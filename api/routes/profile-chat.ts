@@ -1,9 +1,9 @@
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import { ProfileChat } from '../lib/schema.js';
 import Err from '@openaddresses/batch-error';
-import { StandardResponse }from '../lib/types.js';
+import { StandardResponse } from '../lib/types.js';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import * as Default from '../lib/limits.js';
@@ -19,8 +19,8 @@ export default async function router(schema: Schema, config: Config) {
                 id: Type.String(),
                 chatroom: Type.String(),
                 updated: Type.String(),
-            }))
-        })
+            })),
+        }),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -28,14 +28,15 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 total: chats.total,
-                items: chats.items.map((c) => ({
+                items: chats.items.map(c => ({
                     id: c.chatroom,
                     chatroom: c.chatroom,
-                    updated: c.created
-                }))
+                    updated: c.created,
+                })),
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -44,9 +45,9 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ProfileChats',
         description: 'Delete User\'s Chats',
         query: Type.Object({
-            chatroom: Type.Union([Type.String(), Type.Array(Type.String())])
+            chatroom: Type.Union([Type.String(), Type.Array(Type.String())]),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -64,10 +65,11 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 status: 200,
-                message: `Deleted Chatrooms`
+                message: `Deleted Chatrooms`,
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -76,9 +78,9 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ProfileChats',
         description: 'Delete User\'s Chats',
         params: Type.Object({
-            chatroom: Type.String()
+            chatroom: Type.String(),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -90,10 +92,11 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 status: 200,
-                message: `Deleted Chatroom`
+                message: `Deleted Chatroom`,
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -102,7 +105,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ProfileChats',
         description: 'Get User\'s Chats',
         params: Type.Object({
-            chatroom: Type.String()
+            chatroom: Type.String(),
         }),
         query: Type.Object({
             limit: Default.Limit,
@@ -110,13 +113,13 @@ export default async function router(schema: Schema, config: Config) {
             order: Default.Order,
             sort: Type.String({
                 default: 'created',
-                enum: Object.keys(ProfileChat)
+                enum: Object.keys(ProfileChat),
             }),
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(Type.Any())
-        })
+            items: Type.Array(Type.Any()),
+        }),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -128,11 +131,12 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`
                     username = ${user.email}
                     AND chatroom = ${req.params.chatroom}
-                `
+                `,
             });
             res.json(chats);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -141,12 +145,12 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ProfileChats',
         description: 'Delete User\'s Chats',
         params: Type.Object({
-            chatroom: Type.String()
+            chatroom: Type.String(),
         }),
         query: Type.Object({
-            chat: Type.Union([Type.String(), Type.Array(Type.String())])
+            chat: Type.Union([Type.String(), Type.Array(Type.String())]),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -164,10 +168,11 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 status: 200,
-                message: `Deleted Chats`
+                message: `Deleted Chats`,
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

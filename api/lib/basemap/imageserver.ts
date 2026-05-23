@@ -50,7 +50,7 @@ export default class ImageServerBasemap extends BasemapProtocol {
     protected async _tile(
         z: number, x: number, y: number,
         res: Response,
-        opts: Required<TileOpts>
+        opts: Required<TileOpts>,
     ): Promise<void> {
         try {
             const url = ImageServerBasemap.esriRasterTileURL(this.basemap!.url, z, x, y);
@@ -64,15 +64,17 @@ export default class ImageServerBasemap extends BasemapProtocol {
             res.writeHead(200, {
                 ...opts.headers,
                 'Content-Type': 'image/jpeg',
-                'Content-Length': Buffer.byteLength(tile)
+                'Content-Length': Buffer.byteLength(tile),
             });
 
             res.write(tile);
             res.end();
-        } catch (err) {
+        }
+        catch (err) {
             if (err instanceof Err) {
                 throw err;
-            } else {
+            }
+            else {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch ESRI tile');
             }
         }

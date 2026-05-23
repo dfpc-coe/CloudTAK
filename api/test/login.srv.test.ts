@@ -13,20 +13,21 @@ test('POST: api/login', async () => {
         const res = await flight.fetch('/api/login', {
             method: 'POST',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 username: 'admin@example.com',
-                password: 'password123'
-            }
+                password: 'password123',
+            },
         }, false);
 
         assert.deepEqual(res.body, {
             status: 400,
             message: 'Server has not been configured',
-            messages: []
+            messages: [],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -38,12 +39,12 @@ test('POST: api/login', async () => {
         const res = await flight.fetch('/api/login', {
             method: 'POST',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 username: 'admin@example.com',
-                password: 'password123'
-            }
+                password: 'password123',
+            },
         }, false);
 
         assert.ok(res.body.token);
@@ -53,7 +54,8 @@ test('POST: api/login', async () => {
             access: 'admin',
             email: 'admin@example.com',
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });

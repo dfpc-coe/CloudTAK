@@ -7,7 +7,7 @@ import {
     S3Client,
     HeadObjectCommand,
     ListObjectsV2Command,
-    DeleteObjectsCommand
+    DeleteObjectsCommand,
 } from '@aws-sdk/client-s3';
 
 const flight = new Flight();
@@ -21,18 +21,19 @@ test('GET: api/profile/asset', async () => {
         const res = await flight.fetch('/api/profile/asset', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.deepEqual(res.body, {
-             total: 0,
-             tiles: {
-                 url: 'http://localhost:5001/tiles/profile/admin@example.com/'
-             },
-             items: [],
+            total: 0,
+            tiles: {
+                url: 'http://localhost:5001/tiles/profile/admin@example.com/',
+            },
+            items: [],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -40,30 +41,29 @@ test('GET: api/profile/asset', async () => {
 test('POST: api/profile/asset', async () => {
     try {
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
-
             assert.ok(command instanceof HeadObjectCommand);
 
             assert.deepEqual(command.input, {
                 Bucket: 'fake-asset-bucket',
-                Key: 'profile/admin@example.com/9e286ca6-1932-4365-804b-7dd4830f01d7.zip'
+                Key: 'profile/admin@example.com/9e286ca6-1932-4365-804b-7dd4830f01d7.zip',
             });
 
             return Promise.resolve({
-                ContentLength: 123
+                ContentLength: 123,
             });
         });
 
         const res = await flight.fetch('/api/profile/asset', {
             method: 'POST',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 id: '9e286ca6-1932-4365-804b-7dd4830f01d7',
                 name: 'example.zip',
                 path: '/',
-                artifacts: []
-            }
+                artifacts: [],
+            },
         }, true);
 
         assert.ok(res.body.created, 'has created');
@@ -81,11 +81,13 @@ test('POST: api/profile/asset', async () => {
             iconset: null,
             size: 123,
             channels: [],
-            artifacts: []
+            artifacts: [],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
-    } finally {
+    }
+    finally {
         Sinon.restore();
     }
 });
@@ -93,27 +95,26 @@ test('POST: api/profile/asset', async () => {
 test('PATCH: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7', async () => {
     try {
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
-
             assert.ok(command instanceof HeadObjectCommand);
 
             assert.deepEqual(command.input, {
                 Bucket: 'fake-asset-bucket',
-                Key: 'profile/admin@example.com/9e286ca6-1932-4365-804b-7dd4830f01d7.zip'
+                Key: 'profile/admin@example.com/9e286ca6-1932-4365-804b-7dd4830f01d7.zip',
             });
 
             return Promise.resolve({
-                ContentLength: 123
+                ContentLength: 123,
             });
         });
 
         const res = await flight.fetch('/api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7', {
             method: 'PATCH',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
-                channels: [42, 7]
-            }
+                channels: [42, 7],
+            },
         }, true);
 
         assert.ok(res.body.created, 'has created');
@@ -131,11 +132,13 @@ test('PATCH: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7', async () =
             iconset: null,
             size: 123,
             channels: [7, 42],
-            artifacts: []
+            artifacts: [],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
-    } finally {
+    }
+    finally {
         Sinon.restore();
     }
 });
@@ -145,9 +148,10 @@ test('DELETE: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7 cascades ch
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
             if (command instanceof ListObjectsV2Command) {
                 return Promise.resolve({
-                    Contents: []
+                    Contents: [],
                 });
-            } else if (command instanceof DeleteObjectsCommand) {
+            }
+            else if (command instanceof DeleteObjectsCommand) {
                 return Promise.resolve({});
             }
 
@@ -157,20 +161,22 @@ test('DELETE: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7 cascades ch
         const res = await flight.fetch('/api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7', {
             method: 'DELETE',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.deepEqual(res.body, {
             status: 200,
-            message: 'Asset Deleted'
+            message: 'Asset Deleted',
         });
 
         const rows = await flight.config?.pg.select().from(ProfileFileChannel);
         assert.deepEqual(rows, []);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
-    } finally {
+    }
+    finally {
         Sinon.restore();
     }
 });
@@ -187,8 +193,8 @@ test('GET: api/profile/asset includes channel shared files', async () => {
                         name: 'Shared Ops',
                         direction: 'IN',
                         active: true,
-                        bitpos: 42
-                    }]
+                        bitpos: 42,
+                    }],
                 }));
                 response.end();
                 return true;
@@ -202,8 +208,8 @@ test('GET: api/profile/asset includes channel shared files', async () => {
             system_admin: false,
             auth: {
                 cert: 'shared-cert',
-                key: 'shared-key'
-            }
+                key: 'shared-key',
+            },
         });
 
         await flight.config?.models.ProfileFile.generate({
@@ -213,19 +219,19 @@ test('GET: api/profile/asset includes channel shared files', async () => {
             name: 'shared.zip',
             iconset: null,
             size: 456,
-            artifacts: []
+            artifacts: [],
         });
 
         await flight.config?.pg.insert(ProfileFileChannel).values({
             file: '1db1f443-23e2-44b1-b879-fab2db95ce66',
-            channel: 42n
+            channel: 42n,
         });
 
         const res = await flight.fetch('/api/profile/asset', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.equal(res.body.total, 1);
@@ -235,7 +241,8 @@ test('GET: api/profile/asset includes channel shared files', async () => {
         assert.ok(shared);
         assert.equal(shared.username, 'shared@example.com');
         assert.deepEqual(shared.channels, [42]);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });

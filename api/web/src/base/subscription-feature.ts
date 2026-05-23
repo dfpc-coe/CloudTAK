@@ -1,4 +1,4 @@
-import { db } from './database.ts';
+import { db } from '../database.ts';
 import Filter from './filter.ts';
 import COT from './cot.ts';
 import Subscription from './subscription.ts';

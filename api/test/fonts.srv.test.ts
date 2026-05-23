@@ -13,16 +13,17 @@ test('GET: api/fonts/Open Sans Regular/0-255.pbf', async () => {
         const res = await flight.fetch('/api/fonts/Open%20Sans%20Regular/0-255.pbf', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, {
             json: false,
-            binary: true
+            binary: true,
         });
 
         assert.equal(res.status, 200);
         assert.ok(res.body.byteLength > 0);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -32,16 +33,17 @@ test('GET: api/fonts/InvalidFont/0-255.pbf (fallback)', async () => {
         const res = await flight.fetch('/api/fonts/InvalidFont/0-255.pbf', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, {
             json: false,
-            binary: true
+            binary: true,
         });
 
         assert.equal(res.status, 200);
         assert.ok(res.body.byteLength > 0);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -51,30 +53,31 @@ test('GET: api/fonts/Open Sans Regular/999999-1000000.pbf (404)', async () => {
         const res = await flight.fetch('/api/fonts/Open%20Sans%20Regular/999999-1000000.pbf', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, {
             json: false,
-            binary: true
+            binary: true,
         });
 
         assert.equal(res.status, 404);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
 
-
 test('GET: api/fonts/Open Sans Regular/0-255.pbf (401 - No Auth)', async () => {
     try {
         const res = await flight.fetch('/api/fonts/Open%20Sans%20Regular/0-255.pbf', {
-            method: 'GET'
+            method: 'GET',
         }, {
-            json: true
+            json: true,
         });
 
         assert.equal(res.status, 401);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });

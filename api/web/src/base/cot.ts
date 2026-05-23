@@ -1,6 +1,6 @@
 import { v4 as randomUUID } from 'uuid';
 import { std } from '../std.ts';
-import { db } from './database.ts';
+import { db } from '../database.ts';
 import { liveQuery } from 'dexie';
 import { bbox } from '@turf/bbox'
 import { length } from '@turf/length'
@@ -535,6 +535,10 @@ export default class COT {
         }
 
         if (type.includes('Point')) {
+            if (properties.icon && properties.icon.startsWith('COT_MAPPING_2525C')) {
+                delete properties.icon;
+            }
+
             if (properties.group) {
                 properties['icon-opacity'] = 0;
 

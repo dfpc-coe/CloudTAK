@@ -16,6 +16,26 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.3.0 - 2026-05-22
+
+- :rocket: Allow an API user to set contentHashes or entryUid - Closes: https://github.com/dfpc-coe/CloudTAK/pull/1441
+
+### v13.2.0 - 2026-05-22
+
+- :rocket: Hide Copy button on Cursor Coordinates - Closes: #1450
+- :rocket: Add Style Lints for all backend components
+
+### v13.1.1 - 2026-05-21
+
+- :bug: CSP rules prevented `blob:` loaded images
+
+### v13.1.0 - 2026-05-21
+
+- :tada: Update CoTView to use a new Offline native Icon Selection component
+- :rocket: Update MenuIconsets to be fully offline
+- :rocket: Add inline error message if an icon cannot be found
+- :bug: Fix 2525C icons displaying in the UI
+
 ### v13.0.2 - 2026-05-20
 
 - :bug: Ensure Derived-Types is present in PMTiles Dockerfile Context

@@ -8,7 +8,7 @@ export async function createImportResult(
         name: string;
         type: 'Feature' | 'Asset' | 'Iconset' | 'Basemap';
         type_id: string;
-    }
+    },
 ) {
     // Only imports have the create result endpoint - if we are running the task for something else
     // we can ignore this call
@@ -21,13 +21,14 @@ export async function createImportResult(
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${jwt.sign({ access: 'user', email: msg.job.username }, msg.secret)}`,
             },
-            body: JSON.stringify(result)
+            body: JSON.stringify(result),
         });
 
         if (!res.ok) {
             console.error(`Failed to create import result: ${await res.text()}`);
         }
-    } catch (err) {
+    }
+    catch (err) {
         console.error('Failed to create import result:', err);
     }
 }

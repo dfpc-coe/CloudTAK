@@ -7,7 +7,7 @@ import { useMapStore } from './src/stores/map.ts';
 import { useFloatStore } from './src/stores/float.ts';
 import type { MenuItemConfig } from './src/stores/modules/menu.ts';
 import type { BottomBarItemConfig } from './src/stores/modules/bottombar.ts';
-import { db, type DBFeature } from './src/base/database.ts';
+import { db, type DBFeature } from './src/database.ts';
 import { liveQuery } from 'dexie';
 import { from, type Observable } from 'rxjs';
 import mapgl from 'maplibre-gl';

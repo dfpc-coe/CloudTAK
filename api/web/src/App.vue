@@ -188,7 +188,7 @@ import ChannelChangeModal from './components/CloudTAK/Menu/ChannelChangeModal.vu
 import { WorkerMessageType } from './base/events.ts';
 import type { WorkerMessage } from './base/events.ts';
 import { isNativePlatform, supportsServiceWorker } from './base/capacitor.ts';
-import { db } from './base/database.ts';
+import { db } from './database.ts';
 import { getPageServiceWorkerBuildId, markUpdateRequestedByThisTab } from './base/service-worker.ts';
 import { useMapStore } from './stores/map.ts';
 

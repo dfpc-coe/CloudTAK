@@ -1,8 +1,8 @@
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { Busboy } from '@fastify/busboy';
-import Auth, { AuthResourceAccess }  from '../lib/auth.js';
+import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
 import assetList, { AssetOutput } from '../lib/asset.js';
@@ -19,12 +19,12 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(AssetOutput)
-        })
+            items: Type.Array(AssetOutput),
+        }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -33,9 +33,10 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 total: list.total,
-                items: list.assets
+                items: list.assets,
             });
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -48,16 +49,15 @@ export default async function router(schema: Schema, config: Config) {
             connectionid: Type.Integer({ minimum: 1 }),
         }),
         body: {
-            'multipart/form-data': true
+            'multipart/form-data': true,
         },
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
-
         try {
             const { connection } = await Auth.is_connection(config, req, {
                 resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
-                ]
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                ],
             }, req.params.connectionid);
             const contentType = req.headers['content-type'];
 
@@ -67,11 +67,11 @@ export default async function router(schema: Schema, config: Config) {
 
             const bb = new Busboy({
                 headers: {
-                    'content-type': contentType
+                    'content-type': contentType,
                 },
                 limits: {
-                    files: 1
-                }
+                    files: 1,
+                },
             });
 
             const assets: Promise<void>[] = [];
@@ -81,7 +81,8 @@ export default async function router(schema: Schema, config: Config) {
                     file.pipe(passThrough);
 
                     assets.push(S3.put(`connection/${connection.id}/${filename}`, passThrough));
-                } catch (err) {
+                }
+                catch (err) {
                     Err.respond(err, res);
                 }
             }).on('finish', async () => {
@@ -92,15 +93,17 @@ export default async function router(schema: Schema, config: Config) {
 
                     res.json({
                         status: 200,
-                        message: 'Asset Uploaded'
+                        message: 'Asset Uploaded',
                     });
-                } catch (err) {
+                }
+                catch (err) {
                     Err.respond(err, res);
                 }
             });
 
             req.pipe(bb);
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -112,15 +115,15 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
             asset: Type.String(),
-            ext: Type.String()
+            ext: Type.String(),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
                 resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
-                ]
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                ],
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -136,9 +139,10 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 status: 200,
-                message: 'Asset Deleted'
+                message: 'Asset Deleted',
             });
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -150,19 +154,19 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
             asset: Type.String(),
-            ext: Type.String()
+            ext: Type.String(),
         }),
         query: Type.Object({
             token: Type.Optional(Type.String()),
-            download: Type.Boolean()
-        })
+            download: Type.Boolean(),
+        }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
                 token: true,
                 resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
-                ]
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                ],
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -174,7 +178,8 @@ export default async function router(schema: Schema, config: Config) {
             const stream = await S3.get(`connection/${connection.id}/${req.params.asset}.${req.params.ext}`);
 
             stream.pipe(res);
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });

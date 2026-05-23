@@ -206,8 +206,8 @@ function getBboxZoom(bbox: BBox): number {
     for (let z = 0; z < MAX_ZOOM; z++) {
         const mask = 1 << (32 - (z + 1));
         if (
-            (bbox[0] & mask) !== (bbox[2] & mask) ||
-            (bbox[1] & mask) !== (bbox[3] & mask)
+            (bbox[0] & mask) !== (bbox[2] & mask)
+            || (bbox[1] & mask) !== (bbox[3] & mask)
         ) {
             return z;
         }

@@ -5,7 +5,7 @@ import cors from 'cors';
 import express from 'express';
 import { StandardResponse } from './lib/types.js';
 import Bulldozer from './lib/initialization.js';
-import history, {Context} from 'connect-history-api-fallback';
+import history, { Context } from 'connect-history-api-fallback';
 import Schema from '@openaddresses/batch-schema';
 import { ProfileConnConfig } from './lib/connection-config.js';
 import { ConnectionClient } from './lib/connection-pool.js';
@@ -13,9 +13,10 @@ import { ConnectionWebSocket } from './lib/connection-web.js';
 import sleep from './lib/sleep.js';
 import type WebSocket from 'ws';
 import * as ws from 'ws';
+import type { IncomingMessage } from 'node:http';
 import Config from './lib/config.js';
 import ServerManager from './lib/server.js';
-import { tokenParser, AuthUser } from './lib/auth.js'
+import { tokenParser, AuthUser } from './lib/auth.js';
 import process from 'node:process';
 
 type CliArgs = {
@@ -31,13 +32,13 @@ type CliArgs = {
 const { values: args } = parseArgs({
     args: process.argv.slice(2),
     options: {
-        silent: { type: 'boolean' },   // Turn off logging as much as possible
-        nocache: { type: 'boolean' },  // Ignore MemCached
+        silent: { type: 'boolean' }, // Turn off logging as much as possible
+        nocache: { type: 'boolean' }, // Ignore MemCached
         noevents: { type: 'boolean' }, // Disable Initialization of Second Level Events
-        nosinks: { type: 'boolean' },  // Disable Push to Sinks
+        nosinks: { type: 'boolean' }, // Disable Push to Sinks
         nogeofence: { type: 'boolean' }, // Disable Geofence Server Integration
-        postgres: { type: 'string' },  // Postgres Connection String
-        env: { type: 'string' }        // Load a non-default .env file --env local would read .env-local
+        postgres: { type: 'string' }, // Postgres Connection String
+        env: { type: 'string' }, // Load a non-default .env file --env local would read .env-local
     },
     allowPositionals: true,
     strict: false,
@@ -56,10 +57,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         fs.accessSync(dotfile);
 
         process.env = Object.assign(JSON.parse(String(fs.readFileSync(dotfile))), process.env);
-    } catch (err) {
+    }
+    catch (err) {
         if (err instanceof Error && err.message.startsWith('ENOENT')) {
             console.log('ok - no .env file loaded - none found');
-        } else {
+        }
+        else {
             console.log('ok - no .env file loaded', err);
         }
     }
@@ -94,7 +97,7 @@ export default async function server(config: Config): Promise<ServerManager> {
         logging: {
             skip: function (req, res) {
                 return res.statusCode <= 399 && res.statusCode >= 200;
-            }
+            },
         },
         limit: 50,
         error: {
@@ -114,21 +117,21 @@ export default async function server(config: Config): Promise<ServerManager> {
                     bearerAuth: {
                         type: 'http',
                         scheme: 'bearer',
-                        bearerFormat: 'JWT'
-                    }
-                }
+                        bearerFormat: 'JWT',
+                    },
+                },
             },
             security: [{
-                bearerAuth: []
+                bearerAuth: [],
             }],
-        }
+        },
     });
 
     app.disable('x-powered-by');
     app.use(cors({
         origin: '*',
         exposedHeaders: [
-            'Content-Disposition'
+            'Content-Disposition',
         ],
         allowedHeaders: [
             'Content-Type',
@@ -136,9 +139,9 @@ export default async function server(config: Config): Promise<ServerManager> {
             'User-Agent',
             'Authorization',
             'MissionAuthorization',
-            'x-requested-with'
+            'x-requested-with',
         ],
-        credentials: true
+        credentials: true,
     }));
 
     /**
@@ -155,7 +158,7 @@ export default async function server(config: Config): Promise<ServerManager> {
      */
     app.get('/api', (req, res) => {
         res.json({
-            version: pkg.version
+            version: pkg.version,
         });
     });
 
@@ -167,10 +170,9 @@ export default async function server(config: Config): Promise<ServerManager> {
         new URL('./routes/', import.meta.url),
         config,
         {
-            silent: !!config.silent
-        }
+            silent: !!config.silent,
+        },
     );
-
 
     app.use('/fonts', express.static('fonts/'));
 
@@ -178,31 +180,33 @@ export default async function server(config: Config): Promise<ServerManager> {
         rewrites: [{
             from: /.*\/js\/.*$/,
             to(context: Context) {
-                if (!context.parsedUrl.pathname) context.parsedUrl.pathname = ''
+                if (!context.parsedUrl.pathname) context.parsedUrl.pathname = '';
                 return context.parsedUrl.pathname.replace(/.*\/js\//, '/js/');
-            }
-        },{
+            },
+        }, {
             from: /.*$/,
             to(context: Context) {
-                if (!context.parsedUrl.pathname) context.parsedUrl.pathname = ''
-                if (!context.parsedUrl.path) context.parsedUrl.path = ''
+                if (!context.parsedUrl.pathname) context.parsedUrl.pathname = '';
+                if (!context.parsedUrl.path) context.parsedUrl.path = '';
                 const parse = path.parse(context.parsedUrl.path);
                 if (parse.ext) {
                     return context.parsedUrl.pathname;
-                } else {
+                }
+                else {
                     return '/';
                 }
-            }
-        }]
+            },
+        }],
     }));
 
     app.use(express.static('web/dist'));
 
-    const WebSocketServer = ws.WebSocketServer ? ws.WebSocketServer : ws.default.WebSocketServer;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const WebSocketServer = ws.WebSocketServer ?? (ws as any).default.WebSocketServer;
 
     const wss = new WebSocketServer({
-        noServer: true
-    }).on('connection', async (ws: WebSocket, request) => {
+        noServer: true,
+    }).on('connection', async (ws: WebSocket, request: IncomingMessage) => {
         try {
             if (!request.url) throw new Error('Could not parse connection URL');
             const params = new URLSearchParams(request.url.replace(/.*\?/, ''));
@@ -213,23 +217,24 @@ export default async function server(config: Config): Promise<ServerManager> {
             const parsedParams = {
                 connection: String(params.get('connection')),
                 token: String(params.get('token')),
-                format: String(params.get('format') || 'raw')
-            }
+                format: String(params.get('format') || 'raw'),
+            };
 
             const auth = await tokenParser(config, parsedParams.token, config.SigningSecret);
 
-            if (!config.wsClients.has(parsedParams.connection)) config.wsClients.set(parsedParams.connection, [])
+            if (!config.wsClients.has(parsedParams.connection)) config.wsClients.set(parsedParams.connection, []);
 
             if (!config.conns) throw new Error('Server not configured with Connection Pool');
 
             // Connect to MachineUser Connection if it is an integer
             if (!isNaN(Number(parsedParams.connection)) && Number.isInteger(Number(parsedParams.connection))) {
-                let webClients = config.wsClients.get(parsedParams.connection)
+                let webClients = config.wsClients.get(parsedParams.connection);
                 if (!webClients) webClients = [];
                 webClients.push(new ConnectionWebSocket(ws, parsedParams.format));
                 config.wsClients.set(parsedParams.connection, webClients);
                 ws.send(JSON.stringify({ type: 'connected' }));
-            } else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
+            }
+            else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
                 let client: ConnectionClient | undefined;
                 let awaitSecure: Promise<void> | undefined;
                 if (!config.conns.has(parsedParams.connection)) {
@@ -238,15 +243,16 @@ export default async function server(config: Config): Promise<ServerManager> {
 
                     client = await config.conns.add(new ProfileConnConfig(config, parsedParams.connection, profile.auth));
                     if (client.tak.client && !client.tak.client.authorized) {
-                        awaitSecure = new Promise<void>((resolve) => (client as ConnectionClient).tak.once('secureConnect', resolve));
+                        awaitSecure = new Promise<void>(resolve => (client as ConnectionClient).tak.once('secureConnect', resolve));
                     }
-                } else {
+                }
+                else {
                     client = config.conns.get(parsedParams.connection) as ConnectionClient;
                 }
 
                 const connClient = new ConnectionWebSocket(ws, parsedParams.format, client, auth.session);
 
-                let webClients = config.wsClients.get(parsedParams.connection)
+                let webClients = config.wsClients.get(parsedParams.connection);
                 if (!webClients) webClients = [];
                 webClients.push(connClient);
                 config.wsClients.set(parsedParams.connection, webClients);
@@ -265,14 +271,16 @@ export default async function server(config: Config): Promise<ServerManager> {
                     config.wsClients.delete(parsedParams.connection);
 
                     config.conns.delete(parsedParams.connection);
-                })
+                });
 
                 if (awaitSecure) await awaitSecure;
                 ws.send(JSON.stringify({ type: 'connected' }));
-            } else {
+            }
+            else {
                 throw new Error('Unauthorized');
             }
-        } catch (err) {
+        }
+        catch (err) {
             if (err instanceof Error && !err.message.includes('jwt expired')) {
                 console.error('Error: WebSocket: ', err);
             }
@@ -280,8 +288,8 @@ export default async function server(config: Config): Promise<ServerManager> {
             ws.send(JSON.stringify({
                 type: 'Error',
                 properties: {
-                    message: err instanceof Error ? String(err.message) : String(err)
-                }
+                    message: err instanceof Error ? String(err.message) : String(err),
+                },
             }));
             await sleep(500);
             ws.close();
@@ -293,7 +301,8 @@ export default async function server(config: Config): Promise<ServerManager> {
             if (!config.silent) {
                 if (process.env.CLOUDTAK_Mode === 'docker-compose') {
                     console.log('ok - http://localhost:5000');
-                } else {
+                }
+                else {
                     console.log('ok - http://localhost:5001');
                 }
             }
@@ -303,7 +312,7 @@ export default async function server(config: Config): Promise<ServerManager> {
         });
 
         srv.on('upgrade', (request, socket, head) => {
-            wss.handleUpgrade(request, socket, head, (ws) => {
+            wss.handleUpgrade(request, socket, head, (ws: WebSocket) => {
                 wss.emit('connection', ws, request);
             });
         });
@@ -314,4 +323,3 @@ export default async function server(config: Config): Promise<ServerManager> {
         });
     });
 }
-

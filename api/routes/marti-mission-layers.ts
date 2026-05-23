@@ -1,4 +1,4 @@
-import { Static, Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox';
 import { StandardResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -9,19 +9,19 @@ import { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
 import { MissionLayer, MissionLayerType } from '@tak-ps/node-tak/lib/api/mission-layer';
 import {
     TAKItem,
-    TAKList
+    TAKList,
 } from '@tak-ps/node-tak/lib/api/types';
-import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
+import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/marti/missions/:name/layer', {
         name: 'List Layers',
         group: 'MartiMissionLayer',
         params: Type.Object({
-            name: Type.String()
+            name: Type.String(),
         }),
         description: 'Helper API list mission layers',
-        res: TAKList(MissionLayer)
+        res: TAKList(MissionLayer),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -31,16 +31,17 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const list = await api.MissionLayer.list(
                 req.params.name,
-                opts
+                opts,
             );
 
             res.json(list);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -49,10 +50,10 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiMissionLayer',
         params: Type.Object({
             name: Type.String(),
-            layerid: Type.String()
+            layerid: Type.String(),
         }),
         description: 'Helper API to get mission layer',
-        res: TAKItem(MissionLayer)
+        res: TAKItem(MissionLayer),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -62,17 +63,18 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const layer = await api.MissionLayer.get(
                 req.params.name,
                 req.params.layerid,
-                opts
+                opts,
             );
 
             res.json(layer);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -80,7 +82,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Create Layer',
         group: 'MartiMissionLayer',
         params: Type.Object({
-            name: Type.String()
+            name: Type.String(),
         }),
         body: Type.Object({
             name: Default.NameField,
@@ -90,7 +92,7 @@ export default async function router(schema: Schema, config: Config) {
             afterUid: Type.Optional(Type.String()),
         }),
         description: 'Helper API to create mission layers',
-        res: TAKItem(MissionLayer)
+        res: TAKItem(MissionLayer),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -100,20 +102,21 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const create = await api.MissionLayer.create(
                 req.params.name,
                 {
                     ...req.body,
-                    creatorUid: user.email
+                    creatorUid: user.email,
                 },
-                opts
+                opts,
             );
 
             res.json(create);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -122,13 +125,13 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiMissionLayer',
         params: Type.Object({
             name: Type.String(),
-            uid: Type.String()
+            uid: Type.String(),
         }),
         body: Type.Object({
             name: Type.Optional(Default.NameField),
         }),
         description: 'Helper API to update mission layers',
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -139,25 +142,26 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.name) {
                 const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                     ? { token: String(req.headers['missionauthorization']) }
-                    : await config.conns.subscription(user.email, req.params.name)
+                    : await config.conns.subscription(user.email, req.params.name);
 
                 await api.MissionLayer.rename(
                     req.params.name,
                     req.params.uid,
                     {
                         name: req.body.name,
-                        creatorUid: user.email
+                        creatorUid: user.email,
                     },
-                    opts
+                    opts,
                 );
             }
 
             res.json({
                 status: 200,
-                message: 'Layer Updated'
+                message: 'Layer Updated',
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -166,10 +170,10 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiMissionLayer',
         params: Type.Object({
             name: Type.String(),
-            uid: Type.String()
+            uid: Type.String(),
         }),
         description: 'Helper API to delete mission layers',
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -179,23 +183,24 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             await api.MissionLayer.delete(
                 req.params.name,
                 {
-                    uid: [ req.params.uid ],
-                    creatorUid: user.email
+                    uid: [req.params.uid],
+                    creatorUid: user.email,
                 },
-                opts
+                opts,
             );
 
             res.json({
                 status: 200,
-                message: 'Layer Deleted'
+                message: 'Layer Deleted',
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

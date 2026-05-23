@@ -1,9 +1,9 @@
-import { db } from './database.ts';
+import { db } from '../database.ts';
 import { std, stdurl } from '../std.ts';
 import type {
     MissionTemplateLogList
 } from '../types.ts'
-import type { DBMissionTemplateLog } from './database.ts';
+import type { DBMissionTemplateLog } from '../database.ts';
 
 export default class MissionTemplateLogs {
     template: string;

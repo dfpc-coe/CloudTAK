@@ -14,13 +14,14 @@ export default class HookQueue {
 
     async submit(
         Entries: SQS.SendMessageBatchRequestEntry[],
-        QueueUrl: string
+        QueueUrl: string,
     ): Promise<SQS.SendMessageBatchCommandOutput> {
         try {
             const res = await this.sqs.send(new SQS.SendMessageBatchCommand({ QueueUrl, Entries }));
 
             return res;
-        } catch (err) {
+        }
+        catch (err) {
             console.error(err);
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to submit SQS Message');
         }

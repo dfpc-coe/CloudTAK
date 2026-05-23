@@ -25,18 +25,18 @@ export default class HostedBasemap extends BasemapProtocol {
     protected async _tile(
         z: number, x: number, y: number,
         res: Response,
-        opts: Required<TileOpts>
+        opts: Required<TileOpts>,
     ): Promise<void> {
         const url = new URL(this.basemap!.url
             .replace(/\{\$?z\}/, String(z))
             .replace(/\{\$?x\}/, String(x))
-            .replace(/\{\$?y\}/, String(y))
+            .replace(/\{\$?y\}/, String(y)),
         );
 
         try {
             const stream = await undici.pipeline(url, {
                 method: 'GET',
-                headers: opts.headers as Record<string, string>
+                headers: opts.headers as Record<string, string>,
             }, ({ statusCode, headers, body }) => {
                 if (headers) {
                     for (const key in headers) {
@@ -60,13 +60,22 @@ export default class HostedBasemap extends BasemapProtocol {
 
             await new Promise((resolve, reject) => {
                 stream
-                    .on('data', (buf) => { res.write(buf); })
+                    .on('data', (buf) => {
+                        res.write(buf);
+                    })
                     .on('error', (err) => { return reject(err); })
-                    .on('end', () => { res.end(); return resolve(undefined); })
-                    .on('close', () => { res.end(); return resolve(undefined); })
+                    .on('end', () => {
+                        res.end();
+                        return resolve(undefined);
+                    })
+                    .on('close', () => {
+                        res.end();
+                        return resolve(undefined);
+                    })
                     .end();
             });
-        } catch (err) {
+        }
+        catch (err) {
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch tile');
         }
     }

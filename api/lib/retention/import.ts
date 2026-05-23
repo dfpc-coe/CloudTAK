@@ -19,7 +19,7 @@ const task: RetentionTask = {
         for await (const imp of config.models.Import.augmented_iter({
             where: sql`
                 ${Import.created} < ${cutoff.toISOString()}::timestamptz
-            `
+            `,
         })) {
             expiredIds.push(imp.id);
         }
@@ -35,9 +35,9 @@ const task: RetentionTask = {
             status: 'success',
             deleted,
             duration: Date.now() - start,
-            message: deleted ? undefined : 'No expired imports found'
+            message: deleted ? undefined : 'No expired imports found',
         };
-    }
+    },
 };
 
 export default task;

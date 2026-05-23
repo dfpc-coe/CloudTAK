@@ -1,4 +1,4 @@
-import { db } from './database.ts';
+import { db } from '../database.ts';
 import { liveQuery, type Observable } from 'dexie';
 import { std, stdurl } from '../std.ts';
 import type { Group, GroupChannel } from '../types.ts';
@@ -78,10 +78,16 @@ export default class GroupManager {
         return await collection.toArray();
     }
 
+    /**
+     * Get a single GroupChannel by name.
+     */
     static async get(name: string): Promise<GroupChannel | undefined> {
         return await db.group.get(name);
     }
 
+    /**
+     * Put one or more GroupChannels into the database.
+     */
     static async put(channels: GroupChannel[] | GroupChannel): Promise<void> {
         if (!Array.isArray(channels)) channels = [channels];
         await db.group.bulkPut(channels);

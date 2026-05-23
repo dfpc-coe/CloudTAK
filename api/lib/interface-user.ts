@@ -1,11 +1,11 @@
-import Config from './config.js'
+import Config from './config.js';
 import { Static, Type } from '@sinclair/typebox';
 import CoTAKUser from './user/cotak.js';
 
 export const Agency = Type.Object({
     id: Type.Number(),
     name: Type.String(),
-    description: Type.Any()
+    description: Type.Any(),
 });
 
 export const Integration = Type.Object({
@@ -23,13 +23,13 @@ export const Channel = Type.Object({
     id: Type.Number(),
     rdn: Type.String(),
     name: Type.String(),
-    description: Type.Any()
+    description: Type.Any(),
 });
 
 export enum ChannelAccessEnum {
     write = 'write',
     read = 'read',
-    duplex = 'duplex'
+    duplex = 'duplex',
 }
 
 export const ChannelAccess = Type.Enum(ChannelAccessEnum);
@@ -81,12 +81,12 @@ export interface UserInterface {
         agency?: number;
     }): Promise<{
         total: number;
-        items: Array<Static<typeof Channel>>
+        items: Array<Static<typeof Channel>>;
     }>;
 
     agencies(uid: number, filter: string): Promise<{
         total: number;
-        items: Array<Static<typeof Agency>>
+        items: Array<Static<typeof Agency>>;
     }>;
 
     login(username: string): Promise<{
@@ -118,12 +118,12 @@ export class UserManager {
         return service;
     }
 
-    list(): Array<{ id: string, name: string }> {
+    list(): Array<{ id: string; name: string }> {
         const list = [];
         for (const service of this.services.values()) {
             list.push({
                 id: service._id,
-                name: service._name
+                name: service._name,
             });
         }
         return list;

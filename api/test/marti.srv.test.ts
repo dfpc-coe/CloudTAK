@@ -2,7 +2,7 @@ process.env.SigningSecret = 'coe-wildland-fire';
 import test from 'node:test';
 import assert from 'node:assert';
 import Flight from './flight.js';
-import type { IncomingMessage, ServerResponse } from 'node:http'
+import type { IncomingMessage, ServerResponse } from 'node:http';
 
 const flight = new Flight();
 
@@ -25,7 +25,7 @@ test('GET: api/marti/clients - comma separated groups forwarded as repeated grou
             response.write(JSON.stringify({
                 version: '3',
                 type: 'com.bbn.marti.remote.ClientEndpoint',
-                data: []
+                data: [],
             }));
             response.end();
             return true;
@@ -38,13 +38,14 @@ test('GET: api/marti/clients - comma separated groups forwarded as repeated grou
         const res = await flight.fetch('/api/marti/clients?groups=group-a,group-b', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.equal(res.status, 200);
         assert.deepEqual(res.body.data, []);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 
@@ -65,7 +66,7 @@ test('GET: api/marti/clients - single groups filter forwards a single group para
             response.write(JSON.stringify({
                 version: '3',
                 type: 'com.bbn.marti.remote.ClientEndpoint',
-                data: []
+                data: [],
             }));
             response.end();
             return true;
@@ -78,13 +79,14 @@ test('GET: api/marti/clients - single groups filter forwards a single group para
         const res = await flight.fetch('/api/marti/clients?groups=group-a', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.equal(res.status, 200);
         assert.deepEqual(res.body.data, []);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 

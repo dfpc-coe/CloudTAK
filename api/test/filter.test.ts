@@ -6,15 +6,15 @@ import { CoTParser } from '@tak-ps/node-cot';
 test('Filter: Basic Point', async () => {
     const filter = await Filter.test({
         queries: [{
-            query: 'properties.callsign = "TEST"'
-        }]
+            query: 'properties.callsign = "TEST"',
+        }],
     }, await CoTParser.from_geojson({
         type: 'Feature',
         properties: {},
         geometry: {
             type: 'Point',
-            coordinates: [0, 0]
-        }
+            coordinates: [0, 0],
+        },
     }));
 
     assert.equal(filter, false);
@@ -23,17 +23,17 @@ test('Filter: Basic Point', async () => {
 test('Filter: Callsign Match', async () => {
     const filter = await Filter.test({
         queries: [{
-            query: 'properties.callsign = "TEST"'
-        }]
+            query: 'properties.callsign = "TEST"',
+        }],
     }, await CoTParser.from_geojson({
         type: 'Feature',
         properties: {
-            callsign: 'TEST'
+            callsign: 'TEST',
         },
         geometry: {
             type: 'Point',
-            coordinates: [0, 0]
-        }
+            coordinates: [0, 0],
+        },
     }));
 
     assert.equal(filter, true);

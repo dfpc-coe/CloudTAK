@@ -30,7 +30,7 @@ test('PUT: api/attachment?mission= - uploads to S3 and attaches to mission', asy
         Key: `attachment/${fakeHash}/image.png`,
         Size: 12,
         LastModified: new Date(),
-        ETag: '"abc"'
+        ETag: '"abc"',
     }]);
 
     const s3GetStub = Sinon.stub(S3, 'get').resolves(Readable.from(['file-content']));
@@ -56,7 +56,7 @@ test('PUT: api/attachment?mission= - uploads to S3 and attaches to mission', asy
                 PrimaryKey: '1',
                 Hash: takServerHash,
                 CreatorUid: 'admin',
-                Name: 'image.png'
+                Name: 'image.png',
             }));
             response.end();
             return true;
@@ -72,7 +72,7 @@ test('PUT: api/attachment?mission= - uploads to S3 and attaches to mission', asy
             response.write(JSON.stringify({
                 version: '3',
                 type: 'Mission',
-                data: {}
+                data: {},
             }));
             response.end();
             return true;
@@ -84,15 +84,15 @@ test('PUT: api/attachment?mission= - uploads to S3 and attaches to mission', asy
     try {
         const body = new FormData();
         body.append('file', new Blob(['file-content'], {
-            type: 'image/png'
+            type: 'image/png',
         }), 'image.png');
 
         const res = await flight.fetch(`/api/attachment?mission=${missionGuid}`, {
             method: 'PUT',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
-            body
+            body,
         }, true);
 
         assert.deepEqual(res.body, { hash: fakeHash });
@@ -105,7 +105,8 @@ test('PUT: api/attachment?mission= - uploads to S3 and attaches to mission', asy
 
         assert.ok(filesUploadCalled, 'TAK Server Files.upload should be called');
         assert.ok(attachContentsCalled, 'TAK Server Mission.attachContents should be called');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 
@@ -122,22 +123,23 @@ test('PUT: api/attachment (no mission param) - does NOT call TAK server', async 
     try {
         const body = new FormData();
         body.append('file', new Blob(['file-content'], {
-            type: 'text/plain'
+            type: 'text/plain',
         }), 'test.txt');
 
         const res = await flight.fetch('/api/attachment', {
             method: 'PUT',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
-            body
+            body,
         }, true);
 
         assert.deepEqual(res.body, { hash: fakeHash });
 
         assert.ok(s3PutStub.calledOnce, 'S3 put should be called once');
         assert.equal(s3PutStub.firstCall.args[0], `attachment/${fakeHash}/test.txt`);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 
@@ -157,20 +159,21 @@ test('PUT: api/attachment?mission= - fails gracefully if S3 file not found', asy
     try {
         const body = new FormData();
         body.append('file', new Blob(['file-content'], {
-            type: 'image/png'
+            type: 'image/png',
         }), 'missing.png');
 
         const res = await flight.fetch(`/api/attachment?mission=${missionGuid}`, {
             method: 'PUT',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
-            body
+            body,
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Could not find uploaded attachment');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 
@@ -190,7 +193,7 @@ test('PUT: api/attachment?mission= - fails gracefully if mission not in user ove
         Key: `attachment/${fakeHash}/photo.jpg`,
         Size: 50,
         LastModified: new Date(),
-        ETag: '"def"'
+        ETag: '"def"',
     }]);
 
     Sinon.stub(S3, 'get').resolves(Readable.from(['photo-data']));
@@ -211,7 +214,7 @@ test('PUT: api/attachment?mission= - fails gracefully if mission not in user ove
                 PrimaryKey: '1',
                 Hash: takServerHash,
                 CreatorUid: 'admin',
-                Name: 'photo.jpg'
+                Name: 'photo.jpg',
             }));
             response.end();
             return true;
@@ -226,7 +229,7 @@ test('PUT: api/attachment?mission= - fails gracefully if mission not in user ove
             response.setHeader('Content-Type', 'application/json');
             response.write(JSON.stringify({
                 status: 403,
-                message: 'Forbidden'
+                message: 'Forbidden',
             }));
             response.end();
             return true;
@@ -238,19 +241,20 @@ test('PUT: api/attachment?mission= - fails gracefully if mission not in user ove
     try {
         const body = new FormData();
         body.append('file', new Blob(['photo-data'], {
-            type: 'image/jpeg'
+            type: 'image/jpeg',
         }), 'photo.jpg');
 
         const res = await flight.fetch(`/api/attachment?mission=${missionGuid}`, {
             method: 'PUT',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
-            body
+            body,
         }, false);
 
         assert.ok(!res.ok, 'Request should not succeed without mission overlay');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 
@@ -267,14 +271,15 @@ test('PUT: api/attachment?mission= - fails with 400 if no file uploaded', async 
         const res = await flight.fetch(`/api/attachment?mission=${missionGuid}`, {
             method: 'PUT',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
-            body
+            body,
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'No file uploaded');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -286,14 +291,15 @@ test('PUT: api/attachment - fails with 400 if no file uploaded (no mission)', as
         const res = await flight.fetch('/api/attachment', {
             method: 'PUT',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
-            body
+            body,
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'No file uploaded');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -307,11 +313,12 @@ test('PUT: api/attachment?mission= - unauthenticated request fails', async () =>
 
         const res = await flight.fetch(`/api/attachment?mission=${missionGuid}`, {
             method: 'PUT',
-            body
+            body,
         }, false);
 
         assert.equal(res.status, 401);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });

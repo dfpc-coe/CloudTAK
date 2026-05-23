@@ -8,7 +8,7 @@ export default class LayerDeploy {
     static async apply(
         config: Config,
         layerid: number,
-        stack: Static<typeof StackFrame>
+        stack: Static<typeof StackFrame>,
     ): Promise<void> {
         if (!await CloudFormation.exists(config, layerid)) {
             await CloudFormation.create(config, layerid, stack);

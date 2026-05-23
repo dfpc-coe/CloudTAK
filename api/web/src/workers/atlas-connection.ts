@@ -6,7 +6,7 @@ import { stdurl } from '../std.ts';
 import type Atlas from './atlas.ts';
 import { version } from '../../package.json'
 import Chatroom from '../base/chatroom.ts';
-import { db } from '../base/database.ts';
+import { db } from '../database.ts';
 import TAKNotification, { NotificationType } from '../base/notification.ts';
 import { WorkerMessageType } from '../base/events.ts';
 import type { Feature, Import, Chat } from '../types.ts';

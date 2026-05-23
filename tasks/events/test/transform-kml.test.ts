@@ -53,8 +53,8 @@ async function makeTransform(t: TestContext, content: string): Promise<{ transfo
             name: 'test.kml',
             ext: '.kml',
             id: 'test',
-            raw
-        } as LocalMessage
+            raw,
+        } as LocalMessage,
     );
 
     return { transform, tmpdir };
@@ -81,15 +81,15 @@ test('KML Transform — NetworkLink', async (t) => {
         const result = await transform.convert();
 
         const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
-        const features = lines.map((l) => JSON.parse(l));
+        const features = lines.map(l => JSON.parse(l));
 
         assert.strictEqual(features.length, 2, 'should have 2 features (1 local + 1 linked)');
 
-        const names = features.map((f) => f.properties?.name);
+        const names = features.map(f => f.properties?.name);
         assert.ok(names.includes('Local Feature'), 'local feature present');
         assert.ok(names.includes('Remote Feature'), 'linked feature present');
 
-        const hasNetworkLink = features.some((f) => f.properties?.['@geometry-type'] === 'networklink');
+        const hasNetworkLink = features.some(f => f.properties?.['@geometry-type'] === 'networklink');
         assert.ok(!hasNetworkLink, 'NetworkLink meta feature must not appear in output');
     });
 
@@ -308,7 +308,7 @@ test('KML Transform — NetworkLink', async (t) => {
         const result = await transform.convert();
 
         const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
-        const names = lines.map((l) => JSON.parse(l).properties?.name);
+        const names = lines.map(l => JSON.parse(l).properties?.name);
         assert.ok(names.includes('Linked Feature'), 'linked feature present');
         assert.ok(names.includes('Sibling Feature'), 'sibling feature resolved from relative href');
     });
@@ -371,7 +371,7 @@ test('KML Transform — NetworkLink', async (t) => {
         const result = await transform.convert();
 
         const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
-        const names = lines.map((l) => JSON.parse(l).properties?.name);
+        const names = lines.map(l => JSON.parse(l).properties?.name);
         assert.ok(names.includes('Linked Feature'), 'same-origin linked feature is included');
         assert.ok(!names.includes('Cross-Origin Feature'), 'cross-origin feature must be blocked');
     });
@@ -417,7 +417,7 @@ test('KML Transform — NetworkLink', async (t) => {
         const result = await transform.convert();
 
         const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
-        const names = lines.map((l) => JSON.parse(l).properties?.name);
+        const names = lines.map(l => JSON.parse(l).properties?.name);
         assert.ok(names.includes('Root Feature'), 'root feature present');
         assert.ok(names.includes('Sub Feature'), 'local relative linked feature present');
     });
@@ -481,7 +481,7 @@ test('KML Transform — NetworkLink', async (t) => {
         const result = await transform.convert();
 
         const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
-        const features = lines.map((l) => JSON.parse(l));
+        const features = lines.map(l => JSON.parse(l));
 
         // The KMZ fixture has one Placemark with an embedded icon.png.
         // If the icon was NOT extracted, the feature would be silently dropped.
@@ -490,7 +490,7 @@ test('KML Transform — NetworkLink', async (t) => {
 
         // The bundled icon must be present in the convert result icons set.
         assert.ok(result.icons && result.icons.size > 0, 'icon set from linked KMZ must not be empty');
-        const iconNames = result.icons ? [...result.icons].map((i) => i.name) : [];
-        assert.ok(iconNames.some((n) => n.endsWith('.png')), `icon.png from linked KMZ must be in result icons (got: ${iconNames.join(', ')})`);
+        const iconNames = result.icons ? [...result.icons].map(i => i.name) : [];
+        assert.ok(iconNames.some(n => n.endsWith('.png')), `icon.png from linked KMZ must be in result icons (got: ${iconNames.join(', ')})`);
     });
 });

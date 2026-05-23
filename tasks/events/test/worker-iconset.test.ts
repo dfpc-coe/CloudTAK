@@ -17,20 +17,20 @@ test(`Worker Iconset Import: OSM.zip`, async (t) => {
     const originalDispatcher = getGlobalDispatcher();
 
     const expectedIcons = [{
-        "name": "General/accommodation.png",
-        "path": "6d781afb-89a6-4c07-b2b9-a89748b6a38f/General/accommodation.png"
-    },{
-        "name": "General/education.png",
-        "path": "6d781afb-89a6-4c07-b2b9-a89748b6a38f/General/education.png"
-    },{
-        "name": "General/empty.png",
-        "path": "6d781afb-89a6-4c07-b2b9-a89748b6a38f/General/empty.png"
-    },{
-        "name": "General/food.png",
-        "path": "6d781afb-89a6-4c07-b2b9-a89748b6a38f/General/food.png"
-    },{
-        "name": "General/geocache.png",
-        "path": "6d781afb-89a6-4c07-b2b9-a89748b6a38f/General/geocache.png"
+        name: 'General/accommodation.png',
+        path: '6d781afb-89a6-4c07-b2b9-a89748b6a38f/General/accommodation.png',
+    }, {
+        name: 'General/education.png',
+        path: '6d781afb-89a6-4c07-b2b9-a89748b6a38f/General/education.png',
+    }, {
+        name: 'General/empty.png',
+        path: '6d781afb-89a6-4c07-b2b9-a89748b6a38f/General/empty.png',
+    }, {
+        name: 'General/food.png',
+        path: '6d781afb-89a6-4c07-b2b9-a89748b6a38f/General/food.png',
+    }, {
+        name: 'General/geocache.png',
+        path: '6d781afb-89a6-4c07-b2b9-a89748b6a38f/General/geocache.png',
     }];
 
     const icons: Array<{
@@ -52,17 +52,17 @@ test(`Worker Iconset Import: OSM.zip`, async (t) => {
 
     mockPool.intercept({
         path: /\/api\/iconset\/.*/,
-        method: 'GET'
+        method: 'GET',
     }).reply(() => {
         return {
             statusCode: 404,
-            data: JSON.stringify({})
+            data: JSON.stringify({}),
         };
     });
 
     mockPool.intercept({
         path: '/api/iconset',
-        method: 'POST'
+        method: 'POST',
     }).reply((req) => {
         const body = JSON.parse(req.body);
 
@@ -73,13 +73,13 @@ test(`Worker Iconset Import: OSM.zip`, async (t) => {
 
         return {
             statusCode: 200,
-            data: JSON.stringify({})
+            data: JSON.stringify({}),
         };
     });
 
     mockPool.intercept({
         path: /\/api\/iconset\/.*\/icon/,
-        method: 'POST'
+        method: 'POST',
     }).reply((req) => {
         const body = JSON.parse(req.body);
 
@@ -89,29 +89,29 @@ test(`Worker Iconset Import: OSM.zip`, async (t) => {
 
         icons.push({
             name: body.name,
-            path: body.path
+            path: body.path,
         });
 
         return {
             statusCode: 200,
-            data: JSON.stringify({})
+            data: JSON.stringify({}),
         };
     }).persist();
 
     mockPool.intercept({
         path: /\/api\/import\/.*\/result/,
-        method: 'POST'
+        method: 'POST',
     }).reply((req) => {
         const body = JSON.parse(req.body);
         assert.deepEqual(body, {
             name: 'OSM',
             type: 'Iconset',
-            type_id: '6d781afb-89a6-4c07-b2b9-a89748b6a38f'
+            type_id: '6d781afb-89a6-4c07-b2b9-a89748b6a38f',
         });
 
         return {
             statusCode: 200,
-            data: JSON.stringify({})
+            data: JSON.stringify({}),
         };
     }).persist();
 
@@ -120,12 +120,12 @@ test(`Worker Iconset Import: OSM.zip`, async (t) => {
             assert.ok(command instanceof GetObjectCommand);
             assert.deepEqual(command.input, {
                 Bucket: 'test-bucket',
-                Key: `import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139${ext}`
+                Key: `import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139${ext}`,
             });
 
             return Promise.resolve({
-                Body: fs.createReadStream(new URL(`./fixtures/iconsets/${fixturename}`, import.meta.url))
-            })
+                Body: fs.createReadStream(new URL(`./fixtures/iconsets/${fixturename}`, import.meta.url)),
+            });
         },
     ].reverse();
 
@@ -157,7 +157,7 @@ test(`Worker Iconset Import: OSM.zip`, async (t) => {
             source: 'Upload',
             config: {},
             source_id: null,
-        }
+        },
     });
 
     worker.on('error', (err) => {
@@ -172,5 +172,5 @@ test(`Worker Iconset Import: OSM.zip`, async (t) => {
         assert.deepEqual(icons.slice(0, expectedIcons.length), expectedIcons, 'Imported icons do not match expected icons');
     });
 
-    await worker.process()
+    await worker.process();
 });

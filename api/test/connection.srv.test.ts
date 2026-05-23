@@ -20,7 +20,8 @@ test('GET: api/connection - No Auth', async () => {
         }, false);
 
         assert.equal(res.status, 401);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -30,13 +31,14 @@ test('GET: api/connection - Non-admin without agency_admin', async () => {
         const res = await flight.fetch('/api/connection', {
             method: 'GET',
             auth: {
-                bearer: flight.token.user
-            }
+                bearer: flight.token.user,
+            },
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Insufficient Access');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -46,8 +48,8 @@ test('GET: api/connection - Admin (empty)', async () => {
         const res = await flight.fetch('/api/connection', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.deepEqual(res.body, {
@@ -56,10 +58,11 @@ test('GET: api/connection - Admin (empty)', async () => {
             status: {
                 dead: 0,
                 live: 0,
-                unknown: 0
-            }
+                unknown: 0,
+            },
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -69,16 +72,17 @@ test('GET: api/connection/1 - Not Found', async () => {
         const res = await flight.fetch('/api/connection/1', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, false);
 
         assert.deepEqual(res.body, {
             status: 404,
             message: 'Item Not Found',
-            messages: []
+            messages: [],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -88,21 +92,22 @@ test('POST: api/connection - Invalid X509 Certificate', async () => {
         const res = await flight.fetch('/api/connection', {
             method: 'POST',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 name: 'Bad Cert Connection',
                 description: 'test',
                 auth: {
                     cert: 'not a valid certificate',
-                    key: String(fs.readFileSync('/tmp/cloudtak-test-admin.key'))
-                }
-            }
+                    key: String(fs.readFileSync('/tmp/cloudtak-test-admin.key')),
+                },
+            },
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Invalid X509 Certificate Provided');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -112,21 +117,22 @@ test('POST: api/connection - Non-admin without agency', async () => {
         const res = await flight.fetch('/api/connection', {
             method: 'POST',
             auth: {
-                bearer: flight.token.user
+                bearer: flight.token.user,
             },
             body: {
                 name: 'No Agency Connection',
                 description: 'test',
                 auth: {
                     cert: String(fs.readFileSync('/tmp/cloudtak-test-user.cert')),
-                    key: String(fs.readFileSync('/tmp/cloudtak-test-user.key'))
-                }
-            }
+                    key: String(fs.readFileSync('/tmp/cloudtak-test-user.key')),
+                },
+            },
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Only System Admins can create a server without an Agency Configured');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -136,7 +142,7 @@ test('POST: api/connection - Non-admin with wrong agency', async () => {
         const res = await flight.fetch('/api/connection', {
             method: 'POST',
             auth: {
-                bearer: flight.token.user
+                bearer: flight.token.user,
             },
             body: {
                 name: 'Wrong Agency Connection',
@@ -144,14 +150,15 @@ test('POST: api/connection - Non-admin with wrong agency', async () => {
                 agency: 999,
                 auth: {
                     cert: String(fs.readFileSync('/tmp/cloudtak-test-user.cert')),
-                    key: String(fs.readFileSync('/tmp/cloudtak-test-user.key'))
-                }
-            }
+                    key: String(fs.readFileSync('/tmp/cloudtak-test-user.key')),
+                },
+            },
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Cannot create a connection for an Agency you are not an admin of');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -159,13 +166,13 @@ test('POST: api/connection - Non-admin with wrong agency', async () => {
 test('POST: api/connection - Non-admin agency admin creates connection for their agency', async () => {
     try {
         await flight.config!.models.Profile.commit('user@example.com', {
-            agency_admin: [1]
+            agency_admin: [1],
         });
 
         const res = await flight.fetch('/api/connection', {
             method: 'POST',
             auth: {
-                bearer: flight.token.user
+                bearer: flight.token.user,
             },
             body: {
                 name: 'Agency Connection',
@@ -173,31 +180,33 @@ test('POST: api/connection - Non-admin agency admin creates connection for their
                 agency: 1,
                 auth: {
                     cert: String(fs.readFileSync('/tmp/cloudtak-test-user.cert')),
-                    key: String(fs.readFileSync('/tmp/cloudtak-test-user.key'))
-                }
-            }
+                    key: String(fs.readFileSync('/tmp/cloudtak-test-user.key')),
+                },
+            },
         }, true);
 
         assert.equal(res.body.name, 'Agency Connection');
         assert.equal(res.body.agency, 1);
         assert.equal(res.body.enabled, true);
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         const s3Stub = Sinon.stub(S3, 'del').resolves();
         try {
             await flight.fetch(`/api/connection/${res.body.id}`, {
                 method: 'DELETE',
-                auth: { bearer: flight.token.admin }
+                auth: { bearer: flight.token.admin },
             }, true);
-        } finally {
+        }
+        finally {
             s3Stub.restore();
         }
 
         await flight.config!.models.Profile.commit('user@example.com', {
-            agency_admin: []
+            agency_admin: [],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -215,7 +224,7 @@ test('POST: api/connection - Readonly forces enabled to false', async () => {
         const res = await flight.fetch('/api/connection', {
             method: 'POST',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 name: 'Readonly Connection',
@@ -225,9 +234,9 @@ test('POST: api/connection - Readonly forces enabled to false', async () => {
                 auth: {
                     cert: String(fs.readFileSync('/tmp/cloudtak-test-admin.cert')),
                     key: String(fs.readFileSync('/tmp/cloudtak-test-admin.key')),
-                    ca: [caBase64]
-                }
-            }
+                    ca: [caBase64],
+                },
+            },
         }, true);
 
         assert.equal(res.body.name, 'Readonly Connection');
@@ -235,7 +244,8 @@ test('POST: api/connection - Readonly forces enabled to false', async () => {
         assert.equal(res.body.enabled, false);
 
         readonlyConnId = res.body.id;
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -269,16 +279,16 @@ test('Creating Enabled Connection', async () => {
         const conn = await flight.fetch('/api/connection', {
             method: 'POST',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 name: 'Test Connection',
                 description: 'Connection created by Flight Test Runner',
                 auth: {
                     key: String(fs.readFileSync('/tmp/cloudtak-test-alice.key')),
-                    cert: String(fs.readFileSync('/tmp/cloudtak-test-alice.cert'))
-                }
-            }
+                    cert: String(fs.readFileSync('/tmp/cloudtak-test-alice.cert')),
+                },
+            },
         }, true);
 
         assert.equal(conn.body.name, 'Test Connection');
@@ -287,8 +297,9 @@ test('Creating Enabled Connection', async () => {
 
         enabledConnId = conn.body.id;
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-    } catch (err) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -298,8 +309,8 @@ test('GET: api/connection - Admin with connections', async () => {
         const res = await flight.fetch('/api/connection', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.ok(res.body.total >= 2, 'Should have at least 2 connections');
@@ -312,7 +323,8 @@ test('GET: api/connection - Admin with connections', async () => {
             assert.ok(conn.certificate.subject, 'has certificate subject');
             assert.ok(typeof conn.status === 'string', 'has status');
         }
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -322,13 +334,14 @@ test('GET: api/connection - Admin with filter', async () => {
         const res = await flight.fetch('/api/connection?filter=Readonly', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.equal(res.body.total, 1);
         assert.equal(res.body.items[0].name, 'Readonly Connection');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -336,22 +349,23 @@ test('GET: api/connection - Admin with filter', async () => {
 test('GET: api/connection - Agency admin sees filtered connections', async () => {
     try {
         await flight.config!.models.Profile.commit('user@example.com', {
-            agency_admin: [1]
+            agency_admin: [1],
         });
 
         const res = await flight.fetch('/api/connection', {
             method: 'GET',
             auth: {
-                bearer: flight.token.user
-            }
+                bearer: flight.token.user,
+            },
         }, true);
 
         assert.equal(res.body.total, 0);
 
         await flight.config!.models.Profile.commit('user@example.com', {
-            agency_admin: []
+            agency_admin: [],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -361,8 +375,8 @@ test('GET: api/connection/:connectionid - existing', async () => {
         const res = await flight.fetch(`/api/connection/${enabledConnId}`, {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.equal(res.body.id, enabledConnId);
@@ -372,7 +386,8 @@ test('GET: api/connection/:connectionid - existing', async () => {
         assert.ok(res.body.certificate.validTo, 'has validTo');
         assert.ok(res.body.certificate.subject, 'has subject');
         assert.ok(typeof res.body.status === 'string', 'has status');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -382,18 +397,19 @@ test('PATCH: api/connection/:connectionid - Update name and description', async 
         const res = await flight.fetch(`/api/connection/${enabledConnId}`, {
             method: 'PATCH',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 name: 'Updated Connection',
-                description: 'Updated description'
-            }
+                description: 'Updated description',
+            },
         }, true);
 
         assert.equal(res.body.name, 'Updated Connection');
         assert.equal(res.body.description, 'Updated description');
         assert.ok(res.body.certificate, 'has certificate');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -403,16 +419,17 @@ test('PATCH: api/connection/:connectionid - Restore original name', async () => 
         const res = await flight.fetch(`/api/connection/${enabledConnId}`, {
             method: 'PATCH',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 name: 'Test Connection',
-                description: 'Connection created by Flight Test Runner'
-            }
+                description: 'Connection created by Flight Test Runner',
+            },
         }, true);
 
         assert.equal(res.body.name, 'Test Connection');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -422,19 +439,20 @@ test('PATCH: api/connection/:connectionid - Invalid X509 Certificate', async () 
         const res = await flight.fetch(`/api/connection/${enabledConnId}`, {
             method: 'PATCH',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 auth: {
                     cert: 'not a valid certificate',
-                    key: String(fs.readFileSync('/tmp/cloudtak-test-admin.key'))
-                }
-            }
+                    key: String(fs.readFileSync('/tmp/cloudtak-test-admin.key')),
+                },
+            },
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Invalid X509 Certificate Provided');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -444,16 +462,17 @@ test('PATCH: api/connection/:connectionid - Readonly prevents enabling', async (
         const res = await flight.fetch(`/api/connection/${readonlyConnId}`, {
             method: 'PATCH',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
-                enabled: true
-            }
+                enabled: true,
+            },
         }, true);
 
         assert.equal(res.body.enabled, false);
         assert.equal(res.body.readonly, true);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -463,15 +482,16 @@ test('PATCH: api/connection/:connectionid - Disable enabled connection', async (
         const res = await flight.fetch(`/api/connection/${enabledConnId}`, {
             method: 'PATCH',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
-                enabled: false
-            }
+                enabled: false,
+            },
         }, true);
 
         assert.equal(res.body.enabled, false);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -481,17 +501,18 @@ test('PATCH: api/connection/:connectionid - Enable when not in pool', async () =
         const res = await flight.fetch(`/api/connection/${enabledConnId}`, {
             method: 'PATCH',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
-                enabled: true
-            }
+                enabled: true,
+            },
         }, true);
 
         assert.equal(res.body.enabled, true);
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-    } catch (err) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -501,17 +522,18 @@ test('PATCH: api/connection/:connectionid - Re-enable already connected (reconne
         const res = await flight.fetch(`/api/connection/${enabledConnId}`, {
             method: 'PATCH',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
-                enabled: true
-            }
+                enabled: true,
+            },
         }, true);
 
         assert.equal(res.body.enabled, true);
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-    } catch (err) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -520,26 +542,27 @@ test('PATCH: api/connection/:connectionid - Non-admin agency change rejected', a
     try {
         await flight.config!.models.Connection.commit(enabledConnId, { agency: 1 });
         await flight.config!.models.Profile.commit('user@example.com', {
-            agency_admin: [1]
+            agency_admin: [1],
         });
 
         const res = await flight.fetch(`/api/connection/${enabledConnId}`, {
             method: 'PATCH',
             auth: {
-                bearer: flight.token.user
+                bearer: flight.token.user,
             },
             body: {
-                agency: 2
-            }
+                agency: 2,
+            },
         }, false);
 
         assert.equal(res.status, 401);
 
         await flight.config!.models.Connection.commit(enabledConnId, { agency: null });
         await flight.config!.models.Profile.commit('user@example.com', {
-            agency_admin: []
+            agency_admin: [],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -549,13 +572,14 @@ test('POST: api/connection/refresh - Non-admin rejected', async () => {
         const res = await flight.fetch('/api/connection/refresh', {
             method: 'POST',
             auth: {
-                bearer: flight.token.user
-            }
+                bearer: flight.token.user,
+            },
         }, false);
 
         assert.equal(res.status, 403);
         assert.equal(res.body.message, 'Only System Admins can refresh all connections');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -565,17 +589,18 @@ test('POST: api/connection/refresh - Admin', async () => {
         const res = await flight.fetch('/api/connection/refresh', {
             method: 'POST',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.deepEqual(res.body, {
             status: 200,
-            message: 'Connections Refreshed'
+            message: 'Connections Refreshed',
         });
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-    } catch (err) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -585,13 +610,14 @@ test('POST: api/connection/:connectionid/refresh - Disabled connection rejected'
         const res = await flight.fetch(`/api/connection/${readonlyConnId}/refresh`, {
             method: 'POST',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Connection is not currently enabled');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -601,15 +627,16 @@ test('POST: api/connection/:connectionid/refresh - Enabled connection', async ()
         const res = await flight.fetch(`/api/connection/${enabledConnId}/refresh`, {
             method: 'POST',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.equal(res.body.id, enabledConnId);
         assert.ok(res.body.certificate, 'has certificate');
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-    } catch (err) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -619,13 +646,14 @@ test('GET: api/connection/:connectionid/auth - Non-readonly connection rejected'
         const res = await flight.fetch(`/api/connection/${enabledConnId}/auth?password=test123&type=client`, {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Connection is not ReadOnly and cannot return auth');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -635,14 +663,15 @@ test('GET: api/connection/:connectionid/auth - Readonly client P12', async () =>
         const res = await flight.fetch(`/api/connection/${readonlyConnId}/auth?password=test123&type=client`, {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, { verify: false, json: false, binary: true });
 
         assert.ok(res.ok, 'Request succeeded');
         assert.equal(res.headers.get('content-type'), 'application/x-pkcs12');
         assert.ok(res.body.byteLength > 0, 'Response has binary content');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -652,14 +681,15 @@ test('GET: api/connection/:connectionid/auth - Readonly truststore P12', async (
         const res = await flight.fetch(`/api/connection/${readonlyConnId}/auth?password=test123&type=truststore`, {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, { verify: false, json: false, binary: true });
 
         assert.ok(res.ok, 'Request succeeded');
         assert.equal(res.headers.get('content-type'), 'application/x-pkcs12');
         assert.ok(res.body.byteLength > 0, 'Response has binary content');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -669,8 +699,8 @@ test('GET: api/connection/:connectionid/auth - Readonly client P12 with download
         const res = await flight.fetch(`/api/connection/${readonlyConnId}/auth?password=test123&type=client&download=true`, {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, { verify: false, json: false, binary: true });
 
         assert.ok(res.ok, 'Request succeeded');
@@ -679,7 +709,8 @@ test('GET: api/connection/:connectionid/auth - Readonly client P12 with download
         assert.ok(disposition, 'Has Content-Disposition header');
         assert.ok(disposition!.includes('attachment'), 'Content-Disposition includes attachment');
         assert.ok(disposition!.includes('.p12'), 'Content-Disposition includes .p12');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -689,8 +720,8 @@ test('GET: api/connection/:connectionid/auth - Readonly truststore P12 with down
         const res = await flight.fetch(`/api/connection/${readonlyConnId}/auth?password=test123&type=truststore&download=true`, {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, { verify: false, json: false, binary: true });
 
         assert.ok(res.ok, 'Request succeeded');
@@ -698,7 +729,8 @@ test('GET: api/connection/:connectionid/auth - Readonly truststore P12 with down
         const disposition = res.headers.get('content-disposition');
         assert.ok(disposition, 'Has Content-Disposition header');
         assert.ok(disposition!.includes('truststore'), 'Content-Disposition includes truststore');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -707,7 +739,7 @@ test('DELETE: api/connection/:connectionid - Fails with active Layer', async () 
     const layer = await flight.config!.models.Layer.generate({
         name: 'Guard Layer',
         task: 'test-task',
-        connection: enabledConnId
+        connection: enabledConnId,
     });
 
     const s3Stub = Sinon.stub(S3, 'del').resolves();
@@ -715,13 +747,14 @@ test('DELETE: api/connection/:connectionid - Fails with active Layer', async () 
         const res = await flight.fetch(`/api/connection/${enabledConnId}`, {
             method: 'DELETE',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Connection has active Layers - Delete layers before deleting Connection');
-    } finally {
+    }
+    finally {
         s3Stub.restore();
     }
 
@@ -731,7 +764,7 @@ test('DELETE: api/connection/:connectionid - Fails with active Layer', async () 
 test('DELETE: api/connection/:connectionid - Fails with active Data Sync', async () => {
     const data = await flight.config!.models.Data.generate({
         name: 'Guard Data',
-        connection: enabledConnId
+        connection: enabledConnId,
     });
 
     const s3Stub = Sinon.stub(S3, 'del').resolves();
@@ -739,13 +772,14 @@ test('DELETE: api/connection/:connectionid - Fails with active Data Sync', async
         const res = await flight.fetch(`/api/connection/${enabledConnId}`, {
             method: 'DELETE',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Connection has active Data Syncs - Delete Syncs before deleting Connection');
-    } finally {
+    }
+    finally {
         s3Stub.restore();
     }
 
@@ -756,7 +790,7 @@ test('DELETE: api/connection/:connectionid - Fails with active Video Lease', asy
     const lease = await flight.config!.models.VideoLease.generate({
         name: 'Guard Lease',
         path: '/test/path',
-        connection: enabledConnId
+        connection: enabledConnId,
     });
 
     const s3Stub = Sinon.stub(S3, 'del').resolves();
@@ -764,13 +798,14 @@ test('DELETE: api/connection/:connectionid - Fails with active Video Lease', asy
         const res = await flight.fetch(`/api/connection/${enabledConnId}`, {
             method: 'DELETE',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Connection has active Video LEases - Delete Leases before deleting Connection');
-    } finally {
+    }
+    finally {
         s3Stub.restore();
     }
 
@@ -783,15 +818,16 @@ test('DELETE: api/connection/:connectionid - Success', async () => {
         const res = await flight.fetch(`/api/connection/${enabledConnId}`, {
             method: 'DELETE',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.deepEqual(res.body, {
             status: 200,
-            message: 'Connection Deleted'
+            message: 'Connection Deleted',
         });
-    } finally {
+    }
+    finally {
         s3Stub.restore();
     }
 });
@@ -802,15 +838,16 @@ test('DELETE: api/connection/:connectionid - Readonly connection', async () => {
         const res = await flight.fetch(`/api/connection/${readonlyConnId}`, {
             method: 'DELETE',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.deepEqual(res.body, {
             status: 200,
-            message: 'Connection Deleted'
+            message: 'Connection Deleted',
         });
-    } finally {
+    }
+    finally {
         s3Stub.restore();
     }
 });

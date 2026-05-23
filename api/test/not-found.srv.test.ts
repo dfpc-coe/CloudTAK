@@ -13,16 +13,17 @@ test('GET: api/fake/path/to/resource', async () => {
         const res = await flight.fetch('/api/fake/path/to/resource', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, false);
 
         assert.deepEqual(res.body, {
             status: 404,
             message: 'API endpoint does not exist!',
-            messages: []
+            messages: [],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });

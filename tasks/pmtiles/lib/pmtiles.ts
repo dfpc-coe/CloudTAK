@@ -1,8 +1,8 @@
 import * as pmtiles from 'pmtiles';
-import zlib from "zlib";
+import zlib from 'zlib';
 import Err from '@openaddresses/batch-error';
 import {
-    GetObjectCommand
+    GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import S3Client from './s3.js';
 
@@ -10,15 +10,17 @@ const s3client = S3Client();
 
 export async function nativeDecompress(
     buf: ArrayBuffer,
-    compression: pmtiles.Compression
+    compression: pmtiles.Compression,
 ): Promise<ArrayBuffer> {
     if (compression === pmtiles.Compression.None || compression === pmtiles.Compression.Unknown) {
         return buf;
-    } else if (compression === pmtiles.Compression.Gzip) {
+    }
+    else if (compression === pmtiles.Compression.Gzip) {
         const buffer = zlib.gunzipSync(buf);
         return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
-    } else {
-        throw Error("Compression method not supported");
+    }
+    else {
+        throw Error('Compression method not supported');
     }
 }
 
@@ -40,22 +42,22 @@ export class S3Source implements pmtiles.Source {
         offset: number,
         length: number,
         signal?: AbortSignal,
-        etag?: string
+        etag?: string,
     ): Promise<pmtiles.RangeResponse> {
         try {
             const resp = await s3client.send(
                 new GetObjectCommand({
                     Bucket: process.env.ASSET_BUCKET!,
                     Key: this.archive_name,
-                    Range: "bytes=" + offset + "-" + (offset + length - 1),
+                    Range: 'bytes=' + offset + '-' + (offset + length - 1),
                     IfMatch: etag,
-                })
+                }),
             );
 
             const arr = await resp.Body!.transformToByteArray();
 
             if (!arr) {
-                throw new Err(500, null, "Failed to read S3 response body");
+                throw new Err(500, null, 'Failed to read S3 response body');
             }
 
             return {
@@ -64,12 +66,15 @@ export class S3Source implements pmtiles.Source {
                 expires: resp.Expires?.toISOString(),
                 cacheControl: resp.CacheControl,
             };
-        } catch (err) {
+        }
+        catch (err) {
             if (err instanceof Error && err.name === 'NoSuchKey') {
                 throw new Err(404, err, 'Key not found');
-            } else if (err instanceof Error && err.name === "PreconditionFailed") {
+            }
+            else if (err instanceof Error && err.name === 'PreconditionFailed') {
                 throw new Err(400, err, 'ETag Mismatch');
-            } else {
+            }
+            else {
                 throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Internal Server Error');
             }
         }

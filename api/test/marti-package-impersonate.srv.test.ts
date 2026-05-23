@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import Flight from './flight.js';
-import type { IncomingMessage, ServerResponse } from 'node:http'
+import type { IncomingMessage, ServerResponse } from 'node:http';
 
 const flight = new Flight();
 
@@ -15,7 +15,8 @@ test('GET: api/marti/package - impersonate', async () => {
         flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            } else if (request.method === 'GET' && request.url.startsWith('/Marti/sync/search')) {
+            }
+            else if (request.method === 'GET' && request.url.startsWith('/Marti/sync/search')) {
                 if (!request.url.includes('tool=public')) {
                     console.log('WARN: tool=public NOT found in request url:', request.url);
                 }
@@ -31,7 +32,7 @@ test('GET: api/marti/package - impersonate', async () => {
                         SubmissionDateTime: new Date().toISOString(),
                         EXPIRATION: new Date().toISOString(),
                         Size: 123,
-                        PrimaryKey: 'pk1'
+                        PrimaryKey: 'pk1',
                     }, {
                         UID: 'uid2',
                         Name: 'Pkg2',
@@ -40,13 +41,14 @@ test('GET: api/marti/package - impersonate', async () => {
                         SubmissionDateTime: new Date().toISOString(),
                         EXPIRATION: new Date().toISOString(),
                         Size: 456,
-                        PrimaryKey: 'pk2'
-                    }]
+                        PrimaryKey: 'pk2',
+                    }],
                 }));
                 response.end();
 
                 return true;
-            } else {
+            }
+            else {
                 return false;
             }
         });
@@ -55,13 +57,14 @@ test('GET: api/marti/package - impersonate', async () => {
         const res = await flight.fetch('/api/marti/package?impersonate=true', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.equal(res.body.total, 2);
         assert.equal(res.body.items.length, 2);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 
@@ -73,7 +76,8 @@ test('GET: api/marti/package - impersonate user', async () => {
         flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            } else if (request.method === 'GET' && request.url.startsWith('/Marti/sync/search')) {
+            }
+            else if (request.method === 'GET' && request.url.startsWith('/Marti/sync/search')) {
                 if (!request.url.includes('tool=public')) {
                     console.log('WARN: tool=public NOT found in request url:', request.url);
                 }
@@ -89,13 +93,14 @@ test('GET: api/marti/package - impersonate user', async () => {
                         SubmissionDateTime: new Date().toISOString(),
                         EXPIRATION: new Date().toISOString(),
                         Size: 123,
-                        PrimaryKey: 'pk1'
-                    }]
+                        PrimaryKey: 'pk1',
+                    }],
                 }));
                 response.end();
 
                 return true;
-            } else {
+            }
+            else {
                 return false;
             }
         });
@@ -104,13 +109,14 @@ test('GET: api/marti/package - impersonate user', async () => {
         const res = await flight.fetch('/api/marti/package?impersonate=user1@example.com', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.equal(res.body.items.length, 1);
         assert.equal(res.body.items[0].username, 'user1');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 

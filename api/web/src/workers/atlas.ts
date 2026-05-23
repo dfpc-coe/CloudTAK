@@ -11,7 +11,7 @@ import AtlasDatabase from './atlas-database.ts';
 import AtlasConnection from './atlas-connection.ts';
 import AtlasIcons from './atlas-icons.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
-import { db } from '../base/database.ts';
+import { db } from '../database.ts';
 
 export default class Atlas {
     channel: BroadcastChannel;

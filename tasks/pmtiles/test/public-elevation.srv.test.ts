@@ -53,7 +53,7 @@ test('POST /tiles/public/:name/elevation returns sampled elevations', async () =
     const leftTile = createTile(100);
     const rightTile = createTile(200);
 
-    FileTiles.prototype.rasterTileSource = async function(this: unknown, requestToken: string) {
+    FileTiles.prototype.rasterTileSource = async function (this: unknown, requestToken: string) {
         assert.equal(requestToken, token);
 
         return {
@@ -70,14 +70,14 @@ test('POST /tiles/public/:name/elevation returns sampled elevations', async () =
         if (url === 'https://example.test/terrain/2/1/1.png') {
             return new Response(asArrayBuffer(leftTile), {
                 status: 200,
-                headers: { 'Content-Type': 'image/png' }
+                headers: { 'Content-Type': 'image/png' },
             });
         }
 
         if (url === 'https://example.test/terrain/2/2/1.png') {
             return new Response(asArrayBuffer(rightTile), {
                 status: 200,
-                headers: { 'Content-Type': 'image/png' }
+                headers: { 'Content-Type': 'image/png' },
             });
         }
 
@@ -89,19 +89,19 @@ test('POST /tiles/public/:name/elevation returns sampled elevations', async () =
         const res = await originalFetch(`http://localhost:${addr.port}/tiles/public/dem/elevation?token=${token}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 geometry: {
                     type: 'LineString',
                     coordinates: [
                         [-10, 1],
-                        [10, 1]
-                    ]
+                        [10, 1],
+                    ],
                 },
                 samples: 10,
                 zoom: 2,
-            })
+            }),
         });
 
         assert.equal(res.status, 200);
@@ -113,7 +113,8 @@ test('POST /tiles/public/:name/elevation returns sampled elevations', async () =
         assert.equal(body.samples.at(-1).elevation, 200);
         assert.ok(body.samples.some((sample: { elevation: number }) => sample.elevation === 100));
         assert.ok(body.samples.some((sample: { elevation: number }) => sample.elevation === 200));
-    } finally {
+    }
+    finally {
         globalThis.fetch = originalFetch;
         FileTiles.prototype.rasterTileSource = originalRasterTileSource;
     }

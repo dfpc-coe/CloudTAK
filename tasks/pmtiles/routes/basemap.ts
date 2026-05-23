@@ -20,7 +20,8 @@ async function fetchCloudTAKJSON<T>(url: URL): Promise<T> {
         try {
             const body = await res.json() as { message?: string };
             if (body.message) message = body.message;
-        } catch {
+        }
+        catch {
             // Use the default message if the upstream body is not JSON.
         }
 
@@ -43,32 +44,32 @@ export default async function router(schema: Schema) {
         group: 'BasemapTiles',
         description: 'Return sampled elevation values for a CloudTAK raster-dem basemap',
         query: Type.Object({
-            token: Type.String()
+            token: Type.String(),
         }),
         params: Type.Object({
-            basemapid: Type.Integer({ minimum: 1 })
+            basemapid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
             geometry: LineStringGeometryType,
             samples: Type.Integer({
                 minimum: 2,
                 default: 100,
-                description: 'Number of elevation samples to take along the line'
+                description: 'Number of elevation samples to take along the line',
             }),
             zoom: Type.Optional(Type.Integer({ minimum: 0 })),
         }),
-        res: ElevationProfileType
+        res: ElevationProfileType,
     }, async (req, res) => {
         try {
             auth(req.query.token);
 
             const [basemap, tilejson] = await Promise.all([
                 fetchCloudTAKJSON<CloudTAKBasemap>(
-                    cloudtakURL(`/api/basemap/${req.params.basemapid}`, req.query.token)
+                    cloudtakURL(`/api/basemap/${req.params.basemapid}`, req.query.token),
                 ),
                 fetchCloudTAKJSON<CloudTAKTileJSON>(
-                    cloudtakURL(`/api/basemap/${req.params.basemapid}/tiles`, req.query.token)
-                )
+                    cloudtakURL(`/api/basemap/${req.params.basemapid}/tiles`, req.query.token),
+                ),
             ]);
 
             if (typeof basemap === 'string' || basemap.type !== 'raster-dem' || tilejson.type !== 'raster-dem' || tilejson.format === 'mvt') {
@@ -101,7 +102,8 @@ export default async function router(schema: Schema) {
                 encoding,
                 targetSamples: req.body.samples ?? 100,
             }));
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });

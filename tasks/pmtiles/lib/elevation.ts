@@ -48,15 +48,15 @@ export interface ElevationProfileOptions {
 
 export const ElevationEncodingType = Type.Union([
     Type.Literal('mapbox'),
-    Type.Literal('terrarium')
+    Type.Literal('terrarium'),
 ]);
 
 export const LineStringGeometryType = Type.Object({
     type: Type.Literal('LineString'),
     coordinates: Type.Array(
         Type.Array(Type.Number(), { minItems: 2, maxItems: 3 }),
-        { minItems: 2 }
-    )
+        { minItems: 2 },
+    ),
 });
 
 export const ElevationSampleType = Type.Object({
@@ -107,7 +107,7 @@ function mercatorFraction(lon: number, lat: number, zoom: number): { x: number; 
 export async function getElevationProfile(
     tileurl: string,
     geometry: LineString,
-    opts: ElevationProfileOptions
+    opts: ElevationProfileOptions,
 ): Promise<ElevationProfile> {
     for (const token of ['{z}', '{x}', '{y}']) {
         if (!tileurl.includes(token)) {
@@ -144,8 +144,8 @@ export async function getElevationProfile(
 
     if (opts.distances?.length) {
         const requestedDistances = opts.distances
-            .filter((value) => Number.isFinite(value))
-            .map((value) => clamp(value, 0, totalDistance))
+            .filter(value => Number.isFinite(value))
+            .map(value => clamp(value, 0, totalDistance))
             .sort((a, b) => a - b);
 
         if (!requestedDistances.length) {
@@ -153,8 +153,9 @@ export async function getElevationProfile(
         }
 
         stepDistance = requestedDistances.length > 1 ? requestedDistances[1] - requestedDistances[0] : 0;
-        distances = Array.from(new Set(requestedDistances.map((value) => Number(value.toFixed(6)))));
-    } else {
+        distances = Array.from(new Set(requestedDistances.map(value => Number(value.toFixed(6)))));
+    }
+    else {
         const minSampleDistance = opts.minSampleDistance ?? DEFAULT_MIN_SAMPLE_DISTANCE_KM;
         const maxSampleDistance = opts.maxSampleDistance ?? DEFAULT_MAX_SAMPLE_DISTANCE_KM;
 
@@ -169,7 +170,8 @@ export async function getElevationProfile(
         if (totalDistance === 0) {
             stepDistance = 0;
             distances = [0];
-        } else {
+        }
+        else {
             const targetSamples = Math.max(2, opts.targetSamples ?? DEFAULT_TARGET_SAMPLES);
             stepDistance = clamp(totalDistance / targetSamples, minSampleDistance, maxSampleDistance);
             const sampledDistances: number[] = [];
@@ -183,7 +185,7 @@ export async function getElevationProfile(
         }
     }
 
-    const line = lineString(geometry.coordinates.map((coordinate) => [coordinate[0], coordinate[1]]));
+    const line = lineString(geometry.coordinates.map(coordinate => [coordinate[0], coordinate[1]]));
     const tiles = tileCover.tiles(geometry, {
         min_zoom: opts.zoom,
         max_zoom: opts.zoom,
@@ -218,11 +220,13 @@ export async function getElevationProfile(
                     }));
 
                     buffer = response.Body ? Buffer.from(await response.Body.transformToByteArray()) : null;
-                } catch (err) {
+                }
+                catch (err) {
                     if (err instanceof Error && err.name === 'NoSuchKey') return null;
                     throw new Err(502, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch tile from S3');
                 }
-            } else {
+            }
+            else {
                 const response = await fetch(resolved);
 
                 if (response.status === 204 || response.status === 404) return null;
@@ -241,7 +245,8 @@ export async function getElevationProfile(
                     .ensureAlpha()
                     .raw()
                     .toBuffer({ resolveWithObject: true });
-            } catch (err) {
+            }
+            catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Tile is not a supported raster image');
             }
 

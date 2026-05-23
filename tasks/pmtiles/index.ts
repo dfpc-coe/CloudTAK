@@ -9,8 +9,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const { values: args } = parseArgs({
         args: process.argv.slice(2),
         options: {
-            silent: { type: 'boolean' },   // Turn off logging as much as possible
-            env: { type: 'string' }        // Load a non-default .env file --env local would read .env-local
+            silent: { type: 'boolean' }, // Turn off logging as much as possible
+            env: { type: 'string' }, // Load a non-default .env file --env local would read .env-local
         },
         allowPositionals: true,
         strict: false,
@@ -22,10 +22,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         fs.accessSync(dotfile);
 
         process.env = Object.assign(JSON.parse(String(fs.readFileSync(dotfile))), process.env);
-    } catch (err) {
+    }
+    catch (err) {
         if (err instanceof Error && err.message.startsWith('ENOENT')) {
             console.log('ok - no .env file loaded - none found');
-        } else {
+        }
+        else {
             console.log('ok - no .env file loaded', err);
         }
     }
@@ -50,7 +52,7 @@ const config = {};
 
 const schema = new Schema(express.Router(), {
     logging: true,
-    limit: 50
+    limit: 50,
 });
 
 app.disable('x-powered-by');
@@ -64,9 +66,9 @@ app.use(cors({
         'Cache-Control',
         'Authorization',
         'User-Agent',
-        'x-requested-with'
+        'x-requested-with',
     ],
-    credentials: true
+    credentials: true,
 }));
 
 app.use(schema.router);
@@ -78,12 +80,12 @@ await schema.load(
     new URL('./routes/', import.meta.url),
     config,
     {
-        silent: !!process.env.StackName
-    }
+        silent: !!process.env.StackName,
+    },
 );
 
 export const handler = serverless(app, {
-    binary: ['application/x-protobuf', 'application/vnd.mapbox-vector-tile', 'image/png', 'image/jpeg', 'image/webp']
+    binary: ['application/x-protobuf', 'application/vnd.mapbox-vector-tile', 'image/png', 'image/jpeg', 'image/webp'],
 });
 
 const startServer = async () => {
@@ -93,4 +95,3 @@ const startServer = async () => {
 };
 
 startServer();
-

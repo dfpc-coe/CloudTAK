@@ -1,11 +1,11 @@
 import { Static } from '@sinclair/typebox';
 import { X509Certificate } from 'node:crypto';
 import { ConnectionAuth } from './connection-config.js';
-import { spawnSync } from "child_process";
-import { tmpdir } from "node:os";
-import { randomBytes } from "node:crypto";
-import { readFile, writeFile, appendFile, unlink } from "node:fs/promises";
-import { join } from "node:path";
+import { spawnSync } from 'child_process';
+import { tmpdir } from 'node:os';
+import { randomBytes } from 'node:crypto';
+import { readFile, writeFile, appendFile, unlink } from 'node:fs/promises';
+import { join } from 'node:path';
 
 /**
  * Generates a PKCS#12 (PFX) file as a Buffer from PEM-encoded private key and certificate.
@@ -19,15 +19,15 @@ import { join } from "node:path";
 export async function generateClientP12(
     auth: Static<typeof ConnectionAuth>,
     name: string,
-    password: string = ''
+    password: string = '',
 ): Promise<Buffer> {
     const tmp = tmpdir();
-    const rand = randomBytes(8).toString("hex");
+    const rand = randomBytes(8).toString('hex');
     const keyPath = join(tmp, `key-${rand}.pem`);
     const certPath = join(tmp, `cert-${rand}.pem`);
     const p12Path = join(tmp, `out-${rand}.p12`);
 
-    const paths = [ keyPath, certPath, p12Path ];
+    const paths = [keyPath, certPath, p12Path];
 
     try {
         await writeFile(keyPath, auth.key, { encoding: 'utf8' });
@@ -52,8 +52,9 @@ export async function generateClientP12(
                     output.push(x509.toString());
 
                     await appendFile(certPath, '\n' + x509.toString() + '\n');
-                } catch (err) {
-                    console.error("Invalid CA certificate provided, skipping:", err);
+                }
+                catch (err) {
+                    console.error('Invalid CA certificate provided, skipping:', err);
                 }
             }
 
@@ -64,23 +65,26 @@ export async function generateClientP12(
         }
 
         if (password) {
-            args.push("-password", `pass:${password}`);
-        } else {
-            args.push("-password", "pass:");
+            args.push('-password', `pass:${password}`);
+        }
+        else {
+            args.push('-password', 'pass:');
         }
 
-        const res = spawnSync("openssl", args, { stdio: "inherit" });
+        const res = spawnSync('openssl', args, { stdio: 'inherit' });
 
         if (res.error) {
-            throw new Error("OpenSSL command failed");
+            throw new Error('OpenSSL command failed');
         }
 
         return Buffer.from(await readFile(p12Path));
-    } finally {
+    }
+    finally {
         for (const path of paths) {
             try {
                 await unlink(path);
-            } catch (err) {
+            }
+            catch (err) {
                 console.error(err);
             }
         }
@@ -99,16 +103,16 @@ export async function generateClientP12(
 export async function generateTrustP12(
     auth: Static<typeof ConnectionAuth>,
     name: string,
-    password: string = ''
+    password: string = '',
 ): Promise<Buffer> {
     const tmp = tmpdir();
-    const rand = randomBytes(8).toString("hex");
+    const rand = randomBytes(8).toString('hex');
     const p12Path = join(tmp, `out-${rand}.p12`);
 
-    const paths = [ p12Path ];
+    const paths = [p12Path];
 
     if (!auth.ca || !auth.ca.length) {
-        throw new Error("No CA certificates provided for trust store generation");
+        throw new Error('No CA certificates provided for trust store generation');
     }
 
     const output = [];
@@ -117,8 +121,9 @@ export async function generateTrustP12(
         try {
             const x509 = new X509Certificate(Buffer.from(cert, 'base64'));
             output.push(x509.toString());
-        } catch (err) {
-            console.error("Invalid CA certificate provided, skipping:", err);
+        }
+        catch (err) {
+            console.error('Invalid CA certificate provided, skipping:', err);
         }
     }
 
@@ -138,23 +143,26 @@ export async function generateTrustP12(
         ];
 
         if (password) {
-            args.push("-passout", `pass:${password}`);
-        } else {
-            args.push("-passout", "pass:");
+            args.push('-passout', `pass:${password}`);
+        }
+        else {
+            args.push('-passout', 'pass:');
         }
 
-        const res = spawnSync("openssl", args, { stdio: "inherit" });
+        const res = spawnSync('openssl', args, { stdio: 'inherit' });
 
         if (res.error) {
-            throw new Error("OpenSSL command failed");
+            throw new Error('OpenSSL command failed');
         }
 
         return Buffer.from(await readFile(p12Path));
-    } finally {
+    }
+    finally {
         for (const path of paths) {
             try {
                 await unlink(path);
-            } catch (err) {
+            }
+            catch (err) {
                 console.error(err);
             }
         }

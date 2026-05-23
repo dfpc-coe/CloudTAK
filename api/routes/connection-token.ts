@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
@@ -15,7 +15,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionToken',
         description: 'List all tokens associated with a given connection',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 })
+            connectionid: Type.Integer({ minimum: 1 }),
         }),
         query: Type.Object({
             limit: Default.Limit,
@@ -23,18 +23,18 @@ export default async function router(schema: Schema, config: Config) {
             order: Default.Order,
             sort: Type.String({
                 default: 'created',
-                enum: Object.keys(ConnectionToken)
+                enum: Object.keys(ConnectionToken),
             }),
-            filter: Default.Filter
+            filter: Default.Filter,
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(ConnectionTokenResponse)
-        })
+            items: Type.Array(ConnectionTokenResponse),
+        }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
-                resources: []
+                resources: [],
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -47,11 +47,12 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`
                     name ~* ${req.query.filter}
                     AND connection = ${req.params.connectionid}
-                `
+                `,
             });
 
             res.json(list);
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -61,16 +62,16 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionToken',
         description: 'Create a new API token for programatic access',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 })
+            connectionid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
-            name: Default.NameField
+            name: Default.NameField,
         }),
-        res: CreateConnectionTokenResponse
+        res: CreateConnectionTokenResponse,
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
-                resources: []
+                resources: [],
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -78,11 +79,12 @@ export default async function router(schema: Schema, config: Config) {
             const token = await config.models.ConnectionToken.generate({
                 name: req.body.name,
                 token: 'etl.' + jwt.sign({ id: req.params.connectionid, access: 'connection' }, config.SigningSecret),
-                connection: req.params.connectionid
+                connection: req.params.connectionid,
             });
 
             res.json(token);
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -92,17 +94,17 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionToken',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
-            id: Type.Integer({ minimum: 1 })
+            id: Type.Integer({ minimum: 1 }),
         }),
         description: 'Update properties of a Token',
         body: Type.Object({
-            name: Type.Optional(Default.NameField)
+            name: Type.Optional(Default.NameField),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
-                resources: []
+                resources: [],
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -112,11 +114,12 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.models.ConnectionToken.commit(sql`id = ${token.id}::INT`, {
                 updated: sql`Now()`,
-                ...req.body
+                ...req.body,
             });
 
             res.json({ status: 200, message: 'Connection Token Updated' });
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -127,13 +130,13 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Delete a user\'s API Token',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
-            id: Type.Integer({ minimum: 1 })
+            id: Type.Integer({ minimum: 1 }),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
-                resources: []
+                resources: [],
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -144,7 +147,8 @@ export default async function router(schema: Schema, config: Config) {
             await config.models.ConnectionToken.delete(sql`id = ${token.id}::INT`);
 
             res.json({ status: 200, message: 'Connection Token Deleted' });
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });

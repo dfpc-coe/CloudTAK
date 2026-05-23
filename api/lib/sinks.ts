@@ -23,7 +23,7 @@ export default class Sinks {
                 layers.connection = ${conn.id}
                 AND layers.enabled IS True
                 AND layers_outgoing.layer IS NOT NULL
-            `
+            `,
         })) {
             if (!layer.outgoing) continue;
             const arnPrefix = (await this.config.fetchArnPrefix()).split(':');
@@ -38,8 +38,8 @@ export default class Sinks {
                 filtered.push(cot);
             }
 
-            for (let i = 0; i < filtered.length; i+= 10) {
-                const slice = filtered.slice(i, i + 10)
+            for (let i = 0; i < filtered.length; i += 10) {
+                const slice = filtered.slice(i, i + 10);
                 const entries: SQS.SendMessageBatchRequestEntry[] = [];
 
                 for (const cot of slice) {
@@ -48,14 +48,15 @@ export default class Sinks {
                         MessageGroupId: `${String(layer.id)}-${cot.uid()}`.slice(0, 128),
                         MessageBody: JSON.stringify({
                             xml: await CoTParser.to_xml(cot),
-                            geojson: await CoTParser.to_geojson(cot)
-                        })
+                            geojson: await CoTParser.to_geojson(cot),
+                        }),
                     } as SQS.SendMessageBatchRequestEntry);
                 }
 
                 try {
                     await this.queue.submit(entries, queue);
-                } catch (err) {
+                }
+                catch (err) {
                     console.error(`Queue: `, queue, ':', err);
                 }
             }

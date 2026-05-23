@@ -147,7 +147,7 @@
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
 import { useMapStore } from '../../stores/map.ts';
-import { db } from '../../base/database.ts';
+import { db } from '../../database.ts';
 import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';

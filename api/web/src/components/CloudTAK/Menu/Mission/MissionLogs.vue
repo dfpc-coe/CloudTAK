@@ -143,7 +143,7 @@ import { std } from '../../../../std.ts';
 import TagEntry from '../../util/TagEntry.vue';
 import MissionLogItem from './MissionLog.vue';
 import MissionTemplateLogs from '../../../../base/mission-template-logs.ts';
-import type { DBMissionTemplateLog, DBSubscriptionLog } from '../../../../base/database.ts';
+import type { DBMissionTemplateLog, DBSubscriptionLog } from '../../../../database.ts';
 import {
     TablerNone,
     TablerInput,

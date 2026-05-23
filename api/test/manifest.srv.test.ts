@@ -10,7 +10,7 @@ flight.takeoff();
 test('GET: /api/manifest.webmanifest', async () => {
     try {
         const res = await flight.fetch('/api/manifest.webmanifest', {
-            method: 'GET'
+            method: 'GET',
         }, true);
 
         assert.equal(res.status, 200, 'http 200');
@@ -24,7 +24,8 @@ test('GET: /api/manifest.webmanifest', async () => {
         // Check first icon structure
         assert.ok(res.body.icons[0].src);
         assert.ok(res.body.icons[0].sizes);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });

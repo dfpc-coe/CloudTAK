@@ -9,7 +9,7 @@ import type * as Comlink from 'comlink';
 import type Atlas from '../../workers/atlas.ts';
 import type { IconHydrateResult } from '../../workers/atlas-icons.ts';
 import { stdurl } from '../../std.ts';
-import { db, type DBIconset, type DBSprite } from '../../base/database.ts';
+import { db, type DBIconset, type DBSprite } from '../../database.ts';
 
 /** Image id for the on-demand fallback when an iconset icon isn't available locally. */
 const FALLBACK_IMAGE_ID = '__cloudtak_fallback_point__';
@@ -132,8 +132,8 @@ export default class IconManager {
      * reference a specific iconset so it is available even if the user-wide
      * hydrate hasn't completed yet.
      */
-    async addIconset(uid: string): Promise<void> {
-        const updated = await this.worker.icons.addIconset(uid);
+    async addIconset(uid: string, opts: { force?: boolean } = {}): Promise<void> {
+        const updated = await this.worker.icons.addIconset(uid, { force: !!opts.force });
         if (updated) await this.reloadIconsetImages(uid);
     }
 
