@@ -101,6 +101,11 @@ export interface DBNotification {
     created: string;
 }
 
+export interface DBKV {
+    key: string;
+    value: string;
+}
+
 export interface DBVideo {
     id: string;
     created: string;
@@ -235,6 +240,7 @@ export type DatabaseType = Dexie & {
     subscription_chat: EntityTable<DBSubscriptionChat, 'id'>,
     mission_template: EntityTable<DBMissionTemplate, 'id'>,
     mission_template_log: EntityTable<DBMissionTemplateLog, 'id'>,
+    kv: EntityTable<DBKV, 'key'>,
     profile: EntityTable<DBProfileConfig, 'key'>,
     config: EntityTable<DBConfig, 'key'>,
     cache: EntityTable<DBCache, 'key'>,
@@ -244,6 +250,8 @@ export type DatabaseType = Dexie & {
 export const db = new Dexie('CloudTAK') as DatabaseType;
 
 db.version(1).stores({
+    kv: 'key',
+
     server: '_id',
     group: 'name, active',
 
