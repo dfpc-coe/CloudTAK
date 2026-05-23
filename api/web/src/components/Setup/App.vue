@@ -193,7 +193,7 @@ async function loadProviders(): Promise<void> {
     error.value = null
 
     try {
-        const response = await fetch('http://api.cloudtak.io/')
+        const response = await fetch('https://api.cloudtak.io/')
         if (!response.ok) throw new Error(`Request failed: ${response.status}`)
 
         const data = await response.json()
