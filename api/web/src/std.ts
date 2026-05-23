@@ -1,25 +1,53 @@
 import createClient from "openapi-fetch";
+import KV from './base/kv.ts'
 import type { Middleware } from "openapi-fetch";
 import type { paths } from '@cloudtak/api-types'
 import type { APIError } from './types.js'
 import type { Router } from 'vue-router'
-import { openSecondaryView } from './base/capacitor.ts';
+import { openSecondaryView, resolveRuntimeUrl } from './base/capacitor.ts';
+import { db } from './database.ts';
 
-export const server = createClient<paths>({
-    baseUrl: self.location.origin
-});
+export async function createServer() {
+    const baseUrl = await getRuntimeServerUrl();
 
-const AuthMiddleware: Middleware = {
-    async onRequest({ request }) {
-        if (!isWebWorker() && localStorage.token) {
-            request.headers.set("Authorization", `Bearer ${localStorage.token}`);
-        }
+    const server = createClient<paths>({
+        baseUrl,
+    });
 
-        return request;
+    const authMiddleware: Middleware = {
+        async onRequest({ request }) {
+            const token = await getRuntimeToken();
+
+            if (token && !request.headers.has('Authorization')) {
+                request.headers.set('Authorization', `Bearer ${token}`);
+            }
+
+            return request;
+        },
+    };
+
+    server.use(authMiddleware);
+
+    return server;
+}
+
+export const server = await createServer();
+
+async function getRuntimeToken(): Promise<string | undefined> {
+    if (!isWebWorker()) {
+        return localStorage.token || undefined;
     }
-};
 
-server.use(AuthMiddleware);
+    return (await db.config.get('token'))?.value as string | undefined;
+}
+
+async function getRuntimeServerUrl(): Promise<string> {
+    if (!isWebWorker() && localStorage.server) {
+        return localStorage.server;
+    }
+
+    return (await KV.value('serverUrl')) || resolveRuntimeUrl('/').origin;
+}
 
 export function stdurl(url: string | URL): URL {
     try {
@@ -56,15 +84,15 @@ export async function std(
 
     if (!opts.headers) opts.headers = {};
 
+    const authToken = opts.token || await getRuntimeToken();
+
     if (!(opts.body instanceof FormData) && typeof opts.body === 'object' && !opts.headers['Content-Type']) {
         opts.body = JSON.stringify(opts.body);
         opts.headers['Content-Type'] = 'application/json';
     }
 
-    if (!isWebWorker() && localStorage.token && !opts.headers.Authorization) {
-        opts.headers['Authorization'] = 'Bearer ' + localStorage.token;
-    } else if (opts.token) {
-        opts.headers['Authorization'] = 'Bearer ' + opts.token
+    if (authToken && !opts.headers.Authorization) {
+        opts.headers['Authorization'] = 'Bearer ' + authToken;
     }
 
     const res = await fetch(url, opts as RequestInit);
