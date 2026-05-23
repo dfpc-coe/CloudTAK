@@ -99,6 +99,21 @@ export default class CoTAKUser implements UserInterface {
         }
     }
 
+    private async authedFetch(url: URL | string, init: { method?: string; headers?: Record<string, string>; body?: string } = {}) {
+        const creds = await this.auth();
+        const headers = { ...(init.headers as Record<string, string>), Authorization: `Bearer ${creds.token}` };
+
+        const res = await fetch(url, { ...init, headers });
+
+        if (res.status === 401) {
+            this.cache = undefined;
+            const fresh = await this.auth();
+            return fetch(url, { ...init, headers: { ...(init.headers as Record<string, string>), Authorization: `Bearer ${fresh.token}` } });
+        }
+
+        return res;
+    }
+
     async createMachineUser(uid: number, body: {
         name: string;
         description: string;
@@ -112,8 +127,6 @@ export default class CoTAKUser implements UserInterface {
             access: ChannelAccessEnum;
         }>;
     }): Promise<Static<typeof MachineUser>> {
-        const creds = await this.auth();
-
         const url = new URL(`api/v1/proxy/integrations/etl`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
 
@@ -131,12 +144,11 @@ export default class CoTAKUser implements UserInterface {
             },
         };
 
-        const intres = await fetch(url, {
+        const intres = await this.authedFetch(url, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${creds.token}`,
             },
             body: JSON.stringify(req),
         });
@@ -152,10 +164,9 @@ export default class CoTAKUser implements UserInterface {
         const murl = new URL(`api/v1/proxy/machine-users/integration/${integration_body.data.id}`, this.provider.url);
         murl.searchParams.append('proxy_user_id', String(uid));
 
-        const musres = await fetch(murl, {
+        const musres = await this.authedFetch(murl, {
             headers: {
                 Accept: 'application/json',
-                Authorization: `Bearer ${creds.token}`,
             },
         });
 
@@ -176,13 +187,12 @@ export default class CoTAKUser implements UserInterface {
             url.searchParams.append('sync', 'true');
             url.searchParams.append('access_type', channel.access);
 
-            const userres = await fetch(url, {
+            const userres = await this.authedFetch(url, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${creds.token}`,
-                },
+                    'Content-Type': "application/json",
+                }
             });
 
             if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Attachment Error');
@@ -192,15 +202,12 @@ export default class CoTAKUser implements UserInterface {
     }
 
     async fetchMachineUser(uid: number, email: string): Promise<Static<typeof MachineUser>> {
-        const creds = await this.auth();
-
         const url = new URL(`api/v1/proxy/machine-users/email/${email}`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
 
-        const userres = await fetch(url, {
+        const userres = await this.authedFetch(url, {
             headers: {
                 Accept: 'application/json',
-                Authorization: `Bearer ${creds.token}`,
             },
         });
 
@@ -225,8 +232,6 @@ export default class CoTAKUser implements UserInterface {
             connection_id?: number;
         },
     ): Promise<Static<typeof MachineUser>> {
-        const creds = await this.auth();
-
         if (body.integration_id && body.connection_id) {
             const url = new URL(`api/v1/proxy/integrations/etl/${body.integration_id}`, this.provider.url);
             url.searchParams.append('proxy_user_id', String(uid));
@@ -237,12 +242,11 @@ export default class CoTAKUser implements UserInterface {
                 active: true,
             };
 
-            const userres = await fetch(url, {
+            const userres = await this.authedFetch(url, {
                 method: 'PATCH',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${creds.token}`,
                 },
                 body: JSON.stringify(req),
             });
@@ -254,10 +258,9 @@ export default class CoTAKUser implements UserInterface {
             const murl = new URL(`api/v1/proxy/machine-users/integration/${body.integration_id}`, this.provider.url);
             murl.searchParams.append('proxy_user_id', String(uid));
 
-            const musres = await fetch(murl, {
+            const musres = await this.authedFetch(murl, {
                 headers: {
                     Accept: 'application/json',
-                    Authorization: `Bearer ${creds.token}`,
                 },
             });
 
@@ -284,12 +287,11 @@ export default class CoTAKUser implements UserInterface {
                     password: body.password,
                 };
 
-                const userres = await fetch(url, {
+                const userres = await this.authedFetch(url, {
                     method: 'PATCH',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${creds.token}`,
                     },
                     body: JSON.stringify(req),
                 });
@@ -303,17 +305,16 @@ export default class CoTAKUser implements UserInterface {
                 return user.data;
             }
             else {
-                const userres = await fetch(url, {
+                const userres = await this.authedFetch(url, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${creds.token}`,
                     },
                 });
 
                 if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Fetch Error');
-
+        
                 const user = await userres.typed(Type.Object({
                     data: MachineUser,
                 }));
@@ -328,18 +329,15 @@ export default class CoTAKUser implements UserInterface {
     async deleteMachineUser(uid: number, body: {
         connection_id: number;
     }): Promise<void> {
-        const creds = await this.auth();
-
         const url = new URL(`api/v1/proxy/integrations/etl/identifier/${body.connection_id}`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
         url.searchParams.append('delete_machine_users', 'true');
 
-        await fetch(url, {
+        await this.authedFetch(url, {
             method: 'DELETE',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${creds.token}`,
             },
         });
 
@@ -347,14 +345,11 @@ export default class CoTAKUser implements UserInterface {
     }
 
     async agency(uid: number, agency_id: number): Promise<Static<typeof Agency>> {
-        const creds = await this.auth();
-
         const url = new URL(`/api/v1/proxy/agencies/${agency_id}`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
-        const agencyres = await fetch(url, {
+        const agencyres = await this.authedFetch(url, {
             headers: {
                 Accept: 'application/json',
-                Authorization: `Bearer ${creds.token}`,
             },
         });
 
@@ -373,8 +368,6 @@ export default class CoTAKUser implements UserInterface {
         total: number;
         items: Array<Static<typeof Channel>>;
     }> {
-        const creds = await this.auth();
-
         let url: URL;
         if (query.agency) {
             url = new URL(`api/v1/proxy/agencies/${query.agency}/channels`, this.provider.url);
@@ -387,10 +380,9 @@ export default class CoTAKUser implements UserInterface {
             url.searchParams.append('filter', query.filter);
         }
 
-        const channelres = await fetch(url, {
+        const channelres = await this.authedFetch(url, {
             headers: {
                 Accept: 'application/json',
-                Authorization: `Bearer ${creds.token}`,
             },
         });
 
@@ -416,16 +408,13 @@ export default class CoTAKUser implements UserInterface {
         total: number;
         items: Array<Static<typeof Agency>>;
     }> {
-        const creds = await this.auth();
-
         const url = new URL(`/api/v1/proxy/agencies`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
         url.searchParams.append('filter', filter);
 
-        const agencyres = await fetch(url, {
+        const agencyres = await this.authedFetch(url, {
             headers: {
                 Accept: 'application/json',
-                Authorization: `Bearer ${creds.token}`,
             },
         });
 
@@ -453,13 +442,10 @@ export default class CoTAKUser implements UserInterface {
         system_admin: boolean;
         agency_admin: Array<number>;
     }> {
-        const creds = await this.auth();
-
-        const userres = await fetch(new URL(`/api/v1/server/users/email/${encodeURIComponent(username)}`, this.provider.url), {
+        const userres = await this.authedFetch(new URL(`/api/v1/server/users/email/${encodeURIComponent(username)}`, this.provider.url), {
             method: 'GET',
             headers: {
                 Accept: 'application/json',
-                Authorization: `Bearer ${creds.token}`,
             },
         });
 
