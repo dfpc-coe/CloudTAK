@@ -243,7 +243,7 @@ async function saveUrl(): Promise<void> {
 
         if (Capacitor.isNativePlatform()) {
             await Preferences.set({ key: 'serverUrl', value: serverUrl.value })
-            window.location.href = serverUrl.value
+            window.location.href = '/login'
         } else if (window.electronAPI?.saveUrl) {
             window.electronAPI.saveUrl(serverUrl.value)
         } else {
@@ -264,7 +264,7 @@ onMounted(async () => {
 
     const { value } = await Preferences.get({ key: 'serverUrl' })
     if (value) {
-        window.location.href = value
+        window.location.href = '/login'
         return
     }
 
