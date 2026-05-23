@@ -42,7 +42,7 @@ export default class KV extends BaseInterface {
         });
     }
 
-    static async generate(key: string, value: string): Promise<void> {
+    static async generate(key?: string, value?: string): Promise<void> {
         await this.update(key, value);
     }
 
