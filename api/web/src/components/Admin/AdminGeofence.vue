@@ -116,7 +116,7 @@
 <script setup lang='ts'>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import StatusDot from '../util/StatusDot.vue';
-import { server, std } from '../../std.ts';
+import { server } from '../../std.ts';
 import { validateURL } from '../../base/validators.ts';
 import {
     TablerLoading,
@@ -235,7 +235,10 @@ async function fetchStatus() {
     statusError.value = null;
 
     try {
-        const data = await std('/api/geofence') as typeof status.value;
+        const { data, error } = await server.GET('/api/geofence');
+
+        if (error) throw new Error(error.message);
+
         status.value = data;
     } catch (error) {
         statusError.value = error instanceof Error ? error : new Error(String(error));
