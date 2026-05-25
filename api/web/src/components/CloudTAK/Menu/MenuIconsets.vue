@@ -33,7 +33,6 @@
                     <Upload
                         method='PUT'
                         :url='stdurl(`/api/import`)'
-                        :headers='uploadHeaders()'
                         @done='processUpload($event)'
                         @cancel='upload = false'
                         @err='throws($event)'
@@ -263,12 +262,6 @@ function processUpload(body: unknown): void {
     if (isImportUploadResponse(body) && body.imports.length > 0) {
         router.push(`/menu/imports/${body.imports[0].uid}`);
     }
-}
-
-function uploadHeaders(): Record<string, string> {
-    return {
-        Authorization: `Bearer ${token || ''}`
-    };
 }
 
 async function download(iconset: Iconset): Promise<void> {

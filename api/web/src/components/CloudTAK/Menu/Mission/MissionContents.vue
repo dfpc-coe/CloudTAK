@@ -285,9 +285,7 @@ async function deleteFile(hash: string) {
 }
 
 const uploadHeaders = computed(() => {
-    const headers: Record<string, string> = {
-        Authorization: `Bearer ${token || ''}`,
-    }
+    const headers: Record<string, string> = {}
 
     if (props.subscription.token) {
         headers.MissionAuthorization = props.subscription.token;

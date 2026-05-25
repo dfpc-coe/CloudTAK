@@ -23,7 +23,6 @@
             >
                 <Upload
                     :url='stdurl(`/api/import`)'
-                    :headers='uploadHeaders()'
                     method='PUT'
                     @cancel='upload = false'
                     @done='uploadComplete($event)'
@@ -118,7 +117,6 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { Preferences } from '@capacitor/preferences';
 import { useRouter } from 'vue-router';
 import type { ImportList } from '../../../../src/types.ts';
 import { server, stdurl } from '../../../../src/std.ts';
@@ -158,7 +156,6 @@ const list = ref<ImportList>({
     total: 0,
     items: []
 });
-const { value: token } = await Preferences.get({ key: 'token' });
 
 watch(paging.value, async function() {
     await fetchList()
@@ -167,12 +164,6 @@ watch(paging.value, async function() {
 onMounted(async () => {
     await fetchList();
 });
-
-function uploadHeaders() {
-    return {
-        Authorization: `Bearer ${token || ''}`
-    };
-}
 
 function uploadComplete(event: unknown) {
     upload.value = false;

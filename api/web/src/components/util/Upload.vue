@@ -84,6 +84,7 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import {
     IconFile
 } from '@tabler/icons-vue';
@@ -178,6 +179,7 @@ async function upload(opts: {
 } = {}) {
     const currentFile = file.value;
     if (!currentFile) throw new Error('No file staged for upload');
+    const { value: token } = await Preferences.get({ key: 'token' });
 
     const url = new URL(props.url.toString());
 
@@ -233,6 +235,7 @@ async function upload(opts: {
         const headers = {
             'X-Requested-With': 'XMLHttpRequest',
             ...props.headers,
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
         };
 
         xhr.open(props.method, url.toString());

@@ -9,7 +9,6 @@
             <Upload
                 method='PUT'
                 :url='uploadUrl'
-                :headers='uploadHeaders'
                 @done='emit("done", $event)'
                 @cancel='emit("change-type")'
             />
@@ -23,7 +22,6 @@ import TypeSelectorSelected from './TypeSelectorSelected.vue';
 
 defineProps<{
     uploadUrl: URL;
-    uploadHeaders: Record<string, string>;
 }>();
 
 const emit = defineEmits<{

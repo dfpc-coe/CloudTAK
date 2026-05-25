@@ -8,6 +8,7 @@
 */
 
 import { v4 as randomUUID } from 'uuid';
+import { Preferences } from '@capacitor/preferences';
 import { defineStore } from 'pinia'
 import { markRaw } from 'vue';
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
@@ -270,7 +271,8 @@ export const useMapStore = defineStore('cloudtak', {
                     await this.makeActiveMission(undefined);
                 }
 
-                const sub = await Subscription.from(overlay.mode_id, localStorage.token, {
+                const { value: token } = await Preferences.get({ key: 'token' });
+                const sub = await Subscription.from(overlay.mode_id, token || '', {
                     subscribed: true
                 });
 
@@ -350,9 +352,13 @@ export const useMapStore = defineStore('cloudtak', {
                 throw new Error(`Terrain basemap ${terrainId} is not a raster-dem type`);
             }
 
+            const { value: token } = await Preferences.get({ key: 'token' });
+            const terrainUrl = stdurl(`/api/basemap/${terrain.id}/tiles`);
+            if (token) terrainUrl.searchParams.set('token', token);
+
             const source: { type: 'raster-dem'; url: string; tileSize?: number; encoding?: 'mapbox' | 'terrarium' } = {
                 type: 'raster-dem',
-                url: String(stdurl(`/api/basemap/${terrain.id}/tiles?token=${localStorage.token}`))
+                url: String(terrainUrl)
             };
 
             if (terrain.tilesize) source.tileSize = terrain.tilesize;
@@ -540,8 +546,9 @@ export const useMapStore = defineStore('cloudtak', {
                 return null
             }
 
+            const { value: token } = await Preferences.get({ key: 'token' });
             const sub = await Subscription.load(guid, {
-                token: localStorage.token,
+                token: token || '',
                 reload: opts?.reload || false,
                 subscribed: true,
                 missiontoken: overlay.token || undefined
@@ -597,7 +604,8 @@ export const useMapStore = defineStore('cloudtak', {
             }
             document.addEventListener('visibilitychange', this._boundOnVisibilityChange);
 
-            await this.worker.init(localStorage.token);
+            const { value: token } = await Preferences.get({ key: 'token' });
+            await this.worker.init(token || '');
 
             this.channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
                 const msg = event.data;
@@ -705,6 +713,8 @@ export const useMapStore = defineStore('cloudtak', {
                 console.error('Failed to load map configuration, using defaults', err);
             }
 
+            const glyphs = `${String(stdurl('/api/fonts'))}/{fontstack}/{range}.pbf${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+
             const init: mapgl.MapOptions = {
                 container: this.container,
                 hash: true,
@@ -717,7 +727,7 @@ export const useMapStore = defineStore('cloudtak', {
                 maxPitch: 85,
                 style: {
                     version: 8,
-                    glyphs: String(stdurl('/api/fonts')) + '/{fontstack}/{range}.pbf?token=' + localStorage.token,
+                    glyphs,
                     sprite: sprites,
                     sources: {
                         '-1': {

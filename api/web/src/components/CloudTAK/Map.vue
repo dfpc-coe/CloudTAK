@@ -400,7 +400,6 @@
                     <div class='modal-body text-body'>
                         <Upload
                             :url='stdurl("/api/import")'
-                            :headers='{ Authorization: `Bearer ${token}` }'
                             method='PUT'
                             :cancel='false'
                             @cancel='upload.shown = false'
@@ -429,6 +428,7 @@ import DrawTools from './DrawTools.vue';
 import GenericBottomPane from './GenericBottomPane.vue';
 import type { MapGeoJSONFeature, LngLatLike, MapMouseEvent } from 'maplibre-gl';
 import type { Feature } from '../../types.ts';
+import { Preferences } from '@capacitor/preferences';
 import {
     IconCircleArrowUp,
     IconAlertTriangle,
@@ -478,7 +478,6 @@ import { cutOverlayFeature } from './util/featureCut.ts';
 
 const mapStore = useMapStore();
 const floatStore = useFloatStore();
-const token = computed(() => String(localStorage.token ?? ''));
 
 const hasTerrain = ref<boolean>(false);
 Config.list(['map::terrain'], { defaults: { 'map::terrain': null } }).then((cfg) => {
