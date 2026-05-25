@@ -97,6 +97,7 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import type { paths } from '@cloudtak/api-types';
 import { server, std, stdurl } from '../../../../std.ts';
 import ProfileConfig from '../../../../base/profile.ts';
@@ -226,7 +227,17 @@ onMounted(async () => {
 });
 
 async function download(): Promise<void> {
-    await std(`/api/basemap/${props.basemap.id}?format=xml&download=true&token=${localStorage['token']}`, {
+    const url = stdurl(`/api/basemap/${props.basemap.id}`);
+    const { value: token } = await Preferences.get({ key: 'token' });
+
+    url.searchParams.set('format', 'xml');
+    url.searchParams.set('download', 'true');
+
+    if (token) {
+        url.searchParams.set('token', token);
+    }
+
+    await std(url.toString(), {
         download: true,
     });
 }
