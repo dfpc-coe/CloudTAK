@@ -106,6 +106,7 @@
 
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import type { PropType } from 'vue';
 import type { LineString } from 'geojson';
 import { length } from '@turf/length';
@@ -241,7 +242,8 @@ async function loadProfile(): Promise<void> {
     try {
         const baseURL = await getTilesURL();
         const url = stdurl(new URL(baseURL + `/tiles/basemap/${props.terrainBasemapId}/elevation`));
-        url.searchParams.set('token', localStorage.token);
+        const { value: token } = await Preferences.get({ key: 'token' });
+        if (token) url.searchParams.set('token', token);
 
         profile.value = await std(url, {
             method: 'POST',

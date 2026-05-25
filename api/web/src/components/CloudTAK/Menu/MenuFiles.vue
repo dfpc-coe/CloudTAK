@@ -218,6 +218,7 @@
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
 import { ref, watch, onMounted, computed } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import type { ProfileFile, ProfileFileList } from '../../../types.ts';
 import PathManager from '../../../base/path-manager.ts';
 import type { PathNode } from '../../../base/path-manager.ts';
@@ -249,6 +250,7 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '../../../stores/map.ts';
 import Overlay from '../../../base/overlay.ts';
 import Upload from '../../util/Upload.vue';
+const { value: token } = await Preferences.get({ key: 'token' });
 
 const mapStore = useMapStore();
 
@@ -581,7 +583,7 @@ async function createOverlay(asset: ProfileFile) {
 
 function uploadHeaders() {
     return {
-        Authorization: `Bearer ${localStorage.token}`
+        Authorization: `Bearer ${token || ''}`
     };
 }
 
@@ -593,7 +595,7 @@ function uploadComplete(event: unknown) {
 
 async function downloadAsset(asset: ProfileFile) {
     const url = stdurl(`/api/profile/asset/${asset.id}.${asset.name.split('.').pop()}`);
-    url.searchParams.set('token', localStorage.token);
+    if (token) url.searchParams.set('token', token);
     window.open(url, "_blank")
 }
 

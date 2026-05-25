@@ -130,6 +130,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { useRoute } from 'vue-router';
 import { server, stdurl } from '../../../std.ts';
 import {
@@ -178,6 +179,7 @@ const emit = defineEmits<{
 }>();
 
 const route = useRoute();
+const { value: token } = await Preferences.get({ key: 'token' });
 
 const err = ref<unknown>(null);
 const upload = ref(false);
@@ -190,7 +192,7 @@ onMounted(async () => {
 
 function uploadHeaders() {
     return {
-        Authorization: `Bearer ${localStorage.token}`
+        Authorization: `Bearer ${token || ''}`
     };
 }
 
@@ -212,7 +214,7 @@ function splitAssetName(name: string): { asset: string; ext: string } {
 
 async function downloadAsset(asset: Asset) {
     const url = stdurl(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}/asset/${asset.name}`);
-    url.searchParams.set('token', localStorage.token);
+    if (token) url.searchParams.set('token', token);
     await openExternalUrl(url);
 }
 

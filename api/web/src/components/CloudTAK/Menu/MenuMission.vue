@@ -127,6 +127,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { std } from '../../../std.ts';
 import type { Feature } from '../../../types.ts';
 import type { Component } from 'vue';
@@ -243,9 +244,10 @@ async function fetchMission(reload = false): Promise<void> {
     loading.value = true;
 
     try {
+        const { value: storedToken } = await Preferences.get({ key: 'token' });
         subscription.value = await Subscription.load(String(route.params.mission), {
             reload,
-            token: String(localStorage.token),
+            token: String(storedToken || ''),
             missiontoken: token.value,
         });
 

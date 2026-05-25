@@ -190,6 +190,7 @@
 
 <script setup lang='ts'>
 import { computed, ref } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { useRouter } from 'vue-router';
 import { openExternalUrl } from '../../base/capacitor.ts';
 import type { ETLConnection } from '../../types';
@@ -291,12 +292,13 @@ async function refresh() {
     loading.value = false;
 }
 
-function downloadCertificate(type: 'truststore' | 'client') {
+async function downloadCertificate(type: 'truststore' | 'client') {
     const url = stdurl(`/api/connection/${props.connection.id}/auth`);
     url.searchParams.set('type', type);
     url.searchParams.set('download', 'true');
     url.searchParams.set('password', type === 'truststore' ? certificate.value.truststorePassword : certificate.value.clientPassword);
-    url.searchParams.set('token', localStorage.token);
+    const { value: token } = await Preferences.get({ key: 'token' });
+    if (token) url.searchParams.set('token', token);
     void openExternalUrl(url);
 }
 </script>

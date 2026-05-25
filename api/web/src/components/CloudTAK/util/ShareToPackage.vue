@@ -108,6 +108,7 @@
 
 <script setup lang='ts'>
 import { ref, computed, useTemplateRef } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import type { PropType } from 'vue';
 import TagEntry from './TagEntry.vue';
 import Upload from '../../util/Upload.vue';
@@ -128,6 +129,7 @@ import { useRouter } from 'vue-router';
 import FeatureRow from './FeatureRow.vue';
 import type { Feature, Content } from '../../../types.ts';
 import GroupSelect from './GroupSelect.vue';
+const { value: token } = await Preferences.get({ key: 'token' });
 
 const mapStore = useMapStore();
 const router = useRouter();
@@ -196,7 +198,7 @@ function stageUpload(file: { name: string }) {
 
 function uploadHeaders() {
     return {
-        Authorization: `Bearer ${localStorage.token}`
+        Authorization: `Bearer ${token || ''}`
     };
 }
 

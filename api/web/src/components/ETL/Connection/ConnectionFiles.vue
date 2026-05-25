@@ -108,6 +108,7 @@
 <script setup lang='ts'>
 import  { useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { openExternalUrl } from '../../../base/capacitor.ts';
 import { server, stdurl } from '../../../std.ts';
 import type { ETLConnectionAssetList } from '../../../types.ts';
@@ -129,6 +130,7 @@ import {
 } from '@tak-ps/vue-tabler';
 
 const route = useRoute();
+const { value: token } = await Preferences.get({ key: 'token' });
 const error = ref<Error | undefined>(undefined);
 const upload = ref(false);
 const loading = ref(true);
@@ -143,7 +145,7 @@ onMounted(async () => {
 
 function uploadHeaders() {
     return {
-        Authorization: `Bearer ${localStorage.token}`
+        Authorization: `Bearer ${token || ''}`
     };
 }
 
@@ -165,7 +167,7 @@ function splitAssetName(name: string): { asset: string; ext: string } {
 
 async function downloadAsset(asset: ETLConnectionAssetList["items"][0]) {
     const url = stdurl(`/api/connection/${route.params.connectionid}/asset/${asset.name}`);
-    url.searchParams.set('token', localStorage.token);
+    if (token) url.searchParams.set('token', token);
     url.searchParams.set('download', String(true));
     await openExternalUrl(url)
 }

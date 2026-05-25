@@ -1,4 +1,5 @@
 import createClient from "openapi-fetch";
+import { Preferences } from '@capacitor/preferences';
 import KV from './base/kv.ts'
 import type { Middleware } from "openapi-fetch";
 import type { paths } from '@cloudtak/api-types'
@@ -34,7 +35,8 @@ export async function getServer() {
 
 async function getRuntimeToken(): Promise<string | undefined> {
     if (!isWebWorker()) {
-        return localStorage.token || undefined;
+        const { value } = await Preferences.get({ key: 'token' });
+        return value || undefined;
     }
 
     return (await db.config.get('token'))?.value as string | undefined;
@@ -127,7 +129,7 @@ export async function std(
         throw err;
     } else if (res.status === 401) {
         if (!isWebWorker()) {
-            delete localStorage.token;
+            await Preferences.remove({ key: 'token' });
         }
         throw new Error('401');
     }
