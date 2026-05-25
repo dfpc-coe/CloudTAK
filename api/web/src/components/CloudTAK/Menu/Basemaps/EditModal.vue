@@ -110,7 +110,7 @@ import TypeSelectorZxy_Upload from './TypeSelectorZxy_Upload.vue';
 import TypeSelectorZxy from './TypeSelectorZxy.vue';
 import TypeSelectorHosted from './TypeSelectorHosted.vue';
 import { BasemapTypeConfig, inferBasemapType, normalizeEditing } from './types.ts';
-import type { BasemapListItem, BasemapImport, BasemapImportRequest, BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from './types.ts';
+import type { BasemapListItem, BasemapImport, BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from './types.ts';
 import {
     IconMap,
     IconDownload,

@@ -96,7 +96,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, computed, onMounted } from 'vue';
-import type { ETLLdapChannelList, ETLLdapChannel, ETLLdapUser } from '../../../types.ts';
+import type { ETLLdapChannelList, ETLLdapChannel } from '../../../types.ts';
 import { server } from '../../../std.ts';
 import {
     TablerNone,
