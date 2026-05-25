@@ -118,6 +118,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { useRouter } from 'vue-router';
 import type { ImportList } from '../../../../src/types.ts';
 import { server, stdurl } from '../../../../src/std.ts';
@@ -157,6 +158,7 @@ const list = ref<ImportList>({
     total: 0,
     items: []
 });
+const { value: token } = await Preferences.get({ key: 'token' });
 
 watch(paging.value, async function() {
     await fetchList()
@@ -168,7 +170,7 @@ onMounted(async () => {
 
 function uploadHeaders() {
     return {
-        Authorization: `Bearer ${localStorage.token}`
+        Authorization: `Bearer ${token || ''}`
     };
 }
 

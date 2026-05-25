@@ -205,6 +205,7 @@
 
 <script setup lang='ts'>
 import { ref, computed, useTemplateRef } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { from } from 'rxjs';
 import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
@@ -275,6 +276,7 @@ const filteredContents = computed(() => {
 
 const uploadRef = useTemplateRef<typeof Upload>('upload');
 const upload = ref(false);
+const { value: token } = await Preferences.get({ key: 'token' });
 
 const loading = ref(false)
 
@@ -284,7 +286,7 @@ async function deleteFile(hash: string) {
 
 const uploadHeaders = computed(() => {
     const headers: Record<string, string> = {
-        Authorization: `Bearer ${localStorage.token}`,
+        Authorization: `Bearer ${token || ''}`,
     }
 
     if (props.subscription.token) {
@@ -316,7 +318,7 @@ async function uploadStaged(ev: { name: string }) {
 
 async function downloadFile(name: string, hash: string): Promise<void> {
     const url = stdurl(`/api/marti/api/files/${hash}`)
-    url.searchParams.set('token', localStorage.token);
+    if (token) url.searchParams.set('token', token);
     url.searchParams.set('name', name);
 
     await std(url, {
@@ -341,7 +343,7 @@ async function importFile(name: string, hash: string) {
 
 function downloadAssetUrl(hash: string, name: string) {
     const url = stdurl(`/api/marti/api/files/${hash}`)
-    url.searchParams.set('token', localStorage.token);
+    if (token) url.searchParams.set('token', token);
     url.searchParams.set('name', name);
     return url.toString();
 }

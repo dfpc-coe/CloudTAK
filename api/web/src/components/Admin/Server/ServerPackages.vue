@@ -70,6 +70,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, watch } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { server, std, stdurl } from '../../../std.ts';
 import type { PackageList } from '../../../types.ts';
 import {
@@ -149,7 +150,8 @@ async function deletePackage(pkg: PackageList["items"][0]) {
 
 async function downloadPackage(pkg: PackageList["items"][0]) {
     const url = stdurl(`/api/marti/api/files/${pkg.hash}`)
-    url.searchParams.set('token', localStorage.token);
+    const { value: token } = await Preferences.get({ key: 'token' });
+    if (token) url.searchParams.set('token', token);
     url.searchParams.set('name', pkg.name + '.zip');
 
     await std(url, {

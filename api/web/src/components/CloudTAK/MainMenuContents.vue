@@ -341,6 +341,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, onUnmounted, computed, watch, onBeforeUnmount } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import {
     IconX,
     IconUser,
@@ -543,8 +544,8 @@ function returnHome() {
     mapStore.returnHome();
 }
 
-function logout() {
-    delete localStorage.token;
+async function logout() {
+    await Preferences.remove({ key: 'token' });
     router.push("/login");
 }
 

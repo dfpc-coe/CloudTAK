@@ -59,6 +59,7 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue'
+import { Preferences } from '@capacitor/preferences';
 import { std, stdurl } from '../../../std.ts';
 import type { Attachment } from '../../../types.ts';
 import { useFloatStore } from '../../../stores/float.ts';
@@ -84,12 +85,13 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 
 const pane = ref(floatStore.panes.get(props.uid) as Pane<PaneAttachmentConfig>);
+const { value: token } = await Preferences.get({ key: 'token' });
 
 function downloadAssetUrl(attachment: Attachment & { url?: string }) {
     if (attachment.url) return new URL(attachment.url);
 
     const url = stdurl(`/api/attachment/${attachment.hash}`);
-    url.searchParams.set('token', localStorage.token);
+    if (token) url.searchParams.set('token', token);
     url.searchParams.set('download', 'true');
     return url;
 }

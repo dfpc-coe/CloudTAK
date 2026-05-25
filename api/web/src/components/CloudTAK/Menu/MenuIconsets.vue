@@ -177,6 +177,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { useRouter } from 'vue-router';
 import IconsetCache from '../../../base/iconset.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -206,6 +207,7 @@ import {
 } from '@tabler/icons-vue';
 import type { DBIconset } from '../../../database.ts';
 import type { Iconset } from '../../../types.ts';
+const { value: token } = await Preferences.get({ key: 'token' });
 
 interface ImportUploadResponse {
     imports: {
@@ -265,12 +267,12 @@ function processUpload(body: unknown): void {
 
 function uploadHeaders(): Record<string, string> {
     return {
-        Authorization: `Bearer ${localStorage.token}`
+        Authorization: `Bearer ${token || ''}`
     };
 }
 
 async function download(iconset: Iconset): Promise<void> {
-    await std(`/api/iconset/${iconset.uid}?format=zip&download=true&token=${localStorage.token}`, {
+    await std(`/api/iconset/${iconset.uid}?format=zip&download=true${token ? `&token=${encodeURIComponent(token)}` : ''}`, {
         download: true
     });
 }

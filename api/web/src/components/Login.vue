@@ -541,7 +541,7 @@ async function createLogin() {
              }
         }) as Login_CreateRes
 
-        localStorage.token = login.token;
+        await Preferences.set({ key: 'token', value: login.token });
         await persistNativeSession(login.token);
 
         navigateAfterLogin();
@@ -601,7 +601,7 @@ async function completePasskeyLogin(credential: AuthenticationResponseJSON) {
             body: { credential }
         }) as Login_CreateRes & { certRenewalRequired?: boolean };
 
-        localStorage.token = login.token;
+        await Preferences.set({ key: 'token', value: login.token });
         await persistNativeSession(login.token);
 
         if (login.certRenewalRequired) {
@@ -676,7 +676,7 @@ async function renewCertificate() {
             }
         }) as Login_CreateRes;
 
-        localStorage.token = login.token;
+        await Preferences.set({ key: 'token', value: login.token });
         await persistNativeSession(login.token);
         certRenewal.required = false;
         certRenewal.password = '';

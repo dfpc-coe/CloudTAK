@@ -390,6 +390,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import type { ETLLayer, ETLLayerTask, ETLLayerTaskCapabilities } from '../../types.ts';
 import { server, std } from '../../std.ts';
 import { useRoute, useRouter } from 'vue-router';
@@ -622,7 +623,9 @@ async function fetchStatus(load = false) {
 }
 
 async function downloadConfig() {
-    await std(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}?download=true&token=${localStorage.token}`, {
+    const { value: token } = await Preferences.get({ key: 'token' });
+    const url = `/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}?download=true${token ? `&token=${encodeURIComponent(token)}` : ''}`;
+    await std(url, {
         download: true
     });
 }
