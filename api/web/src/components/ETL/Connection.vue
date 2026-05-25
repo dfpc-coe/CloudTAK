@@ -214,6 +214,6 @@ async function fetch() {
 
     if (res.error) throw new Error(res.error.message);
 
-    connection.value = res.data as ETLConnection;
+    connection.value = res.data;
 }
 </script>
