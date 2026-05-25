@@ -7,7 +7,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 const milsymbolBrowserBundle = path.resolve(__dirname, 'node_modules/milsymbol/dist/milsymbol.js');
 
 export default defineConfig(({ mode }) => {
-    const res = {
+    return {
         define: {
             'import.meta.env.HASH': JSON.stringify(Math.random().toString(36).substring(2, 15)),
         },
@@ -75,8 +75,6 @@ export default defineConfig(({ mode }) => {
             },
             setupFiles: ['./src/test/setup.ts'],
         },
-    }
-
-    return res;
+    };
 })
 
