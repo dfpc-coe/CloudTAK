@@ -42,6 +42,7 @@ export default defineConfig(({ mode }) => {
         },
         build: {
             manifest: true,
+            target: 'esnext',
             rolldownOptions: {
                 input: {
                     main: path.resolve(__dirname, 'index.html'),
@@ -52,6 +53,9 @@ export default defineConfig(({ mode }) => {
                     setup: path.resolve(__dirname, 'setup.html'),
                 },
             },
+        },
+        worker: {
+            format: 'es'
         },
         server: {
             port: 8080,
