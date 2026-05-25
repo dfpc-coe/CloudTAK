@@ -12,13 +12,14 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.3.4"),
-        .package(name: "CapacitorApp", path: "../../../node_modules/@capacitor/app"),
-        .package(name: "CapacitorBrowser", path: "../../../node_modules/@capacitor/browser"),
-        .package(name: "CapacitorClipboard", path: "../../../node_modules/@capacitor/clipboard"),
-        .package(name: "CapacitorGeolocation", path: "../../../node_modules/@capacitor/geolocation"),
-        .package(name: "CapacitorHaptics", path: "../../../node_modules/@capacitor/haptics"),
-        .package(name: "CapacitorKeyboard", path: "../../../node_modules/@capacitor/keyboard"),
-        .package(name: "CapacitorStatusBar", path: "../../../node_modules/@capacitor/status-bar")
+        .package(name: "CapacitorApp", path: "../../../api/web/node_modules/@capacitor/app"),
+        .package(name: "CapacitorBrowser", path: "../../../api/web/node_modules/@capacitor/browser"),
+        .package(name: "CapacitorClipboard", path: "../../../api/web/node_modules/@capacitor/clipboard"),
+        .package(name: "CapacitorGeolocation", path: "../../../api/web/node_modules/@capacitor/geolocation"),
+        .package(name: "CapacitorHaptics", path: "../../../api/web/node_modules/@capacitor/haptics"),
+        .package(name: "CapacitorKeyboard", path: "../../../api/web/node_modules/@capacitor/keyboard"),
+        .package(name: "CapacitorPreferences", path: "../../../api/web/node_modules/@capacitor/preferences"),
+        .package(name: "CapacitorStatusBar", path: "../../../api/web/node_modules/@capacitor/status-bar")
     ],
     targets: [
         .target(
@@ -32,6 +33,7 @@ let package = Package(
                 .product(name: "CapacitorGeolocation", package: "CapacitorGeolocation"),
                 .product(name: "CapacitorHaptics", package: "CapacitorHaptics"),
                 .product(name: "CapacitorKeyboard", package: "CapacitorKeyboard"),
+                .product(name: "CapacitorPreferences", package: "CapacitorPreferences"),
                 .product(name: "CapacitorStatusBar", package: "CapacitorStatusBar")
             ]
         )

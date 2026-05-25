@@ -198,7 +198,7 @@
 import type { ETLData, ETLConnection } from '../../types.ts';
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { std } from '../../std.ts';
+import { server, std } from '../../std.ts';
 import PageFooter from '../PageFooter.vue';
 import timeDiff from '../../timediff.ts';
 import InitialAuthor from '../util/InitialAuthor.vue';
@@ -250,7 +250,17 @@ onMounted(async () => {
 
 
 async function fetchConnection() {
-    connection.value = await std(`/api/connection/${route.params.connectionid}`) as ETLConnection;
+    const res = await server.GET('/api/connection/{:connectionid}', {
+        params: {
+            path: {
+                ':connectionid': Number(route.params.connectionid)
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    connection.value = res.data;
 }
 
 async function fetch() {
