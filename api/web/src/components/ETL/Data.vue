@@ -198,7 +198,7 @@
 import type { ETLData, ETLConnection } from '../../types.ts';
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { server, std } from '../../std.ts';
+import { server } from '../../std.ts';
 import PageFooter from '../PageFooter.vue';
 import timeDiff from '../../timediff.ts';
 import InitialAuthor from '../util/InitialAuthor.vue';

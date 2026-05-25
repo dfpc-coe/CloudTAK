@@ -239,7 +239,6 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { server } from '../../std.ts';
-import type { ETLConnection } from '../../types.ts';
 import PageFooter from '../PageFooter.vue';
 import AgencySelect from './Connection/AgencySelect.vue';
 import CertificateP12 from './Connection/CertificateP12.vue';

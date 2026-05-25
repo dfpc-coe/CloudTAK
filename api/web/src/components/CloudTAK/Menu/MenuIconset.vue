@@ -78,7 +78,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { server, std, stdurl } from '../../../std.ts';
+import { server, std } from '../../../std.ts';
 import IconsetCache from '../../../base/iconset.ts';
 import CombinedIcons from '../util/Icons.vue';
 import { useMapStore } from '../../../stores/map.ts';
