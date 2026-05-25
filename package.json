@@ -23,6 +23,16 @@
     },
     "homepage": "https://github.com/dfpc-coe/CloudTAK#readme",
     "dependencies": {
+        "@capacitor/app": "^8.1.0",
+        "@capacitor/browser": "^8.0.1",
+        "@capacitor/clipboard": "^8.0.1",
+        "@capacitor/core": "^8.3.1",
+        "@capacitor/geolocation": "^8.1.0",
+        "@capacitor/haptics": "^8.0.2",
+        "@capacitor/ios": "^8.3.1",
+        "@capacitor/keyboard": "^8.0.3",
+        "@capacitor/preferences": "^8.0.1",
+        "@capacitor/status-bar": "^8.0.2",
         "@eslint/js": "^10.0.1",
         "@mapbox/tile-cover": "^3.0.2",
         "@mapbox/tilebelt": "^2.0.3",
@@ -31,6 +41,7 @@
         "@openaddresses/deploy": "^10.0.0"
     },
     "devDependencies": {
+        "@capacitor/cli": "^8.3.1",
         "@types/mapbox__tile-cover": "^3.0.4",
         "@types/mapbox__tilebelt": "^1.0.4",
         "@types/xml2js": "^0.4.11",
