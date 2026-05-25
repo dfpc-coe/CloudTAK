@@ -193,7 +193,7 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { openExternalUrl } from '../../base/capacitor.ts';
 import type { ETLConnection } from '../../types';
-import { std, stdurl } from '../../std';
+import { server, stdurl } from '../../std';
 import timeDiff from '../../timediff.ts';
 import ConnectionStatus from './Connection/StatusDot.vue';
 import AgencyBadge from './Connection/AgencyBadge.vue';
@@ -252,10 +252,17 @@ const certificateStatus = computed(() => certificateExpiryState(props.connection
 async function cycle() {
     loading.value = true;
     try {
-        const updated = await std(`/api/connection/${props.connection.id}/refresh`, {
-            method: 'POST'
-        }) as ETLConnection;
-        emit('update:connection', updated);
+        const res = await server.POST('/api/connection/{:connectionid}/refresh', {
+            params: {
+                path: {
+                    ':connectionid': props.connection.id
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        emit('update:connection', res.data as ETLConnection);
     } catch (err) {
         console.error(err);
     }
@@ -265,8 +272,17 @@ async function cycle() {
 async function refresh() {
     loading.value = true;
     try {
-        const updated = await std(`/api/connection/${props.connection.id}`) as ETLConnection;
-        emit('update:connection', updated);
+        const res = await server.GET('/api/connection/{:connectionid}', {
+            params: {
+                path: {
+                    ':connectionid': props.connection.id
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        emit('update:connection', res.data as ETLConnection);
     } catch (err) {
         console.error(err);
     }
