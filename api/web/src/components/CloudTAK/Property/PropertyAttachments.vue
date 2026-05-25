@@ -44,7 +44,6 @@
                         >
                             <Upload
                                 :url='uploadURL()'
-                                :headers='uploadHeaders()'
                                 method='PUT'
                                 @cancel='upload = false'
                                 @done='uploadComplete($event)'
@@ -210,12 +209,6 @@ async function refresh(): Promise<void> {
     }
 
     loading.value = false;
-}
-
-function uploadHeaders(): Record<string, string> {
-    return {
-        Authorization: `Bearer ${token || ''}`
-    };
 }
 
 function hasHash(val: unknown): val is { hash: string } {

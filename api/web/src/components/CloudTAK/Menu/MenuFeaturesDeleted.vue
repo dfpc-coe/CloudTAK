@@ -99,6 +99,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, computed, useTemplateRef } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import FeatureRow from '../util/FeatureRow.vue';
 import GenericSelect from '../util/GenericSelect.vue';
@@ -211,7 +212,8 @@ async function restoreFeatures(): Promise<void> {
 }
 
 async function download(format: string): Promise<void> {
-    await std(`/api/profile/feature?format=${format}&download=true&token=${localStorage.token}&deleted=true`, {
+    const { value: token } = await Preferences.get({ key: 'token' });
+    await std(`/api/profile/feature?format=${format}&download=true&deleted=true${token ? `&token=${encodeURIComponent(token)}` : ''}`, {
         download: true
     });
 }

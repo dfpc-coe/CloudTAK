@@ -92,7 +92,6 @@
             <Upload
                 v-else-if='upload'
                 :url='uploadURL()'
-                :headers='uploadHeaders()'
                 @cancel='upload = false'
                 @done='fetchList'
             />
@@ -142,12 +141,6 @@ const list = ref<ETLConnectionAssetList>({
 onMounted(async () => {
     await fetchList();
 });
-
-function uploadHeaders() {
-    return {
-        Authorization: `Bearer ${token || ''}`
-    };
-}
 
 function uploadURL() {
     return stdurl(`/api/connection/${route.params.connectionid}/asset`);

@@ -77,6 +77,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { useRoute, useRouter } from 'vue-router';
 import { server, std } from '../../../std.ts';
 import IconsetCache from '../../../base/iconset.ts';
@@ -146,7 +147,8 @@ async function refresh(): Promise<void> {
 }
 
 async function download(): Promise<void> {
-    await std(`/api/iconset/${iconset.value.uid}?format=zip&download=true&token=${localStorage.token}`, {
+    const { value: token } = await Preferences.get({ key: 'token' });
+    await std(`/api/iconset/${iconset.value.uid}?format=zip&download=true${token ? `&token=${encodeURIComponent(token)}` : ''}`, {
         download: true
     });
 }

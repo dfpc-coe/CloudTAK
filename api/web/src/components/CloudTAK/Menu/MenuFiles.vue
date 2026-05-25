@@ -24,7 +24,6 @@
             >
                 <Upload
                     :url='stdurl(`/api/import`)'
-                    :headers='uploadHeaders()'
                     method='PUT'
                     size-warning
                     @cancel='upload = false'
@@ -579,12 +578,6 @@ async function createOverlay(asset: ProfileFile) {
         loading.value = false;
         throw err;
     }
-}
-
-function uploadHeaders() {
-    return {
-        Authorization: `Bearer ${token || ''}`
-    };
 }
 
 function uploadComplete(event: unknown) {

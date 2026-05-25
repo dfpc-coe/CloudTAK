@@ -1,4 +1,5 @@
 import router from '../../router.ts';
+import { Preferences } from '@capacitor/preferences';
 import * as terraDraw from 'terra-draw';
 import * as tilecover from '@mapbox/tile-cover';
 import {
@@ -544,7 +545,8 @@ export default class DrawTool {
                  finalUrl = finalUrl.replace(/\.[a-z0-9]+$/i, '') + '/features';
 
                  const url = new URL(finalUrl);
-                 url.searchParams.set('token', localStorage.token);
+                 const { value: token } = await Preferences.get({ key: 'token' });
+                 if (token) url.searchParams.set('token', token);
                  url.searchParams.set('type', 'LineString');
                  url.searchParams.set('multi', 'false');
 

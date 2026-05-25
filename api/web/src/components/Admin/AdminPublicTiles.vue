@@ -30,7 +30,6 @@
         >
             <Upload
                 :url='uploadUrl'
-                :headers='uploadHeaders'
                 mimetype='.pmtiles'
                 label='Upload a .pmtiles file to the hosted tileset directory'
                 @cancel='uploading = false'
@@ -97,7 +96,6 @@
 
 <script setup lang='ts'>
 import { computed, ref } from 'vue';
-import { Preferences } from '@capacitor/preferences';
 import {
     TablerAlert,
     TablerIconButton,
@@ -120,14 +118,8 @@ const error = ref<Error | undefined>();
 const selected = ref<PublicTile>();
 const uploading = ref(false);
 const tilesetKey = ref(0);
-const { value: token } = await Preferences.get({ key: 'token' });
 
 const uploadUrl = computed(() => new URL('/api/server/tileset', window.location.origin));
-const uploadHeaders = computed(() => {
-    return {
-        Authorization: `Bearer ${token || ''}`
-    };
-});
 
 function toggleUpload() {
     error.value = undefined;

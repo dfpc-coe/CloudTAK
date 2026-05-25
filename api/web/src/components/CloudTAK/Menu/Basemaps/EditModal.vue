@@ -65,7 +65,6 @@
                 :is-system-admin='isSystemAdmin'
                 :url='tilejson.url'
                 :upload-url='uploadUrl'
-                :upload-headers='uploadHeadersValue'
                 @change-type='resetBasemapType'
                 @update:scope='scope = $event'
                 @update:warn-sharing='warnSharing = $event'
@@ -212,11 +211,6 @@ const activeSelectorComponent = computed(() => {
 });
 
 const uploadUrl = computed(() => stdurl('/api/basemap'));
-const uploadHeadersValue = computed<Record<string, string>>(() => {
-    return {
-        Authorization: `Bearer ${localStorage['token']}`,
-    };
-});
 
 type BasemapImportBody = paths['/api/basemap']['put']['requestBody']['content']['application/json'];
 type BasemapCreateBody = paths['/api/basemap']['post']['requestBody']['content']['application/json'];
