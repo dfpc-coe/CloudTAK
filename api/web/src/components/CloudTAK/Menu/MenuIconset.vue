@@ -78,7 +78,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { std, stdurl } from '../../../std.ts';
+import { server, std, stdurl } from '../../../std.ts';
 import IconsetCache from '../../../base/iconset.ts';
 import CombinedIcons from '../util/Icons.vue';
 import { useMapStore } from '../../../stores/map.ts';
@@ -177,8 +177,16 @@ async function syncIconset(): Promise<void> {
 
 async function deleteIconset(): Promise<void> {
     loading.value = true;
-    const url = stdurl(`/api/iconset/${route.params.iconset}`);
-    await std(url, { method: 'DELETE' });
+    const { error } = await server.DELETE('/api/iconset/{:iconset}', {
+        params: {
+            path: {
+                ':iconset': String(route.params.iconset),
+            }
+        }
+    });
+
+    if (error) throw new Error(error.message);
+
     await mapStore.icons.removeIconset(String(route.params.iconset));
     router.push('/menu/iconsets');
 }
