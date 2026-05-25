@@ -52,9 +52,10 @@
 </template>
 
 <script setup lang="ts">
+import type { paths } from '@cloudtak/api-types';
 import { useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
-import { std, stdurl } from '../../../../std.ts';
+import { server } from '../../../../std.ts';
 import type { Iconset } from '../../../../types.ts';
 import {
     TablerModal,
@@ -71,7 +72,16 @@ const loading = ref({
     iconset: true
 });
 const schema = ref<Record<string, unknown>>({});
-const iconset = ref<Partial<Iconset> & { scope?: string; name?: string }>({
+type IconsetCreateBody = paths['/api/iconset']['post']['requestBody']['content']['application/json'];
+type IconsetUpdateBody = paths['/api/iconset/{:iconset}']['patch']['requestBody']['content']['application/json'];
+type SchemaResponse = { body?: Record<string, unknown> };
+
+const iconset = ref<Partial<Iconset> & {
+    scope?: 'server' | 'user';
+    name?: string;
+    internal?: boolean;
+    public?: boolean;
+}>({
     scope: 'user'
 });
 
@@ -87,33 +97,98 @@ onMounted(async () => {
 
 async function fetch() {
     loading.value.iconset = true;
-    iconset.value = await std(`/api/iconset/${route.params.iconset}`) as Iconset;
+    const res = await server.GET('/api/iconset/{:iconset}', {
+        params: {
+            path: {
+                ':iconset': String(route.params.iconset),
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    iconset.value = res.data;
     loading.value.iconset = false;
 }
 
 async function submit() {
-    const url = await stdurl(`/api/iconset/${route.params.iconset ||''}`);
+    if (route.params.iconset) {
+        const body: IconsetUpdateBody = {
+            ...(iconset.value.public !== undefined ? { public: iconset.value.public } : {}),
+            ...(iconset.value.default_group ? { default_group: iconset.value.default_group } : {}),
+            ...(iconset.value.default_friendly ? { default_friendly: iconset.value.default_friendly } : {}),
+            ...(iconset.value.default_hostile ? { default_hostile: iconset.value.default_hostile } : {}),
+            ...(iconset.value.default_neutral ? { default_neutral: iconset.value.default_neutral } : {}),
+            ...(iconset.value.default_unknown ? { default_unknown: iconset.value.default_unknown } : {}),
+            ...(iconset.value.skip_resize !== undefined ? { skip_resize: iconset.value.skip_resize } : {}),
+        };
 
-    await std(url, {
-        method: route.params.iconset ? 'PATCH' : 'POST',
-        body: iconset.value
-    });
+        const res = await server.PATCH('/api/iconset/{:iconset}', {
+            params: {
+                path: {
+                    ':iconset': String(route.params.iconset),
+                }
+            },
+            body,
+        });
+
+        if (res.error) throw new Error(res.error.message);
+    } else {
+        if (!iconset.value.uid || iconset.value.version === undefined || !iconset.value.name || iconset.value.internal === undefined) {
+            throw new Error('Iconset form is incomplete');
+        }
+
+        const body: IconsetCreateBody = {
+            uid: iconset.value.uid,
+            version: iconset.value.version,
+            name: iconset.value.name,
+            internal: iconset.value.internal,
+            ...(iconset.value.scope ? { scope: iconset.value.scope } : {}),
+            ...(iconset.value.default_group ? { default_group: iconset.value.default_group } : {}),
+            ...(iconset.value.default_friendly ? { default_friendly: iconset.value.default_friendly } : {}),
+            ...(iconset.value.default_hostile ? { default_hostile: iconset.value.default_hostile } : {}),
+            ...(iconset.value.default_neutral ? { default_neutral: iconset.value.default_neutral } : {}),
+            ...(iconset.value.default_unknown ? { default_unknown: iconset.value.default_unknown } : {}),
+            ...(iconset.value.skip_resize !== undefined ? { skip_resize: iconset.value.skip_resize } : {}),
+        };
+
+        const res = await server.POST('/api/iconset', {
+            body,
+        });
+
+        if (res.error) throw new Error(res.error.message);
+    }
 
     emit('close');
 }
 
 async function regen() {
     loading.value.iconset = true;
-    await std(`/api/iconset/${route.params.iconset}/regen`, {
-        method: 'POST'
+    const res = await server.POST('/api/iconset/{:iconset}/regen', {
+        params: {
+            path: {
+                ':iconset': String(route.params.iconset),
+            }
+        }
     });
+
+    if (res.error) throw new Error(res.error.message);
+
     loading.value.iconset = false;
 }
 
 async function fetchSchema() {
-    const url = await stdurl(`/api/schema`);
-    url.searchParams.set('method', route.params.iconset ? 'PATCH' : 'POST');
-    url.searchParams.set('url', route.params.iconset ? '/iconset/:iconset' : '/iconset');
-    schema.value = ((await std(url)) as { body: Record<string, unknown> }).body;
+    const res = await server.GET('/api/schema', {
+        params: {
+            query: {
+                method: route.params.iconset ? 'PATCH' : 'POST',
+                url: route.params.iconset ? '/iconset/:iconset' : '/iconset',
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    schema.value = ((res.data as SchemaResponse).body) ?? {};
 }
 </script>

@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue';
-import { std } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import {
     TablerInput,
     TablerLoading
@@ -62,12 +62,13 @@ const body = reactive({
 const generate = async () => {
     loading.generate = true;
     try {
-        const res = await std('/api/marti/signClient', {
-            method: 'POST',
+        const res = await server.POST('/api/marti/signClient', {
             body: body
         });
 
-        emit('certs', res);
+        if (res.error) throw new Error(res.error.message);
+
+        emit('certs', res.data);
     } catch (err) {
         loading.generate = false;
         throw err;

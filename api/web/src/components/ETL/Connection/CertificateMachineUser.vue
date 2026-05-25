@@ -97,7 +97,7 @@
 <script setup lang='ts'>
 import { ref, watch, computed, onMounted } from 'vue';
 import type { ETLLdapChannelList, ETLLdapChannel, ETLLdapUser } from '../../../types.ts';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import {
     TablerNone,
     TablerEnum,
@@ -184,12 +184,18 @@ async function listChannels() {
     loading.value.channels = true;
 
     try {
-        const url = stdurl('/api/ldap/channel');
-        if (props.connection.agency) {
-            url.searchParams.set('agency', String(props.connection.agency));
-        }
-        url.searchParams.set('filter', paging.value.filter);
-        channels.value = await std(url) as ETLLdapChannelList
+        const res = await server.GET('/api/ldap/channel', {
+            params: {
+                query: {
+                    ...(props.connection.agency ? { agency: props.connection.agency } : {}),
+                    filter: paging.value.filter,
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        channels.value = res.data as ETLLdapChannelList;
     } catch (err) {
         loading.value.channels = false;
         throw err;
@@ -208,40 +214,45 @@ async function regenerate() {
 
     const email = certificate.subject.split('=')[3]
 
-    const url = stdurl(`/api/ldap/user/${email}`);
-    const res = await std(url, {
-        method: 'PUT',
-    }) as ETLLdapUser
+    const res = await server.PUT('/api/ldap/user/{:email}', {
+        params: {
+            path: {
+                ':email': email,
+            }
+        }
+    });
 
-    loading.value.gen = true;
+    if (res.error) throw new Error(res.error.message);
 
-    emit('certs', res.auth);
-    emit('integration', res.integrationId);
+    loading.value.gen = false;
+
+    emit('certs', res.data.auth);
+    emit('integration', res.data.integrationId);
 }
 
 async function generate() {
     loading.value.gen = true;
     try {
-        const url = stdurl('/api/ldap/user');
-        const res = await std(url, {
-            method: 'POST',
+        const res = await server.POST('/api/ldap/user', {
             body: {
                 name: props.connection.name,
                 description: props.connection.description,
-                agency_id: props.connection.agency,
+                ...(props.connection.agency ? { agency_id: props.connection.agency } : {}),
                 locking: !props.connection.readonly,
                 channels: selected.value.map((s) => {
                     return {
                         id: s.channel.id,
-                        access: s.access.toLowerCase()
+                        access: s.access.toLowerCase() as 'read' | 'write' | 'duplex'
                     }
                 })
             }
-        }) as ETLLdapUser
+        });
+
+        if (res.error) throw new Error(res.error.message);
 
         loading.value.gen = false;
-        emit('certs', res.auth);
-        emit('integration', res.integrationId);
+        emit('certs', res.data.auth);
+        emit('integration', res.data.integrationId);
     } catch (err) {
         loading.value.gen = false;
         throw err;

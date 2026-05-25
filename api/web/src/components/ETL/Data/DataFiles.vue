@@ -131,7 +131,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { std, stdurl } from '../../../std.ts';
+import { server, stdurl } from '../../../std.ts';
 import {
     IconRefreshDot,
     IconRefreshOff,
@@ -155,8 +155,8 @@ import { openExternalUrl } from '../../../base/capacitor.ts';
 type Asset = {
     name: string;
     size: number;
-    updated: string;
-    visualized: boolean;
+    updated: number;
+    visualized?: string;
     sync: boolean;
 };
 
@@ -198,6 +198,18 @@ function uploadURL() {
     return stdurl(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}/asset`);
 }
 
+function splitAssetName(name: string): { asset: string; ext: string } {
+    const idx = name.lastIndexOf('.');
+    if (idx <= 0 || idx === name.length - 1) {
+        throw new Error(`Unsupported asset name: ${name}`);
+    }
+
+    return {
+        asset: name.slice(0, idx),
+        ext: name.slice(idx + 1),
+    };
+}
+
 async function downloadAsset(asset: Asset) {
     const url = stdurl(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}/asset/${asset.name}`);
     url.searchParams.set('token', localStorage.token);
@@ -206,9 +218,20 @@ async function downloadAsset(asset: Asset) {
 
 async function deleteAsset(asset: Asset) {
     loading.value.list = true;
-    await std(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}/asset/${asset.name}`, {
-        method: 'DELETE'
+    const parts = splitAssetName(asset.name);
+    const { error } = await server.DELETE('/api/connection/{:connectionid}/data/{:dataid}/asset/{:asset}.{:ext}', {
+        params: {
+            path: {
+                ':connectionid': Number(route.params.connectionid),
+                ':dataid': Number(route.params.dataid),
+                ':asset': parts.asset,
+                ':ext': parts.ext,
+            }
+        }
     });
+
+    if (error) throw new Error(error.message);
+
     await fetchList();
 }
 
@@ -217,7 +240,18 @@ async function fetchList() {
     try {
         loading.value.list = true;
         err.value = null;
-        list.value = await std(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}/asset`) as AssetList;
+        const { data, error } = await server.GET('/api/connection/{:connectionid}/data/{:dataid}/asset', {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid),
+                    ':dataid': Number(route.params.dataid),
+                }
+            }
+        });
+
+        if (error) throw new Error(error.message);
+
+        list.value = data as AssetList;
         loading.value.list = false;
         emit('assets', list.value);
     } catch (e) {
