@@ -87,7 +87,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, watch } from 'vue'
-import { std, stdurl } from '../../std.ts';
+import { server } from '../../std.ts';
 import type { User, UserList } from '../../types.ts';
 import {
     IconTrash,
@@ -147,13 +147,33 @@ onMounted(async () => {
 
 async function getUser() {
     loading.value = true;
-    selected.value = await std(`/api/user/${props.modelValue}`) as User;
+    const res = await server.GET('/api/user/{:username}', {
+        params: {
+            path: {
+                ':username': String(props.modelValue)
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+    selected.value = res.data as User;
     loading.value = false;
 }
 
 async function listUsers() {
-    const url = stdurl(`/api/user`);
-    url.searchParams.set('filter', paging.value.filter);
-    list.value = await std(url) as UserList;
+    const res = await server.GET('/api/user', {
+        params: {
+            query: {
+                filter: paging.value.filter,
+                limit: 100,
+                page: 0,
+                order: 'asc',
+                sort: 'username'
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+    list.value = res.data as UserList;
 }
 </script>

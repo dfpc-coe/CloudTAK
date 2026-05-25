@@ -80,7 +80,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../std.ts';
+import { server, std, stdurl } from '../../std.ts';
 import type { APIList } from '../../types.ts';
 import {
     IconX,
@@ -154,6 +154,16 @@ onMounted(async () => {
     loading.value.main = false;
 });
 
+async function ensureConfig() {
+    if (config.value) return config.value;
+
+    const { data, error } = await server.GET('/api/config/tiles');
+    if (error) throw new Error(error.message);
+
+    config.value = data;
+    return config.value;
+}
+
 async function fetchSelected() {
     if (props.url && !selected.value) {
         try {
@@ -164,8 +174,8 @@ async function fetchSelected() {
 
             if (match && match[1]) {
                 const name = match[1];
-                if (!config.value) config.value = await std('/api/config/tiles') as { url: string };
-                const url = stdurl(new URL(config.value.url + `/tiles/public/${name}`));
+                const configValue = await ensureConfig();
+                const url = stdurl(new URL(configValue.url + `/tiles/public/${name}`));
                 url.searchParams.set('token', localStorage.token);
                 selected.value = await std(url) as TileDetail;
                 selected.value.url = url.toString();
@@ -179,13 +189,11 @@ async function fetchSelected() {
 async function select(tile: TileDetail) {
     loading.value.tiles = true;
 
-    if (!config.value) {
-        config.value = await std('/api/config/tiles') as { url: string };
-    }
+    const configValue = await ensureConfig();
 
     const name = tile.name.replace(/^public\//, "").replace(/\.pmtiles$/, '');
 
-    const url = stdurl(new URL(config.value.url + `/tiles/public/${name}`));
+    const url = stdurl(new URL(configValue.url + `/tiles/public/${name}`));
     url.searchParams.set('token', localStorage.token);
 
     const detail = await std(url) as TileDetail;
@@ -196,12 +204,10 @@ async function select(tile: TileDetail) {
 }
 
 async function listTiles() {
-    if (!config.value) {
-        config.value = await std('/api/config/tiles') as { url: string };
-    }
+    const configValue = await ensureConfig();
 
     loading.value.list = true;
-    const url = stdurl(new URL(config.value.url + '/tiles/public'));
+    const url = stdurl(new URL(configValue.url + '/tiles/public'));
     url.searchParams.set('token', localStorage.token);
     url.searchParams.set('filter', paging.value.filter);
     url.searchParams.set('limit', String(paging.value.limit));
