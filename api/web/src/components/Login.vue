@@ -467,16 +467,6 @@ const certRenewal = reactive<{
 });
 
 onMounted(async () => {
-    if (isNativePlatform()) {
-        const { value } = await Preferences.get({ key: 'serverUrl' });
-        if (!value?.trim()) {
-            window.location.href = '/setup.html';
-            return;
-        } else {
-            console.log('Server URL', value);
-        }
-    }
-
     const config = await Config.list([
         'login::name',
         'login::logo',
@@ -622,16 +612,7 @@ async function completePasskeyLogin(credential: AuthenticationResponseJSON) {
 async function persistNativeSession(token: string): Promise<void> {
     if (!isNativePlatform()) return;
 
-    const { value } = await Preferences.get({ key: 'serverUrl' });
-    const serverUrl = value?.trim();
-    if (!serverUrl) return;
-
-    localStorage.server = serverUrl;
-
-    await Promise.all([
-        KV.generate('serverUrl', serverUrl),
-        KV.generate('token', token)
-    ]);
+    await KV.generate('token', token);
 }
 
 function navigateAfterLogin() {
