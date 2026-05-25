@@ -7,8 +7,8 @@ import type { Router } from 'vue-router'
 import { openSecondaryView, resolveRuntimeUrl } from './base/capacitor.ts';
 import { db } from './database.ts';
 
-const serverUrl = await getRuntimeServerUrl();
-const server = await getServer();
+export const serverUrl = await getRuntimeServerUrl();
+export const server = await getServer();
 
 export async function getServer() {
     const server = createClient<paths>({

@@ -73,7 +73,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std } from '../../std.ts';
+import { server } from '../../std.ts';
 import type { ETLData, APIList } from '../../types.ts';
 import {
     IconTrash,
@@ -137,10 +137,36 @@ function update(d?: { id: string | number; name: string } | PointerEvent) {
 }
 
 async function fetch() {
-    selected.value = await std(`/api/connection/${props.connection}/data/${props.modelValue}`) as typeof selected.value;
+    const res = await server.GET('/api/connection/{:connectionid}/data/{:dataid}', {
+        params: {
+            path: {
+                ':connectionid': Number(props.connection),
+                ':dataid': Number(props.modelValue)
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+    selected.value = res.data as typeof selected.value;
 }
 
 async function listData() {
-    data.value = await std(`/api/connection/${props.connection}/data`) as typeof data.value;
+    const res = await server.GET('/api/connection/{:connectionid}/data', {
+        params: {
+            path: {
+                ':connectionid': Number(props.connection)
+            },
+            query: {
+                filter: '',
+                limit: 1000,
+                page: 0,
+                order: 'asc',
+                sort: 'name'
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+    data.value = res.data as typeof data.value;
 }
 </script>
