@@ -4,7 +4,7 @@ import type { Middleware } from "openapi-fetch";
 import type { paths } from '@cloudtak/api-types'
 import type { APIError } from './types.js'
 import type { Router } from 'vue-router'
-import { openSecondaryView, resolveRuntimeUrl } from './base/capacitor.ts';
+import { openSecondaryView } from './base/capacitor.ts';
 import { db } from './database.ts';
 
 export const serverUrl = await getRuntimeServerUrl();
@@ -45,7 +45,23 @@ async function getRuntimeServerUrl(): Promise<string> {
         return localStorage.server;
     }
 
-    return (await KV.value('serverUrl')) || resolveRuntimeUrl('/').origin;
+    return (await KV.value('serverUrl')) || getRuntimeOrigin();
+}
+
+function getRuntimeOrigin(): string {
+    if (typeof location !== 'undefined' && location.origin) {
+        return location.origin;
+    }
+
+    if (typeof window !== 'undefined' && window.location.origin) {
+        return window.location.origin;
+    }
+
+    if (typeof self !== 'undefined' && self.location.origin) {
+        return self.location.origin;
+    }
+
+    return 'http://localhost';
 }
 
 export function stdurl(url: string | URL): URL {

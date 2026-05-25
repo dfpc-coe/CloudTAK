@@ -4,18 +4,6 @@ import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
 import type { CallbackID, Position, PositionOptions } from '@capacitor/geolocation';
 
-function getRuntimeOrigin(): string {
-    if (typeof window !== 'undefined') {
-        return window.location.origin;
-    }
-
-    if (typeof self !== 'undefined') {
-        return self.location.origin;
-    }
-
-    return 'http://localhost';
-}
-
 export function isNativePlatform(): boolean {
     return Capacitor.isNativePlatform();
 }
@@ -28,12 +16,9 @@ export function supportsLocationRequests(): boolean {
     return isNativePlatform() || (typeof navigator !== 'undefined' && 'geolocation' in navigator);
 }
 
-export function resolveRuntimeUrl(url: string | URL): URL {
-    return url instanceof URL ? url : new URL(String(url), getRuntimeOrigin());
-}
-
 export async function openExternalUrl(url: string | URL): Promise<void> {
-    const href = resolveRuntimeUrl(url).toString();
+    const { stdurl } = await import('../std.ts');
+    const href = stdurl(url).toString();
 
     if (isNativePlatform()) {
         await Browser.open({ url: href });
@@ -44,7 +29,8 @@ export async function openExternalUrl(url: string | URL): Promise<void> {
 }
 
 export async function openSecondaryView(url: string | URL): Promise<void> {
-    const href = resolveRuntimeUrl(url);
+    const { stdurl } = await import('../std.ts');
+    const href = stdurl(url);
 
     if (isNativePlatform()) {
         if (typeof window !== 'undefined' && href.origin === window.location.origin) {
