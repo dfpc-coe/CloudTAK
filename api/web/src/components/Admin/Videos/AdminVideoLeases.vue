@@ -113,7 +113,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../../../src/std.ts';
+import { server } from '../../../../src/std.ts';
 import type { VideoLease, VideoLeaseList } from '../../../../src/types.ts';
 import TableHeader from '../../util/TableHeader.vue';
 import TableFooter from '../../util/TableFooter.vue';
@@ -128,6 +128,7 @@ import {
 } from '@tak-ps/vue-tabler';
 
 type Header = { name: keyof VideoLease, display: boolean };
+type VideoLeaseSort = 'id' | 'name' | 'created' | 'updated' | 'username' | 'connection' | 'layer' | 'source_id' | 'source_type' | 'source_model' | 'publish' | 'recording' | 'share' | 'ephemeral' | 'channel' | 'expiration' | 'path' | 'stream_user' | 'stream_pass' | 'read_user' | 'read_pass' | 'proxy' | 'enableRLS';
 
 const error = ref<Error | undefined>();
 const loading = ref(true);
@@ -135,8 +136,8 @@ const header = ref<Array<Header>>([]);
 const modal = ref<VideoLease | undefined>()
 const paging = ref({
     filter: '',
-    sort: 'name',
-    order: 'asc',
+    sort: 'name' as VideoLeaseSort,
+    order: 'asc' as 'asc' | 'desc',
     limit: 100,
     page: 0
 });
@@ -156,7 +157,18 @@ onMounted(async () => {
 });
 
 async function listLayerSchema() {
-    const schema = await std('/api/schema?method=GET&url=/video/lease');
+    const res = await server.GET('/api/schema', {
+        params: {
+            query: {
+                method: 'GET',
+                url: '/video/lease'
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    const schema = res.data;
 
     const defaults: Array<keyof VideoLease> = ['id', 'name', 'username', 'channel', 'path', 'expiration'];
     header.value = defaults.map((h) => {
@@ -188,16 +200,24 @@ async function fetchList() {
     loading.value = true;
 
     try {
-        const url = stdurl('/api/video/lease');
-        url.searchParams.set('impersonate', String(true));
-        url.searchParams.set('expired', 'all');
-        url.searchParams.set('filter', paging.value.filter);
-        url.searchParams.set('limit', String(paging.value.limit));
-        url.searchParams.set('sort', paging.value.sort);
-        url.searchParams.set('order', paging.value.order);
-        url.searchParams.set('page', String(paging.value.page));
+        const res = await server.GET('/api/video/lease', {
+            params: {
+                query: {
+                    impersonate: true,
+                    expired: 'all',
+                    ephemeral: 'all',
+                    filter: paging.value.filter,
+                    limit: paging.value.limit,
+                    sort: paging.value.sort,
+                    order: paging.value.order,
+                    page: paging.value.page
+                }
+            }
+        });
 
-        list.value = await std(url) as VideoLeaseList;
+        if (res.error) throw new Error(res.error.message);
+
+        list.value = res.data as VideoLeaseList;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }

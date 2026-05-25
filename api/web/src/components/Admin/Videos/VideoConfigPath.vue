@@ -26,7 +26,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
-import { std } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import {
     TablerModal,
     TablerLoading,
@@ -49,7 +49,18 @@ onMounted(async () => {
 
 async function fetchPath() {
     loading.value = true;
-    path.value = await std(`/api/video/service/path/${props.pathid}`) as Record<string, unknown>;
+
+    const res = await server.GET('/api/video/service/path/{:path}', {
+        params: {
+            path: {
+                ':path': props.pathid
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    path.value = res.data as Record<string, unknown>;
     loading.value = false;
 }
 </script>
