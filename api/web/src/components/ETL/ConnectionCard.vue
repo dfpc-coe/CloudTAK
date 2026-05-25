@@ -223,7 +223,9 @@ const props = withDefaults(defineProps<{
     expanded: false
 });
 
-const emit = defineEmits(['update:connection']);
+const emit = defineEmits<{
+    'update:connection': [connection: ETLConnection];
+}>();
 
 const loading = ref(false);
 
@@ -262,7 +264,7 @@ async function cycle() {
 
         if (res.error) throw new Error(res.error.message);
 
-        emit('update:connection', res.data as ETLConnection);
+        emit('update:connection', res.data);
     } catch (err) {
         console.error(err);
     }
@@ -282,7 +284,7 @@ async function refresh() {
 
         if (res.error) throw new Error(res.error.message);
 
-        emit('update:connection', res.data as ETLConnection);
+        emit('update:connection', res.data);
     } catch (err) {
         console.error(err);
     }
