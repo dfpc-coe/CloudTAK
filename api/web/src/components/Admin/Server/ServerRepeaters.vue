@@ -57,7 +57,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
-import { std } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import type { RepeaterList, Repeater } from '../../../types.ts';
 import timeDiff from '../../../timediff.ts';
 import {
@@ -83,7 +83,11 @@ onMounted(async () => {
 async function fetchList() {
     loading.value = true;
     try {
-        list.value = await std(`/api/server/repeater`) as RepeaterList;
+        const res = await server.GET('/api/server/repeater');
+
+        if (res.error) throw new Error(res.error.message);
+
+        list.value = res.data as RepeaterList;
         loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
@@ -93,9 +97,15 @@ async function fetchList() {
 async function deleteRepeater(repeater: Repeater) {
     loading.value = true;
     try {
-        await std(`/api/server/repeater/${repeater.uid}`, {
-            method: 'DELETE'
+        const res = await server.DELETE('/api/server/repeater/{:uid}', {
+            params: {
+                path: {
+                    ':uid': repeater.uid
+                }
+            }
         })
+
+        if (res.error) throw new Error(res.error.message);
     
         await fetchList();
     } catch (err) {
