@@ -7,11 +7,11 @@ import type { Router } from 'vue-router'
 import { openSecondaryView, resolveRuntimeUrl } from './base/capacitor.ts';
 import { db } from './database.ts';
 
-export async function createServer() {
-    const baseUrl = await getRuntimeServerUrl();
+const runtimeServerUrl = await getRuntimeServerUrl();
 
+export async function createServer() {
     const server = createClient<paths>({
-        baseUrl,
+        baseUrl: runtimeServerUrl,
     });
 
     const authMiddleware: Middleware = {
@@ -54,7 +54,7 @@ export function stdurl(url: string | URL): URL {
         url = new URL(url);
     } catch (err) {
         if (err instanceof TypeError) {
-            url = new URL(String(self.location.origin).replace(/\/$/, '') + url);
+            url = new URL(String(runtimeServerUrl).replace(/\/$/, '') + url);
         } else {
             throw err;
         }
