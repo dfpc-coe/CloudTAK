@@ -62,7 +62,7 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import type { Injector } from '../../../types.ts';
 import {
     TablerModal,
@@ -90,10 +90,11 @@ async function saveInjector() {
     loading.value = true;
 
     try {
-        await std('/api/server/injector', {
-            method: 'POST',
+        const res = await server.POST('/api/server/injector', {
             body: injector.value
         })
+
+        if (res.error) throw new Error(res.error.message);
 
         emit('close');
     } catch (err) {
@@ -108,13 +109,16 @@ async function deleteInjector() {
     loading.value = true;
 
     try {
-        const url = stdurl('/api/server/injector')
-        url.searchParams.set('uid', props.injector.uid);
-        url.searchParams.set('toInject', props.injector.toInject);
-
-        await std(url, {
-            method: 'DELETE'
+        const res = await server.DELETE('/api/server/injector', {
+            params: {
+                query: {
+                    uid: props.injector.uid,
+                    toInject: props.injector.toInject
+                }
+            }
         })
+
+        if (res.error) throw new Error(res.error.message);
 
         emit('close');
     } catch (err) {
