@@ -7,11 +7,12 @@ import type { Router } from 'vue-router'
 import { openSecondaryView, resolveRuntimeUrl } from './base/capacitor.ts';
 import { db } from './database.ts';
 
-const runtimeServerUrl = await getRuntimeServerUrl();
+const serverUrl = await getRuntimeServerUrl();
+const server = await getServer();
 
-export async function createServer() {
+export async function getServer() {
     const server = createClient<paths>({
-        baseUrl: runtimeServerUrl,
+        baseUrl: serverUrl,
     });
 
     const authMiddleware: Middleware = {
@@ -30,8 +31,6 @@ export async function createServer() {
 
     return server;
 }
-
-export const server = await createServer();
 
 async function getRuntimeToken(): Promise<string | undefined> {
     if (!isWebWorker()) {
@@ -54,7 +53,7 @@ export function stdurl(url: string | URL): URL {
         url = new URL(url);
     } catch (err) {
         if (err instanceof TypeError) {
-            url = new URL(String(runtimeServerUrl).replace(/\/$/, '') + url);
+            url = new URL(String(serverUrl).replace(/\/$/, '') + url);
         } else {
             throw err;
         }
@@ -155,17 +154,6 @@ export async function std(
     }
 }
 
-export function humanSeconds(seconds: number): string {
-        const date = new Date(seconds * 1000);
-        const str = [];
-        if (date.getUTCDate()-1 !== 0) str.push(date.getUTCDate()-1 + " days");
-        if (date.getUTCHours() !== 0 ) str.push(date.getUTCHours() + " hrs");
-        if (date.getUTCMinutes() !== 0) str.push(date.getUTCMinutes() + " mins");
-        if (date.getUTCSeconds() !== 0) str.push(date.getUTCSeconds() + " secs");
-        if (date.getUTCMilliseconds() !== 0) str.push(date.getUTCMilliseconds() + " ms");
-        return str.join(', ');
-}
-
 function isWebWorker() {
     return typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
 }
@@ -179,3 +167,15 @@ export function stdclick($router: Router, event: MouseEvent | KeyboardEvent, pat
         $router.push(path);
     }
 }
+
+export function humanSeconds(seconds: number): string {
+        const date = new Date(seconds * 1000);
+        const str = [];
+        if (date.getUTCDate()-1 !== 0) str.push(date.getUTCDate()-1 + " days");
+        if (date.getUTCHours() !== 0 ) str.push(date.getUTCHours() + " hrs");
+        if (date.getUTCMinutes() !== 0) str.push(date.getUTCMinutes() + " mins");
+        if (date.getUTCSeconds() !== 0) str.push(date.getUTCSeconds() + " secs");
+        if (date.getUTCMilliseconds() !== 0) str.push(date.getUTCMilliseconds() + " ms");
+        return str.join(', ');
+}
+
