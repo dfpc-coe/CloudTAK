@@ -42,9 +42,10 @@ async function getRuntimeToken(): Promise<string | undefined> {
     return (await db.config.get('token'))?.value as string | undefined;
 }
 
-async function getRuntimeServerUrl(): Promise<string> {
-    if (!isWebWorker() && localStorage.server) {
-        return localStorage.server;
+async function getRuntimeServerUrl(): Promise<string | undefined> {
+    if (!isWebWorker()) {
+        const { value } = await Preferences.get({ key: 'serverUrl' });
+        return value || undefined;
     }
 
     return (await KV.value('serverUrl')) || getRuntimeOrigin();
@@ -71,7 +72,8 @@ export function stdurl(url: string | URL): URL {
         url = new URL(url);
     } catch (err) {
         if (err instanceof TypeError) {
-            url = new URL(String(serverUrl).replace(/\/$/, '') + url);
+            const baseUrl = (!isWebWorker() && localStorage.server) ? localStorage.server : serverUrl;
+            url = new URL(String(baseUrl).replace(/\/$/, '') + url);
         } else {
             throw err;
         }

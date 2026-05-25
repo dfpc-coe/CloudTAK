@@ -137,7 +137,7 @@
         </header>
 
         <Loading
-            v-if='loading && !route.path.includes("configure") && !route.path.includes("login")'
+            v-if='!mounted || (loading && !route.path.includes("configure") && !route.path.includes("login"))'
         />
         <router-view
             v-else
@@ -179,6 +179,7 @@ import {
 } from '@tabler/icons-vue';
 import { Preferences } from '@capacitor/preferences';
 import { StatusBar } from '@capacitor/status-bar';
+import KV from './base/kv.ts';
 import Loading from './components/Loading.vue';
 import {
     TablerBadge,
@@ -319,6 +320,21 @@ onMounted(async () => {
 
     if (supportsServiceWorker()) {
         window.addEventListener('sw:update-available', onSwUpdateAvailable);
+    }
+
+    if (!isNativePlatform()) {
+        await KV.generate('serverUrl', window.location.origin);
+        await Preferences.set({ key: 'serverUrl', value: window.location.origin });
+    } else {
+        const { value } = await Preferences.get({ key: 'serverUrl' });
+        const serverUrl = value?.trim();
+
+        if (!serverUrl) {
+            window.location.href = '/setup.html';
+            return;
+        } else {
+            await KV.generate('serverUrl', serverUrl);
+        }
     }
 
     await configureStatusBar();
