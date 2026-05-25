@@ -109,7 +109,7 @@
 import  { useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue';
 import { openExternalUrl } from '../../../base/capacitor.ts';
-import { std, stdurl } from '../../../std.ts';
+import { server, stdurl } from '../../../std.ts';
 import type { ETLConnectionAssetList } from '../../../types.ts';
 import {
     IconPlus,
@@ -151,6 +151,18 @@ function uploadURL() {
     return stdurl(`/api/connection/${route.params.connectionid}/asset`);
 }
 
+function splitAssetName(name: string): { asset: string; ext: string } {
+    const idx = name.lastIndexOf('.');
+    if (idx <= 0 || idx === name.length - 1) {
+        throw new Error(`Unsupported asset name: ${name}`);
+    }
+
+    return {
+        asset: name.slice(0, idx),
+        ext: name.slice(idx + 1),
+    };
+}
+
 async function downloadAsset(asset: ETLConnectionAssetList["items"][0]) {
     const url = stdurl(`/api/connection/${route.params.connectionid}/asset/${asset.name}`);
     url.searchParams.set('token', localStorage.token);
@@ -160,9 +172,18 @@ async function downloadAsset(asset: ETLConnectionAssetList["items"][0]) {
 
 async function deleteAsset(asset: ETLConnectionAssetList["items"][0]) {
     loading.value = true;
-    await std(`/api/connection/${route.params.connectionid}/asset/${asset.name}`, {
-        method: 'DELETE'
+    const parts = splitAssetName(asset.name);
+    const { error } = await server.DELETE('/api/connection/{:connectionid}/asset/{:asset}.{:ext}', {
+        params: {
+            path: {
+                ':connectionid': Number(route.params.connectionid),
+                ':asset': parts.asset,
+                ':ext': parts.ext,
+            }
+        }
     });
+
+    if (error) throw new Error(error.message);
 
     await fetchList();
 }
@@ -173,7 +194,17 @@ async function fetchList() {
     try {
         loading.value = true;
         error.value = undefined;
-        list.value = await std(`/api/connection/${route.params.connectionid}/asset`) as ETLConnectionAssetList;
+        const { data, error: serverError } = await server.GET('/api/connection/{:connectionid}/asset', {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid),
+                }
+            }
+        });
+
+        if (serverError) throw new Error(serverError.message);
+
+        list.value = data;
         loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
