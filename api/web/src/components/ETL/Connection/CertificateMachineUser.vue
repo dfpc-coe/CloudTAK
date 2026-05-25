@@ -200,7 +200,13 @@ async function listChannels() {
 async function regenerate() {
     loading.value.gen = true;
 
-    const email = props.connection.certificate.subject.split('=')[3]
+    const certificate = props.connection.certificate;
+    if (!certificate) {
+        loading.value.gen = false;
+        return;
+    }
+
+    const email = certificate.subject.split('=')[3]
 
     const url = stdurl(`/api/ldap/user/${email}`);
     const res = await std(url, {

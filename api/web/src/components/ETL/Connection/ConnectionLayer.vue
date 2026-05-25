@@ -118,7 +118,7 @@
 <script setup lang='ts'>
 import { ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import type { ETLLayerList } from '../../../types.ts';
 import TableFooter from '../../util/TableFooter.vue';
 import {
@@ -167,13 +167,29 @@ onMounted(async () => {
 
 async function listLayers() {
     loading.value = true;
+    error.value = undefined;
     try {
-        const url = stdurl(`/api/connection/${route.params.connectionid}/layer`);
-        url.searchParams.set('alarms', String(true));
-        url.searchParams.set('limit', String(paging.value.limit));
-        url.searchParams.set('page', String(paging.value.page));
-        url.searchParams.set('filter', paging.value.filter);
-        list.value = await std(url) as ETLLayerList;
+        const { data, error: serverError } = await server.GET('/api/connection/{:connectionid}/layer', {
+            params: {
+                path: {
+                    ':connectionid': route.params.connectionid === 'template'
+                        ? 'template'
+                        : Number(route.params.connectionid)
+                },
+                query: {
+                    alarms: true,
+                    limit: paging.value.limit,
+                    page: paging.value.page,
+                    order: 'asc',
+                    sort: 'created',
+                    filter: paging.value.filter,
+                }
+            }
+        });
+
+        if (serverError) throw new Error(serverError.message);
+
+        list.value = data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
