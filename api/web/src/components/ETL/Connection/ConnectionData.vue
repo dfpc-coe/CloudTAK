@@ -110,7 +110,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import type { ETLConnection, APIList, ETLData } from '../../../types.ts';
 import TableFooter from '../../util/TableFooter.vue';
 import {
@@ -156,13 +156,26 @@ onMounted(async () => {
 
 async function listData() {
     loading.value = true;
+    error.value = undefined;
     try {
-        const url = stdurl(`/api/connection/${route.params.connectionid}/data`);
-        url.searchParams.set('limit', String(paging.value.limit));
-        url.searchParams.set('page', String(paging.value.page));
-        url.searchParams.set('filter', paging.value.filter);
-        url.searchParams.set('connection', String(route.params.connectionid));
-        list.value = await std(url) as APIList<ETLData>;
+        const { data, error: serverError } = await server.GET('/api/connection/{:connectionid}/data', {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid),
+                },
+                query: {
+                    limit: paging.value.limit,
+                    page: paging.value.page,
+                    filter: paging.value.filter,
+                    order: 'asc',
+                    sort: 'created',
+                }
+            }
+        });
+
+        if (serverError) throw new Error(serverError.message);
+
+        list.value = data as APIList<ETLData>;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }

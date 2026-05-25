@@ -264,6 +264,17 @@ async function fetchConnection() {
 }
 
 async function fetch() {
-    data.value = await std(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}`) as ETLData;
+    const res = await server.GET('/api/connection/{:connectionid}/data/{:dataid}', {
+        params: {
+            path: {
+                ':connectionid': Number(route.params.connectionid),
+                ':dataid': Number(route.params.dataid),
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    data.value = res.data;
 }
 </script>
