@@ -235,7 +235,7 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { std } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import type { ETLTaskVersions } from '../../../types.ts';
 import UploadLogo from '../../util/UploadLogo.vue';
 import {
@@ -285,7 +285,17 @@ async function fetch(): Promise<void> {
     loading.value = true;
     error.value = undefined;
     try {
-        task.value = await std(`/api/task/${route.params.task}`) as Task;
+        const res = await server.GET('/api/task/{:task}', {
+            params: {
+                path: {
+                    ':task': Number(route.params.task)
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        task.value = res.data as Task;
         await fetchVersions();
     } catch (err) {
         error.value = err as Error;
@@ -298,8 +308,17 @@ async function fetchVersions(): Promise<void> {
     if (!task.value) return;
     loadingVersions.value = true;
     try {
-        const res = await std(`/api/task/raw/${task.value.prefix}`) as ETLTaskVersions;
-        versions.value = res.versions;
+        const res = await server.GET('/api/task/raw/{:task}', {
+            params: {
+                path: {
+                    ':task': task.value.prefix
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        versions.value = (res.data as ETLTaskVersions).versions;
     } finally {
         loadingVersions.value = false;
     }
@@ -307,23 +326,36 @@ async function fetchVersions(): Promise<void> {
 
 function startEdit(): void {
     if (!task.value) return;
-    edit.value = { ...task.value };
+    edit.value = {
+        ...task.value,
+        logo: task.value.logo || undefined,
+        repo: task.value.repo || undefined,
+        readme: task.value.readme || undefined,
+    };
 }
 
 async function saveTask(): Promise<void> {
     if (!edit.value) return;
     loading.value = true;
     try {
-        task.value = await std(`/api/task/${edit.value.id}`, {
-            method: 'PATCH',
+        const res = await server.PATCH('/api/task/{:task}', {
+            params: {
+                path: {
+                    ':task': String(edit.value.id)
+                }
+            },
             body: {
                 name: edit.value.name,
                 favorite: edit.value.favorite,
-                logo: edit.value.logo,
-                repo: edit.value.repo,
-                readme: edit.value.readme
+                logo: edit.value.logo || undefined,
+                repo: edit.value.repo || undefined,
+                readme: edit.value.readme || undefined,
             }
-        }) as Task;
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        task.value = res.data as Task;
         edit.value = null;
     } finally {
         loading.value = false;
@@ -332,9 +364,16 @@ async function saveTask(): Promise<void> {
 
 async function deleteTask(): Promise<void> {
     if (!task.value) return;
-    await std(`/api/task/${task.value.id}`, {
-        method: 'DELETE'
+    const res = await server.DELETE('/api/task/{:taskid}', {
+        params: {
+            path: {
+                ':taskid': task.value.id
+            }
+        }
     });
+
+    if (res.error) throw new Error(res.error.message);
+
     router.push('/admin/tasks');
 }
 
@@ -381,9 +420,17 @@ async function downloadTask(): Promise<void> {
 async function deleteVersion(version: string): Promise<void> {
     if (!task.value) return;
     loadingVersions.value = true;
-    await std(`/api/task/raw/${task.value.prefix}/version/${version}`, {
-        method: 'DELETE'
+    const res = await server.DELETE('/api/task/raw/{:task}/version/{:version}', {
+        params: {
+            path: {
+                ':task': task.value.prefix,
+                ':version': version
+            }
+        }
     });
+
+    if (res.error) throw new Error(res.error.message);
+
     await fetchVersions();
 }
 </script>

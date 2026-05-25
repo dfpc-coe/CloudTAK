@@ -189,7 +189,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import type { APIList } from '../../../types.ts';
 import TableHeader from '../../util/TableHeader.vue'
 import TableFooter from '../../util/TableFooter.vue'
@@ -220,8 +220,12 @@ interface Task {
     prefix?: string;
     logo?: string;
     favorite?: boolean;
+    repo?: string;
+    readme?: string;
     [key: string]: unknown;
 }
+
+type TaskSort = 'id' | 'prefix' | 'favorite' | 'created' | 'updated' | 'name' | 'logo' | 'repo' | 'readme' | 'enableRLS';
 
 const error = ref<Error>();
 const loading = ref<boolean>(true);
@@ -231,8 +235,8 @@ const router = useRouter();
 const uploadInput = ref<HTMLInputElement | null>(null);
 const paging = ref({
     filter: '',
-    sort: 'name',
-    order: 'asc',
+    sort: 'name' as TaskSort,
+    order: 'asc' as 'asc' | 'desc',
     limit: 100,
     page: 0
 });
@@ -251,7 +255,18 @@ onMounted(async () => {
 });
 
 async function listLayerSchema() {
-    const schema = await std('/api/schema?method=GET&url=/task') as {
+    const res = await server.GET('/api/schema', {
+        params: {
+            query: {
+                method: 'GET',
+                url: '/task'
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    const schema = res.data as {
         query: { properties: { sort: { enum: string[] } } }
     };
     header.value = ['logo', 'name', 'prefix'].map((h) => {
@@ -275,10 +290,18 @@ async function saveTask() {
     loading.value = true;
 
     if (edit.value) {
-        await std('/api/task', {
-            method: 'POST',
-            body: edit.value
+        const res = await server.POST('/api/task', {
+            body: {
+                name: String(edit.value.name || ''),
+                prefix: String(edit.value.prefix || ''),
+                favorite: Boolean(edit.value.favorite),
+                logo: edit.value.logo || undefined,
+                repo: edit.value.repo || undefined,
+                readme: edit.value.readme || undefined,
+            }
         });
+
+        if (res.error) throw new Error(res.error.message);
     }
 
     edit.value = false
@@ -345,11 +368,21 @@ async function handleUpload(event: Event): Promise<void> {
 
 async function fetchList() {
     loading.value = true;
-    const url = stdurl('/api/task');
-    if (paging.value.filter) url.searchParams.set('filter', paging.value.filter);
-    url.searchParams.set('limit', String(paging.value.limit));
-    url.searchParams.set('page', String(paging.value.page));
-    list.value = await std(url) as APIList<Task>;
+    const res = await server.GET('/api/task', {
+        params: {
+            query: {
+                filter: paging.value.filter,
+                limit: paging.value.limit,
+                page: paging.value.page,
+                sort: paging.value.sort,
+                order: paging.value.order,
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    list.value = res.data as APIList<Task>;
     loading.value = false;
 }
 </script>

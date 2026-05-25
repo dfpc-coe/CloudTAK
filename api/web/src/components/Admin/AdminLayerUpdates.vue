@@ -113,7 +113,7 @@
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { openSecondaryView } from '../../base/capacitor.ts';
-import { std } from '../../std.ts';
+import { server } from '../../std.ts';
 import type { AdminLayerUpdate, AdminLayerUpdateList } from '../../types.ts';
 import {
     TablerAlert,
@@ -142,12 +142,20 @@ onMounted(async () => {
     await fetchList();
 });
 
+function layerConnectionId(layer: AdminLayerUpdate): 'template' | number {
+    return layer.connection ?? 'template';
+}
+
 async function fetchList(): Promise<void> {
     loading.value = true;
     error.value = undefined;
 
     try {
-        list.value = await std('/api/layer/update-management') as AdminLayerUpdateList;
+        const res = await server.GET('/api/layer/update-management');
+
+        if (res.error) throw new Error(res.error.message);
+
+        list.value = res.data as AdminLayerUpdateList;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {
@@ -164,12 +172,22 @@ async function updateLayer(layer: AdminLayerUpdate): Promise<void> {
             throw new Error('No newer version available');
         }
 
-        await std(`/api/connection/${layer.connection ?? 'template'}/layer/${layer.id}`, {
-            method: 'PATCH',
+        const res = await server.PATCH('/api/connection/{:connectionid}/layer/{:layerid}', {
+            params: {
+                query: {
+                    alarms: false
+                },
+                path: {
+                    ':connectionid': layerConnectionId(layer),
+                    ':layerid': layer.id
+                }
+            },
             body: {
                 task: `${layer.task_prefix}-v${layer.latest_version}`
             }
         });
+
+        if (res.error) throw new Error(res.error.message);
 
         await fetchList();
     } catch (err) {
@@ -184,9 +202,16 @@ async function redeployLayer(layer: AdminLayerUpdate): Promise<void> {
     error.value = undefined;
 
     try {
-        await std(`/api/connection/${layer.connection ?? 'template'}/layer/${layer.id}/redeploy`, {
-            method: 'POST'
+        const res = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/redeploy', {
+            params: {
+                path: {
+                    ':connectionid': layerConnectionId(layer),
+                    ':layerid': layer.id
+                }
+            }
         });
+
+        if (res.error) throw new Error(res.error.message);
 
         await fetchList();
     } catch (err) {
