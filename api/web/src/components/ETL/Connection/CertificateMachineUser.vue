@@ -96,7 +96,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, computed, onMounted } from 'vue';
-import type { ETLConnection, ETLLdapChannelList, ETLLdapChannel, ETLLdapUser } from '../../../types.ts';
+import type { ETLLdapChannelList, ETLLdapChannel, ETLLdapUser } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
 import {
     TablerNone,
@@ -109,8 +109,18 @@ import {
     IconTrash
 } from '@tabler/icons-vue';
 
+interface MachineUserConnection {
+    agency: number | null;
+    certificate?: {
+        subject: string;
+    };
+    name: string;
+    description: string;
+    readonly: boolean;
+}
+
 const props = defineProps<{
-    connection: ETLConnection
+    connection: MachineUserConnection
 }>();
 
 const emit = defineEmits([ 'certs', 'integration' ]);
