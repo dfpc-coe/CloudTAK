@@ -63,6 +63,8 @@ export default class Atlas {
     }
 
     async init(authToken: string) {
+        console.error('WORKER');
+        
         // Only skip if we know initialization has successfully completed before
         if (this.initialized) return;
 
@@ -109,3 +111,4 @@ const atlas = new Atlas()
 new CloudTAKTransferHandler(Comlink.transferHandlers, false);
 
 Comlink.expose(Comlink.proxy(atlas));
+self.postMessage({ type: WorkerMessageType.Atlas_Ready } satisfies WorkerMessage);
