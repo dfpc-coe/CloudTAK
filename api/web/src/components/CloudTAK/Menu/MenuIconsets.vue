@@ -206,7 +206,6 @@ import {
 } from '@tabler/icons-vue';
 import type { DBIconset } from '../../../database.ts';
 import type { Iconset } from '../../../types.ts';
-const { value: token } = await Preferences.get({ key: 'token' });
 
 interface ImportUploadResponse {
     imports: {
@@ -265,6 +264,7 @@ function processUpload(body: unknown): void {
 }
 
 async function download(iconset: Iconset): Promise<void> {
+    const { value: token } = await Preferences.get({ key: 'token' });
     await std(`/api/iconset/${iconset.uid}?format=zip&download=true${token ? `&token=${encodeURIComponent(token)}` : ''}`, {
         download: true
     });

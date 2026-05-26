@@ -535,7 +535,13 @@ export default class COT {
         }
 
         if (type.includes('Point')) {
-            if (properties.icon && properties.icon.startsWith('COT_MAPPING_2525C')) {
+            if (
+                properties.icon
+                && (
+                    properties.icon.startsWith('COT_MAPPING_2525C')
+                    || properties.icon.startsWith('COT_MAPPING_2525B')
+                )
+            ) {
                 delete properties.icon;
             }
 
