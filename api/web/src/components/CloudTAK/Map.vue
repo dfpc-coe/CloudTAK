@@ -428,7 +428,6 @@ import DrawTools from './DrawTools.vue';
 import GenericBottomPane from './GenericBottomPane.vue';
 import type { MapGeoJSONFeature, LngLatLike, MapMouseEvent } from 'maplibre-gl';
 import type { Feature } from '../../types.ts';
-import { Preferences } from '@capacitor/preferences';
 import {
     IconCircleArrowUp,
     IconAlertTriangle,
