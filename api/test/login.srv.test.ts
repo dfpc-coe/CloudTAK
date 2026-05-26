@@ -26,8 +26,7 @@ test('POST: api/login', async () => {
             message: 'Server has not been configured',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -54,8 +53,7 @@ test('POST: api/login', async () => {
             access: 'admin',
             email: 'admin@example.com',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

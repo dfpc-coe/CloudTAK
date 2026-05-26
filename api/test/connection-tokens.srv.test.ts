@@ -26,8 +26,7 @@ test('GET: api/connection/1/token', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -64,8 +63,7 @@ test('POST: api/connection/1/token', async () => {
             created: time,
             updated: time,
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -108,8 +106,7 @@ test('GET: api/connection/1 - Use Token', async () => {
             description: 'Connection created by Flight Test Runner',
             enabled: true,
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -130,8 +127,7 @@ test('PATCH: api/connection/1/token/1', async () => {
             status: 200,
             message: 'Connection Token Updated',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -149,8 +145,7 @@ test('DELETE: api/connection/1/token/1', async () => {
             status: 200,
             message: 'Connection Token Deleted',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -169,8 +164,7 @@ test('GET: api/connection/1 - Use Token, Access Revoked', async () => {
             message: 'Token does not exist',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

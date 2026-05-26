@@ -57,8 +57,7 @@ test('POST: api/basemap - Sharing Turned On Initially', async () => {
             snapping_enabled: false,
             snapping_layer: null,
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -74,8 +73,7 @@ test('GET: api/basemap/1/tiles - Ensure Access Without Token Doesn\'t', async ()
             message: 'No Auth Present',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -107,8 +105,7 @@ test('GET: api/basemap/1/tiles - Ensure Token Works', async () => {
             tiles: ['http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}'],
             actions: { feature: [] },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -154,8 +151,7 @@ test('PATCH: api/basemap/1 - Turn off Sharing', async () => {
             snapping_enabled: false,
             snapping_layer: null,
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -174,8 +170,7 @@ test('GET: api/basemap/1/tiles - Ensure Token Is Now Disabled', async () => {
             message: 'Sharing for Test Basemap is disabled',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -223,8 +218,7 @@ test('PATCH: api/basemap/1 - Turn on Sharing', async () => {
             snapping_enabled: false,
             snapping_layer: null,
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -243,8 +237,7 @@ test('GET: api/basemap/1/tiles - Ensure Old Token is unusable', async () => {
             message: 'You don\'t have permission to access this resource',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

@@ -58,8 +58,7 @@ export default class DataModel extends Modeler<typeof Data> {
 
         if (pgres.length === 0) {
             return { total: 0, items: [] };
-        }
-        else {
+        } else {
             return {
                 total: parseInt(pgres[0].count),
                 items: pgres.map((t) => {

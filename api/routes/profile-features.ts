@@ -78,8 +78,7 @@ export default async function router(schema: Schema, config: Config) {
                         } as Static<typeof FeatureResponse>;
                     }),
                 });
-            }
-            else {
+            } else {
                 const filename = `${user.email}-export-${new Date().toISOString()}`;
 
                 res.setHeader('Content-Disposition', `attachment; filename="${filename}.${req.query.format}"`);
@@ -104,8 +103,7 @@ export default async function router(schema: Schema, config: Config) {
                     res.set('Content-Length', String(Buffer.byteLength(output)));
                     res.write(output);
                     res.end();
-                }
-                else if (req.query.format === ExportFeatureFormat.KML) {
+                } else if (req.query.format === ExportFeatureFormat.KML) {
                     res.set('Content-Type', 'application/vnd.google-earth.kml+xml');
 
                     const output = Buffer.from(tokml(feats, {
@@ -119,13 +117,11 @@ export default async function router(schema: Schema, config: Config) {
                     res.set('Content-Length', String(Buffer.byteLength(output)));
                     res.write(output);
                     res.end();
-                }
-                else {
+                } else {
                     throw new Err(400, null, `Unknown Export Format: ${req.query.format}`);
                 }
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -152,14 +148,12 @@ export default async function router(schema: Schema, config: Config) {
                         starts_with(path, ${req.query.path})
                         AND username = ${user.email}
                     `);
-                }
-                else {
+                } else {
                     await config.models.ProfileFeature.delete(sql`
                         username = ${user.email}
                     `);
                 }
-            }
-            else {
+            } else {
                 if (req.query.path) {
                     try {
                         await config.models.ProfileFeature.commit(sql`
@@ -168,23 +162,20 @@ export default async function router(schema: Schema, config: Config) {
                         `, {
                             deleted: true,
                         });
-                    }
-                    catch (err) {
+                    } catch (err) {
                         // Ignore features not found
                         if (!(err instanceof Error) || !('status' in err) || ('status' in err && err.status !== 404)) {
                             throw err;
                         }
                     }
-                }
-                else {
+                } else {
                     try {
                         await config.models.ProfileFeature.commit(sql`
                             username = ${user.email}
                         `, {
                             deleted: true,
                         });
-                    }
-                    catch (err) {
+                    } catch (err) {
                         if (!(err instanceof Error) || !('status' in err) || ('status' in err && err.status !== 404)) {
                             throw err;
                         }
@@ -196,8 +187,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Features Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -256,8 +246,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(feat);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -286,8 +275,7 @@ export default async function router(schema: Schema, config: Config) {
                 await config.models.ProfileFeature.delete(sql`
                     id = ${req.params.id} AND username = ${user.email}
                 `);
-            }
-            else {
+            } else {
                 await config.models.ProfileFeature.commit(sql`
                     id = ${req.params.id} AND username = ${user.email}
                 `, {
@@ -299,8 +287,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Feature Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -330,8 +317,7 @@ export default async function router(schema: Schema, config: Config) {
                 type: 'Feature',
                 ...feat,
             } as Static<typeof FeatureResponse>);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

@@ -70,8 +70,7 @@ test('PUT api/config proxy whitelist', async () => {
             'proxy::enabled': true,
             'proxy::whitelist': [upstreamOrigin],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -117,8 +116,7 @@ test('POST api/proxy rejects when disabled', async () => {
         }, false);
 
         assert.equal(enable.status, 200);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -143,8 +141,7 @@ test('POST api/proxy GET allowed origin', async () => {
             ok: true,
             via: 'proxy',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -176,8 +173,7 @@ test('POST api/proxy forwards explicit headers only', async () => {
             cookie: null,
             body: '{"ok":true}',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -197,8 +193,7 @@ test('POST api/proxy rejects disallowed origin', async () => {
 
         assert.equal(res.status, 403);
         assert.equal(res.body.message, 'Proxy origin https://example.com is not allowed');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -221,8 +216,7 @@ test('POST api/proxy rejects forbidden request headers', async () => {
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Header cookie is not allowed');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -245,8 +239,7 @@ test('POST api/proxy rejects spoofed forwarded headers', async () => {
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Header x-forwarded-for is not allowed');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -292,8 +285,7 @@ test('POST api/proxy rejects invalid whitelist entries', async () => {
         }, false);
 
         assert.equal(reset.status, 200);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -313,8 +305,7 @@ test('POST api/proxy rejects oversized response bodies', async () => {
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Proxy response body exceeds the 1MB limit');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

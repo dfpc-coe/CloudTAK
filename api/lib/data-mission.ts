@@ -44,8 +44,7 @@ export default class DataMission {
                 });
                 return;
             }
-        }
-        catch (err) {
+        } catch (err) {
             console.error(err);
             if (!data.mission_sync) {
                 return;
@@ -102,8 +101,7 @@ export default class DataMission {
                     },
                     { token: data.mission_token || undefined },
                 );
-            }
-            else {
+            } else {
                 if (exists.type !== MissionLayerType.UID) {
                     await api.MissionLayer.delete(
                         data.name,

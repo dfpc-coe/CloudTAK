@@ -49,8 +49,7 @@ test('GET: api/profile', async () => {
             system_admin: true,
             agency_admin: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -99,8 +98,7 @@ test('PATCH: api/profile', async () => {
             system_admin: true,
             agency_admin: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -127,8 +125,7 @@ test('PUT: api/config - Change Defaults', async () => {
         }, true);
 
         assert.ok(res.body['display::stale']);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -176,8 +173,7 @@ test('GET: api/profile - New User / New Defaults', async () => {
             system_admin: false,
             agency_admin: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

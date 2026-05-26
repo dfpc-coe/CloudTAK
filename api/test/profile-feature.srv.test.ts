@@ -24,8 +24,7 @@ test('GET: api/profile/feature', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -81,8 +80,7 @@ test('PUT: api/profile/feature', async () => {
                 coordinates: [123.3223, 123.0002, 123],
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -118,8 +116,7 @@ test('GET: api/profile/feature', async () => {
                 },
             }],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -175,8 +172,7 @@ test('PUT: api/profile/feature - UPSERT', async () => {
                 coordinates: [123.3223, 123.0002, 123],
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -212,8 +208,7 @@ test('GET: api/profile/feature', async () => {
                 },
             }],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -246,8 +241,7 @@ test('GET: api/profile/feature/123', async () => {
                 coordinates: [123.3223, 123.0002, 123],
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -265,8 +259,7 @@ test('DELETE: api/profile/feature/123', async () => {
             status: 200,
             message: 'Feature Deleted',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -309,8 +302,7 @@ test('PUT: api/profile/feature - Enabled Geofence', async () => {
         `);
 
         assert.equal(feature.enabled_geofence, true);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

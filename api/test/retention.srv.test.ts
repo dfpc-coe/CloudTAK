@@ -40,8 +40,7 @@ test('PUT api/connection/1/feature - stale feature', async () => {
         }, true);
 
         assert.equal(res.body.id, 'stale-feature');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -74,8 +73,7 @@ test('PUT api/connection/1/feature - fresh feature', async () => {
         }, true);
 
         assert.equal(res.body.id, 'fresh-feature');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -97,8 +95,7 @@ test('POST api/retention - connection feature action', async () => {
         assert.equal(res.body.deleted, 1);
         assert.equal(typeof res.body.duration, 'number');
         assert.ok(res.body.duration >= 0);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -133,8 +130,7 @@ test('GET api/connection/1/feature - only fresh remains', async () => {
                 },
             }],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

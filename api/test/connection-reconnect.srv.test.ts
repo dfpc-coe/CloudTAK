@@ -80,8 +80,7 @@ test('Connection - reports dead before any ping reply is received', async () => 
             'dead',
             'Connection should report dead before a t-x-c-t-r ping reply is received',
         );
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -91,8 +90,7 @@ test('Connection - becomes live after TAK server sends a ping reply', async () =
         flight.tak.streamingWrite(pingReplyXml());
 
         await waitForConnectionStatus('live', 3000);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -102,8 +100,7 @@ test('Connection - drops to dead when the TAK streaming connection is reset (sim
         flight.tak.restartStreaming();
 
         await waitForConnectionStatus('dead', 3000);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -117,8 +114,7 @@ test('Connection - reconnects and becomes live after TAK server comes back', asy
         flight.tak.streamingWrite(pingReplyXml());
 
         await waitForConnectionStatus('live', 3000);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

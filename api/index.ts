@@ -57,12 +57,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         fs.accessSync(dotfile);
 
         process.env = Object.assign(JSON.parse(String(fs.readFileSync(dotfile))), process.env);
-    }
-    catch (err) {
+    } catch (err) {
         if (err instanceof Error && err.message.startsWith('ENOENT')) {
             console.log('ok - no .env file loaded - none found');
-        }
-        else {
+        } else {
             console.log('ok - no .env file loaded', err);
         }
     }
@@ -191,8 +189,7 @@ export default async function server(config: Config): Promise<ServerManager> {
                 const parse = path.parse(context.parsedUrl.path);
                 if (parse.ext) {
                     return context.parsedUrl.pathname;
-                }
-                else {
+                } else {
                     return '/';
                 }
             },
@@ -233,8 +230,7 @@ export default async function server(config: Config): Promise<ServerManager> {
                 webClients.push(new ConnectionWebSocket(ws, parsedParams.format));
                 config.wsClients.set(parsedParams.connection, webClients);
                 ws.send(JSON.stringify({ type: 'connected' }));
-            }
-            else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
+            } else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
                 let client: ConnectionClient | undefined;
                 let awaitSecure: Promise<void> | undefined;
                 if (!config.conns.has(parsedParams.connection)) {
@@ -245,8 +241,7 @@ export default async function server(config: Config): Promise<ServerManager> {
                     if (client.tak.client && !client.tak.client.authorized) {
                         awaitSecure = new Promise<void>(resolve => (client as ConnectionClient).tak.once('secureConnect', resolve));
                     }
-                }
-                else {
+                } else {
                     client = config.conns.get(parsedParams.connection) as ConnectionClient;
                 }
 
@@ -275,12 +270,10 @@ export default async function server(config: Config): Promise<ServerManager> {
 
                 if (awaitSecure) await awaitSecure;
                 ws.send(JSON.stringify({ type: 'connected' }));
-            }
-            else {
+            } else {
                 throw new Error('Unauthorized');
             }
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Error && !err.message.includes('jwt expired')) {
                 console.error('Error: WebSocket: ', err);
             }
@@ -301,8 +294,7 @@ export default async function server(config: Config): Promise<ServerManager> {
             if (!config.silent) {
                 if (process.env.CLOUDTAK_Mode === 'docker-compose') {
                     console.log('ok - http://localhost:5000');
-                }
-                else {
+                } else {
                     console.log('ok - http://localhost:5001');
                 }
             }

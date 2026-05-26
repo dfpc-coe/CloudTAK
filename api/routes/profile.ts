@@ -64,8 +64,7 @@ export default async function router(schema: Schema, config: Config) {
             const profile = await profileControl.from(user.email);
 
             res.json(profile);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -95,8 +94,7 @@ export default async function router(schema: Schema, config: Config) {
             const profile = await profileControl.from(user.email);
 
             res.json(profile);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

@@ -22,8 +22,7 @@ test('GET: api/login/passkey - empty before registration', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -43,8 +42,7 @@ test('POST: api/login/passkey/register/options - get registration options', asyn
         assert.ok(res.body.user);
         assert.equal(res.body.user.name, 'admin@example.com');
         assert.ok(Array.isArray(res.body.pubKeyCredParams));
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -58,8 +56,7 @@ test('POST: api/login/passkey/authenticate/options - get auth options (no userna
 
         assert.ok(res.body.challenge);
         assert.equal(res.body.rpId, 'localhost');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -96,8 +93,7 @@ test('POST: api/login/passkey/register - rejects invalid credential', async () =
 
         assert.ok(!res.ok);
         assert.equal(res.status, 400);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -129,8 +125,7 @@ test('POST: api/login/passkey/authenticate - rejects unknown credential', async 
 
         assert.ok(!res.ok);
         assert.equal(res.status, 401);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

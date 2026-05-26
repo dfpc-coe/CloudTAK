@@ -24,8 +24,7 @@ test('GET: /api/iconset', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -52,8 +51,7 @@ test('POST: /api/iconset', async () => {
         assert.equal(res.body.uid, 'test-iconset');
         assert.equal(res.body.version, 1);
         assert.equal(res.body.name, 'Test Iconset');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -73,8 +71,7 @@ test('POST: /api/iconset/:iconset/icon - PNG with folder', async () => {
 
         assert.equal(res.body.name, 'google/camera');
         assert.equal(res.body.path, 'test-iconset/google/camera');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -94,8 +91,7 @@ test('POST: /api/iconset/:iconset/icon - PNG without folder', async () => {
 
         assert.equal(res.body.name, 'car');
         assert.equal(res.body.path, 'test-iconset/car');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -115,8 +111,7 @@ test('POST: /api/iconset/:iconset/icon - SVG with folder', async () => {
 
         assert.equal(res.body.name, 'google/marker');
         assert.equal(res.body.path, 'test-iconset/google/marker');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -139,8 +134,7 @@ test('POST: /api/iconset/:iconset/icon - SVG without folder', async () => {
 
         // Allow time for background sprite generation to complete before test teardown
         await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -172,8 +166,7 @@ test('GET: /api/icon', async () => {
         const truckSvg = res.body.items.find((i: any) => i.name === 'truck' && i.format === '.svg');
         assert.ok(truckSvg);
         assert.equal(truckSvg.path, 'test-iconset/truck');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -201,8 +194,7 @@ test('GET: /api/iconset/:iconset/icon/:icon', async () => {
             assert.equal(res.body.path, icon.path);
             assert.equal(res.body.iconset, 'test-iconset');
         }
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -250,8 +242,7 @@ test('GET: /api/iconset/:iconset?format=zip', async () => {
   <icon name="google/marker.png"/>
   <icon name="truck.png"/>
 </iconset>`);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -312,8 +303,7 @@ test('GET: /api/iconset/:iconset/sprite.json and sprite.png', async () => {
         assert.equal(metadata.format, 'png');
         assert.equal(metadata.width, expectedWidth);
         assert.equal(metadata.height, expectedHeight);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -361,8 +351,7 @@ test('GET: /api/iconset/:iconset/icon/:name', async () => {
             assert.equal(res.body.id, icon.id);
             assert.equal(res.body.name, icon.name);
         }
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -400,8 +389,7 @@ test('POST: /api/iconset/:iconset/icon - PNG with dots in filename', async () =>
         }, true);
 
         assert.ok(sprite.body['INF.01.FireStation'], 'Sprite JSON should contain the key with dots');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

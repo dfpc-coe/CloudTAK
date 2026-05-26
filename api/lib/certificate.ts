@@ -52,8 +52,7 @@ export async function generateClientP12(
                     output.push(x509.toString());
 
                     await appendFile(certPath, '\n' + x509.toString() + '\n');
-                }
-                catch (err) {
+                } catch (err) {
                     console.error('Invalid CA certificate provided, skipping:', err);
                 }
             }
@@ -66,8 +65,7 @@ export async function generateClientP12(
 
         if (password) {
             args.push('-password', `pass:${password}`);
-        }
-        else {
+        } else {
             args.push('-password', 'pass:');
         }
 
@@ -78,13 +76,11 @@ export async function generateClientP12(
         }
 
         return Buffer.from(await readFile(p12Path));
-    }
-    finally {
+    } finally {
         for (const path of paths) {
             try {
                 await unlink(path);
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
             }
         }
@@ -121,8 +117,7 @@ export async function generateTrustP12(
         try {
             const x509 = new X509Certificate(Buffer.from(cert, 'base64'));
             output.push(x509.toString());
-        }
-        catch (err) {
+        } catch (err) {
             console.error('Invalid CA certificate provided, skipping:', err);
         }
     }
@@ -144,8 +139,7 @@ export async function generateTrustP12(
 
         if (password) {
             args.push('-passout', `pass:${password}`);
-        }
-        else {
+        } else {
             args.push('-passout', 'pass:');
         }
 
@@ -156,13 +150,11 @@ export async function generateTrustP12(
         }
 
         return Buffer.from(await readFile(p12Path));
-    }
-    finally {
+    } finally {
         for (const path of paths) {
             try {
                 await unlink(path);
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
             }
         }

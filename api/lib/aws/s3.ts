@@ -43,8 +43,7 @@ export default class S3 {
             }));
 
             return head;
-        }
-        catch (err) {
+        } catch (err) {
             console.error(`s3://${process.env.ASSET_BUCKET}/${key} - HEAD ERROR:`, err);
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to head file');
         }
@@ -64,8 +63,7 @@ export default class S3 {
             });
 
             await upload.done();
-        }
-        catch (err) {
+        } catch (err) {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to upload file');
         }
     }
@@ -81,8 +79,7 @@ export default class S3 {
 
             const read = res.Body as Readable;
             return read;
-        }
-        catch (err) {
+        } catch (err) {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to get file');
         }
     }
@@ -96,8 +93,7 @@ export default class S3 {
                 Key: key,
             }));
             return true;
-        }
-        catch (err) {
+        } catch (err) {
             if (String(err).startsWith('NotFound')) return false;
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to determine existance');
         }
@@ -118,8 +114,7 @@ export default class S3 {
             }));
 
             return list.Contents || [];
-        }
-        catch (err) {
+        } catch (err) {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list files');
         }
     }
@@ -142,8 +137,7 @@ export default class S3 {
                     Bucket: process.env.ASSET_BUCKET,
                     Key: key,
                 }));
-            }
-            else {
+            } else {
                 const list = await this.list(key);
 
                 if (!list.length) return;
@@ -159,8 +153,7 @@ export default class S3 {
                     },
                 }));
             }
-        }
-        catch (err) {
+        } catch (err) {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to delete files');
         }
     }

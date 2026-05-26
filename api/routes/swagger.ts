@@ -11,8 +11,7 @@ export default async function router(schema: Schema) {
     }, async (req, res) => {
         try {
             res.json(schema.docs.base);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

@@ -16,8 +16,7 @@ test('GET: api/connection/1/channel', async () => {
         flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            }
-            else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
+            } else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     version: 3,
@@ -35,8 +34,7 @@ test('GET: api/connection/1/channel', async () => {
                 response.end();
 
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         });
@@ -61,8 +59,7 @@ test('GET: api/connection/1/channel', async () => {
                 description: 'Description',
             }],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -74,16 +71,14 @@ test('GET: api/connection/1/channel - Failure', async () => {
         flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            }
-            else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
+            } else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
                 response.setHeader('Content-Type', 'application/json');
                 response.statusCode = 500; // Simulate server error
                 response.write('Internal Server Error');
                 response.end();
 
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         });
@@ -96,8 +91,7 @@ test('GET: api/connection/1/channel - Failure', async () => {
         }, false);
 
         assert.deepEqual(res.status, 500);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 

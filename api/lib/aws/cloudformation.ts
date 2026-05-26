@@ -74,8 +74,7 @@ export default class CloudFormation {
             await cwl.send(new AWSCWL.DeleteLogGroupCommand({
                 logGroupName: `/aws/lambda/${config.StackName}-layer-${layerid}`,
             }));
-        }
-        catch (err) {
+        } catch (err) {
             console.error(err);
             // Resource not found
         }
@@ -128,12 +127,10 @@ export default class CloudFormation {
             return {
                 status: String(res.Stacks[0].StackStatus),
             };
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Error && err.message.match(/Stack with id .* does not exist/)) {
                 return { status: 'DOES_NOT_EXIST_COMPLETE' };
-            }
-            else {
+            } else {
                 throw err;
             }
         }
@@ -148,12 +145,10 @@ export default class CloudFormation {
             }));
 
             return true;
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Error && err.message.match(/Stack with id .* does not exist/)) {
                 return false;
-            }
-            else {
+            } else {
                 throw err;
             }
         }

@@ -47,8 +47,7 @@ test('GET: api/connection/1/layer', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -61,8 +60,7 @@ test('POST: api/connection/1/layer', async () => {
                     StackName: 'test',
                 });
                 return Promise.resolve({});
-            }
-            else {
+            } else {
                 throw new Error('Unexpected command');
             }
         });
@@ -74,8 +72,7 @@ test('POST: api/connection/1/layer', async () => {
                 });
 
                 return Promise.resolve({});
-            }
-            else {
+            } else {
                 throw new Error('Unexpected command');
             }
         });
@@ -96,8 +93,7 @@ test('POST: api/connection/1/layer', async () => {
                         imageManifest: '{}',
                     }],
                 });
-            }
-            else {
+            } else {
                 throw new Error('Unexpected command');
             }
         });
@@ -150,8 +146,7 @@ test('POST: api/connection/1/layer', async () => {
                 enabled: true,
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -203,8 +198,7 @@ test('GET: api/connection/1/layer/1', async () => {
                 enabled: true,
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -259,8 +253,7 @@ test('PATCH: api/connection/1/layer/1 - set protected', async () => {
                 enabled: true,
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -276,8 +269,7 @@ test('DELETE: api/connection/1/layer/1 - protected layer should fail', async () 
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Layer is protected and cannot be deleted');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -330,8 +322,7 @@ test('PATCH: api/connection/1/layer/1 - unset protected', async () => {
                 enabled: true,
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -420,11 +411,9 @@ test('GET: api/layer/update-management', async () => {
                 parent_name: 'Test Connection',
             }],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
-    }
-    finally {
+    } finally {
         if (stacklessLayerId !== undefined) {
             await flight.config!.models.Layer.delete(stacklessLayerId);
         }
@@ -453,14 +442,12 @@ test('PATCH: api/connection/1/layer/1 - update task version', async () => {
                     }
 
                     throw new Error('Stack with id test-layer-1 does not exist');
-                }
-                else if (command.input.StackName === 'test') {
+                } else if (command.input.StackName === 'test') {
                     return Promise.resolve({
                         Stacks: [{ Tags: [] }],
                     });
                 }
-            }
-            else if (command instanceof CreateStackCommand) {
+            } else if (command instanceof CreateStackCommand) {
                 return Promise.resolve({});
             }
 
@@ -499,11 +486,9 @@ test('PATCH: api/connection/1/layer/1 - update task version', async () => {
         }, true);
 
         assert.equal(updated.body.task, 'etl-test-v1.1.0');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
-    }
-    finally {
+    } finally {
         Sinon.restore();
     }
 });
@@ -519,8 +504,7 @@ test('DELETE: api/connection/1/layer/1', async () => {
                         CreationTime: new Date(),
                     }],
                 });
-            }
-            else {
+            } else {
                 return Promise.resolve({});
             }
         });
@@ -536,8 +520,7 @@ test('DELETE: api/connection/1/layer/1', async () => {
             status: 200,
             message: 'Layer Deleted',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 

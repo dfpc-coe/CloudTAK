@@ -34,8 +34,7 @@ test('GET: api/task - empty', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -78,8 +77,7 @@ test('GET: api/task - empty', async () => {
                 another: ['10.1.0', '1.1.0'],
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 

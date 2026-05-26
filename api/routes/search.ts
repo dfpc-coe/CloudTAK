@@ -61,8 +61,7 @@ export default async function router(schema: Schema, config: Config) {
             const searchConfig = await searchManager.config();
 
             return res.json(searchConfig);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -121,8 +120,7 @@ export default async function router(schema: Schema, config: Config) {
                 (async () => {
                     try {
                         response.weather = await config.weather.get(req.params.longitude, req.params.latitude);
-                    }
-                    catch (err) {
+                    } catch (err) {
                         console.error('Weather Fetch Error', err);
                     }
                 })(),
@@ -134,8 +132,7 @@ export default async function router(schema: Schema, config: Config) {
                                 req.params.longitude,
                                 req.params.latitude,
                             );
-                        }
-                        catch (err) {
+                        } catch (err) {
                             console.error('ESRI Fetch Error', err);
                         }
                     }
@@ -157,8 +154,7 @@ export default async function router(schema: Schema, config: Config) {
             };
 
             res.json(finalResponse);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -208,23 +204,20 @@ export default async function router(schema: Schema, config: Config) {
 
                 if (route.features.length === 1) {
                     route.features[0].properties.callsign = req.query.callsign;
-                }
-                else {
+                } else {
                     for (let i = 0; i < route.features.length; i++) {
                         route.features[i].properties.callsign = `${req.query.callsign} #${i + 1}`;
                     }
                 }
 
                 res.json(route);
-            }
-            else {
+            } else {
                 res.json({
                     type: 'FeatureCollection',
                     features: [],
                 });
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -258,16 +251,14 @@ export default async function router(schema: Schema, config: Config) {
                         req.query.magicKey,
                         req.query.limit,
                     );
-                }
-                catch (err) {
+                } catch (err) {
                     console.error('Forward Geocoding Error:', err);
                     response.items = [];
                 }
             }
 
             res.json(response);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -306,8 +297,7 @@ export default async function router(schema: Schema, config: Config) {
                         req.query.limit,
                         location,
                     );
-                }
-                catch (err) {
+                } catch (err) {
                     console.error('ESRI Suggest Error', err);
                 }
             }
@@ -317,8 +307,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(response);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

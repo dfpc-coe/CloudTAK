@@ -31,8 +31,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
-            }
-            else if (!layer.incoming) {
+            } else if (!layer.incoming) {
                 throw new Err(400, null, 'Layer does not have incoming config');
             }
 
@@ -42,8 +41,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(incoming.ephemeral);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -73,8 +71,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
-            }
-            else if (!layer.outgoing) {
+            } else if (!layer.outgoing) {
                 throw new Err(400, null, 'Layer does not have outgoing config');
             }
 
@@ -84,8 +81,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(outgoing.ephemeral);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

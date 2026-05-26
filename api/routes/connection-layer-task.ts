@@ -35,8 +35,7 @@ export default async function router(schema: Schema, config: Config) {
                 await Auth.is_auth(config, req);
 
                 layer = await layerControl.from(null, req.params.layerid);
-            }
-            else {
+            } else {
                 const { connection } = await Auth.is_connection(config, req, {
                     resources: [],
                 }, req.params.connectionid);
@@ -45,8 +44,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(await CF.status(config, layer.id));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -70,8 +68,7 @@ export default async function router(schema: Schema, config: Config) {
                 await Auth.is_auth(config, req);
 
                 layer = await layerControl.from(null, req.params.layerid);
-            }
-            else {
+            } else {
                 const { connection } = await Auth.is_connection(config, req, {
                     resources: [],
                 }, req.params.connectionid);
@@ -85,8 +82,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Stack Update Cancelled',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -110,8 +106,7 @@ export default async function router(schema: Schema, config: Config) {
                 await Auth.is_auth(config, req);
 
                 layer = await layerControl.from(null, req.params.layerid);
-            }
-            else {
+            } else {
                 const { connection } = await Auth.is_connection(config, req, {
                     resources: [],
                 }, req.params.connectionid);
@@ -125,8 +120,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Manually Invoked Lambda',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -152,8 +146,7 @@ export default async function router(schema: Schema, config: Config) {
                 await Auth.is_auth(config, req);
 
                 layer = await layerControl.from(null, req.params.layerid);
-            }
-            else {
+            } else {
                 const { connection } = await Auth.is_connection(config, req, {
                     resources: [],
                 }, req.params.connectionid);
@@ -162,8 +155,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(await Logs.list(config, layer));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -187,8 +179,7 @@ export default async function router(schema: Schema, config: Config) {
                 await Auth.is_auth(config, req);
 
                 layer = await layerControl.from(null, req.params.layerid);
-            }
-            else {
+            } else {
                 const { connection } = await Auth.is_connection(config, req, {
                     resources: [],
                 }, req.params.connectionid);
@@ -199,8 +190,7 @@ export default async function router(schema: Schema, config: Config) {
             const capabilities = await Lambda.capabilities(config, layer.id);
 
             res.json(capabilities);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -226,8 +216,7 @@ export default async function router(schema: Schema, config: Config) {
                 await Auth.is_auth(config, req);
 
                 layer = await layerControl.from(null, req.params.layerid);
-            }
-            else {
+            } else {
                 const { connection } = await Auth.is_connection(config, req, {
                     resources: [],
                 }, req.params.connectionid);
@@ -237,8 +226,7 @@ export default async function router(schema: Schema, config: Config) {
 
             try {
                 await Logs.delete(config, layer);
-            }
-            catch (err) {
+            } catch (err) {
                 console.log('no existing log groups', err);
             }
 
@@ -246,8 +234,7 @@ export default async function router(schema: Schema, config: Config) {
             await LayerDeploy.apply(config, layer.id, lambda);
 
             res.json(await CF.status(config, layer.id));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

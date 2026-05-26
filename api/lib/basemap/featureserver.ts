@@ -141,8 +141,7 @@ export default class FeatureServerBasemap extends BasemapProtocol {
 
         if (fc.features.length === 0) {
             throw new Err(404, null, `Could not find feature with ID: ${id}`);
-        }
-        else if (fc.features.length > 1) {
+        } else if (fc.features.length > 1) {
             throw new Err(404, null, `Server returned multiple features with ID: ${id}`);
         }
 
@@ -202,12 +201,10 @@ export default class FeatureServerBasemap extends BasemapProtocol {
 
             res.write(tile);
             res.end();
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Err) {
                 throw err;
-            }
-            else {
+            } else {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch ESRI tile');
             }
         }

@@ -43,14 +43,12 @@ export default async function router(schema: Schema, config: Config) {
             let where;
             if (profile.system_admin) {
                 where = sql`name ~* ${req.query.filter}`;
-            }
-            else if (profile.agency_admin.length) {
+            } else if (profile.agency_admin.length) {
                 where = and(
                     sql`name ~* ${req.query.filter}`,
                     inArray(Connection.agency, profile.agency_admin),
                 );
-            }
-            else {
+            } else {
                 throw new Err(400, null, 'Insufficient Access');
             }
 
@@ -83,8 +81,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(json);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -110,8 +107,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!req.body.agency && user.access !== 'admin') {
                 throw new Err(400, null, 'Only System Admins can create a server without an Agency Configured');
-            }
-            else if (req.body.agency && user.access !== 'admin') {
+            } else if (req.body.agency && user.access !== 'admin') {
                 if (!profile.agency_admin || !profile.agency_admin.includes(req.body.agency)) {
                     throw new Err(400, null, 'Cannot create a connection for an Agency you are not an admin of');
                 }
@@ -127,15 +123,13 @@ export default async function router(schema: Schema, config: Config) {
 
             try {
                 new X509Certificate(req.body.auth.cert);
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid X509 Certificate Provided');
             }
 
             try {
                 createPrivateKey(req.body.auth.key);
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid Private Key Provided');
             }
 
@@ -163,8 +157,7 @@ export default async function router(schema: Schema, config: Config) {
                 certificate: { validFrom, validTo, subject },
                 ...conn,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -193,8 +186,7 @@ export default async function router(schema: Schema, config: Config) {
                         await config.conns.delete(conn.id);
                     }
                     await config.conns.add(new MachineConnConfig(config, conn));
-                }
-                catch (err) {
+                } catch (err) {
                     console.error(err);
                 }
             }
@@ -203,8 +195,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Connections Refreshed',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -238,15 +229,13 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.auth) {
                 try {
                     new X509Certificate(req.body.auth.cert);
-                }
-                catch (err) {
+                } catch (err) {
                     throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid X509 Certificate Provided');
                 }
 
                 try {
                     createPrivateKey(req.body.auth.key);
-                }
-                catch (err) {
+                } catch (err) {
                     throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid Private Key Provided');
                 }
             }
@@ -262,12 +251,10 @@ export default async function router(schema: Schema, config: Config) {
 
             if (conn.enabled && !config.conns.has(conn.id)) {
                 await config.conns.add(new MachineConnConfig(config, conn));
-            }
-            else if (conn.enabled && config.conns.has(conn.id)) {
+            } else if (conn.enabled && config.conns.has(conn.id)) {
                 await config.conns.delete(conn.id);
                 await config.conns.add(new MachineConnConfig(config, conn));
-            }
-            else if (!conn.enabled && config.conns.has(conn.id)) {
+            } else if (!conn.enabled && config.conns.has(conn.id)) {
                 await config.conns.delete(conn.id);
             }
 
@@ -278,8 +265,7 @@ export default async function router(schema: Schema, config: Config) {
                 certificate: { validFrom, validTo, subject },
                 ...conn,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -305,8 +291,7 @@ export default async function router(schema: Schema, config: Config) {
                 certificate: { validFrom, validTo, subject },
                 ...connection,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -358,8 +343,7 @@ export default async function router(schema: Schema, config: Config) {
                 res.setHeader('Content-Type', 'application/x-pkcs12');
                 res.write(buff);
                 res.end();
-            }
-            else if (req.query.type === 'truststore') {
+            } else if (req.query.type === 'truststore') {
                 const buff = await generateTrustP12(
                     connection.auth,
                     config.server.name + ' Truststore',
@@ -373,12 +357,10 @@ export default async function router(schema: Schema, config: Config) {
                 res.setHeader('Content-Type', 'application/x-pkcs12');
                 res.write(buff);
                 res.end();
-            }
-            else {
+            } else {
                 throw new Err(400, null, 'Invalid type parameter');
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -402,8 +384,7 @@ export default async function router(schema: Schema, config: Config) {
             if (config.conns.has(connection.id)) {
                 await config.conns.delete(connection.id);
                 await config.conns.add(new MachineConnConfig(config, connection));
-            }
-            else {
+            } else {
                 await config.conns.add(new MachineConnConfig(config, connection));
             }
 
@@ -414,8 +395,7 @@ export default async function router(schema: Schema, config: Config) {
                 certificate: { validFrom, validTo, subject },
                 ...connection,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -476,8 +456,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Connection Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

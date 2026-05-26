@@ -84,8 +84,7 @@ export default class LayerControl {
         // name-v<major>.<minor>.<patch>
         if (!input.task || !input.task.match(/^(.+)-v(\d+)\.(\d+)\.(\d+)$/)) {
             throw new Err(400, null, 'Layer Task must be in the format name-v<major>.<minor>.<patch>');
-        }
-        else if (!await ECR.exists(input.task)) {
+        } else if (!await ECR.exists(input.task)) {
             throw new Err(400, null, `Layer Task ${input.task} does not exist in AWS Container Registry`);
         }
 
@@ -108,8 +107,7 @@ export default class LayerControl {
         try {
             const stack = await Lambda.generate(this.config, layer);
             await CloudFormation.create(this.config, layer.id, stack);
-        }
-        catch (err) {
+        } catch (err) {
             console.error(err);
         }
 
@@ -117,8 +115,7 @@ export default class LayerControl {
         if (this.config.StackName !== 'test' && opts && opts.alarms === true) {
             try {
                 status = await this.alarm.get(layer.id);
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
             }
         }

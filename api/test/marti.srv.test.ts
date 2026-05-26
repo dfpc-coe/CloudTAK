@@ -44,8 +44,7 @@ test('GET: api/marti/clients - comma separated groups forwarded as repeated grou
 
         assert.equal(res.status, 200);
         assert.deepEqual(res.body.data, []);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -85,8 +84,7 @@ test('GET: api/marti/clients - single groups filter forwards a single group para
 
         assert.equal(res.status, 200);
         assert.deepEqual(res.body.data, []);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 

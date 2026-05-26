@@ -52,11 +52,9 @@ test('PROFILE: asset iconset integration', async () => {
 
         assert.ok(asset.body.created, 'asset has created');
         assert.ok(asset.body.updated, 'asset has updated');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
-    }
-    finally {
+    } finally {
         stub?.restore();
         Sinon.restore();
     }
@@ -119,8 +117,7 @@ test('PROFILE: iconset creation, icon upload, regen', async () => {
                 bearer: flight.token.admin,
             },
         }, true);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -134,8 +131,7 @@ test('PROFILE: assign iconset to asset', async () => {
                 return Promise.resolve({
                     Contents: [],
                 });
-            }
-            else if (command instanceof DeleteObjectsCommand) {
+            } else if (command instanceof DeleteObjectsCommand) {
                 return Promise.resolve({});
             }
 
@@ -171,11 +167,9 @@ test('PROFILE: assign iconset to asset', async () => {
                 bearer: flight.token.admin,
             },
         }, true);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
-    }
-    finally {
+    } finally {
         stub?.restore();
         Sinon.restore();
     }
@@ -208,8 +202,7 @@ test('PROFILE: verify cascade delete of icons', async () => {
             messages: [],
             status: 404,
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

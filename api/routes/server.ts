@@ -35,8 +35,7 @@ export default async function router(schema: Schema, config: Config) {
                     webtak: '',
                     auth: false,
                 });
-            }
-            else {
+            } else {
                 const user = await Auth.as_user(config, req);
 
                 let auth = false;
@@ -58,8 +57,7 @@ export default async function router(schema: Schema, config: Config) {
                     }
 
                     res.json(response);
-                }
-                else {
+                } else {
                     res.json({
                         id: config.server.id,
                         status: 'configured',
@@ -74,8 +72,7 @@ export default async function router(schema: Schema, config: Config) {
                     });
                 }
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -132,8 +129,7 @@ export default async function router(schema: Schema, config: Config) {
                     username: req.body.username,
                     system_admin: true,
                 });
-            }
-            else if (!config.server.auth.key && !config.server.auth.cert && (!req.body.username || !req.body.password)) {
+            } else if (!config.server.auth.key && !config.server.auth.cert && (!req.body.username || !req.body.password)) {
                 throw new Err(400, null, 'Initial configuration must include valid TAK Username & Password to set System Administrator');
             }
 
@@ -160,8 +156,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(response);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

@@ -85,8 +85,7 @@ export default async function router(schema: Schema, config: Config) {
                         } as Static<typeof FeatureResponse>;
                     }),
                 });
-            }
-            else {
+            } else {
                 const filename = `connection-${connection.id}-export-${new Date().toISOString()}`;
 
                 res.setHeader('Content-Disposition', `attachment; filename="${filename}.${req.query.format}"`);
@@ -111,8 +110,7 @@ export default async function router(schema: Schema, config: Config) {
                     res.set('Content-Length', String(Buffer.byteLength(output)));
                     res.write(output);
                     res.end();
-                }
-                else if (req.query.format === ExportFeatureFormat.KML) {
+                } else if (req.query.format === ExportFeatureFormat.KML) {
                     res.set('Content-Type', 'application/vnd.google-earth.kml+xml');
 
                     const output = Buffer.from(tokml(feats, {
@@ -126,13 +124,11 @@ export default async function router(schema: Schema, config: Config) {
                     res.set('Content-Length', String(Buffer.byteLength(output)));
                     res.write(output);
                     res.end();
-                }
-                else {
+                } else {
                     throw new Err(400, null, `Unknown Export Format: ${req.query.format}`);
                 }
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -162,8 +158,7 @@ export default async function router(schema: Schema, config: Config) {
                     starts_with(path, ${req.query.path})
                     AND connection = ${req.params.connectionid}
                 `);
-            }
-            else {
+            } else {
                 await config.models.ConnectionFeature.delete(sql`
                     connection = ${req.params.connectionid}
                 `);
@@ -173,8 +168,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Features Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -220,8 +214,7 @@ export default async function router(schema: Schema, config: Config) {
                 type: 'Feature',
                 ...feature,
             } as Static<typeof FeatureResponse>);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -255,8 +248,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Feature Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -290,8 +282,7 @@ export default async function router(schema: Schema, config: Config) {
                 type: 'Feature',
                 ...feat,
             } as Static<typeof FeatureResponse>);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

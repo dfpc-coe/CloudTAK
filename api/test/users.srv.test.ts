@@ -42,8 +42,7 @@ test('GET: api/user', async () => {
                 agency_admin: [],
             }],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -92,8 +91,7 @@ test('PATCH: api/user/admin@example.com', async () => {
             system_admin: true,
             agency_admin: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -139,8 +137,7 @@ test('GET: api/user/admin@example.com', async () => {
             system_admin: true,
             agency_admin: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

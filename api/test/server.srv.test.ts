@@ -27,8 +27,7 @@ test('GET: api/server - Configured - Admin', async () => {
         assert.ok(res.body.certificate.validTo);
         assert.ok(res.body.url);
         assert.ok(res.body.api);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -47,8 +46,7 @@ test('GET: api/server - Configured - Non-admin User', async () => {
         assert.equal(res.body.certificate, undefined);
         assert.ok(res.body.url);
         assert.ok(res.body.api);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -60,8 +58,7 @@ test('GET: api/server - Configured - No Auth', async () => {
         }, false);
 
         assert.equal(res.status, 401);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -86,8 +83,7 @@ test('PATCH: api/server - Configured - Non-admin User', async () => {
         }, false);
 
         assert.equal(res.status, 401);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -115,8 +111,7 @@ test('PATCH: api/server - Configured - Admin', async () => {
         assert.equal(res.body.name, 'Updated Server');
         assert.equal(res.body.auth, true);
         assert.ok(res.body.certificate);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -130,8 +125,7 @@ test('Reset Server to Unconfigured', async () => {
             webtak: '',
             auth: {},
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -158,8 +152,7 @@ test('GET: api/server - Unconfigured - Admin', async () => {
             webtak: '',
             auth: false,
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -186,8 +179,7 @@ test('GET: api/server - Unconfigured - User', async () => {
             webtak: '',
             auth: false,
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -211,8 +203,7 @@ test('GET: api/server - Unconfigured - No Auth', async () => {
             webtak: '',
             auth: false,
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -235,8 +226,7 @@ test('PATCH: api/server - Unconfigured without username/password', async () => {
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Initial configuration must include valid TAK Username & Password to set System Administrator');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

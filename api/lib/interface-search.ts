@@ -99,8 +99,7 @@ export class SearchManager extends Map<string, Search> {
 
                 manager.set(agol._id, agol);
             }
-        }
-        catch (err) {
+        } catch (err) {
             console.error('not ok - AGOL Search Provider failed to initialize', err);
         }
 

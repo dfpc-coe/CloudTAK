@@ -59,8 +59,7 @@ export default async function router(schema: Schema, config: Config) {
                         await deployLayer(layer);
 
                         await sleep(50); // Otherwise AWS will throw Throttling exceptions
-                    }
-                    catch (err) {
+                    } catch (err) {
                         console.error(err);
                     }
                 }
@@ -70,8 +69,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Layers Redeploying',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -91,8 +89,7 @@ export default async function router(schema: Schema, config: Config) {
                 total: items.length,
                 items,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -138,8 +135,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.params.connectionid === 'template') {
                 await Auth.is_auth(config, req, { resources });
-            }
-            else {
+            } else {
                 const { connection } = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
                 if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
             }
@@ -166,8 +162,7 @@ export default async function router(schema: Schema, config: Config) {
                     if (state === 'alarm') status.alarm++;
                     if (state === 'unknown') status.unknown++;
                 }
-            }
-            catch (err) {
+            } catch (err) {
                 // Surface this in the future - failing alarm lists shouldn't nuke access
                 console.error(err);
             }
@@ -183,8 +178,7 @@ export default async function router(schema: Schema, config: Config) {
                     };
                 }),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -248,8 +242,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(layer);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -314,16 +307,14 @@ export default async function router(schema: Schema, config: Config) {
             if (config.events) {
                 if (incoming.cron && !Schedule.is_aws(incoming.cron) && layer.enabled) {
                     config.events.add(layer.id, incoming.cron);
-                }
-                else if (!incoming.cron || (incoming.cron && Schedule.is_aws(incoming.cron)) || !layer.enabled) {
+                } else if (!incoming.cron || (incoming.cron && Schedule.is_aws(incoming.cron)) || !layer.enabled) {
                     await config.events.delete(layer.id);
                 }
             }
 
             try {
                 await deployLayer(layer);
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
             }
 
@@ -333,16 +324,14 @@ export default async function router(schema: Schema, config: Config) {
                 try {
                     // Handle Potential Renames
                     await DataMission.sync(config, data);
-                }
-                catch (err) {
+                } catch (err) {
                     // Eventually do something
                     console.error(err);
                 }
             }
 
             res.json(incoming);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -379,8 +368,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
-            }
-            else if (!layer.incoming) {
+            } else if (!layer.incoming) {
                 throw new Err(400, null, 'Layer does not have incoming config');
             }
 
@@ -402,8 +390,7 @@ export default async function router(schema: Schema, config: Config) {
                 try {
                     // Handle Potential Renames
                     await DataMission.sync(config, data);
-                }
-                catch (err) {
+                } catch (err) {
                     // Eventually do something
                     console.error(err);
                 }
@@ -445,8 +432,7 @@ export default async function router(schema: Schema, config: Config) {
             if (changed) {
                 try {
                     await deployLayer(layer);
-                }
-                catch (err) {
+                } catch (err) {
                     console.error(err);
                 }
             }
@@ -454,8 +440,7 @@ export default async function router(schema: Schema, config: Config) {
             if (config.events) {
                 if (incoming.cron && !Schedule.is_aws(incoming.cron) && layer.enabled) {
                     config.events.add(layer.id, incoming.cron);
-                }
-                else if (!incoming.cron || (incoming.cron && Schedule.is_aws(incoming.cron)) || !layer.enabled) {
+                } else if (!incoming.cron || (incoming.cron && Schedule.is_aws(incoming.cron)) || !layer.enabled) {
                     await config.events.delete(layer.id);
                 }
             }
@@ -466,8 +451,7 @@ export default async function router(schema: Schema, config: Config) {
                 try {
                     // Handle Potential Renames
                     await DataMission.sync(config, data);
-                }
-                catch (err) {
+                } catch (err) {
                     // Eventually do something
                     console.error(err);
                 }
@@ -478,8 +462,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(incoming);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -517,8 +500,7 @@ export default async function router(schema: Schema, config: Config) {
 
             try {
                 await deployLayer(layer);
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
             }
 
@@ -526,8 +508,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Incoming Layer Config Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -568,14 +549,12 @@ export default async function router(schema: Schema, config: Config) {
 
             try {
                 await deployLayer(layer);
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
             }
 
             res.json(incoming);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -630,8 +609,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(outgoing);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -669,8 +647,7 @@ export default async function router(schema: Schema, config: Config) {
 
             try {
                 await deployLayer(layer);
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
             }
 
@@ -678,8 +655,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Outgoing Layer Config Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -740,8 +716,7 @@ export default async function router(schema: Schema, config: Config) {
                 if (layer.connection !== null) {
                     throw new Err(400, null, 'Layer is not a template layer');
                 }
-            }
-            else {
+            } else {
                 const auth = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
                 connection = auth.connection;
                 layer = await layerControl.from(connection, req.params.layerid);
@@ -771,8 +746,7 @@ export default async function router(schema: Schema, config: Config) {
             if (changed) {
                 try {
                     await deployLayer(layer);
-                }
-                catch (err) {
+                } catch (err) {
                     console.error(err);
                 }
             }
@@ -782,8 +756,7 @@ export default async function router(schema: Schema, config: Config) {
             if (layer.incoming && config.events) {
                 if (layer.incoming.cron && !Schedule.is_aws(layer.incoming.cron) && layer.enabled) {
                     config.events.add(layer.id, layer.incoming.cron);
-                }
-                else if (!layer.incoming.cron || (layer.incoming.cron && Schedule.is_aws(layer.incoming.cron)) || !layer.enabled) {
+                } else if (!layer.incoming.cron || (layer.incoming.cron && Schedule.is_aws(layer.incoming.cron)) || !layer.enabled) {
                     await config.events.delete(layer.id);
                 }
             }
@@ -792,8 +765,7 @@ export default async function router(schema: Schema, config: Config) {
             if (config.StackName !== 'test' && req.query.alarms) {
                 try {
                     status = await alarm.get(layer.id);
-                }
-                catch (err) {
+                } catch (err) {
                     console.error(err);
                 }
             }
@@ -802,8 +774,7 @@ export default async function router(schema: Schema, config: Config) {
                 status,
                 ...layer,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -845,8 +816,7 @@ export default async function router(schema: Schema, config: Config) {
                 });
 
                 layer = await layerControl.from(null, req.params.layerid);
-            }
-            else {
+            } else {
                 const { connection } = await Auth.is_connection(config, req, {
                     token: true, resources,
                 }, req.params.connectionid);
@@ -860,8 +830,7 @@ export default async function router(schema: Schema, config: Config) {
             if (config.StackName !== 'test' && req.query.alarms) {
                 try {
                     status = await alarm.get(layer.id);
-                }
-                catch (err) {
+                } catch (err) {
                     console.error(err);
                 }
             }
@@ -873,15 +842,13 @@ export default async function router(schema: Schema, config: Config) {
                 res.setHeader('Content-Type', 'application/json');
                 res.write(JSON.stringify(hydrated, null, 4));
                 res.end();
-            }
-            else {
+            } else {
                 res.json({
                     status,
                     ...layer,
                 });
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -909,8 +876,7 @@ export default async function router(schema: Schema, config: Config) {
                 await Auth.is_auth(config, req, { resources });
 
                 layer = await layerControl.from(null, req.params.layerid);
-            }
-            else {
+            } else {
                 const { connection } = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
 
                 layer = await layerControl.from(connection, req.params.layerid);
@@ -921,8 +887,7 @@ export default async function router(schema: Schema, config: Config) {
 
             try {
                 await deployLayer(layer);
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
             }
 
@@ -930,8 +895,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Layer Redeploying',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -958,8 +922,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.params.connectionid === 'template') {
                 await Auth.is_auth(config, req, { resources });
                 layer = await layerControl.from(null, req.params.layerid);
-            }
-            else {
+            } else {
                 const { connection } = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
                 layer = await layerControl.from(connection, req.params.layerid);
             }
@@ -987,8 +950,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Layer Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

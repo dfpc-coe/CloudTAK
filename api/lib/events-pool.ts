@@ -40,8 +40,7 @@ export default class EventsPool {
 
             try {
                 this.add(layer.id, layer.incoming.cron);
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(`CloudTAK Cron: Init Error on Layer ${layer.id}`, err);
             }
         }
@@ -52,8 +51,7 @@ export default class EventsPool {
 
         try {
             await this.delete(layerid);
-        }
-        catch (err) {
+        } catch (err) {
             console.error('CloudTAK EventPool: Failed to remove existing job', err);
         }
 
@@ -72,13 +70,11 @@ export default class EventsPool {
                             type: 'default',
                         })),
                     }));
-                }
-                catch (err) {
+                } catch (err) {
                     console.error(err);
                 }
             }, parsed.freq * 1000));
-        }
-        catch (err) {
+        } catch (err) {
             console.error(`CloudTAK EventPool: Add Error on Layer ${layerid}`, err);
             throw err;
         }
@@ -88,8 +84,7 @@ export default class EventsPool {
         try {
             const interval = this.jobs.get(layerid);
             if (interval) clearInterval(interval);
-        }
-        catch (err) {
+        } catch (err) {
             console.log(`CloudTAK EventPool: ${layerid} does not yet exist and cannot be removed`, err);
             throw err;
         }

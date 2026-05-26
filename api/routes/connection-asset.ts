@@ -35,8 +35,7 @@ export default async function router(schema: Schema, config: Config) {
                 total: list.total,
                 items: list.assets,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -81,8 +80,7 @@ export default async function router(schema: Schema, config: Config) {
                     file.pipe(passThrough);
 
                     assets.push(S3.put(`connection/${connection.id}/${filename}`, passThrough));
-                }
-                catch (err) {
+                } catch (err) {
                     Err.respond(err, res);
                 }
             }).on('finish', async () => {
@@ -95,15 +93,13 @@ export default async function router(schema: Schema, config: Config) {
                         status: 200,
                         message: 'Asset Uploaded',
                     });
-                }
-                catch (err) {
+                } catch (err) {
                     Err.respond(err, res);
                 }
             });
 
             req.pipe(bb);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -141,8 +137,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Asset Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -178,8 +173,7 @@ export default async function router(schema: Schema, config: Config) {
             const stream = await S3.get(`connection/${connection.id}/${req.params.asset}.${req.params.ext}`);
 
             stream.pipe(res);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

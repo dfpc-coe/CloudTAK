@@ -79,12 +79,10 @@ export default class Bulldozer {
                         });
                     }
                 }
-            }
-            catch (err) {
+            } catch (err) {
                 if (err instanceof Error && (err as NodeJS.ErrnoException).code === 'ENOENT') {
                     console.log('ok - could not automatically load iconsets');
-                }
-                else {
+                } else {
                     console.error(err);
                 }
             }
@@ -108,12 +106,10 @@ export default class Bulldozer {
                         maxzoom: b.maxZoom || 16,
                     });
                 }
-            }
-            catch (err) {
+            } catch (err) {
                 if (err instanceof Error && (err as NodeJS.ErrnoException).code === 'ENOENT') {
                     console.log('ok - could not automatically load basemaps');
-                }
-                else {
+                } else {
                     console.error(err);
                 }
             }
