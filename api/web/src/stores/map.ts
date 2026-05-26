@@ -38,6 +38,33 @@ import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature } fr
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 import type { CallbackID } from '@capacitor/geolocation';
 
+function waitForAtlasWorkerReady(worker: Worker): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const controller = new AbortController();
+
+        const cleanup = () => {
+            controller.abort();
+        };
+
+        worker.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
+            if (event.data?.type !== WorkerMessageType.Atlas_Ready) return;
+
+            cleanup();
+            resolve();
+        }, { signal: controller.signal });
+
+        worker.addEventListener('error', (event) => {
+            cleanup();
+            reject(event.error instanceof Error ? event.error : new Error(event.message || 'Atlas worker failed to load'));
+        }, { signal: controller.signal });
+
+        worker.addEventListener('messageerror', () => {
+            cleanup();
+            reject(new Error('Atlas worker sent an unreadable startup message'));
+        }, { signal: controller.signal });
+    });
+}
+
 export type TAKNotification = { type: string; name: string; body: string; url: string; created: string; }
 
 export const useMapStore = defineStore('cloudtak', {
@@ -84,6 +111,7 @@ export const useMapStore = defineStore('cloudtak', {
         timer: ReturnType<typeof setInterval> | null;
 
         _rawWorker: Worker;
+        _workerReady: Promise<void>;
         worker: Comlink.Remote<Atlas>;
         mission: Subscription | undefined;
         terrainEnabled: boolean;
@@ -115,6 +143,7 @@ export const useMapStore = defineStore('cloudtak', {
         overlays: Array<Overlay>
     } => {
         const rawWorker = new Worker(AtlasWorker, { type: 'module' });
+        const workerReady = waitForAtlasWorkerReady(rawWorker);
         const worker = Comlink.wrap<Atlas>(rawWorker);
 
         new CloudTAKTransferHandler(
@@ -124,6 +153,7 @@ export const useMapStore = defineStore('cloudtak', {
 
         return {
             _rawWorker: rawWorker,
+            _workerReady: workerReady,
             worker,
             _bottomBar: markRaw(new BottomBarManager()),
             timer: null,
@@ -605,7 +635,11 @@ export const useMapStore = defineStore('cloudtak', {
             document.addEventListener('visibilitychange', this._boundOnVisibilityChange);
 
             const { value: token } = await Preferences.get({ key: 'token' });
+
+            console.error('START', token);
+            await this._workerReady;
             await this.worker.init(token || '');
+            console.error('END');
 
             this.channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
                 const msg = event.data;
