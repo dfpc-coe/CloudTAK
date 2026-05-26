@@ -16,8 +16,7 @@ test('Config: Default Basemap Flow - Get Default Config', async () => {
         }, true);
 
         assert.equal(res.body['map::basemap'], undefined);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -35,8 +34,7 @@ test('Config: Default Basemap Flow - Create Basemap', async () => {
         }, true);
 
         assert.ok(res.body.id, 'Basemap Created');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
         return;
     }
@@ -53,8 +51,7 @@ test('Config: Default Basemap Flow - Create Default Basemap Config', async () =>
         }, true);
 
         assert.equal(res.body['map::basemap'], 1);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -73,8 +70,7 @@ test('Config: Default Basemap Flow - Fail Deleting Default Basemap', async () =>
             message: 'Cannot delete default basemap',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -88,8 +84,7 @@ test('Config: Default Basemap Flow - Unset Default Basemap', async () => {
                 'map::basemap': null,
             },
         }, true);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -105,8 +100,7 @@ test('Config: Default Basemap Flow - Sucessful Basemap Delete', async () => {
             status: 200,
             message: 'Basemap Deleted',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

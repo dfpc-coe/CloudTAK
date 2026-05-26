@@ -120,8 +120,7 @@ export default class MockTAKServer {
                     this.unhandledMartiRequests.push(`${request.method} ${request.url}`);
                     throw new Error(`Unhandled TAK API Operation: ${request.method} ${request.url}`);
                 }
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
                 if (!response.headersSent) {
                     response.statusCode = 500;
@@ -155,8 +154,7 @@ export default class MockTAKServer {
                 if (!handled) {
                     throw new Error(`Unhandled TAK (WebTAK) API Operation: ${request.method} ${request.url}`);
                 }
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
                 if (!response.headersSent) {
                     response.statusCode = 500;
@@ -197,16 +195,14 @@ export default class MockTAKServer {
                     server.listen(port, '127.0.0.1');
                 });
                 return;
-            }
-            catch (err: any) {
+            } catch (err: any) {
                 if (err.code === 'EADDRINUSE') {
                     if (i < retries - 1) {
                         console.log(`Port ${port} in use, retrying (${i + 1}/${retries})...`);
                         await new Promise(r => setTimeout(r, 1000));
                         try {
                             server.close();
-                        }
-                        catch (e) {
+                        } catch (e) {
                             console.error('Error closing server:', e);
                         }
                         continue;
@@ -222,8 +218,7 @@ export default class MockTAKServer {
         this.mockWebtak = [async (request, response) => {
             if (!request.method || !request.url) {
                 return false;
-            }
-            else if (request.method === 'POST' && request.url.startsWith('/oauth/token')) {
+            } else if (request.method === 'POST' && request.url.startsWith('/oauth/token')) {
                 const body = (await stream2buffer(request)).toString();
                 const params = new URLSearchParams(body);
                 response.setHeader('Content-Type', 'application/json');
@@ -232,14 +227,12 @@ export default class MockTAKServer {
                 }, 'fake-test-token') }));
                 response.end();
                 return true;
-            }
-            else if (request.method === 'GET' && request.url === '/Marti/api/tls/config') {
+            } else if (request.method === 'GET' && request.url === '/Marti/api/tls/config') {
                 response.setHeader('Content-Type', 'text/xml');
                 response.write('<ns2:certificateConfig><nameEntries><nameEntry O="test"/><nameEntry OU="test"/></nameEntries></ns2:certificateConfig>');
                 response.end();
                 return true;
-            }
-            else if (request.method === 'POST' && request.url.startsWith('/Marti/api/tls/signClient/v2')) {
+            } else if (request.method === 'POST' && request.url.startsWith('/Marti/api/tls/signClient/v2')) {
                 const csr = crypto.randomUUID();
                 fs.writeFileSync(`/tmp/${csr}.csr`, String(await stream2buffer(request)));
 
@@ -247,7 +240,9 @@ export default class MockTAKServer {
 
                 const signedCertArr = String(fs.readFileSync(`/tmp/${csr}.pem`))
                     .split('\n')
-                    .filter((line) => { return line.length; });
+                    .filter((line) => {
+                        return line.length;
+                    });
 
                 const signedCert = signedCertArr.slice(1, signedCertArr.length - 1)
                     .join('\n');
@@ -256,8 +251,7 @@ export default class MockTAKServer {
                 response.write(JSON.stringify({ signedCert: signedCert }));
                 response.end();
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         }];
@@ -267,26 +261,22 @@ export default class MockTAKServer {
         this.mockMarti = [async (request, response) => {
             if (!request.method || !request.url) {
                 return false;
-            }
-            else if (request.method === 'GET' && request.url === '/files/api/config') {
+            } else if (request.method === 'GET' && request.url === '/files/api/config') {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({ uploadSizeLimit: 50 }));
                 response.end();
                 return true;
-            }
-            else if (request.method === 'GET' && request.url === '/Marti/api/contacts/all') {
+            } else if (request.method === 'GET' && request.url === '/Marti/api/contacts/all') {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify([]));
                 response.end();
                 return true;
-            }
-            else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
+            } else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({ version: '3', type: 'com.bbn.marti.remote.groups.Group', data: [] }));
                 response.end();
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         }];
@@ -295,15 +285,13 @@ export default class MockTAKServer {
     reset(): void {
         if (this.defaultMartiResponses) {
             this.mockMartiDefaultResponses();
-        }
-        else {
+        } else {
             this.mockMarti = [];
         }
 
         if (this.defaultWebtakResponses) {
             this.mockWebtakDefaultResponses();
-        }
-        else {
+        } else {
             this.mockWebtak = [];
         }
 

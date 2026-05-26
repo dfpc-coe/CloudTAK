@@ -36,8 +36,7 @@ export default async function router(schema: Schema, config: Config) {
             const list = await cotak.channels(profile.id, req.query);
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -100,8 +99,7 @@ export default async function router(schema: Schema, config: Config) {
                 integrationId: user.integrations.find(Boolean)?.id ?? undefined,
                 auth: certs,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -147,8 +145,7 @@ export default async function router(schema: Schema, config: Config) {
                 integrationId: user.integrations.find(Boolean)?.id ?? undefined,
                 auth: certs,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

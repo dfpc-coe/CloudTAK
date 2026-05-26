@@ -150,12 +150,10 @@ export default class VideoServiceControl {
             const url = await this.config.models.Setting.from('media::url');
             if (!url.value) return null;
             return new URL(url.value);
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Error && err.message.includes('Not Found')) {
                 return null;
-            }
-            else {
+            } else {
                 throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Media Service Configuration Error');
             }
         }
@@ -172,21 +170,17 @@ export default class VideoServiceControl {
             const kv = await this.config.models.Setting.from('media::url');
             if (kv.value && typeof kv.value === 'string' && new URL(kv.value)) {
                 video = kv.value;
-            }
-            else {
+            } else {
                 throw new Err(400, null, 'Media Service URL is not configured');
             }
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Error && err.message.includes('Not Found')) {
                 return {
                     configured: false,
                 };
-            }
-            else if (err instanceof Err) {
+            } else if (err instanceof Err) {
                 throw err;
-            }
-            else {
+            } else {
                 throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Media Service Configuration Error');
             }
         }
@@ -271,8 +265,7 @@ export default class VideoServiceControl {
                         name: 'Real-Time Streaming Protocol (RTSP)',
                         url: String(url),
                     };
-                }
-                else if (populated === ProtocolPopulation.WRITE && lease.stream_user && lease.stream_pass) {
+                } else if (populated === ProtocolPopulation.WRITE && lease.stream_user && lease.stream_pass) {
                     url.username = lease.stream_user;
                     url.password = lease.stream_pass;
 
@@ -280,8 +273,7 @@ export default class VideoServiceControl {
                         name: 'Real-Time Streaming Protocol (RTSP)',
                         url: String(url),
                     };
-                }
-                else {
+                } else {
                     const rtspurl = new URL(String(url));
                     rtspurl.username = 'username';
                     rtspurl.password = 'password';
@@ -291,8 +283,7 @@ export default class VideoServiceControl {
                         url: String(rtspurl).replace(/username:password/, '{{username}}:{{password}}'),
                     };
                 }
-            }
-            else {
+            } else {
                 protocols.rtsp = {
                     name: 'Real-Time Streaming Protocol (RTSP)',
                     url: String(url),
@@ -313,11 +304,9 @@ export default class VideoServiceControl {
             if (lease.stream_user && lease.read_user) {
                 if (populated === ProtocolPopulation.TEMPLATE) {
                     protocols.rtmp.url = `${protocols.rtmp.url}?user={{username}}&pass={{password}}`;
-                }
-                else if (populated === ProtocolPopulation.READ) {
+                } else if (populated === ProtocolPopulation.READ) {
                     protocols.rtmp.url = `${protocols.rtmp.url}?user=${lease.read_user}&pass=${lease.read_pass}`;
-                }
-                else if (populated === ProtocolPopulation.WRITE) {
+                } else if (populated === ProtocolPopulation.WRITE) {
                     protocols.rtmp.url = `${protocols.rtmp.url}?user=${lease.stream_user}&pass=${lease.stream_pass}`;
                 }
             }
@@ -334,21 +323,18 @@ export default class VideoServiceControl {
                         name: 'Secure Reliable Transport (SRT)',
                         url: String(url) + `?streamid={{mode}}:${lease.path}:${lease.read_user}}:${lease.read_pass}`,
                     };
-                }
-                else if (populated === ProtocolPopulation.WRITE) {
+                } else if (populated === ProtocolPopulation.WRITE) {
                     protocols.srt = {
                         name: 'Secure Reliable Transport (SRT)',
                         url: String(url) + `?streamid={{mode}}:${lease.path}:${lease.stream_user}}:${lease.stream_pass}`,
                     };
-                }
-                else {
+                } else {
                     protocols.srt = {
                         name: 'Secure Reliable Transport (SRT)',
                         url: String(url) + `?streamid={{mode}}:${lease.path}:{{username}}:{{password}}`,
                     };
                 }
-            }
-            else {
+            } else {
                 protocols.srt = {
                     name: 'Secure Reliable Transport (SRT)',
                     url: String(url) + `?streamid={{mode}}:${lease.path}`,
@@ -371,8 +357,7 @@ export default class VideoServiceControl {
                         name: 'HTTP Live Streaming (HLS)',
                         url: String(hlsurl),
                     };
-                }
-                else if (populated === ProtocolPopulation.WRITE && lease.stream_user && lease.stream_pass) {
+                } else if (populated === ProtocolPopulation.WRITE && lease.stream_user && lease.stream_pass) {
                     const hlsurl = new URL(String(url));
                     hlsurl.username = lease.stream_user;
                     hlsurl.password = lease.stream_pass;
@@ -381,8 +366,7 @@ export default class VideoServiceControl {
                         name: 'HTTP Live Streaming (HLS)',
                         url: String(hlsurl),
                     };
-                }
-                else {
+                } else {
                     const hlsurl = new URL(String(url));
                     hlsurl.username = 'username';
                     hlsurl.password = 'password';
@@ -392,8 +376,7 @@ export default class VideoServiceControl {
                         url: String(hlsurl).replace(/username:password/, '{{username}}:{{password}}'),
                     };
                 }
-            }
-            else {
+            } else {
                 protocols.hls = {
                     name: 'HTTP Live Streaming (HLS)',
                     url: String(url),
@@ -431,14 +414,12 @@ export default class VideoServiceControl {
                 read_user: `read${lease.id}`,
                 read_pass: Math.random().toString(20).substr(2, 6),
             });
-        }
-        else if (secure && rotate) {
+        } else if (secure && rotate) {
             await this.config.models.VideoLease.commit(lease.id, {
                 read_user: `read${lease.id}`,
                 read_pass: Math.random().toString(20).substr(2, 6),
             });
-        }
-        else if (!secure && (lease.stream_user || lease.stream_pass || lease.read_user || lease.read_pass)) {
+        } else if (!secure && (lease.stream_user || lease.stream_pass || lease.read_user || lease.read_pass)) {
             await this.config.models.VideoLease.commit(lease.id, {
                 stream_user: null,
                 stream_pass: null,
@@ -473,11 +454,9 @@ export default class VideoServiceControl {
 
         if (opts.username && opts.connection) {
             throw new Err(400, null, 'Either username or connection must be set but not both');
-        }
-        else if (opts.share && !opts.channel) {
+        } else if (opts.share && !opts.channel) {
             throw new Err(400, null, 'Channel must be set when share is true');
-        }
-        else if (opts.publish && !opts.channel) {
+        } else if (opts.publish && !opts.channel) {
             throw new Err(400, null, 'Channel must be set when publish is true');
         }
 
@@ -529,12 +508,10 @@ export default class VideoServiceControl {
                             url: protocols.hls.url,
                         }],
                     });
-                }
-                else {
+                } else {
                     throw new Err(400, null, 'Only HLS shared video streams are supported at this time');
                 }
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
             }
         }
@@ -549,12 +526,10 @@ export default class VideoServiceControl {
 
                     if (res.status === 404) {
                         throw new Err(400, null, 'External Video Server reports Video Stream not found');
-                    }
-                    else if (!res.ok) {
+                    } else if (!res.ok) {
                         throw new Err(res.status, null, `External Video Server failed stream video - HTTP Error ${res.status}, ${await res.text()}`);
                     }
-                }
-                else {
+                } else {
                     const res = await fetch(url, {
                         method: 'POST',
                         headers: Object.fromEntries(headers.entries()),
@@ -567,21 +542,17 @@ export default class VideoServiceControl {
 
                     if (!res.ok) throw new Err(500, null, await res.text());
                 }
-            }
-            catch (err) {
+            } catch (err) {
                 if (err instanceof Err) {
                     throw err;
                 // @ts-expect-error code is not defined in type
-                }
-                else if (err instanceof TypeError && err.code === 'ERR_INVALID_URL') {
+                } else if (err instanceof TypeError && err.code === 'ERR_INVALID_URL') {
                     throw new Err(400, null, 'Invalid Video Stream URL');
-                }
-                else {
+                } else {
                     throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Failed to generate proxy stream');
                 }
             }
-        }
-        else {
+        } else {
             const res = await fetch(url, {
                 method: 'POST',
                 headers: Object.fromEntries(headers.entries()),
@@ -619,8 +590,7 @@ export default class VideoServiceControl {
 
         if (typeof id === 'string') {
             lease = await this.config.models.VideoLease.from(eq(VideoLease.path, id));
-        }
-        else {
+        } else {
             lease = await this.config.models.VideoLease.from(id);
         }
 
@@ -629,16 +599,13 @@ export default class VideoServiceControl {
         if (opts.connection) {
             if (lease.connection !== opts.connection) {
                 throw new Err(400, null, 'Connections can only access leases created in the context of the connection');
-            }
-            else {
+            } else {
                 return lease;
             }
-        }
-        else if (opts.username) {
+        } else if (opts.username) {
             if (opts.username === lease.username) {
                 return lease;
-            }
-            else {
+            } else {
                 const profile = await this.config.models.Profile.from(opts.username);
                 const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
                 const groups = (await api.Group.list({ useCache: true }))
@@ -650,8 +617,7 @@ export default class VideoServiceControl {
 
                 return lease;
             }
-        }
-        else {
+        } else {
             return lease;
         }
     }
@@ -685,18 +651,15 @@ export default class VideoServiceControl {
 
         if (lease.connection && !opts.connection) {
             throw new Err(400, null, 'Lease must be edited in the context of a Connection');
-        }
-        else if (lease.username && !opts.username) {
+        } else if (lease.username && !opts.username) {
             throw new Err(400, null, 'Lease must be edited in the context of the CloudTAK Map');
-        }
-        else if (
+        } else if (
             (body.share && body.channel === undefined && !lease.channel)
             || (body.share && body.channel === null)
             || (lease.share && body.channel === null)
         ) {
             throw new Err(400, null, 'Channel must be set when share is true');
-        }
-        else if (
+        } else if (
             (body.publish && body.channel === undefined && !lease.channel)
             || (body.publish && body.channel === null)
             || (lease.publish && body.channel === null)
@@ -720,8 +683,7 @@ export default class VideoServiceControl {
 
             try {
                 await api.Video.delete(lease.path);
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
             }
 
@@ -742,16 +704,13 @@ export default class VideoServiceControl {
                             url: protocols.hls.url,
                         }],
                     });
-                }
-                else {
+                } else {
                     throw new Err(400, null, 'Only HLS shared video streams are supported at this time');
                 }
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
             }
-        }
-        catch (err) {
+        } catch (err) {
             console.error(err);
         }
 
@@ -775,8 +734,7 @@ export default class VideoServiceControl {
             });
 
             if (!res.ok) throw new Err(500, null, await res.text());
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Err && err.status === 404) {
                 const url = new URL(`/path`, video.url);
                 url.port = '9997';
@@ -795,8 +753,7 @@ export default class VideoServiceControl {
                 });
 
                 if (!res.ok) throw new Err(500, null, await res.text());
-            }
-            else {
+            } else {
                 throw err;
             }
         }
@@ -823,8 +780,7 @@ export default class VideoServiceControl {
 
         if (res.ok) {
             return await res.typed(PathListItem);
-        }
-        else {
+        } else {
             throw new Err(res.status, new Error(await res.text()), 'Media Server Error');
         }
     }
@@ -845,8 +801,7 @@ export default class VideoServiceControl {
 
         if (res.ok) {
             return await res.typed(Recording);
-        }
-        else {
+        } else {
             throw new Err(res.status, new Error(await res.text()), 'Media Server Error');
         }
     }
@@ -863,8 +818,7 @@ export default class VideoServiceControl {
 
         if (!opts.username && !opts.connection) {
             throw new Err(400, null, 'Either connection or username config must be provided');
-        }
-        else if (opts.username && opts.connection) {
+        } else if (opts.username && opts.connection) {
             throw new Err(400, null, 'connection and username cannot both be provided');
         }
 
@@ -876,8 +830,7 @@ export default class VideoServiceControl {
 
         if (opts.connection && lease.connection !== opts.connection) {
             throw new Err(400, null, `Lease does not belong to connection ${opts.connection}`);
-        }
-        else if (!opts.admin && opts.username && lease.username !== opts.username) {
+        } else if (!opts.admin && opts.username && lease.username !== opts.username) {
             throw new Err(400, null, `Lease does not belong to user ${opts.username}`);
         }
 
@@ -899,8 +852,7 @@ export default class VideoServiceControl {
             );
 
             await api.Video.delete(lease.path);
-        }
-        catch (err) {
+        } catch (err) {
             console.error(err);
         }
 

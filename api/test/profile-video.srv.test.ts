@@ -21,8 +21,7 @@ test('GET: api/profile/video', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

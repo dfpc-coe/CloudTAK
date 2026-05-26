@@ -33,12 +33,10 @@ export default class LogGroup {
                 logGroupName: `/aws/lambda/${config.StackName}-layer-${layer.id}`,
                 orderBy: 'LastEventTime',
             }));
-        }
-        catch (err) {
+        } catch (err) {
             if (String(err).includes('ResourceNotFoundException')) {
                 return { logs: [] };
-            }
-            else {
+            } else {
                 throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list lambda logs');
             }
         }

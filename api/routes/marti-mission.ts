@@ -67,8 +67,7 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             res.json(mission);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -97,8 +96,7 @@ export default async function router(schema: Schema, config: Config) {
             const features = await api.Mission.latestFeats(req.params.guid, opts);
 
             res.json({ type: 'FeatureCollection', features });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -133,8 +131,7 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             res.json(missionContent);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -171,8 +168,7 @@ export default async function router(schema: Schema, config: Config) {
             ].join(','), { type: 'svg' });
 
             svg.pipe(res);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -203,8 +199,7 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             res.json(changes);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -235,8 +230,7 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             res.json(mission);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -259,8 +253,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(mission);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -302,8 +295,7 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             res.json(await api.Mission.get(mission.guid || req.params.name, {}, opts));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -369,8 +361,7 @@ export default async function router(schema: Schema, config: Config) {
                 invites: invites.data,
                 total: missions.data.length,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -416,8 +407,7 @@ export default async function router(schema: Schema, config: Config) {
                 res.setHeader('Content-Type', 'application/zip');
 
                 archive.pipe(res);
-            }
-            else if (['geojson', 'kml'].includes(req.query.format)) {
+            } else if (['geojson', 'kml'].includes(req.query.format)) {
                 const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                     ? { token: String(req.headers['missionauthorization']) }
                     : await config.conns.subscription(user.email, req.params.name);
@@ -434,8 +424,7 @@ export default async function router(schema: Schema, config: Config) {
                     res.set('Content-Length', String(Buffer.byteLength(output)));
                     res.write(output);
                     res.end();
-                }
-                else if (req.query.format === 'kml') {
+                } else if (req.query.format === 'kml') {
                     res.set('Content-Type', 'application/vnd.google-earth.kml+xml');
 
                     const output = Buffer.from(tokml(fc, {
@@ -449,13 +438,11 @@ export default async function router(schema: Schema, config: Config) {
                     res.set('Content-Length', String(Buffer.byteLength(output)));
                     res.write(output);
                     res.end();
-                }
-                else {
+                } else {
                     throw new Err(400, null, `Unknown Export Format: ${req.query.format}`);
                 }
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -484,8 +471,7 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             res.json(role);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -514,8 +500,7 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             res.json(subs);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -544,8 +529,7 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             res.json(roles);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -582,8 +566,7 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             res.json(missions);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -648,8 +631,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Files Attached',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -702,8 +684,7 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             res.json(missionContent);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -738,8 +719,7 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             res.json(missionContent);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -767,8 +747,7 @@ export default async function router(schema: Schema, config: Config) {
             const invites = await api.MissionInvite.get(req.params.guid, opts);
 
             res.json(invites);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -811,8 +790,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Invite Created',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -853,8 +831,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Invite Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -890,8 +867,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'User(s) Removed',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

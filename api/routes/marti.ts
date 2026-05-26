@@ -29,8 +29,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.query.connection) {
                 const connection = await config.models.Connection.from(parseInt(String(req.query.connection)));
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
-            }
-            else {
+            } else {
                 const user = await Auth.as_user(config, req);
                 const profile = await config.models.Profile.from(user.email);
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
@@ -41,8 +40,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(groups);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -73,8 +71,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.query.connection) {
                 const connection = await config.models.Connection.from(parseInt(String(req.query.connection)));
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
-            }
-            else {
+            } else {
                 const user = await Auth.as_user(config, req);
                 const profile = await config.models.Profile.from(user.email);
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
@@ -85,8 +82,7 @@ export default async function router(schema: Schema, config: Config) {
             const groups = await api.Group.list({});
 
             res.json(groups);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -112,8 +108,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.query.connection) {
                 const connection = await config.models.Connection.from(parseInt(String(req.query.connection)));
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
-            }
-            else {
+            } else {
                 const user = await Auth.as_user(config, req);
                 const profile = await config.models.Profile.from(user.email);
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
@@ -138,8 +133,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(clients);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -158,8 +152,7 @@ export default async function router(schema: Schema, config: Config) {
             const contacts = await api.Contacts.list();
 
             res.json(contacts);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -181,8 +174,7 @@ export default async function router(schema: Schema, config: Config) {
             const certs = await api.Credentials.generate();
 
             res.json(certs);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

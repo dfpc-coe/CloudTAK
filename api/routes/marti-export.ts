@@ -31,8 +31,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             exp.pipe(res);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -54,8 +53,7 @@ export default async function router(schema: Schema, config: Config) {
             const feat = await api.Query.singleFeat(req.params.uid);
 
             res.json(feat);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -102,8 +100,7 @@ export default async function router(schema: Schema, config: Config) {
                 for (const feat of feats.reverse()) {
                     if (feat.geometry.type !== 'Point') {
                         features.push(feat);
-                    }
-                    else if (composite === undefined) {
+                    } else if (composite === undefined) {
                         composite = feat;
                         composite.id = `${composite.id}-track`;
                         composite.geometry = {
@@ -111,16 +108,14 @@ export default async function router(schema: Schema, config: Config) {
                             // @ts-expect-error Need to be more explicit with Geometry Defs to lock point to number[]
                             coordinates: [composite.geometry.coordinates],
                         };
-                    }
-                    else if (feat.geometry.coordinates[0] !== 0 && feat.geometry.coordinates[1]) {
+                    } else if (feat.geometry.coordinates[0] !== 0 && feat.geometry.coordinates[1]) {
                         // @ts-expect-error Need to be more explicit with Geometry Defs to lock point to number[]
                         composite.geometry.coordinates.push(feat.geometry.coordinates);
                     }
                 }
 
                 if (composite) features.push(composite);
-            }
-            else {
+            } else {
                 features = feats;
             }
 
@@ -128,8 +123,7 @@ export default async function router(schema: Schema, config: Config) {
                 type: 'FeatureCollection',
                 features,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

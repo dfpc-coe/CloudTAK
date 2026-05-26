@@ -31,8 +31,7 @@ export default async function router(schema: Schema, config: Config) {
             const list = await api.Video.list(req.query);
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -54,8 +53,7 @@ export default async function router(schema: Schema, config: Config) {
             const conn = await api.Video.get(req.params.uid);
 
             res.json(conn);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -75,8 +73,7 @@ export default async function router(schema: Schema, config: Config) {
             const videoConn = await api.Video.create(req.body);
 
             res.json(videoConn);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -102,8 +99,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(videoConn);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -128,8 +124,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Video Stream Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

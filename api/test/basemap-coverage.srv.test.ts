@@ -123,8 +123,7 @@ test('POST: api/basemap - Non-admin cannot create server-scoped basemap', async 
         }, true);
 
         assert.fail();
-    }
-    catch (err) {
+    } catch (err) {
         assert.ok(String(err).includes('Only Server Admins can create Server scoped basemaps'));
     }
 });
@@ -145,8 +144,7 @@ test('POST: api/basemap - Snapping on non-vector type fails', async () => {
         }, true);
 
         assert.fail();
-    }
-    catch (err) {
+    } catch (err) {
         assert.ok(String(err).includes('Snapping can only be enabled on Vector basemaps'));
     }
 });
@@ -167,8 +165,7 @@ test('POST: api/basemap - Snapping without snapping_layer fails', async () => {
         }, true);
 
         assert.fail();
-    }
-    catch (err) {
+    } catch (err) {
         assert.ok(String(err).includes('A snapping_layer must be provided when enabling snapping'));
     }
 });
@@ -190,8 +187,7 @@ test('POST: api/basemap - Snapping on non-S3 hosted fails', async () => {
         }, true);
 
         assert.fail();
-    }
-    catch (err) {
+    } catch (err) {
         assert.ok(String(err).includes('Snapping can only be enabled on S3 hosted Basemaps'));
     }
 });

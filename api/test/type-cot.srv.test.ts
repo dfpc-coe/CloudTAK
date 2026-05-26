@@ -70,8 +70,7 @@ test('GET: api/type/cot', async () => {
                 desc: 'BOMBER',
             }],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -90,8 +89,7 @@ test('GET: api/type/cot/a-f-A-M-F', async () => {
             full: 'Air/Mil/Fixed',
             desc: 'FIXED WING',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -110,8 +108,7 @@ test('GET: api/type/cot/a-f-FAKE', async () => {
             full: 'a-f-FAKE',
             desc: 'Unknown CoT Type',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

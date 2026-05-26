@@ -94,15 +94,13 @@ export default async function router(schema: Schema, config: Config) {
             if (!keys.every(k => (PublicConfigKeys as readonly string[]).includes(k))) {
                 if (keys.every(k => (PublicConfigKeys as readonly string[]).includes(k) || (UserConfigKeys as readonly string[]).includes(k))) {
                     await Auth.as_user(config, req);
-                }
-                else {
+                } else {
                     await Auth.as_user(config, req, { admin: true });
                 }
             }
 
             res.json(await config.models.Setting.typedKeys(keys));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -148,8 +146,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(final);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -164,8 +161,7 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.as_user(config, req);
 
             res.json(await profileControl.defaultUnits());
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -235,8 +231,7 @@ export default async function router(schema: Schema, config: Config) {
                     color: final['background::color'] || undefined,
                 },
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -253,8 +248,7 @@ export default async function router(schema: Schema, config: Config) {
             res.json({
                 url: config.PMTILES_URL,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

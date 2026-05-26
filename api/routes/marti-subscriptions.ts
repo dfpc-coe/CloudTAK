@@ -34,8 +34,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(subs);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -77,8 +76,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (!done) throw new Err(404, null, `Subscription for ${req.params.clientuid} not found`);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

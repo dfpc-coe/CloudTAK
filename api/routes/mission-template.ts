@@ -49,8 +49,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -70,8 +69,7 @@ export default async function router(schema: Schema, config: Config) {
             const template = await config.models.MissionTemplate.augmented_from(req.params.mission);
 
             res.json(template);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -112,8 +110,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(await config.models.MissionTemplate.augmented_from(template.id));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -150,8 +147,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(await config.models.MissionTemplate.augmented_from(req.params.mission));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -173,8 +169,7 @@ export default async function router(schema: Schema, config: Config) {
             await config.models.MissionTemplate.delete(req.params.mission);
 
             res.json({ status: 200, message: 'Mission Template Deleted' });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -216,8 +211,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -238,8 +232,7 @@ export default async function router(schema: Schema, config: Config) {
             const log = await config.models.MissionTemplateLog.augmented_from(req.params.log);
 
             res.json(log);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -284,8 +277,7 @@ export default async function router(schema: Schema, config: Config) {
 
             try {
                 ajv.compile(req.body.schema);
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid Schema');
             }
 
@@ -296,8 +288,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(await config.models.MissionTemplateLog.augmented_from(log.id));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -333,8 +324,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.schema) {
                 try {
                     ajv.compile(req.body.schema);
-                }
-                catch (err) {
+                } catch (err) {
                     throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid Schema');
                 }
             }
@@ -345,8 +335,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(await config.models.MissionTemplateLog.augmented_from(log.id));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -369,8 +358,7 @@ export default async function router(schema: Schema, config: Config) {
             await config.models.MissionTemplateLog.delete(req.params.log);
 
             res.json({ status: 200, message: 'Mission Template Log Deleted' });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -412,8 +400,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -438,8 +425,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(palette);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -467,8 +453,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(await config.models.Palette.augmented_from(palette.uuid));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -502,8 +487,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(await config.models.Palette.augmented_from(req.params.palette));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -532,8 +516,7 @@ export default async function router(schema: Schema, config: Config) {
             await config.models.Palette.delete(req.params.palette);
 
             res.json({ status: 200, message: 'Palette Deleted' });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -579,8 +562,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -612,8 +594,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(feature);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -650,8 +631,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(feature);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -694,8 +674,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(feature);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -731,8 +710,7 @@ export default async function router(schema: Schema, config: Config) {
             await config.models.PaletteFeature.delete(req.params.feature);
 
             res.json({ status: 200, message: 'Palette Feature Deleted' });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

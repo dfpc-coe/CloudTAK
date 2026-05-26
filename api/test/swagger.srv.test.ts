@@ -19,8 +19,7 @@ test('GET: api/swagger', async () => {
 
         assert.ok(res.body.info);
         assert.equal(res.body.info.title, 'CloudTAK API');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

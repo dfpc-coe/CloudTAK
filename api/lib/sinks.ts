@@ -55,8 +55,7 @@ export default class Sinks {
 
                 try {
                     await this.queue.submit(entries, queue);
-                }
-                catch (err) {
+                } catch (err) {
                     console.error(`Queue: `, queue, ':', err);
                 }
             }

@@ -74,8 +74,7 @@ export default async function router(schema: Schema, config: Config) {
                     if (state === 'alarm') status.alarm++;
                     if (state === 'unknown') status.unknown++;
                 }
-            }
-            catch (err) {
+            } catch (err) {
                 // Surface this in the future - failing alarm lists shouldn't nuke access
                 console.error(err);
             }
@@ -91,8 +90,7 @@ export default async function router(schema: Schema, config: Config) {
                     };
                 }),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -134,16 +132,14 @@ export default async function router(schema: Schema, config: Config) {
                     mission_exists: true,
                     ...data,
                 });
-            }
-            catch (err) {
+            } catch (err) {
                 res.json({
                     mission_exists: false,
                     mission_error: err instanceof Error ? err.message : String(err),
                     ...data,
                 });
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -180,8 +176,7 @@ export default async function router(schema: Schema, config: Config) {
             if (config.StackName !== 'test' && req.query.alarms) {
                 try {
                     status = await alarm.get(layer.id);
-                }
-                catch (err) {
+                } catch (err) {
                     console.error(err);
                 }
             }
@@ -190,8 +185,7 @@ export default async function router(schema: Schema, config: Config) {
                 status,
                 ...layer,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

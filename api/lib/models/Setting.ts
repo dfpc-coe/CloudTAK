@@ -12,8 +12,7 @@ type FullConfigType = Static<typeof FullConfig>;
 function parseJSONSetting<K extends keyof FullConfigType>(key: K, raw: string): FullConfigType[K] {
     try {
         return JSON.parse(raw) as FullConfigType[K];
-    }
-    catch (err) {
+    } catch (err) {
         throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid JSON for array setting "${String(key)}"`);
     }
 }
@@ -65,11 +64,9 @@ export default class SettingModel extends Modeler<typeof Setting> {
             const configDefault = FullConfigDefaults[key];
             if (configDefault !== undefined) {
                 return { key, value: configDefault as FullConfigType[K] };
-            }
-            else if (defaultValue !== undefined) {
+            } else if (defaultValue !== undefined) {
                 return { key, value: defaultValue };
-            }
-            else {
+            } else {
                 throw new Err(404, null, `Item Not Found`);
             }
         }
@@ -95,8 +92,7 @@ export default class SettingModel extends Modeler<typeof Setting> {
         for (const key of keys) {
             if (found.has(key as string)) {
                 result[key] = coerceRawValue(key, found.get(key as string) as string);
-            }
-            else if (FullConfigDefaults[key] !== undefined) {
+            } else if (FullConfigDefaults[key] !== undefined) {
                 result[key] = FullConfigDefaults[key] as FullConfigType[K];
             }
             // absent from both DB and defaults → omit from result
@@ -122,8 +118,7 @@ export default class SettingModel extends Modeler<typeof Setting> {
         for (const key of keys) {
             if (found.has(key as string)) {
                 result[key] = coerceRawValue(key, found.get(key as string) as string) as Pick<FullConfigType, K>[K];
-            }
-            else if (FullConfigDefaults[key] !== undefined) {
+            } else if (FullConfigDefaults[key] !== undefined) {
                 result[key] = FullConfigDefaults[key] as Pick<FullConfigType, K>[K];
             }
         }

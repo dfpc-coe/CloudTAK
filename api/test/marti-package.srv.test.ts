@@ -24,8 +24,7 @@ test('GET: api/marti/package - empty', async () => {
         flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            }
-            else if (request.method === 'GET' && request.url === '/Marti/sync/search?tool=public') {
+            } else if (request.method === 'GET' && request.url === '/Marti/sync/search?tool=public') {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     resultCount: 0,
@@ -34,8 +33,7 @@ test('GET: api/marti/package - empty', async () => {
                 response.end();
 
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         });
@@ -51,8 +49,7 @@ test('GET: api/marti/package - empty', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -64,8 +61,7 @@ test('GET api/marti/package/:uid - includes channels from the newest duplicate-h
         flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            }
-            else if (request.method === 'GET' && request.url.includes('/Marti/sync/search?uid=visible-pkg-uid')) {
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search?uid=visible-pkg-uid')) {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     resultCount: 2,
@@ -100,8 +96,7 @@ test('GET api/marti/package/:uid - includes channels from the newest duplicate-h
                 response.end();
 
                 return true;
-            }
-            else if (request.method === 'GET' && request.url.includes('/Marti/api/files/metadata')) {
+            } else if (request.method === 'GET' && request.url.includes('/Marti/api/files/metadata')) {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     data: [{
@@ -119,8 +114,7 @@ test('GET api/marti/package/:uid - includes channels from the newest duplicate-h
                 response.end();
 
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         });
@@ -135,8 +129,7 @@ test('GET api/marti/package/:uid - includes channels from the newest duplicate-h
         assert.equal(res.status, 200);
         assert.equal(res.body.hash, 'latest-hash');
         assert.deepEqual(res.body.channels, ['Blue', 'Red']);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -150,8 +143,7 @@ test('POST api/marti/package - Upload Data Package', async () => {
         flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            }
-            else if (request.method === 'POST' && request.url.includes('/Marti/sync/missionupload')) {
+            } else if (request.method === 'POST' && request.url.includes('/Marti/sync/missionupload')) {
                 await new Promise((resolve, reject) => {
                     const contentType = request.headers['content-type'];
                     if (!contentType) {
@@ -212,8 +204,7 @@ test('POST api/marti/package - Upload Data Package', async () => {
                 response.end();
 
                 return true;
-            }
-            else if (request.method === 'GET' && request.url.includes('/Marti/sync/search')) {
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search')) {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     resultCount: 1,
@@ -235,8 +226,7 @@ test('POST api/marti/package - Upload Data Package', async () => {
                 response.end();
 
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         });
@@ -255,8 +245,7 @@ test('POST api/marti/package - Upload Data Package', async () => {
             },
             body,
         }, true);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -270,8 +259,7 @@ test('POST api/marti/package - Upload KML', async () => {
         flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            }
-            else if (request.method === 'POST' && request.url.includes('/Marti/sync/missionupload')) {
+            } else if (request.method === 'POST' && request.url.includes('/Marti/sync/missionupload')) {
                 await new Promise((resolve, reject) => {
                     const contentType = request.headers['content-type'];
                     if (!contentType) {
@@ -335,8 +323,7 @@ test('POST api/marti/package - Upload KML', async () => {
                 response.end();
 
                 return true;
-            }
-            else if (request.method === 'GET' && request.url.includes('/Marti/sync/search')) {
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search')) {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     resultCount: 1,
@@ -358,8 +345,7 @@ test('POST api/marti/package - Upload KML', async () => {
                 response.end();
 
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         });
@@ -378,8 +364,7 @@ test('POST api/marti/package - Upload KML', async () => {
             },
             body,
         }, true);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -458,8 +443,7 @@ test('PUT api/marti/package - private package upload uses application/zip for fi
         assert.equal(res.status, 200);
         assert.equal(uploadHit, true);
         assert.equal(res.body.Hash, 'private-hash');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -483,8 +467,7 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
         flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            }
-            else if (request.method === 'GET' && request.url.includes('/Marti/sync/search?uid=patch-pkg-uid')) {
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search?uid=patch-pkg-uid')) {
                 searchCount++;
 
                 response.setHeader('Content-Type', 'application/json');
@@ -521,16 +504,14 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
                 response.end();
 
                 return true;
-            }
-            else if (request.method === 'GET' && request.url === '/Marti/sync/content?hash=latest-hash') {
+            } else if (request.method === 'GET' && request.url === '/Marti/sync/content?hash=latest-hash') {
                 response.writeHead(200, {
                     'Content-Type': 'application/zip',
                 });
                 response.end(Buffer.from('zip-payload'));
 
                 return true;
-            }
-            else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
+            } else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
                 groupsHandlerHit = true;
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
@@ -555,8 +536,7 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
                 response.end();
 
                 return true;
-            }
-            else if (request.method === 'GET' && request.url.includes('/Marti/api/files/metadata')) {
+            } else if (request.method === 'GET' && request.url.includes('/Marti/api/files/metadata')) {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     data: [{
@@ -574,15 +554,13 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
                 response.end();
 
                 return true;
-            }
-            else if (request.method === 'POST' && request.url === '/Marti/sync/missionupload?filename=Patch+Package&creatorUid=pkgowner&hash=latest-hash&mimetype=application%2Fzip&keyword=missionpackage&keyword=updated&Groups=Blue&Groups=Red') {
+            } else if (request.method === 'POST' && request.url === '/Marti/sync/missionupload?filename=Patch+Package&creatorUid=pkgowner&hash=latest-hash&mimetype=application%2Fzip&keyword=missionpackage&keyword=updated&Groups=Blue&Groups=Red') {
                 uploadHit = true;
                 response.writeHead(200);
                 response.end('http://takserver/Marti/sync/content?hash=latest-hash');
 
                 return true;
-            }
-            else if (request.method === 'PUT' && request.url === '/Marti/api/sync/metadata/latest-hash/keywords') {
+            } else if (request.method === 'PUT' && request.url === '/Marti/api/sync/metadata/latest-hash/keywords') {
                 const body = await stream2buffer(request);
 
                 assert.deepEqual(JSON.parse(body.toString()), ['updated']);
@@ -591,14 +569,12 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
                 response.end();
 
                 return true;
-            }
-            else if (request.method === 'PUT' && request.url === '/Marti/api/sync/metadata/latest-hash/expiration?expiration=1234567890') {
+            } else if (request.method === 'PUT' && request.url === '/Marti/api/sync/metadata/latest-hash/expiration?expiration=1234567890') {
                 response.writeHead(200);
                 response.end();
 
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         });
@@ -623,11 +599,9 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
         assert.equal(res.body.items[1].Hash, 'latest-hash');
         assert.equal(groupsHandlerHit, true);
         assert.equal(uploadHit, true);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
-    }
-    finally {
+    } finally {
         flight.config?.conns.delete('pkgowner@example.com');
     }
 
@@ -656,8 +630,7 @@ test('PATCH api/marti/package/:uid - closes downloaded content when channel uplo
         flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            }
-            else if (request.method === 'GET' && request.url.includes('/Marti/sync/search?uid=failed-upload-pkg-uid')) {
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search?uid=failed-upload-pkg-uid')) {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     resultCount: 1,
@@ -679,8 +652,7 @@ test('PATCH api/marti/package/:uid - closes downloaded content when channel uplo
                 response.end();
 
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         });
@@ -697,11 +669,9 @@ test('PATCH api/marti/package/:uid - closes downloaded content when channel uplo
 
         assert.equal(res.status, 500);
         assert.equal(destroySpy.called || resumeSpy.called, true);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
-    }
-    finally {
+    } finally {
         Sinon.restore();
     }
 
@@ -720,8 +690,7 @@ test('PATCH api/marti/package/:uid - User without overlapping active channel can
         flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            }
-            else if (request.method === 'GET' && request.url.includes('/Marti/sync/search?uid=forbidden-pkg-uid')) {
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search?uid=forbidden-pkg-uid')) {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     resultCount: 1,
@@ -743,8 +712,7 @@ test('PATCH api/marti/package/:uid - User without overlapping active channel can
                 response.end();
 
                 return true;
-            }
-            else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
+            } else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     version: '3',
@@ -768,8 +736,7 @@ test('PATCH api/marti/package/:uid - User without overlapping active channel can
                 response.end();
 
                 return true;
-            }
-            else if (request.method === 'GET' && request.url.includes('/Marti/api/files/metadata')) {
+            } else if (request.method === 'GET' && request.url.includes('/Marti/api/files/metadata')) {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     data: [{
@@ -781,16 +748,14 @@ test('PATCH api/marti/package/:uid - User without overlapping active channel can
                 response.end();
 
                 return true;
-            }
-            else if (request.method === 'PUT' && request.url.includes('/Marti/api/sync/metadata/forbidden-hash/')) {
+            } else if (request.method === 'PUT' && request.url.includes('/Marti/api/sync/metadata/forbidden-hash/')) {
                 attemptedUpdate = true;
 
                 response.writeHead(200);
                 response.end();
 
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         });
@@ -808,11 +773,9 @@ test('PATCH api/marti/package/:uid - User without overlapping active channel can
         assert.equal(res.status, 403);
         assert.equal(res.body.message, 'Insufficient Access to update Package');
         assert.equal(attemptedUpdate, false);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
-    }
-    finally {
+    } finally {
         flight.config?.conns.delete('pkgviewer@example.com');
     }
 
@@ -826,8 +789,7 @@ test('PATCH api/marti/package/:uid - Admin can update any package', async () => 
         flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            }
-            else if (request.method === 'GET' && request.url.includes('/Marti/sync/search?uid=admin-pkg-uid')) {
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search?uid=admin-pkg-uid')) {
                 searchCount++;
 
                 response.setHeader('Content-Type', 'application/json');
@@ -851,8 +813,7 @@ test('PATCH api/marti/package/:uid - Admin can update any package', async () => 
                 response.end();
 
                 return true;
-            }
-            else if (request.method === 'PUT' && request.url === '/Marti/api/sync/metadata/admin-hash/keywords') {
+            } else if (request.method === 'PUT' && request.url === '/Marti/api/sync/metadata/admin-hash/keywords') {
                 const body = await stream2buffer(request);
 
                 assert.deepEqual(JSON.parse(body.toString()), ['admin-updated']);
@@ -861,8 +822,7 @@ test('PATCH api/marti/package/:uid - Admin can update any package', async () => 
                 response.end();
 
                 return true;
-            }
-            else if (request.method === 'GET' && request.url.includes('/Marti/api/files/metadata')) {
+            } else if (request.method === 'GET' && request.url.includes('/Marti/api/files/metadata')) {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     data: [{
@@ -874,8 +834,7 @@ test('PATCH api/marti/package/:uid - Admin can update any package', async () => 
                 response.end();
 
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         });
@@ -894,8 +853,7 @@ test('PATCH api/marti/package/:uid - Admin can update any package', async () => 
         assert.equal(res.body.hash, 'admin-hash');
         assert.deepEqual(res.body.keywords, ['admin-updated']);
         assert.deepEqual(res.body.channels, ['Blue']);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -907,8 +865,7 @@ test('DELETE api/marti/package/:uid - Owner can delete own package', async () =>
         flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            }
-            else if (request.method === 'GET' && request.url.includes('/Marti/sync/search')) {
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search')) {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     resultCount: 1,
@@ -930,14 +887,12 @@ test('DELETE api/marti/package/:uid - Owner can delete own package', async () =>
                 response.end();
 
                 return true;
-            }
-            else if (request.method === 'DELETE' && request.url.includes('/Marti/api/files/owner-hash-123')) {
+            } else if (request.method === 'DELETE' && request.url.includes('/Marti/api/files/owner-hash-123')) {
                 response.writeHead(200);
                 response.end();
 
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         });
@@ -954,8 +909,7 @@ test('DELETE api/marti/package/:uid - Owner can delete own package', async () =>
             status: 200,
             message: 'Package Deleted',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -967,8 +921,7 @@ test('DELETE api/marti/package/:uid - Non-owner non-admin cannot delete', async 
         flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            }
-            else if (request.method === 'GET' && request.url.includes('/Marti/sync/search')) {
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search')) {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     resultCount: 1,
@@ -990,8 +943,7 @@ test('DELETE api/marti/package/:uid - Non-owner non-admin cannot delete', async 
                 response.end();
 
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         });
@@ -1005,8 +957,7 @@ test('DELETE api/marti/package/:uid - Non-owner non-admin cannot delete', async 
 
         assert.equal(res.status, 403);
         assert.equal(res.body.message, 'Insufficient Access to delete Package');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -1018,8 +969,7 @@ test('DELETE api/marti/package/:uid - Admin can delete any package', async () =>
         flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            }
-            else if (request.method === 'GET' && request.url.includes('/Marti/sync/search')) {
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search')) {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     resultCount: 1,
@@ -1041,14 +991,12 @@ test('DELETE api/marti/package/:uid - Admin can delete any package', async () =>
                 response.end();
 
                 return true;
-            }
-            else if (request.method === 'DELETE' && request.url.includes('/Marti/api/files/any-hash-789')) {
+            } else if (request.method === 'DELETE' && request.url.includes('/Marti/api/files/any-hash-789')) {
                 response.writeHead(200);
                 response.end();
 
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         });
@@ -1065,8 +1013,7 @@ test('DELETE api/marti/package/:uid - Admin can delete any package', async () =>
             status: 200,
             message: 'Package Deleted',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 

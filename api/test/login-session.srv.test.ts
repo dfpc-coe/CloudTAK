@@ -22,8 +22,7 @@ test('GET: api/user/admin@example.com/session - empty before login', async () =>
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -48,8 +47,7 @@ test('POST: api/login - create session', async () => {
             access: 'admin',
             email: 'admin@example.com',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -74,8 +72,7 @@ test('GET: api/user/admin@example.com/session - populated after login', async ()
         assert.ok(session.device_type);
         assert.ok(session.browser);
         assert.ok(session.os);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

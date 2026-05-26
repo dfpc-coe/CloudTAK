@@ -34,8 +34,7 @@ export default class AttachmentControl {
             );
 
             return { hash };
-        }
-        catch (err) {
+        } catch (err) {
             fs.unlinkSync(tmp + '/' + name);
             throw err;
         }

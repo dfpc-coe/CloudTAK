@@ -27,8 +27,7 @@ test('GET: api/profile/feature?format=geojson&download=true', async () => {
             type: 'FeatureCollection',
             features: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -52,8 +51,7 @@ test('GET: api/profile/feature?format=kml&download=true', async () => {
             res.body.replace(/\d{4}-\d{2}-\d{2}T.*?Z/, 'DATE'),
             '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>admin@example.com-export-DATE</name><description>Exported from CloudTAK</description></Document></kml>',
         );
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -109,8 +107,7 @@ test('PUT: api/profile/feature', async () => {
                 coordinates: [123.3223, 123.0002, 123],
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -166,8 +163,7 @@ test('PUT: api/profile/feature - To Be Deleted to ensure deleted features aren\'
                 coordinates: [123.3223, 123.0002, 123],
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -180,8 +176,7 @@ test('DELETE: api/profile/feature?id=321', async () => {
                 bearer: flight.token.admin,
             },
         }, true);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -203,8 +198,7 @@ test('GET: api/profile/feature?format=geojson&download=true', async () => {
 
         res.body = JSON.parse(res.body.replace(/\d{4}-\d{2}-\d{2}T.*?Z/g, 'DATE'));
         assert.deepEqual(res.body, { type: 'FeatureCollection', features: [{ id: '123', path: '/Test Features/', type: 'Feature', properties: { type: 'a-f-g', how: 'm-g', time: 'DATE', start: 'DATE', stale: 'DATE', callsign: 'Test Callsign', archived: true, center: [123.3223, 123.0002] }, geometry: { type: 'Point', coordinates: [123.3223, 123.0002, 123], bbox: [123.3223, 123.0002, 123.3223, 123.0002] } }] });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -228,8 +222,7 @@ test('GET: api/profile/feature?format=kml&download=true', async () => {
             res.body.replace(/\d{4}-\d{2}-\d{2}T.*?Z/, 'DATE'),
             '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>admin@example.com-export-DATE</name><description>Exported from CloudTAK</description><Placemark><name>Test Callsign</name><ExtendedData><Data name="how"><value>m-g</value></Data><Data name="time"><value>2025-03-04T22:54:15.447Z</value></Data><Data name="type"><value>a-f-g</value></Data><Data name="stale"><value>2025-03-04T22:54:15.447Z</value></Data><Data name="start"><value>2025-03-04T22:54:15.447Z</value></Data><Data name="center"><value>123.3223,123.0002</value></Data><Data name="archived"><value>true</value></Data><Data name="callsign"><value>Test Callsign</value></Data></ExtendedData><Point><coordinates>123.3223,123.0002,123</coordinates></Point></Placemark></Document></kml>',
         );
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

@@ -20,8 +20,7 @@ export default class ProfileConfigModel {
         for (const setting of settings) {
             try {
                 config[setting.key] = JSON.parse(setting.value);
-            }
-            catch {
+            } catch {
                 config[setting.key] = setting.value;
             }
         }

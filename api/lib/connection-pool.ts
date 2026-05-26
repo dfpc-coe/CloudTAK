@@ -61,8 +61,7 @@ export class ConnectionClient {
             }
             this.channels = active;
             console.log(`ok - ${this.config.id} - ${this.config.name} - refreshed channels: [${[...active].join(', ')}]`);
-        }
-        catch (err) {
+        } catch (err) {
             console.error(`not ok - ${this.config.id} - ${this.config.name} - failed to refresh channels: ${err instanceof Error ? err.message : String(err)}`);
         }
     }
@@ -113,8 +112,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                         }));
                     }
                 }
-            }
-            catch (err) {
+            } catch (err) {
                 console.error('Failed to send ping: ', err);
             }
         }, 5000);
@@ -180,8 +178,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
             const geofences = await connConfig.geofences();
             await this.config.geofence.load(connConfig, geofences);
-        }
-        catch (err) {
+        } catch (err) {
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} - failed to load geofences: ${err instanceof Error ? err.message : String(err)}`);
         }
     }
@@ -215,8 +212,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
         if (conn) {
             return conn.tak.open ? 'live' : 'dead';
-        }
-        else {
+        } else {
             return 'unknown';
         }
     }
@@ -260,8 +256,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                                 message_id: feat.properties.chat.messageId || randomUUID(),
                                 message: feat.properties.remarks || '',
                             });
-                        }
-                        else if (conn instanceof ProfileConnConfig && feat.properties.fileshare) {
+                        } else if (conn instanceof ProfileConnConfig && feat.properties.fileshare) {
                             const file = new URL(feat.properties.fileshare.senderUrl);
 
                             let name = feat.properties.fileshare.name;
@@ -275,8 +270,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                                 source_id: file.searchParams.get('hash') || undefined,
                             });
                         }
-                    }
-                    catch (err) {
+                    } catch (err) {
                         console.error('Failed to save COT: ', err);
                     }
 
@@ -300,15 +294,12 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                                         time: feat.properties.time || new Date().toISOString(),
                                     },
                                 }));
-                            }
-                            else if (feat.properties.type.startsWith('t-x')) {
+                            } else if (feat.properties.type.startsWith('t-x')) {
                                 client.ws.send(JSON.stringify({ type: 'task', connection: conn.id, data: feat }));
-                            }
-                            else {
+                            } else {
                                 client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: feat }));
                             }
-                        }
-                        else {
+                        } else {
                             client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.raw }));
                         }
                     }
@@ -318,8 +309,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             if (conn instanceof MachineConnConfig && !this.config.nosinks) {
                 await this.sinks.cots(conn, cots);
             }
-        }
-        catch (err) {
+        } catch (err) {
             console.error('Error', err);
         }
     }
@@ -338,8 +328,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             }, {
                 id: connConfig.id,
             });
-        }
-        else {
+        } else {
             tak = await TAK.connect(new URL(this.config.server.url), {
                 key: connConfig.auth.key,
                 cert: connConfig.auth.cert,
@@ -377,14 +366,12 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
                         console.log(`Connection: ${connConfig.id} - Sync: ${sub.name}: Subscribed!`);
                         retry = false;
-                    }
-                    catch (err) {
+                    } catch (err) {
                         console.warn(`Connection: ${connConfig.id} (${connConfig.uid()}) - Sync: ${sub.name}: ${err instanceof Error ? err.message : String(err)}`);
 
                         if (err instanceof Error && err.message.includes('ECONNREFUSED')) {
                             await sleep(1000);
-                        }
-                        else {
+                        } else {
                             // We don't retry for unknown issues as it could be the Sync has been remotely deleted and will
                             // retry forwever
                             retry = false;
@@ -428,8 +415,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         if (connClient.retrying) {
             console.error(`ok - Not Retrying: ${connClient.config.id} - ${connClient.config.name} - Connection Already Retrying`);
             return;
-        }
-        else if (this.closed) {
+        } else if (this.closed) {
             console.error(`ok - Not Retrying: ${connClient.config.id} - ${connClient.config.name} - Connection Pool Closed`);
             return;
         }
@@ -458,8 +444,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
         try {
             await connClient.tak.reconnect();
-        }
-        catch (err) {
+        } catch (err) {
             console.error(`not ok - ${connClient.config.id} - ${connClient.config.name} - reconnect failed: ${err instanceof Error ? err.message : String(err)}`);
             connClient.retrying = false;
 
@@ -481,8 +466,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             super.delete(id);
 
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }

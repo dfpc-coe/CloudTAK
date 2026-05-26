@@ -47,8 +47,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -74,8 +73,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (user.access !== AuthUserAccess.ADMIN && baseLayer.template === false) {
                 throw new Err(400, null, 'Layer is not a Template Layer');
-            }
-            else if (user.access != AuthUserAccess.ADMIN && !req.body.connection) {
+            } else if (user.access != AuthUserAccess.ADMIN && !req.body.connection) {
                 throw new Err(400, null, 'Must provide a Connection ID');
             }
 
@@ -115,8 +113,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(layer);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

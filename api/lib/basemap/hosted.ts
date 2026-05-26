@@ -63,7 +63,9 @@ export default class HostedBasemap extends BasemapProtocol {
                     .on('data', (buf) => {
                         res.write(buf);
                     })
-                    .on('error', (err) => { return reject(err); })
+                    .on('error', (err) => {
+                        return reject(err);
+                    })
                     .on('end', () => {
                         res.end();
                         return resolve(undefined);
@@ -74,8 +76,7 @@ export default class HostedBasemap extends BasemapProtocol {
                     })
                     .end();
             });
-        }
-        catch (err) {
+        } catch (err) {
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch tile');
         }
     }

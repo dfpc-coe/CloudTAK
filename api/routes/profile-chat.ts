@@ -34,8 +34,7 @@ export default async function router(schema: Schema, config: Config) {
                     updated: c.created,
                 })),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -67,8 +66,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: `Deleted Chatrooms`,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -94,8 +92,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: `Deleted Chatroom`,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -134,8 +131,7 @@ export default async function router(schema: Schema, config: Config) {
                 `,
             });
             res.json(chats);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -170,8 +166,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: `Deleted Chats`,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

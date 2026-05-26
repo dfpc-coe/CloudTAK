@@ -87,8 +87,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
 
         if (pgres.length === 0) {
             return [];
-        }
-        else {
+        } else {
             const taskSet: Set<string> = new Set();
             for (const t of pgres) {
                 taskSet.add(t.task.replace(/-v\d+\.\d+\.\d+/, ''));
@@ -104,8 +103,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
             if (typeof l.incoming.styles === 'string') l.incoming.styles = JSON.parse(l.incoming.styles);
             if (typeof l.incoming.ephemeral === 'string') l.incoming.ephemeral = JSON.parse(l.incoming.ephemeral);
             if (typeof l.incoming.environment === 'string') l.incoming.environment = JSON.parse(l.incoming.environment);
-        }
-        else {
+        } else {
             delete l.incoming;
         }
 
@@ -113,8 +111,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
             if (typeof l.outgoing.ephemeral === 'string') l.outgoing.ephemeral = JSON.parse(l.outgoing.ephemeral);
             if (typeof l.outgoing.environment === 'string') l.outgoing.environment = JSON.parse(l.outgoing.environment);
             if (typeof l.outgoing.filters === 'string') l.outgoing.filters = JSON.parse(l.outgoing.filters);
-        }
-        else {
+        } else {
             delete l.outgoing;
         }
 
@@ -288,8 +285,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
 
         if (pgres.length === 0) {
             return { total: 0, items: [] };
-        }
-        else {
+        } else {
             return {
                 total: parseInt(pgres[0].count),
                 items: pgres.map((t) => {

@@ -67,8 +67,7 @@ export default async function router(schema: Schema, config: Config) {
 
             // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -93,8 +92,7 @@ export default async function router(schema: Schema, config: Config) {
             for (const key of Object.keys(profileBody) as Array<keyof UserPatchBodyType>) {
                 if (key === 'system_admin') {
                     profile_body.system_admin = profileBody[key];
-                }
-                else {
+                } else {
                     profile_config[String(key).replace('_', '::')] = profileBody[key];
                 }
             }
@@ -110,8 +108,7 @@ export default async function router(schema: Schema, config: Config) {
             const profile = await profileControl.from(req.params.username);
 
             res.json(profile);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -131,8 +128,7 @@ export default async function router(schema: Schema, config: Config) {
             const profile = await profileControl.from(req.params.username);
 
             res.json(profile);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -191,8 +187,7 @@ export default async function router(schema: Schema, config: Config) {
                     active: activeSessions.has(item.id),
                 })),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

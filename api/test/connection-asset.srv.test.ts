@@ -39,8 +39,7 @@ test('GET: api/connection/1/asset', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -83,8 +82,7 @@ test('GET: api/connection/1/asset - result', async () => {
                 etag: '123',
             }],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 

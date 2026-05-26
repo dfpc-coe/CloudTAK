@@ -26,8 +26,7 @@ export class TypedResponse extends Response {
 
         if (cached) {
             typeChecker = cached;
-        }
-        else {
+        } else {
             typeChecker = TypeCompiler.Compile(type);
             cache.set(type, typeChecker);
         }

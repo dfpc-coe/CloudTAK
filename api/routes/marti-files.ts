@@ -29,8 +29,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'File Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -57,8 +56,7 @@ export default async function router(schema: Schema, config: Config) {
             const file = await api.Files.download(req.params.hash);
 
             file.pipe(res);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

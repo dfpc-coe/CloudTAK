@@ -79,8 +79,7 @@ export default class Flight {
 
                     await pool.end();
                 }
-            }
-            catch (err) {
+            } catch (err) {
                 assert.ifError(err);
             }
 
@@ -90,8 +89,7 @@ export default class Flight {
                 try {
                     const regexp = pathToRegexp(route.split(' ').join(' /api'));
                     this.routes[route] = new RegExp(regexp.regexp);
-                }
-                catch (err) {
+                } catch (err) {
                     assert.fail(`Could not parse ${route} as RegExp: ` + err);
                 }
             }
@@ -125,8 +123,7 @@ export default class Flight {
 
             try {
                 await this.fetch(req.url, req, true);
-            }
-            catch (err) {
+            } catch (err) {
                 assert.ifError(err);
             }
         });
@@ -156,11 +153,9 @@ export default class Flight {
 
         if (t === true) {
             defs.verify = true;
-        }
-        else if (t === false) {
+        } else if (t === false) {
             defs.verify = false;
-        }
-        else {
+        } else {
             Object.assign(defs, t);
         }
 
@@ -174,8 +169,7 @@ export default class Flight {
 
         if (req.auth && req.auth.bearer) {
             req.headers['Authorization'] = `Bearer ${req.auth.bearer}`;
-        }
-        else if (req.auth && req.auth.username && req.auth.password) {
+        } else if (req.auth && req.auth.username && req.auth.password) {
             req.headers['Authorization'] = 'Basic ' + btoa(req.auth.username + ':' + req.auth.password);
         }
         delete req.auth;
@@ -205,11 +199,9 @@ export default class Flight {
         if (!matches.length) {
             assert.fail(`Cannot find schema match for: ${spath}`);
             return;
-        }
-        else if (matches.length === 1) {
+        } else if (matches.length === 1) {
             match = matches[0];
-        }
-        else {
+        } else {
             // TODO multiple selection - default to first one defined in routes to mirror express behabior
             match = matches[0];
         }
@@ -236,8 +228,7 @@ export default class Flight {
             for (const error of schema.errors) {
                 assert.fail(`${error.schemaPath}: ${error.message}`);
             }
-        }
-        else {
+        } else {
             // Just print the body instead of spewing
             // 100 schema validation errors for an error response
             assert.fail(JSON.stringify(res.body));
@@ -326,8 +317,7 @@ export default class Flight {
 
             if (opts.admin) {
                 this.token[username] = jwt.sign({ access: 'admin', email: username + '@example.com' }, 'coe-wildland-fire');
-            }
-            else {
+            } else {
                 this.token[username] = jwt.sign({ access: 'user', email: username + '@example.com' }, 'coe-wildland-fire');
             }
         });

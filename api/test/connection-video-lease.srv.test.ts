@@ -23,8 +23,7 @@ test('GET: api/connection/1/video/lease', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -46,8 +45,7 @@ test('POST: api/connection/1/video/lease', async () => {
             message: 'Media Integration is not configured',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -67,8 +65,7 @@ test('PUT api/config', async () => {
         assert.deepEqual(res.body, {
             'media::url': 'https://video.example.com',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

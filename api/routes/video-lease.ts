@@ -48,60 +48,46 @@ export default async function router(schema: Schema, config: Config) {
                     }
 
                     res.json({ status: 200, message: 'Authorized' });
-                }
-                catch (err) {
+                } catch (err) {
                     console.error(err);
                     throw new Err(401, new Error(String(err)), 'Invalid Token');
                 }
-            }
-            else if ([Action.PUBLISH, Action.READ, Action.PLAYBACK].includes(req.body.action)) {
+            } else if ([Action.PUBLISH, Action.READ, Action.PLAYBACK].includes(req.body.action)) {
                 const lease = await config.models.VideoLease.from(eq(VideoLease.path, req.body.path));
 
                 if (req.body.action === Action.PUBLISH && lease.stream_user && lease.stream_pass) {
                     if (req.body.user !== lease.stream_user || req.body.password !== lease.stream_pass) {
                         throw new Err(401, null, 'Unauthorized');
-                    }
-                    else {
+                    } else {
                         res.json({ status: 200, message: 'Authorized' });
                     }
-                }
-                else if (req.body.action === Action.PUBLISH && !lease.stream_user && !lease.stream_pass) {
+                } else if (req.body.action === Action.PUBLISH && !lease.stream_user && !lease.stream_pass) {
                     res.json({ status: 200, message: 'Authorized' });
-                }
-                else if (req.body.action === Action.READ && lease.read_user && lease.read_pass) {
+                } else if (req.body.action === Action.READ && lease.read_user && lease.read_pass) {
                     if (req.body.user !== lease.read_user || req.body.password !== lease.read_pass) {
                         throw new Err(401, null, 'Unauthorized');
-                    }
-                    else {
+                    } else {
                         res.json({ status: 200, message: 'Authorized' });
                     }
-                }
-                else if (req.body.action === Action.READ && !lease.read_user && !lease.read_pass) {
+                } else if (req.body.action === Action.READ && !lease.read_user && !lease.read_pass) {
                     res.json({ status: 200, message: 'Authorized' });
-                }
-                else if (req.body.action === Action.PLAYBACK && !lease.recording) {
+                } else if (req.body.action === Action.PLAYBACK && !lease.recording) {
                     throw new Err(401, null, 'Unauthorized - Recording Disabled');
-                }
-                else if (req.body.action === Action.PLAYBACK && lease.read_user && lease.read_pass) {
+                } else if (req.body.action === Action.PLAYBACK && lease.read_user && lease.read_pass) {
                     if (req.body.user !== lease.read_user || req.body.password !== lease.read_pass) {
                         throw new Err(401, null, 'Unauthorized');
-                    }
-                    else {
+                    } else {
                         res.json({ status: 200, message: 'Authorized' });
                     }
-                }
-                else if (req.body.action === Action.PLAYBACK && !lease.read_user && !lease.read_pass) {
+                } else if (req.body.action === Action.PLAYBACK && !lease.read_user && !lease.read_pass) {
                     res.json({ status: 200, message: 'Authorized' });
-                }
-                else {
+                } else {
                     res.json({ status: 401, message: 'Unauthorized' });
                 }
-            }
-            else {
+            } else {
                 throw new Err(401, null, 'Unauthorized');
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -146,20 +132,17 @@ export default async function router(schema: Schema, config: Config) {
                     leasable: false,
                     message: 'CloudTAK does not have a media server configured',
                 });
-            }
-            else if (url.hostname !== requested.hostname) {
+            } else if (url.hostname !== requested.hostname) {
                 res.json({
                     leasable: true,
                     message: 'CloudTAK has a media server provisioned and can attempt to serve the stream',
                 });
-            }
-            else if (!uuid || !uuid[0]) {
+            } else if (!uuid || !uuid[0]) {
                 res.json({
                     leasable: true,
                     message: 'CloudTAK could not parse a UUID from the provided stream',
                 });
-            }
-            else {
+            } else {
                 const lease = await videoControl.from(uuid[0], {
                     admin: user.access === AuthUserAccess.ADMIN,
                 });
@@ -186,8 +169,7 @@ export default async function router(schema: Schema, config: Config) {
                             protocols,
                         },
                     });
-                }
-                else if (lease.read_user && lease.read_pass) {
+                } else if (lease.read_user && lease.read_pass) {
                     if (
                         !req.query.url.includes(lease.read_user)
                         || !req.query.url.includes(lease.read_pass)
@@ -202,13 +184,11 @@ export default async function router(schema: Schema, config: Config) {
                             protocols,
                         },
                     });
-                }
-                else {
+                } else {
                     throw new Err(400, null, 'Clould not determine lease state');
                 }
             }
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof TypeError && err.message.includes('Invalid URL')) {
                 Err.respond(new Err(400, null, 'Invalid URL'), res);
             }
@@ -273,8 +253,7 @@ export default async function router(schema: Schema, config: Config) {
                         AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
                     `,
                 }));
-            }
-            else {
+            } else {
                 const user = await Auth.as_user(config, req);
 
                 const profile = await config.models.Profile.from(user.email);
@@ -300,8 +279,7 @@ export default async function router(schema: Schema, config: Config) {
                     `,
                 }));
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -325,22 +303,19 @@ export default async function router(schema: Schema, config: Config) {
                 lease = await videoControl.from(req.params.lease, {
                     admin: true,
                 });
-            }
-            else if (auth instanceof AuthUser) {
+            } else if (auth instanceof AuthUser) {
                 const user = auth as AuthUser;
 
                 lease = await videoControl.from(req.params.lease, {
                     username: user.email,
                     admin: user.access === AuthUserAccess.ADMIN,
                 });
-            }
-            else {
+            } else {
                 throw new Err(401, null, 'Unauthorized');
             }
 
             res.json(lease);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -367,16 +342,14 @@ export default async function router(schema: Schema, config: Config) {
                 lease = await videoControl.from(req.params.lease, {
                     admin: true,
                 });
-            }
-            else if (auth instanceof AuthUser) {
+            } else if (auth instanceof AuthUser) {
                 const user = auth as AuthUser;
 
                 lease = await videoControl.from(req.params.lease, {
                     username: user.email,
                     admin: user.access === AuthUserAccess.ADMIN,
                 });
-            }
-            else {
+            } else {
                 throw new Err(401, null, 'Unauthorized');
             }
 
@@ -387,13 +360,11 @@ export default async function router(schema: Schema, config: Config) {
                     protocols,
                     path: await videoControl.path(lease.path),
                 });
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
                 res.json({ protocols });
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -448,8 +419,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (user.access !== AuthUserAccess.ADMIN && req.body.duration > 60 * 60 * 24) {
                 throw new Err(400, null, 'Only Administrators can request a lease > 24 hours');
-            }
-            else if (user.access !== AuthUserAccess.ADMIN && req.body.permanent) {
+            } else if (user.access !== AuthUserAccess.ADMIN && req.body.permanent) {
                 throw new Err(400, null, 'Only Administrators can request permanent leases');
             }
 
@@ -471,8 +441,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(lease);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -517,8 +486,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (user.access !== AuthUserAccess.ADMIN && req.body.duration && req.body.duration > 60 * 60 * 24) {
                 throw new Err(400, null, 'Only Administrators can request a lease > 24 hours');
-            }
-            else if (user.access !== AuthUserAccess.ADMIN && req.body.permanent) {
+            } else if (user.access !== AuthUserAccess.ADMIN && req.body.permanent) {
                 throw new Err(400, null, 'Only Administrators can request permanent leases');
             }
 
@@ -540,8 +508,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(lease);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -567,8 +534,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Video Lease Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

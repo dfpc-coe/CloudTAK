@@ -22,8 +22,7 @@ test('GET: api/basemap', async () => {
             collections: [],
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -43,8 +42,7 @@ test('POST: api/basemap - Invalid URL', async () => {
         }, true);
 
         assert.fail();
-    }
-    catch (err) {
+    } catch (err) {
         assert.equal(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Invalid URL provided","messages":[]}');
     }
 });
@@ -64,8 +62,7 @@ test('POST: api/basemap - Invalid URL Protocol', async () => {
         }, true);
 
         assert.fail();
-    }
-    catch (err) {
+    } catch (err) {
         assert.equal(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Only HTTP and HTTPS Protocols are supported","messages":[]}');
     }
 });
@@ -85,8 +82,7 @@ test('POST: api/basemap - Invalid URL - No Variables', async () => {
         }, true);
 
         assert.fail();
-    }
-    catch (err) {
+    } catch (err) {
         assert.equal(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"ZXY protocol requires {z}/{x}/{y} tile variables or a {q} quadkey variable","messages":[]}');
     }
 });
@@ -135,8 +131,7 @@ test('POST: api/basemap', async () => {
             snapping_enabled: false,
             snapping_layer: null,
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -165,8 +160,7 @@ test('GET: api/basemap/1/tiles', async () => {
             actions: { feature: [] },
             tiles: ['http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}'],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -212,8 +206,7 @@ test('PATCH: api/basemap/1', async () => {
             snapping_enabled: false,
             snapping_layer: null,
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -232,8 +225,7 @@ test('PATCH: api/basemap/1 - Invalid URL', async () => {
         }, true);
 
         assert.fail();
-    }
-    catch (err) {
+    } catch (err) {
         assert.equal(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Invalid URL provided","messages":[]}');
     }
 });
@@ -251,8 +243,7 @@ test('DELETE: api/basemap/1', async () => {
             status: 200,
             message: 'Basemap Deleted',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -271,8 +262,7 @@ test('DELETE: api/basemap/1 - Doesn\'t Exist', async () => {
             message: 'Item Not Found',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -294,8 +284,7 @@ test('PATCH: api/basemap/1 - Doesn\'t Exist', async () => {
             message: 'Item Not Found',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

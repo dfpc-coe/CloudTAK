@@ -25,8 +25,7 @@ export default async function router(schema: Schema, config: Config) {
             const list = await api.Video.list(req.query);
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

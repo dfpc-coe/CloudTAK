@@ -69,12 +69,10 @@ export default class ImageServerBasemap extends BasemapProtocol {
 
             res.write(tile);
             res.end();
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Err) {
                 throw err;
-            }
-            else {
+            } else {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch ESRI tile');
             }
         }

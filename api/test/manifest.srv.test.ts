@@ -24,8 +24,7 @@ test('GET: /api/manifest.webmanifest', async () => {
         // Check first icon structure
         assert.ok(res.body.icons[0].src);
         assert.ok(res.body.icons[0].sizes);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

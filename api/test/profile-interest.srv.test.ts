@@ -23,8 +23,7 @@ test('GET: api/profile/interest', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -56,8 +55,7 @@ test('POST: api/profile/interest', async () => {
                 coordinates: [[[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]]],
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -88,8 +86,7 @@ test('GET: api/profile/interest', async () => {
                 },
             }],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -120,8 +117,7 @@ test('PATCH: api/profile/interest/1', async () => {
                 coordinates: [[[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]]],
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -152,8 +148,7 @@ test('GET: api/profile/interest', async () => {
                 },
             }],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -171,8 +166,7 @@ test('DELETE: api/profile/interest/1', async () => {
             status: 200,
             message: 'Interest Area Deleted',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -190,8 +184,7 @@ test('GET: api/profile/interest', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
