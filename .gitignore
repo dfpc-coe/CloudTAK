@@ -9,6 +9,7 @@
 deploy-*.sh
 api/assets/*
 Caddyfile
+.DS_Store
 
 # Logs
 logs
