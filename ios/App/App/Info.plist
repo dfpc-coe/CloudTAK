@@ -26,6 +26,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Allows user's to upload geotagged photos and share them with other user's</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>User's are able to login to the service via FaceID or a Passkey</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>CloudTAK shared location with other authenticated users for real-time team situational awareness</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
