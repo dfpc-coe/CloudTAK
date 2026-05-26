@@ -178,7 +178,6 @@ const emit = defineEmits<{
 }>();
 
 const route = useRoute();
-const { value: token } = await Preferences.get({ key: 'token' });
 
 const err = ref<unknown>(null);
 const upload = ref(false);
@@ -206,6 +205,7 @@ function splitAssetName(name: string): { asset: string; ext: string } {
 }
 
 async function downloadAsset(asset: Asset) {
+    const { value: token } = await Preferences.get({ key: 'token' });
     const url = stdurl(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}/asset/${asset.name}`);
     if (token) url.searchParams.set('token', token);
     await openExternalUrl(url);

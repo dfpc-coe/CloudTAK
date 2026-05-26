@@ -87,7 +87,6 @@ const loading = ref({
 
 const selected = ref<string | null>(null);
 const config = ref<{ url: string }>();
-const { value: token } = await Preferences.get({ key: 'token' });
 
 const paging = ref({
     filter: '',
@@ -121,6 +120,7 @@ async function select(tile: { name: string }) {
 
     const name = tile.name.replace(/^public\//, '').replace(/\.pmtiles$/, '');
     const url = stdurl(new URL(config.value!.url + `/tiles/public/${name}`));
+    const { value: token } = await Preferences.get({ key: 'token' });
     if (token) url.searchParams.set('token', token);
 
     const detail = await std(url) as Record<string, unknown>;
@@ -132,6 +132,7 @@ async function select(tile: { name: string }) {
 async function listTiles() {
     loading.value.list = true;
     const url = stdurl(new URL(config.value!.url + '/tiles/public'));
+    const { value: token } = await Preferences.get({ key: 'token' });
     if (token) url.searchParams.set('token', token);
     url.searchParams.set('filter', paging.value.filter);
     url.searchParams.set('limit', String(paging.value.limit));

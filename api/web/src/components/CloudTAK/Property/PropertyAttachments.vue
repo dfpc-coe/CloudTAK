@@ -167,7 +167,7 @@ const expanded = ref(false);
 const upload = ref(false);
 const loading = ref(true);
 const files = ref<Attachment[]>([]);
-const { value: token } = await Preferences.get({ key: 'token' });
+const token = ref<string | null>(null);
 
 watch(() => props.modelValue, async (newVal, oldVal) => {
     if (newVal.length === oldVal.length && newVal.every((h, i) => h === oldVal[i])) return;
@@ -185,6 +185,7 @@ watch(files, () => {
 });
 
 onMounted(async () => {
+    token.value = (await Preferences.get({ key: 'token' })).value;
     await refresh();
 });
 
@@ -250,7 +251,7 @@ function uploadURL(): URL {
 
 function downloadAssetUrl(file: Attachment): string {
     const url = stdurl(`/api/attachment/${file.hash}`);
-    if (token) url.searchParams.set('token', token);
+    if (token.value) url.searchParams.set('token', token.value);
     return url.toString();
 }
 

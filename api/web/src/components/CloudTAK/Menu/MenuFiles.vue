@@ -249,7 +249,6 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '../../../stores/map.ts';
 import Overlay from '../../../base/overlay.ts';
 import Upload from '../../util/Upload.vue';
-const { value: token } = await Preferences.get({ key: 'token' });
 
 const mapStore = useMapStore();
 
@@ -587,6 +586,7 @@ function uploadComplete(event: unknown) {
 }
 
 async function downloadAsset(asset: ProfileFile) {
+    const { value: token } = await Preferences.get({ key: 'token' });
     const url = stdurl(`/api/profile/asset/${asset.id}.${asset.name.split('.').pop()}`);
     if (token) url.searchParams.set('token', token);
     window.open(url, "_blank")
