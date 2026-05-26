@@ -129,7 +129,6 @@ import {
 } from '@tak-ps/vue-tabler';
 
 const route = useRoute();
-const { value: token } = await Preferences.get({ key: 'token' });
 const error = ref<Error | undefined>(undefined);
 const upload = ref(false);
 const loading = ref(true);
@@ -159,6 +158,7 @@ function splitAssetName(name: string): { asset: string; ext: string } {
 }
 
 async function downloadAsset(asset: ETLConnectionAssetList["items"][0]) {
+    const { value: token } = await Preferences.get({ key: 'token' });
     const url = stdurl(`/api/connection/${route.params.connectionid}/asset/${asset.name}`);
     if (token) url.searchParams.set('token', token);
     url.searchParams.set('download', String(true));

@@ -108,7 +108,6 @@ const props = withDefaults(defineProps<{
 }>(), {
     url: undefined,
 });
-const { value: token } = await Preferences.get({ key: 'token' });
 
 const loading = ref<Record<string, boolean>>({
     main: true,
@@ -178,6 +177,7 @@ async function fetchSelected() {
                 const name = match[1];
                 const configValue = await ensureConfig();
                 const url = stdurl(new URL(configValue.url + `/tiles/public/${name}`));
+                const { value: token } = await Preferences.get({ key: 'token' });
                 if (token) url.searchParams.set('token', token);
                 selected.value = await std(url) as TileDetail;
                 selected.value.url = url.toString();
@@ -196,6 +196,7 @@ async function select(tile: TileDetail) {
     const name = tile.name.replace(/^public\//, "").replace(/\.pmtiles$/, '');
 
     const url = stdurl(new URL(configValue.url + `/tiles/public/${name}`));
+    const { value: token } = await Preferences.get({ key: 'token' });
     if (token) url.searchParams.set('token', token);
 
     const detail = await std(url) as TileDetail;
@@ -210,6 +211,7 @@ async function listTiles() {
 
     loading.value.list = true;
     const url = stdurl(new URL(configValue.url + '/tiles/public'));
+    const { value: token } = await Preferences.get({ key: 'token' });
     if (token) url.searchParams.set('token', token);
     url.searchParams.set('filter', paging.value.filter);
     url.searchParams.set('limit', String(paging.value.limit));

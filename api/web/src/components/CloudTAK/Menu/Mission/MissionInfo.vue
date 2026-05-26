@@ -275,10 +275,10 @@ const emit = defineEmits(['refresh']);
 const props = defineProps<{
     subscription: Subscription
 }>();
-const { value: token } = await Preferences.get({ key: 'token' });
+const token = ref<string | null>(null);
 
 const missionQRURL = computed(() => {
-    return String(stdurl(`/api/marti/missions/${props.subscription.guid}/qr${token ? `?token=${encodeURIComponent(token)}` : ''}`));
+    return String(stdurl(`/api/marti/missions/${props.subscription.guid}/qr${token.value ? `?token=${encodeURIComponent(token.value)}` : ''}`));
 });
 
 const keywords = computed(() => {
@@ -371,6 +371,8 @@ const subscriptions = ref<MissionSubscriptions>([]);
 const missionTemplate = ref<MissionTemplate>();
 
 onMounted(async () => {
+    token.value = (await Preferences.get({ key: 'token' })).value;
+
     loading.value.users = true;
     await fetchSubscriptions();
     loading.value.users = false;
