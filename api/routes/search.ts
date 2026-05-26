@@ -10,25 +10,30 @@ import { SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from '.
 import { Feature } from '@tak-ps/node-cot';
 import Config from '../lib/config.js';
 
+function optionalISOString(date: Date): string | null {
+    return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
 export default async function router(schema: Schema, config: Config) {
     const searchManager = await SearchManager.init(config);
+    const SunTime = (description: string) => Type.Union([Type.String(), Type.Null()], { description });
 
     const ReverseResponse = Type.Object({
         sun: Type.Object({
-            sunrise: Type.String({ description: 'sunrise (top edge of the sun appears on the horizon)' }),
-            sunriseEnd: Type.String({ description: 'sunrise ends (bottom edge of the sun touches the horizon)' }),
-            goldenHourEnd: Type.String({ description: 'morning golden hour (soft light, best time for photography) ends' }),
-            solarNoon: Type.String({ description: 'solar noon (sun is in the highest position)' }),
-            goldenHour: Type.String({ description: 'evening golden hour starts' }),
-            sunsetStart: Type.String({ description: 'sunset starts (bottom edge of the sun touches the horizon)' }),
-            sunset: Type.String({ description: 'sunset (sun disappears below the horizon, evening civil twilight starts)' }),
-            dusk: Type.String({ description: 'dusk (evening nautical twilight starts)' }),
-            nauticalDusk: Type.String({ description: 'nautical dusk (evening astronomical twilight starts)' }),
-            night: Type.String({ description: 'night starts (dark enough for astronomical observations)' }),
-            nadir: Type.String({ description: 'nadir (darkest moment of the night, sun is in the lowest position)' }),
-            nightEnd: Type.String({ description: 'night ends (morning astronomical twilight starts)' }),
-            nauticalDawn: Type.String({ description: 'nautical dawn (morning nautical twilight starts)' }),
-            dawn: Type.String({ description: 'dawn (morning nautical twilight ends, morning civil twilight starts)' }),
+            sunrise: SunTime('sunrise (top edge of the sun appears on the horizon)'),
+            sunriseEnd: SunTime('sunrise ends (bottom edge of the sun touches the horizon)'),
+            goldenHourEnd: SunTime('morning golden hour (soft light, best time for photography) ends'),
+            solarNoon: SunTime('solar noon (sun is in the highest position)'),
+            goldenHour: SunTime('evening golden hour starts'),
+            sunsetStart: SunTime('sunset starts (bottom edge of the sun touches the horizon)'),
+            sunset: SunTime('sunset (sun disappears below the horizon, evening civil twilight starts)'),
+            dusk: SunTime('dusk (evening nautical twilight starts)'),
+            nauticalDusk: SunTime('nautical dusk (evening astronomical twilight starts)'),
+            night: SunTime('night starts (dark enough for astronomical observations)'),
+            nadir: SunTime('nadir (darkest moment of the night, sun is in the lowest position)'),
+            nightEnd: SunTime('night ends (morning astronomical twilight starts)'),
+            nauticalDawn: SunTime('nautical dawn (morning nautical twilight starts)'),
+            dawn: SunTime('dawn (morning nautical twilight ends, morning civil twilight starts)'),
         }),
         magnetic: Type.Object({
             declination: Type.Number(),
@@ -92,20 +97,20 @@ export default async function router(schema: Schema, config: Config) {
 
             const response: Static<typeof ReverseResponse> = {
                 sun: {
-                    sunrise: sun.sunrise.toISOString(),
-                    sunriseEnd: sun.sunriseEnd.toISOString(),
-                    goldenHourEnd: sun.goldenHourEnd.toISOString(),
-                    solarNoon: sun.solarNoon.toISOString(),
-                    goldenHour: sun.goldenHour.toISOString(),
-                    sunsetStart: sun.sunsetStart.toISOString(),
-                    sunset: sun.sunset.toISOString(),
-                    dusk: sun.dusk.toISOString(),
-                    nauticalDusk: sun.nauticalDusk.toISOString(),
-                    night: sun.night.toISOString(),
-                    nadir: sun.nadir.toISOString(),
-                    nightEnd: sun.nightEnd.toISOString(),
-                    nauticalDawn: sun.nauticalDawn.toISOString(),
-                    dawn: sun.dawn.toISOString(),
+                    sunrise: optionalISOString(sun.sunrise),
+                    sunriseEnd: optionalISOString(sun.sunriseEnd),
+                    goldenHourEnd: optionalISOString(sun.goldenHourEnd),
+                    solarNoon: optionalISOString(sun.solarNoon),
+                    goldenHour: optionalISOString(sun.goldenHour),
+                    sunsetStart: optionalISOString(sun.sunsetStart),
+                    sunset: optionalISOString(sun.sunset),
+                    dusk: optionalISOString(sun.dusk),
+                    nauticalDusk: optionalISOString(sun.nauticalDusk),
+                    night: optionalISOString(sun.night),
+                    nadir: optionalISOString(sun.nadir),
+                    nightEnd: optionalISOString(sun.nightEnd),
+                    nauticalDawn: optionalISOString(sun.nauticalDawn),
+                    dawn: optionalISOString(sun.dawn),
                 },
                 magnetic: {
                     declination: magnetic.decl,
