@@ -212,7 +212,7 @@ async function regenerate() {
         return;
     }
 
-    const email = certificate.subject.split('=')[3]
+    const email = certificate.subject.split('=')[3];
 
     const res = await server.PUT('/api/ldap/user/{:email}', {
         params: {
