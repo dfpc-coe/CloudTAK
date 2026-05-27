@@ -1,0 +1,1 @@
+ALTER TABLE "profile_sessions" ADD COLUMN "fcm" text;
