@@ -16,6 +16,12 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.4.0 - 2026-05-26
+
+- :tada: Add initial capacitor project for iOS
+- :tada: Implement new serverURL handling to allow the Web UI to point at a CloudTAK server that is not on it's origin
+- :rocket: Migrate a significant amount of `std()` API calls to use `server()` for strong typing
+
 ### v13.3.0 - 2026-05-22
 
 - :rocket: Allow an API user to set contentHashes or entryUid - Closes: https://github.com/dfpc-coe/CloudTAK/pull/1441
