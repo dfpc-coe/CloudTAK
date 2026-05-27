@@ -53,11 +53,9 @@ test('POST: api/server/tileset', async () => {
             name: 'ski-areas.pmtiles',
             path: 'public/ski-areas.pmtiles',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
-    }
-    finally {
+    } finally {
         Sinon.restore();
     }
 });
@@ -81,8 +79,7 @@ test('POST: api/server/tileset - Requires Admin', async () => {
             message: 'User must be a System Administrator to access this resource',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

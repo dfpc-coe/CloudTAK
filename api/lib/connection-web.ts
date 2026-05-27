@@ -48,8 +48,7 @@ export class ConnectionWebSocket {
                                 parent: msg.data.parent,
                                 groupOwner: msg.data.groupOwner,
                             });
-                        }
-                        else {
+                        } else {
                             chat = new DirectChat(msg.data);
                         }
 
@@ -68,16 +67,14 @@ export class ConnectionWebSocket {
                             message_id: feat.properties.chat ? (feat.properties.chat.messageId || randomUUID()) : randomUUID(),
                             message: msg.data.message,
                         });
-                    }
-                    else {
+                    } else {
                         const feat = msg.data as Static<typeof Feature.Feature>;
 
                         const cot = await CoTParser.from_geojson(feat);
 
                         client.tak.write([cot], { stripFlow: true });
                     }
-                }
-                catch (err) {
+                } catch (err) {
                     this.ws.send(JSON.stringify({
                         type: 'Error',
                         properties: {

@@ -82,7 +82,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import type { ETLConnection, ETLLayerList } from '../../../types.ts';
 import TableFooter from '../../util/TableFooter.vue';
 import {
@@ -127,13 +127,25 @@ watch(paging.value, async () => {
 
 async function listLayers() {
     loading.value = true;
+    err.value = undefined;
     try {
-        const url = stdurl('/api/layer');
-        url.searchParams.set('data', String(route.params.dataid));
-        url.searchParams.set('limit', String(paging.value.limit));
-        url.searchParams.set('page', String(paging.value.page));
-        url.searchParams.set('filter', paging.value.filter);
-        list.value = await std(url) as typeof list.value;
+        const { data, error } = await server.GET('/api/layer', {
+            params: {
+                query: {
+                    data: Number(route.params.dataid),
+                    limit: paging.value.limit,
+                    alarms: false,
+                    page: paging.value.page,
+                    order: 'asc',
+                    sort: 'created',
+                    filter: paging.value.filter,
+                }
+            }
+        });
+
+        if (error) throw new Error(error.message);
+
+        list.value = data as typeof list.value;
     } catch (e) {
         err.value = e instanceof Error ? e : new Error(String(e));
     }

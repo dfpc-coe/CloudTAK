@@ -17,8 +17,7 @@ test('GET: Ensure DFPC AGOL Portal is up and running', async () => {
         await res.typed(Type.Object({
             currentVersion: Type.String(),
         }));
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -33,8 +32,7 @@ test('PATCH: api/esri/portal/content', async () => {
         }, false);
 
         assert.ok(res.body.total);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

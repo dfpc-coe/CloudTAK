@@ -40,8 +40,7 @@ test('GET: api/attachments - no result', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -82,8 +81,7 @@ test('GET: api/attachments - result', async () => {
                 created: '2025-03-04T22:54:15.447Z',
             }],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -112,8 +110,7 @@ test('PUT: api/attachment - success', async () => {
         assert.ok(s3Stub.calledOnce);
         assert.ok(hashStub.calledOnce);
         assert.equal(s3Stub.firstCall.args[0], 'attachment/hash-123/image.png');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -134,8 +131,7 @@ test('PUT: api/attachment - unsupported content type', async () => {
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Unsupported Content-Type');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -153,8 +149,7 @@ test('GET: api/attachment/:hash - stream', async () => {
                         Key: 'attachment/stream-hash/data.txt',
                     }],
                 });
-            }
-            else if (command.constructor.name === 'GetObjectCommand') {
+            } else if (command.constructor.name === 'GetObjectCommand') {
                 assert.deepEqual(command.input, {
                     Bucket: 'fake-asset-bucket',
                     Key: 'attachment/stream-hash/data.txt',
@@ -178,8 +173,7 @@ test('GET: api/attachment/:hash - stream', async () => {
 
         assert.equal(res.status, 200);
         assert.equal(res.body, 'file-body');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -207,8 +201,7 @@ test('GET: api/attachment/:hash - missing', async () => {
 
         assert.equal(res.status, 404);
         assert.equal(res.body.message, 'Attachment not found');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 

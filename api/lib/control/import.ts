@@ -76,8 +76,7 @@ export default class ImportControl {
                     name: imp.name,
                     status: 'Pending',
                 });
-            }
-            catch (err) {
+            } catch (err) {
                 file.resume();
                 await this.fail(imp.id, err);
                 throw err;
@@ -101,8 +100,7 @@ export default class ImportControl {
 
         if (body.status && [Import_Status.EMPTY, Import_Status.PENDING].includes(body.status)) {
             throw new Err(400, null, `Cannot set status to ${body.status}`);
-        }
-        else if (body.status === Import_Status.RUNNING && imported.status === Import_Status.RUNNING) {
+        } else if (body.status === Import_Status.RUNNING && imported.status === Import_Status.RUNNING) {
             throw new Err(400, null, `Cannot set status to running on an import that is already running`);
         }
 

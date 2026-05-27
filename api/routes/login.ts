@@ -48,32 +48,28 @@ export default async function router(schema: Schema, config: Config) {
                             ...response,
                             last_login: new Date().toISOString(),
                         });
-                    }
-                    catch (err) {
+                    } catch (err) {
                         console.error(err);
 
                         await config.models.Profile.commit(email, {
                             last_login: new Date().toISOString(),
                         });
                     }
-                }
-                else {
+                } else {
                     await config.models.Profile.commit(email, {
                         last_login: new Date().toISOString(),
                     });
                 }
 
                 profile = await config.models.Profile.from(email);
-            }
-            else {
+            } else {
                 throw new Err(400, null, 'Server has not been configured');
             }
 
             let access = AuthUserAccess.USER;
             if (profile.system_admin) {
                 access = AuthUserAccess.ADMIN;
-            }
-            else if (profile.agency_admin && profile.agency_admin.length) {
+            } else if (profile.agency_admin && profile.agency_admin.length) {
                 access = AuthUserAccess.AGENCY;
             }
 
@@ -95,8 +91,7 @@ export default async function router(schema: Schema, config: Config) {
                 email: profile.username,
                 token: jwt.sign({ access, email: profile.username, s: session.id }, config.SigningSecret, { expiresIn: '16h' }),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -124,8 +119,7 @@ export default async function router(schema: Schema, config: Config) {
                 email: user.email,
                 access: user.access,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

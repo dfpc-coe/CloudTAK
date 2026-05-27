@@ -22,8 +22,7 @@ test('GET: api/video/lease - MediaServer Query', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -87,8 +86,7 @@ test('Mock Media Server Start', async () => {
             key: 'media::url',
             value: 'http://media-server',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -111,8 +109,7 @@ test('POST: api/video/lease - Create Lease', async () => {
         assert.equal(res.body.name, 'Test Lease', 'Name matches');
         leaseId = res.body.id;
         leasePath = res.body.path;
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -129,8 +126,7 @@ test('GET: api/video/lease/:lease - Get Lease', async () => {
         assert.equal(res.status, 200, 'Status 200');
         assert.equal(res.body.id, leaseId, 'Lease ID matches');
         assert.equal(res.body.name, 'Test Lease', 'Name matches');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -142,14 +138,12 @@ test('PATCH: api/video/lease/:lease - Update Lease', async () => {
             response.write(JSON.stringify({}));
             response.end();
             return true;
-        }
-        else if (request.method === 'POST' && request.url && request.url.startsWith('/Marti/api/video')) {
+        } else if (request.method === 'POST' && request.url && request.url.startsWith('/Marti/api/video')) {
             response.setHeader('Content-Type', 'application/json');
             response.write(JSON.stringify({}));
             response.end();
             return true;
-        }
-        else if (request.method === 'GET' && request.url && request.url.startsWith('/Marti/api/video/')) {
+        } else if (request.method === 'GET' && request.url && request.url.startsWith('/Marti/api/video/')) {
             response.setHeader('Content-Type', 'application/json');
             response.write(JSON.stringify({}));
             response.end();
@@ -196,8 +190,7 @@ test('PATCH: api/video/lease/:lease - Update Lease', async () => {
         assert.equal(res.status, 200, 'Status 200');
         assert.equal(res.body.id, leaseId, 'Lease ID matches');
         assert.equal(res.body.name, 'Updated Lease Name', 'Name updated');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

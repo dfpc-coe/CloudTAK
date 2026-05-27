@@ -96,8 +96,8 @@
 
 <script setup lang='ts'>
 import { ref, watch, computed, onMounted } from 'vue';
-import type { ETLConnection, ETLLdapChannelList, ETLLdapChannel, ETLLdapUser } from '../../../types.ts';
-import { std, stdurl } from '../../../std.ts';
+import type { ETLLdapChannelList, ETLLdapChannel } from '../../../types.ts';
+import { server } from '../../../std.ts';
 import {
     TablerNone,
     TablerEnum,
@@ -109,8 +109,18 @@ import {
     IconTrash
 } from '@tabler/icons-vue';
 
+interface MachineUserConnection {
+    agency: number | null;
+    certificate?: {
+        subject: string;
+    };
+    name: string;
+    description: string;
+    readonly: boolean;
+}
+
 const props = defineProps<{
-    connection: ETLConnection
+    connection: MachineUserConnection
 }>();
 
 const emit = defineEmits([ 'certs', 'integration' ]);
@@ -174,12 +184,18 @@ async function listChannels() {
     loading.value.channels = true;
 
     try {
-        const url = stdurl('/api/ldap/channel');
-        if (props.connection.agency) {
-            url.searchParams.set('agency', String(props.connection.agency));
-        }
-        url.searchParams.set('filter', paging.value.filter);
-        channels.value = await std(url) as ETLLdapChannelList
+        const res = await server.GET('/api/ldap/channel', {
+            params: {
+                query: {
+                    ...(props.connection.agency ? { agency: props.connection.agency } : {}),
+                    filter: paging.value.filter,
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        channels.value = res.data as ETLLdapChannelList;
     } catch (err) {
         loading.value.channels = false;
         throw err;
@@ -190,42 +206,53 @@ async function listChannels() {
 async function regenerate() {
     loading.value.gen = true;
 
-    const email = props.connection.certificate.subject.split('=')[3]
+    const certificate = props.connection.certificate;
+    if (!certificate) {
+        loading.value.gen = false;
+        return;
+    }
 
-    const url = stdurl(`/api/ldap/user/${email}`);
-    const res = await std(url, {
-        method: 'PUT',
-    }) as ETLLdapUser
+    const email = certificate.subject.split('=')[3];
 
-    loading.value.gen = true;
+    const res = await server.PUT('/api/ldap/user/{:email}', {
+        params: {
+            path: {
+                ':email': email,
+            }
+        }
+    });
 
-    emit('certs', res.auth);
-    emit('integration', res.integrationId);
+    if (res.error) throw new Error(res.error.message);
+
+    loading.value.gen = false;
+
+    emit('certs', res.data.auth);
+    emit('integration', res.data.integrationId);
 }
 
 async function generate() {
     loading.value.gen = true;
     try {
-        const url = stdurl('/api/ldap/user');
-        const res = await std(url, {
-            method: 'POST',
+        const res = await server.POST('/api/ldap/user', {
             body: {
                 name: props.connection.name,
                 description: props.connection.description,
-                agency_id: props.connection.agency,
+                ...(props.connection.agency ? { agency_id: props.connection.agency } : {}),
                 locking: !props.connection.readonly,
                 channels: selected.value.map((s) => {
                     return {
                         id: s.channel.id,
-                        access: s.access.toLowerCase()
+                        access: s.access.toLowerCase() as 'read' | 'write' | 'duplex'
                     }
                 })
             }
-        }) as ETLLdapUser
+        });
+
+        if (res.error) throw new Error(res.error.message);
 
         loading.value.gen = false;
-        emit('certs', res.auth);
-        emit('integration', res.integrationId);
+        emit('certs', res.data.auth);
+        emit('integration', res.data.integrationId);
     } catch (err) {
         loading.value.gen = false;
         throw err;

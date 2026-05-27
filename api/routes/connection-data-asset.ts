@@ -55,8 +55,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json({ ...list, assets });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -109,8 +108,7 @@ export default async function router(schema: Schema, config: Config) {
 
                     name = filename;
                     assets.push(S3.put(`data/${data.id}/${filename}`, passThrough));
-                }
-                catch (err) {
+                } catch (err) {
                     Err.respond(err, res);
                 }
             }).on('finish', async () => {
@@ -139,8 +137,7 @@ export default async function router(schema: Schema, config: Config) {
 
                     try {
                         await DataMission.sync(config, data);
-                    }
-                    catch (err) {
+                    } catch (err) {
                         console.error(err);
                     }
 
@@ -154,15 +151,13 @@ export default async function router(schema: Schema, config: Config) {
                         status: 200,
                         message: 'Asset Uploaded',
                     });
-                }
-                catch (err) {
+                } catch (err) {
                     Err.respond(err, res);
                 }
             });
 
             req.pipe(bb);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -210,8 +205,7 @@ export default async function router(schema: Schema, config: Config) {
                         }
                     }
                 }
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
             }
 
@@ -228,8 +222,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Asset Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -262,8 +255,7 @@ export default async function router(schema: Schema, config: Config) {
             const stream = await S3.get(`data/${req.params.dataid}/${req.params.asset}.${req.params.ext}`);
 
             stream.pipe(res);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -301,8 +293,7 @@ export default async function router(schema: Schema, config: Config) {
             url.searchParams.append('token', token);
 
             return res.redirect(String(url));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

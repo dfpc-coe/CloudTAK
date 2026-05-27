@@ -1,6 +1,6 @@
 import { db } from '../database.ts'
 import type { DBConfig } from '../database.ts';
-import { std } from '../std.ts';
+import { std, stdurl } from '../std.ts';
 import { liveQuery, type Subscription } from 'dexie';
 import type { paths } from '@cloudtak/api-types';
 
@@ -99,7 +99,7 @@ export default class Config<K extends keyof FullConfig = keyof FullConfig> {
     static async refresh(keys: (keyof FullConfig)[]): Promise<Partial<FullConfig>> {
         if (keys.length === 0) return {};
 
-        const url = new URL('/api/config', self.location.origin);
+        const url = stdurl('/api/config');
         url.searchParams.append('keys', keys.join(','));
 
         const res = await std(url) as Partial<FullConfig>;

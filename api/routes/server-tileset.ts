@@ -86,8 +86,7 @@ export default async function router(schema: Schema, config: Config) {
                     passThrough = new Stream.PassThrough();
                     file.pipe(passThrough);
                     uploadPromise = S3.put(`public/${uploadName}`, passThrough);
-                }
-                catch (err) {
+                } catch (err) {
                     uploadError = err instanceof Error ? err : new Error(String(err));
                     file.resume();
                 }
@@ -109,15 +108,13 @@ export default async function router(schema: Schema, config: Config) {
                         name: uploadName,
                         path: `public/${uploadName}`,
                     });
-                }
-                catch (err) {
+                } catch (err) {
                     respond(err);
                 }
             });
 
             req.pipe(bb);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

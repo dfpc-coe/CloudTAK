@@ -73,8 +73,7 @@ export default async function router(schema: Schema, config: Config) {
                 total: items.length,
                 items: items.slice(0, req.query.limit),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -102,14 +101,12 @@ export default async function router(schema: Schema, config: Config) {
                         full: req.params.type,
                         desc: 'Unknown CoT Type',
                     });
-                }
-                else {
+                } else {
                     info.cot = req.params.type.replace('-.-', `-${split[1]}-`);
 
                     res.json(info);
                 }
-            }
-            else {
+            } else {
                 const info = types.cots.get(req.params.type);
 
                 if (!info) {
@@ -118,13 +115,11 @@ export default async function router(schema: Schema, config: Config) {
                         full: req.params.type,
                         desc: 'Unknown CoT Type',
                     });
-                }
-                else {
+                } else {
                     res.json(info);
                 }
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

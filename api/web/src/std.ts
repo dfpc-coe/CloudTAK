@@ -1,32 +1,78 @@
 import createClient from "openapi-fetch";
+import { Preferences } from '@capacitor/preferences';
+import KV from './base/kv.ts'
 import type { Middleware } from "openapi-fetch";
 import type { paths } from '@cloudtak/api-types'
 import type { APIError } from './types.js'
 import type { Router } from 'vue-router'
 import { openSecondaryView } from './base/capacitor.ts';
+import { db } from './database.ts';
 
-export const server = createClient<paths>({
-    baseUrl: self.location.origin
-});
+export const serverUrl = await getRuntimeServerUrl();
+export const server = await getServer();
 
-const AuthMiddleware: Middleware = {
-    async onRequest({ request }) {
-        if (!isWebWorker() && localStorage.token) {
-            request.headers.set("Authorization", `Bearer ${localStorage.token}`);
-        }
+export async function getServer() {
+    const server = createClient<paths>({
+        baseUrl: serverUrl,
+    });
 
-        return request;
+    const authMiddleware: Middleware = {
+        async onRequest({ request }) {
+            const token = await getRuntimeToken();
+
+            if (token && !request.headers.has('Authorization')) {
+                request.headers.set('Authorization', `Bearer ${token}`);
+            }
+
+            return request;
+        },
+    };
+
+    server.use(authMiddleware);
+
+    return server;
+}
+
+async function getRuntimeToken(): Promise<string | undefined> {
+    if (!isWebWorker()) {
+        const { value } = await Preferences.get({ key: 'token' });
+        return value || undefined;
     }
-};
 
-server.use(AuthMiddleware);
+    return (await db.config.get('token'))?.value as string | undefined;
+}
+
+async function getRuntimeServerUrl(): Promise<string> {
+    if (!isWebWorker()) {
+        const { value } = await Preferences.get({ key: 'serverUrl' });
+        return value || getRuntimeOrigin();
+    }
+
+    return (await KV.value('serverUrl')) || getRuntimeOrigin();
+}
+
+function getRuntimeOrigin(): string {
+    if (typeof location !== 'undefined' && location.origin) {
+        return location.origin;
+    }
+
+    if (typeof window !== 'undefined' && window.location.origin) {
+        return window.location.origin;
+    }
+
+    if (typeof self !== 'undefined' && self.location.origin) {
+        return self.location.origin;
+    }
+
+    return 'http://localhost';
+}
 
 export function stdurl(url: string | URL): URL {
     try {
         url = new URL(url);
     } catch (err) {
         if (err instanceof TypeError) {
-            url = new URL(String(self.location.origin).replace(/\/$/, '') + url);
+            url = new URL(String(serverUrl).replace(/\/$/, '') + url);
         } else {
             throw err;
         }
@@ -56,15 +102,15 @@ export async function std(
 
     if (!opts.headers) opts.headers = {};
 
+    const authToken = opts.token || await getRuntimeToken();
+
     if (!(opts.body instanceof FormData) && typeof opts.body === 'object' && !opts.headers['Content-Type']) {
         opts.body = JSON.stringify(opts.body);
         opts.headers['Content-Type'] = 'application/json';
     }
 
-    if (!isWebWorker() && localStorage.token && !opts.headers.Authorization) {
-        opts.headers['Authorization'] = 'Bearer ' + localStorage.token;
-    } else if (opts.token) {
-        opts.headers['Authorization'] = 'Bearer ' + opts.token
+    if (authToken && !opts.headers.Authorization) {
+        opts.headers['Authorization'] = 'Bearer ' + authToken;
     }
 
     const res = await fetch(url, opts as RequestInit);
@@ -84,7 +130,7 @@ export async function std(
         throw err;
     } else if (res.status === 401) {
         if (!isWebWorker()) {
-            delete localStorage.token;
+            await Preferences.remove({ key: 'token' });
         }
         throw new Error('401');
     }
@@ -127,17 +173,6 @@ export async function std(
     }
 }
 
-export function humanSeconds(seconds: number): string {
-        const date = new Date(seconds * 1000);
-        const str = [];
-        if (date.getUTCDate()-1 !== 0) str.push(date.getUTCDate()-1 + " days");
-        if (date.getUTCHours() !== 0 ) str.push(date.getUTCHours() + " hrs");
-        if (date.getUTCMinutes() !== 0) str.push(date.getUTCMinutes() + " mins");
-        if (date.getUTCSeconds() !== 0) str.push(date.getUTCSeconds() + " secs");
-        if (date.getUTCMilliseconds() !== 0) str.push(date.getUTCMilliseconds() + " ms");
-        return str.join(', ');
-}
-
 function isWebWorker() {
     return typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
 }
@@ -151,3 +186,15 @@ export function stdclick($router: Router, event: MouseEvent | KeyboardEvent, pat
         $router.push(path);
     }
 }
+
+export function humanSeconds(seconds: number): string {
+        const date = new Date(seconds * 1000);
+        const str = [];
+        if (date.getUTCDate()-1 !== 0) str.push(date.getUTCDate()-1 + " days");
+        if (date.getUTCHours() !== 0 ) str.push(date.getUTCHours() + " hrs");
+        if (date.getUTCMinutes() !== 0) str.push(date.getUTCMinutes() + " mins");
+        if (date.getUTCSeconds() !== 0) str.push(date.getUTCSeconds() + " secs");
+        if (date.getUTCMilliseconds() !== 0) str.push(date.getUTCMilliseconds() + " ms");
+        return str.join(', ');
+}
+

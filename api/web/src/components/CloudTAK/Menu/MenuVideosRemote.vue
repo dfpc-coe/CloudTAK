@@ -89,10 +89,11 @@
 
 <script setup lang='ts'>
 import { v4 as randomUUID } from 'uuid';
+import type { paths } from '@cloudtak/api-types';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import type { VideoConnection, VideoConnectionFeed } from '../../../types.ts';
+import type { VideoConnection, VideoConnectionFeed, VideoConnection_Create } from '../../../types.ts';
 import VideosRemoteFeed from './Videos/VideosRemoteFeed.vue';
-import { std } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import { useRoute, useRouter } from 'vue-router';
 import GroupSelect from '../../util/GroupSelect.vue';
 import {
@@ -115,6 +116,8 @@ const loading = ref(String(route.params.connectionid) !== "new");
 const err = ref<Error | undefined>(undefined);
 
 const groups = ref<string[]>([]);
+
+type VideoConnection_Update = paths['/api/marti/video/{:uid}']['put']['requestBody']['content']['application/json'];
 
 const connection = ref<VideoConnection>({
     uuid: randomUUID(),
@@ -142,13 +145,37 @@ function newFeed() {
     } as VideoConnectionFeed)
 }
 
+function toVideoConnectionBody(value: VideoConnection): VideoConnection_Update {
+    return {
+        uuid: value.uuid,
+        active: value.active,
+        alias: value.alias,
+        feeds: value.feeds.map((feed) => {
+            return {
+                uuid: feed.uuid,
+                active: feed.active,
+                alias: feed.alias,
+                url: feed.url,
+            };
+        })
+    };
+}
+
 async function fetchConnection() {
     loading.value = true;
 
     try {
-        connection.value = await std(`/api/marti/video/${route.params.connectionid}`, {
-            method: 'GET'
-        }) as VideoConnection;
+        const res = await server.GET('/api/marti/video/{:uid}', {
+            params: {
+                path: {
+                    ':uid': String(route.params.connectionid),
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        connection.value = res.data;
 
         loading.value = false;
     } catch (err) {
@@ -162,18 +189,25 @@ async function saveConnection() {
 
     try {
         if (String(route.params.connectionid) !== 'new') {
-            await std(`/api/marti/video/${connection.value.uuid}`, {
-                method: 'PUT',
-                body: connection.value
+            const res = await server.PUT('/api/marti/video/{:uid}', {
+                params: {
+                    path: {
+                        ':uid': connection.value.uuid,
+                    }
+                },
+                body: toVideoConnectionBody(connection.value)
             });
+
+            if (res.error) throw new Error(res.error.message);
         } else {
-            await std('/api/marti/video', {
-                method: 'POST',
+            const res = await server.POST('/api/marti/video', {
                 body: {
                     groups: groups.value,
-                    ...connection.value
-                }
+                    ...toVideoConnectionBody(connection.value)
+                } satisfies VideoConnection_Create
             });
+
+            if (res.error) throw new Error(res.error.message);
         }
 
         router.push(`/menu/videos`)
@@ -189,9 +223,15 @@ async function deleteConnection(): Promise<void> {
     loading.value = true;
 
     try {
-        await std(`/api/marti/video/${route.params.connectionid}`, {
-            method: 'DELETE'
+        const res = await server.DELETE('/api/marti/video/{:uid}', {
+            params: {
+                path: {
+                    ':uid': String(route.params.connectionid),
+                }
+            }
         });
+
+        if (res.error) throw new Error(res.error.message);
 
         router.push(`/menu/videos`)
     } catch (err) {

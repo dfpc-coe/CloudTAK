@@ -26,8 +26,7 @@ export default class ECR {
             } while (res.nextToken);
 
             return imageIds;
-        }
-        catch (err) {
+        } catch (err) {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list ECR Tasks');
         }
     }
@@ -43,8 +42,7 @@ export default class ECR {
 
             if (!res || !res.images) return false;
             return res.images.length > 0;
-        }
-        catch (err) {
+        } catch (err) {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to Get ECR Task');
         }
     }
@@ -60,8 +58,7 @@ export default class ECR {
 
             if (!res || !res.images) return false;
             return res.images.length > 0;
-        }
-        catch (err) {
+        } catch (err) {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to Get ECR Task Digest');
         }
     }
@@ -104,8 +101,7 @@ export default class ECR {
                 repositoryName: repositoryName(),
                 imageIds: [{ imageTag: `${task}-v${version}` }],
             }));
-        }
-        catch (err) {
+        } catch (err) {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to delete ECR Tasks');
         }
     }

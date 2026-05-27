@@ -84,7 +84,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../std.ts';
+import { server } from '../../std.ts';
 import type { APIList } from '../../types.ts';
 import {
     IconTrash,
@@ -146,16 +146,38 @@ onMounted(async () => {
 });
 
 async function fetch() {
-    selected.value = await std(`/api/layer/${props.modelValue}`) as typeof selected.value;
+    const res = await server.GET('/api/layer/{:layerid}', {
+        params: {
+            path: {
+                ':layerid': Number(props.modelValue)
+            },
+            query: {
+                alarms: false
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+    selected.value = res.data as typeof selected.value;
 }
 
 async function listData() {
     loading.value.list = true;
-    const url = stdurl('/api/layer');
-    url.searchParams.set('filter', paging.value.filter);
-    url.searchParams.set('limit', String(paging.value.limit));
-    url.searchParams.set('page', String(paging.value.page));
-    list.value = await std(url) as typeof list.value;
+    const res = await server.GET('/api/layer', {
+        params: {
+            query: {
+                alarms: false,
+                filter: paging.value.filter,
+                limit: paging.value.limit,
+                page: paging.value.page,
+                order: 'asc',
+                sort: 'name'
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+    list.value = res.data as typeof list.value;
 
     loading.value.list = false;
 }

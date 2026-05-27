@@ -1,6 +1,7 @@
 /**
  * Icon Color Manager for runtime icon recoloring
  */
+import { Preferences } from '@capacitor/preferences';
 import ms from 'milsymbol'
 import mapgl from 'maplibre-gl'
 import Icon from '../../base/icon.ts'
@@ -473,8 +474,11 @@ export default class IconManager {
  * persist it so the next request is served from disk.
  */
 async function fetchAndCacheSprite(id: string): Promise<DBSprite> {
-    const jsonUrl = stdurl(`/api/iconset/${id}/sprite.json?token=${localStorage.token}`);
-    const pngUrl = stdurl(`/api/iconset/${id}/sprite.png?token=${localStorage.token}`);
+    const { value: token } = await Preferences.get({ key: 'token' });
+    const jsonUrl = stdurl(`/api/iconset/${id}/sprite.json`);
+    const pngUrl = stdurl(`/api/iconset/${id}/sprite.png`);
+    if (token) jsonUrl.searchParams.set('token', token);
+    if (token) pngUrl.searchParams.set('token', token);
 
     const [jsonRes, pngRes] = await Promise.all([fetch(jsonUrl), fetch(pngUrl)]);
     if (!jsonRes.ok) throw new Error(`Failed to load sprite '${id}' json (${jsonRes.status})`);

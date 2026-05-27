@@ -78,7 +78,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import type { ETLConnectionVideoLeaseList } from '../../../types.ts';
 import TableFooter from '../../util/TableFooter.vue';
 import {
@@ -119,10 +119,15 @@ async function deleteAll() {
     error.value = undefined;
 
     try {
-        const url = stdurl(`/api/connection/${route.params.connectionid}/video/lease`);
-        await std(url, {
-            method: 'DELETE',
+        const { error: serverError } = await server.DELETE('/api/connection/{:connectionid}/video/lease', {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid)
+                }
+            }
         });
+
+        if (serverError) throw new Error(serverError.message);
 
         await fetch();
     } catch (err) {
@@ -137,11 +142,24 @@ async function fetch() {
     error.value = undefined;
 
     try {
-        const url = stdurl(`/api/connection/${route.params.connectionid}/video/lease`);
-        url.searchParams.set('limit', String(paging.value.limit));
-        url.searchParams.set('page', String(paging.value.page));
-        url.searchParams.set('filter', paging.value.filter);
-        list.value = await std(url) as ETLConnectionVideoLeaseList;
+        const { data, error: serverError } = await server.GET('/api/connection/{:connectionid}/video/lease', {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid)
+                },
+                query: {
+                    limit: paging.value.limit,
+                    page: paging.value.page,
+                    order: 'asc',
+                    sort: 'created',
+                    filter: paging.value.filter,
+                }
+            }
+        });
+
+        if (serverError) throw new Error(serverError.message);
+
+        list.value = data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {

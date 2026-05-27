@@ -19,8 +19,7 @@ test('GET api/config', async () => {
         }, true);
 
         assert.deepEqual(res.body, {});
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -40,8 +39,7 @@ test('PUT api/config', async () => {
         assert.deepEqual(res.body, {
             'group::Yellow': 'Wildland Firefighter',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -58,8 +56,7 @@ test('GET api/config', async () => {
         assert.deepEqual(res.body, {
             'group::Yellow': 'Wildland Firefighter',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -83,8 +80,7 @@ test('GET api/config/login', async () => {
                 enabled: false,
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -106,8 +102,7 @@ test('PUT api/config', async () => {
             'login::signup': 'https://example.com/signup',
             'login::forgot': 'https://example.com/forgot',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -133,8 +128,7 @@ test('GET api/config/login', async () => {
                 enabled: false,
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -149,8 +143,7 @@ test('GET api/config (user - restricted)', async () => {
         }, false);
 
         assert.equal(res.status, 401);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -168,8 +161,7 @@ test('GET api/config (user - map keys)', async () => {
         assert.deepEqual(res.body, {
             'map::center': '-100,40',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -187,8 +179,7 @@ test('GET api/config (user - group keys)', async () => {
         assert.deepEqual(res.body, {
             'group::Yellow': 'Wildland Firefighter',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -214,8 +205,7 @@ test('PUT api/config (admin - firebase keys)', async () => {
         }, false);
 
         assert.deepEqual(res.body, body);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -239,8 +229,7 @@ test('GET api/config (admin - firebase keys)', async () => {
             'firebase::appid': '1:1234567890:web:abcdef123456',
             'firebase::measurementid': 'G-ABCDEF1234',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

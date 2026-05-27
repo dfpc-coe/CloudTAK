@@ -45,8 +45,7 @@ export default class Alarm {
             }
 
             return map;
-        }
-        catch (err) {
+        } catch (err) {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to describe alarms');
         }
     }
@@ -83,8 +82,7 @@ export default class Alarm {
             }
 
             return final || 'unknown';
-        }
-        catch (err) {
+        } catch (err) {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to describe alarm');
         }
     }

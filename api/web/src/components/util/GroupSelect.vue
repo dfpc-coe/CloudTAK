@@ -90,7 +90,7 @@
 
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
-import { std, stdurl } from '../../../src/std.ts';
+import { server } from '../../../src/std.ts';
 import type { Group, GroupChannel } from '../../../src/types.ts';
 import {
     TablerLoading,
@@ -156,10 +156,16 @@ async function fetch() {
 
     let list: Group[];
     if (props.connection) {
-        const url = stdurl(`/api/connection/${props.connection}/channel`);
-        list = (await std(url) as {
-            data: Group[]
-        }).data;
+        const res = await server.GET('/api/connection/{:connectionid}/channel', {
+            params: {
+                path: {
+                    ':connectionid': Number(props.connection)
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+        list = res.data.data as Group[];
     } else {
         list = GroupManager.explode(await GroupManager.list());
     }

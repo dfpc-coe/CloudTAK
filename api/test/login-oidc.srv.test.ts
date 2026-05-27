@@ -23,8 +23,7 @@ test('PUT: api/config - enable OIDC enforcement', async () => {
         }, false);
 
         assert.equal(res.status, 200);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -45,8 +44,7 @@ test('POST: api/login - rejected when OIDC enforced', async () => {
             message: 'Username/Password login is disabled - Please use SSO',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -65,8 +63,7 @@ test('PUT: api/config - disable OIDC enforcement, keep enabled', async () => {
         }, false);
 
         assert.equal(res.status, 200);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -91,8 +88,7 @@ test('POST: api/login - allowed when OIDC enabled but not enforced', async () =>
             access: 'admin',
             email: 'admin@example.com',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

@@ -22,8 +22,7 @@ test('GET: api/fonts/Open Sans Regular/0-255.pbf', async () => {
 
         assert.equal(res.status, 200);
         assert.ok(res.body.byteLength > 0);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -42,8 +41,7 @@ test('GET: api/fonts/InvalidFont/0-255.pbf (fallback)', async () => {
 
         assert.equal(res.status, 200);
         assert.ok(res.body.byteLength > 0);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -61,8 +59,7 @@ test('GET: api/fonts/Open Sans Regular/999999-1000000.pbf (404)', async () => {
         });
 
         assert.equal(res.status, 404);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -76,8 +73,7 @@ test('GET: api/fonts/Open Sans Regular/0-255.pbf (401 - No Auth)', async () => {
         });
 
         assert.equal(res.status, 401);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

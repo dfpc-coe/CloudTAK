@@ -65,7 +65,6 @@
                 :is-system-admin='isSystemAdmin'
                 :url='tilejson.url'
                 :upload-url='uploadUrl'
-                :upload-headers='uploadHeadersValue'
                 @change-type='resetBasemapType'
                 @update:scope='scope = $event'
                 @update:warn-sharing='warnSharing = $event'
@@ -98,7 +97,9 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
-import { std, stdurl } from '../../../../std.ts';
+import { Preferences } from '@capacitor/preferences';
+import type { paths } from '@cloudtak/api-types';
+import { server, std, stdurl } from '../../../../std.ts';
 import ProfileConfig from '../../../../base/profile.ts';
 import BasemapTypeSelector from './TypeSelector.vue';
 import TypeSelectorFeatureServer from './TypeSelectorFeatureServer.vue';
@@ -109,7 +110,7 @@ import TypeSelectorZxy_Upload from './TypeSelectorZxy_Upload.vue';
 import TypeSelectorZxy from './TypeSelectorZxy.vue';
 import TypeSelectorHosted from './TypeSelectorHosted.vue';
 import { BasemapTypeConfig, inferBasemapType, normalizeEditing } from './types.ts';
-import type { BasemapListItem, BasemapImport, BasemapImportRequest, BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from './types.ts';
+import type { BasemapListItem, BasemapImport, BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from './types.ts';
 import {
     IconMap,
     IconDownload,
@@ -211,11 +212,10 @@ const activeSelectorComponent = computed(() => {
 });
 
 const uploadUrl = computed(() => stdurl('/api/basemap'));
-const uploadHeadersValue = computed<Record<string, string>>(() => {
-    return {
-        Authorization: `Bearer ${localStorage['token']}`,
-    };
-});
+
+type BasemapImportBody = paths['/api/basemap']['put']['requestBody']['content']['application/json'];
+type BasemapCreateBody = paths['/api/basemap']['post']['requestBody']['content']['application/json'];
+type BasemapUpdateBody = paths['/api/basemap/{:basemapid}']['patch']['requestBody']['content']['application/json'];
 
 onMounted(async () => {
     const isSysAdmin = await ProfileConfig.get('system_admin');
@@ -227,7 +227,17 @@ onMounted(async () => {
 });
 
 async function download(): Promise<void> {
-    await std(`/api/basemap/${props.basemap.id}?format=xml&download=true&token=${localStorage['token']}`, {
+    const url = stdurl(`/api/basemap/${props.basemap.id}`);
+    const { value: token } = await Preferences.get({ key: 'token' });
+
+    url.searchParams.set('format', 'xml');
+    url.searchParams.set('download', 'true');
+
+    if (token) {
+        url.searchParams.set('token', token);
+    }
+
+    await std(url.toString(), {
         download: true,
     });
 }
@@ -258,24 +268,28 @@ async function fetchTileJSON(): Promise<void> {
     loading.value = true;
     try {
         const importType = selectedBasemapType.value;
+        if (!importType) throw new Error('Basemap type not selected');
+
         const isArcGISImport = importType === 'featureserver'
             || importType === 'mapserver'
             || importType === 'imageserver';
 
-        const data = await std('/api/basemap', isArcGISImport
+        const res = await server.PUT('/api/basemap', isArcGISImport
             ? {
-                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                body: {
                     type: importType,
                     url: tilejson.value.url,
-                } satisfies BasemapImportRequest),
+                } satisfies BasemapImportBody,
             }
             : {
-                method: 'PUT',
                 headers: { 'Content-Type': 'text/plain' },
                 body: tilejson.value.url,
-            }) as BasemapImport;
+            });
+
+        if (res.error) throw new Error(res.error.message);
+
+        const data = res.data as BasemapImport;
 
         editing.value = normalizeEditing(data);
         vectorLayers.value = Array.isArray(data.vector_layers)
@@ -298,14 +312,39 @@ function processUpload(body: unknown): void {
 }
 
 async function fetchBasemap(): Promise<void> {
+    const basemapId = props.basemap.id;
+    if (basemapId === undefined) throw new Error('Missing basemap id');
+
     loading.value = true;
-    const data = await std(`/api/basemap/${props.basemap.id}`) as BasemapListItem;
+    const res = await server.GET('/api/basemap/{:basemapid}', {
+        params: {
+            path: {
+                ':basemapid': basemapId,
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+    if (typeof res.data === 'string') throw new Error('Unexpected basemap download response');
+
+    const data = res.data as BasemapListItem;
+
     editing.value = normalizeEditing(data);
     selectedBasemapType.value = inferBasemapType(editing.value.url) ?? 'zxy';
 
     vectorLayers.value = [];
-    if (props.basemap.id && editing.value.type === 'vector') {
-        const tileData = await std(`/api/basemap/${props.basemap.id}/tiles`) as BasemapImport;
+    if (editing.value.type === 'vector') {
+        const tileRes = await server.GET('/api/basemap/{:basemapid}/tiles', {
+            params: {
+                path: {
+                    ':basemapid': basemapId,
+                }
+            }
+        });
+
+        if (tileRes.error) throw new Error(tileRes.error.message);
+
+        const tileData = tileRes.data;
         vectorLayers.value = Array.isArray(tileData.vector_layers)
             ? tileData.vector_layers as VectorLayerDescriptor[]
             : [];
@@ -322,42 +361,63 @@ async function create(): Promise<void> {
 
     loading.value = true;
     try {
-        const body: Omit<Partial<EditingBasemap>, 'tilesize' | 'collection' | 'attribution' | 'bounds' | 'center' | 'frequency' | 'snapping_layer'> & {
-            bounds?: number[];
-            center?: number[];
-            tilesize?: number | null;
-            collection?: string | null;
-            attribution?: string | null;
-            frequency?: number | null;
-            snapping_layer?: string | null;
-        } = {
-            ...editing.value,
-        };
-
-        if (!body.bounds?.length) delete body.bounds;
-        if (!body.center?.length) delete body.center;
-
-        if (!body.tilesize && body.tilesize !== 0) body.tilesize = null;
-
-        if (!body.collection || body.collection.trim().length === 0) body.collection = null;
-
-        if (!body.attribution || body.attribution.trim().length === 0) body.attribution = null;
-        if (body.encoding === null) delete body.encoding;
-
-        if (editing.value.type !== 'vector' || !editing.value.title || editing.value.title.trim().length === 0) {
-            delete body.title;
+        const protocol = selectedBasemapType.value;
+        if (!protocol || protocol === 'tilejson' || protocol === 'upload') {
+            throw new Error('Unsupported basemap protocol');
         }
 
+        const body: Omit<BasemapCreateBody, 'scope' | 'protocol'> = {
+            name: editing.value.name,
+            sharing_enabled: editing.value.sharing_enabled,
+            snapping_enabled: editing.value.snapping_enabled,
+            url: editing.value.url,
+            overlay: editing.value.overlay,
+            hidden: editing.value.hidden,
+            tilesize: editing.value.tilesize,
+            collection: editing.value.collection.trim().length ? editing.value.collection : null,
+            attribution: editing.value.attribution.trim().length ? editing.value.attribution : null,
+            frequency: editing.value.frequency,
+            minzoom: editing.value.minzoom,
+            maxzoom: editing.value.maxzoom,
+            format: editing.value.format,
+            type: editing.value.type,
+            styles: editing.value.styles,
+            ...(editing.value.snapping_layer.trim().length ? { snapping_layer: editing.value.snapping_layer } : {}),
+            ...(editing.value.encoding ? { encoding: editing.value.encoding } : {}),
+            ...(editing.value.bounds.length ? { bounds: editing.value.bounds } : {}),
+            ...(editing.value.center.length ? { center: editing.value.center } : {}),
+            ...(editing.value.type === 'vector' && editing.value.title.trim().length ? { title: editing.value.title } : {}),
+            ...(editing.value.tilejson.trim().length ? { tilejson: editing.value.tilejson } : {}),
+        };
+
         if (props.basemap.id) {
-            await std(`/api/basemap/${props.basemap.id}`, {
-                method: 'PATCH',
-                body: { scope: scope.value, protocol: selectedBasemapType.value, ...body },
+            const basemapId = props.basemap.id;
+            if (basemapId === undefined) throw new Error('Missing basemap id');
+
+            const res = await server.PATCH('/api/basemap/{:basemapid}', {
+                params: {
+                    path: {
+                        ':basemapid': basemapId,
+                    }
+                },
+                body: {
+                    scope: scope.value,
+                    protocol,
+                    ...body,
+                } satisfies BasemapUpdateBody,
             });
+
+            if (res.error) throw new Error(res.error.message);
         } else {
-            await std('/api/basemap', {
-                method: 'POST',
-                body: { scope: scope.value, protocol: selectedBasemapType.value, ...body },
+            const res = await server.POST('/api/basemap', {
+                body: {
+                    scope: scope.value,
+                    protocol,
+                    ...body,
+                } satisfies BasemapCreateBody,
             });
+
+            if (res.error) throw new Error(res.error.message);
         }
 
         loading.value = false;
@@ -369,9 +429,21 @@ async function create(): Promise<void> {
 }
 
 async function deleteBasemap(): Promise<void> {
+    const basemapId = props.basemap.id;
+    if (basemapId === undefined) throw new Error('Missing basemap id');
+
     loading.value = true;
     try {
-        await std(`/api/basemap/${props.basemap.id}`, { method: 'DELETE' });
+        const res = await server.DELETE('/api/basemap/{:basemapid}', {
+            params: {
+                path: {
+                    ':basemapid': basemapId,
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
         emit('close');
     } catch (err) {
         loading.value = false;

@@ -79,8 +79,7 @@ test('GET: api/marti/mission - Sorted List (Oldest => Newest)', async () => {
         assert.equal(res.body.items[0].name, 'Mission A');
         assert.equal(res.body.items[1].name, 'Mission B');
         assert.equal(res.body.items[2].name, 'Mission C');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -156,8 +155,7 @@ test('GET: api/marti/mission - Sorted List (Newest => Oldest)', async () => {
         assert.equal(res.body.items[0].name, 'Mission C');
         assert.equal(res.body.items[1].name, 'Mission B');
         assert.equal(res.body.items[2].name, 'Mission A');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -244,8 +242,7 @@ test('GET: api/marti/mission - Filter Groups', async () => {
         assert.equal(res2.body.items[0].name, 'Mission A');
         assert.equal(res2.body.items[1].name, 'Mission B');
         assert.equal(res2.body.items[2].name, 'Mission C');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -347,8 +344,7 @@ test('PATCH: api/marti/missions/:name - returns refreshed groups after update', 
         assert.equal(missionAuthorization, 'Bearer test-mission-token');
         assert.equal(allowGroupChange, 'true');
         assert.deepEqual(res.body.groups, ['updated-group']);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 

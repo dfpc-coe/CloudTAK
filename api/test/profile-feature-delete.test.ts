@@ -37,8 +37,7 @@ test('PUT: api/profile/feature - Path', async () => {
                 },
             },
         }, true);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -70,8 +69,7 @@ test('PUT: api/profile/feature - Path 2', async () => {
                 },
             },
         }, true);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -103,8 +101,7 @@ test('PUT: api/profile/feature - No Path', async () => {
                 },
             },
         }, true);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -121,8 +118,7 @@ test('GET: api/profile/feature', async () => {
         assert.deepEqual(res.body.total, 3);
 
         assert.equal(res.body.total, 3);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -140,8 +136,7 @@ test('DELETE: api/profile/feature?path=fake', async () => {
             status: 200,
             message: 'Features Deleted',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -158,8 +153,7 @@ test('GET: api/profile/feature', async () => {
         assert.deepEqual(res.body.total, 3);
 
         assert.equal(res.body.total, 3);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -177,8 +171,7 @@ test('DELETE: api/profile/feature?path=/path1/', async () => {
             status: 200,
             message: 'Features Deleted',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -194,13 +187,14 @@ test('GET: api/profile/feature', async () => {
 
         assert.deepEqual(
             res.body.items
-                .map((i: { id: string }) => { return i.id; })
+                .map((i: { id: string }) => {
+                    return i.id;
+                })
                 .sort(), ['123-no-path', '123-path2'],
         );
 
         assert.equal(res.body.total, 2);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -218,8 +212,7 @@ test('DELETE: api/profile/feature', async () => {
             status: 200,
             message: 'Features Deleted',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -234,8 +227,7 @@ test('GET: api/profile/feature', async () => {
         }, true);
 
         assert.equal(res.body.total, 0);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -268,8 +260,7 @@ test('GET: api/profile/feature/123-no-path', async () => {
                 coordinates: [123.3223, 123.0002, 123],
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -287,8 +278,7 @@ test('DELETE: api/profile/feature/123-no-path?permanent=true', async () => {
             status: 200,
             message: 'Feature Deleted',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -303,8 +293,7 @@ test('GET: api/profile/feature/123-no-path', async () => {
         }, false);
 
         assert.deepEqual(res.status, 404);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

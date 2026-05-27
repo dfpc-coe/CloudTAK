@@ -78,8 +78,7 @@ export default async function AssetList(config: Config, prefix: string): Promise
             },
             assets: final,
         };
-    }
-    catch (err) {
+    } catch (err) {
         throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Asset List Error');
     }
 }

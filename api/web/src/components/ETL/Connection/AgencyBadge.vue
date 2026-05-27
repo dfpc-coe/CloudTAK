@@ -76,7 +76,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import type { ETLConnection, ETLAgency } from '../../../types.ts';
-import { std } from '../../../std.ts';
+import { server } from '../../../std.ts';
 
 const props = defineProps<{
     connection: ETLConnection,
@@ -97,6 +97,21 @@ onMounted(async () => {
 });
 
 async function fetch() {
-    agency.value = await std(`/api/agency/${props.connection.agency}`) as ETLAgency;
+    if (!props.connection.agency) {
+        agency.value = undefined;
+        return;
+    }
+
+    const res = await server.GET('/api/agency/{:agencyid}', {
+        params: {
+            path: {
+                ':agencyid': props.connection.agency,
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    agency.value = res.data as ETLAgency;
 }
 </script>

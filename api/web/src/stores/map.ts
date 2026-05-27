@@ -8,6 +8,7 @@
 */
 
 import { v4 as randomUUID } from 'uuid';
+import { Preferences } from '@capacitor/preferences';
 import { defineStore } from 'pinia'
 import { markRaw } from 'vue';
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
@@ -36,6 +37,33 @@ import { clearLocationWatch, supportsLocationRequests, watchLocation } from '../
 import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 import type { CallbackID } from '@capacitor/geolocation';
+
+function waitForAtlasWorkerReady(worker: Worker): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const controller = new AbortController();
+
+        const cleanup = () => {
+            controller.abort();
+        };
+
+        worker.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
+            if (event.data?.type !== WorkerMessageType.Atlas_Ready) return;
+
+            cleanup();
+            resolve();
+        }, { signal: controller.signal });
+
+        worker.addEventListener('error', (event) => {
+            cleanup();
+            reject(event.error instanceof Error ? event.error : new Error(event.message || 'Atlas worker failed to load'));
+        }, { signal: controller.signal });
+
+        worker.addEventListener('messageerror', () => {
+            cleanup();
+            reject(new Error('Atlas worker sent an unreadable startup message'));
+        }, { signal: controller.signal });
+    });
+}
 
 export type TAKNotification = { type: string; name: string; body: string; url: string; created: string; }
 
@@ -83,6 +111,7 @@ export const useMapStore = defineStore('cloudtak', {
         timer: ReturnType<typeof setInterval> | null;
 
         _rawWorker: Worker;
+        _workerReady: Promise<void>;
         worker: Comlink.Remote<Atlas>;
         mission: Subscription | undefined;
         terrainEnabled: boolean;
@@ -114,6 +143,7 @@ export const useMapStore = defineStore('cloudtak', {
         overlays: Array<Overlay>
     } => {
         const rawWorker = new Worker(AtlasWorker, { type: 'module' });
+        const workerReady = waitForAtlasWorkerReady(rawWorker);
         const worker = Comlink.wrap<Atlas>(rawWorker);
 
         new CloudTAKTransferHandler(
@@ -123,6 +153,7 @@ export const useMapStore = defineStore('cloudtak', {
 
         return {
             _rawWorker: rawWorker,
+            _workerReady: workerReady,
             worker,
             _bottomBar: markRaw(new BottomBarManager()),
             timer: null,
@@ -270,7 +301,8 @@ export const useMapStore = defineStore('cloudtak', {
                     await this.makeActiveMission(undefined);
                 }
 
-                const sub = await Subscription.from(overlay.mode_id, localStorage.token, {
+                const { value: token } = await Preferences.get({ key: 'token' });
+                const sub = await Subscription.from(overlay.mode_id, token || '', {
                     subscribed: true
                 });
 
@@ -350,9 +382,13 @@ export const useMapStore = defineStore('cloudtak', {
                 throw new Error(`Terrain basemap ${terrainId} is not a raster-dem type`);
             }
 
+            const { value: token } = await Preferences.get({ key: 'token' });
+            const terrainUrl = stdurl(`/api/basemap/${terrain.id}/tiles`);
+            if (token) terrainUrl.searchParams.set('token', token);
+
             const source: { type: 'raster-dem'; url: string; tileSize?: number; encoding?: 'mapbox' | 'terrarium' } = {
                 type: 'raster-dem',
-                url: String(stdurl(`/api/basemap/${terrain.id}/tiles?token=${localStorage.token}`))
+                url: String(terrainUrl)
             };
 
             if (terrain.tilesize) source.tileSize = terrain.tilesize;
@@ -540,8 +576,9 @@ export const useMapStore = defineStore('cloudtak', {
                 return null
             }
 
+            const { value: token } = await Preferences.get({ key: 'token' });
             const sub = await Subscription.load(guid, {
-                token: localStorage.token,
+                token: token || '',
                 reload: opts?.reload || false,
                 subscribed: true,
                 missiontoken: overlay.token || undefined
@@ -597,7 +634,12 @@ export const useMapStore = defineStore('cloudtak', {
             }
             document.addEventListener('visibilitychange', this._boundOnVisibilityChange);
 
-            await this.worker.init(localStorage.token);
+            const { value: token } = await Preferences.get({ key: 'token' });
+
+            console.error('START', token);
+            await this._workerReady;
+            await this.worker.init(token || '');
+            console.error('END');
 
             this.channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
                 const msg = event.data;
@@ -705,6 +747,8 @@ export const useMapStore = defineStore('cloudtak', {
                 console.error('Failed to load map configuration, using defaults', err);
             }
 
+            const glyphs = `${String(stdurl('/api/fonts'))}/{fontstack}/{range}.pbf${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+
             const init: mapgl.MapOptions = {
                 container: this.container,
                 hash: true,
@@ -717,7 +761,7 @@ export const useMapStore = defineStore('cloudtak', {
                 maxPitch: 85,
                 style: {
                     version: 8,
-                    glyphs: String(stdurl('/api/fonts')) + '/{fontstack}/{range}.pbf?token=' + localStorage.token,
+                    glyphs,
                     sprite: sprites,
                     sources: {
                         '-1': {

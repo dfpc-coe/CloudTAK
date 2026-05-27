@@ -49,14 +49,12 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
                 title: input.title,
                 snapping_layer: input.snapping_layer,
             });
-        }
-        else if (input.type === Basemap_Type.TERRAIN) {
+        } else if (input.type === Basemap_Type.TERRAIN) {
             await this.pool.insert(BasemapTerrain).values({
                 basemap: base.id,
                 encoding: input.encoding,
             });
-        }
-        else {
+        } else {
             await this.pool.insert(BasemapRaster).values({
                 basemap: base.id,
             });
@@ -72,12 +70,10 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
         if (base.type === Basemap_Type.VECTOR) {
             const res = await this.pool.select().from(BasemapVector).where(eq(BasemapVector.basemap, base.id));
             specific = res[0];
-        }
-        else if (base.type === Basemap_Type.TERRAIN) {
+        } else if (base.type === Basemap_Type.TERRAIN) {
             const res = await this.pool.select().from(BasemapTerrain).where(eq(BasemapTerrain.basemap, base.id));
             specific = res[0];
-        }
-        else {
+        } else {
             const res = await this.pool.select().from(BasemapRaster).where(eq(BasemapRaster.basemap, base.id));
             specific = res[0];
         }
@@ -134,8 +130,7 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
                     target: BasemapVector.basemap,
                     set: vector,
                 });
-            }
-            else {
+            } else {
                 await this.pool.insert(BasemapVector).values({
                     basemap: base.id,
                 }).onConflictDoNothing();
@@ -143,8 +138,7 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
 
             await this.pool.delete(BasemapRaster).where(eq(BasemapRaster.basemap, base.id));
             await this.pool.delete(BasemapTerrain).where(eq(BasemapTerrain.basemap, base.id));
-        }
-        else if (base.type === Basemap_Type.TERRAIN) {
+        } else if (base.type === Basemap_Type.TERRAIN) {
             const terrain: any = {};
             if (input.encoding !== undefined) terrain.encoding = input.encoding;
 
@@ -156,8 +150,7 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
                     target: BasemapTerrain.basemap,
                     set: terrain,
                 });
-            }
-            else {
+            } else {
                 await this.pool.insert(BasemapTerrain).values({
                     basemap: base.id,
                 }).onConflictDoNothing();
@@ -165,8 +158,7 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
 
             await this.pool.delete(BasemapRaster).where(eq(BasemapRaster.basemap, base.id));
             await this.pool.delete(BasemapVector).where(eq(BasemapVector.basemap, base.id));
-        }
-        else {
+        } else {
             const raster: any = {};
 
             if (Object.keys(raster).length > 0) {
@@ -177,8 +169,7 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
                     target: BasemapRaster.basemap,
                     set: raster,
                 });
-            }
-            else {
+            } else {
                 await this.pool.insert(BasemapRaster).values({
                     basemap: base.id,
                 }).onConflictDoNothing();
@@ -251,8 +242,7 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
 
         if (pgres.length === 0) {
             return [] as Array<Static<typeof BasemapCollection>>;
-        }
-        else {
+        } else {
             return pgres as Array<Static<typeof BasemapCollection>>;
         }
     }

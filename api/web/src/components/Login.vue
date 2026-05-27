@@ -326,11 +326,13 @@ import type { Login_Create, Login_CreateRes, ConfigLogin } from '../types.ts'
 import { ref, computed, onMounted, reactive, watch } from 'vue';
 import { version } from '../../package.json';
 import { IconSettings, IconTrash, IconLock, IconFingerprint } from '@tabler/icons-vue';
+import { Preferences } from '@capacitor/preferences';
 import { startAuthentication } from '@simplewebauthn/browser';
 import type { PublicKeyCredentialRequestOptionsJSON, AuthenticationResponseJSON } from '@simplewebauthn/browser';
 import Config from '../base/config.ts';
 import type { FullConfig } from '../base/config.ts';
-import { supportsServiceWorker } from '../base/capacitor.ts';
+import KV from '../base/kv.ts';
+import { isNativePlatform, supportsServiceWorker } from '../base/capacitor.ts';
 import { getCurrentEntryBuildId } from '../base/service-worker.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { std } from '../std.ts';
@@ -529,7 +531,8 @@ async function createLogin() {
              }
         }) as Login_CreateRes
 
-        localStorage.token = login.token;
+        await Preferences.set({ key: 'token', value: login.token });
+        await persistNativeSession(login.token);
 
         navigateAfterLogin();
     } catch (err) {
@@ -588,7 +591,8 @@ async function completePasskeyLogin(credential: AuthenticationResponseJSON) {
             body: { credential }
         }) as Login_CreateRes & { certRenewalRequired?: boolean };
 
-        localStorage.token = login.token;
+        await Preferences.set({ key: 'token', value: login.token });
+        await persistNativeSession(login.token);
 
         if (login.certRenewalRequired) {
             certRenewal.required = true;
@@ -603,6 +607,12 @@ async function completePasskeyLogin(credential: AuthenticationResponseJSON) {
         loading.value = false;
         throw err;
     }
+}
+
+async function persistNativeSession(token: string): Promise<void> {
+    if (!isNativePlatform()) return;
+
+    await KV.generate('token', token);
 }
 
 function navigateAfterLogin() {
@@ -647,7 +657,8 @@ async function renewCertificate() {
             }
         }) as Login_CreateRes;
 
-        localStorage.token = login.token;
+        await Preferences.set({ key: 'token', value: login.token });
+        await persistNativeSession(login.token);
         certRenewal.required = false;
         certRenewal.password = '';
 

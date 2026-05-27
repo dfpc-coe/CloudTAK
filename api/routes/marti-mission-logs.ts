@@ -75,8 +75,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
 
                 res.end();
-            }
-            else {
+            } else {
                 if (req.query.download) {
                     res.setHeader('Content-Disposition', `attachment; filename="mission-${req.params.name}-logs.json"`);
                 }
@@ -86,8 +85,7 @@ export default async function router(schema: Schema, config: Config) {
                     items: mission.logs || [],
                 });
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -131,8 +129,7 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             res.json(log);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -180,8 +177,7 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             res.json(mission);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -215,8 +211,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Log Entry Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

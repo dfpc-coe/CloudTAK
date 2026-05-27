@@ -53,8 +53,7 @@ export default async function router(schema: Schema, config: Config) {
                 total: items.length,
                 items,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -134,15 +133,13 @@ export default async function router(schema: Schema, config: Config) {
                     res.json({
                         ...result,
                     });
-                }
-                catch (err) {
+                } catch (err) {
                     Err.respond(err, res);
                 }
             });
 
             req.pipe(bb);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -176,8 +173,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             stream.pipe(res);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

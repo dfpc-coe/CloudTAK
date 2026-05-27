@@ -40,14 +40,12 @@ export default async function router(schema: Schema, config: Config) {
             let where;
             if (profile.system_admin) {
                 where = sql`name ~* ${req.query.filter}`;
-            }
-            else if (profile.agency_admin && profile.agency_admin.length) {
+            } else if (profile.agency_admin && profile.agency_admin.length) {
                 where = and(
                     sql`name ~* ${req.query.filter}`,
                     inArray(Connection.agency, profile.agency_admin),
                 );
-            }
-            else {
+            } else {
                 throw new Err(400, null, 'Insufficient Access');
             }
 
@@ -60,8 +58,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -104,8 +101,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -160,16 +156,14 @@ export default async function router(schema: Schema, config: Config) {
                     mission_exists: true,
                     ...data,
                 });
-            }
-            catch (err) {
+            } catch (err) {
                 res.json({
                     mission_exists: false,
                     mission_error: err instanceof Error ? err.message : String(err),
                     ...data,
                 });
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -222,16 +216,14 @@ export default async function router(schema: Schema, config: Config) {
                     mission_exists: true,
                     ...data,
                 });
-            }
-            catch (err) {
+            } catch (err) {
                 res.json({
                     mission_exists: false,
                     mission_error: err instanceof Error ? err.message : String(err),
                     ...data,
                 });
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -266,16 +258,14 @@ export default async function router(schema: Schema, config: Config) {
                     mission_exists: true,
                     ...data,
                 });
-            }
-            catch (err) {
+            } catch (err) {
                 res.json({
                     mission_exists: false,
                     mission_error: err instanceof Error ? err.message : String(err),
                     ...data,
                 });
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -316,8 +306,7 @@ export default async function router(schema: Schema, config: Config) {
                     status: 200,
                     message: `Data Deleted`,
                 });
-            }
-            catch (err) {
+            } catch (err) {
                 await config.models.Data.delete(req.params.dataid);
 
                 res.json({
@@ -325,8 +314,7 @@ export default async function router(schema: Schema, config: Config) {
                     message: `Data Deleted - But TAK Server had an upstream error. Provide an admin with this error message ${String(err)}`,
                 });
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

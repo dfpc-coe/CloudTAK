@@ -93,8 +93,7 @@ export default class CoTAKUser implements UserInterface {
             this.cache = res;
 
             return res;
-        }
-        else {
+        } else {
             return this.cache;
         }
     }
@@ -301,8 +300,7 @@ export default class CoTAKUser implements UserInterface {
                 }));
 
                 return user.data;
-            }
-            else {
+            } else {
                 const userres = await fetch(url, {
                     method: 'GET',
                     headers: {
@@ -380,8 +378,7 @@ export default class CoTAKUser implements UserInterface {
             url = new URL(`api/v1/proxy/agencies/${query.agency}/channels`, this.provider.url);
             url.searchParams.append('proxy_user_id', String(uid));
             url.searchParams.append('filter', query.filter);
-        }
-        else {
+        } else {
             url = new URL(`/api/v1/proxy/channels`, this.provider.url);
             url.searchParams.append('proxy_user_id', String(uid));
             url.searchParams.append('filter', query.filter);

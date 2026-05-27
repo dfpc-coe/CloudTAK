@@ -63,22 +63,18 @@ test('LayerDeploy.apply updates when current image digest exists', async () => {
                     return Promise.resolve({
                         Stacks: [{ StackStatus: 'UPDATE_COMPLETE' }],
                     });
-                }
-                else if (command.input.StackName === 'test') {
+                } else if (command.input.StackName === 'test') {
                     return Promise.resolve({
                         Stacks: [{ Tags: [] }],
                     });
                 }
-            }
-            else if (command instanceof UpdateStackCommand) {
+            } else if (command instanceof UpdateStackCommand) {
                 cfCommands.push('update');
                 return Promise.resolve({});
-            }
-            else if (command instanceof DeleteStackCommand) {
+            } else if (command instanceof DeleteStackCommand) {
                 cfCommands.push('delete');
                 return Promise.resolve({});
-            }
-            else if (command instanceof CreateStackCommand) {
+            } else if (command instanceof CreateStackCommand) {
                 cfCommands.push('create');
                 return Promise.resolve({});
             }
@@ -120,8 +116,7 @@ test('LayerDeploy.apply updates when current image digest exists', async () => {
         await LayerDeploy.apply(config, 1, stack as any);
 
         assert.deepEqual(cfCommands, ['update']);
-    }
-    finally {
+    } finally {
         Sinon.restore();
     }
 });
@@ -151,22 +146,18 @@ test('LayerDeploy.apply recreates stack when current image digest is missing', a
                     }
 
                     throw new Error('Stack with id test-layer-1 does not exist');
-                }
-                else if (command.input.StackName === 'test') {
+                } else if (command.input.StackName === 'test') {
                     return Promise.resolve({
                         Stacks: [{ Tags: [] }],
                     });
                 }
-            }
-            else if (command instanceof DeleteStackCommand) {
+            } else if (command instanceof DeleteStackCommand) {
                 cfCommands.push('delete');
                 return Promise.resolve({});
-            }
-            else if (command instanceof CreateStackCommand) {
+            } else if (command instanceof CreateStackCommand) {
                 cfCommands.push('create');
                 return Promise.resolve({});
-            }
-            else if (command instanceof UpdateStackCommand) {
+            } else if (command instanceof UpdateStackCommand) {
                 cfCommands.push('update');
                 return Promise.resolve({});
             }
@@ -202,8 +193,7 @@ test('LayerDeploy.apply recreates stack when current image digest is missing', a
         await LayerDeploy.apply(config, 1, stack as any);
 
         assert.deepEqual(cfCommands, ['delete', 'create']);
-    }
-    finally {
+    } finally {
         Sinon.restore();
     }
 });

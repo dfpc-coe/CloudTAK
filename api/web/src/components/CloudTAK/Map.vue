@@ -400,7 +400,6 @@
                     <div class='modal-body text-body'>
                         <Upload
                             :url='stdurl("/api/import")'
-                            :headers='{ Authorization: `Bearer ${token}` }'
                             method='PUT'
                             :cancel='false'
                             @cancel='upload.shown = false'
@@ -478,7 +477,6 @@ import { cutOverlayFeature } from './util/featureCut.ts';
 
 const mapStore = useMapStore();
 const floatStore = useFloatStore();
-const token = computed(() => String(localStorage.token ?? ''));
 
 const hasTerrain = ref<boolean>(false);
 Config.list(['map::terrain'], { defaults: { 'map::terrain': null } }).then((cfg) => {

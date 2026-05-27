@@ -28,8 +28,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

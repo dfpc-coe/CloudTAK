@@ -59,8 +59,7 @@ export default async function router(schema: Schema, config: Config) {
                     AND connection = ${req.params.connectionid}
                 `,
             }));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -101,8 +100,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Video Leases Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -143,8 +141,7 @@ export default async function router(schema: Schema, config: Config) {
                 lease,
                 protocols: await videoControl.protocols(lease),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -236,8 +233,7 @@ export default async function router(schema: Schema, config: Config) {
                 lease,
                 protocols: await videoControl.protocols(lease),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -300,8 +296,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if ((!profile || !profile.system_admin) && req.body.duration && req.body.duration > 60 * 60 * 24) {
                 throw new Err(400, null, 'Only Administrators can request a lease > 24 hours');
-            }
-            else if ((!profile || !profile.system_admin) && req.body.permanent) {
+            } else if ((!profile || !profile.system_admin) && req.body.permanent) {
                 throw new Err(400, null, 'Only Administrators can request permanent leases');
             }
 
@@ -314,8 +309,7 @@ export default async function router(schema: Schema, config: Config) {
             let expiration: null | string | undefined = undefined;
             if (req.body.permanent) {
                 expiration = null;
-            }
-            else if (req.body.duration) {
+            } else if (req.body.duration) {
                 expiration = moment().add(req.body.duration, 'seconds').toISOString();
             }
 
@@ -341,8 +335,7 @@ export default async function router(schema: Schema, config: Config) {
                 lease,
                 protocols: await videoControl.protocols(lease),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -380,8 +373,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Video Lease Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

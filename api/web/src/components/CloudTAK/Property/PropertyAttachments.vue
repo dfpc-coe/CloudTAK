@@ -44,7 +44,6 @@
                         >
                             <Upload
                                 :url='uploadURL()'
-                                :headers='uploadHeaders()'
                                 method='PUT'
                                 @cancel='upload = false'
                                 @done='uploadComplete($event)'
@@ -129,6 +128,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { server, std, stdurl } from '../../../std.ts';
 import { useFloatStore } from '../../../stores/float.ts';
 import Upload from '../../util/Upload.vue';
@@ -167,6 +167,7 @@ const expanded = ref(false);
 const upload = ref(false);
 const loading = ref(true);
 const files = ref<Attachment[]>([]);
+const token = ref<string | null>(null);
 
 watch(() => props.modelValue, async (newVal, oldVal) => {
     if (newVal.length === oldVal.length && newVal.every((h, i) => h === oldVal[i])) return;
@@ -184,6 +185,7 @@ watch(files, () => {
 });
 
 onMounted(async () => {
+    token.value = (await Preferences.get({ key: 'token' })).value;
     await refresh();
 });
 
@@ -208,12 +210,6 @@ async function refresh(): Promise<void> {
     }
 
     loading.value = false;
-}
-
-function uploadHeaders(): Record<string, string> {
-    return {
-        Authorization: `Bearer ${localStorage.token}`
-    };
 }
 
 function hasHash(val: unknown): val is { hash: string } {
@@ -255,7 +251,7 @@ function uploadURL(): URL {
 
 function downloadAssetUrl(file: Attachment): string {
     const url = stdurl(`/api/attachment/${file.hash}`);
-    url.searchParams.set('token', localStorage.token);
+    if (token.value) url.searchParams.set('token', token.value);
     return url.toString();
 }
 

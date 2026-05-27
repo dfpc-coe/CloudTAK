@@ -28,8 +28,7 @@ test('POST: /template/mission - create parent template', async () => {
         }, true);
 
         templateId = res.body.id;
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -47,8 +46,7 @@ test('GET: /template/mission/:mission/log - empty', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -89,8 +87,7 @@ test('POST: /template/mission/:mission/log - create', async () => {
         assert.ok(res.body.updated, 'returned an updated date');
 
         logId = res.body.id;
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -109,8 +106,7 @@ test('GET: /template/mission/:mission/log - list', async () => {
         assert.equal(res.body.items[0].id, logId);
         assert.equal(res.body.items[0].name, 'Test Log');
         assert.deepEqual(res.body.items[0].keywords, ['log-tag1']);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -135,8 +131,7 @@ test('GET: /template/mission/:mission/log/:log - get', async () => {
                 field1: { type: 'string' },
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -172,8 +167,7 @@ test('PATCH: /template/mission/:mission/log/:log - update', async () => {
                 field1: { type: 'number' },
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -189,8 +183,7 @@ test('DELETE: /template/mission/:mission/log/:log - delete', async () => {
 
         assert.equal(res.body.status, 200);
         assert.equal(res.body.message, 'Mission Template Log Deleted');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -205,8 +198,7 @@ test('GET: /template/mission/:mission/log/:log - not found', async () => {
         }, false);
 
         assert.equal(res.status, 404);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -221,8 +213,7 @@ test('DELETE: /template/mission/:mission - delete parent template', async () => 
         }, true);
 
         assert.equal(res.body.status, 200);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

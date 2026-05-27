@@ -7,7 +7,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 const milsymbolBrowserBundle = path.resolve(__dirname, 'node_modules/milsymbol/dist/milsymbol.js');
 
 export default defineConfig(({ mode }) => {
-    const res = {
+    return {
         define: {
             'import.meta.env.HASH': JSON.stringify(Math.random().toString(36).substring(2, 15)),
         },
@@ -21,6 +21,8 @@ export default defineConfig(({ mode }) => {
                             req.url = '/admin.html';
                         } else if (req.url?.startsWith('/connection') && !path.extname(req.url)) {
                             req.url = '/connection.html';
+                        } else if (req.url?.startsWith('/setup') && !path.extname(req.url)) {
+                            req.url = '/setup.html';
                         }
                         next();
                     });
@@ -40,6 +42,7 @@ export default defineConfig(({ mode }) => {
         },
         build: {
             manifest: true,
+            target: 'esnext',
             rolldownOptions: {
                 input: {
                     main: path.resolve(__dirname, 'index.html'),
@@ -47,8 +50,12 @@ export default defineConfig(({ mode }) => {
                     video: path.resolve(__dirname, 'video.html'),
                     admin: path.resolve(__dirname, 'admin.html'),
                     connection: path.resolve(__dirname, 'connection.html'),
+                    setup: path.resolve(__dirname, 'setup.html'),
                 },
             },
+        },
+        worker: {
+            format: 'es'
         },
         server: {
             port: 8080,
@@ -68,8 +75,6 @@ export default defineConfig(({ mode }) => {
             },
             setupFiles: ['./src/test/setup.ts'],
         },
-    }
-
-    return res;
+    };
 })
 

@@ -40,19 +40,16 @@ export default class Filter {
                     if (await expression.evaluate(feature) === true) {
                         return true;
                     }
-                }
-                catch {
+                } catch {
                     // Ignore queries that result in invalid output - this is explicitly allowed
                 }
             }
 
             return false;
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Error) {
                 throw new Err(400, err, err.message);
-            }
-            else {
+            } else {
                 throw new Err(400, new Error(String(err)), String(err));
             }
         }
@@ -67,15 +64,12 @@ export default class Filter {
             }
 
             return true;
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Err) {
                 throw err;
-            }
-            else if (err instanceof Error) {
+            } else if (err instanceof Error) {
                 throw new Err(400, err, err.message);
-            }
-            else {
+            } else {
                 throw new Err(400, new Error(String(err)), String(err));
             }
         }

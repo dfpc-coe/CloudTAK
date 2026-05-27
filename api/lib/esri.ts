@@ -64,8 +64,7 @@ export class EsriBase {
         if (this.type === EsriType.AGOL || this.type === EsriType.PORTAL) {
             this.postfix = base.pathname.replace(/.*sharing\/rest/i, '');
             base.pathname = base.pathname.replace(/(?<=sharing\/rest).*/i, '');
-        }
-        else { // EsriType === SERVER
+        } else { // EsriType === SERVER
             this.postfix = base.pathname.replace(/.*\/rest/, '');
             base.pathname = base.pathname.replace(/\/rest.*/, '/rest');
         }
@@ -100,8 +99,7 @@ export class EsriBase {
         const url = new URL(this.base);
         if (this.type === EsriType.SERVER) {
             url.pathname = url.pathname.replace('/rest', '/tokens/generateToken');
-        }
-        else {
+        } else {
             url.pathname = url.pathname + '/generateToken';
         }
 
@@ -135,8 +133,7 @@ export class EsriBase {
             };
 
             return this.token;
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Error && err.name === 'PublicError') throw err;
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
         }
@@ -147,14 +144,11 @@ export class EsriBase {
 
         if (base.hostname.match(/maps\.arcgis\.com$/)) {
             return EsriType.AGOL;
-        }
-        else if (base.pathname.toLowerCase().includes('/arcgis/rest')) {
+        } else if (base.pathname.toLowerCase().includes('/arcgis/rest')) {
             return EsriType.SERVER;
-        }
-        else if (base.pathname.toLowerCase().includes('/sharing/rest')) {
+        } else if (base.pathname.toLowerCase().includes('/sharing/rest')) {
             return EsriType.PORTAL;
-        }
-        else if (base.pathname.toLowerCase().includes('/rest')) {
+        } else if (base.pathname.toLowerCase().includes('/rest')) {
             return EsriType.SERVER;
         }
 
@@ -196,8 +190,7 @@ export class EsriBase {
             const url = new URL(this.base);
             try {
                 return await fetchCurrentVersion(url);
-            }
-            catch (err) {
+            } catch (err) {
                 // Some ArcGIS Server deployments expose version metadata at /rest/services
                 // even when /rest itself cannot be used for version detection.
                 if (this.type === EsriType.SERVER && url.pathname.endsWith('/rest')) {
@@ -206,22 +199,19 @@ export class EsriBase {
 
                     try {
                         return await fetchCurrentVersion(fallback);
-                    }
-                    catch {
+                    } catch {
                         throw err;
                     }
                 }
 
                 throw err;
             }
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Error && err.name === 'PublicError') throw err;
             if (err instanceof Error) {
                 if (err.cause) err.message = `${err.message}: ${err.cause}`;
                 throw new Err(400, err, String(err));
-            }
-            else {
+            } else {
                 throw new Err(400, new Error(String(err)), String(err));
             }
         }
@@ -230,8 +220,7 @@ export class EsriBase {
     static #toURL(base: string | URL): URL {
         try {
             base = new URL(base);
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Error && err.name === 'PublicError') throw err;
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
         }
@@ -317,8 +306,7 @@ class EsriProxyPortal {
                 const json = await res.json();
                 if (json.error) {
                     throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
-                }
-                else {
+                } else {
                     throw new Err(400, null, `ESRI Server returned HTTP ${res.status} ${res.statusText}`);
                 }
             }
@@ -326,8 +314,7 @@ class EsriProxyPortal {
             return await res.typed(ESRIPortal, {
                 verbose: true,
             });
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Error && err.name === 'PublicError') throw err;
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
         }
@@ -491,11 +478,9 @@ class EsriProxyLayer {
         this.type = EsriLayerType.UNKNOWN;
         if (this.esri.postfix.includes('FeatureServer')) {
             this.type = EsriLayerType.FEATURE;
-        }
-        else if (this.esri.postfix.includes('MapServer')) {
+        } else if (this.esri.postfix.includes('MapServer')) {
             this.type = EsriLayerType.MAP;
-        }
-        else if (this.esri.postfix.includes('ImageServer')) {
+        } else if (this.esri.postfix.includes('ImageServer')) {
             this.type = EsriLayerType.IMAGE;
         }
     }
@@ -544,8 +529,7 @@ class EsriProxyLayer {
         url.searchParams.append('where', where);
         if (countOnly) {
             url.searchParams.append('returnCountOnly', 'true');
-        }
-        else {
+        } else {
             url.searchParams.append('resultRecordCount', '5');
         }
 

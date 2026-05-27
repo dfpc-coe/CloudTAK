@@ -62,8 +62,7 @@ export default async function router(schema: Schema, config: Config) {
             let scope = sql`True`;
             if (req.query.scope === ResourceCreationScope.SERVER) {
                 scope = sql`username IS NULL`;
-            }
-            else if (req.query.scope === ResourceCreationScope.USER) {
+            } else if (req.query.scope === ResourceCreationScope.USER) {
                 scope = sql`username IS NOT NULL`;
             }
 
@@ -81,8 +80,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -115,8 +113,7 @@ export default async function router(schema: Schema, config: Config) {
             let username: string | null = null;
             if (user.access !== AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
                 throw new Err(400, null, 'Only Server Admins can create Server scoped iconsets');
-            }
-            else if (user.access === AuthUserAccess.USER || req.body.scope === ResourceCreationScope.USER) {
+            } else if (user.access === AuthUserAccess.USER || req.body.scope === ResourceCreationScope.USER) {
                 username = user.email;
             }
 
@@ -127,8 +124,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(iconset);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -158,16 +154,14 @@ export default async function router(schema: Schema, config: Config) {
 
             if (existing.username && existing.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
-            }
-            else if (!existing.username && user.access !== AuthUserAccess.ADMIN) {
+            } else if (!existing.username && user.access !== AuthUserAccess.ADMIN) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
             if (typeof req.body.public === 'boolean' && user.access === AuthUserAccess.ADMIN) {
                 if (req.body.public === true) {
                     await config.models.Iconset.commit(req.params.iconset, { username: null });
-                }
-                else {
+                } else {
                     await config.models.Iconset.commit(req.params.iconset, { username: user.email });
                 }
             }
@@ -176,8 +170,7 @@ export default async function router(schema: Schema, config: Config) {
             const iconset = await config.models.Iconset.commit(req.params.iconset, req.body);
 
             res.json(iconset);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -251,8 +244,7 @@ export default async function router(schema: Schema, config: Config) {
                     if (req.query.resize) {
                         buffer = Buffer.from(await sharp(buffer).resize(32).png().toBuffer());
                         ext = '.png';
-                    }
-                    else if (ext !== '.png') {
+                    } else if (ext !== '.png') {
                         buffer = Buffer.from(await sharp(buffer).png().toBuffer());
                         ext = '.png';
                     }
@@ -270,12 +262,10 @@ export default async function router(schema: Schema, config: Config) {
                 archive.append(Buffer.from(xml), { name: 'iconset.xml' });
 
                 archive.finalize();
-            }
-            else {
+            } else {
                 res.json(iconset);
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -296,8 +286,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
-            }
-            else if (!iconset.username && user.access !== AuthUserAccess.ADMIN) {
+            } else if (!iconset.username && user.access !== AuthUserAccess.ADMIN) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
@@ -307,8 +296,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Iconset Regenerated',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -329,8 +317,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
-            }
-            else if (!iconset.username && user.access !== AuthUserAccess.ADMIN) {
+            } else if (!iconset.username && user.access !== AuthUserAccess.ADMIN) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
@@ -341,8 +328,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Iconset Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -374,8 +360,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
-            }
-            else if (!iconset.username && user.access !== AuthUserAccess.ADMIN) {
+            } else if (!iconset.username && user.access !== AuthUserAccess.ADMIN) {
                 throw new Err(400, null, 'Only Server Admins can create Server scoped icons');
             }
 
@@ -404,8 +389,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.query.regen) {
                 await Sprites.regen(config, iconset.uid);
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -458,8 +442,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -492,14 +475,12 @@ export default async function router(schema: Schema, config: Config) {
                 `);
 
                 return res.json(icon);
-            }
-            else {
+            } else {
                 const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
 
                 res.json(icon);
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -526,8 +507,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
-            }
-            else if (!iconset.username && user.access !== AuthUserAccess.ADMIN) {
+            } else if (!iconset.username && user.access !== AuthUserAccess.ADMIN) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
@@ -554,8 +534,7 @@ export default async function router(schema: Schema, config: Config) {
             res.json(icon);
 
             await Sprites.regen(config, iconset.uid);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -577,8 +556,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
-            }
-            else if (!iconset.username && user.access !== AuthUserAccess.ADMIN) {
+            } else if (!iconset.username && user.access !== AuthUserAccess.ADMIN) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
@@ -593,8 +571,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             await Sprites.regen(config, iconset.uid);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -618,8 +595,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.params.iconset === 'default') {
                 res.json(DefaultSprite.json);
-            }
-            else {
+            } else {
                 const iconset = await config.models.Iconset.from(req.params.iconset);
                 if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                     throw new Err(400, null, 'You don\'t have permission to access this resource');
@@ -627,13 +603,11 @@ export default async function router(schema: Schema, config: Config) {
 
                 if (iconset.spritesheet_json) {
                     res.json(iconset.spritesheet_json);
-                }
-                else {
+                } else {
                     throw new Err(400, null, 'Request regeneration of Iconset Spritesheet');
                 }
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -657,8 +631,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.params.iconset === 'default') {
                 res.send(DefaultSprite.image);
-            }
-            else {
+            } else {
                 const iconset = await config.models.Iconset.from(req.params.iconset);
                 if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                     throw new Err(400, null, 'You don\'t have permission to access this resource');
@@ -666,13 +639,11 @@ export default async function router(schema: Schema, config: Config) {
 
                 if (iconset.spritesheet_data) {
                     res.send(Buffer.from(iconset.spritesheet_data, 'base64'));
-                }
-                else {
+                } else {
                     throw new Err(400, null, 'Request regeneration of Iconset Spritesheet');
                 }
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

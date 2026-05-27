@@ -69,8 +69,7 @@ export default async function router(schema: Schema, config: Config) {
                         )
                     `,
                 });
-            }
-            else {
+            } else {
                 const auth = await Auth.is_auth(config, req, {
                     resources: [{ access: AuthResourceAccess.IMPORT }],
                 });
@@ -97,8 +96,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -124,8 +122,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(imp);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -177,8 +174,7 @@ export default async function router(schema: Schema, config: Config) {
                             status: Import_Status.PENDING,
                             error: null,
                         });
-                    }
-                    catch (err) {
+                    } catch (err) {
                         file.resume();
                         await importControl.fail(imported.id, err);
                         throw err;
@@ -192,8 +188,7 @@ export default async function router(schema: Schema, config: Config) {
                     // Refetch to get updated status after commit
                     const refetchedImport = await config.models.Import.augmented_from(req.params.import);
                     res.json(refetchedImport);
-                }
-                catch (err) {
+                } catch (err) {
                     Err.respond(err, res);
                 }
             }).on('error', (err: Error) => {
@@ -201,8 +196,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             req.pipe(bb);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -268,8 +262,7 @@ export default async function router(schema: Schema, config: Config) {
                             status: Import_Status.PENDING,
                             error: null,
                         });
-                    }
-                    catch (err) {
+                    } catch (err) {
                         file.resume();
                         await importControl.fail(res.uid, err);
                         throw err;
@@ -282,8 +275,7 @@ export default async function router(schema: Schema, config: Config) {
                     res.json({
                         imports: await Promise.all(uploads),
                     });
-                }
-                catch (err) {
+                } catch (err) {
                     Err.respond(err, res);
                 }
             }).on('error', (err: Error) => {
@@ -291,8 +283,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             req.pipe(bb);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -321,8 +312,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(imported);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -358,8 +348,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             stream.pipe(res);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -398,8 +387,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(result);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -432,8 +420,7 @@ export default async function router(schema: Schema, config: Config) {
             const response = await importControl.update(req.params.import, req.body);
 
             res.json(response);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -457,8 +444,7 @@ export default async function router(schema: Schema, config: Config) {
             const response = await importControl.retry(req.params.import);
 
             res.json(response);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -492,8 +478,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Import Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

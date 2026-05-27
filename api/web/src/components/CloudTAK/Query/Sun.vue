@@ -97,7 +97,7 @@
 </template>
 
 <script setup lang='ts'>
-import { computed } from 'vue';
+import { computed, type Component } from 'vue';
 import type { SearchReverse } from '../../../types.ts';
 import {
     IconSunrise,
@@ -112,20 +112,33 @@ const props = defineProps<{
     sun: SearchReverse["sun"]
 }>();
 
+type TimelineEvent = {
+    name: string;
+    time: string;
+    icon: Component | null;
+    color: string;
+    type: 'event' | 'now';
+};
+
 const timeline = computed(() => {
-    const events = [
-        { name: 'Sunrise', time: props.sun.sunrise, icon: IconSunrise, color: 'text-orange', type: 'event' },
-        { name: 'Sunset', time: props.sun.sunset, icon: IconSunset, color: 'text-orange', type: 'event' },
-        { name: 'Dawn', time: props.sun.dawn, icon: IconSun, color: 'text-yellow', type: 'event' },
-        { name: 'Dusk', time: props.sun.dusk, icon: IconMoon, color: 'text-blue', type: 'event' },
-        { name: 'Solar Noon', time: props.sun.solarNoon, icon: IconSunHigh, color: 'text-yellow', type: 'event' },
-        { name: 'Nadir', time: props.sun.nadir, icon: IconMoonStars, color: 'text-blue', type: 'event' },
-    ];
+    const events: TimelineEvent[] = [];
+
+    const addEvent = (name: string, time: string | null, icon: Component, color: string) => {
+        if (!time) return;
+
+        events.push({ name, time, icon, color, type: 'event' });
+    };
+
+    addEvent('Sunrise', props.sun.sunrise, IconSunrise, 'text-orange');
+    addEvent('Sunset', props.sun.sunset, IconSunset, 'text-orange');
+    addEvent('Dawn', props.sun.dawn, IconSun, 'text-yellow');
+    addEvent('Dusk', props.sun.dusk, IconMoon, 'text-blue');
+    addEvent('Solar Noon', props.sun.solarNoon, IconSunHigh, 'text-yellow');
+    addEvent('Nadir', props.sun.nadir, IconMoonStars, 'text-blue');
 
     events.push({
         name: 'Current Time',
         time: new Date().toISOString(),
-        // @ts-expect-error Icon is not needed for now
         icon: null,
         color: 'text-red',
         type: 'now'

@@ -32,8 +32,7 @@ test('GET: api/profile/asset', async () => {
             },
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -83,11 +82,9 @@ test('POST: api/profile/asset', async () => {
             channels: [],
             artifacts: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
-    }
-    finally {
+    } finally {
         Sinon.restore();
     }
 });
@@ -134,11 +131,9 @@ test('PATCH: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7', async () =
             channels: [7, 42],
             artifacts: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
-    }
-    finally {
+    } finally {
         Sinon.restore();
     }
 });
@@ -150,8 +145,7 @@ test('DELETE: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7 cascades ch
                 return Promise.resolve({
                     Contents: [],
                 });
-            }
-            else if (command instanceof DeleteObjectsCommand) {
+            } else if (command instanceof DeleteObjectsCommand) {
                 return Promise.resolve({});
             }
 
@@ -172,11 +166,9 @@ test('DELETE: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7 cascades ch
 
         const rows = await flight.config?.pg.select().from(ProfileFileChannel);
         assert.deepEqual(rows, []);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
-    }
-    finally {
+    } finally {
         Sinon.restore();
     }
 });
@@ -241,8 +233,7 @@ test('GET: api/profile/asset includes channel shared files', async () => {
         assert.ok(shared);
         assert.equal(shared.username, 'shared@example.com');
         assert.deepEqual(shared.channels, [42]);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

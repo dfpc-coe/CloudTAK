@@ -173,7 +173,7 @@
                                                 </template>
                                                 <template v-else-if='!agencyDisabled && type === "creation"'>
                                                     <CertificateMachineUser
-                                                        :connection='(connection as ETLConnection)'
+                                                        :connection='connection'
                                                         @certs='certificateAttachment($event)'
                                                         @integration='integrationAttachment($event)'
                                                         @err='err = $event'
@@ -238,8 +238,7 @@
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { std } from '../../std.ts';
-import type { ETLConnection } from '../../types.ts';
+import { server } from '../../std.ts';
 import PageFooter from '../PageFooter.vue';
 import AgencySelect from './Connection/AgencySelect.vue';
 import CertificateP12 from './Connection/CertificateP12.vue';
@@ -274,7 +273,7 @@ interface ConnectionForm {
     readonly: boolean;
     description: string;
     enabled: boolean;
-    integrationId?: string;
+    integrationId?: number;
     auth: {
         ca: string[];
         cert: string;
@@ -354,10 +353,19 @@ function disableAgency() {
 
 async function fetch() {
     loading.value = true;
-    const res = await std(`/api/connection/${route.params.connectionid}`) as ETLConnection;
+    const res = await server.GET('/api/connection/{:connectionid}', {
+        params: {
+            path: {
+                ':connectionid': Number(route.params.connectionid)
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
     connection.value = {
-        ...res,
-        agency: res.agency ?? null,
+        ...res.data,
+        agency: res.data.agency ?? null,
         auth: {
             ca: [],
             cert: '',
@@ -367,7 +375,7 @@ async function fetch() {
     loading.value = false;
 }
 
-function integrationAttachment(integration: string) {
+function integrationAttachment(integration?: number) {
     connection.value.integrationId = integration;
 }
 
@@ -389,27 +397,54 @@ async function create() {
     }
 
     if (route.params.connectionid) {
-        const body = JSON.parse(JSON.stringify(connection.value));
-        if (!regen.value) delete body.auth;
+        const res = await server.PATCH('/api/connection/{:connectionid}', {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid)
+                }
+            },
+            body: {
+                name: connection.value.name,
+                description: connection.value.description,
+                enabled: connection.value.enabled,
+                agency: connection.value.agency,
+                ...(regen.value ? { auth: connection.value.auth } : {})
+            }
+        });
 
-        const res = await std(`/api/connection/${route.params.connectionid}`, {
-            method: 'PATCH',
-            body: body
-        }) as ETLConnection;
-        router.push(`/connection/${res.id}`);
+        if (res.error) throw new Error(res.error.message);
+
+        router.push(`/connection/${res.data.id}`);
     } else {
-        const res = await std('/api/connection', {
-            method: 'POST',
-            body: connection.value
-        }) as ETLConnection;
-        router.push(`/connection/${res.id}`);
+        const res = await server.POST('/api/connection', {
+            body: {
+                name: connection.value.name,
+                description: connection.value.description,
+                readonly: connection.value.readonly,
+                enabled: connection.value.enabled,
+                agency: connection.value.agency,
+                ...(connection.value.integrationId !== undefined ? { integrationId: connection.value.integrationId } : {}),
+                auth: connection.value.auth
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        router.push(`/connection/${res.data.id}`);
     }
 }
 
 async function del() {
-    await std(`/api/connection/${route.params.connectionid}`, {
-        method: 'DELETE'
+    const res = await server.DELETE('/api/connection/{:connectionid}', {
+        params: {
+            path: {
+                ':connectionid': Number(route.params.connectionid)
+            }
+        }
     });
+
+    if (res.error) throw new Error(res.error.message);
+
     router.push('/connection');
 }
 </script>

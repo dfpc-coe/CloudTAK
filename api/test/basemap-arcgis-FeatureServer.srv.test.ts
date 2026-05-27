@@ -74,8 +74,7 @@ test('POST: api/basemap - ArcGIS Feature Server Source', async () => {
             snapping_enabled: false,
             snapping_layer: null,
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -98,8 +97,7 @@ test('PATCH: api/basemap/1 - ArcGIS Feature Server TileJSON Source', async () =>
         assert.equal(res.status, 200);
         assert.equal(res.body.id, 1);
         assert.equal(res.body.url, ARCGIS_FEATURE_URL);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -160,8 +158,7 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server direct source', async () 
 
         assert.notDeepEqual(res.body.bounds, [-180, -90, 180, 90]);
         assertBoundsIn4326(res.body.bounds);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -222,8 +219,7 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server TileJSON', async () => {
 
         assert.notDeepEqual(res.body.bounds, [-180, -90, 180, 90]);
         assertBoundsIn4326(res.body.bounds);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -244,8 +240,7 @@ for (const { label, z, x, y } of SAMPLE_TILES) {
             assert.equal(res.status, 200);
             assert.equal(res.headers.get('content-type'), 'application/vnd.mapbox-vector-tile');
             assert.ok(res.body.length > 0, 'tile payload received');
-        }
-        catch (err) {
+        } catch (err) {
             assert.ifError(err);
         }
     });

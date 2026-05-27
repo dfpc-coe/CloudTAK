@@ -77,8 +77,7 @@ async function importBasemapURL(
     let url: URL;
     try {
         url = new URL(rawURL);
-    }
-    catch (err) {
+    } catch (err) {
         throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid URL');
     }
 
@@ -187,8 +186,7 @@ export default async function router(schema: Schema, config: Config) {
                 bb.on('file', async (fieldname, file) => {
                     try {
                         buffer = await stream2buffer(file);
-                    }
-                    catch (err) {
+                    } catch (err) {
                         Err.respond(err, res);
                     }
                 }).on('finish', async () => {
@@ -197,8 +195,7 @@ export default async function router(schema: Schema, config: Config) {
 
                         if (!b.raw.customMapSource) {
                             res.json(imported);
-                        }
-                        else {
+                        } else {
                             const map = b.raw.customMapSource;
 
                             imported.name = map.name._text;
@@ -219,31 +216,26 @@ export default async function router(schema: Schema, config: Config) {
 
                             res.json(imported);
                         }
-                    }
-                    catch (err) {
+                    } catch (err) {
                         Err.respond(err, res);
                     }
                 });
 
                 req.pipe(bb);
-            }
-            else if (contentType && contentType.startsWith('text/plain')) {
+            } else if (contentType && contentType.startsWith('text/plain')) {
                 const imported = await importBasemapURL(config, String(req.body));
                 res.json(imported);
-            }
-            else if (contentType && contentType.startsWith('application/json')) {
+            } else if (contentType && contentType.startsWith('application/json')) {
                 if (!req.body || typeof req.body !== 'object' || !('url' in req.body) || typeof (req.body as Record<string, unknown>).url !== 'string') {
                     throw new Err(400, null, 'Invalid import request');
                 }
 
                 const imported = await importBasemapURL(config, (req.body as Static<typeof BasemapImportRequest>).url, (req.body as Static<typeof BasemapImportRequest>).auth);
                 res.json(imported);
-            }
-            else {
+            } else {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -290,8 +282,7 @@ export default async function router(schema: Schema, config: Config) {
             let scope = sql`True`;
             if (req.query.scope === ResourceCreationScope.SERVER) {
                 scope = sql`username IS NULL`;
-            }
-            else if (req.query.scope === ResourceCreationScope.USER) {
+            } else if (req.query.scope === ResourceCreationScope.USER) {
                 scope = sql`username IS NOT NULL`;
             }
 
@@ -353,8 +344,7 @@ export default async function router(schema: Schema, config: Config) {
                         `,
                     });
                 }
-            }
-            else {
+            } else {
                 const user = await Auth.as_user(config, req);
 
                 list = await config.models.Basemap.list({
@@ -414,8 +404,7 @@ export default async function router(schema: Schema, config: Config) {
                     };
                 }),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -490,18 +479,15 @@ export default async function router(schema: Schema, config: Config) {
             let username: string | null = null;
             if (user.access !== AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
                 throw new Err(400, null, 'Only Server Admins can create Server scoped basemaps');
-            }
-            else if (user.access === AuthUserAccess.USER || req.body.scope === ResourceCreationScope.USER) {
+            } else if (user.access === AuthUserAccess.USER || req.body.scope === ResourceCreationScope.USER) {
                 username = user.email;
             }
 
             if (req.body.type !== Basemap_Type.VECTOR && req.body.snapping_enabled) {
                 throw new Err(400, null, 'Snapping can only be enabled on Vector basemaps');
-            }
-            else if (req.body.snapping_enabled && !req.body.snapping_layer) {
+            } else if (req.body.snapping_enabled && !req.body.snapping_layer) {
                 throw new Err(400, null, 'A snapping_layer must be provided when enabling snapping');
-            }
-            else if (req.body.snapping_enabled) {
+            } else if (req.body.snapping_enabled) {
                 const url = new URL(config.PMTILES_URL);
                 if (!req.body.url.includes(url.hostname)) {
                     throw new Err(400, null, 'Snapping can only be enabled on S3 hosted Basemaps');
@@ -528,8 +514,7 @@ export default async function router(schema: Schema, config: Config) {
                 center: basemap.center ? basemap.center.coordinates : undefined,
                 actions: fromProtocol(basemap.protocol).actions(),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -597,8 +582,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (existing.username && existing.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
-            }
-            else if (!existing.username && (user.access !== AuthUserAccess.ADMIN && !user.impersonate)) {
+            } else if (!existing.username && (user.access !== AuthUserAccess.ADMIN && !user.impersonate)) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resources');
             }
 
@@ -609,11 +593,9 @@ export default async function router(schema: Schema, config: Config) {
                 && (!user.impersonate && user.access !== AuthUserAccess.ADMIN)
             ) {
                 throw new Err(400, null, 'Only Server Admins can edit scoped basemaps');
-            }
-            else if (req.body.scope !== undefined && user.access === AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
+            } else if (req.body.scope !== undefined && user.access === AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
                 username = null;
-            }
-            else if ((req.body.scope && user.access === AuthUserAccess.USER) || req.body.scope === ResourceCreationScope.USER) {
+            } else if ((req.body.scope && user.access === AuthUserAccess.USER) || req.body.scope === ResourceCreationScope.USER) {
                 username = user.email;
             }
 
@@ -622,11 +604,9 @@ export default async function router(schema: Schema, config: Config) {
 
             if (type !== Basemap_Type.VECTOR && req.body.snapping_enabled) {
                 throw new Err(400, null, 'Snapping can only be enabled on Vector basemaps');
-            }
-            else if (req.body.snapping_enabled && !req.body.snapping_layer) {
+            } else if (req.body.snapping_enabled && !req.body.snapping_layer) {
                 throw new Err(400, null, 'A snapping_layer must be provided when enabling snapping');
-            }
-            else if (req.body.snapping_enabled) {
+            } else if (req.body.snapping_enabled) {
                 const u = new URL(Object.keys(config.PMTILES_URL || '').length ? config.PMTILES_URL : 'http://localhost:5001');
                 if (!url.includes(u.hostname)) {
                     throw new Err(400, null, 'Snapping can only be enabled on S3 hosted Basemaps');
@@ -646,8 +626,7 @@ export default async function router(schema: Schema, config: Config) {
                     basemap = await config.models.Basemap.commit(basemap.id, {
                         sharing_token: basemap.sharing_token || `etl.${jwt.sign({ id: basemap.id, access: 'basemap', internal: true, t: +new Date() }, config.SigningSecret)}`,
                     });
-                }
-                else {
+                } else {
                     basemap = await config.models.Basemap.commit(basemap.id, {
                         sharing_token: null,
                     });
@@ -660,8 +639,7 @@ export default async function router(schema: Schema, config: Config) {
                 center: basemap.center ? basemap.center.coordinates : undefined,
                 actions: fromProtocol(basemap.protocol).actions(),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -709,8 +687,7 @@ export default async function router(schema: Schema, config: Config) {
                 })).to_xml();
 
                 res.send(xml);
-            }
-            else {
+            } else {
                 res.json({
                     ...basemap,
                     bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
@@ -718,8 +695,7 @@ export default async function router(schema: Schema, config: Config) {
                     actions: fromProtocol(basemap.protocol).actions(),
                 });
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -750,12 +726,10 @@ export default async function router(schema: Schema, config: Config) {
                 if (basemap.username && basemap.username !== auth.email && auth.access === AuthUserAccess.USER) {
                     throw new Err(400, null, 'You don\'t have permission to access this resource');
                 }
-            }
-            else if (auth instanceof AuthResource) {
+            } else if (auth instanceof AuthResource) {
                 if (basemap.sharing_enabled === false) {
                     throw new Err(400, null, `Sharing for ${basemap.name} is disabled`);
-                }
-                else if (basemap.sharing_token !== auth.token) {
+                } else if (basemap.sharing_token !== auth.token) {
                     throw new Err(400, null, 'You don\'t have permission to access this resource');
                 }
             }
@@ -765,8 +739,7 @@ export default async function router(schema: Schema, config: Config) {
             if (basemap.url.includes(new URL(config.PMTILES_URL || 'http://localhost:5001').hostname)) {
                 tileURL = basemap.url;
                 if (req.query.token) tileURL = tileURL + `?token=${req.query.token}`;
-            }
-            else {
+            } else {
                 tileURL = config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
                 if (req.query.token) tileURL = tileURL + `?token=${req.query.token}`;
             }
@@ -815,8 +788,7 @@ export default async function router(schema: Schema, config: Config) {
                     type: basemap.type,
                     actions: fromProtocol(basemap.protocol).actions(),
                 });
-            }
-            else {
+            } else {
                 const json = BasemapProtocol.json({
                     ...basemap,
                     bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
@@ -829,8 +801,7 @@ export default async function router(schema: Schema, config: Config) {
                     actions: fromProtocol(basemap.protocol).actions(),
                 });
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -863,12 +834,10 @@ export default async function router(schema: Schema, config: Config) {
                 if (basemap.username && basemap.username !== auth.email && auth.access === AuthUserAccess.USER) {
                     throw new Err(400, null, 'You don\'t have permission to access this resource');
                 }
-            }
-            else if (auth instanceof AuthResource) {
+            } else if (auth instanceof AuthResource) {
                 if (basemap.sharing_enabled === false) {
                     throw new Err(400, null, `Sharing for ${basemap.name} is disabled`);
-                }
-                else if (basemap.sharing_token !== auth.token) {
+                } else if (basemap.sharing_token !== auth.token) {
                     throw new Err(400, null, 'You don\'t have permission to access this resource');
                 }
             }
@@ -886,8 +855,7 @@ export default async function router(schema: Schema, config: Config) {
                     },
                 },
             );
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -933,8 +901,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(fc);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -972,8 +939,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(feat);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -994,8 +960,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
-            }
-            else if (!basemap.username && user.access !== AuthUserAccess.ADMIN) {
+            } else if (!basemap.username && user.access !== AuthUserAccess.ADMIN) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
@@ -1017,8 +982,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Basemap Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

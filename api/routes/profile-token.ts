@@ -44,8 +44,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -69,8 +68,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(token);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -99,8 +97,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json({ status: 200, message: 'Token Updated' });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -122,8 +119,7 @@ export default async function router(schema: Schema, config: Config) {
             await config.models.ProfileToken.delete(sql`id = ${token.id}::INT`);
 
             res.json({ status: 200, message: 'Token Deleted' });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

@@ -25,8 +25,7 @@ test('GET: api/connection/1/feature', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -83,8 +82,7 @@ test('PUT: api/connection/1/feature', async () => {
                 coordinates: [123.3223, 123.0002, 123],
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -120,8 +118,7 @@ test('GET: api/connection/1/feature - List', async () => {
                 },
             }],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -154,8 +151,7 @@ test('GET: api/connection/1/feature/:id', async () => {
                 coordinates: [123.3223, 123.0002, 123],
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -173,8 +169,7 @@ test('DELETE: api/connection/1/feature/:id', async () => {
             status: 200,
             message: 'Feature Deleted',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -193,8 +188,7 @@ test('GET: api/connection/1/feature/:id - 404', async () => {
             message: 'Item Not Found',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -243,8 +237,7 @@ test('PUT: api/connection/1/feature - Create another', async () => {
                 coordinates: [0, 0, 0],
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -288,8 +281,7 @@ test('PUT: api/connection/1/feature - Enabled Geofence', async () => {
         `);
 
         assert.equal(feature.enabled_geofence, true);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -307,8 +299,7 @@ test('DELETE: api/connection/1/feature - Delete All', async () => {
             status: 200,
             message: 'Features Deleted',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -326,8 +317,7 @@ test('GET: api/connection/1/feature - Empty', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

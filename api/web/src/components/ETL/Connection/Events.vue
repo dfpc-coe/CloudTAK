@@ -39,6 +39,7 @@
 </template>
 <script setup lang='ts'>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { useRoute } from 'vue-router';
 import { stdurl } from '../../../std.ts';
 import {
@@ -65,10 +66,11 @@ onUnmounted(() => {
     if (ws.value) ws.value.close();
 });
 
-onMounted(() => {
+onMounted(async () => {
     const url = stdurl('/api');
     url.searchParams.set('connection', String(route.params.connectionid));
-    url.searchParams.set('token', localStorage.token);
+    const { value: token } = await Preferences.get({ key: 'token' });
+    if (token) url.searchParams.set('token', token);
     if (window.location.hostname === 'localhost') {
         url.protocol = 'ws:';
     } else {

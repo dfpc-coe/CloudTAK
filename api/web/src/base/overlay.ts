@@ -3,6 +3,7 @@ import type {
     ProfileOverlay_Create,
     TileJSON
 } from '../types.ts';
+import { Preferences } from '@capacitor/preferences';
 import { DrawToolMode } from '../stores/modules/draw.ts';
 import type { FeatureCollection } from 'geojson';
 import { bbox } from '@turf/bbox'
@@ -321,10 +322,11 @@ export default class Overlay {
         skipLayers?: boolean;
     } = {}) {
         const mapStore = useMapStore();
+        const { value: token } = await Preferences.get({ key: 'token' });
 
         if (this.type === 'raster' && this.url) {
             const url = stdurl(this.url);
-            url.searchParams.set('token', localStorage.token);
+            if (token) url.searchParams.set('token', token);
 
             // A failed /tiles lookup (network blip, expired token, deleted
             // basemap upstream, etc.) must NOT abort map initialization or
@@ -346,7 +348,7 @@ export default class Overlay {
             }
         } else if (this.type === 'vector' && this.url) {
             const url = stdurl(this.url);
-            url.searchParams.set('token', localStorage.token);
+            if (token) url.searchParams.set('token', token);
 
             if (!mapStore.map.getSource(String(this.id))) {
                 // MapLibre resolves the vector TileJSON lazily on first tile

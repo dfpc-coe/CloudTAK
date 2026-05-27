@@ -39,7 +39,6 @@
                             ref='upload'
                             :cancel='false'
                             :url='uploadUrl'
-                            :headers='uploadHeaders()'
                             :autoupload='false'
                             @staged='stageUpload($event)'
                         />
@@ -192,12 +191,6 @@ const createDisabled = computed(() => {
 function stageUpload(file: { name: string }) {
     body.value.name = body.value.name || file.name;
     uploaded.value = true;
-}
-
-function uploadHeaders() {
-    return {
-        Authorization: `Bearer ${localStorage.token}`
-    };
 }
 
 async function share() {
