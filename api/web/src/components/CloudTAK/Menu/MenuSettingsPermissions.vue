@@ -93,6 +93,7 @@ import {
 import { TablerBadge, TablerIconButton } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
+import { isNativePlatform } from '../../../base/capacitor.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { usePermissionStore } from '../../../stores/modules/permissions.ts';
 import type { BrowserPermissionState } from '../../../stores/modules/permissions.ts';
@@ -236,6 +237,12 @@ function badgeProps(status: BrowserPermissionState): Record<string, string> {
 }
 
 function descriptionFor(type: PermissionKey, status: BrowserPermissionState): string {
+    if (isNativePlatform() && status !== 'granted' && status !== 'unsupported') {
+        if (status === 'denied') return `${permissionDescriptions.denied[type].split('. ')[0]}.`;
+        if (status === 'prompt') return permissionDescriptions.prompt[type];
+        return permissionDescriptions.unknown[type];
+    }
+
     switch (status) {
         case 'granted':
             return permissionDescriptions.granted[type];
@@ -251,6 +258,8 @@ function descriptionFor(type: PermissionKey, status: BrowserPermissionState): st
 }
 
 function canRequest(type: PermissionKey, status: BrowserPermissionState): boolean {
+    if (isNativePlatform()) return false;
+
     if (type === 'orientation' && !permissionStore.hasOrientationPermissionRequest() && status !== 'granted') {
         return false;
     }
@@ -259,7 +268,7 @@ function canRequest(type: PermissionKey, status: BrowserPermissionState): boolea
 }
 
 function shouldShowAction(status: BrowserPermissionState): boolean {
-    return status !== 'granted' && status !== 'unsupported';
+    return !isNativePlatform() && status !== 'granted' && status !== 'unsupported';
 }
 
 function actionLabel(status: BrowserPermissionState, type: PermissionKey): string {
@@ -281,6 +290,8 @@ async function refreshStatuses(): Promise<void> {
 }
 
 async function requestPermission(type: PermissionKey): Promise<void> {
+    if (isNativePlatform()) return;
+
     error.value = '';
     working.value = type;
 
