@@ -19,6 +19,39 @@ type WindowWithFilePicker = Window & {
     showOpenFilePicker?: (options?: { multiple?: boolean }) => Promise<FileSystemAccessHandle[]>;
 };
 
+type DeviceOrientationEventWithPermission = typeof DeviceOrientationEvent & {
+    requestPermission?: () => Promise<PermissionState>;
+};
+
+type DeviceOrientationEventWithCompass = DeviceOrientationEvent & {
+    webkitCompassHeading?: number;
+};
+
+type DeviceOrientationEventName = 'deviceorientationabsolute' | 'deviceorientation';
+
+function hasPermissionQuery(): boolean {
+    return 'permissions' in navigator && typeof navigator.permissions?.query === 'function';
+}
+
+async function queryPermissionStatus(name: string, warning: string): Promise<PermissionStatus | null> {
+    if (!hasPermissionQuery()) return null;
+
+    try {
+        return await navigator.permissions.query({ name } as PermissionDescriptor);
+    } catch (err) {
+        console.warn(warning, err);
+        return null;
+    }
+}
+
+function normalizeNotificationPermission(permission: NotificationPermission): BrowserPermissionState {
+    return permission === 'default' ? 'prompt' : permission;
+}
+
+function supportsNotifications(): boolean {
+    return 'Notification' in window;
+}
+
 export const usePermissionStore = defineStore('permissions', {
     state: (): {
         permissions: Record<BrowserPermissionType, BrowserPermissionState>;
@@ -49,11 +82,28 @@ export const usePermissionStore = defineStore('permissions', {
         hasOrientationPermissionRequest: function(): boolean {
             if (!('DeviceOrientationEvent' in window)) return false;
 
-            const orientationEvent = window.DeviceOrientationEvent as (typeof DeviceOrientationEvent & {
-                requestPermission?: () => Promise<PermissionState>;
-            });
-
+            const orientationEvent = window.DeviceOrientationEvent as DeviceOrientationEventWithPermission;
             return typeof orientationEvent.requestPermission === 'function';
+        },
+        getOrientationEventName: function(): DeviceOrientationEventName {
+            return 'ondeviceorientationabsolute' in (window as unknown as Record<string, unknown>)
+                ? 'deviceorientationabsolute'
+                : 'deviceorientation';
+        },
+        getOrientationHeading: function(event: DeviceOrientationEvent): number | null {
+            const compassEvent = event as DeviceOrientationEventWithCompass;
+
+            if (compassEvent.webkitCompassHeading !== undefined) {
+                return compassEvent.webkitCompassHeading;
+            }
+
+            return event.alpha === null ? null : 360 - event.alpha;
+        },
+        addOrientationListener: function(listener: (event: DeviceOrientationEvent) => void): void {
+            window.addEventListener(this.getOrientationEventName(), listener as EventListener);
+        },
+        removeOrientationListener: function(listener: (event: DeviceOrientationEvent) => void): void {
+            window.removeEventListener(this.getOrientationEventName(), listener as EventListener);
         },
         setPermissionStatus: function(type: BrowserPermissionType, state: BrowserPermissionState): void {
             this.permissions[type] = state;
@@ -69,39 +119,27 @@ export const usePermissionStore = defineStore('permissions', {
                 return;
             }
 
-            if ('permissions' in navigator && navigator.permissions?.query) {
-                try {
-                    const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
-                    this.setPermissionStatus('location', status.state);
-                    return;
-                } catch (err) {
-                    console.warn('Failed to query geolocation permission status', err);
-                }
+            const status = await queryPermissionStatus('geolocation', 'Failed to query geolocation permission status');
+            if (status) {
+                this.setPermissionStatus('location', status.state);
+                return;
             }
 
             this.setPermissionStatus('location', 'unknown');
         },
         refreshNotificationPermissionStatus: async function(): Promise<void> {
-            if (!("Notification" in window)) {
+            if (!supportsNotifications()) {
                 this.setPermissionStatus('notification', 'unsupported');
                 return;
             }
 
-            if ('permissions' in navigator && navigator.permissions?.query) {
-                try {
-                    const status = await navigator.permissions.query({ name: 'notifications' as PermissionName });
-                    this.setPermissionStatus('notification', status.state);
-                    return;
-                } catch (err) {
-                    console.warn('Failed to query notification permission status', err);
-                }
+            const status = await queryPermissionStatus('notifications', 'Failed to query notification permission status');
+            if (status) {
+                this.setPermissionStatus('notification', status.state);
+                return;
             }
 
-            if (Notification.permission === 'default') {
-                this.setPermissionStatus('notification', 'prompt');
-            } else {
-                this.setPermissionStatus('notification', Notification.permission);
-            }
+            this.setPermissionStatus('notification', normalizeNotificationPermission(Notification.permission));
         },
         refreshOrientationPermissionStatus: async function(): Promise<void> {
             if (!this.hasOrientationSupport()) {
@@ -109,7 +147,7 @@ export const usePermissionStore = defineStore('permissions', {
                 return;
             }
 
-            if ('permissions' in navigator && navigator.permissions?.query) {
+            if (hasPermissionQuery()) {
                 const sensorPermissions = [
                     'accelerometer',
                     'gyroscope',
@@ -160,14 +198,10 @@ export const usePermissionStore = defineStore('permissions', {
                 return;
             }
 
-            if ('permissions' in navigator && navigator.permissions?.query) {
-                try {
-                    const status = await navigator.permissions.query({ name: 'persistent-storage' as PermissionName });
-                    this.setPermissionStatus('storage', status.state);
-                    return;
-                } catch (err) {
-                    console.warn('Failed to query persistent storage permission status', err);
-                }
+            const status = await queryPermissionStatus('persistent-storage', 'Failed to query persistent storage permission status');
+            if (status) {
+                this.setPermissionStatus('storage', status.state);
+                return;
             }
 
             try {
@@ -184,14 +218,10 @@ export const usePermissionStore = defineStore('permissions', {
                 return;
             }
 
-            if ('permissions' in navigator && navigator.permissions?.query) {
-                try {
-                    const status = await navigator.permissions.query({ name: 'camera' as PermissionName });
-                    this.setPermissionStatus('camera', status.state);
-                    return;
-                } catch (err) {
-                    console.warn('Failed to query camera permission status', err);
-                }
+            const status = await queryPermissionStatus('camera', 'Failed to query camera permission status');
+            if (status) {
+                this.setPermissionStatus('camera', status.state);
+                return;
             }
 
             this.setPermissionStatus('camera', 'unknown');
@@ -207,14 +237,10 @@ export const usePermissionStore = defineStore('permissions', {
                 return;
             }
 
-            if ('permissions' in navigator && navigator.permissions?.query) {
-                try {
-                    const status = await navigator.permissions.query({ name: 'screen-wake-lock' as PermissionName });
-                    this.setPermissionStatus('wakeLock', status.state);
-                    return;
-                } catch (err) {
-                    console.warn('Failed to query wake lock permission status', err);
-                }
+            const status = await queryPermissionStatus('screen-wake-lock', 'Failed to query wake lock permission status');
+            if (status) {
+                this.setPermissionStatus('wakeLock', status.state);
+                return;
             }
 
             this.setPermissionStatus('wakeLock', 'prompt');
@@ -284,14 +310,14 @@ export const usePermissionStore = defineStore('permissions', {
             }
         },
         requestNotificationPermission: async function(): Promise<void> {
-            if (!("Notification" in window)) {
+            if (!supportsNotifications()) {
                 this.setPermissionStatus('notification', 'unsupported');
                 return;
             }
 
             try {
                 const status = await Notification.requestPermission();
-                this.setPermissionStatus('notification', status === 'default' ? 'prompt' : status);
+                this.setPermissionStatus('notification', normalizeNotificationPermission(status));
             } finally {
                 await this.refreshNotificationPermissionStatus();
             }
@@ -304,9 +330,7 @@ export const usePermissionStore = defineStore('permissions', {
 
             try {
                 if (this.hasOrientationPermissionRequest()) {
-                    const orientationEvent = window.DeviceOrientationEvent as (typeof DeviceOrientationEvent & {
-                        requestPermission?: () => Promise<PermissionState>;
-                    });
+                    const orientationEvent = window.DeviceOrientationEvent as DeviceOrientationEventWithPermission;
 
                     const status = await orientationEvent.requestPermission?.();
                     if (status) {
@@ -412,39 +436,30 @@ export const usePermissionStore = defineStore('permissions', {
                 if (status === 'granted') {
                     onLocationGranted?.();
                 }
-            } else if ("geolocation" in navigator) {
-                if ('permissions' in navigator && navigator.permissions?.query) {
-                    try {
-                        const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+            } else if ('geolocation' in navigator) {
+                const status = await queryPermissionStatus('geolocation', 'Failed to subscribe to geolocation permission changes');
+                if (status) {
+                    this.setPermissionStatus('location', status.state);
+                    status.onchange = () => {
                         this.setPermissionStatus('location', status.state);
-                        status.onchange = () => {
-                            this.setPermissionStatus('location', status.state);
 
-                            if (status.state === 'granted') {
-                                onLocationGranted?.();
-                            }
-                        };
-                    } catch (err) {
-                        console.warn('Failed to subscribe to geolocation permission changes', err);
-                    }
+                        if (status.state === 'granted') {
+                            onLocationGranted?.();
+                        }
+                    };
                 }
             } else {
                 console.error('Browser does not appear to support Geolocation');
                 this.setPermissionStatus('location', 'unsupported');
             }
 
-            if ('Notification' in window) {
-                if ('permissions' in navigator && navigator.permissions?.query) {
-                    try {
-                        const status = await navigator.permissions.query({ name: 'notifications' as PermissionName });
+            if (supportsNotifications()) {
+                const status = await queryPermissionStatus('notifications', 'Failed to subscribe to notification permission changes');
+                if (status) {
+                    this.setPermissionStatus('notification', status.state);
+                    status.onchange = () => {
                         this.setPermissionStatus('notification', status.state);
-                        status.onchange = () => {
-                            this.setPermissionStatus('notification', status.state);
-                        };
-                    } catch (err) {
-                        console.warn('Failed to subscribe to notification permission changes', err);
-                        await this.refreshNotificationPermissionStatus();
-                    }
+                    };
                 } else {
                     await this.refreshNotificationPermissionStatus();
                 }

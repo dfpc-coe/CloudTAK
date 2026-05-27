@@ -248,6 +248,8 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
+            await this.stopGPSWatch();
+
             this.channel.close();
 
             await permissionStore.releaseWakeLockSentinel();
@@ -255,15 +257,9 @@ export const useMapStore = defineStore('cloudtak', {
             if (this._boundOnOnline) window.removeEventListener('online', this._boundOnOnline);
             if (this._boundOnOffline) window.removeEventListener('offline', this._boundOnOffline);
             if (this._boundOnDeviceOrientation) {
-                if ('ondeviceorientationabsolute' in (window as unknown as Record<string, unknown>)) {
-                    window.removeEventListener('deviceorientationabsolute', this._boundOnDeviceOrientation as EventListener);
-                } else {
-                    window.removeEventListener('deviceorientation', this._boundOnDeviceOrientation as EventListener);
-                }
+                permissionStore.removeOrientationListener(this._boundOnDeviceOrientation);
             }
             if (this._boundOnVisibilityChange) document.removeEventListener('visibilitychange', this._boundOnVisibilityChange);
-
-            await this.stopGPSWatch();
 
             if (this._map) {
                 try {
@@ -592,6 +588,8 @@ export const useMapStore = defineStore('cloudtak', {
             return sub;
         },
         init: async function(container: HTMLElement) {
+            const permissionStore = usePermissionStore();
+
             this.container = container;
 
             this.isOnline = navigator.onLine;
@@ -600,13 +598,7 @@ export const useMapStore = defineStore('cloudtak', {
             this._boundOnDeviceOrientation = (event: DeviceOrientationEvent): void => {
                 if (!this.userOrientationMode) return;
 
-                let heading: number | null = null;
-                const iOSEvent = event as DeviceOrientationEvent & { webkitCompassHeading?: number };
-                if (iOSEvent.webkitCompassHeading !== undefined) {
-                    heading = iOSEvent.webkitCompassHeading;
-                } else if (event.alpha !== null) {
-                    heading = 360 - event.alpha;
-                }
+                const heading = permissionStore.getOrientationHeading(event);
 
                 if (heading !== null && this.map) {
                     this.map.setBearing(heading);
@@ -627,11 +619,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             window.addEventListener('online', this._boundOnOnline);
             window.addEventListener('offline', this._boundOnOffline);
-            if ('ondeviceorientationabsolute' in (window as unknown as Record<string, unknown>)) {
-                window.addEventListener('deviceorientationabsolute', this._boundOnDeviceOrientation as EventListener);
-            } else {
-                window.addEventListener('deviceorientation', this._boundOnDeviceOrientation as EventListener);
-            }
+            permissionStore.addOrientationListener(this._boundOnDeviceOrientation);
             document.addEventListener('visibilitychange', this._boundOnVisibilityChange);
 
             const { value: token } = await Preferences.get({ key: 'token' });
@@ -699,7 +687,6 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
-            const permissionStore = usePermissionStore();
             let startedGPSWatchFromPermissionSubscription = false;
             await permissionStore.initializePermissionSubscriptions(() => {
                 startedGPSWatchFromPermissionSubscription = true;
