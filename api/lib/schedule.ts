@@ -36,8 +36,7 @@ export default class Schedule {
         // AWS went to grammar school and rate(1 minutes) won't be accepted
         if (freq === 1 && schedules[1].match(/s$/)) {
             throw new Err(400, null, 'A frequency value of 1 cannot have a plural unit');
-        }
-        else if (freq > 1 && !schedules[1].match(/s$/)) {
+        } else if (freq > 1 && !schedules[1].match(/s$/)) {
             throw new Err(400, null, 'A frequency value of >1 must have a plural unit');
         }
 
@@ -47,12 +46,10 @@ export default class Schedule {
     static is_valid(schedule: string): boolean {
         if (this.is_cron(schedule)) {
             return true;
-        }
-        else if (this.is_rate(schedule)) {
+        } else if (this.is_rate(schedule)) {
             this.parse_rate(schedule);
             return true;
-        }
-        else {
+        } else {
             throw new Err(400, null, 'Unknown Schedule Type');
         }
     }

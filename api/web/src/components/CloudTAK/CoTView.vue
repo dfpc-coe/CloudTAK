@@ -652,6 +652,7 @@
 
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { useRoute, useRouter } from 'vue-router'
 import FeatureIcon from './util/FeatureIcon.vue';
 import BufferInput from './Inputs/BufferInput.vue';
@@ -767,7 +768,8 @@ const interval = ref<ReturnType<typeof setInterval> | undefined>();
 watch(cot, async () => {
     if (cot.value) {
         if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
-            subscription.value = await Subscription.from(cot.value.origin.mode_id, localStorage.token);
+            const { value: token } = await Preferences.get({ key: 'token' });
+            subscription.value = await Subscription.from(cot.value.origin.mode_id, token || '');
         } else {
             subscription.value = undefined;
         }
@@ -879,7 +881,8 @@ async function load_cot() {
     }))
 
     if (baseCOT && baseCOT.origin.mode === OriginMode.MISSION && baseCOT.origin.mode_id) {
-        subscription.value = await Subscription.from(baseCOT.origin.mode_id, localStorage.token);
+        const { value: token } = await Preferences.get({ key: 'token' });
+        subscription.value = await Subscription.from(baseCOT.origin.mode_id, token || '');
     }
 
     if (baseCOT) {

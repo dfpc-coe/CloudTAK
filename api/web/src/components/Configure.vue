@@ -151,6 +151,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { useRouter } from 'vue-router';
 import type { Server_Update } from '../types.ts';
 import ServerManager from '../base/server.ts';
@@ -204,7 +205,7 @@ onMounted(async () => {
     }
 
     if (!server || server.status === 'configured') {
-        delete localStorage.token;
+        await Preferences.remove({ key: 'token' });
         window.location.href = '/login';
     }
 });

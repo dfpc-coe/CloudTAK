@@ -64,7 +64,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
-import { std } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import ServerInjectorModal from './ServerInjectorModal.vue';
 import type { InjectorList, Injector } from '../../../types.ts';
 import {
@@ -95,7 +95,11 @@ async function fetchList() {
     injector.value = false;
     loading.value = true;
     try {
-        list.value = await std(`/api/server/injector`) as InjectorList;
+        const res = await server.GET('/api/server/injector');
+
+        if (res.error) throw new Error(res.error.message);
+
+        list.value = res.data as InjectorList;
         loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));

@@ -105,7 +105,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { std, stdurl, stdclick } from '../../std.ts';
+import { server, stdclick } from '../../std.ts';
 import timeDiff from '../../timediff.ts';
 import type { User, UserList } from '../../types.ts';
 import TableHeader from '../util/TableHeader.vue'
@@ -124,12 +124,13 @@ const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 
 type Header = { name: keyof User, display: boolean };
+type UserSort = 'id' | 'name' | 'username' | 'last_login' | 'auth' | 'created' | 'updated' | 'phone' | 'system_admin' | 'agency_admin' | 'enableRLS';
 const header = ref<Array<Header>>([])
 const list = ref<UserList>({ total: 0, items: [] });
 const paging = ref({
     filter: '',
-    sort: 'last_login',
-    order: 'desc',
+    sort: 'last_login' as UserSort,
+    order: 'desc' as 'asc' | 'desc',
     limit: 100,
     page: 0
 });
@@ -144,7 +145,17 @@ onMounted(async () => {
 });
 
 async function listLayerSchema() {
-    const schema = await std('/api/schema?method=GET&url=/user');
+    const res = await server.GET('/api/schema', {
+        params: {
+            query: {
+                method: 'GET',
+                url: '/user'
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+    const schema = res.data;
 
     header.value = ['username', 'last_login', 'phone'].map((h) => {
         return { name: h, display: true } as Header;
@@ -167,13 +178,20 @@ async function listLayerSchema() {
 async function fetchList() {
     try {
         loading.value = true;
-        const url = stdurl('/api/user');
-        url.searchParams.set('filter', paging.value.filter);
-        url.searchParams.set('limit', String(paging.value.limit));
-        url.searchParams.set('page', String(paging.value.page));
-        url.searchParams.set('sort', paging.value.sort);
-        url.searchParams.set('order', paging.value.order);
-        list.value = await std(url) as UserList;
+        const res = await server.GET('/api/user', {
+            params: {
+                query: {
+                    filter: paging.value.filter,
+                    limit: paging.value.limit,
+                    page: paging.value.page,
+                    sort: paging.value.sort,
+                    order: paging.value.order
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+        list.value = res.data as UserList;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }

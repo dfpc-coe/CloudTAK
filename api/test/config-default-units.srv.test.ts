@@ -59,8 +59,7 @@ test('GET api/config/display', async () => {
                 options: [true, false],
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -88,8 +87,7 @@ test('PUT api/config', async () => {
             'display::style': 'Light',
             'display::icon_rotation': false,
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -104,8 +102,7 @@ test('GET api/config/display - icon_rotation false conversion', async () => {
         }, true);
 
         assert.equal(res.body.icon_rotation.value, false, 'string "false" converted to boolean false');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -125,8 +122,7 @@ test('PUT api/config - reset icon_rotation to true', async () => {
         assert.deepEqual(res.body, {
             'display::icon_rotation': true,
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -141,8 +137,7 @@ test('GET api/config/display - icon_rotation true conversion', async () => {
         }, true);
 
         assert.equal(res.body.icon_rotation.value, true, 'string "true" converted to boolean true');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -193,8 +188,7 @@ test('GET api/profile', async () => {
             system_admin: false,
             agency_admin: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

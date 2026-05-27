@@ -24,7 +24,6 @@
             >
                 <Upload
                     :url='stdurl(`/api/import`)'
-                    :headers='uploadHeaders()'
                     method='PUT'
                     size-warning
                     @cancel='upload = false'
@@ -218,6 +217,7 @@
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
 import { ref, watch, onMounted, computed } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import type { ProfileFile, ProfileFileList } from '../../../types.ts';
 import PathManager from '../../../base/path-manager.ts';
 import type { PathNode } from '../../../base/path-manager.ts';
@@ -579,12 +579,6 @@ async function createOverlay(asset: ProfileFile) {
     }
 }
 
-function uploadHeaders() {
-    return {
-        Authorization: `Bearer ${localStorage.token}`
-    };
-}
-
 function uploadComplete(event: unknown) {
     upload.value = false;
     const imp = event as { imports: Array<{ uid: string }> };
@@ -592,8 +586,9 @@ function uploadComplete(event: unknown) {
 }
 
 async function downloadAsset(asset: ProfileFile) {
+    const { value: token } = await Preferences.get({ key: 'token' });
     const url = stdurl(`/api/profile/asset/${asset.id}.${asset.name.split('.').pop()}`);
-    url.searchParams.set('token', localStorage.token);
+    if (token) url.searchParams.set('token', token);
     window.open(url, "_blank")
 }
 

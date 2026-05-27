@@ -72,8 +72,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!layer.incoming.data) {
                 pooledClient = await config.conns.get(layer.connection);
-            }
-            else if (layer.incoming.data) {
+            } else if (layer.incoming.data) {
                 data = await config.models.Data.from(layer.incoming.data);
 
                 pooledClient = await config.conns.get(data.connection);
@@ -89,8 +88,7 @@ export default async function router(schema: Schema, config: Config) {
             for (const feat of req.body.features) {
                 try {
                     cots.push(await CoTParser.from_geojson(feat));
-                }
-                catch (err) {
+                } catch (err) {
                     errors.push({
                         error: err instanceof Error ? err.message : String(err),
                         feature: feat,
@@ -179,8 +177,7 @@ export default async function router(schema: Schema, config: Config) {
                                 pathMap.set(currentPath, missionLayer.data);
 
                                 pathMapEntryLast = missionLayer.data;
-                            }
-                            else {
+                            } else {
                                 pathMapEntryLast = pathMapEntry;
                             }
                         }
@@ -227,14 +224,12 @@ export default async function router(schema: Schema, config: Config) {
                     }
 
                     cots = filtered;
-                }
-                else {
+                } else {
                     for (const cot of cots) {
                         cot.addDest({ mission: data.name });
                     }
                 }
-            }
-            else {
+            } else {
                 // Don't push already stale data as they will instantly disappear on the device
                 cots = cots.filter(cot => cot.is_stale);
 
@@ -255,8 +250,7 @@ export default async function router(schema: Schema, config: Config) {
                             upsertTarget: [ConnectionFeature.connection, ConnectionFeature.id],
                         });
                     }
-                }
-                catch (err) {
+                } catch (err) {
                     // We don't throw as priority is TAK Server Delivery
                     console.error(err);
                 }
@@ -275,16 +269,14 @@ export default async function router(schema: Schema, config: Config) {
                 message: 'Submitted',
                 errors,
             });
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Err && err.status === 200) {
                 res.json({
                     status: 200,
                     message: err.message,
                     errors: [],
                 });
-            }
-            else {
+            } else {
                 Err.respond(err, res);
             }
         }
@@ -329,8 +321,7 @@ export default async function router(schema: Schema, config: Config) {
             const feat = await api.Query.singleFeat(req.params.uid);
 
             res.json(feat);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -385,8 +376,7 @@ export default async function router(schema: Schema, config: Config) {
                 type: 'FeatureCollection',
                 features,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

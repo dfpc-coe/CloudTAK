@@ -155,8 +155,7 @@ export default async function router(schema: Schema, config: Config) {
                 orientation: 'landscape',
                 categories: ['utilities', 'productivity', 'navigation', 'government'],
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

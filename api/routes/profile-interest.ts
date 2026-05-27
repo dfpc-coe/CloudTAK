@@ -46,8 +46,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(interests);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -75,8 +74,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(interest);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -111,8 +109,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(interest);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -144,8 +141,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Interest Area Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

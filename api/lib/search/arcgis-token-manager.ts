@@ -108,8 +108,7 @@ export default class ArcGISTokenManager {
             }));
 
             return !data.error;
-        }
-        catch {
+        } catch {
             return false;
         }
     }

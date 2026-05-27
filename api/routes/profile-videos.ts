@@ -38,8 +38,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -64,8 +63,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(video);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -92,8 +90,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Video Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -117,8 +114,7 @@ export default async function router(schema: Schema, config: Config) {
             `);
 
             res.json(video);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

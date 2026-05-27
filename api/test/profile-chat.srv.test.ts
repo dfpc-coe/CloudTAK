@@ -23,8 +23,7 @@ test('GET: api/profile/chatroom', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -70,8 +69,7 @@ test('Streaming: TAK Chat Message', async () => {
 
                 conn.close();
                 resolve();
-            }
-            catch (err) {
+            } catch (err) {
                 reject(err);
             }
         });
@@ -97,8 +95,7 @@ test('GET: api/profile/chatroom', async () => {
                 chatroom: 'user@example.com',
             }],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -119,8 +116,7 @@ test('GET: api/profile/chatroom/:chatroom/chat (Get Message)', async () => {
 
         lastMessageId = res.body.items[0].message_id;
         assert.ok(lastMessageId);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -138,8 +134,7 @@ test('DELETE: api/profile/chatroom/:chatroom/chat (Delete Message)', async () =>
             status: 200,
             message: 'Deleted Chats',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -154,8 +149,7 @@ test('GET: api/profile/chatroom/:chatroom/chat (Verify Delete)', async () => {
         }, true);
 
         assert.equal(res.body.total, 0);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

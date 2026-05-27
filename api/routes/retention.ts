@@ -34,8 +34,7 @@ export default async function router(schema: Schema, config: Config) {
             res.json(await retention.run({
                 name: req.body.action,
             }));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

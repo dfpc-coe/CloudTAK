@@ -72,8 +72,7 @@ test('POST: api/basemap - ArcGIS Imagery Source', async () => {
             snapping_enabled: false,
             snapping_layer: null,
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -99,8 +98,7 @@ test('POST: api/basemap - ArcGIS Imagery Source WKT Spatial Reference', async ()
         assert.equal(res.body.type, 'raster');
         assert.equal(res.body.format, 'png');
         assert.equal(res.body.scheme, 'xyz');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -136,8 +134,7 @@ test('GET: api/basemap/1/tiles - ArcGIS Imagery TileJSON', async () => {
 
         assert.notDeepEqual(res.body.bounds, [-180, -90, 180, 90]);
         assertBoundsIn4326(res.body.bounds);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -157,8 +154,7 @@ test('GET: api/basemap/2/tiles - ArcGIS Imagery TileJSON WKT Spatial Reference',
         assertBoundsIn4326(res.body.bounds);
         assert.ok(res.body.bounds[0] > -89.2 && res.body.bounds[0] < -88.8, `Unexpected Jefferson County minLon: ${res.body.bounds[0]}`);
         assert.ok(res.body.bounds[3] > 43.1 && res.body.bounds[3] < 43.3, `Unexpected Jefferson County maxLat: ${res.body.bounds[3]}`);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -179,8 +175,7 @@ for (const { label, z, x, y } of SAMPLE_TILES) {
             assert.equal(res.status, 200);
             assert.equal(res.headers.get('content-type'), 'image/jpeg');
             assert.ok(res.body.length > 0, 'tile payload received');
-        }
-        catch (err) {
+        } catch (err) {
             assert.ifError(err);
         }
     });

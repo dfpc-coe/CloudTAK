@@ -76,7 +76,7 @@
 
 <script setup lang='ts'>
 import { ref, watch } from 'vue';
-import { std, stdurl } from '../../std.ts';
+import { server } from '../../std.ts';
 import TableHeader from '../util/TableHeader.vue';
 import TableFooter from '../util/TableFooter.vue';
 import StatusDot from '../util/StatusDot.vue';
@@ -108,6 +108,7 @@ interface Session {
 }
 
 type Header = { name: string & keyof Session; display: boolean };
+type SessionSort = 'id' | 'username' | 'created' | 'ip' | 'device_type' | 'browser' | 'os' | 'user_agent' | 'enableRLS';
 
 const isOpen = ref(false);
 const loading = ref(false);
@@ -123,8 +124,8 @@ const header = ref<Header[]>([
 const paging = ref({
     limit: 10,
     page: 0,
-    sort: 'created',
-    order: 'desc',
+    sort: 'created' as SessionSort,
+    order: 'desc' as 'asc' | 'desc',
 });
 
 function toggle(): void {
@@ -147,13 +148,22 @@ async function fetchSessions(): Promise<void> {
     err.value = null;
 
     try {
-        const url = stdurl(`/api/user/${encodeURIComponent(props.username)}/session`);
-        url.searchParams.set('limit', String(paging.value.limit));
-        url.searchParams.set('page', String(paging.value.page));
-        url.searchParams.set('sort', paging.value.sort);
-        url.searchParams.set('order', paging.value.order);
+        const res = await server.GET('/api/user/{:username}/session', {
+            params: {
+                path: {
+                    ':username': props.username
+                },
+                query: {
+                    limit: paging.value.limit,
+                    page: paging.value.page,
+                    sort: paging.value.sort,
+                    order: paging.value.order
+                }
+            }
+        });
 
-        list.value = await std(url) as { total: number; items: Session[] };
+        if (res.error) throw new Error(res.error.message);
+        list.value = res.data as { total: number; items: Session[] };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
     }

@@ -20,8 +20,7 @@ export default async function router(schema: Schema, config: Config) {
             const configuration = await videoControl.configuration();
 
             res.json(configuration);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -43,8 +42,7 @@ export default async function router(schema: Schema, config: Config) {
             res.json({
                 path: await videoControl.path(req.params.path),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

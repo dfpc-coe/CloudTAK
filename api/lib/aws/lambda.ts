@@ -49,8 +49,7 @@ export default class Lambda {
 
         if (res.Payload) {
             return Buffer.from(res.Payload);
-        }
-        else {
+        } else {
             return;
         }
     }
@@ -72,8 +71,7 @@ export default class Lambda {
             if (!tag) return true;
 
             return await ECR.exists(tag);
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Error && /ResourceNotFoundException|Function not found/i.test(err.message)) {
                 return false;
             }

@@ -39716,33 +39716,33 @@ export interface paths {
                         "application/json": {
                             sun: {
                                 /** @description sunrise (top edge of the sun appears on the horizon) */
-                                sunrise: string;
+                                sunrise: string | null;
                                 /** @description sunrise ends (bottom edge of the sun touches the horizon) */
-                                sunriseEnd: string;
+                                sunriseEnd: string | null;
                                 /** @description morning golden hour (soft light, best time for photography) ends */
-                                goldenHourEnd: string;
+                                goldenHourEnd: string | null;
                                 /** @description solar noon (sun is in the highest position) */
-                                solarNoon: string;
+                                solarNoon: string | null;
                                 /** @description evening golden hour starts */
-                                goldenHour: string;
+                                goldenHour: string | null;
                                 /** @description sunset starts (bottom edge of the sun touches the horizon) */
-                                sunsetStart: string;
+                                sunsetStart: string | null;
                                 /** @description sunset (sun disappears below the horizon, evening civil twilight starts) */
-                                sunset: string;
+                                sunset: string | null;
                                 /** @description dusk (evening nautical twilight starts) */
-                                dusk: string;
+                                dusk: string | null;
                                 /** @description nautical dusk (evening astronomical twilight starts) */
-                                nauticalDusk: string;
+                                nauticalDusk: string | null;
                                 /** @description night starts (dark enough for astronomical observations) */
-                                night: string;
+                                night: string | null;
                                 /** @description nadir (darkest moment of the night, sun is in the lowest position) */
-                                nadir: string;
+                                nadir: string | null;
                                 /** @description night ends (morning astronomical twilight starts) */
-                                nightEnd: string;
+                                nightEnd: string | null;
                                 /** @description nautical dawn (morning nautical twilight starts) */
-                                nauticalDawn: string;
+                                nauticalDawn: string | null;
                                 /** @description dawn (morning nautical twilight ends, morning civil twilight starts) */
-                                dawn: string;
+                                dawn: string | null;
                             };
                             magnetic: {
                                 declination: number;

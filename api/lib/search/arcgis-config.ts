@@ -51,8 +51,7 @@ export default class ArcGISConfigService {
                     value: newConfig.clientSecret,
                 }, { upsert: GenerateUpsert.UPDATE });
             }
-        }
-        else {
+        } else {
             await this.appConfig.models.Setting.generate({
                 key: 'agol::auth_method',
                 value: 'legacy',
@@ -82,15 +81,13 @@ export default class ArcGISConfigService {
                     clientId: settings['agol::client_id'] || undefined,
                     clientSecret: settings['agol::client_secret'] || undefined,
                 };
-            }
-            else {
+            } else {
                 return {
                     authMethod: 'legacy',
                     legacyToken: settings['agol::token'] || undefined,
                 };
             }
-        }
-        catch {
+        } catch {
             // Default configuration
             return {
                 authMethod: 'oauth2',
@@ -104,8 +101,7 @@ export default class ArcGISConfigService {
         const config = await this.getConfig();
         if (config.authMethod === 'oauth2') {
             return !!(config.clientId && config.clientSecret);
-        }
-        else {
+        } else {
             return !!config.legacyToken;
         }
     }

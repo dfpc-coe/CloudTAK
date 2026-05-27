@@ -123,20 +123,17 @@ export default class Auth {
 
             if (opts.anyResources && opts.resources.length) {
                 throw new Err(403, null, 'Server cannot specify defined resource access and any resource access together');
-            }
-            else if (!opts.anyResources && !opts.resources.length) {
+            } else if (!opts.anyResources && !opts.resources.length) {
                 throw new Err(403, null, 'Resource token cannot access resource');
             }
 
             if (!auth_resource.internal) {
                 try {
                     await config.models.ConnectionToken.from(auth_resource.token);
-                }
-                catch (err) {
+                } catch (err) {
                     if (err instanceof Error) {
                         throw new Err(403, err.name === 'PublicError' ? err : new Error(String(err)), 'Token does not exist');
-                    }
-                    else {
+                    } else {
                         throw new Err(500, new Error(String(err)), 'Unknown Token Error');
                     }
                 }
@@ -145,8 +142,7 @@ export default class Auth {
             if (!opts.anyResources && !opts.resources.some((r) => {
                 if (r.id) {
                     return r.access === auth_resource.access && r.id === auth_resource.id;
-                }
-                else {
+                } else {
                     return r.access === auth_resource.access;
                 }
             })) {
@@ -175,16 +171,14 @@ export default class Auth {
 
             if (profile.system_admin === true) {
                 return { connection, profile, auth };
-            }
-            else {
+            } else {
                 if (!connection.agency) throw new Err(401, null, 'Only a System Admin can access this connection');
                 if (!profile.agency_admin) throw new Err(401, null, 'Only an Agency Admin admin or higher can access connections');
                 if (!profile.agency_admin.includes(connection.agency)) throw new Err(401, null, `You are not an Agency Admin for Agency ${connection.agency}`);
 
                 return { connection, profile, auth };
             }
-        }
-        else {
+        } else {
             const auth_resource = auth as AuthResource;
 
             // If a resource token is used it's up to the caller to specify it is allowed via the resources array
@@ -194,8 +188,7 @@ export default class Auth {
                 const layer = await config.models.Layer.from(auth_resource.id);
                 if (layer.connection !== connectionid) throw new Err(401, null, 'Layer does not belong to this Connection');
                 return { auth, connection, layer };
-            }
-            else {
+            } else {
                 return { auth, connection };
             }
         }
@@ -301,8 +294,7 @@ async function auth_request(
             }
 
             return await tokenParser(config, authorization[1], config.SigningSecret);
-        }
-        else if (
+        } else if (
             opts
             && opts.token
             && req.query
@@ -310,16 +302,13 @@ async function auth_request(
             && typeof req.query.token === 'string'
         ) {
             return await tokenParser(config, req.query.token, config.SigningSecret);
-        }
-        else {
+        } else {
             throw new Err(401, null, 'No Auth Present');
         }
-    }
-    catch (err) {
+    } catch (err) {
         if (err instanceof Error && err.name === 'PublicError') {
             throw err;
-        }
-        else {
+        } else {
             throw new Err(401, new Error(String(err)), 'Invalid Token');
         }
     }
@@ -346,19 +335,15 @@ export async function tokenParser(
 
             if (profile.system_admin) {
                 return new AuthUser(AuthUserAccess.ADMIN, profile.username, `etl.${token}`);
-            }
-            else if (profile.agency_admin.length) {
+            } else if (profile.agency_admin.length) {
                 return new AuthUser(AuthUserAccess.AGENCY, profile.username, `etl.${token}`);
-            }
-            else {
+            } else {
                 return new AuthUser(AuthUserAccess.USER, profile.username, `etl.${token}`);
             }
-        }
-        else {
+        } else {
             return new AuthResource(`etl.${token}`, access, decoded.id, decoded.internal);
         }
-    }
-    else {
+    } else {
         const decoded = jwt.verify(token, secret);
         if (typeof decoded === 'string') throw new Err(400, null, 'Decoded JWT Should be Object');
         if (!decoded.email || typeof decoded.email !== 'string') throw new Err(401, null, 'Invalid Token');

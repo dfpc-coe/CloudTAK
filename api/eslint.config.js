@@ -12,7 +12,8 @@ export default tseslint.config(
     }),
     {
         rules: {
-            "@typescript-eslint/no-explicit-any": "warn"
+            "@typescript-eslint/no-explicit-any": "warn",
+            '@stylistic/brace-style': ['error', '1tbs', { allowSingleLine: false }]
         }
     }
 );

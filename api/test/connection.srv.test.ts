@@ -20,8 +20,7 @@ test('GET: api/connection - No Auth', async () => {
         }, false);
 
         assert.equal(res.status, 401);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -37,8 +36,7 @@ test('GET: api/connection - Non-admin without agency_admin', async () => {
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Insufficient Access');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -61,8 +59,7 @@ test('GET: api/connection - Admin (empty)', async () => {
                 unknown: 0,
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -81,8 +78,7 @@ test('GET: api/connection/1 - Not Found', async () => {
             message: 'Item Not Found',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -106,8 +102,7 @@ test('POST: api/connection - Invalid X509 Certificate', async () => {
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Invalid X509 Certificate Provided');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -131,8 +126,7 @@ test('POST: api/connection - Non-admin without agency', async () => {
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Only System Admins can create a server without an Agency Configured');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -157,8 +151,7 @@ test('POST: api/connection - Non-admin with wrong agency', async () => {
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Cannot create a connection for an Agency you are not an admin of');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -197,16 +190,14 @@ test('POST: api/connection - Non-admin agency admin creates connection for their
                 method: 'DELETE',
                 auth: { bearer: flight.token.admin },
             }, true);
-        }
-        finally {
+        } finally {
             s3Stub.restore();
         }
 
         await flight.config!.models.Profile.commit('user@example.com', {
             agency_admin: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -244,8 +235,7 @@ test('POST: api/connection - Readonly forces enabled to false', async () => {
         assert.equal(res.body.enabled, false);
 
         readonlyConnId = res.body.id;
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -298,8 +288,7 @@ test('Creating Enabled Connection', async () => {
         enabledConnId = conn.body.id;
 
         await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -323,8 +312,7 @@ test('GET: api/connection - Admin with connections', async () => {
             assert.ok(conn.certificate.subject, 'has certificate subject');
             assert.ok(typeof conn.status === 'string', 'has status');
         }
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -340,8 +328,7 @@ test('GET: api/connection - Admin with filter', async () => {
 
         assert.equal(res.body.total, 1);
         assert.equal(res.body.items[0].name, 'Readonly Connection');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -364,8 +351,7 @@ test('GET: api/connection - Agency admin sees filtered connections', async () =>
         await flight.config!.models.Profile.commit('user@example.com', {
             agency_admin: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -386,8 +372,7 @@ test('GET: api/connection/:connectionid - existing', async () => {
         assert.ok(res.body.certificate.validTo, 'has validTo');
         assert.ok(res.body.certificate.subject, 'has subject');
         assert.ok(typeof res.body.status === 'string', 'has status');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -408,8 +393,7 @@ test('PATCH: api/connection/:connectionid - Update name and description', async 
         assert.equal(res.body.name, 'Updated Connection');
         assert.equal(res.body.description, 'Updated description');
         assert.ok(res.body.certificate, 'has certificate');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -428,8 +412,7 @@ test('PATCH: api/connection/:connectionid - Restore original name', async () => 
         }, true);
 
         assert.equal(res.body.name, 'Test Connection');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -451,8 +434,7 @@ test('PATCH: api/connection/:connectionid - Invalid X509 Certificate', async () 
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Invalid X509 Certificate Provided');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -471,8 +453,7 @@ test('PATCH: api/connection/:connectionid - Readonly prevents enabling', async (
 
         assert.equal(res.body.enabled, false);
         assert.equal(res.body.readonly, true);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -490,8 +471,7 @@ test('PATCH: api/connection/:connectionid - Disable enabled connection', async (
         }, true);
 
         assert.equal(res.body.enabled, false);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -511,8 +491,7 @@ test('PATCH: api/connection/:connectionid - Enable when not in pool', async () =
         assert.equal(res.body.enabled, true);
 
         await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -532,8 +511,7 @@ test('PATCH: api/connection/:connectionid - Re-enable already connected (reconne
         assert.equal(res.body.enabled, true);
 
         await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -561,8 +539,7 @@ test('PATCH: api/connection/:connectionid - Non-admin agency change rejected', a
         await flight.config!.models.Profile.commit('user@example.com', {
             agency_admin: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -578,8 +555,7 @@ test('POST: api/connection/refresh - Non-admin rejected', async () => {
 
         assert.equal(res.status, 403);
         assert.equal(res.body.message, 'Only System Admins can refresh all connections');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -599,8 +575,7 @@ test('POST: api/connection/refresh - Admin', async () => {
         });
 
         await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -616,8 +591,7 @@ test('POST: api/connection/:connectionid/refresh - Disabled connection rejected'
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Connection is not currently enabled');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -635,8 +609,7 @@ test('POST: api/connection/:connectionid/refresh - Enabled connection', async ()
         assert.ok(res.body.certificate, 'has certificate');
 
         await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -652,8 +625,7 @@ test('GET: api/connection/:connectionid/auth - Non-readonly connection rejected'
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Connection is not ReadOnly and cannot return auth');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -670,8 +642,7 @@ test('GET: api/connection/:connectionid/auth - Readonly client P12', async () =>
         assert.ok(res.ok, 'Request succeeded');
         assert.equal(res.headers.get('content-type'), 'application/x-pkcs12');
         assert.ok(res.body.byteLength > 0, 'Response has binary content');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -688,8 +659,7 @@ test('GET: api/connection/:connectionid/auth - Readonly truststore P12', async (
         assert.ok(res.ok, 'Request succeeded');
         assert.equal(res.headers.get('content-type'), 'application/x-pkcs12');
         assert.ok(res.body.byteLength > 0, 'Response has binary content');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -709,8 +679,7 @@ test('GET: api/connection/:connectionid/auth - Readonly client P12 with download
         assert.ok(disposition, 'Has Content-Disposition header');
         assert.ok(disposition!.includes('attachment'), 'Content-Disposition includes attachment');
         assert.ok(disposition!.includes('.p12'), 'Content-Disposition includes .p12');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -729,8 +698,7 @@ test('GET: api/connection/:connectionid/auth - Readonly truststore P12 with down
         const disposition = res.headers.get('content-disposition');
         assert.ok(disposition, 'Has Content-Disposition header');
         assert.ok(disposition!.includes('truststore'), 'Content-Disposition includes truststore');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -753,8 +721,7 @@ test('DELETE: api/connection/:connectionid - Fails with active Layer', async () 
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Connection has active Layers - Delete layers before deleting Connection');
-    }
-    finally {
+    } finally {
         s3Stub.restore();
     }
 
@@ -778,8 +745,7 @@ test('DELETE: api/connection/:connectionid - Fails with active Data Sync', async
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Connection has active Data Syncs - Delete Syncs before deleting Connection');
-    }
-    finally {
+    } finally {
         s3Stub.restore();
     }
 
@@ -804,8 +770,7 @@ test('DELETE: api/connection/:connectionid - Fails with active Video Lease', asy
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Connection has active Video LEases - Delete Leases before deleting Connection');
-    }
-    finally {
+    } finally {
         s3Stub.restore();
     }
 
@@ -826,8 +791,7 @@ test('DELETE: api/connection/:connectionid - Success', async () => {
             status: 200,
             message: 'Connection Deleted',
         });
-    }
-    finally {
+    } finally {
         s3Stub.restore();
     }
 });
@@ -846,8 +810,7 @@ test('DELETE: api/connection/:connectionid - Readonly connection', async () => {
             status: 200,
             message: 'Connection Deleted',
         });
-    }
-    finally {
+    } finally {
         s3Stub.restore();
     }
 });

@@ -23,8 +23,7 @@ test('GET: /template/mission - empty', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -55,8 +54,7 @@ test('POST: /template/mission - create', async () => {
         assert.ok(res.body.updated, 'returned an updated date');
 
         templateId = res.body.id;
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -75,8 +73,7 @@ test('GET: /template/mission - list', async () => {
         assert.equal(res.body.items[0].id, templateId);
         assert.equal(res.body.items[0].name, 'Test Template');
         assert.deepEqual(res.body.items[0].keywords, ['tag1', 'tag2']);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -95,8 +92,7 @@ test('GET: /template/mission/:mission - get', async () => {
         assert.equal(res.body.description, 'A test mission template');
         assert.equal(res.body.icon, validIcon);
         assert.deepEqual(res.body.keywords, ['tag1', 'tag2']);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -120,8 +116,7 @@ test('PATCH: /template/mission/:mission - update', async () => {
         assert.equal(res.body.description, 'An updated description');
         assert.equal(res.body.icon, validIcon);
         assert.deepEqual(res.body.keywords, ['tag3']);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -137,8 +132,7 @@ test('DELETE: /template/mission/:mission - delete', async () => {
 
         assert.equal(res.body.status, 200);
         assert.equal(res.body.message, 'Mission Template Deleted');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -153,8 +147,7 @@ test('GET: /template/mission/:mission - not found', async () => {
         }, false);
 
         assert.equal(res.status, 404);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

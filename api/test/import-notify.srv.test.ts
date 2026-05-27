@@ -44,8 +44,7 @@ test('POST: api/import', async () => {
             source_id: null,
             config: {},
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -102,8 +101,7 @@ test(`PATCH: api/import/<id> - Success`, async () => {
 
                 conn.close();
                 resolve();
-            }
-            catch (err) {
+            } catch (err) {
                 reject(err);
             }
         });

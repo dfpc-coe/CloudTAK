@@ -23,8 +23,7 @@ test('GET: api/profile/token', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -69,8 +68,7 @@ test('POST: api/profile/token', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -88,8 +86,7 @@ test('GET: api/profile/token - Ensure ACL is respected', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -117,8 +114,7 @@ test('GET: api/profile/token', async () => {
                 name: 'Test Token',
             }],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -140,8 +136,7 @@ test('PATCH: api/profile/token/1 - Ensure ACL is respected', async () => {
             message: 'You can only modify your own tokens',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -162,8 +157,7 @@ test('PATCH: api/profile/token/1', async () => {
             status: 200,
             message: 'Token Updated',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -182,8 +176,7 @@ test('DELETE: api/profile/token/1 - Ensure ACL is respected', async () => {
             message: 'You can only modify your own tokens',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -201,8 +194,7 @@ test('DELETE: api/profile/token/1', async () => {
             status: 200,
             message: 'Token Deleted',
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

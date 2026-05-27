@@ -35,32 +35,27 @@ export default async function router(schema: Schema, config: Config) {
 
             try {
                 await fsp.access(new URL(`../fonts/${req.params.fontstack}/${req.params.start}-${req.params.end}.pbf`, import.meta.url));
-            }
-            catch (err) {
+            } catch (err) {
                 if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
                     req.params.fontstack = 'Open Sans Regular';
-                }
-                else {
+                } else {
                     throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Internal Server Error');
                 }
             }
 
             try {
                 await fsp.access(new URL(`../fonts/${req.params.fontstack}/${req.params.start}-${req.params.end}.pbf`, import.meta.url));
-            }
-            catch (err) {
+            } catch (err) {
                 if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
                     throw new Err(404, err, 'Font stack or glyph range not found');
-                }
-                else {
+                } else {
                     throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Internal Server Error');
                 }
             }
 
             fs.createReadStream(new URL(`../fonts/${req.params.fontstack}/${req.params.start}-${req.params.end}.pbf`, import.meta.url))
                 .pipe(res);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

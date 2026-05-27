@@ -38,8 +38,7 @@ export default async function router(schema: Schema, config: Config) {
             let url;
             try {
                 url = new URL(req.body.url);
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, null, err instanceof Error ? err.message : String(err));
             }
 
@@ -50,8 +49,7 @@ export default async function router(schema: Schema, config: Config) {
                     password: req.body.password,
                     referer: config.API_URL,
                 });
-            }
-            else {
+            } else {
                 base = await EsriBase.from(url);
             }
 
@@ -60,8 +58,7 @@ export default async function router(schema: Schema, config: Config) {
                 base: String(base.base),
                 auth: base.token,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -96,8 +93,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const portal = new EsriProxyPortal(base);
             res.json(await portal.getPortal());
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -138,8 +134,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(content);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -173,8 +168,7 @@ export default async function router(schema: Schema, config: Config) {
             const portal = new EsriProxyPortal(base);
 
             res.json(await portal.createService(req.body.name));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -213,8 +207,7 @@ export default async function router(schema: Schema, config: Config) {
             res.json({
                 servers: servers.servers,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -251,8 +244,7 @@ export default async function router(schema: Schema, config: Config) {
             if (!list.services) list.services = [];
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -284,8 +276,7 @@ export default async function router(schema: Schema, config: Config) {
             const server = new EsriProxyServer(base);
 
             res.json(await server.createLayer());
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -323,8 +314,7 @@ export default async function router(schema: Schema, config: Config) {
             const server = new EsriProxyServer(base);
 
             res.json(await server.deleteLayer(layer_id));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -361,8 +351,7 @@ export default async function router(schema: Schema, config: Config) {
             const count = await layer.sample(req.query.query);
 
             res.json(count);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

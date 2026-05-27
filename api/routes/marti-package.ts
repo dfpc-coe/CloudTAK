@@ -153,15 +153,13 @@ export default async function router(schema: Schema, config: Config) {
             let groups: string[] | undefined = undefined;
             if (req.query.groups && typeof req.query.groups === 'string') {
                 groups = [req.query.groups];
-            }
-            else if (req.query.groups && Array.isArray(req.query.groups)) {
+            } else if (req.query.groups && Array.isArray(req.query.groups)) {
                 groups = req.query.groups;
             }
 
             if (req.query.keywords && typeof req.query.keywords === 'string') {
                 keywords = [req.query.keywords];
-            }
-            else if (req.query.groups && Array.isArray(req.query.keywords)) {
+            } else if (req.query.groups && Array.isArray(req.query.keywords)) {
                 keywords = req.query.keywords;
             }
 
@@ -205,8 +203,7 @@ export default async function router(schema: Schema, config: Config) {
                             return await DataPackage.parse(input, {
                                 name: safeName,
                             });
-                        }
-                        catch (err) {
+                        } catch (err) {
                             console.error('ok - treating as unique file (not a DataPackage)', err);
 
                             const pkg = new DataPackage(id, id);
@@ -249,19 +246,16 @@ export default async function router(schema: Schema, config: Config) {
 
                         handled = true;
                         res.json(pkgres.results[0]);
-                    }
-                    catch (err) {
+                    } catch (err) {
                         respond(err);
                     }
                 });
 
                 req.pipe(bb);
-            }
-            else {
+            } else {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -429,8 +423,7 @@ export default async function router(schema: Schema, config: Config) {
                     CreatorUid: creatorUid,
                     Name: pkg.settings.name,
                 };
-            }
-            else {
+            } else {
                 // DataPackage.finalize() always materializes a TAK-compatible ZIP archive,
                 // even though the private upload name is the extensionless package hash.
                 content = await api.Files.upload({
@@ -509,8 +502,7 @@ export default async function router(schema: Schema, config: Config) {
             res.json(content);
 
             await pkg.destroy();
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -544,12 +536,10 @@ export default async function router(schema: Schema, config: Config) {
                 if (typeof req.query.impersonate === 'string' && req.query.impersonate !== 'true') {
                     const profile = await config.models.Profile.from(req.query.impersonate);
                     auth = profile.auth;
-                }
-                else {
+                } else {
                     auth = config.serverCert();
                 }
-            }
-            else {
+            } else {
                 const user = await Auth.as_user(config, req);
                 auth = (await config.models.Profile.from(user.email)).auth;
             }
@@ -580,8 +570,7 @@ export default async function router(schema: Schema, config: Config) {
                 total: pkg.resultCount,
                 items,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -612,8 +601,7 @@ export default async function router(schema: Schema, config: Config) {
             if (!pkg.results.length) throw new Err(404, null, 'Package not found');
 
             res.json(await packageSummaryWithChannels(api, req.params.uid, pkg.results));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -695,13 +683,11 @@ export default async function router(schema: Schema, config: Config) {
                         mimetype: latest.MIMEType,
                         groups: req.body.channels,
                     }, content);
-                }
-                catch (err) {
+                } catch (err) {
                     if (!content.destroyed && !content.readableEnded) {
                         if (content.destroy) {
                             content.destroy(err instanceof Error ? err : new Error(String(err)));
-                        }
-                        else if (content.resume) {
+                        } else if (content.resume) {
                             content.resume();
                         }
                     }
@@ -718,8 +704,7 @@ export default async function router(schema: Schema, config: Config) {
                         expiration,
                     });
                 }
-            }
-            else {
+            } else {
                 await api.Files.update(latest.Hash, {
                     keywords: req.body.keywords,
                     expiration: req.body.expiration,
@@ -735,8 +720,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(await packageSummaryWithChannels(api, req.params.uid, updated.results));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -780,8 +764,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.query.impersonate) {
                 await Auth.as_user(config, req, { admin: true });
-            }
-            else if (
+            } else if (
                 pkg.SubmissionUser !== user.email
                 && user.access !== AuthUserAccess.ADMIN
             ) {
@@ -794,8 +777,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Package Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

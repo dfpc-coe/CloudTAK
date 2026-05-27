@@ -41,11 +41,9 @@ export default async function router(schema: Schema, config: Config) {
                     },
                     items: [],
                 });
-            }
-            else if (!profile.id) {
+            } else if (!profile.id) {
                 throw new Err(400, null, 'External ID must be set on profile');
-            }
-            else {
+            } else {
                 const list = await cotak.agencies(profile.id, req.query.filter);
 
                 res.json({
@@ -55,8 +53,7 @@ export default async function router(schema: Schema, config: Config) {
                     },
                 });
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -84,8 +81,7 @@ export default async function router(schema: Schema, config: Config) {
             const agency = await cotak.agency(profile.id, req.params.agencyid);
 
             res.json(agency);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

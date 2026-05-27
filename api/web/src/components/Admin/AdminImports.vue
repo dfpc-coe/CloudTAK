@@ -137,6 +137,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { std, stdurl, server } from '../../std.ts';
 import type { paths } from '@cloudtak/api-types';
 import type { Import, ImportList } from '../../types.ts';
@@ -243,7 +244,8 @@ async function retryImport(id: string) {
 
 async function downloadImport(id: string) {
     const url = stdurl(`/api/import/${id}/raw`)
-    url.searchParams.set('token', localStorage.token);
+    const { value: token } = await Preferences.get({ key: 'token' });
+    if (token) url.searchParams.set('token', token);
     url.searchParams.set('download', String(true));
     await std(url, {
         download: true

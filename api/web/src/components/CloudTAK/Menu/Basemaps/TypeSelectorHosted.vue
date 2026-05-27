@@ -61,6 +61,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { server, std, stdurl } from '../../../../std.ts';
 import StandardItem from '../../util/StandardItem.vue';
 import TypeSelectorSelected from './TypeSelectorSelected.vue';
@@ -119,7 +120,8 @@ async function select(tile: { name: string }) {
 
     const name = tile.name.replace(/^public\//, '').replace(/\.pmtiles$/, '');
     const url = stdurl(new URL(config.value!.url + `/tiles/public/${name}`));
-    url.searchParams.set('token', localStorage.token);
+    const { value: token } = await Preferences.get({ key: 'token' });
+    if (token) url.searchParams.set('token', token);
 
     const detail = await std(url) as Record<string, unknown>;
     detail.url = url.toString();
@@ -130,7 +132,8 @@ async function select(tile: { name: string }) {
 async function listTiles() {
     loading.value.list = true;
     const url = stdurl(new URL(config.value!.url + '/tiles/public'));
-    url.searchParams.set('token', localStorage.token);
+    const { value: token } = await Preferences.get({ key: 'token' });
+    if (token) url.searchParams.set('token', token);
     url.searchParams.set('filter', paging.value.filter);
     url.searchParams.set('limit', String(paging.value.limit));
     url.searchParams.set('page', String(paging.value.page));

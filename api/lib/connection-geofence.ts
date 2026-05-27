@@ -223,8 +223,7 @@ export default class ConnectionGeofence {
             this.markConnected();
 
             console.log(`ok - geofence connected: ${settings.url}`);
-        }
-        catch (err) {
+        } catch (err) {
             if (!this.isCurrentClient(client, version)) {
                 return;
             }
@@ -345,8 +344,7 @@ export default class ConnectionGeofence {
     private async safeQuit(client: Tile38): Promise<void> {
         try {
             await client.quit(true);
-        }
-        catch (err) {
+        } catch (err) {
             const error = toError(err);
             if (error.message !== 'Connection is closed.') {
                 console.error(`not ok - geofence close failed: ${error.message}`);

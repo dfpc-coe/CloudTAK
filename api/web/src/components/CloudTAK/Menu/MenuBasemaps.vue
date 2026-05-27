@@ -163,6 +163,7 @@
 
 <script setup lang='ts'>
 import { onMounted, ref, watch, computed } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import StandardItemBasemap from '../util/StandardItemBasemap.vue';
 import StandardItemFolder from '../util/StandardItemFolder.vue';
 import PathBreadcrumb from '../util/PathBreadcrumb.vue';
@@ -300,8 +301,9 @@ async function setBasemap(basemap: Basemap) {
     }
 }
 
-function download(basemap: Basemap) {
-    void openExternalUrl(stdurl(`/api/basemap/${basemap.id}?format=xml&download=true&token=${localStorage.token}`));
+async function download(basemap: Basemap) {
+    const { value: token } = await Preferences.get({ key: 'token' });
+    void openExternalUrl(stdurl(`/api/basemap/${basemap.id}?format=xml&download=true${token ? `&token=${encodeURIComponent(token)}` : ''}`));
 }
 
 function setCollection(name: string) {

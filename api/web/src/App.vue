@@ -137,7 +137,7 @@
         </header>
 
         <Loading
-            v-if='loading && !route.path.includes("configure") && !route.path.includes("login")'
+            v-if='!mounted || (loading && !route.path.includes("configure") && !route.path.includes("login"))'
         />
         <router-view
             v-else
@@ -177,7 +177,9 @@ import {
     IconSettings,
     IconRefresh,
 } from '@tabler/icons-vue';
+import { Preferences } from '@capacitor/preferences';
 import { StatusBar } from '@capacitor/status-bar';
+import KV from './base/kv.ts';
 import Loading from './components/Loading.vue';
 import {
     TablerBadge,
@@ -320,14 +322,31 @@ onMounted(async () => {
         window.addEventListener('sw:update-available', onSwUpdateAvailable);
     }
 
+    if (!isNativePlatform()) {
+        await KV.generate('serverUrl', window.location.origin);
+        await Preferences.set({ key: 'serverUrl', value: window.location.origin });
+    } else {
+        const { value } = await Preferences.get({ key: 'serverUrl' });
+        const serverUrl = value?.trim();
+
+        if (!serverUrl) {
+            window.location.href = '/setup.html';
+            return;
+        } else {
+            await KV.generate('serverUrl', serverUrl);
+        }
+    }
+
     await configureStatusBar();
 
     applyTheme();
+
     displayStyleSub = liveQuery(() => db.profile.get('display_style')).subscribe((entry) => {
         const style = entry?.value;
         displayStyle.value = style === 'Light' || style === 'Dark' ? style : 'System Default';
         applyTheme(displayStyle.value);
     });
+
     systemThemeQuery?.addEventListener('change', onSystemThemeChange);
 
     let status;
@@ -373,10 +392,12 @@ onMounted(async () => {
     };
 
     if (status === 'unconfigured') {
-        delete localStorage.token;
+        await Preferences.remove({ key: 'token' });
         router.push("/configure");
     } else {
-        if (localStorage.token) {
+        const { value: token } = await Preferences.get({ key: 'token' });
+
+        if (token) {
             await refreshLogin();
         } else if (route.name !== 'login') {
             routeLogin();
@@ -439,10 +460,10 @@ onUnmounted(() => {
     displayStyleSub?.unsubscribe();
 });
 
-function logout() {
+async function logout() {
     user.value = false;
     mapStore.tokenExpiry = null;
-    delete localStorage.token;
+    await Preferences.remove({ key: 'token' });
 
     window.location.href = '/login';
 }
@@ -469,7 +490,7 @@ async function refreshLogin() {
 
 async function checkToken() {
     try {
-        const token = localStorage.token;
+        const { value: token } = await Preferences.get({ key: 'token' });
         if (!token) throw new Error('No token found');
         const payload = JSON.parse(atob(token.split('.')[1]));
         const expirationDate = payload.exp * 1000; // Convert to milliseconds

@@ -188,7 +188,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../std.ts';
+import { server } from '../../std.ts';
 import type { APIList } from '../../types.ts';
 import {
     IconStar,
@@ -211,11 +211,13 @@ interface Task {
     id?: number;
     name?: string;
     prefix?: string;
-    logo?: string;
+    logo?: string | null;
     version?: string;
     versions?: string[];
     favorite?: boolean;
     readme_body?: string;
+    repo?: string | null;
+    readme?: string | null;
     [key: string]: unknown;
 }
 
@@ -246,8 +248,8 @@ const selected = ref<Task>({
 const paging = ref({
     filter: '',
     limit: 12,
-    sort: 'favorite',
-    order: 'desc',
+    sort: 'favorite' as const,
+    order: 'desc' as const,
     page: 0
 });
 
@@ -267,12 +269,21 @@ async function resolveTask(task: Task): Promise<Task> {
     const existing = list.value.items.find((item) => item.prefix === task.prefix);
     if (existing) return existing;
 
-    const url = stdurl('/api/task');
-    url.searchParams.set('filter', String(task.prefix || ''));
-    url.searchParams.set('limit', '1');
+    const res = await server.GET('/api/task', {
+        params: {
+            query: {
+                filter: String(task.prefix || ''),
+                limit: 1,
+                page: 0,
+                order: paging.value.order,
+                sort: paging.value.sort
+            }
+        }
+    });
 
-    const res = await std(url) as APIList<Task>;
-    const match = res.items.find((item) => item.prefix === task.prefix);
+    if (res.error) throw new Error(res.error.message);
+
+    const match = res.data.items.find((item) => item.prefix === task.prefix);
 
     return match || task;
 }
@@ -290,9 +301,17 @@ watch(selected, () => {
 watch(infoModal, async function() {
     if (!infoModal.value) return;
 
-    const readme = await std(`/api/task/${infoModal.value.id}/readme`) as { body: string };
+    const res = await server.GET('/api/task/{:task}/readme', {
+        params: {
+            path: {
+                ':task': Number(infoModal.value.id)
+            }
+        }
+    });
 
-    infoModal.value.readme_body = readme.body;
+    if (res.error) throw new Error(res.error.message);
+
+    infoModal.value.readme_body = res.data.body;
 })
 
 watch(() => props.modelValue, async function() {
@@ -327,8 +346,17 @@ async function select(task: Task, version?: string) {
     loading.value.task = true;
 
     const resolvedTask = await resolveTask(task);
-    const detail = await std(`/api/task/raw/${task.prefix}`) as { versions: Array<{ version: string; deployed: boolean }> };
-    const versions = detail.versions.map((v) => v.version);
+    const res = await server.GET('/api/task/raw/{:task}', {
+        params: {
+            path: {
+                ':task': String(task.prefix)
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    const versions = res.data.versions.map((v) => v.version);
     selected.value = {
         versions,
         version: version || versions[0],
@@ -340,13 +368,20 @@ async function select(task: Task, version?: string) {
 
 async function listTasks() {
     loading.value.list = true;
-    const url = stdurl('/api/task');
-    url.searchParams.set('filter', paging.value.filter);
-    url.searchParams.set('limit', String(paging.value.limit));
-    url.searchParams.set('order', paging.value.order);
-    url.searchParams.set('sort', paging.value.sort);
-    url.searchParams.set('page', String(paging.value.page));
-    list.value = await std(url) as APIList<Task>;
+    const res = await server.GET('/api/task', {
+        params: {
+            query: {
+                filter: paging.value.filter,
+                limit: paging.value.limit,
+                order: paging.value.order,
+                sort: paging.value.sort,
+                page: paging.value.page
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+    list.value = res.data as APIList<Task>;
 
     loading.value.list = false;
 }

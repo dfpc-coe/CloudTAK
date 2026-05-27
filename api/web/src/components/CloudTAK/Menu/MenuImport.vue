@@ -192,6 +192,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, onUnmounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { useRoute, useRouter } from 'vue-router';
 import { server } from '../../../../src/std.ts';
 import type { Import } from '../../../../src/types.ts';
@@ -268,13 +269,14 @@ function downloadBlob(blob: Blob, response: Response, fallbackName: string): voi
 }
 
 async function downloadImport() {
+    const { value: token } = await Preferences.get({ key: 'token' });
     const res = await server.GET('/api/import/{:import}/raw', {
         params: {
             path: {
                 ':import': String(route.params.import)
             },
             query: {
-                token: localStorage.token,
+                token: token || '',
                 download: true
             }
         },

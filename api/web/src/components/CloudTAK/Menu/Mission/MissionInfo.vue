@@ -242,6 +242,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, computed } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import type { MissionSubscriptions } from '../../../../types.ts';
 import { useRoute, useRouter } from 'vue-router';
 import { stdurl } from '../../../../std.ts'
@@ -274,9 +275,10 @@ const emit = defineEmits(['refresh']);
 const props = defineProps<{
     subscription: Subscription
 }>();
+const token = ref<string | null>(null);
 
 const missionQRURL = computed(() => {
-    return String(stdurl(`/api/marti/missions/${props.subscription.guid}/qr?token=${localStorage.token}`));
+    return String(stdurl(`/api/marti/missions/${props.subscription.guid}/qr${token.value ? `?token=${encodeURIComponent(token.value)}` : ''}`));
 });
 
 const keywords = computed(() => {
@@ -369,6 +371,8 @@ const subscriptions = ref<MissionSubscriptions>([]);
 const missionTemplate = ref<MissionTemplate>();
 
 onMounted(async () => {
+    token.value = (await Preferences.get({ key: 'token' })).value;
+
     loading.value.users = true;
     await fetchSubscriptions();
     loading.value.users = false;

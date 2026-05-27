@@ -32,7 +32,7 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import type { VideoService } from '../../../types.ts';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import VideoConfig from './VideoConfig.vue';
 import {
     TablerNone,
@@ -56,8 +56,11 @@ async function fetchService() {
     loading.value = true;
 
     try {
-        const url = stdurl('/api/video/service');
-        service.value = await std(url) as VideoService;
+        const res = await server.GET('/api/video/service');
+
+        if (res.error) throw new Error(res.error.message);
+
+        service.value = res.data as VideoService;
         loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));

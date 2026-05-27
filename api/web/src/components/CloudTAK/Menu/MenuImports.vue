@@ -23,7 +23,6 @@
             >
                 <Upload
                     :url='stdurl(`/api/import`)'
-                    :headers='uploadHeaders()'
                     method='PUT'
                     @cancel='upload = false'
                     @done='uploadComplete($event)'
@@ -165,12 +164,6 @@ watch(paging.value, async function() {
 onMounted(async () => {
     await fetchList();
 });
-
-function uploadHeaders() {
-    return {
-        Authorization: `Bearer ${localStorage.token}`
-    };
-}
 
 function uploadComplete(event: unknown) {
     upload.value = false;

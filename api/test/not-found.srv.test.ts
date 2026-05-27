@@ -22,8 +22,7 @@ test('GET: api/fake/path/to/resource', async () => {
             message: 'API endpoint does not exist!',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

@@ -30,7 +30,6 @@
         >
             <Upload
                 :url='uploadUrl'
-                :headers='uploadHeaders'
                 mimetype='.pmtiles'
                 label='Upload a .pmtiles file to the hosted tileset directory'
                 @cancel='uploading = false'
@@ -121,11 +120,6 @@ const uploading = ref(false);
 const tilesetKey = ref(0);
 
 const uploadUrl = computed(() => new URL('/api/server/tileset', window.location.origin));
-const uploadHeaders = computed(() => {
-    return {
-        Authorization: `Bearer ${localStorage.token}`
-    };
-});
 
 function toggleUpload() {
     error.value = undefined;

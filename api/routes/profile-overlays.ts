@@ -120,13 +120,11 @@ export default async function router(schema: Schema, config: Config) {
                     if (!(await S3.exists(`profile/${item.username}/${path.parse(item.url.replace(/\/tile$/, '')).name}.pmtiles`))) {
                         return { keep: false as const, item };
                     }
-                }
-                else if (item.mode === 'data') {
+                } else if (item.mode === 'data') {
                     if (!(await S3.exists(`data/${item.mode_id}/${path.parse(item.url.replace(/\/tile$/, '')).name}.pmtiles`))) {
                         return { keep: false as const, item };
                     }
-                }
-                else if (item.mode === 'basemap' || item.mode === 'overlay') {
+                } else if (item.mode === 'basemap' || item.mode === 'overlay') {
                     try {
                         if (!item.mode_id) throw new Error('mode_id is required');
                         const basemap = await config.models.Basemap.from(parseInt(item.mode_id));
@@ -136,13 +134,11 @@ export default async function router(schema: Schema, config: Config) {
                             actions: fromProtocol(basemap.protocol).actions(),
                             encoding: basemap.type === 'raster-dem' ? basemap.encoding : undefined,
                         };
-                    }
-                    catch (err) {
+                    } catch (err) {
                         console.error('Could not find basemap', err);
                         return { keep: false as const, item };
                     }
-                }
-                else if (item.mode === 'mission' && item.mode_id && api) {
+                } else if (item.mode === 'mission' && item.mode_id && api) {
                     const subscription = await config.conns.subscription(user.email, item.name);
                     if (!(await api.Mission.access(item.mode_id, subscription))) {
                         return { keep: false as const, item };
@@ -165,15 +161,13 @@ export default async function router(schema: Schema, config: Config) {
                 if (!result.keep) {
                     removed.push({ ...result.item, opacity: Number(result.item.opacity) });
                     total--;
-                }
-                else {
+                } else {
                     items.push(serializeOverlay(result.item, result.actions, result.encoding));
                 }
             }
 
             res.json({ removed, total, items, available });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -202,12 +196,10 @@ export default async function router(schema: Schema, config: Config) {
                     fromProtocol(basemap.protocol).actions(),
                     basemap.type === 'raster-dem' ? basemap.encoding : undefined,
                 ));
-            }
-            else {
+            } else {
                 res.json(serializeOverlay(overlay, fromProtocol().actions()));
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -251,8 +243,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.body.active && overlay.mode !== 'mission') {
                 throw new Err(400, null, 'Only mission overlays can be made active');
-            }
-            else if (req.body.active) {
+            } else if (req.body.active) {
                 await config.models.ProfileOverlay.commit(sql`
                     username = ${user.email}
                 `, {
@@ -271,12 +262,10 @@ export default async function router(schema: Schema, config: Config) {
                     fromProtocol(basemap.protocol).actions(),
                     basemap.type === 'raster-dem' ? basemap.encoding : undefined,
                 ));
-            }
-            else {
+            } else {
                 res.json(serializeOverlay(overlay, fromProtocol().actions()));
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -311,8 +300,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.body.active && req.body.mode !== 'mission') {
                 throw new Err(400, null, 'Only mission overlays can be made active');
-            }
-            else if (req.body.active) {
+            } else if (req.body.active) {
                 await config.models.ProfileOverlay.commit(sql`
                     username = ${user.email}
                 `, {
@@ -339,8 +327,7 @@ export default async function router(schema: Schema, config: Config) {
                     username: user.email,
                     token: sub.data.token,
                 });
-            }
-            else {
+            } else {
                 if (req.body.mode === 'profile' && req.body.url.startsWith('http')) {
                     const url = new URL(req.body.url);
                     req.body.url = url.pathname;
@@ -362,16 +349,13 @@ export default async function router(schema: Schema, config: Config) {
                     fromProtocol(basemap.protocol).actions(),
                     basemap.type === 'raster-dem' ? basemap.encoding : undefined,
                 ));
-            }
-            else {
+            } else {
                 res.json(serializeOverlay(overlay, fromProtocol().actions()));
             }
-        }
-        catch (err) {
+        } catch (err) {
             if (String(err).includes('duplicate key value violates unique constraint')) {
                 Err.respond(new Err(400, err instanceof Error ? err : new Error(String(err)), 'Overlay appears to exist - cannot add duplicate'), res);
-            }
-            else {
+            } else {
                 Err.respond(err, res);
             }
         }
@@ -407,8 +391,7 @@ export default async function router(schema: Schema, config: Config) {
                     }, {
                         token: overlay.token || undefined,
                     });
-                }
-                catch (err) {
+                } catch (err) {
                     // Currently ignored as this usually just means the Mission has been deleted
                     // TODO Ask ARA to return a 4xx error code
                     console.error(err);
@@ -419,8 +402,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Overlay Removed',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

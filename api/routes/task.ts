@@ -49,8 +49,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(list);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -78,8 +77,7 @@ export default async function router(schema: Schema, config: Config) {
             const task = await config.models.Task.generate(req.body);
 
             res.json(task);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -102,8 +100,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Registered Task Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -129,8 +126,7 @@ export default async function router(schema: Schema, config: Config) {
                 total,
                 items: Object.fromEntries(tasks),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -178,8 +174,7 @@ export default async function router(schema: Schema, config: Config) {
                     deployed: deployedVersions.has(version),
                 })),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -219,8 +214,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Deleted Task Version',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -240,8 +234,7 @@ export default async function router(schema: Schema, config: Config) {
             const task = await config.models.Task.from(req.params.task);
 
             res.json(task);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -270,8 +263,7 @@ export default async function router(schema: Schema, config: Config) {
             const task = await config.models.Task.commit(req.params.task, req.body);
 
             res.json(task);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -297,12 +289,10 @@ export default async function router(schema: Schema, config: Config) {
                 res.json({
                     body: await readmeres.text(),
                 });
-            }
-            else {
+            } else {
                 res.json({ body: '' });
             }
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

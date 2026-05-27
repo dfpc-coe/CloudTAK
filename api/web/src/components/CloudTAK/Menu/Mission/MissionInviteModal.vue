@@ -48,10 +48,11 @@
 </template>
 
 <script setup lang="ts">
+import type { paths } from '@cloudtak/api-types';
 import { TablerModal } from '@tak-ps/vue-tabler';
 import { IconMail } from '@tabler/icons-vue';
 import { useRouter } from 'vue-router';
-import { std, stdurl } from '../../../../std.ts';
+import { server } from '../../../../std.ts';
 import Subscription from '../../../../base/subscription.ts';
 
 const props = defineProps<{
@@ -67,6 +68,9 @@ const props = defineProps<{
 
 const emit = defineEmits(['close']);
 const router = useRouter();
+
+type MissionInviteDeleteQuery = paths['/api/marti/missions/{:guid}/invite']['delete']['parameters']['query'];
+const inviteTypes = new Set<MissionInviteDeleteQuery['type']>(['clientUid', 'callsign', 'userName', 'group', 'team']);
 
 function ignore() {
     emit('close');
@@ -89,14 +93,22 @@ async function decline() {
         const res = await Subscription.list();
         const invite = res.invites.find(i => i.missionGuid === props.mission.guid);
 
-        if (invite) {
-             const url = stdurl(`/api/marti/missions/${invite.missionGuid}/invite`);
-            url.searchParams.set('type', String(invite.type));
-            url.searchParams.set('invitee', String(invite.invitee));
+        if (invite?.missionGuid && invite.type && invite.invitee && inviteTypes.has(invite.type as MissionInviteDeleteQuery['type'])) {
+            const type = invite.type as MissionInviteDeleteQuery['type'];
 
-            await std(url, {
-                method: 'DELETE'
+            const { error } = await server.DELETE('/api/marti/missions/{:guid}/invite', {
+                params: {
+                    path: {
+                        ':guid': invite.missionGuid,
+                    },
+                    query: {
+                        type,
+                        invitee: invite.invitee,
+                    } satisfies MissionInviteDeleteQuery,
+                }
             });
+
+            if (error) throw new Error(error.message);
         }
     } catch (err) {
         console.error('Failed to decline invite', err);

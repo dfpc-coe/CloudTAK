@@ -83,7 +83,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../std.ts';
+import { server } from '../../std.ts';
 import type { APIList } from '../../types.ts';
 import {
     IconTrash,
@@ -162,16 +162,25 @@ onMounted(async () => {
 
 async function fetch() {
     if (!props.modelValue?.id) return;
-    selected.value = await std(`/api/template/${props.modelValue.id}`) as Template;
+    selected.value = props.modelValue;
 }
 
 async function listData() {
     loading.value.list = true;
-    const url = stdurl('/api/template');
-    url.searchParams.set('filter', paging.value.filter);
-    url.searchParams.set('limit', String(paging.value.limit));
-    url.searchParams.set('page', String(paging.value.page));
-    list.value = await std(url) as APIList<Template>;
+    const res = await server.GET('/api/template', {
+        params: {
+            query: {
+                filter: paging.value.filter,
+                limit: paging.value.limit,
+                page: paging.value.page,
+                order: 'asc',
+                sort: 'name'
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+    list.value = res.data as APIList<Template>;
 
     loading.value.list = false;
 }

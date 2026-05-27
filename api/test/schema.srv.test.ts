@@ -23,8 +23,7 @@ test('GET: api/schema', async () => {
         }
 
         assert.deepEqual(res.body, JSON.parse(String(fs.readFileSync(fixture))));
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -38,8 +37,7 @@ test('GET: api/schema?method=FAKE', async () => {
         assert.equal(res.status, 400, 'http: 400');
 
         assert.deepEqual(res.body, { status: 400, message: 'Validation Error GET /schema', messages: [{ type: 'Query', errors: [{ instancePath: '/method', schemaPath: '#/properties/method/anyOf/0/const', keyword: 'const', params: { allowedValue: 'GET' }, message: 'must be equal to constant' }, { instancePath: '/method', schemaPath: '#/properties/method/anyOf/1/const', keyword: 'const', params: { allowedValue: 'PUT' }, message: 'must be equal to constant' }, { instancePath: '/method', schemaPath: '#/properties/method/anyOf/2/const', keyword: 'const', params: { allowedValue: 'POST' }, message: 'must be equal to constant' }, { instancePath: '/method', schemaPath: '#/properties/method/anyOf/3/const', keyword: 'const', params: { allowedValue: 'DELETE' }, message: 'must be equal to constant' }, { instancePath: '/method', schemaPath: '#/properties/method/anyOf/4/const', keyword: 'const', params: { allowedValue: 'OPTIONS' }, message: 'must be equal to constant' }, { instancePath: '/method', schemaPath: '#/properties/method/anyOf/5/const', keyword: 'const', params: { allowedValue: 'HEAD' }, message: 'must be equal to constant' }, { instancePath: '/method', schemaPath: '#/properties/method/anyOf/6/const', keyword: 'const', params: { allowedValue: 'PATCH' }, message: 'must be equal to constant' }, { instancePath: '/method', schemaPath: '#/properties/method/anyOf/7/const', keyword: 'const', params: { allowedValue: 'TRACE' }, message: 'must be equal to constant' }, { instancePath: '/method', schemaPath: '#/properties/method/anyOf', keyword: 'anyOf', params: {}, message: 'must match a schema in anyOf' }] }] });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -56,8 +54,7 @@ test('GET: api/schema?method=GET', async () => {
             message: 'url & method params must be used together',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -74,8 +71,7 @@ test('GET: api/schema?url=123', async () => {
             message: 'url & method params must be used together',
             messages: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

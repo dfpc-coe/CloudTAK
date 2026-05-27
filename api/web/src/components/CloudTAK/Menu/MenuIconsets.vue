@@ -33,7 +33,6 @@
                     <Upload
                         method='PUT'
                         :url='stdurl(`/api/import`)'
-                        :headers='uploadHeaders()'
                         @done='processUpload($event)'
                         @cancel='upload = false'
                         @err='throws($event)'
@@ -177,6 +176,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { useRouter } from 'vue-router';
 import IconsetCache from '../../../base/iconset.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -263,14 +263,9 @@ function processUpload(body: unknown): void {
     }
 }
 
-function uploadHeaders(): Record<string, string> {
-    return {
-        Authorization: `Bearer ${localStorage.token}`
-    };
-}
-
 async function download(iconset: Iconset): Promise<void> {
-    await std(`/api/iconset/${iconset.uid}?format=zip&download=true&token=${localStorage.token}`, {
+    const { value: token } = await Preferences.get({ key: 'token' });
+    await std(`/api/iconset/${iconset.uid}?format=zip&download=true${token ? `&token=${encodeURIComponent(token)}` : ''}`, {
         download: true
     });
 }

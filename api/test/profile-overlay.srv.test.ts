@@ -29,8 +29,7 @@ test('GET: api/profile/overlay - empty', async () => {
                 snapping: false,
             },
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -74,11 +73,9 @@ test('GET: api/profile/overlay - profile mode, S3 present -> kept in items', asy
             method: 'DELETE',
             auth: { bearer: flight.token.admin },
         }, false);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
-    }
-    finally {
+    } finally {
         stub?.restore();
         Sinon.restore();
     }
@@ -117,11 +114,9 @@ test('GET: api/profile/overlay - profile mode, S3 absent -> moved to removed', a
         assert.equal(res.body.items.length, 0);
         assert.equal(res.body.removed.length, 1);
         assert.equal(res.body.removed[0].name, 'Missing Profile Overlay');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
-    }
-    finally {
+    } finally {
         stub?.restore();
         Sinon.restore();
     }
@@ -161,11 +156,9 @@ test('GET: api/profile/overlay - data mode, S3 absent -> moved to removed', asyn
         assert.equal(res.body.items.length, 0);
         assert.equal(res.body.removed.length, 1);
         assert.equal(res.body.removed[0].name, 'Missing Data Overlay');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
-    }
-    finally {
+    } finally {
         stub?.restore();
         Sinon.restore();
     }
@@ -187,8 +180,7 @@ test('POST: api/basemap - for overlay tests', async () => {
         }, true);
 
         assert.equal(res.body.id, 1);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -220,8 +212,7 @@ test('GET: api/profile/overlay - basemap mode, basemap present -> kept in items'
         // basemap overlays carry TileJSON actions
         assert.ok(res.body.items[0].actions);
         assert.equal(res.body.items[0].encoding, 'terrarium');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -243,8 +234,7 @@ test('GET: api/profile/overlay - basemap mode, basemap deleted -> moved to remov
         assert.equal(res.body.items.length, 0);
         assert.equal(res.body.removed.length, 1);
         assert.equal(res.body.removed[0].name, 'Kept Basemap Overlay');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -314,11 +304,9 @@ test('GET: api/profile/overlay - mission mode, access denied -> moved to removed
         assert.equal(res.body.items.length, 0);
         assert.equal(res.body.removed.length, 1);
         assert.equal(res.body.removed[0].name, 'Denied Mission Overlay');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
-    }
-    finally {
+    } finally {
         flight.tak.reset();
     }
 });

@@ -14,11 +14,9 @@ handlebars.registerHelper('fallback', (...params: Array<unknown>) => {
 handlebars.registerHelper('slice', (text: string, start: number, end?: number) => {
     if (text && !isNaN(Number(start)) && !isNaN(Number(end))) {
         return text.substring(start, end);
-    }
-    else if (text && !isNaN(Number(start))) {
+    } else if (text && !isNaN(Number(start))) {
         return text.substring(start);
-    }
-    else {
+    } else {
         return '';
     }
 });
@@ -237,15 +235,12 @@ export default class Style {
             }
 
             return true;
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Err) {
                 throw err;
-            }
-            else if (err instanceof Error) {
+            } else if (err instanceof Error) {
                 throw new Err(400, err, err.message);
-            }
-            else {
+            } else {
                 throw new Err(400, new Error(String(err)), String(err));
             }
         }
@@ -255,8 +250,7 @@ export default class Style {
         if (style.id) {
             try {
                 handlebars.compile(style.id)({});
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid ID Template: ${style.id}`);
             }
         }
@@ -264,24 +258,21 @@ export default class Style {
         if (style.callsign) {
             try {
                 handlebars.compile(style.callsign)({});
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Callsign Template: ${style.callsign}`);
             }
         }
         if (style.remarks) {
             try {
                 handlebars.compile(style.remarks)({});
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Remarks Template: ${style.remarks}`);
             }
         }
         if (style.phone) {
             try {
                 handlebars.compile(style.phone)({});
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Phone Template: ${style.phone}`);
             }
         }
@@ -305,8 +296,7 @@ export default class Style {
         if (style.id) {
             try {
                 handlebars.compile(style.id)({});
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) ID Template: ${style.id}`);
             }
         }
@@ -314,8 +304,7 @@ export default class Style {
         if (style.type) {
             try {
                 handlebars.compile(style.type)({});
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Type Template: ${style.type}`);
             }
         }
@@ -323,8 +312,7 @@ export default class Style {
         if (style.callsign) {
             try {
                 handlebars.compile(style.callsign)({});
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Callsign Template: ${style.callsign}`);
             }
         }
@@ -332,8 +320,7 @@ export default class Style {
         if (style.remarks) {
             try {
                 handlebars.compile(style.remarks)({});
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Remarks Template: ${style.remarks}`);
             }
         }
@@ -341,8 +328,7 @@ export default class Style {
         if (style.phone) {
             try {
                 handlebars.compile(style.phone)({});
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Phone Template: ${style.phone}`);
             }
         }
@@ -352,16 +338,13 @@ export default class Style {
         if (minzoom !== undefined && typeof minzoom === 'number') {
             if (minzoom < 0) {
                 throw new Err(400, null, `Invalid minzoom: ${minzoom} - Less than 0`);
-            }
-            else if (minzoom > 24) {
+            } else if (minzoom > 24) {
                 throw new Err(400, null, `Invalid minzoom: ${minzoom} - Greater than 24`);
             }
-        }
-        else if (typeof minzoom === 'string') {
+        } else if (typeof minzoom === 'string') {
             try {
                 handlebars.compile(minzoom)({});
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid MinZoom: ${minzoom}`);
             }
         }
@@ -369,16 +352,13 @@ export default class Style {
         if (maxzoom !== undefined && typeof maxzoom === 'number') {
             if (maxzoom < 0) {
                 throw new Err(400, null, `Invalid maxzoom: ${maxzoom} - Less than 0`);
-            }
-            else if (maxzoom > 24) {
+            } else if (maxzoom > 24) {
                 throw new Err(400, null, `Invalid maxzoom: ${maxzoom} - Greater than 24`);
             }
-        }
-        else if (typeof maxzoom === 'string') {
+        } else if (typeof maxzoom === 'string') {
             try {
                 handlebars.compile(maxzoom)({});
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid MaxZoom: ${minzoom}`);
             }
         }
@@ -394,15 +374,13 @@ export default class Style {
         for (const link of links) {
             try {
                 handlebars.compile(link.url)({});
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Link URL: ${link.url}`);
             }
 
             try {
                 handlebars.compile(link.remarks)({});
-            }
-            catch (err) {
+            } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Link Remarks: ${link.remarks}`);
             }
         }
@@ -452,12 +430,10 @@ export default class Style {
             if (typeof this.style.styles.stale === 'string') {
                 if (!isNaN(Number(this.style.styles.stale))) {
                     feature.properties.stale = Number(this.style.styles.stale) * 1000;
-                }
-                else {
+                } else {
                     feature.properties.stale = this.compile(this.style.styles.stale, feature.properties.metadata);
                 }
-            }
-            else if (typeof this.style.styles.stale === 'number') {
+            } else if (typeof this.style.styles.stale === 'number') {
                 feature.properties.stale = this.style.styles.stale * 1000;
             }
 
@@ -498,12 +474,10 @@ export default class Style {
                             if (typeof q.styles.stale === 'string') {
                                 if (!isNaN(Number(q.styles.stale))) {
                                     feature.properties.stale = Number(q.styles.stale) * 1000;
-                                }
-                                else {
+                                } else {
                                     feature.properties.stale = this.compile(q.styles.stale, feature.properties.metadata);
                                 }
-                            }
-                            else if (typeof q.styles.stale === 'number') {
+                            } else if (typeof q.styles.stale === 'number') {
                                 feature.properties.stale = q.styles.stale * 1000;
                             }
 
@@ -514,19 +488,16 @@ export default class Style {
                             this.#by_geom(q.styles, feature);
                         }
                     }
-                }
-                catch {
+                } catch {
                     // Ignore queries that result in invalid output - this is explicitly allowed
                 }
             }
 
             return feature;
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Error) {
                 throw new Err(400, err, err.message);
-            }
-            else {
+            } else {
                 throw new Err(400, new Error(String(err)), String(err));
             }
         }
@@ -555,19 +526,16 @@ export default class Style {
         if (typeof value === 'string') {
             if (!isNaN(Number(value))) {
                 return Number(value);
-            }
-            else {
+            } else {
                 const comp = this.compile(value, feature.properties.metadata || {});
 
                 if (!isNaN(Number(comp))) {
                     return Number(comp);
-                }
-                else {
+                } else {
                     return existing;
                 }
             }
-        }
-        else if (typeof value === 'number') {
+        } else if (typeof value === 'number') {
             return value;
         }
     }
@@ -608,12 +576,10 @@ export default class Style {
             if (typeof style.point.stale === 'string') {
                 if (!isNaN(Number(style.point.stale))) {
                     feature.properties.stale = Number(style.point.stale) * 1000;
-                }
-                else {
+                } else {
                     feature.properties.stale = this.compile(style.point.stale, feature.properties.metadata);
                 }
-            }
-            else if (typeof style.point.stale === 'number') {
+            } else if (typeof style.point.stale === 'number') {
                 feature.properties.stale = style.point.stale * 1000;
             }
 
@@ -622,8 +588,7 @@ export default class Style {
             if (style.point.rotate !== undefined) feature.properties.rotate = style.point.rotate;
             if (style.point.icon) feature.properties.icon = style.point.icon;
             if (style.point.marti) this.#applyMarti(style.point.marti, feature);
-        }
-        else if (feature.geometry.type === 'LineString' && style.line) {
+        } else if (feature.geometry.type === 'LineString' && style.line) {
             if (style.line.id) feature.id = this.compile(style.line.id, feature.properties.metadata);
             if (style.line.remarks) feature.properties.remarks = this.compile(style.line.remarks, feature.properties.metadata);
             if (style.line.phone) {
@@ -639,12 +604,10 @@ export default class Style {
             if (typeof style.line.stale === 'string') {
                 if (!isNaN(Number(style.line.stale))) {
                     feature.properties.stale = Number(style.line.stale) * 1000;
-                }
-                else {
+                } else {
                     feature.properties.stale = this.compile(style.line.stale, feature.properties.metadata);
                 }
-            }
-            else if (typeof style.line.stale === 'number') {
+            } else if (typeof style.line.stale === 'number') {
                 feature.properties.stale = style.line.stale * 1000;
             }
 
@@ -653,8 +616,7 @@ export default class Style {
             if (style.line['stroke-opacity']) feature.properties['stroke-opacity'] = Number(style.line['stroke-opacity']);
             if (style.line['stroke-width']) feature.properties['stroke-width'] = Number(style.line['stroke-width']);
             if (style.line.marti) this.#applyMarti(style.line.marti, feature);
-        }
-        else if (feature.geometry.type === 'Polygon' && style.polygon) {
+        } else if (feature.geometry.type === 'Polygon' && style.polygon) {
             if (style.polygon.id) feature.id = this.compile(style.polygon.id, feature.properties.metadata);
             if (style.polygon.remarks) feature.properties.remarks = this.compile(style.polygon.remarks, feature.properties.metadata);
             if (style.polygon.phone) {
@@ -670,12 +632,10 @@ export default class Style {
             if (typeof style.polygon.stale === 'string') {
                 if (!isNaN(Number(style.polygon.stale))) {
                     feature.properties.stale = Number(style.polygon.stale) * 1000;
-                }
-                else {
+                } else {
                     feature.properties.stale = this.compile(style.polygon.stale, feature.properties.metadata);
                 }
-            }
-            else if (typeof style.polygon.stale === 'number') {
+            } else if (typeof style.polygon.stale === 'number') {
                 feature.properties.stale = style.polygon.stale * 1000;
             }
 
@@ -694,8 +654,7 @@ export default class Style {
 export function validateTemplate(template: string, label = 'Title'): void {
     try {
         handlebars.compile(template)({});
-    }
-    catch (err) {
+    } catch (err) {
         throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid ${label} Template: ${template}`);
     }
 }

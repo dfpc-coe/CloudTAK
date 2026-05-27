@@ -60,8 +60,7 @@ function normalizeWhitelist(raw: string[]): Set<string> {
 
         try {
             url = new URL(entry);
-        }
-        catch {
+        } catch {
             throw new Err(400, null, `Invalid whitelist entry: ${entry}`);
         }
 
@@ -121,8 +120,7 @@ function serializeRequestBody(method: typeof ALLOWED_METHODS[number], headers: H
     let serialized: string;
     if (typeof body === 'string') {
         serialized = body;
-    }
-    else {
+    } else {
         serialized = JSON.stringify(body);
         if (!headers.has('content-type')) headers.set('content-type', 'application/json');
     }
@@ -152,8 +150,7 @@ async function readResponseBodyWithLimit(response: Response, limit: number): Pro
             if (total > limit) {
                 try {
                     await reader.cancel();
-                }
-                catch {
+                } catch {
                     // Ignore cancellation errors
                 }
 
@@ -288,8 +285,7 @@ export default async function router(schema: Schema, config: Config) {
                 body: response.body,
                 ...(response.encoding ? { encoding: response.encoding } : {}),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

@@ -89,8 +89,7 @@ export default async function router(schema: Schema, config: Config) {
                 },
                 ...list,
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -142,8 +141,7 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Asset Deleted',
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -195,8 +193,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(await config.models.ProfileFile.augmented_from(file.id));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -245,8 +242,7 @@ export default async function router(schema: Schema, config: Config) {
             let iconsetValue = file.iconset;
             if (req.body.iconset === null) {
                 iconsetValue = null;
-            }
-            else if (req.body.iconset !== undefined) {
+            } else if (req.body.iconset !== undefined) {
                 iconsetValue = req.body.iconset;
             }
 
@@ -272,8 +268,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(await config.models.ProfileFile.augmented_from(file.id));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -304,8 +299,7 @@ export default async function router(schema: Schema, config: Config) {
             const stream = await S3.get(`profile/${user.email}/${req.params.asset}.${req.params.ext}`);
 
             stream.pipe(res);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -355,8 +349,7 @@ export default async function router(schema: Schema, config: Config) {
             url.searchParams.append('token', token);
 
             res.redirect(String(url));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

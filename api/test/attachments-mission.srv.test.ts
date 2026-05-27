@@ -105,8 +105,7 @@ test('PUT: api/attachment?mission= - uploads to S3 and attaches to mission', asy
 
         assert.ok(filesUploadCalled, 'TAK Server Files.upload should be called');
         assert.ok(attachContentsCalled, 'TAK Server Mission.attachContents should be called');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -138,8 +137,7 @@ test('PUT: api/attachment (no mission param) - does NOT call TAK server', async 
 
         assert.ok(s3PutStub.calledOnce, 'S3 put should be called once');
         assert.equal(s3PutStub.firstCall.args[0], `attachment/${fakeHash}/test.txt`);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -172,8 +170,7 @@ test('PUT: api/attachment?mission= - fails gracefully if S3 file not found', asy
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Could not find uploaded attachment');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -253,8 +250,7 @@ test('PUT: api/attachment?mission= - fails gracefully if mission not in user ove
         }, false);
 
         assert.ok(!res.ok, 'Request should not succeed without mission overlay');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 
@@ -278,8 +274,7 @@ test('PUT: api/attachment?mission= - fails with 400 if no file uploaded', async 
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'No file uploaded');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -298,8 +293,7 @@ test('PUT: api/attachment - fails with 400 if no file uploaded (no mission)', as
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'No file uploaded');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -317,8 +311,7 @@ test('PUT: api/attachment?mission= - unauthenticated request fails', async () =>
         }, false);
 
         assert.equal(res.status, 401);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

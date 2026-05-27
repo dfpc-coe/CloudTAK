@@ -204,7 +204,8 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, useTemplateRef } from 'vue';
+import { ref, computed, useTemplateRef, onMounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { from } from 'rxjs';
 import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
@@ -275,6 +276,11 @@ const filteredContents = computed(() => {
 
 const uploadRef = useTemplateRef<typeof Upload>('upload');
 const upload = ref(false);
+const token = ref<string | null>(null);
+
+onMounted(async () => {
+    token.value = (await Preferences.get({ key: 'token' })).value;
+});
 
 const loading = ref(false)
 
@@ -283,9 +289,7 @@ async function deleteFile(hash: string) {
 }
 
 const uploadHeaders = computed(() => {
-    const headers: Record<string, string> = {
-        Authorization: `Bearer ${localStorage.token}`,
-    }
+    const headers: Record<string, string> = {}
 
     if (props.subscription.token) {
         headers.MissionAuthorization = props.subscription.token;
@@ -316,7 +320,7 @@ async function uploadStaged(ev: { name: string }) {
 
 async function downloadFile(name: string, hash: string): Promise<void> {
     const url = stdurl(`/api/marti/api/files/${hash}`)
-    url.searchParams.set('token', localStorage.token);
+    if (token.value) url.searchParams.set('token', token.value);
     url.searchParams.set('name', name);
 
     await std(url, {
@@ -341,7 +345,7 @@ async function importFile(name: string, hash: string) {
 
 function downloadAssetUrl(hash: string, name: string) {
     const url = stdurl(`/api/marti/api/files/${hash}`)
-    url.searchParams.set('token', localStorage.token);
+    if (token.value) url.searchParams.set('token', token.value);
     url.searchParams.set('name', name);
     return url.toString();
 }

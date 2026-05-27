@@ -29,8 +29,7 @@ test('POST: /template/mission - create parent template', async () => {
         }, true);
 
         templateId = res.body.id;
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -48,8 +47,7 @@ test('GET: /template/mission/:mission/palette - empty', async () => {
             total: 0,
             items: [],
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -71,8 +69,7 @@ test('POST: /template/mission/:mission/palette - create', async () => {
         assert.equal(res.body.template, templateId);
 
         paletteId = res.body.uuid;
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -88,8 +85,7 @@ test('GET: /template/mission/:mission/palette/:palette - get', async () => {
 
         assert.equal(res.body.uuid, paletteId);
         assert.equal(res.body.name, 'Test Palette');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -113,8 +109,7 @@ test('POST: /template/mission/:mission/palette/:palette/feature - create', async
         assert.equal(res.body.palette, paletteId);
 
         featureId = res.body.uuid;
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -130,8 +125,7 @@ test('GET: /template/mission/:mission/palette/:palette/feature - list', async ()
 
         assert.equal(res.body.total, 1);
         assert.equal(res.body.items.length, 1);
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -149,8 +143,7 @@ test('PATCH: /template/mission/:mission/palette/:palette/feature/:feature - upda
         }, true);
 
         assert.equal(res.body.name, 'Updated Feature');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -165,8 +158,7 @@ test('DELETE: /template/mission/:mission/palette/:palette/feature/:feature - del
         }, true);
 
         assert.deepEqual(res.body, { status: 200, message: 'Palette Feature Deleted' });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -181,8 +173,7 @@ test('DELETE: /template/mission/:mission/palette/:palette - delete', async () =>
         }, true);
 
         assert.deepEqual(res.body, { status: 200, message: 'Palette Deleted' });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });

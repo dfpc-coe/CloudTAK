@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { std } from '../../../../std.ts';
+import { server } from '../../../../std.ts';
 import {
     TablerModal,
     TablerDelete,
@@ -63,9 +63,15 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'refresh']);
 
 async function deletePasskey() {
-    await std(`/api/login/passkey/${encodeURIComponent(props.passkey.id)}`, {
-        method: 'DELETE',
+    const { error } = await server.DELETE('/api/login/passkey/{:id}', {
+        params: {
+            path: {
+                ':id': props.passkey.id,
+            }
+        }
     });
+
+    if (error) throw new Error(error.message);
 
     emit('refresh');
 }

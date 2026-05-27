@@ -137,8 +137,7 @@ export class BasemapProtocol implements BasemapProtocolInterface {
         let url: URL;
         try {
             url = new URL(str);
-        }
-        catch (err) {
+        } catch (err) {
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid URL provided');
         }
 
@@ -159,8 +158,7 @@ export class BasemapProtocol implements BasemapProtocolInterface {
 
         if (!basemap.sharing_enabled) {
             throw new Err(400, null, `Basemap Sharing has been disabled for ${basemap.name}`);
-        }
-        else if (!basemap.sharing_token) {
+        } else if (!basemap.sharing_token) {
             throw new Err(500, null, `Basemap with sharing has no token for ${basemap.id}`);
         }
 
