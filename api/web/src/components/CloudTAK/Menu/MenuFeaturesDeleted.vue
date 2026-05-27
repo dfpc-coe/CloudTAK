@@ -67,6 +67,7 @@
                     role='menu'
                     :disabled='false'
                     :hover='false'
+                    :sticky-controls='true'
                     :items='filteredList'
                 >
                     <template #buttons='{disabled}'>
