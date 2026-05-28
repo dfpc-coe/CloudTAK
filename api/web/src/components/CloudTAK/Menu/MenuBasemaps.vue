@@ -171,7 +171,7 @@ import type { BasemapList, Basemap } from '../../../types.ts';
 import { openExternalUrl } from '../../../base/capacitor.ts';
 import ProfileConfig from '../../../base/profile.ts';
 import { server, stdurl } from '../../../std.ts';
-import Overlay from '../../../base/overlay.ts';
+import Overlay from '../../../base/overlay-class.ts';
 import BasemapEditModal from './Basemaps/EditModal.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import Share from '../util/Share.vue';

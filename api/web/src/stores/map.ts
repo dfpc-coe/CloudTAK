@@ -23,7 +23,7 @@ import type { DatabaseType } from '../database.ts';
 import { db } from '../database.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
-import Overlay from '../base/overlay.ts';
+import Overlay from '../base/overlay-class.ts';
 import Subscription from '../base/subscription.ts';
 import { std, stdurl } from '../std.js';
 import * as mapgl from 'maplibre-gl'

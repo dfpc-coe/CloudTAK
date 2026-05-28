@@ -306,7 +306,7 @@ import {
     IconFolder,
 } from '@tabler/icons-vue';
 import { useMapStore } from '../../../../stores/map.ts';
-import type Overlay from '../../../../base/overlay.ts';
+import type Overlay from '../../../../base/overlay-class.ts';
 import type COT from '../../../../base/cot.ts';
 import type { Contact as ContactData } from '../../../../types.ts';
 

@@ -247,7 +247,7 @@ import PathBrowser from '../util/PathBrowser.vue';
 import FileRow from './MenuFilesRow.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '../../../stores/map.ts';
-import Overlay from '../../../base/overlay.ts';
+import Overlay from '../../../base/overlay-class.ts';
 import Upload from '../../util/Upload.vue';
 
 const mapStore = useMapStore();
