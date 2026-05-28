@@ -266,7 +266,7 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
-import Overlay from '../../../../base/overlay.ts';
+import Overlay from '../../../../base/overlay-class.ts';
 import { useMapStore } from '../../../../stores/map.ts';
 const mapStore = useMapStore();
 

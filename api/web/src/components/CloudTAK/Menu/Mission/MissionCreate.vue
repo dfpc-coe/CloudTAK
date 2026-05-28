@@ -225,7 +225,7 @@ import {
 } from '@tabler/icons-vue';
 import GroupSelect from '../../util/GroupSelect.vue';
 import TagEntry from '../../util/TagEntry.vue';
-import Overlay from '../../../../base/overlay.ts';
+import Overlay from '../../../../base/overlay-class.ts';
 import {
     TablerInput,
     TablerEnum,

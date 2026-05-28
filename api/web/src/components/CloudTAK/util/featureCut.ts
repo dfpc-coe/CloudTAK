@@ -4,7 +4,7 @@ import type { Feature } from 'geojson';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 import { server } from '../../../std.ts';
 import type { useMapStore } from '../../../stores/map.ts';
-import type Overlay from '../../../base/overlay.ts';
+import type Overlay from '../../../base/overlay-class.ts';
 
 type FeatureLike = Feature | MapGeoJSONFeature;
 type MapStore = ReturnType<typeof useMapStore>;

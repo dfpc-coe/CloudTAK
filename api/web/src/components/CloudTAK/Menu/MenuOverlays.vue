@@ -310,7 +310,7 @@ import StandardItem from '../util/StandardItem.vue';
 import Sortable from 'sortablejs';
 import type { SortableEvent } from 'sortablejs';
 import { useMapStore } from '../../../../src/stores/map.ts';
-import type Overlay from '../../../../src/base/overlay.ts';
+import type Overlay from '../../../../src/base/overlay-class.ts';
 
 type OverlayBadgeTone = 'primary' | 'neutral' | 'mission' | 'warning' | 'muted';
 type OverlayBadge = { label: string; tone: OverlayBadgeTone };

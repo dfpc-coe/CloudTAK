@@ -116,7 +116,7 @@ import StandardItem from '../util/StandardItem.vue';
 import StandardItemBasemap from '../util/StandardItemBasemap.vue';
 import StandardItemFolder from '../util/StandardItemFolder.vue';
 import PathBreadcrumb from '../util/PathBreadcrumb.vue';
-import Overlay from '../../../base/overlay.ts';
+import Overlay from '../../../base/overlay-class.ts';
 import { useMapStore } from '../../../stores/map.ts';
 
 const mapStore = useMapStore();
