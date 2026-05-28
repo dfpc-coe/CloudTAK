@@ -7,7 +7,8 @@ import type {
     MissionChange,
     MissionLog,
     Contact,
-    Server
+    Server,
+    ProfileOverlayList
 } from './types.ts';
 
 export interface DBIcon {
@@ -71,6 +72,8 @@ export interface DBIconset {
     default_unknown: string | null;
     skip_resize: boolean;
 }
+
+export type DBOverlay = ProfileOverlayList["items"][number];
 
 export interface DBFilter {
     id: string;
@@ -222,6 +225,7 @@ export interface DBSprite {
 export type DatabaseType = Dexie & {
     icon: EntityTable<DBIcon, 'name'>,
     iconset: EntityTable<DBIconset, 'uid'>,
+    overlay: EntityTable<DBOverlay, 'id'>,
     sprite: EntityTable<DBSprite, 'id'>,
     group: EntityTable<GroupChannel, 'name'>,
     video: EntityTable<DBVideo, 'id'>,
@@ -258,6 +262,7 @@ db.version(1).stores({
     sprite: 'id',
     icon: 'name, iconset',
     iconset: 'uid, name',
+    overlay: 'id, name, mode, mode_id',
 
     filter: 'id, external',
     video: 'id, username',
