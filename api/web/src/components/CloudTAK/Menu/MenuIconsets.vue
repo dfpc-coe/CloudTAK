@@ -131,7 +131,7 @@
                                             </TablerBadge>
                                             <TablerIconButton
                                                 title='Download TAK Zip'
-                                                @click.stop='download(iconset)'
+                                                @click.stop='IconsetCache.download(iconset.uid)'
                                             >
                                                 <IconDownload
                                                     :size='32'
@@ -176,12 +176,11 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
-import { Preferences } from '@capacitor/preferences';
 import { useRouter } from 'vue-router';
 import IconsetCache from '../../../base/iconset.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
-import { std, stdurl } from '../../../std.ts';
+import { stdurl } from '../../../std.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import Upload from '../../util/Upload.vue';
 import IconCombineds from '../util/Icons.vue';
@@ -205,7 +204,6 @@ import {
     IconPlus
 } from '@tabler/icons-vue';
 import type { DBIconset } from '../../../database.ts';
-import type { Iconset } from '../../../types.ts';
 
 interface ImportUploadResponse {
     imports: {
@@ -261,13 +259,6 @@ function processUpload(body: unknown): void {
     if (isImportUploadResponse(body) && body.imports.length > 0) {
         router.push(`/menu/imports/${body.imports[0].uid}`);
     }
-}
-
-async function download(iconset: Iconset): Promise<void> {
-    const { value: token } = await Preferences.get({ key: 'token' });
-    await std(`/api/iconset/${iconset.uid}?format=zip&download=true${token ? `&token=${encodeURIComponent(token)}` : ''}`, {
-        download: true
-    });
 }
 
 async function fetchList(): Promise<void> {

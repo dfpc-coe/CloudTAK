@@ -52,11 +52,11 @@
 </template>
 
 <script setup lang="ts">
-import type { paths } from '@cloudtak/api-types';
 import { useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
 import { server } from '../../../../std.ts';
 import type { Iconset } from '../../../../types.ts';
+import IconsetManager, { type Iconset_Create, type Iconset_Update } from '../../../../base/iconset.ts';
 import {
     TablerModal,
     TablerLoading,
@@ -72,8 +72,6 @@ const loading = ref({
     iconset: true
 });
 const schema = ref<Record<string, unknown>>({});
-type IconsetCreateBody = paths['/api/iconset']['post']['requestBody']['content']['application/json'];
-type IconsetUpdateBody = paths['/api/iconset/{:iconset}']['patch']['requestBody']['content']['application/json'];
 type SchemaResponse = { body?: Record<string, unknown> };
 
 const iconset = ref<Partial<Iconset> & {
@@ -97,23 +95,13 @@ onMounted(async () => {
 
 async function fetch() {
     loading.value.iconset = true;
-    const res = await server.GET('/api/iconset/{:iconset}', {
-        params: {
-            path: {
-                ':iconset': String(route.params.iconset),
-            }
-        }
-    });
-
-    if (res.error) throw new Error(res.error.message);
-
-    iconset.value = res.data;
+    iconset.value = await IconsetManager.get(String(route.params.iconset));
     loading.value.iconset = false;
 }
 
 async function submit() {
     if (route.params.iconset) {
-        const body: IconsetUpdateBody = {
+        const body: Iconset_Update = {
             ...(iconset.value.public !== undefined ? { public: iconset.value.public } : {}),
             ...(iconset.value.default_group ? { default_group: iconset.value.default_group } : {}),
             ...(iconset.value.default_friendly ? { default_friendly: iconset.value.default_friendly } : {}),
@@ -123,22 +111,13 @@ async function submit() {
             ...(iconset.value.skip_resize !== undefined ? { skip_resize: iconset.value.skip_resize } : {}),
         };
 
-        const res = await server.PATCH('/api/iconset/{:iconset}', {
-            params: {
-                path: {
-                    ':iconset': String(route.params.iconset),
-                }
-            },
-            body,
-        });
-
-        if (res.error) throw new Error(res.error.message);
+        await IconsetManager.update(String(route.params.iconset), body);
     } else {
         if (!iconset.value.uid || iconset.value.version === undefined || !iconset.value.name || iconset.value.internal === undefined) {
             throw new Error('Iconset form is incomplete');
         }
 
-        const body: IconsetCreateBody = {
+        const body: Iconset_Create = {
             uid: iconset.value.uid,
             version: iconset.value.version,
             name: iconset.value.name,
@@ -152,11 +131,7 @@ async function submit() {
             ...(iconset.value.skip_resize !== undefined ? { skip_resize: iconset.value.skip_resize } : {}),
         };
 
-        const res = await server.POST('/api/iconset', {
-            body,
-        });
-
-        if (res.error) throw new Error(res.error.message);
+        await IconsetManager.create(body);
     }
 
     emit('close');
@@ -164,16 +139,7 @@ async function submit() {
 
 async function regen() {
     loading.value.iconset = true;
-    const res = await server.POST('/api/iconset/{:iconset}/regen', {
-        params: {
-            path: {
-                ':iconset': String(route.params.iconset),
-            }
-        }
-    });
-
-    if (res.error) throw new Error(res.error.message);
-
+    await IconsetManager.regenerate(String(route.params.iconset));
     loading.value.iconset = false;
 }
 
