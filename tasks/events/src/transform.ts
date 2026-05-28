@@ -83,8 +83,7 @@ export default class DataTransform {
 
             if (!iconsetRes.ok) {
                 console.error(`err - Failed to create iconset: ${await iconsetRes.text()}`);
-            }
-            else {
+            } else {
                 await createImportResult(this.msg, {
                     name: `${this.msg.job.name} Icons`,
                     type: 'Iconset',
@@ -105,8 +104,7 @@ export default class DataTransform {
                             const rando = randomUUID();
                             iconNameMap.set(icon.name, rando);
                             icon.name = rando + '.png';
-                        }
-                        else {
+                        } else {
                             iconNameMap.set(icon.name, name);
                             icon.name = name;
                         }
@@ -151,8 +149,7 @@ export default class DataTransform {
 
                 if (!res.ok) {
                     throw new Error(`Failed to update asset: ${await res.text()}`);
-                }
-                else {
+                } else {
                     this.asset = await res.json() as Asset;
                 }
             }
@@ -215,8 +212,7 @@ export default class DataTransform {
 
             if (!res.ok) {
                 throw new Error(`Failed to update asset: ${await res.text()}`);
-            }
-            else {
+            } else {
                 this.asset = await res.json() as Asset;
             }
 
@@ -243,8 +239,7 @@ export default class DataTransform {
                     },
                 },
             );
-        }
-        else {
+        } else {
             console.log(`ok - converting ${conversion.asset}`);
             const pmout = cp.execFileSync('pmtiles', ['convert', conversion.asset, path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')], { maxBuffer: 100 * 1024 * 1024 });
             console.log(String(pmout));
@@ -275,8 +270,7 @@ export default class DataTransform {
 
         if (!res.ok) {
             throw new Error(`Failed to update asset: ${await res.text()}`);
-        }
-        else {
+        } else {
             this.asset = await res.json() as Asset;
         }
     }

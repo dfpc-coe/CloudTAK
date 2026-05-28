@@ -42,13 +42,11 @@ export default class GeoJSON implements Transform {
                     writeStream.on('finish', resolve);
                     writeStream.on('error', reject);
                 });
-            }
-            else if (json.type === 'Feature') {
+            } else if (json.type === 'Feature') {
                 isFeatureCollection = true;
                 await fs.promises.writeFile(outputFile, JSON.stringify(json) + '\n');
             }
-        }
-        catch {
+        } catch {
             // Fallback to line-delimited processing
         }
 
@@ -67,14 +65,12 @@ export default class GeoJSON implements Transform {
                     const json = JSON.parse(line);
                     if (json.type === 'Feature') {
                         writeStream.write(JSON.stringify(json) + '\n');
-                    }
-                    else if (json.type === 'FeatureCollection' && Array.isArray(json.features)) {
+                    } else if (json.type === 'FeatureCollection' && Array.isArray(json.features)) {
                         for (const feature of json.features) {
                             writeStream.write(JSON.stringify(feature) + '\n');
                         }
                     }
-                }
-                catch {
+                } catch {
                     // Skip invalid lines
                 }
             }

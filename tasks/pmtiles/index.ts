@@ -22,12 +22,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         fs.accessSync(dotfile);
 
         process.env = Object.assign(JSON.parse(String(fs.readFileSync(dotfile))), process.env);
-    }
-    catch (err) {
+    } catch (err) {
         if (err instanceof Error && err.message.startsWith('ENOENT')) {
             console.log('ok - no .env file loaded - none found');
-        }
-        else {
+        } else {
             console.log('ok - no .env file loaded', err);
         }
     }

@@ -113,8 +113,7 @@ test('POST /tiles/public/:name/elevation returns sampled elevations', async () =
         assert.equal(body.samples.at(-1).elevation, 200);
         assert.ok(body.samples.some((sample: { elevation: number }) => sample.elevation === 100));
         assert.ok(body.samples.some((sample: { elevation: number }) => sample.elevation === 200));
-    }
-    finally {
+    } finally {
         globalThis.fetch = originalFetch;
         FileTiles.prototype.rasterTileSource = originalRasterTileSource;
     }
