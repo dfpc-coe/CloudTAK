@@ -25,7 +25,7 @@
 
             <TablerIconButton
                 title='Download TAK Zip'
-                @click.stop='download'
+                @click.stop='IconsetCache.download(iconset.uid)'
             >
                 <IconDownload
                     :size='32'
@@ -77,9 +77,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { Preferences } from '@capacitor/preferences';
 import { useRoute, useRouter } from 'vue-router';
-import { std } from '../../../std.ts';
 import IconsetCache from '../../../base/iconset.ts';
 import CombinedIcons from '../util/Icons.vue';
 import { useMapStore } from '../../../stores/map.ts';
@@ -144,13 +142,6 @@ async function refresh(): Promise<void> {
     } finally {
         loading.value = false;
     }
-}
-
-async function download(): Promise<void> {
-    const { value: token } = await Preferences.get({ key: 'token' });
-    await std(`/api/iconset/${iconset.value.uid}?format=zip&download=true${token ? `&token=${encodeURIComponent(token)}` : ''}`, {
-        download: true
-    });
 }
 
 async function fetchIconset(): Promise<void> {

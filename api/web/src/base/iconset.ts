@@ -1,12 +1,16 @@
 import { liveQuery, type Observable } from 'dexie';
 import { db, type DBIconset } from '../database.ts';
-import type { IconsetList } from '../types.ts';
+import type { paths } from '@cloudtak/api-types';
+import type { Iconset, IconsetList } from '../types.ts';
 import { server, std } from '../std.ts';
 import BaseInterface from './interface.ts';
 import type {
     BaseInterface_ListOptions,
     BaseInterface_FromOptions
 } from './interface.ts';
+
+export type Iconset_Create = paths['/api/iconset']['post']['requestBody']['content']['application/json'];
+export type Iconset_Update = paths['/api/iconset/{:iconset}']['patch']['requestBody']['content']['application/json'];
 
 export type Iconset_ListOptions = BaseInterface_ListOptions & {
     token?: string;
@@ -62,6 +66,48 @@ export default class IconsetManager extends BaseInterface {
     static liveFrom(uid: string): Observable<DBIconset | undefined> {
         return liveQuery(async () => {
             return await db.iconset.get(uid);
+        });
+    }
+
+    static async get(uid: string, token?: string): Promise<Iconset> {
+        const iconset = await std(`/api/iconset/${encodeURIComponent(uid)}`, { token }) as Iconset;
+
+        await db.iconset.put(iconset as DBIconset);
+
+        return iconset;
+    }
+
+    static async create(body: Iconset_Create, token?: string): Promise<Iconset> {
+        const iconset = await std('/api/iconset', {
+            method: 'POST',
+            token,
+            body
+        }) as Iconset;
+
+        await db.iconset.put(iconset as DBIconset);
+
+        return iconset;
+    }
+
+    static async update(uid: string, body: Iconset_Update): Promise<void> {
+        const iconset = await std(`/api/iconset/${encodeURIComponent(uid)}`, {
+            method: 'PATCH',
+            body
+        }) as Iconset;
+
+        await db.iconset.put(iconset as DBIconset);
+    }
+
+    static async regenerate(uid: string, token?: string): Promise<void> {
+        await std(`/api/iconset/${encodeURIComponent(uid)}/regen`, {
+            method: 'POST',
+            token
+        });
+    }
+
+    static async download(uid: string): Promise<void> {
+        await std(`/api/iconset/${encodeURIComponent(uid)}?format=zip&download=true`, {
+            download: true
         });
     }
 
