@@ -79,7 +79,7 @@
 import { ref, onMounted } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import { useRoute, useRouter } from 'vue-router';
-import { server, std } from '../../../std.ts';
+import { std } from '../../../std.ts';
 import IconsetCache from '../../../base/iconset.ts';
 import CombinedIcons from '../util/Icons.vue';
 import { useMapStore } from '../../../stores/map.ts';
@@ -179,17 +179,7 @@ async function syncIconset(): Promise<void> {
 
 async function deleteIconset(): Promise<void> {
     loading.value = true;
-    const { error } = await server.DELETE('/api/iconset/{:iconset}', {
-        params: {
-            path: {
-                ':iconset': String(route.params.iconset),
-            }
-        }
-    });
-
-    if (error) throw new Error(error.message);
-
-    await mapStore.icons.removeIconset(String(route.params.iconset));
+    await mapStore.icons.deleteIconset(String(route.params.iconset));
     router.push('/menu/iconsets');
 }
 </script>

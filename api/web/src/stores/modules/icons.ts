@@ -146,6 +146,12 @@ export default class IconManager {
         }
     }
 
+    async deleteIconset(uid: string): Promise<void> {
+        await this.worker.icons.deleteIconset(uid);
+        this.purgeMapImagesForIconset(uid);
+        this.removeRequestedImagesForIconset(uid);
+    }
+
     private async applyHydrateResult(result: IconHydrateResult): Promise<void> {
         if (result.skipped) return;
 
