@@ -24,6 +24,7 @@ import { db } from '../database.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay-class.ts';
+import OverlayManager from '../base/overlay.ts';
 import Subscription from '../base/subscription.ts';
 import { std, stdurl } from '../std.js';
 import * as mapgl from 'maplibre-gl'
@@ -34,7 +35,7 @@ import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
 import { clearLocationWatch, supportsLocationRequests, watchLocation } from '../base/capacitor.ts';
 
-import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature } from '../types.ts';
+import type { ProfileOverlay, Basemap, APIList, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 import type { CallbackID } from '@capacitor/geolocation';
 
@@ -1130,14 +1131,10 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             });
 
-            const url = stdurl('/api/profile/overlay');
-            url.searchParams.set('sort', 'pos');
-            url.searchParams.set('order', 'asc');
-            url.searchParams.set('limit', '100');
-            const profileOverlays = await std(url) as ProfileOverlayList;
-            this.hasSnapping = profileOverlays.available.snapping;
+            await OverlayManager.sync();
+            const profileOverlays = await OverlayManager.list();
 
-            const hasBasemap = profileOverlays.items.some((o: ProfileOverlay) => {
+            const hasBasemap = profileOverlays.some((o: ProfileOverlay) => {
                 return o.mode === 'basemap'
             });
 
@@ -1196,7 +1193,7 @@ export const useMapStore = defineStore('cloudtak', {
             // the rest of map init -- from completing. Failed entries are
             // logged and dropped; Overlay.init also records the error on
             // the overlay instance so the MenuOverlays UI can surface it.
-            const overlayResults = await Promise.allSettled(profileOverlays.items.map(item =>
+            const overlayResults = await Promise.allSettled(profileOverlays.map(item =>
                 Overlay.create(item as ProfileOverlay, { skipSave: true, skipLayers: true })
             ));
 
@@ -1206,7 +1203,7 @@ export const useMapStore = defineStore('cloudtak', {
                 if (result.status === 'fulfilled') {
                     newOverlays.push(result.value);
                 } else {
-                    const item = profileOverlays.items[i];
+                    const item = profileOverlays[i];
                     console.error(`Failed to create overlay ${item?.id} (${item?.name}):`, result.reason);
                 }
             }
