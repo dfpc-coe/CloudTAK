@@ -175,7 +175,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import IconsetCache from '../../../base/iconset.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -204,6 +204,7 @@ import {
     IconPlus
 } from '@tabler/icons-vue';
 import type { DBIconset } from '../../../database.ts';
+import type { Subscription } from 'dexie';
 
 interface ImportUploadResponse {
     imports: {
@@ -233,13 +234,26 @@ const list = ref<{ total: number; items: DBIconset[] }>({
     total: 0,
     items: []
 });
+let listSubscription: Subscription | undefined;
 
-watch(paging.value, async () => {
-    await fetchList();
+watch(
+    () => [paging.value.filter, paging.value.limit, paging.value.page] as const,
+    ([filter], [previousFilter]) => {
+        if (filter !== previousFilter && paging.value.page !== 0) {
+            paging.value.page = 0;
+            return;
+        }
+
+        subscribeList();
+    }
+);
+
+onMounted(() => {
+    subscribeList();
 });
 
-onMounted(async () => {
-    await fetchList();
+onUnmounted(() => {
+    listSubscription?.unsubscribe();
 });
 
 function throws(err: Error): void {
@@ -261,35 +275,30 @@ function processUpload(body: unknown): void {
     }
 }
 
-async function fetchList(): Promise<void> {
+function subscribeList(): void {
+    listSubscription?.unsubscribe();
     loading.value = true;
     loadError.value = undefined;
 
-    try {
-        const all = await IconsetCache.list();
-        const filter = paging.value.filter.trim().toLowerCase();
-        const filtered = filter
-            ? all.filter((iconset) => {
-                return iconset.name.toLowerCase().includes(filter)
-                    || iconset.uid.toLowerCase().includes(filter)
-                    || (iconset.username || '').toLowerCase().includes(filter);
-            })
-            : all;
-
-        const offset = paging.value.page * paging.value.limit;
-        list.value = {
-            total: filtered.length,
-            items: filtered.slice(offset, offset + paging.value.limit)
-        };
-    } catch (err) {
-        loadError.value = err instanceof Error ? err : new Error(String(err));
-        list.value = {
-            total: 0,
-            items: []
-        };
-    } finally {
-        loading.value = false;
-    }
+    listSubscription = IconsetCache.liveList({
+        paged: true,
+        filter: paging.value.filter,
+        limit: paging.value.limit,
+        page: paging.value.page
+    }).subscribe({
+        next: (page) => {
+            list.value = page;
+            loading.value = false;
+        },
+        error: (err: unknown) => {
+            loadError.value = err instanceof Error ? err : new Error(String(err));
+            list.value = {
+                total: 0,
+                items: []
+            };
+            loading.value = false;
+        }
+    });
 }
 
 async function refreshList(): Promise<void> {
@@ -302,6 +311,6 @@ async function refreshList(): Promise<void> {
         syncError.value = err instanceof Error ? err : new Error(String(err));
     }
 
-    await fetchList();
+    loading.value = false;
 }
 </script>
