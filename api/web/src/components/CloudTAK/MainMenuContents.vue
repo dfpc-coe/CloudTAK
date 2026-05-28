@@ -23,10 +23,10 @@
         </template>
     </template>
     <template v-else>
-        <div class='d-flex flex-column h-100 overflow-hidden'>
+        <div class='main-menu-layout d-flex flex-column h-100 overflow-hidden'>
             <div
                 v-if='!compact'
-                class='flex-shrink-0 col-12 border-bottom border-light'
+                class='flex-shrink-0 w-100 border-bottom border-light'
                 :class='{
                     "cloudtak-bg rounded-0": !compact,
                     "rounded-0": !modal,
@@ -92,7 +92,7 @@
             </div>
             <div
                 v-if='!compact'
-                class='main-menu-scroll flex-grow-1 col-12 overflow-auto noscroll pb-2'
+                class='main-menu-scroll flex-grow-1 w-100 overflow-auto noscroll pb-2'
             >
                 <div
                     class='px-3 pt-3 pb-2'
@@ -175,7 +175,7 @@
             </div>
             <div
                 v-else
-                class='main-menu-scroll flex-grow-1 col-12 overflow-auto noscroll pb-2'
+                class='main-menu-scroll flex-grow-1 w-100 overflow-auto noscroll pb-2'
             >
                 <MenuItemCard
                     v-for='item in visibleCompactMenuItems'
@@ -588,6 +588,10 @@ function normalizeApplications(applications: unknown): AppSwitcherApplication[] 
 }
 .noscroll::-webkit-scrollbar {
     display: none;  /* Older Safari and Chromium */
+}
+
+.main-menu-layout {
+    min-height: 0;
 }
 
 .main-menu-scroll {
