@@ -9,9 +9,6 @@ import type {
     BaseInterface_FromOptions
 } from './interface.ts';
 
-export type Iconset_Create = paths['/api/iconset']['post']['requestBody']['content']['application/json'];
-export type Iconset_Update = paths['/api/iconset/{:iconset}']['patch']['requestBody']['content']['application/json'];
-
 export type Iconset_DeleteOptions = {
     localOnly?: boolean;
 };
@@ -84,7 +81,9 @@ export default class IconsetManager extends BaseInterface {
         return res.data;
     }
 
-    static async create(body: Iconset_Create): Promise<Iconset> {
+    static async create(
+        body: paths['/api/iconset']['post']['requestBody']['content']['application/json']
+    ): Promise<Iconset> {
         const token = await getRuntimeToken();
         const res = await server.POST('/api/iconset', {
             headers: token ? { Authorization: `Bearer ${token}` } : undefined,
@@ -99,8 +98,12 @@ export default class IconsetManager extends BaseInterface {
         return res.data;
     }
 
-    static async update(uid: string, body: Iconset_Update): Promise<void> {
+    static async update(
+        uid: string,
+        body: paths['/api/iconset/{:iconset}']['patch']['requestBody']['content']['application/json']
+    ): Promise<void> {
         const token = await getRuntimeToken();
+
         const res = await server.PATCH('/api/iconset/{:iconset}', {
             params: {
                 path: {
