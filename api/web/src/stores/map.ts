@@ -15,7 +15,7 @@ import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import IconManager from './modules/icons.ts';
 import MenuManager from './modules/menu.ts';
 import BottomBarManager from './modules/bottombar.ts';
-import { usePermissionStore } from './modules/permissions.ts';
+import { useDeviceStore } from './device/index.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
@@ -228,7 +228,7 @@ export const useMapStore = defineStore('cloudtak', {
             // Capture current worker instances to avoid races with $reset()/state() creating new ones.
             const currentWorker = this.worker;
             const currentRawWorker = this._rawWorker;
-            const permissionStore = usePermissionStore();
+            const deviceStore = useDeviceStore();
 
             if (this.timer) {
                 window.clearInterval(this.timer);
@@ -252,12 +252,12 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.channel.close();
 
-            await permissionStore.releaseWakeLockSentinel();
+            await deviceStore.wakeLock.releaseSentinel();
 
             if (this._boundOnOnline) window.removeEventListener('online', this._boundOnOnline);
             if (this._boundOnOffline) window.removeEventListener('offline', this._boundOnOffline);
             if (this._boundOnDeviceOrientation) {
-                permissionStore.removeOrientationListener(this._boundOnDeviceOrientation);
+                deviceStore.orientation.removeListener(this._boundOnDeviceOrientation);
             }
             if (this._boundOnVisibilityChange) document.removeEventListener('visibilitychange', this._boundOnVisibilityChange);
 
@@ -588,7 +588,7 @@ export const useMapStore = defineStore('cloudtak', {
             return sub;
         },
         init: async function(container: HTMLElement) {
-            const permissionStore = usePermissionStore();
+            const deviceStore = useDeviceStore();
 
             this.container = container;
 
@@ -598,7 +598,7 @@ export const useMapStore = defineStore('cloudtak', {
             this._boundOnDeviceOrientation = (event: DeviceOrientationEvent): void => {
                 if (!this.userOrientationMode) return;
 
-                const heading = permissionStore.getOrientationHeading(event);
+                const heading = deviceStore.orientation.getHeading(event);
 
                 if (heading !== null && this.map) {
                     this.map.setBearing(heading);
@@ -619,7 +619,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             window.addEventListener('online', this._boundOnOnline);
             window.addEventListener('offline', this._boundOnOffline);
-            permissionStore.addOrientationListener(this._boundOnDeviceOrientation);
+            deviceStore.orientation.addListener(this._boundOnDeviceOrientation);
             document.addEventListener('visibilitychange', this._boundOnVisibilityChange);
 
             const { value: token } = await Preferences.get({ key: 'token' });
@@ -688,13 +688,13 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             let startedGPSWatchFromPermissionSubscription = false;
-            await permissionStore.initializePermissionSubscriptions(() => {
+            await deviceStore.initializePermissionSubscriptions(() => {
                 startedGPSWatchFromPermissionSubscription = true;
                 void this.startGPSWatch();
             });
 
             if (
-                permissionStore.permissions.location !== 'unsupported'
+                deviceStore.permissions.location !== 'unsupported'
                 && !startedGPSWatchFromPermissionSubscription
             ) {
                 await this.startGPSWatch();
