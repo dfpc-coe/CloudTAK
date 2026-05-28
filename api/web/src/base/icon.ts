@@ -107,13 +107,6 @@ export default class Icon {
         return true;
     }
 
-    /**
-     * Remove an iconset and all of its icons from Dexie. Returns true when
-     * something was actually removed.
-     */
-    static async removeIconset(uid: string): Promise<boolean> {
-        return await IconsetCache.delete(uid, { localOnly: true });
-    }
 }
 
 function runDiffOnce(token: string): Promise<IconHydrateResult> {
@@ -161,7 +154,7 @@ async function runDiff(token: string): Promise<IconHydrateResult> {
         if (!remoteByUid.has(uid)) removed.push(uid);
     }
 
-    await Promise.all(removed.map((uid) => Icon.removeIconset(uid)));
+    await Promise.all(removed.map((uid) => IconsetCache.delete(uid, { localOnly: true })));
     await Promise.all(toSync.map((iconset) => syncIconset(iconset, token)));
     await Promise.all(BUILTIN_SPRITES.map((id) => syncBuiltinSprite(id, token)));
 
