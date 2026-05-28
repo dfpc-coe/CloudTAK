@@ -10,13 +10,11 @@ export async function isZipFile(filePath: string): Promise<boolean> {
             console.error(`Error: Path is not a regular file: '${filePath}'`);
             return false;
         }
-    }
-    catch (error) {
+    } catch (error) {
         const err = error as Error & { code?: string };
         if (err.code === 'ENOENT') {
             console.error(`Error: File not found: '${filePath}'`);
-        }
-        else {
+        } else {
             console.error(`Error accessing file '${filePath}': ${err.message}`);
         }
 
@@ -30,13 +28,11 @@ export async function isZipFile(filePath: string): Promise<boolean> {
         await fileHandle.read(buffer, 0, 4, 0);
 
         return buffer.equals(ZIP_MAGIC_BYTES);
-    }
-    catch (error) {
+    } catch (error) {
         const err = error as Error;
         console.error(`Error reading file '${filePath}': ${err.message}`);
         return false;
-    }
-    finally {
+    } finally {
         if (fileHandle) {
             await fileHandle.close();
         }

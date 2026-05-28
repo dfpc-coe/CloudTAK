@@ -20,8 +20,7 @@ async function fetchCloudTAKJSON<T>(url: URL): Promise<T> {
         try {
             const body = await res.json() as { message?: string };
             if (body.message) message = body.message;
-        }
-        catch {
+        } catch {
             // Use the default message if the upstream body is not JSON.
         }
 
@@ -102,8 +101,7 @@ export default async function router(schema: Schema) {
                 encoding,
                 targetSamples: req.body.samples ?? 100,
             }));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

@@ -176,7 +176,9 @@ export class FileTiles {
 
         const lnglat: number[] = rawQuery
             .split(',')
-            .map((comp) => { return Number(comp); });
+            .map((comp) => {
+                return Number(comp);
+            });
 
         if (lnglat.length !== 2) throw new Err(400, null, 'Invalid LngLat');
         if (isNaN(lnglat[0]) || isNaN(lnglat[1])) throw new Err(400, null, 'Invalid LngLat (Non-Numeric)');
@@ -198,8 +200,7 @@ export class FileTiles {
                 meta,
                 features: [],
             };
-        }
-        else {
+        } else {
             const fc: any = await new Promise((resolve, reject) => {
                 vtquery([
                     { buffer: tile.data, z: xyz[2], x: xyz[0], y: xyz[1] },
@@ -297,15 +298,13 @@ export class FileTiles {
                             if (opts.type && feat.geometry.type !== opts.type) continue;
                             features.push(feat);
                         }
-                    }
-                    else {
+                    } else {
                         if (opts.type && geojson.geometry.type !== opts.type) continue;
                         features.push(geojson);
                     }
                 }
             }
-        }
-        else {
+        } else {
             throw new Err(400, null, 'Tile is not MVT');
         }
 
@@ -398,8 +397,7 @@ export class FileTiles {
                                 if (opts.type && feat.geometry.type !== opts.type) continue;
                                 features.push(feat);
                             }
-                        }
-                        else {
+                        } else {
                             if (opts.type && geojson.geometry.type !== opts.type) continue;
                             features.push(geojson);
                         }
@@ -496,20 +494,17 @@ export class FileTiles {
 
                 if (isGzip) {
                     res.send(buffer);
-                }
-                else {
+                } else {
                     const compressed_data = zlib.gzipSync(buffer);
                     res.send(compressed_data);
                 }
-            }
-            else {
+            } else {
                 if (isGzip) {
                     res.set('Content-Encoding', 'gzip');
                 }
                 res.send(buffer);
             }
-        }
-        else {
+        } else {
             res.status(204).send('');
         }
     }

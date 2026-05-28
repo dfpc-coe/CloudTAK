@@ -92,8 +92,7 @@ export async function isSafeUrl(href: string): Promise<{ safe: boolean; url?: UR
     let url: URL;
     try {
         url = new URL(href);
-    }
-    catch {
+    } catch {
         return { safe: false, reason: `invalid URL: ${href}` };
     }
 
@@ -129,8 +128,7 @@ export async function isSafeUrl(href: string): Promise<{ safe: boolean; url?: UR
                 return { safe: false, url, reason: `hostname resolves to blocked private IPv6: ${address}` };
             }
         }
-    }
-    catch {
+    } catch {
         // DNS lookup failed (e.g. NXDOMAIN, no network) — allow and let the fetch fail
     }
 

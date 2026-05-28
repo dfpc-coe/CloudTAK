@@ -27,8 +27,7 @@ export async function createImportResult(
         if (!res.ok) {
             console.error(`Failed to create import result: ${await res.text()}`);
         }
-    }
-    catch (err) {
+    } catch (err) {
         console.error('Failed to create import result:', err);
     }
 }
