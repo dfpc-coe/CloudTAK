@@ -125,7 +125,7 @@ function runDiffOnce(token: string): Promise<IconHydrateResult> {
 
 async function runDiff(token: string): Promise<IconHydrateResult> {
     const local = await db.iconset.toArray();
-    const remote = await IconsetCache.list({ token, sync: true }) as Iconset[];
+    const remote = await IconsetCache.list({ sync: true }) as Iconset[];
 
     const remoteByUid = new Map<string, Iconset>();
     for (const iconset of remote) {

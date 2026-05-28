@@ -33,7 +33,7 @@ export async function getServer() {
     return server;
 }
 
-async function getRuntimeToken(): Promise<string | undefined> {
+export async function getRuntimeToken(): Promise<string | undefined> {
     if (!isWebWorker()) {
         const { value } = await Preferences.get({ key: 'token' });
         return value || undefined;
@@ -136,34 +136,8 @@ export async function std(
     }
 
     const ContentType = res.headers.get('Content-Type');
-    const ContentDisposition = res.headers.get('Content-Disposition');
-
     if (opts.download) {
-        let name = 'download';
-        if (typeof opts.download === 'string') {
-            name = opts.download;
-        } else if (ContentDisposition) {
-            const regex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-            const matches = regex.exec(ContentDisposition);
-            if (matches && matches[1]) {
-                name = matches[1].replace(/['"]/g, '');
-            }
-        }
-
-        const object = new File([await res.blob()], name);
-        const file = window.URL.createObjectURL(object);
-
-        const link = document.createElement('a');
-        link.href = file;
-        link.download = name; // This is the magic attribute
-
-        // Append to body, click, and then remove
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        // Clean up the blob URL to prevent memory leaks
-        window.URL.revokeObjectURL(file);
+        downloadBlob(await res.blob(), res, typeof opts.download === 'string' ? opts.download : 'download');
 
         return res;
     } else if (ContentType && ContentType.includes('application/json')) {
@@ -171,6 +145,27 @@ export async function std(
     } else {
         return res;
     }
+}
+
+export function downloadBlob(blob: Blob, response: Response, fallbackName: string): void {
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let name = fallbackName;
+
+    if (contentDisposition) {
+        const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(contentDisposition);
+        if (matches?.[1]) {
+            name = matches[1].replace(/['"]/g, '');
+        }
+    }
+
+    const fileUrl = URL.createObjectURL(new File([blob], name));
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(fileUrl);
 }
 
 function isWebWorker() {

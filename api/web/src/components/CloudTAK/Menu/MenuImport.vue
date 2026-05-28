@@ -194,7 +194,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import { useRoute, useRouter } from 'vue-router';
-import { server } from '../../../../src/std.ts';
+import { downloadBlob, server } from '../../../../src/std.ts';
 import type { Import } from '../../../../src/types.ts';
 import Status from '../../util/StatusDot.vue';
 import timeDiff from '../../../timediff.ts';
@@ -246,27 +246,6 @@ onUnmounted(() => {
         clearInterval(interval.value);
     }
 });
-
-function downloadBlob(blob: Blob, response: Response, fallbackName: string): void {
-    const contentDisposition = response.headers.get('Content-Disposition');
-    let name = fallbackName;
-
-    if (contentDisposition) {
-        const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(contentDisposition);
-        if (matches?.[1]) {
-            name = matches[1].replace(/['"]/g, '');
-        }
-    }
-
-    const fileUrl = URL.createObjectURL(new File([blob], name));
-    const link = document.createElement('a');
-    link.href = fileUrl;
-    link.download = name;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(fileUrl);
-}
 
 async function downloadImport() {
     const { value: token } = await Preferences.get({ key: 'token' });
