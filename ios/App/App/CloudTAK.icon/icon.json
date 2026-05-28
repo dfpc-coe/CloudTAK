@@ -1,0 +1,52 @@
+{
+  "fill" : {
+    "automatic-gradient" : "display-p3:0.06921,0.18792,0.27081,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "fill" : {
+            "linear-gradient" : [
+              "display-p3:0.96026,0.72965,0.27866,1.00000",
+              "display-p3:0.94396,0.61512,0.25527,1.00000"
+            ],
+            "orientation" : {
+              "start" : {
+                "x" : 0,
+                "y" : -0.39399950592885374
+              },
+              "stop" : {
+                "x" : 1.4314014302302238,
+                "y" : 1.8467057806324112
+              }
+            }
+          },
+          "image-name" : "CloudTAK Icon Color.svg",
+          "name" : "CloudTAK Icon Color",
+          "position" : {
+            "scale" : 11,
+            "translation-in-points" : [
+              -0.1670142074025307,
+              -19.22625000000005
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}
