@@ -5,6 +5,7 @@ import { Preferences } from '@capacitor/preferences';
 import ms from 'milsymbol'
 import mapgl from 'maplibre-gl'
 import Icon from '../../base/icon.ts'
+import IconsetManager from '../../base/iconset.ts';
 import type { Map as MapLibreMap } from 'maplibre-gl';
 import type * as Comlink from 'comlink';
 import type Atlas from '../../workers/atlas.ts';
@@ -139,8 +140,10 @@ export default class IconManager {
     }
 
     async removeIconset(uid: string): Promise<void> {
-        const removed = await this.worker.icons.removeIconset(uid);
-        if (removed) {
+        const cached = await IconsetManager.from(uid);
+        await IconsetManager.delete(uid, { localOnly: true });
+
+        if (cached) {
             this.purgeMapImagesForIconset(uid);
             this.removeRequestedImagesForIconset(uid);
         }

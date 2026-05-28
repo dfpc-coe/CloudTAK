@@ -82,7 +82,7 @@ export default class IconsetManager extends BaseInterface {
         });
     }
 
-    static async delete(uid: string, opts: Iconset_DeleteOptions = {}): Promise<boolean> {
+    static async delete(uid: string, opts: Iconset_DeleteOptions = {}): Promise<void> {
         if (!opts.localOnly) {
             const { error } = await server.DELETE('/api/iconset/{:iconset}', {
                 params: {
@@ -96,13 +96,11 @@ export default class IconsetManager extends BaseInterface {
         }
 
         const cached = await db.iconset.get(uid);
-        if (!cached) return false;
+        if (!cached) return;
 
         await db.transaction('rw', db.icon, db.iconset, async () => {
             await db.icon.where('iconset').equals(uid).delete();
             await db.iconset.delete(uid);
         });
-
-        return true;
     }
 };

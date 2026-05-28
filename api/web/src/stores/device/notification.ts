@@ -158,14 +158,18 @@ export class BrowserNotificationPermission {
     }
 
     private async initializeNativeMessaging(): Promise<void> {
-        if (!this.tokenListener) {
-            this.tokenListener = await FirebaseMessaging.addListener('tokenReceived', (event) => {
-                this.messagingToken = event.token;
-            });
-        }
+        try {
+            if (!this.tokenListener) {
+                this.tokenListener = await FirebaseMessaging.addListener('tokenReceived', (event) => {
+                    this.messagingToken = event.token;
+                });
+            }
 
-        if (this.context.permissions.notification === 'granted') {
-            await this.refreshMessagingToken();
+            if (this.context.permissions.notification === 'granted') {
+                await this.refreshMessagingToken();
+            }
+        } catch (err) {
+            console.warn('Failed to initialize native notification messaging', err);
         }
     }
 }
