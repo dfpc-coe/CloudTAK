@@ -1,7 +1,7 @@
 import { liveQuery, type Observable } from 'dexie';
 import { db, type DBIconset } from '../database.ts';
 import type { IconsetList } from '../types.ts';
-import { std } from '../std.ts';
+import { server, std } from '../std.ts';
 import BaseInterface from './interface.ts';
 import type {
     BaseInterface_ListOptions,
@@ -10,6 +10,10 @@ import type {
 
 export type Iconset_ListOptions = BaseInterface_ListOptions & {
     token?: string;
+};
+
+export type Iconset_DeleteOptions = {
+    localOnly?: boolean;
 };
 
 export default class IconsetManager extends BaseInterface {
@@ -76,5 +80,29 @@ export default class IconsetManager extends BaseInterface {
                 updated: Date.now()
             });
         });
+    }
+
+    static async delete(uid: string, opts: Iconset_DeleteOptions = {}): Promise<boolean> {
+        if (!opts.localOnly) {
+            const { error } = await server.DELETE('/api/iconset/{:iconset}', {
+                params: {
+                    path: {
+                        ':iconset': uid,
+                    }
+                }
+            });
+
+            if (error) throw new Error(error.message);
+        }
+
+        const cached = await db.iconset.get(uid);
+        if (!cached) return false;
+
+        await db.transaction('rw', db.icon, db.iconset, async () => {
+            await db.icon.where('iconset').equals(uid).delete();
+            await db.iconset.delete(uid);
+        });
+
+        return true;
     }
 };

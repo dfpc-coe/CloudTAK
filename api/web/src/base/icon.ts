@@ -112,15 +112,7 @@ export default class Icon {
      * something was actually removed.
      */
     static async removeIconset(uid: string): Promise<boolean> {
-        const cached = await db.iconset.get(uid);
-        if (!cached) return false;
-
-        await db.transaction('rw', db.icon, db.iconset, async () => {
-            await db.icon.where('iconset').equals(uid).delete();
-            await db.iconset.delete(uid);
-        });
-
-        return true;
+        return await IconsetCache.delete(uid, { localOnly: true });
     }
 }
 

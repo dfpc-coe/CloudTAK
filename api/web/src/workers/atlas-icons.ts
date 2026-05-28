@@ -8,6 +8,7 @@
  */
 
 import Icon, { type IconHydrateResult } from '../base/icon.ts';
+import IconsetCache from '../base/iconset.ts';
 import type Atlas from './atlas.ts';
 
 export type { IconHydrateResult };
@@ -29,5 +30,9 @@ export default class AtlasIcons {
 
     async removeIconset(uid: string): Promise<boolean> {
         return await Icon.removeIconset(uid);
+    }
+
+    async deleteIconset(uid: string): Promise<void> {
+        await IconsetCache.delete(uid);
     }
 }

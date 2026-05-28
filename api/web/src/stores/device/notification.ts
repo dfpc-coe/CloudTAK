@@ -1,3 +1,7 @@
+import { FirebaseMessaging } from '@capacitor-firebase/messaging';
+import type { PermissionStatus as FirebaseMessagingPermissionStatus } from '@capacitor-firebase/messaging';
+import type { PluginListenerHandle } from '@capacitor/core';
+import { isNativePlatform } from '../../base/capacitor.ts';
 import { queryPermissionStatus } from './shared.ts';
 import type { BrowserPermissionState, DevicePermissionContext } from './types.ts';
 
@@ -5,14 +9,26 @@ function normalizeNotificationPermission(permission: NotificationPermission): Br
     return permission === 'default' ? 'prompt' : permission;
 }
 
+function normalizeNativeNotificationPermission(permission: FirebaseMessagingPermissionStatus['receive']): BrowserPermissionState {
+    return permission === 'prompt-with-rationale' ? 'prompt' : permission;
+}
+
 function supportsNotifications(): boolean {
     return 'Notification' in window;
 }
 
 export class BrowserNotificationPermission {
+    private messagingToken: string | null = null;
+    private tokenListener: PluginListenerHandle | null = null;
+
     constructor(private readonly context: DevicePermissionContext) {}
 
     async refreshStatus(): Promise<void> {
+        if (isNativePlatform()) {
+            await this.refreshNativeStatus();
+            return;
+        }
+
         if (!supportsNotifications()) {
             this.context.setPermissionStatus('notification', 'unsupported');
             return;
@@ -28,6 +44,21 @@ export class BrowserNotificationPermission {
     }
 
     async request(): Promise<void> {
+        if (isNativePlatform()) {
+            try {
+                const status = await FirebaseMessaging.requestPermissions();
+                this.context.setPermissionStatus('notification', normalizeNativeNotificationPermission(status.receive));
+
+                if (status.receive === 'granted') {
+                    await this.refreshMessagingToken();
+                }
+            } finally {
+                await this.refreshStatus();
+            }
+
+            return;
+        }
+
         if (!supportsNotifications()) {
             this.context.setPermissionStatus('notification', 'unsupported');
             return;
@@ -42,6 +73,12 @@ export class BrowserNotificationPermission {
     }
 
     async initializeSubscription(): Promise<void> {
+        if (isNativePlatform()) {
+            await this.refreshStatus();
+            await this.initializeNativeMessaging();
+            return;
+        }
+
         if (!supportsNotifications()) {
             console.error('Browser does not appear to support Notifications');
             this.context.setPermissionStatus('notification', 'unsupported');
@@ -56,6 +93,79 @@ export class BrowserNotificationPermission {
             };
         } else {
             await this.refreshStatus();
+        }
+    }
+
+    getMessagingToken(): string | null {
+        return this.messagingToken;
+    }
+
+    async refreshMessagingToken(): Promise<string | null> {
+        if (!isNativePlatform()) {
+            this.messagingToken = null;
+            return null;
+        }
+
+        try {
+            const support = await FirebaseMessaging.isSupported();
+            if (!support.isSupported) {
+                this.messagingToken = null;
+                return null;
+            }
+
+            const status = await FirebaseMessaging.checkPermissions();
+            if (status.receive !== 'granted') {
+                this.messagingToken = null;
+                return null;
+            }
+
+            const result = await FirebaseMessaging.getToken();
+            this.messagingToken = result.token || null;
+            return this.messagingToken;
+        } catch (err) {
+            console.warn('Failed to refresh native notification token', err);
+            this.messagingToken = null;
+            return null;
+        }
+    }
+
+    async deleteMessagingToken(): Promise<void> {
+        if (!isNativePlatform()) return;
+
+        try {
+            await FirebaseMessaging.deleteToken();
+        } catch (err) {
+            console.warn('Failed to delete native notification token', err);
+        } finally {
+            this.messagingToken = null;
+        }
+    }
+
+    private async refreshNativeStatus(): Promise<void> {
+        try {
+            const support = await FirebaseMessaging.isSupported();
+            if (!support.isSupported) {
+                this.context.setPermissionStatus('notification', 'unsupported');
+                return;
+            }
+
+            const status = await FirebaseMessaging.checkPermissions();
+            this.context.setPermissionStatus('notification', normalizeNativeNotificationPermission(status.receive));
+        } catch (err) {
+            console.warn('Failed to query native notification permission status', err);
+            this.context.setPermissionStatus('notification', 'unknown');
+        }
+    }
+
+    private async initializeNativeMessaging(): Promise<void> {
+        if (!this.tokenListener) {
+            this.tokenListener = await FirebaseMessaging.addListener('tokenReceived', (event) => {
+                this.messagingToken = event.token;
+            });
+        }
+
+        if (this.context.permissions.notification === 'granted') {
+            await this.refreshMessagingToken();
         }
     }
 }
