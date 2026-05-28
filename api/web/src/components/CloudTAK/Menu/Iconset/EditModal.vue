@@ -56,7 +56,7 @@ import { useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
 import { server } from '../../../../std.ts';
 import type { Iconset } from '../../../../types.ts';
-import IconsetManager, { type Iconset_Create, type Iconset_Update } from '../../../../base/iconset.ts';
+import IconsetManager from '../../../../base/iconset.ts';
 import {
     TablerModal,
     TablerLoading,
@@ -101,7 +101,7 @@ async function fetch() {
 
 async function submit() {
     if (route.params.iconset) {
-        const body: Iconset_Update = {
+        await IconsetManager.update(String(route.params.iconset), {
             ...(iconset.value.public !== undefined ? { public: iconset.value.public } : {}),
             ...(iconset.value.default_group ? { default_group: iconset.value.default_group } : {}),
             ...(iconset.value.default_friendly ? { default_friendly: iconset.value.default_friendly } : {}),
@@ -109,15 +109,13 @@ async function submit() {
             ...(iconset.value.default_neutral ? { default_neutral: iconset.value.default_neutral } : {}),
             ...(iconset.value.default_unknown ? { default_unknown: iconset.value.default_unknown } : {}),
             ...(iconset.value.skip_resize !== undefined ? { skip_resize: iconset.value.skip_resize } : {}),
-        };
-
-        await IconsetManager.update(String(route.params.iconset), body);
+        });
     } else {
         if (!iconset.value.uid || iconset.value.version === undefined || !iconset.value.name || iconset.value.internal === undefined) {
             throw new Error('Iconset form is incomplete');
         }
 
-        const body: Iconset_Create = {
+        await IconsetManager.create({
             uid: iconset.value.uid,
             version: iconset.value.version,
             name: iconset.value.name,
@@ -129,9 +127,7 @@ async function submit() {
             ...(iconset.value.default_neutral ? { default_neutral: iconset.value.default_neutral } : {}),
             ...(iconset.value.default_unknown ? { default_unknown: iconset.value.default_unknown } : {}),
             ...(iconset.value.skip_resize !== undefined ? { skip_resize: iconset.value.skip_resize } : {}),
-        };
-
-        await IconsetManager.create(body);
+        });
     }
 
     emit('close');
