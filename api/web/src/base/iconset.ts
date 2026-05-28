@@ -13,36 +13,86 @@ export type Iconset_DeleteOptions = {
     localOnly?: boolean;
 };
 
+export type Iconset_ListOptions = BaseInterface_ListOptions & {
+    filter?: string;
+    limit?: number;
+    page?: number;
+};
+
+export type Iconset_Page = {
+    total: number;
+    items: DBIconset[];
+};
+
 export default class IconsetManager extends BaseInterface {
     static readonly listCacheKey = 'iconset';
 
-    static async count(): Promise<number> {
-        return await db.iconset.count();
+    static async count(opts: Pick<Iconset_ListOptions, 'filter'> = {}): Promise<number> {
+        let collection = db.iconset.orderBy('name');
+        const filter = opts.filter?.trim().toLowerCase();
+
+        if (filter) {
+            collection = collection.filter((iconset) => {
+                return iconset.name.toLowerCase().includes(filter)
+                    || iconset.uid.toLowerCase().includes(filter)
+                    || (iconset.username || '').toLowerCase().includes(filter);
+            });
+        }
+
+        return await collection.count();
     }
 
-    static liveCount(): Observable<number> {
+    static liveCount(opts: Pick<Iconset_ListOptions, 'filter'> = {}): Observable<number> {
         return liveQuery(async () => {
-            return await db.iconset.count();
+            return await this.count(opts);
         });
     }
 
     /**
      * Return all locally cached iconsets ordered by name.
      */
-    static async list(opts: BaseInterface_ListOptions = {}): Promise<DBIconset[]> {
+    static async list(opts: Iconset_ListOptions = {}): Promise<DBIconset[]> {
         const cache = await this.hydrated();
 
         if (!cache || opts.sync) {
             await this.sync();
         }
 
-        return await db.iconset.orderBy('name').toArray();
+        let collection = db.iconset.orderBy('name');
+        const filter = opts.filter?.trim().toLowerCase();
+
+        if (filter) {
+            collection = collection.filter((iconset) => {
+                return iconset.name.toLowerCase().includes(filter)
+                    || iconset.uid.toLowerCase().includes(filter)
+                    || (iconset.username || '').toLowerCase().includes(filter);
+            });
+        }
+
+        if (opts.limit !== undefined) {
+            collection = collection
+                .offset((opts.page ?? 0) * opts.limit)
+                .limit(opts.limit);
+        }
+
+        return await collection.toArray();
     }
 
-    static liveList(): Observable<DBIconset[]> {
+    static async page(opts: Iconset_ListOptions = {}): Promise<Iconset_Page> {
+        const [total, items] = await Promise.all([
+            this.count({ filter: opts.filter }),
+            this.list(opts)
+        ]);
+
+        return { total, items };
+    }
+
+    static liveList<T extends Iconset_ListOptions & { paged?: boolean } = Iconset_ListOptions>(
+        opts: T = {} as T
+    ): Observable<T extends { paged: true } ? Iconset_Page : DBIconset[]> {
         return liveQuery(async () => {
-            return await db.iconset.orderBy('name').toArray();
-        });
+            return opts.paged ? await this.page(opts) : await this.list(opts);
+        }) as Observable<T extends { paged: true } ? Iconset_Page : DBIconset[]>;
     }
 
     static async from(
