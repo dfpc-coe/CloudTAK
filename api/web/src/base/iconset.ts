@@ -2,7 +2,7 @@ import { liveQuery, type Observable } from 'dexie';
 import { db, type DBIconset } from '../database.ts';
 import type { paths } from '@cloudtak/api-types';
 import type { Iconset, IconsetList } from '../types.ts';
-import { downloadBlob, getRuntimeToken, server } from '../std.ts';
+import { downloadUrl, getRuntimeToken, server } from '../std.ts';
 import BaseInterface from './interface.ts';
 import type {
     BaseInterface_ListOptions,
@@ -132,24 +132,10 @@ export default class IconsetManager extends BaseInterface {
     }
 
     static async download(uid: string): Promise<void> {
-        const token = await getRuntimeToken();
-        const res = await server.GET('/api/iconset/{:iconset}', {
-            params: {
-                path: {
-                    ':iconset': uid,
-                },
-                query: {
-                    format: 'zip',
-                    download: true
-                }
-            },
-            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-            parseAs: 'blob'
+        await downloadUrl(`/api/iconset/${encodeURIComponent(uid)}?format=zip&download=true`, {
+            filename: `${uid}.zip`,
+            token: true
         });
-
-        if (res.error) throw new Error(res.error.message);
-
-        downloadBlob(res.data, res.response, `${uid}.zip`);
     }
 
     static async sync(): Promise<void> {

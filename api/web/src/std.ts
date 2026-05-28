@@ -1,11 +1,12 @@
 import createClient from "openapi-fetch";
+import { Browser } from '@capacitor/browser';
 import { Preferences } from '@capacitor/preferences';
 import KV from './base/kv.ts'
 import type { Middleware } from "openapi-fetch";
 import type { paths } from '@cloudtak/api-types'
 import type { APIError } from './types.js'
 import type { Router } from 'vue-router'
-import { openSecondaryView } from './base/capacitor.ts';
+import { isNativePlatform, openSecondaryView } from './base/capacitor.ts';
 import { db } from './database.ts';
 
 export const serverUrl = await getRuntimeServerUrl();
@@ -166,6 +167,38 @@ export function downloadBlob(blob: Blob, response: Response, fallbackName: strin
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(fileUrl);
+}
+
+export async function downloadUrl(
+    url: string | URL,
+    opts: {
+        filename?: string;
+        token?: boolean;
+        native?: boolean;
+    } = {}
+): Promise<void> {
+    if (isWebWorker()) throw new Error('Downloads require a browser context');
+
+    const href = stdurl(url);
+
+    if (opts.token) {
+        const token = await getRuntimeToken();
+        if (token) href.searchParams.set('token', token);
+    }
+
+    if (opts.native !== false && isNativePlatform()) {
+        await Browser.open({ url: href.toString() });
+        return;
+    }
+
+    const link = document.createElement('a');
+    link.href = href.toString();
+    link.rel = 'noopener';
+    if (opts.filename) link.download = opts.filename;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 function isWebWorker() {
