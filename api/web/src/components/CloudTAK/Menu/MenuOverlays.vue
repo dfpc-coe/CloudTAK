@@ -311,6 +311,7 @@ import Sortable from 'sortablejs';
 import type { SortableEvent } from 'sortablejs';
 import { useMapStore } from '../../../../src/stores/map.ts';
 import type Overlay from '../../../../src/base/overlay-class.ts';
+import OverlayManager from '../../../../src/base/overlay.ts';
 
 type OverlayBadgeTone = 'primary' | 'neutral' | 'mission' | 'warning' | 'muted';
 type OverlayBadge = { label: string; tone: OverlayBadgeTone };
@@ -528,38 +529,16 @@ async function saveOrder(sortableEv: SortableEvent) {
 
     const overlay_ids = sortable.toArray().map((i) => parseInt(i));
 
-    const overlay = mapStore.getOverlayById(parseInt(id));
-    if (!overlay) throw new Error('Could not find Overlay');
-
-    const post = mapStore.getOverlayById(overlay_ids[sortableEv.newIndex + 1]);
-
-    for (const l of overlay.styles) {
-        if (post) {
-            mapStore.map.moveLayer(l.id, post.styles[0].id);
-        } else {
-            mapStore.map.moveLayer(l.id);
-        }
-    }
-
-    for (const current of overlays) {
-        await current.update({
-            pos: overlay_ids.indexOf(current.id)
-        });
-    }
-
-    overlays.sort((a, b) => {
-        return a.pos - b.pos;
-    });
+    await OverlayManager.reorderLoaded(overlays, overlay_ids, id);
 }
 
 async function removeOverlay(id: number) {
     loading.value = true;
-    for (const overlay of overlays) {
-        if (overlay.id === id) {
-            await mapStore.removeOverlay(overlay);
-        }
+    try {
+        await OverlayManager.deleteLoaded(overlays, id);
+    } finally {
+        loading.value = false;
     }
-    loading.value = false;
 }
 </script>
 
