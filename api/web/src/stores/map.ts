@@ -285,29 +285,6 @@ export const useMapStore = defineStore('cloudtak', {
                 (this.overlays as unknown as Overlay[]).push(overlay);
             }
         },
-        removeOverlay: async function(overlay: Overlay) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const pos = (this.overlays as any[]).indexOf(overlay)
-            if (pos === -1) return;
-
-            this.overlays.splice(pos, 1)
-
-            await overlay.delete();
-            if (overlay.mode === 'mission' && overlay.mode_id) {
-                if (this.mission && this.mission.guid === overlay.mode_id) {
-                    await this.makeActiveMission(undefined);
-                }
-
-                const { value: token } = await Preferences.get({ key: 'token' });
-                const sub = await Subscription.from(overlay.mode_id, token || '', {
-                    subscribed: true
-                });
-
-                if (sub) {
-                    await sub.update({ subscribed: false });
-                }
-            }
-        },
         makeActiveMission: async function(mission?: Subscription): Promise<void> {
             this.mission = mission;
             await this.worker.db.makeActiveMission(mission ? mission.meta.guid : undefined);

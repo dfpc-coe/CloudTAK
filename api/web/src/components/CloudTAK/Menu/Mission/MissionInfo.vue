@@ -437,10 +437,13 @@ async function subscribe(subscribe: boolean) {
         emit('refresh');
     } else if (subscribe === false && overlay) {
         if (mapStore.mission && mapStore.mission.meta.guid === props.subscription.meta.guid) {
-            mapStore.makeActiveMission();
+            await mapStore.makeActiveMission();
         }
 
-        await mapStore.removeOverlay(overlay);
+        const overlayIndex = mapStore.overlays.indexOf(overlay);
+        if (overlayIndex !== -1) mapStore.overlays.splice(overlayIndex, 1);
+
+        await overlay.delete();
 
         emit('refresh');
     }

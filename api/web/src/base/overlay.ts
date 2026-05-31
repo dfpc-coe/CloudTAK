@@ -4,6 +4,7 @@ import type { paths } from '@cloudtak/api-types';
 import type { ProfileOverlay, ProfileOverlayList } from '../types.ts';
 import { server } from '../std.ts';
 import BaseInterface from './interface.ts';
+import type Overlay from './overlay-class.ts';
 import type {
     BaseInterface_ListOptions,
     BaseInterface_FromOptions
@@ -30,6 +31,49 @@ export type Overlay_Page = {
 
 export default class OverlayManager extends BaseInterface {
     static readonly listCacheKey = 'overlay';
+
+    static loadedFrom(overlays: Overlay[], id: string | number): Overlay | undefined {
+        const overlayId = this.overlayId(id);
+
+        return overlays.find((overlay) => overlay.id === overlayId);
+    }
+
+    static async reorderLoaded(
+        overlays: Overlay[],
+        orderedIds: number[],
+        movedId: string | number
+    ): Promise<void> {
+        const overlayId = this.overlayId(movedId);
+        const overlay = this.loadedFrom(overlays, overlayId);
+        if (!overlay) throw new Error('Could not find Overlay');
+
+        const movedIndex = orderedIds.indexOf(overlayId);
+        if (movedIndex === -1) throw new Error('Could not find Overlay in order');
+
+        const postId = orderedIds[movedIndex + 1];
+        const post = postId === undefined ? undefined : this.loadedFrom(overlays, postId);
+        overlay.moveBefore(post);
+
+        for (const current of overlays) {
+            await current.update({
+                pos: orderedIds.indexOf(current.id)
+            });
+        }
+
+        overlays.sort((a, b) => {
+            return a.pos - b.pos;
+        });
+    }
+
+    static async deleteLoaded(overlays: Overlay[], id: string | number): Promise<void> {
+        const overlay = this.loadedFrom(overlays, id);
+        if (!overlay) return;
+
+        const pos = overlays.indexOf(overlay);
+        if (pos !== -1) overlays.splice(pos, 1);
+
+        await overlay.delete();
+    }
 
     static async count(opts: Omit<Overlay_ListOptions, 'limit' | 'page' | 'sync'> = {}): Promise<number> {
         return (await this.query(opts)).length;

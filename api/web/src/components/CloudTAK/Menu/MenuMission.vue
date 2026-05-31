@@ -225,7 +225,12 @@ async function deleteMission() {
     await subscription.value.delete();
 
     const overlay = mapStore.getOverlayByMode('mission', String(route.params.mission));
-    if (overlay) await mapStore.removeOverlay(overlay);
+    if (overlay) {
+        const overlayIndex = mapStore.overlays.indexOf(overlay);
+        if (overlayIndex !== -1) mapStore.overlays.splice(overlayIndex, 1);
+
+        await overlay.delete();
+    }
 
     router.replace('/menu/missions');
 }

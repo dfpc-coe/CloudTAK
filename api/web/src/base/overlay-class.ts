@@ -12,6 +12,7 @@ import cotStyles from './utils/styles.ts'
 import { std, stdurl } from '../std.js';
 import { useMapStore } from '../stores/map.js';
 import ProfileConfig from './profile.ts';
+import Subscription from './subscription.ts';
 
 /**
  * @class
@@ -459,6 +460,22 @@ export default class Overlay {
         }
     }
 
+    moveBefore(overlay?: Overlay): void {
+        const mapStore = useMapStore();
+        const before = overlay?.styles[0]?.id;
+        const hasBefore = before ? !!mapStore.map.getLayer(before) : false;
+
+        for (const layer of this.styles) {
+            if (!mapStore.map.getLayer(layer.id)) continue;
+
+            if (before && hasBefore) {
+                mapStore.map.moveLayer(layer.id, before);
+            } else {
+                mapStore.map.moveLayer(layer.id);
+            }
+        }
+    }
+
     async replace(
         overlay: {
             name?: string
@@ -528,9 +545,25 @@ export default class Overlay {
     }
 
     async delete(): Promise<void> {
-        this._destroyed = true;
-
+        const mapStore = useMapStore();
         const wasBasemap = this.mode === 'basemap';
+
+        if (this.mode === 'mission' && this.mode_id) {
+            if (mapStore.mission && mapStore.mission.guid === this.mode_id) {
+                await mapStore.makeActiveMission(undefined);
+            }
+
+            const { value: token } = await Preferences.get({ key: 'token' });
+            const sub = await Subscription.from(this.mode_id, token || '', {
+                subscribed: true
+            });
+
+            if (sub) {
+                await sub.update({ subscribed: false });
+            }
+        }
+
+        this._destroyed = true;
 
         if (this._timer) {
             clearInterval(this._timer);
@@ -549,7 +582,6 @@ export default class Overlay {
 
         // Update attribution if this was a basemap
         if (wasBasemap) {
-            const mapStore = useMapStore();
             await mapStore.updateAttribution();
         }
     }
