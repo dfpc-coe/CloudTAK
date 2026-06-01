@@ -283,6 +283,7 @@ import ChannelInfo from '../util/ChannelInfo.vue';
 import { useMapStore } from '../../../stores/map.ts';
 import EmptyInfo from '../util/EmptyInfo.vue';
 import Subscription from '../../../base/subscription.ts';
+import OverlayManager from '../../../base/overlay.ts';
 
 const mapStore = useMapStore();
 
@@ -410,7 +411,7 @@ async function generateFilteredList() {
 
 async function openMission(mission: Mission, usePassword: boolean) {
     if (mission.passwordProtected && subscribed.value.has(mission.guid)) {
-        const o = mapStore.getOverlayByMode('mission', mission.guid);
+        const o = OverlayManager.loadedByMode('mission', mission.guid);
 
         let fragment = `/menu/missions/${mission.guid}`;
         if (o && o.token) fragment = `${fragment}?token=${encodeURIComponent(o.token)}`;

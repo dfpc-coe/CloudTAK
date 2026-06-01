@@ -246,18 +246,11 @@ import GroupSelectModal from '../../util/GroupSelectModal.vue';
 import PathBrowser from '../util/PathBrowser.vue';
 import FileRow from './MenuFilesRow.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import { useMapStore } from '../../../stores/map.ts';
-import Overlay from '../../../base/overlay.ts';
+import OverlayManager from '../../../base/overlay.ts';
 import Upload from '../../util/Upload.vue';
 
-const mapStore = useMapStore();
-
 const overlayUrls = computed<Set<string>>(() => {
-    return new Set(
-        mapStore.overlays
-            .filter((overlay) => overlay.mode === 'profile' && overlay.url)
-            .map((overlay) => overlay.url as string)
-    );
+    return OverlayManager.loadedProfileUrls();
 });
 
 const router = useRouter();
@@ -547,27 +540,23 @@ async function createOverlay(asset: ProfileFile) {
         }
 
         if (new URL(metadata.tiles[0]).pathname.endsWith('.mvt')) {
-            mapStore.addOverlay(await Overlay.create({
+            await OverlayManager.createLoaded({
                 url: stdurl(`/api/profile/asset/${encodeURIComponent(asset.id)}.pmtiles/tile`).toString(),
                 name: asset.name,
                 mode: 'profile',
                 mode_id: asset.name,
                 iconset: asset.iconset,
                 type: 'vector',
-            }, {
-                before: mapStore.getOverlayBeforeId()
-            }));
+            });
         } else {
-            mapStore.addOverlay(await Overlay.create({
+            await OverlayManager.createLoaded({
                 url: stdurl(`/api/profile/asset/${encodeURIComponent(asset.id)}.pmtiles/tile`).toString(),
                 name: asset.name,
                 mode: 'profile',
                 mode_id: asset.name,
                 iconset: asset.iconset,
                 type: 'raster',
-            }, {
-                before: mapStore.getOverlayBeforeId()
-            }));
+            });
         }
 
         loading.value = false;

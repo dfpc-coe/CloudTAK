@@ -24,6 +24,7 @@ import { createCircleEllipseShape } from '../../base/cot/ellipse.ts';
 import { std, stdurl, server } from '../../std.ts';
 import type { Feature, FeatureCollection } from '../../types.ts';
 import type { paths } from '@cloudtak/api-types';
+import OverlayManager from '../../base/overlay.ts';
 
 type AugmentedBasemapResponse = paths['/api/basemap']['get']['responses']['200']['content']['application/json']['items'][0];
 import type { Polygon, Position, LineString, Feature as GeoJSONFeature, FeatureCollection as GeoJSONFeatureCollection } from 'geojson';
@@ -317,7 +318,7 @@ export default class DrawTool {
                             this.mapStore.selected.set(cot.id, cot);
                         }
                     } else {
-                        const ov = this.mapStore.getOverlayByName(this.lasso.overlay);
+                        const ov = OverlayManager.loadedByName(this.lasso.overlay);
                         if (!ov) throw new Error('Could not find overlay');
 
                         this.lasso.loading = true;
@@ -470,32 +471,35 @@ export default class DrawTool {
     }
 
     async populateSnappingLayers(): Promise<void> {
-        if (this.mapStore.hasSnapping) {
-            const { data } = await server.GET('/api/basemap', {
-                params: {
-                    query: {
-                        limit: 100,
-                        page: 0,
-                        order: 'asc',
-                        sort: 'name',
-                        filter: '',
-                        snapping: true,
-                        hidden: 'all',
-                        overlay: true
-                    }
+        const { data } = await server.GET('/api/basemap', {
+            params: {
+                query: {
+                    limit: 100,
+                    page: 0,
+                    order: 'asc',
+                    sort: 'name',
+                    filter: '',
+                    snapping: true,
+                    hidden: 'all',
+                    overlay: true
                 }
-            });
-
-            if (data && data.items) {
-                this.route.definitions.clear();
-                for (const item of data.items) {
-                    item.minzoom = item.minzoom ? Number(item.minzoom) : 0;
-                    item.maxzoom = item.maxzoom ? Number(item.maxzoom) : 22;
-                    this.route.definitions.set(item.name, item);
-                }
-
-                this.snappingOptions = ['No Snapping'].concat(data.items.map((b) => b.name));
             }
+        });
+
+        this.route.definitions.clear();
+
+        if (data && data.items.length) {
+            for (const item of data.items) {
+                item.minzoom = item.minzoom ? Number(item.minzoom) : 0;
+                item.maxzoom = item.maxzoom ? Number(item.maxzoom) : 22;
+                this.route.definitions.set(item.name, item);
+            }
+
+            this.snappingOptions = ['No Snapping'].concat(data.items.map((b) => b.name));
+            this.mapStore.hasSnapping = true;
+        } else {
+            this.snappingOptions = ['No Snapping'];
+            this.mapStore.hasSnapping = false;
         }
     }
 

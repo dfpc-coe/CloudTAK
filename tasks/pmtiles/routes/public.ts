@@ -69,8 +69,7 @@ export default async function router(schema: Schema) {
                         };
                     }),
             });
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -92,8 +91,7 @@ export default async function router(schema: Schema) {
 
             const file = new FileTiles(`public/${req.params.name}`);
             res.json(await file.tilejson(req.query.token));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -121,8 +119,7 @@ export default async function router(schema: Schema) {
                 limit: req.query.limit,
                 zoom: req.query.zoom,
             }));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -155,8 +152,7 @@ export default async function router(schema: Schema) {
                 type: req.query.type,
                 multi: req.query.multi,
             }));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -192,8 +188,7 @@ export default async function router(schema: Schema) {
                 type: req.query.type,
                 multi: req.query.multi,
             }));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -243,8 +238,7 @@ export default async function router(schema: Schema) {
                 encoding: req.body.encoding,
                 targetSamples: req.body.samples ?? 100,
             }));
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });
@@ -270,8 +264,7 @@ export default async function router(schema: Schema) {
             const file = new FileTiles(`public/${req.params.name}`);
 
             await file.tile(res, req.params.z, req.params.x, req.params.y, req.params.ext);
-        }
-        catch (err) {
+        } catch (err) {
             Err.respond(err, res);
         }
     });

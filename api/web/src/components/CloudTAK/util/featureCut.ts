@@ -4,23 +4,24 @@ import type { Feature } from 'geojson';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 import { server } from '../../../std.ts';
 import type { useMapStore } from '../../../stores/map.ts';
-import type Overlay from '../../../base/overlay.ts';
+import type Overlay from '../../../base/overlay-class.ts';
+import OverlayManager from '../../../base/overlay.ts';
 
 type FeatureLike = Feature | MapGeoJSONFeature;
 type MapStore = ReturnType<typeof useMapStore>;
 
-export function getFeatureOverlay(mapStore: MapStore, feature?: FeatureLike): Overlay | null {
+export function getFeatureOverlay(feature?: FeatureLike): Overlay | null {
     if (!feature) return null;
 
     // @ts-expect-error MapLibre vector features expose source at runtime
     const sourceId = Number(feature.source);
     if (!sourceId || Number.isNaN(sourceId)) return null;
 
-    return mapStore.getOverlayById(sourceId);
+    return OverlayManager.loadedFrom(sourceId) || null;
 }
 
-export function canCutOverlayFeature(mapStore: MapStore, feature?: FeatureLike): boolean {
-    const overlay = getFeatureOverlay(mapStore, feature);
+export function canCutOverlayFeature(feature?: FeatureLike): boolean {
+    const overlay = getFeatureOverlay(feature);
 
     return Boolean(
         overlay
@@ -31,7 +32,7 @@ export function canCutOverlayFeature(mapStore: MapStore, feature?: FeatureLike):
 }
 
 export async function cutOverlayFeature(mapStore: MapStore, feature?: FeatureLike): Promise<void> {
-    const overlay = getFeatureOverlay(mapStore, feature);
+    const overlay = getFeatureOverlay(feature);
 
     if (!overlay || !feature) throw new Error('Could not determine Overlay');
 

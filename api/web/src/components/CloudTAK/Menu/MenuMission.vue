@@ -158,6 +158,7 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import ShareToPackage from '../util/ShareToPackage.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMapStore } from '../../../stores/map.ts';
+import OverlayManager from '../../../base/overlay.ts';
 
 const mapStore = useMapStore();
 const route = useRoute();
@@ -224,8 +225,10 @@ async function deleteMission() {
 
     await subscription.value.delete();
 
-    const overlay = mapStore.getOverlayByMode('mission', String(route.params.mission));
-    if (overlay) await mapStore.removeOverlay(overlay);
+    const overlay = OverlayManager.loadedByMode('mission', String(route.params.mission));
+    if (overlay) {
+        await OverlayManager.deleteLoaded(overlay);
+    }
 
     router.replace('/menu/missions');
 }

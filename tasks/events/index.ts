@@ -68,15 +68,12 @@ export default class WorkerPool extends EventEmitter {
                             if (message.type === 'success') {
                                 await this.success(job.id);
                                 console.log(`Import: ${job.id} - completed successfully`);
-                            }
-                            else if (message.type === 'error') {
+                            } else if (message.type === 'error') {
                                 await this.error(job.id, message.error instanceof Error ? message.error.message : String(message.error));
-                            }
-                            else {
+                            } else {
                                 console.error(`Import: ${job.id} -`, message);
                             }
-                        }
-                        catch (err) {
+                        } catch (err) {
                             console.error(`Import ${job.id} - failed to handle Job Finalization`, err);
                         }
 
@@ -94,8 +91,7 @@ export default class WorkerPool extends EventEmitter {
                         secret: this.secret,
                     });
                 }
-            }
-            catch (err) {
+            } catch (err) {
                 console.error('error - Failed to poll for new work:', err);
             }
         }, opts.interval);

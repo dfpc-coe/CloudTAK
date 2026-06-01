@@ -13,21 +13,15 @@ RUN export VERSION_TIPPECANOE='2.79.0' && \
     PREFIX=/usr/local make install && \
     rm -rf /tmp/tippecanoe
 
-FROM alpine:3.23 AS runtime
-
-COPY --from=build /usr/lib /usr/lib
-COPY --from=build /usr/local/share /usr/local/share
-COPY --from=build /usr/local/lib /usr/local/lib
-COPY --from=build /usr/local/include /usr/local/include
-COPY --from=build /usr/local/bin /usr/local/bin
+FROM ghcr.io/osgeo/gdal:alpine-normal-3.13.0 AS runtime
 
 ENV APP_ROOT=/workspace
 WORKDIR $APP_ROOT/tasks/events
 
-COPY --from=0 /usr/local/bin/tippecanoe* /usr/local/bin/
-COPY --from=0 /usr/local/bin/tile-join /usr/local/bin/
+COPY --from=build /usr/local/bin/tippecanoe* /usr/local/bin/
+COPY --from=build /usr/local/bin/tile-join /usr/local/bin/
 
-RUN apk add nodejs npm gdal-tools curl  gdal-driver-all
+RUN apk add --no-cache nodejs npm curl libstdc++ sqlite-libs zlib
 
 # PMTiles: https://github.com/protomaps/go-pmtiles/releases
 RUN export VERSION_PMTILES='1.28.3' && \

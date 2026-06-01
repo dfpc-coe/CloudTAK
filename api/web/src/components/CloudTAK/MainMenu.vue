@@ -5,7 +5,7 @@
     >
         <div
             ref='menu'
-            class='position-relative w-100 h-100 px-0'
+            class='main-menu-modal-frame position-relative w-100 px-0 overflow-hidden'
         >
             <MainMenuContents
                 :compact='false'
@@ -207,5 +207,10 @@ onMounted(async () => {
    width: 3px;
    height: 15px;
    border-inline: 1px solid currentColor;
+}
+
+.main-menu-modal-frame {
+    height: calc(100dvh - 2rem);
+    max-height: calc(100dvh - 2rem);
 }
 </style>

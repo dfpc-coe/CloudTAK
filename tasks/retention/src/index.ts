@@ -148,8 +148,7 @@ async function runOnce(): Promise<void> {
         try {
             const result = await task.run();
             console.log(`ok - task:${task.name}: ${result.deleted} deleted in ${Date.now() - start}ms`);
-        }
-        catch (err) {
+        } catch (err) {
             console.error(`error - task:${task.name} failed:`, err);
         }
     }
@@ -161,13 +160,11 @@ if (process.argv.includes('--run-once')) {
     try {
         await runOnce();
         process.exit(0);
-    }
-    catch (err) {
+    } catch (err) {
         console.error('error - retention run failed:', err);
         process.exit(1);
     }
-}
-else {
+} else {
     const schedule = process.env.RETENTION_SCHEDULE || '0 3 * * *';
 
     if (!cron.validate(schedule)) throw new Error(`Invalid RETENTION_SCHEDULE: ${schedule}`);
@@ -175,8 +172,7 @@ else {
     const task = cron.schedule(schedule, async () => {
         try {
             await runOnce();
-        }
-        catch (err) {
+        } catch (err) {
             console.error('error - retention cron run failed:', err);
         }
     }, { timezone: process.env.TZ || 'UTC' });

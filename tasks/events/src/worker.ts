@@ -64,16 +64,14 @@ export default class Worker extends EventEmitter {
 
             if (await isZipFile(local.raw)) {
                 await this.processArchive(local);
-            }
-            else {
+            } else {
                 await this.processFile(local);
             }
 
             if (local) await rimraf(local.tmpdir);
 
             this.emit('success');
-        }
-        catch (err) {
+        } catch (err) {
             console.error(`import: ${this.msg.job.id} Error: `, err);
 
             if (local) await rimraf(local.tmpdir);
@@ -149,8 +147,7 @@ export default class Worker extends EventEmitter {
             if (!res.ok) {
                 const json = (await res.json()) as { message: string };
                 console.error(json.message);
-            }
-            else {
+            } else {
                 const feature = await res.json() as ProfileFeature;
                 await createImportResult(this.msg, {
                     name: feat.id as string,
@@ -169,8 +166,7 @@ export default class Worker extends EventEmitter {
 
             if (base !== 'MANIFEST.xml' && extLower === '.xml') {
                 indexes.push(file);
-            }
-            else {
+            } else {
                 if (base === 'MANIFEST.xml') continue;
                 if (['.png', '.xml'].includes(extLower)) continue;
 
@@ -207,8 +203,7 @@ export default class Worker extends EventEmitter {
                 await Basemap.parse(xml);
 
                 return await this.processBasemap(xml);
-            }
-            catch (err) {
+            } catch (err) {
                 console.error('Basemap Error: ' + err);
             }
         }
@@ -337,11 +332,9 @@ export default class Worker extends EventEmitter {
                     let prefix = 'data:';
                     if (ext === '.png') {
                         prefix += 'image/png;base64,';
-                    }
-                    else if (ext === '.svg') {
+                    } else if (ext === '.svg') {
                         prefix += 'image/svg+xml;base64,';
-                    }
-                    else {
+                    } else {
                         console.warn(`Iconset ${iconset.name} (${iconset.uid}) - Unsupported icon type for ${icon.name}: ${ext}`);
                         continue;
                     }
@@ -363,8 +356,7 @@ export default class Worker extends EventEmitter {
                     if (!icon_req.ok) console.error(await icon_req.text());
                 }
             }
-        }
-        catch (err) {
+        } catch (err) {
             console.log(`Import: ${this.msg.job.id} - Is not an Iconset:`, err instanceof Error ? err.message : String(err));
         }
     }
@@ -395,8 +387,7 @@ export default class Worker extends EventEmitter {
 
             if (!basemap_req.ok) {
                 console.error(await basemap_req.text());
-            }
-            else {
+            } else {
                 const prod = await basemap_req.json() as BasemapResponse;
 
                 await createImportResult(this.msg, {
@@ -405,8 +396,7 @@ export default class Worker extends EventEmitter {
                     type_id: String(prod.id),
                 });
             }
-        }
-        catch (err) {
+        } catch (err) {
             console.log(`Import: ${this.msg.job.id} - Is not a Basemap:`, err instanceof Error ? err.message : String(err));
         }
     }

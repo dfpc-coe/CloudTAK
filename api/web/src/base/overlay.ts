@@ -1,629 +1,398 @@
+import { liveQuery, type Observable } from 'dexie';
+import { shallowReactive } from 'vue';
+import { db, type DBOverlay } from '../database.ts';
+import type { paths } from '@cloudtak/api-types';
+import type { ProfileOverlay, ProfileOverlayList } from '../types.ts';
+import { server } from '../std.ts';
+import BaseInterface from './interface.ts';
+import Overlay from './overlay-class.ts';
 import type {
-    ProfileOverlay,
-    ProfileOverlay_Create,
-    TileJSON
-} from '../types.ts';
-import { Preferences } from '@capacitor/preferences';
-import { DrawToolMode } from '../stores/modules/draw.ts';
-import type { FeatureCollection } from 'geojson';
-import { bbox } from '@turf/bbox'
-import type { LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource } from 'maplibre-gl'
-import cotStyles from './utils/styles.ts'
-import { std, stdurl } from '../std.js';
-import { useMapStore } from '../stores/map.js';
-import ProfileConfig from './profile.ts';
+    BaseInterface_ListOptions,
+    BaseInterface_FromOptions
+} from './interface.ts';
 
-/**
- * @class
- */
-export default class Overlay {
-    _destroyed: boolean;
-    _internal: boolean;
+export type Overlay_DeleteOptions = {
+    localOnly?: boolean;
+};
 
-    _timer: ReturnType<typeof setInterval> | null;
+export type Overlay_ListOptions = BaseInterface_ListOptions & {
+    active?: boolean;
+    filter?: string;
+    limit?: number;
+    localFirst?: boolean;
+    mode?: string;
+    modeId?: string | null;
+    page?: number;
+    visible?: boolean;
+};
 
-    _clickable: Array<{ id: string; type: string }>;
+export type Overlay_Page = {
+    total: number;
+    items: DBOverlay[];
+};
 
-    _error?: Error;
-    _loaded: boolean;
+export type Overlay_CreateLoadedOptions = NonNullable<Parameters<typeof Overlay.create>[1]> & {
+    position?: 'default' | 'prepend';
+};
 
-    loading: boolean;
+const loadedOverlays = shallowReactive<Overlay[]>([]) as Overlay[];
 
-    id: number;
-    name: string;
-    active: boolean;
-    username?: string;
-    frequency: number | null;
-    iconset: string | null;
-    created: string;
-    updated: string;
-    pos: number;
-    type: string;
-    opacity: number;
-    visible: boolean;
-    mode: string;
-    mode_id: string | null;
-    encoding: 'mapbox' | 'terrarium' | null;
+export default class OverlayManager extends BaseInterface {
+    static readonly listCacheKey = 'overlay';
+    static readonly loaded = loadedOverlays;
 
-    actions: ProfileOverlay["actions"];
+    static listLoaded(): Overlay[] {
+        return this.loaded;
+    }
 
-    url?: string;
-    styles: Array<LayerSpecification>;
-    token: string | null;
+    static clearLoaded(): void {
+        this.loaded.splice(0);
+    }
 
-    static async create(
-        body: ProfileOverlay | ProfileOverlay_Create,
-        opts: {
-            internal?: boolean;
-            skipSave?: boolean;
-            clickable?: Array<{ id: string; type: string }>;
-            before?: string;
-            skipLayers?: boolean;
-        } = {}
-    ): Promise<Overlay> {
-        if (opts.skipSave !== true) {
-            let ov = await std('/api/profile/overlay', {
-                method: 'POST',
-                body
-            }) as ProfileOverlay;
+    static loadedFrom(id: string | number): Overlay | undefined {
+        const overlayId = this.overlayId(id);
 
-            if (ov.styles && ov.styles.length) {
-                for (const layer of ov.styles) {
-                    const l = layer as LayerSpecification;
-                    l.id = `${ov.id}-${l.id}`;
-                    // @ts-expect-error Special case Background Layer type
-                    l.source = String(ov.id);
-                }
-            }
+        return this.loaded.find((overlay) => overlay.id === overlayId);
+    }
 
-            ov = await std(`/api/profile/overlay/${ov.id}`, {
-                method: 'PATCH',
-                body: ov
-            }) as ProfileOverlay;
+    static loadedByName(name: string): Overlay | undefined {
+        return this.loaded.find((overlay) => overlay.name === name);
+    }
 
-            const overlay = new Overlay(ov, {
-                internal: opts.internal
-            });
+    static loadedByMode(mode: string, modeId: string): Overlay | undefined {
+        return this.loaded.find((overlay) => overlay.mode === mode && overlay.mode_id === modeId);
+    }
 
-            await overlay.init(opts);
+    static loadedBeforeId(): string | undefined {
+        if (this.loaded.length > 1 && this.loaded[1].styles.length > 0) {
+            return String(this.loaded[1].styles[0].id);
+        }
 
-            return overlay;
+        return undefined;
+    }
+
+    static addLoaded(overlay: Overlay): void {
+        if (this.loaded.length > 0) {
+            this.loaded.splice(1, 0, overlay);
         } else {
-            const overlay = new Overlay(body as ProfileOverlay, {
-                internal: opts.internal
-            });
-
-            await overlay.init(opts);
-
-            return overlay;
+            this.loaded.push(overlay);
         }
     }
 
-    static async internal(
-        body: {
-            id: number;
-            type: string;
-            name: string;
-            styles?: Array<LayerSpecification>;
-            clickable?: Array<{ id: string; type: string }>;
-        }
+    static prependLoaded(overlay: Overlay): void {
+        this.loaded.unshift(overlay);
+    }
+
+    static appendLoaded(...overlays: Overlay[]): void {
+        this.loaded.push(...overlays);
+    }
+
+    static async createLoaded(
+        body: Parameters<typeof Overlay.create>[0],
+        opts: Overlay_CreateLoadedOptions = {}
     ): Promise<Overlay> {
-        const overlay = await Overlay.create({
-            ...body,
-            visible: true,
-            opacity: 1,
-            username: 'internal',
-            url: '',
-            frequency: null,
-            iconset: null,
-            created: new Date().toISOString(),
-            updated: new Date().toISOString(),
-            token: undefined,
-            mode: 'internal',
-            mode_id: undefined,
-            styles: body.styles || [],
-            pos: 3,
-        }, {
-            skipSave: true,
-            clickable: body.clickable,
-            internal: true
+        const { position = 'default', ...createOpts } = opts;
+        const overlay = await Overlay.create(body, {
+            ...createOpts,
+            before: createOpts.before ?? this.loadedBeforeId()
         });
+
+        if (position === 'prepend') {
+            this.prependLoaded(overlay);
+        } else {
+            this.addLoaded(overlay);
+        }
 
         return overlay;
     }
 
-    static async load(id: number): Promise<Overlay> {
-        const remote = await std(`/api/profile/overlay/${id}`) as ProfileOverlay;
-
-        const ov = await Overlay.create(remote, {
-            skipSave: true
-        });
-
-        return ov;
-    }
-
-    constructor(
-        overlay: ProfileOverlay & { encoding?: 'mapbox' | 'terrarium' | null },
-        opts: {
-            internal?: boolean;
-        } = {}
-    ) {
-        this._destroyed = false;
-        this._internal = opts.internal || false;
-        this._clickable = [];
-        this._loaded = false;
-
-        this.loading = false;
-
-        this.id = overlay.id;
-        this.name = overlay.name;
-        this.active = overlay.active;
-        this.username = overlay.username;
-        this.frequency = overlay.frequency;
-        this.iconset = overlay.iconset;
-        this.created = overlay.created;
-        this.updated = overlay.updated;
-        this.actions = overlay.actions || {
-            feature: []
-        };
-        this.pos = overlay.pos;
-        this.type = overlay.type;
-        this.opacity = overlay.opacity;
-        this.visible = overlay.visible;
-        this.mode = overlay.mode;
-        this.mode_id = overlay.mode_id || null;
-        this.encoding = overlay.encoding || null;
-        this.url = overlay.url;
-        this.styles = overlay.styles as Array<LayerSpecification>;
-        this.token = overlay.token;
-
-        if (this.frequency) {
-            this._timer = setInterval(async () => {
-                const mapStore = useMapStore();
-                try {
-                    mapStore.map.refreshTiles(String(this.id));
-                } catch (err) {
-                    console.error('Error refreshing tiles for overlay', this.id, err);
-                }
-            }, this.frequency * 1000);
-        } else {
-            this._timer = null;
-        }
-    }
-
-    healthy(): boolean {
-        return !this._error;
-    }
-
-    hasBounds(): boolean {
-        const mapStore = useMapStore();
-        const source = mapStore.map.getSource(String(this.id))
-        if (!source) return false;
-
-        if (source.type === 'vector') {
-            return !!(source as VectorTileSource).bounds;
-        } else if (source.type === 'raster') {
-            return !!(source as RasterTileSource).bounds;
-        } else if (source.type === 'geojson') {
-            return true;
-        } else {
-            return false
-        }
-    }
-
-    async zoomTo(): Promise<void> {
-        const mapStore = useMapStore();
-        const source = mapStore.map.getSource(String(this.id))
-        if (!source) return;
-
-        if (source.type === 'vector') {
-            mapStore.map.fitBounds((source as VectorTileSource).bounds);
-        } else if (source.type === 'raster') {
-            mapStore.map.fitBounds((source as RasterTileSource).bounds);
-        } else if (source.type === 'geojson') {
-            const geojson = await (source as GeoJSONSource).getData();
-            mapStore.map.fitBounds(bbox(geojson) as LngLatBoundsLike);
-        }
-    }
-
-    async addLayers(before?: string): Promise<void> {
-        const mapStore = useMapStore();
-
-        // If init() failed to register the source (e.g. a /tiles fetch
-        // 404'd), skip layer registration. addLayer would otherwise throw
-        // "source ... not found" and break the rest of map setup.
-        if (this._error || !mapStore.map.getSource(String(this.id))) {
-            return;
-        }
-
-        for (const l of this.styles) {
-            if (before) {
-                mapStore.map.addLayer(l, before);
-            } else {
-                mapStore.map.addLayer(l)
-            }
-        }
-
-        // The above doesn't set vis/opacity initially - apply directly
-        // without round-tripping through update()/save() which would PATCH
-        // the server with unchanged values.
-        for (const l of this.styles) {
-            if (this.type === 'raster') {
-                mapStore.map.setPaintProperty(l.id, 'raster-opacity', Number(this.opacity));
-            }
-            mapStore.map.setLayoutProperty(l.id, 'visibility', this.visible ? 'visible' : 'none');
-        }
-
-        // Update attribution if this is a basemap
-        if (this.mode === 'basemap') {
-            await mapStore.updateAttribution();
-        }
-
-        for (const click of this._clickable) {
-            const hoverIds = new Set<string>();
-
-            mapStore.map.on('mouseenter', click.id, () => {
-                if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
-                mapStore.map.getCanvas().style.cursor = 'pointer';
-            })
-
-            mapStore.map.on('mousemove', click.id, (e) => {
-                if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
-
-                if (this.type === 'vector' && e.features) {
-                    const newIds = e.features.map(f => String(f.id));
-
-                    for (const id of hoverIds) {
-                        if (newIds.includes(id)) continue;
-
-                        mapStore.map.setFeatureState({
-                            id: id,
-                            source: String(this.id),
-                            sourceLayer: 'out'
-                        }, { hover: false });
-
-                        hoverIds.delete(id);
-                    }
-
-                    for (const id of newIds) {
-                        mapStore.map.setFeatureState({
-                            id: id,
-                            source: String(this.id),
-                            sourceLayer: 'out'
-                        }, { hover: true });
-
-                        hoverIds.add(id);
-                    }
-                }
-            });
-
-            mapStore.map.on('mouseleave', click.id, () => {
-                if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
-                mapStore.map.getCanvas().style.cursor = '';
-
-                if (this.type === 'vector') {
-                    for (const id of hoverIds) {
-                        mapStore.map.setFeatureState({
-                            id: id,
-                            source: String(this.id),
-                            sourceLayer: 'out'
-                        }, { hover: false });
-                    }
-
-                    hoverIds.clear()
-                }
-            })
-        }
-    }
-
-    async init(opts: {
-        clickable?: Array<{ id: string; type: string }>;
-        before?: string;
-        skipLayers?: boolean;
-    } = {}) {
-        const mapStore = useMapStore();
-        const { value: token } = await Preferences.get({ key: 'token' });
-
-        if (this.type === 'raster' && this.url) {
-            const url = stdurl(this.url);
-            if (token) url.searchParams.set('token', token);
-
-            // A failed /tiles lookup (network blip, expired token, deleted
-            // basemap upstream, etc.) must NOT abort map initialization or
-            // every other overlay disappears with it. Capture the error on
-            // the overlay so MenuOverlays.vue surfaces an "Issue" badge,
-            // and skip addSource so addLayers later no-ops cleanly.
-            try {
-                const tileJSON = await std(url.toString()) as TileJSON
-
-                if (!mapStore.map.getSource(String(this.id))) {
-                    mapStore.map.addSource(String(this.id), {
-                        ...tileJSON,
-                        type: 'raster',
-                    });
-                }
-            } catch (err) {
-                this._error = err instanceof Error ? err : new Error(String(err));
-                console.error(`Failed to load raster tiles for overlay ${this.id} (${this.name}):`, err);
-            }
-        } else if (this.type === 'vector' && this.url) {
-            const url = stdurl(this.url);
-            if (token) url.searchParams.set('token', token);
-
-            if (!mapStore.map.getSource(String(this.id))) {
-                // MapLibre resolves the vector TileJSON lazily on first tile
-                // request, so addSource itself does not throw on a bad URL.
-                // Still wrap defensively for parity with the raster branch.
-                try {
-                    mapStore.map.addSource(String(this.id), {
-                        type: 'vector',
-                        url: String(url)
-                    });
-                } catch (err) {
-                    this._error = err instanceof Error ? err : new Error(String(err));
-                    console.error(`Failed to add vector source for overlay ${this.id} (${this.name}):`, err);
-                }
-            }
-        } else if (this.type === 'geojson') {
-            if (!mapStore.map.getSource(String(this.id))) {
-                const data: FeatureCollection = { type: 'FeatureCollection', features: [] };
-
-                mapStore.map.addSource(String(this.id), {
-                    type: 'geojson',
-                    cluster: false,
-                    data
-                })
-            }
-        }
-
-        const display_text = (await ProfileConfig.get('display_text'))?.value;
-        const display_icon_rotation = (await ProfileConfig.get('display_icon_rotation'))?.value;
-
-        let size = 8
-        if (display_text === 'Small') size = 4;
-        if (display_text === 'Large') size = 16;
-
-        if (!this.styles.length && this.type === 'raster') {
-            this.styles = [{
-                'id': String(this.id),
-                'type': 'raster',
-                'source': String(this.id)
-            }]
-        } else if (!this.styles.length && this.type === 'vector') {
-            this.styles = cotStyles(String(this.id), {
-                sourceLayer: 'out',
-                group: false,
-                icons: !!this.iconset,
-                labels: { size }
-            });
-        } else if (!this.styles.length && this.type === 'geojson') {
-            this.styles = cotStyles(String(this.id), {
-                group: this.mode !== "mission",
-                icons: true,
-                course: true,
-                rotateIcons: display_icon_rotation,
-                labels: { size }
-            });
-        } else if (!this.styles.length) {
-            this.styles = [];
-        }
-
-        if (this.iconset) {
-            mapStore.icons.addIconset(this.iconset).catch((err: unknown) => {
-                console.error('Error adding iconset', this.iconset, err);
-            });
-        }
-
-        if (this.type === 'vector' && this. mode !== 'basemap' && opts.clickable === undefined) {
-            opts.clickable = this.styles.map((l) => {
-                return { id: l.id, type: 'feat' };
-            });
-        } else if (this.type === 'geojson' && opts.clickable === undefined) {
-            opts.clickable = this.styles.map((l) => {
-                if (this.mode === 'mission') {
-                    return { id: l.id, type: 'cot' };
-                } else {
-                    return { id: l.id, type: this.id === -1 ? 'cot' : 'feat' };
-                }
-            });
-        }
-
-        if (!opts.clickable) {
-            opts.clickable = [];
-        }
-
-        this._clickable = opts.clickable;
-
-        if (!opts.skipLayers) {
-            await this.addLayers(opts.before);
-        }
-        this._loaded = true;
-    }
-
-    remove() {
-        const mapStore = useMapStore();
-
-        for (const l of this.styles) {
-            mapStore.map.removeLayer(String(l.id));
-        }
-
-        if (this.iconset) {
-            mapStore.icons.removeIconset(this.iconset).catch((err: unknown) => {
-                console.error('Error removing iconset', this.iconset, err);
-            });
-        }
-
-        if (mapStore.map.getStyle().sources[String(this.id)]) {
-            // Don't crash the map if it already  removed
-            mapStore.map.removeSource(String(this.id));
-        }
-    }
-
-    async replace(
-        overlay: {
-            name?: string
-            active?: boolean;
-            username?: string
-            actions?: ProfileOverlay["actions"];
-            type?: string;
-            opacity?: number;
-            visible?: boolean;
-            mode?: string;
-            mode_id?: string;
-            encoding?: 'mapbox' | 'terrarium' | null;
-            url?: string;
-            token?: string;
-            styles?: Array<LayerSpecification>;
-        },
-        opts: {
-            before?: string;
-        } = {}
+    static async reorderLoaded(
+        orderedIds: number[],
+        movedId: string | number
     ): Promise<void> {
-        this.remove();
+        const overlayId = this.overlayId(movedId);
+        const overlay = this.loadedFrom(overlayId);
+        if (!overlay) throw new Error('Could not find Overlay');
 
-        const oldType = this.type;
+        const movedIndex = orderedIds.indexOf(overlayId);
+        if (movedIndex === -1) throw new Error('Could not find Overlay in order');
 
-        if (overlay.name) this.name = overlay.name;
-        if (overlay.active !== undefined) this.active = overlay.active;
-        if (overlay.username) this.username = overlay.username;
-        if (overlay.actions) this.actions = overlay.actions || { feature: [] };
-        if (overlay.type) this.type = overlay.type;
+        const postId = orderedIds[movedIndex + 1];
+        const post = postId === undefined ? undefined : this.loadedFrom(postId);
+        overlay.moveBefore(post);
 
-        if (this.type === 'raster' && oldType !== 'raster' && !overlay.styles) {
-            this.styles = [];
-        }
-
-        if (overlay.opacity !== undefined) this.opacity = overlay.opacity;
-        if (overlay.visible !== undefined) this.visible = overlay.visible;
-        if (overlay.mode) this.mode = overlay.mode;
-        if (overlay.mode_id) this.mode_id = overlay.mode_id || null;
-        if (overlay.encoding !== undefined) this.encoding = overlay.encoding;
-        if (overlay.url) this.url = overlay.url;
-        if (overlay.token) this.token = overlay.token;
-        if (overlay.styles) {
-            if (overlay.styles && overlay.styles.length) {
-                for (const layer of overlay.styles) {
-                    const l = layer as LayerSpecification;
-                    l.id = `${this.id}-${l.id}`;
-                    // @ts-expect-error Special case Background Layer type
-                    l.source = String(this.id);
-                }
-            }
-            this.styles = overlay.styles as Array<LayerSpecification>;
-        }
-
-        await this.init({
-            clickable: this._clickable,
-            before: opts.before
-        });
-
-        await this.save();
-
-
-        // Update attribution if this is a basemap
-        if (this.mode === 'basemap') {
-            const mapStore = useMapStore();
-            await mapStore.updateAttribution();
-        }
-    }
-
-    async delete(): Promise<void> {
-        this._destroyed = true;
-
-        const wasBasemap = this.mode === 'basemap';
-
-        if (this._timer) {
-            clearInterval(this._timer);
-            this._timer = null;
-        }
-
-        this.remove();
-
-        if (this._internal) return;
-
-        if (this.id) {
-            await std(`/api/profile/overlay?id=${this.id}`, {
-                method: 'DELETE'
+        for (const current of this.loaded) {
+            await current.update({
+                pos: orderedIds.indexOf(current.id)
             });
         }
 
-        // Update attribution if this was a basemap
-        if (wasBasemap) {
-            const mapStore = useMapStore();
-            await mapStore.updateAttribution();
-        }
+        this.loaded.sort((a, b) => {
+            return a.pos - b.pos;
+        });
     }
 
-    async update(body: {
-        pos?: number;
-        visible?: boolean;
-        opacity?: number;
-        encoding?: 'mapbox' | 'terrarium' | null;
-    }): Promise<void> {
-        const mapStore = useMapStore();
+    static async deleteLoaded(idOrOverlay: string | number | Overlay): Promise<void> {
+        const overlay = typeof idOrOverlay === 'object' ? idOrOverlay : this.loadedFrom(idOrOverlay);
+        if (!overlay) return;
 
-        let changed = false;
+        const pos = this.loaded.indexOf(overlay);
+        if (pos !== -1) this.loaded.splice(pos, 1);
 
-        if (body.opacity !== undefined && body.opacity !== this.opacity) {
-            this.opacity = body.opacity;
-            for (const l of this.styles) {
-                if (this.type === 'raster') {
-                    mapStore.map.setPaintProperty(l.id, 'raster-opacity', Number(this.opacity))
+        await overlay.delete();
+    }
+
+    static loadedBasemapIds(mode = 'overlay'): Set<string> {
+        return new Set(
+            this.loaded
+                .filter((overlay) => overlay.mode === mode && overlay.mode_id)
+                .map((overlay) => String(overlay.mode_id))
+        );
+    }
+
+    static loadedProfileUrls(): Set<string> {
+        return new Set(
+            this.loaded
+                .filter((overlay) => overlay.mode === 'profile' && overlay.url)
+                .map((overlay) => overlay.url as string)
+        );
+    }
+
+    static queryableOverlayNames(): string[] {
+        return this.loaded
+            .filter((overlay) => overlay.actions.feature.includes('query') || overlay.id === -1)
+            .map((overlay) => overlay.name);
+    }
+
+    static clickableLayerMap(): Map<string, { type: string; id: string }> {
+        const clickMap: Map<string, { type: string; id: string }> = new Map();
+
+        for (const overlay of this.loaded) {
+            for (const click of overlay._clickable) {
+                clickMap.set(click.id, click);
+            }
+        }
+
+        return clickMap;
+    }
+
+    static missionOverlays(): Overlay[] {
+        return this.loaded.filter((overlay) => overlay.mode === 'mission' && overlay.mode_id);
+    }
+
+    static visibleBasemaps(): Overlay[] {
+        return this.loaded.filter((overlay) => overlay.mode === 'basemap' && overlay.mode_id && overlay.visible);
+    }
+
+    static async count(opts: Omit<Overlay_ListOptions, 'limit' | 'page' | 'sync'> = {}): Promise<number> {
+        return (await this.query(opts)).length;
+    }
+
+    static liveCount(opts: Omit<Overlay_ListOptions, 'limit' | 'page' | 'sync'> = {}): Observable<number> {
+        return liveQuery(async () => {
+            return await this.count(opts);
+        });
+    }
+
+    static async list(opts: Overlay_ListOptions = {}): Promise<DBOverlay[]> {
+        const cache = await this.hydrated();
+
+        if (!cache || opts.sync) {
+            const localCount = await db.overlay.count();
+            if (opts.sync || !opts.localFirst || localCount === 0) {
+                await this.sync();
+            }
+        }
+
+        const overlays = await this.query(opts);
+
+        if (opts.limit !== undefined) {
+            return overlays.slice((opts.page ?? 0) * opts.limit, ((opts.page ?? 0) + 1) * opts.limit);
+        }
+
+        return overlays;
+    }
+
+    static async page(opts: Overlay_ListOptions = {}): Promise<Overlay_Page> {
+        const [total, items] = await Promise.all([
+            this.count({
+                active: opts.active,
+                filter: opts.filter,
+                mode: opts.mode,
+                modeId: opts.modeId,
+                visible: opts.visible,
+            }),
+
+            this.list(opts)
+        ]);
+
+        return { total, items };
+    }
+
+    static liveList<T extends Overlay_ListOptions & { paged?: boolean } = Overlay_ListOptions>(
+        opts: T = {} as T
+    ): Observable<T extends { paged: true } ? Overlay_Page : DBOverlay[]> {
+        return liveQuery(async () => {
+            return opts.paged ? await this.page(opts) : await this.list(opts);
+        }) as Observable<T extends { paged: true } ? Overlay_Page : DBOverlay[]>;
+    }
+
+    static async from(
+        id: string,
+        opts?: BaseInterface_FromOptions
+    ): Promise<DBOverlay | undefined> {
+        if (opts?.sync) {
+            await this.get(id);
+        }
+
+        return await db.overlay.get(this.overlayId(id));
+    }
+
+    static liveFrom(id: string): Observable<DBOverlay | undefined> {
+        return liveQuery(async () => {
+            return await db.overlay.get(this.overlayId(id));
+        });
+    }
+
+    static async get(id: string | number): Promise<ProfileOverlay> {
+        const overlayId = this.overlayId(id);
+        const res = await server.GET('/api/profile/overlay/{:overlay}', {
+            params: {
+                path: {
+                    ':overlay': overlayId,
                 }
             }
-            changed = true;
-        }
+        });
 
-        if (body.visible !== undefined && body.visible !== this.visible) {
-            this.visible = body.visible;
-            for (const l of this.styles) {
-                mapStore.map.setLayoutProperty(l.id, 'visibility', this.visible ? 'visible' : 'none');
-            }
-            changed = true;
-        }
+        if (res.error) throw new Error(res.error.message);
+        if (!res.data) throw new Error('Failed to fetch overlay');
 
-        // Update attribution if this is a basemap
-        if (this.mode === 'basemap') {
-            await mapStore.updateAttribution();
-        }
+        await db.overlay.put(res.data as DBOverlay);
 
-        if (body.pos !== undefined && body.pos !== this.pos) {
-            this.pos = body.pos;
-            changed = true;
-        }
-
-        if (body.encoding !== undefined && body.encoding !== this.encoding) {
-            this.encoding = body.encoding;
-            changed = true;
-        }
-
-        if (changed) {
-            await this.save();
-        }
+        return res.data;
     }
 
-    async save(): Promise<void> {
-        if (this._destroyed) throw new Error('Cannot save a destroyed layer');
-        if (this._internal) return;
+    static async create(
+        body: paths['/api/profile/overlay']['post']['requestBody']['content']['application/json']
+    ): Promise<ProfileOverlay> {
+        const res = await server.POST('/api/profile/overlay', {
+            body
+        });
 
-        // We want to just use the default style every time for things like missions
-        // We only want to save the style on custom datasources
-        const dropStyles = ['mission', 'internal'].includes(this.mode);
+        if (res.error) throw new Error(res.error.message);
+        if (!res.data) throw new Error('Failed to create overlay');
 
-        await std(`/api/profile/overlay/${this.id}`, {
-            method: 'PATCH',
-            body: {
-                pos: this.pos,
-                name: this.name,
-                type: this.type,
-                active: this.active,
-                opacity: this.opacity,
-                mode_id: this.mode_id,
-                url: this.url,
-                visible: this.visible,
-                encoding: this.encoding,
-                styles: dropStyles ? [] : this.styles
+        await db.overlay.put(res.data as DBOverlay);
+
+        return res.data;
+    }
+
+    static async update(
+        id: string,
+        body: paths['/api/profile/overlay/{:overlay}']['patch']['requestBody']['content']['application/json']
+    ): Promise<void> {
+        const overlayId = this.overlayId(id);
+        const res = await server.PATCH('/api/profile/overlay/{:overlay}', {
+            params: {
+                path: {
+                    ':overlay': overlayId,
+                }
+            },
+            body
+        });
+
+        if (res.error) throw new Error(res.error.message);
+        if (!res.data) throw new Error('Failed to update overlay');
+
+        await db.overlay.put(res.data as DBOverlay);
+    }
+
+    static async sync(): Promise<void> {
+        const res = await server.GET('/api/profile/overlay', {
+            params: {
+                query: {
+                    limit: 100,
+                    page: 0,
+                    order: 'asc',
+                    sort: 'pos'
+                }
             }
-        })
+        });
+
+        if (res.error) throw new Error(res.error.message);
+        if (!res.data) throw new Error('Failed to sync overlays');
+
+        const list = res.data as ProfileOverlayList;
+
+        await db.transaction('rw', db.overlay, db.cache, async () => {
+            await db.overlay.clear();
+
+            if (list.items.length) {
+                await db.overlay.bulkPut(list.items);
+            }
+
+            await db.cache.put({
+                key: this.listCacheKey,
+                updated: Date.now()
+            });
+        });
+    }
+
+    static async delete(id: string, opts: Overlay_DeleteOptions = {}): Promise<void> {
+        const overlayId = this.overlayId(id);
+
+        if (!opts.localOnly) {
+            const { error } = await server.DELETE('/api/profile/overlay', {
+                params: {
+                    query: {
+                        id: String(overlayId),
+                    }
+                }
+            });
+
+            if (error) throw new Error(error.message);
+        }
+
+        await db.overlay.delete(overlayId);
+    }
+
+    private static async query(opts: Omit<Overlay_ListOptions, 'limit' | 'page' | 'sync'> = {}): Promise<DBOverlay[]> {
+        let overlays = await db.overlay.toArray();
+        const filter = opts.filter?.trim().toLowerCase();
+
+        if (opts.mode !== undefined) {
+            overlays = overlays.filter((overlay) => overlay.mode === opts.mode);
+        }
+
+        if (opts.modeId !== undefined) {
+            overlays = overlays.filter((overlay) => overlay.mode_id === opts.modeId);
+        }
+
+        if (opts.active !== undefined) {
+            overlays = overlays.filter((overlay) => overlay.active === opts.active);
+        }
+
+        if (opts.visible !== undefined) {
+            overlays = overlays.filter((overlay) => overlay.visible === opts.visible);
+        }
+
+        if (filter) {
+            overlays = overlays.filter((overlay) => {
+                return overlay.name.toLowerCase().includes(filter)
+                    || String(overlay.id).includes(filter)
+                    || overlay.mode.toLowerCase().includes(filter)
+                    || (overlay.mode_id || '').toLowerCase().includes(filter)
+                    || overlay.username.toLowerCase().includes(filter);
+            });
+        }
+
+        return overlays.sort((first, second) => first.pos - second.pos || first.name.localeCompare(second.name));
+    }
+
+    private static overlayId(id: string | number): number {
+        const overlayId = Number(id);
+        if (!Number.isFinite(overlayId)) throw new Error(`Invalid overlay id: ${id}`);
+
+        return overlayId;
     }
 }

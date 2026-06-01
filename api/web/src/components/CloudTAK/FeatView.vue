@@ -174,7 +174,7 @@ const feature = computed(() => {
 
 const mode = ref('default');
 
-const overlay = computed(() => getFeatureOverlay(mapStore, feature.value));
+const overlay = computed(() => getFeatureOverlay(feature.value));
 
 const center = computed(() => {
     if (!feature.value) return [0, 0];

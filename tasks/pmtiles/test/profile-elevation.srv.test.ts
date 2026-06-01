@@ -108,8 +108,7 @@ test('POST /tiles/profile/:username/:file/elevation returns sampled elevations',
         assert.equal(body.tileCount, 2);
         assert.equal(body.samples[0].elevation, 100);
         assert.equal(body.samples.at(-1).elevation, 200);
-    }
-    finally {
+    } finally {
         globalThis.fetch = originalFetch;
         FileTiles.prototype.rasterTileSource = originalRasterTileSource;
     }
