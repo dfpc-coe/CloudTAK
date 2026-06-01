@@ -14,12 +14,10 @@ export async function nativeDecompress(
 ): Promise<ArrayBuffer> {
     if (compression === pmtiles.Compression.None || compression === pmtiles.Compression.Unknown) {
         return buf;
-    }
-    else if (compression === pmtiles.Compression.Gzip) {
+    } else if (compression === pmtiles.Compression.Gzip) {
         const buffer = zlib.gunzipSync(buf);
         return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
-    }
-    else {
+    } else {
         throw Error('Compression method not supported');
     }
 }
@@ -66,15 +64,12 @@ export class S3Source implements pmtiles.Source {
                 expires: resp.Expires?.toISOString(),
                 cacheControl: resp.CacheControl,
             };
-        }
-        catch (err) {
+        } catch (err) {
             if (err instanceof Error && err.name === 'NoSuchKey') {
                 throw new Err(404, err, 'Key not found');
-            }
-            else if (err instanceof Error && err.name === 'PreconditionFailed') {
+            } else if (err instanceof Error && err.name === 'PreconditionFailed') {
                 throw new Err(400, err, 'ETag Mismatch');
-            }
-            else {
+            } else {
                 throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Internal Server Error');
             }
         }

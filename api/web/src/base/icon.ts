@@ -107,21 +107,6 @@ export default class Icon {
         return true;
     }
 
-    /**
-     * Remove an iconset and all of its icons from Dexie. Returns true when
-     * something was actually removed.
-     */
-    static async removeIconset(uid: string): Promise<boolean> {
-        const cached = await db.iconset.get(uid);
-        if (!cached) return false;
-
-        await db.transaction('rw', db.icon, db.iconset, async () => {
-            await db.icon.where('iconset').equals(uid).delete();
-            await db.iconset.delete(uid);
-        });
-
-        return true;
-    }
 }
 
 function runDiffOnce(token: string): Promise<IconHydrateResult> {
@@ -140,7 +125,7 @@ function runDiffOnce(token: string): Promise<IconHydrateResult> {
 
 async function runDiff(token: string): Promise<IconHydrateResult> {
     const local = await db.iconset.toArray();
-    const remote = await IconsetCache.list({ token, sync: true }) as Iconset[];
+    const remote = await IconsetCache.list({ sync: true }) as Iconset[];
 
     const remoteByUid = new Map<string, Iconset>();
     for (const iconset of remote) {
@@ -169,7 +154,7 @@ async function runDiff(token: string): Promise<IconHydrateResult> {
         if (!remoteByUid.has(uid)) removed.push(uid);
     }
 
-    await Promise.all(removed.map((uid) => Icon.removeIconset(uid)));
+    await Promise.all(removed.map((uid) => IconsetCache.delete(uid, { localOnly: true })));
     await Promise.all(toSync.map((iconset) => syncIconset(iconset, token)));
     await Promise.all(BUILTIN_SPRITES.map((id) => syncBuiltinSprite(id, token)));
 

@@ -192,10 +192,12 @@ import type { WorkerMessage } from './base/events.ts';
 import { isNativePlatform, supportsServiceWorker } from './base/capacitor.ts';
 import { db } from './database.ts';
 import { getPageServiceWorkerBuildId, markUpdateRequestedByThisTab } from './base/service-worker.ts';
+
 import { useMapStore } from './stores/map.ts';
 
 const router = useRouter();
 const route = useRoute();
+
 const mapStore = useMapStore();
 
 const loginLogo = ref<string>();

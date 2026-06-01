@@ -79,8 +79,7 @@ export default class GDALTranslate implements Transform {
                     }
                 }
             }
-        }
-        catch {
+        } catch {
             // If metadata sniffing fails, continue without zoom clamping
         }
 

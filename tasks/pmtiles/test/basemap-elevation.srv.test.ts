@@ -118,8 +118,7 @@ test('POST /tiles/basemap/:basemapid/elevation returns sampled elevations', asyn
         assert.equal(body.samples.at(-1).elevation, 200);
         assert.ok(requestedURLs.has(`http://localhost:5001/api/basemap/42?token=${token}`));
         assert.ok(requestedURLs.has(`http://localhost:5001/api/basemap/42/tiles?token=${token}`));
-    }
-    finally {
+    } finally {
         globalThis.fetch = originalFetch;
     }
 });

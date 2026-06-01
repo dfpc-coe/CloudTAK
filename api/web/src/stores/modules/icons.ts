@@ -4,11 +4,9 @@
 import { Preferences } from '@capacitor/preferences';
 import ms from 'milsymbol'
 import mapgl from 'maplibre-gl'
-import Icon from '../../base/icon.ts'
+import Icon, { type IconHydrateResult } from '../../base/icon.ts'
+import IconsetManager from '../../base/iconset.ts';
 import type { Map as MapLibreMap } from 'maplibre-gl';
-import type * as Comlink from 'comlink';
-import type Atlas from '../../workers/atlas.ts';
-import type { IconHydrateResult } from '../../workers/atlas-icons.ts';
 import { stdurl } from '../../std.ts';
 import { db, type DBIconset, type DBSprite } from '../../database.ts';
 
@@ -27,16 +25,14 @@ let spriteProtocolRegistered = false;
 export default class IconManager {
     private cache = new Map<string, HTMLCanvasElement>();
     private map: MapLibreMap;
-    private worker: Comlink.Remote<Atlas>;
     private loggedMissingImageIds = new Set<string>();
     private loggedErrors = new Set<string>();
     private inflightImage = new Map<string, Promise<boolean>>();
     private fallbackBitmap: ImageBitmap | null = null;
     private requestedIconsetImageIds = new Set<string>();
 
-    constructor(map: MapLibreMap, worker: Comlink.Remote<Atlas>) {
+    constructor(map: MapLibreMap) {
         this.map = map;
-        this.worker = worker;
     }
 
     private logWarnOnce(key: string, message: string, context?: Record<string, unknown>): void {
@@ -119,12 +115,11 @@ export default class IconManager {
     /**
      * Hydrate the local Dexie icon cache from the API.
      *
-     * The actual network IO and base64 -> Blob decoding runs inside the Atlas
-     * worker (see `AtlasIcons.hydrate`); this method only handles main-thread
-     * concerns like purging stale MapLibre images.
+     * This method also handles main-thread concerns like purging stale MapLibre
+     * images when the local Dexie cache changes.
      */
     async hydrate(opts: { force?: boolean } = {}): Promise<void> {
-        const result = await this.worker.icons.hydrate({ force: !!opts.force }) as IconHydrateResult;
+        const result = await Icon.hydrate({ token: await getToken(), force: !!opts.force }) as IconHydrateResult;
         await this.applyHydrateResult(result);
     }
 
@@ -134,16 +129,24 @@ export default class IconManager {
      * hydrate hasn't completed yet.
      */
     async addIconset(uid: string, opts: { force?: boolean } = {}): Promise<void> {
-        const updated = await this.worker.icons.addIconset(uid, { force: !!opts.force });
+        const updated = await Icon.addIconset(uid, { token: await getToken(), force: !!opts.force });
         if (updated) await this.reloadIconsetImages(uid);
     }
 
     async removeIconset(uid: string): Promise<void> {
-        const removed = await this.worker.icons.removeIconset(uid);
-        if (removed) {
+        const cached = await IconsetManager.from(uid);
+        await IconsetManager.delete(uid, { localOnly: true });
+
+        if (cached) {
             this.purgeMapImagesForIconset(uid);
             this.removeRequestedImagesForIconset(uid);
         }
+    }
+
+    async deleteIconset(uid: string): Promise<void> {
+        await IconsetManager.delete(uid);
+        this.purgeMapImagesForIconset(uid);
+        this.removeRequestedImagesForIconset(uid);
     }
 
     private async applyHydrateResult(result: IconHydrateResult): Promise<void> {
@@ -469,12 +472,12 @@ export default class IconManager {
 
 /**
  * Fallback path for the sprite protocol: when Dexie has no row for the
- * requested built-in sprite (typically only on a brand-new install where
- * `AtlasIcons.hydrate` hasn't completed yet) fetch it from the API and
- * persist it so the next request is served from disk.
+ * requested built-in sprite (typically only on a brand-new install where icon
+ * hydration hasn't completed yet) fetch it from the API and persist it so the
+ * next request is served from disk.
  */
 async function fetchAndCacheSprite(id: string): Promise<DBSprite> {
-    const { value: token } = await Preferences.get({ key: 'token' });
+    const token = await getToken();
     const jsonUrl = stdurl(`/api/iconset/${id}/sprite.json`);
     const pngUrl = stdurl(`/api/iconset/${id}/sprite.png`);
     if (token) jsonUrl.searchParams.set('token', token);
@@ -490,4 +493,10 @@ async function fetchAndCacheSprite(id: string): Promise<DBSprite> {
     const row: DBSprite = { id, updated: Date.now(), json, image };
     await db.sprite.put(row);
     return row;
+}
+
+async function getToken(): Promise<string> {
+    const { value } = await Preferences.get({ key: 'token' });
+    if (!value) throw new Error('No authentication token available');
+    return value;
 }

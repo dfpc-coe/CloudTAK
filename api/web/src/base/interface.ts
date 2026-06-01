@@ -95,7 +95,7 @@ export default class BaseInterface {
     /**
      * Generates a new item, attempt to save it via the API and save it to the database
      */
-    static async generate(): Promise<unknown> {
+    static async generate(data: unknown): Promise<unknown> {
         throw new Error('Method not implemented.');
     }
 
@@ -105,7 +105,7 @@ export default class BaseInterface {
      * @param id - The unique identifier of the item to update
      * @param data - The data to update the item with
      */
-    static async update(): Promise<void> {
+    static async update(id: string, data: unknown): Promise<void> {
         throw new Error('Method not implemented.');
     }
 

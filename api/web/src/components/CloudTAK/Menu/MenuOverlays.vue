@@ -176,9 +176,9 @@
                                         </TablerIconButton>
 
                                         <TablerIconButton
-                                            v-if='card.overlay.visible'
+                                            v-if='card.visible'
                                             title='Hide Layer'
-                                            @click.stop.prevent='card.overlay.update({ visible: !card.overlay.visible })'
+                                            @click.stop.prevent='void updateOverlay(card.overlay, { visible: !card.visible })'
                                         >
                                             <IconEye
                                                 :size='20'
@@ -189,7 +189,7 @@
                                         <TablerIconButton
                                             v-else
                                             title='Show Layer'
-                                            @click.stop.prevent='card.overlay.update({ visible: !card.overlay.visible })'
+                                            @click.stop.prevent='void updateOverlay(card.overlay, { visible: !card.visible })'
                                         >
                                             <IconEyeOff
                                                 :size='20'
@@ -227,7 +227,7 @@
                                             :min='0'
                                             :max='1'
                                             :step='0.1'
-                                            @update:model-value='void card.overlay.update({ opacity: $event })'
+                                            @update:model-value='void updateOverlay(card.overlay, { opacity: $event })'
                                         />
                                     </div>
                                     <div
@@ -238,7 +238,7 @@
                                             :model-value='card.overlay.encoding || "mapbox"'
                                             label='Terrain Encoding'
                                             :options='["mapbox", "terrarium"]'
-                                            @update:model-value='void card.overlay.update({ encoding: $event })'
+                                            @update:model-value='void updateOverlay(card.overlay, { encoding: $event })'
                                         />
                                     </div>
                                     <div
@@ -310,13 +310,15 @@ import StandardItem from '../util/StandardItem.vue';
 import Sortable from 'sortablejs';
 import type { SortableEvent } from 'sortablejs';
 import { useMapStore } from '../../../../src/stores/map.ts';
-import type Overlay from '../../../../src/base/overlay.ts';
+import type Overlay from '../../../../src/base/overlay-class.ts';
+import OverlayManager from '../../../../src/base/overlay.ts';
 
 type OverlayBadgeTone = 'primary' | 'neutral' | 'mission' | 'warning' | 'muted';
 type OverlayBadge = { label: string; tone: OverlayBadgeTone };
 type OverlayStatusTone = 'success' | 'warning' | 'danger';
 type OverlayStatus = { label: string; tone: OverlayStatusTone; tooltip?: string };
-type OverlayCard = { overlay: Overlay; status: OverlayStatus; badges: OverlayBadge[] };
+type OverlayUpdate = Parameters<Overlay['update']>[0];
+type OverlayCard = { overlay: Overlay; visible: boolean; status: OverlayStatus; badges: OverlayBadge[] };
 
 const mapStore = useMapStore();
 const router = useRouter();
@@ -341,9 +343,10 @@ const isDraggable = ref(false);
 const loading = ref(false);
 const opened = ref<Set<number>>(new Set());
 const overlayFilter = ref('');
+const overlayRenderTick = ref(0);
 
 const isLoaded = mapStore.isLoaded;
-const overlays = (mapStore as unknown as { overlays: Overlay[] }).overlays;
+const overlays = OverlayManager.loaded;
 
 const sortableRef = useTemplateRef<HTMLElement>('sortableRef');
 
@@ -366,11 +369,16 @@ const filteredOverlays = computed<Overlay[]>(() => {
     });
 });
 
-const overlayCards = computed<OverlayCard[]>(() => filteredOverlays.value.map((overlay) => ({
-    overlay,
-    status: resolveOverlayStatus(overlay),
-    badges: getOverlayBadges(overlay)
-})));
+const overlayCards = computed<OverlayCard[]>(() => {
+    void overlayRenderTick.value;
+
+    return filteredOverlays.value.map((overlay) => ({
+        overlay,
+        visible: overlay.visible,
+        status: resolveOverlayStatus(overlay),
+        badges: getOverlayBadges(overlay)
+    }));
+});
 
 const canEditOrder = computed(() => !hasSearchTerm.value && overlays.length > 1);
 
@@ -528,38 +536,27 @@ async function saveOrder(sortableEv: SortableEvent) {
 
     const overlay_ids = sortable.toArray().map((i) => parseInt(i));
 
-    const overlay = mapStore.getOverlayById(parseInt(id));
-    if (!overlay) throw new Error('Could not find Overlay');
+    await OverlayManager.reorderLoaded(overlay_ids, id);
+}
 
-    const post = mapStore.getOverlayById(overlay_ids[sortableEv.newIndex + 1]);
+async function updateOverlay(overlay: Overlay, body: OverlayUpdate): Promise<void> {
+    const update = overlay.update(body);
+    overlayRenderTick.value += 1;
 
-    for (const l of overlay.styles) {
-        if (post) {
-            mapStore.map.moveLayer(l.id, post.styles[0].id);
-        } else {
-            mapStore.map.moveLayer(l.id);
-        }
+    try {
+        await update;
+    } finally {
+        overlayRenderTick.value += 1;
     }
-
-    for (const current of overlays) {
-        await current.update({
-            pos: overlay_ids.indexOf(current.id)
-        });
-    }
-
-    overlays.sort((a, b) => {
-        return a.pos - b.pos;
-    });
 }
 
 async function removeOverlay(id: number) {
     loading.value = true;
-    for (const overlay of overlays) {
-        if (overlay.id === id) {
-            await mapStore.removeOverlay(overlay);
-        }
+    try {
+        await OverlayManager.deleteLoaded(id);
+    } finally {
+        loading.value = false;
     }
-    loading.value = false;
 }
 </script>
 

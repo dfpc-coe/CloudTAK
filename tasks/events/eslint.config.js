@@ -1,4 +1,3 @@
-import globals from 'globals';
 import eslint from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
 import tseslint from 'typescript-eslint';
@@ -13,12 +12,8 @@ export default tseslint.config(
     }),
     {
         rules: {
-            "@typescript-eslint/no-explicit-any": "warn"
-        },
-        languageOptions: {
-            globals: {
-                ...globals.node
-            }
-        },
+            "@typescript-eslint/no-explicit-any": "warn",
+            '@stylistic/brace-style': ['error', '1tbs', { allowSingleLine: false }]
+        }
     }
 );

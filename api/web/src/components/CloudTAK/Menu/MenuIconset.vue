@@ -25,7 +25,7 @@
 
             <TablerIconButton
                 title='Download TAK Zip'
-                @click.stop='download'
+                @click.stop='IconsetCache.download(iconset.uid)'
             >
                 <IconDownload
                     :size='32'
@@ -77,9 +77,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { Preferences } from '@capacitor/preferences';
 import { useRoute, useRouter } from 'vue-router';
-import { server, std } from '../../../std.ts';
 import IconsetCache from '../../../base/iconset.ts';
 import CombinedIcons from '../util/Icons.vue';
 import { useMapStore } from '../../../stores/map.ts';
@@ -146,13 +144,6 @@ async function refresh(): Promise<void> {
     }
 }
 
-async function download(): Promise<void> {
-    const { value: token } = await Preferences.get({ key: 'token' });
-    await std(`/api/iconset/${iconset.value.uid}?format=zip&download=true${token ? `&token=${encodeURIComponent(token)}` : ''}`, {
-        download: true
-    });
-}
-
 async function fetchIconset(): Promise<void> {
     const cached = await IconsetCache.from(String(route.params.iconset));
     if (!cached) throw new Error('Iconset not available offline. Refresh to sync this iconset.');
@@ -179,17 +170,7 @@ async function syncIconset(): Promise<void> {
 
 async function deleteIconset(): Promise<void> {
     loading.value = true;
-    const { error } = await server.DELETE('/api/iconset/{:iconset}', {
-        params: {
-            path: {
-                ':iconset': String(route.params.iconset),
-            }
-        }
-    });
-
-    if (error) throw new Error(error.message);
-
-    await mapStore.icons.removeIconset(String(route.params.iconset));
+    await mapStore.icons.deleteIconset(String(route.params.iconset));
     router.push('/menu/iconsets');
 }
 </script>

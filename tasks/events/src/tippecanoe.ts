@@ -12,8 +12,7 @@ export default class Tippecanoe {
         try {
             CP.execSync('tippecanoe --version 2>&1');
             CP.execSync('which tile-join');
-        }
-        catch (err) {
+        } catch (err) {
             throw new Error(`tippecanoe not installed`, { cause: err });
         }
     }

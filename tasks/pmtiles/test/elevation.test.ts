@@ -91,8 +91,7 @@ test('getElevationProfile samples elevations across covered tiles', async () => 
             'https://example.test/terrain/2/1/1.png',
             'https://example.test/terrain/2/2/1.png',
         ]));
-    }
-    finally {
+    } finally {
         globalThis.fetch = originalFetch;
     }
 });
@@ -133,8 +132,7 @@ test('getElevationProfile decodes WebP raster-dem tiles', async () => {
         });
 
         assert.ok(profile.samples.every(sample => sample.elevation === 321));
-    }
-    finally {
+    } finally {
         globalThis.fetch = originalFetch;
     }
 });

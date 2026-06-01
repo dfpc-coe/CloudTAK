@@ -116,10 +116,7 @@ import StandardItem from '../util/StandardItem.vue';
 import StandardItemBasemap from '../util/StandardItemBasemap.vue';
 import StandardItemFolder from '../util/StandardItemFolder.vue';
 import PathBreadcrumb from '../util/PathBreadcrumb.vue';
-import Overlay from '../../../base/overlay.ts';
-import { useMapStore } from '../../../stores/map.ts';
-
-const mapStore = useMapStore();
+import OverlayManager from '../../../base/overlay.ts';
 const router = useRouter();
 
 const loading = ref(false);
@@ -138,15 +135,7 @@ const list = ref<BasemapList>({
 });
 
 const overlayBasemapIds = computed<Set<string>>(() => {
-    const ids = new Set<string>();
-
-    for (const overlay of mapStore.overlays as Array<{ mode?: string; mode_id?: string | number | null }>) {
-        if (overlay.mode === 'overlay' && overlay.mode_id) {
-            ids.add(String(overlay.mode_id));
-        }
-    }
-
-    return ids;
+    return OverlayManager.loadedBasemapIds('overlay');
 });
 
 watch(
@@ -184,7 +173,7 @@ async function createOverlay(overlay: Basemap) {
     loading.value = true;
 
     try {
-        const createdOverlay = await Overlay.create({
+        await OverlayManager.createLoaded({
             url: String(stdurl(`/api/basemap/${overlay.id}/tiles`)),
             name: overlay.name,
             mode: 'overlay',
@@ -192,11 +181,7 @@ async function createOverlay(overlay: Basemap) {
             frequency: overlay.frequency,
             type: overlay.type,
             styles: overlay.styles
-        }, {
-            before: mapStore.getOverlayBeforeId()
         });
-
-        mapStore.addOverlay(createdOverlay);
 
         router.push('/menu/overlays');
     } finally {

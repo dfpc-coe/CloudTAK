@@ -93,9 +93,10 @@ import {
 import { TablerBadge, TablerIconButton } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
+import { isNativePlatform } from '../../../base/capacitor.ts';
 import { useMapStore } from '../../../stores/map.ts';
-import { usePermissionStore } from '../../../stores/modules/permissions.ts';
-import type { BrowserPermissionState } from '../../../stores/modules/permissions.ts';
+import { usePermissionStore } from '../../../stores/device/index.ts';
+import type { BrowserPermissionState } from '../../../stores/device/index.ts';
 
 const mapStore = useMapStore();
 const permissionStore = usePermissionStore();
@@ -236,6 +237,12 @@ function badgeProps(status: BrowserPermissionState): Record<string, string> {
 }
 
 function descriptionFor(type: PermissionKey, status: BrowserPermissionState): string {
+    if (isNativePlatform() && status !== 'granted' && status !== 'unsupported') {
+        if (status === 'denied') return `${permissionDescriptions.denied[type].split('. ')[0]}.`;
+        if (status === 'prompt') return permissionDescriptions.prompt[type];
+        return permissionDescriptions.unknown[type];
+    }
+
     switch (status) {
         case 'granted':
             return permissionDescriptions.granted[type];
@@ -251,7 +258,9 @@ function descriptionFor(type: PermissionKey, status: BrowserPermissionState): st
 }
 
 function canRequest(type: PermissionKey, status: BrowserPermissionState): boolean {
-    if (type === 'orientation' && !permissionStore.hasOrientationPermissionRequest() && status !== 'granted') {
+    if (isNativePlatform()) return false;
+
+    if (type === 'orientation' && !permissionStore.orientation.hasPermissionRequest() && status !== 'granted') {
         return false;
     }
 
@@ -259,12 +268,12 @@ function canRequest(type: PermissionKey, status: BrowserPermissionState): boolea
 }
 
 function shouldShowAction(status: BrowserPermissionState): boolean {
-    return status !== 'granted' && status !== 'unsupported';
+    return !isNativePlatform() && status !== 'granted' && status !== 'unsupported';
 }
 
 function actionLabel(status: BrowserPermissionState, type: PermissionKey): string {
     if (working.value === type) return 'Requesting...';
-    if (type === 'orientation' && !permissionStore.hasOrientationPermissionRequest() && status !== 'granted') return 'Unavailable';
+    if (type === 'orientation' && !permissionStore.orientation.hasPermissionRequest() && status !== 'granted') return 'Unavailable';
     if (status === 'denied') return 'Re-request Permission';
     if (status === 'granted') return 'Allowed';
     return 'Request Permission';
@@ -281,33 +290,35 @@ async function refreshStatuses(): Promise<void> {
 }
 
 async function requestPermission(type: PermissionKey): Promise<void> {
+    if (isNativePlatform()) return;
+
     error.value = '';
     working.value = type;
 
     try {
         switch (type) {
             case 'location':
-                await permissionStore.requestLocationPermission(() => {
+                await permissionStore.geolocation.request(() => {
                     mapStore.startGPSWatch();
                 });
                 break;
             case 'camera':
-                await permissionStore.requestCameraPermission();
+                await permissionStore.camera.request();
                 break;
             case 'orientation':
-                await permissionStore.requestOrientationPermission();
+                await permissionStore.orientation.request();
                 break;
             case 'fileSystem':
-                await permissionStore.requestFileSystemPermission();
+                await permissionStore.fileSystem.request();
                 break;
             case 'storage':
-                await permissionStore.requestStoragePermission();
+                await permissionStore.storage.request();
                 break;
             case 'wakeLock':
-                await permissionStore.requestWakeLockPermission();
+                await permissionStore.wakeLock.request();
                 break;
             case 'notification':
-                await permissionStore.requestNotificationPermission();
+                await permissionStore.notification.request();
                 break;
         }
     } catch (err) {

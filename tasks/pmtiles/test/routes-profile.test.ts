@@ -27,8 +27,7 @@ test('Setup', async () => {
                 resolve();
             });
         });
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -39,8 +38,7 @@ test('GET /tiles/profile/:username/:file - Missing Token', async () => {
         assert.equal(res.status, 400, 'Returns 400 (Validation Error)');
         const body = await res.json();
         assert.match(body.message, /Validation Error/, 'Error message matches');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -52,8 +50,7 @@ test('GET /tiles/profile/:username/:file - Unauthorized (Wrong User)', async () 
         assert.equal(res.status, 401, 'Returns 401');
         const body = await res.json();
         assert.match(body.message, /Unauthorized Access/, 'Error message matches');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -65,8 +62,7 @@ test('GET /tiles/profile/:username/:file - Unauthorized (Wrong Access)', async (
         assert.equal(res.status, 401, 'Returns 401');
         const body = await res.json();
         assert.match(body.message, /Unauthorized Access/, 'Error message matches');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -79,8 +75,7 @@ test('GET /tiles/profile/:username/:file - Success (Auth passes, S3 fails)', asy
         // We expect a 500 or similar because S3 is not mocked and will fail
         // But getting past 401 means auth worked
         assert.notEqual(res.status, 401, 'Should not be 401');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -89,8 +84,7 @@ test('GET /tiles/profile/:username/:file/query - Missing Token', async () => {
     try {
         const res = await fetch(`${getAddress()}/tiles/profile/user@example.com/map/query`);
         assert.equal(res.status, 400, 'Returns 400 (Validation Error)');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
@@ -99,8 +93,7 @@ test('GET /tiles/profile/:username/:file/tiles/:z/:x/:y.:ext - Missing Token', a
     try {
         const res = await fetch(`${getAddress()}/tiles/profile/user@example.com/map/tiles/0/0/0.mvt`);
         assert.equal(res.status, 400, 'Returns 400 (Validation Error)');
-    }
-    catch (err) {
+    } catch (err) {
         assert.ifError(err);
     }
 });
