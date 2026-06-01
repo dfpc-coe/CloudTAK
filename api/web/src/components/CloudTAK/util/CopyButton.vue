@@ -27,11 +27,11 @@ import {
     IconCopy,
     IconCopyCheck
 } from '@tabler/icons-vue';
+import { Clipboard } from '@capacitor/clipboard';
 
 import {
     TablerIconButton
 } from '@tak-ps/vue-tabler'
-import { writeClipboardText } from '../../../base/capacitor.ts';
 
 const props = defineProps({
     text: {
@@ -58,7 +58,7 @@ onUnmounted(() => {
 });
 
 async function copy() {
-    await writeClipboardText(String(props.text))
+    await Clipboard.write({ string: String(props.text) });
     copied.value = true;
 
     timeout.value = setTimeout(() => {
