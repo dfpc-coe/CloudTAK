@@ -66,7 +66,7 @@ export default class Bulldozer {
                         }
 
                         const parsed = path.parse(file);
-                        const name = parsed.name;
+                        const name = parsed.dir ? `${parsed.dir}/${parsed.name}` : parsed.name;
                         const format = parsed.ext.toLowerCase();
 
                         this.config.models.Icon.generate({
