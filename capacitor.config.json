@@ -5,6 +5,7 @@
     "ios": {
         "path": "ios",
         "includePlugins": [
+            "@capacitor-community/background-geolocation",
             "@capacitor-community/keep-awake",
             "@capacitor/app",
             "@capacitor/browser",
