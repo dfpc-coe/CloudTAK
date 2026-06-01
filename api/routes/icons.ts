@@ -466,12 +466,26 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (isNaN(Number(req.params.icon))) {
-                const { name, dir } = path.parse(decodeURIComponent(String(req.params.icon)));
-                const full = dir ? `${dir}/${name}` : name;
+                const decoded = decodeURIComponent(String(req.params.icon)).replace(/^\/+/, '');
+                const { name, dir, ext } = path.posix.parse(decoded);
+                const iconName = dir ? `${dir}/${name}` : name;
+                const iconPath = `${req.params.iconset}/${decoded}`;
+                const iconPathNoExt = `${req.params.iconset}/${iconName}`;
+                const format = ext.toLowerCase();
 
                 const icon = await config.models.Icon.from(sql`
                     iconset = ${req.params.iconset}
-                    AND name = ${full}
+                    AND (
+                        path = ${iconPath}
+                        OR (
+                            path = ${iconPathNoExt}
+                            AND (${format} = '' OR format = ${format})
+                        )
+                        OR (
+                            name = ${iconName}
+                            AND (${format} = '' OR format = ${format})
+                        )
+                    )
                 `);
 
                 return res.json(icon);

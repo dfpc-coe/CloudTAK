@@ -394,4 +394,32 @@ test('POST: /api/iconset/:iconset/icon - PNG with dots in filename', async () =>
     }
 });
 
+test('GET: /api/iconset/:iconset/icon/:icon - path lookup with seeded leaf-only name', async () => {
+    try {
+        if (!flight.config) throw new Error('Flight config not initialized');
+
+        const seeded = await flight.config.models.Icon.generate({
+            iconset: 'test-iconset',
+            name: 'open-diamond',
+            format: '.png',
+            type2525b: null,
+            data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+            path: 'test-iconset/Shapes/open-diamond.png',
+        });
+
+        const res = await flight.fetch('/api/iconset/test-iconset/icon/Shapes%2Fopen-diamond.png', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.equal(res.body.id, seeded.id);
+        assert.equal(res.body.name, 'open-diamond');
+        assert.equal(res.body.path, 'test-iconset/Shapes/open-diamond.png');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 flight.landing();
