@@ -9,22 +9,24 @@
         <div class='d-flex align-items-center justify-content-between mt-1'>
             <TablerDropdown
                 v-if='hasFilters'
+                :width='280'
+                autoclose='outside'
                 position='bottom-start'
             >
-                <div class='d-flex align-items-center gap-1 px-1 py-1 rounded cursor-pointer cloudtak-hover'>
-                    <IconChevronDown
-                        :size='16'
+                <TablerIconButton title='Filter'>
+                    <IconFilter
+                        :size='20'
                         stroke='1'
                     />
-                    <span class='small text-muted'>Filters</span>
                     <TablerBadge
                         v-if='activeFilters > 0'
+                        class='ms-1'
                         background-color='var(--tblr-primary)'
-                        text-color='#ffffff'
+                        border-color='var(--tblr-primary)'
                     >
                         {{ activeFilters }}
                     </TablerBadge>
-                </div>
+                </TablerIconButton>
                 <template #dropdown>
                     <slot name='filters' />
                 </template>
@@ -65,12 +67,12 @@
 import { computed, useSlots } from 'vue';
 import {
     TablerInput,
-    TablerBadge,
     TablerDropdown,
     TablerIconButton,
+    TablerBadge,
 } from '@tak-ps/vue-tabler';
 import {
-    IconChevronDown,
+    IconFilter,
     IconArrowsSort,
 } from '@tabler/icons-vue';
 
