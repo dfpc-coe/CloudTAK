@@ -207,9 +207,13 @@ async function syncIconset(iconset: Iconset, token: string): Promise<void> {
     ) as IconList;
 
     const rows: DBIcon[] = [];
+    const prefix = `${iconset.uid}/`;
     for (const icon of list.items) {
         const blob = dataUrlToBlob(icon.data);
-        const path = stripExt(icon.name);
+        const sourcePath = icon.path && icon.path.startsWith(prefix)
+            ? icon.path.slice(prefix.length)
+            : icon.name;
+        const path = stripExt(sourcePath);
 
         rows.push({
             name: `${iconset.uid}:${path}`,
