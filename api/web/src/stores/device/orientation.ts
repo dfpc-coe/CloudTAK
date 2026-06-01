@@ -1,4 +1,4 @@
-import { hasPermissionQuery } from './shared.ts';
+import { PermissionQuery } from './shared.ts';
 import type { DevicePermissionContext } from './types.ts';
 
 type DeviceOrientationEventWithPermission = typeof DeviceOrientationEvent & {
@@ -58,7 +58,7 @@ export class OrientationPermission {
             return;
         }
 
-        if (hasPermissionQuery()) {
+        if (PermissionQuery.hasPermissionQuery()) {
             const sensorPermissions = [
                 'accelerometer',
                 'gyroscope',

@@ -1,4 +1,4 @@
-import { queryPermissionStatus } from './shared.ts';
+import { PermissionQuery } from './shared.ts';
 import type { DevicePermissionContext } from './types.ts';
 
 export class StoragePermission {
@@ -10,7 +10,7 @@ export class StoragePermission {
             return;
         }
 
-        const status = await queryPermissionStatus('persistent-storage', 'Failed to query persistent storage permission status');
+        const status = await PermissionQuery.queryPermissionStatus('persistent-storage', 'Failed to query persistent storage permission status');
         if (status) {
             this.context.setPermissionStatus('storage', status.state);
             return;

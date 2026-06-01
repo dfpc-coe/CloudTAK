@@ -33,7 +33,7 @@ import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
-import { clearLocationWatch, supportsLocationRequests, watchLocation } from './device/geolocation.ts';
+import { GeolocationPermission } from './device/geolocation.ts';
 
 import type { ProfileOverlay, Basemap, APIList, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
@@ -778,18 +778,18 @@ export const useMapStore = defineStore('cloudtak', {
             this.gpsWatchId = null;
 
             try {
-                await clearLocationWatch(watchId);
+                await GeolocationPermission.clearLocationWatch(watchId);
             } catch (err) {
                 console.warn('Failed to clear location watch', err);
             }
         },
         startGPSWatch: async function(): Promise<void> {
-            if (!supportsLocationRequests()) return;
+            if (!GeolocationPermission.supportsLocationRequests()) return;
 
             await this.stopGPSWatch();
 
             try {
-                this.gpsWatchId = await watchLocation({
+                this.gpsWatchId = await GeolocationPermission.watchLocation({
                     maximumAge: 0,
                     timeout: 1500,
                     enableHighAccuracy: true
