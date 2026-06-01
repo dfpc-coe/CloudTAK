@@ -761,6 +761,7 @@ export default async function router(schema: Schema, config: Config) {
                 const json = BasemapProtocol.json({
                     ...basemap,
                     ...metadata,
+                    type: basemap.type,
                     minzoom: basemap.minzoom ?? metadata.minzoom,
                     maxzoom: basemap.maxzoom ?? metadata.maxzoom,
                     bounds: basemap.bounds ? bbox(basemap.bounds) : metadata.bounds,

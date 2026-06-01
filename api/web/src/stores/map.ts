@@ -15,7 +15,7 @@ import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import IconManager from './modules/icons.ts';
 import MenuManager from './modules/menu.ts';
 import BottomBarManager from './modules/bottombar.ts';
-import { useDeviceStore } from './device/index.ts';
+import { useDeviceStore } from './device.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';

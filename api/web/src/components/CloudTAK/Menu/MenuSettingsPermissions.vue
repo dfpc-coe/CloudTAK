@@ -95,8 +95,8 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import { isNativePlatform } from '../../../base/capacitor.ts';
 import { useMapStore } from '../../../stores/map.ts';
-import { usePermissionStore } from '../../../stores/device/index.ts';
-import type { BrowserPermissionState } from '../../../stores/device/index.ts';
+import { usePermissionStore } from '../../../stores/device.ts';
+import type { BrowserPermissionState } from '../../../stores/device.ts';
 
 const mapStore = useMapStore();
 const permissionStore = usePermissionStore();
