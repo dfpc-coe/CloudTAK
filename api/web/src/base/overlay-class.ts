@@ -600,7 +600,7 @@ export default class Overlay {
             this.opacity = body.opacity;
             for (const l of this.styles) {
                 if (this.type === 'raster') {
-                    mapStore.map.setPaintProperty(l.id, 'raster-opacity', Number(this.opacity))
+                    mapStore.map.setPaintProperty(l.id, 'raster-opacity', Number(this.opacity));
                 }
             }
             changed = true;
