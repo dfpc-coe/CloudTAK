@@ -16,6 +16,20 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.5.0 - 2026-06-01
+
+- :rocket: Add sticky menu to deleted features - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1452
+- :tada: Add FCM token storage and Firebase Messaging support for the iOS app
+- :tada: Add overlay base classes and ProfileOverlay storage, and migrate overlay sync/removal flows onto the new model
+- :rocket: Centralize iconset operations with delete, download, live list, and runtime token handling
+- :rocket: Improve compact menu behavior with sticky controls, reduced overflow, and cleaner layout handling
+- :rocket: Clean up native device permissions and Capacitor API calls
+- :rocket: Simplify Atlas icon handling and remove unused Atlas icon code
+- :rocket: Migrate geospatial task Dockerfiles to OSGeo GDAL base images
+- :bug: Restore snapping behavior and fix visibility eye controls
+- :white_check_mark: Update event worker tests
+- :arrow_up: Update core dependencies and ESLint rules
+
 ### v13.4.0 - 2026-05-26
 
 - :tada: Add initial capacitor project for iOS
