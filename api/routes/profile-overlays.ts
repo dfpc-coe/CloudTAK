@@ -333,6 +333,11 @@ export default async function router(schema: Schema, config: Config) {
                     req.body.url = url.pathname;
                 }
 
+                if ((req.body.mode === 'basemap' || req.body.mode === 'overlay') && req.body.mode_id && !req.body.type) {
+                    const basemapForType = await config.models.Basemap.from(parseInt(req.body.mode_id));
+                    req.body.type = basemapForType.type;
+                }
+
                 overlay = await config.models.ProfileOverlay.generate({
                     ...req.body,
                     opacity: String(req.body.opacity || 1),
@@ -346,7 +351,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 res.json(serializeOverlay(
                     overlay,
-                    fromProtocol(basemap.protocol).actions(),
+                    fromProtocol(basemap.protocol, basemap).actions(),
                     basemap.type === 'raster-dem' ? basemap.encoding : undefined,
                 ));
             } else {

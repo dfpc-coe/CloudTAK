@@ -1,24 +1,23 @@
 import { defineStore } from 'pinia';
 import { markRaw, reactive, ref } from 'vue';
-import { CameraPermission } from './camera.ts';
-import { FileSystemPermission } from './file-system.ts';
-import { GeolocationPermission } from './geolocation.ts';
-import { BrowserNotificationPermission } from './notification.ts';
-import { OrientationPermission } from './orientation.ts';
-import { StoragePermission } from './storage.ts';
-import { WakeLockPermission } from './wake-lock.ts';
-import type { BrowserPermissionState, BrowserPermissionType, DevicePermissionContext, FileSystemAccessHandle } from './types.ts';
+import { CameraPermission } from './device/camera.ts';
+import { FileSystemPermission } from './device/file-system.ts';
+import { GeolocationPermission } from './device/geolocation.ts';
+import { BrowserNotificationPermission } from './device/notification.ts';
+import { OrientationPermission } from './device/orientation.ts';
+import { StoragePermission } from './device/storage.ts';
+import { WakeLockPermission } from './device/wake-lock.ts';
+import type { BrowserPermissionState, BrowserPermissionType, DevicePermissionContext, FileSystemAccessHandle } from './device/types.ts';
+export type { BrowserPermissionState, BrowserPermissionType } from './device/types.ts';
+export { CameraPermission } from './device/camera.ts';
+export { FileSystemPermission } from './device/file-system.ts';
+export { GeolocationPermission } from './device/geolocation.ts';
+export { BrowserNotificationPermission } from './device/notification.ts';
+export { OrientationPermission } from './device/orientation.ts';
+export { StoragePermission } from './device/storage.ts';
+export { WakeLockPermission } from './device/wake-lock.ts';
 
-export type { BrowserPermissionState, BrowserPermissionType } from './types.ts';
-export { CameraPermission } from './camera.ts';
-export { FileSystemPermission } from './file-system.ts';
-export { GeolocationPermission } from './geolocation.ts';
-export { BrowserNotificationPermission } from './notification.ts';
-export { OrientationPermission } from './orientation.ts';
-export { StoragePermission } from './storage.ts';
-export { WakeLockPermission } from './wake-lock.ts';
-
-export const usePermissionStore = defineStore('permissions', () => {
+export const useDeviceStore = defineStore('device', () => {
     const permissions = reactive<Record<BrowserPermissionType, BrowserPermissionState>>({
         location: 'unknown',
         notification: 'unknown',
@@ -112,5 +111,3 @@ export const usePermissionStore = defineStore('permissions', () => {
         releaseWakeLockSentinel: () => wakeLock.releaseSentinel()
     };
 });
-
-export const useDeviceStore = usePermissionStore;

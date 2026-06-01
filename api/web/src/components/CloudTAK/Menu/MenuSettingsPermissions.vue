@@ -95,11 +95,11 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import { isNativePlatform } from '../../../base/capacitor.ts';
 import { useMapStore } from '../../../stores/map.ts';
-import { usePermissionStore } from '../../../stores/device.ts';
+import { useDeviceStore } from '../../../stores/device.ts';
 import type { BrowserPermissionState } from '../../../stores/device.ts';
 
 const mapStore = useMapStore();
-const permissionStore = usePermissionStore();
+const deviceStore = useDeviceStore();
 type PermissionKey = 'location' | 'notification' | 'orientation' | 'storage' | 'camera' | 'wakeLock' | 'fileSystem';
 type PermissionDescriptor = {
     key: PermissionKey;
@@ -192,7 +192,7 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
 
 const permissionItems = computed(() => {
     return permissionDescriptors.map((permission) => {
-        const status = permissionStore.permissions[permission.key];
+        const status = deviceStore.permissions[permission.key];
 
         return {
             ...permission,
@@ -260,7 +260,7 @@ function descriptionFor(type: PermissionKey, status: BrowserPermissionState): st
 function canRequest(type: PermissionKey, status: BrowserPermissionState): boolean {
     if (isNativePlatform()) return false;
 
-    if (type === 'orientation' && !permissionStore.orientation.hasPermissionRequest() && status !== 'granted') {
+    if (type === 'orientation' && !deviceStore.orientation.hasPermissionRequest() && status !== 'granted') {
         return false;
     }
 
@@ -273,7 +273,7 @@ function shouldShowAction(status: BrowserPermissionState): boolean {
 
 function actionLabel(status: BrowserPermissionState, type: PermissionKey): string {
     if (working.value === type) return 'Requesting...';
-    if (type === 'orientation' && !permissionStore.orientation.hasPermissionRequest() && status !== 'granted') return 'Unavailable';
+    if (type === 'orientation' && !deviceStore.orientation.hasPermissionRequest() && status !== 'granted') return 'Unavailable';
     if (status === 'denied') return 'Re-request Permission';
     if (status === 'granted') return 'Allowed';
     return 'Request Permission';
@@ -283,7 +283,7 @@ async function refreshStatuses(): Promise<void> {
     error.value = '';
 
     try {
-        await permissionStore.refreshPermissionStatuses();
+        await deviceStore.refreshPermissionStatuses();
     } catch (err) {
         error.value = err instanceof Error ? err.message : 'Failed to refresh permission status';
     }
@@ -298,27 +298,27 @@ async function requestPermission(type: PermissionKey): Promise<void> {
     try {
         switch (type) {
             case 'location':
-                await permissionStore.geolocation.request(() => {
+                await deviceStore.geolocation.request(() => {
                     mapStore.startGPSWatch();
                 });
                 break;
             case 'camera':
-                await permissionStore.camera.request();
+                await deviceStore.camera.request();
                 break;
             case 'orientation':
-                await permissionStore.orientation.request();
+                await deviceStore.orientation.request();
                 break;
             case 'fileSystem':
-                await permissionStore.fileSystem.request();
+                await deviceStore.fileSystem.request();
                 break;
             case 'storage':
-                await permissionStore.storage.request();
+                await deviceStore.storage.request();
                 break;
             case 'wakeLock':
-                await permissionStore.wakeLock.request();
+                await deviceStore.wakeLock.request();
                 break;
             case 'notification':
-                await permissionStore.notification.request();
+                await deviceStore.notification.request();
                 break;
         }
     } catch (err) {
