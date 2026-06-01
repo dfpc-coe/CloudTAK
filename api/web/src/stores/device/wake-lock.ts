@@ -1,6 +1,6 @@
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { isNativePlatform } from '../../base/capacitor.ts';
-import { queryPermissionStatus } from './shared.ts';
+import { PermissionQuery } from './shared.ts';
 import type { DevicePermissionContext } from './types.ts';
 
 export class WakeLockPermission {
@@ -22,7 +22,7 @@ export class WakeLockPermission {
             return;
         }
 
-        const status = await queryPermissionStatus('screen-wake-lock', 'Failed to query wake lock permission status');
+        const status = await PermissionQuery.queryPermissionStatus('screen-wake-lock', 'Failed to query wake lock permission status');
         if (status) {
             this.context.setPermissionStatus('wakeLock', status.state);
             return;
