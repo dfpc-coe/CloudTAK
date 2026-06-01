@@ -26,7 +26,7 @@ import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay-class.ts';
 import OverlayManager from '../base/overlay.ts';
 import Subscription from '../base/subscription.ts';
-import { std, stdurl } from '../std.js';
+import { std, stdurl, server } from '../std.js';
 import * as mapgl from 'maplibre-gl'
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-csp-worker.js?url'
 import type Atlas from '../workers/atlas.ts';
@@ -34,10 +34,11 @@ import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
 import { GeolocationPermission } from './device/geolocation.ts';
+import { isNativePlatform } from '../base/capacitor.ts';
 
 import type { ProfileOverlay, Basemap, APIList, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
-import type { CallbackID } from '@capacitor/geolocation';
+import type { CallbackID, Position } from '@capacitor/geolocation';
 
 function waitForAtlasWorkerReady(worker: Worker): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -818,9 +819,66 @@ export const useMapStore = defineStore('cloudtak', {
                             coordinates: [ position.coords.longitude, position.coords.latitude ]
                         }
                     });
+
+                    if (isNativePlatform() && document.hidden) {
+                        void this.submitLocationHttp(position);
+                    }
                 });
             } catch (err) {
                 console.error('Failed to start location watch', err);
+            }
+        },
+        submitLocationHttp: async function(position: Position): Promise<void> {
+            try {
+                const [callsignConfig, typeConfig, remarksConfig, groupConfig, roleConfig, usernameConfig] = await Promise.all([
+                    ProfileConfig.get('tak_callsign'),
+                    ProfileConfig.get('tak_type'),
+                    ProfileConfig.get('tak_remarks'),
+                    ProfileConfig.get('tak_group'),
+                    ProfileConfig.get('tak_role'),
+                    ProfileConfig.get('username'),
+                ]);
+
+                const username = usernameConfig?.value as string | undefined;
+                if (!username) return;
+
+                const uid = `ANDROID-CloudTAK-${username}`;
+                const callsign = callsignConfig?.value as string || 'Unknown';
+                const type = typeConfig?.value as string || 'a-f-G-E-V-C';
+                const remarks = remarksConfig?.value as string || '';
+                const group = groupConfig?.value as string || 'Cyan';
+                const role = roleConfig?.value as string || 'Team Member';
+
+                const hae = position.coords.altitude ?? 0;
+                const now = new Date();
+                const stale = new Date(now.getTime() + 60000);
+
+                await server.PUT('/api/profile/location', {
+                    body: {
+                        id: uid,
+                        path: '/',
+                        type: 'Feature',
+                        properties: {
+                            callsign,
+                            type,
+                            how: 'm-g',
+                            time: now.toISOString(),
+                            start: now.toISOString(),
+                            stale: stale.toISOString(),
+                            center: [position.coords.longitude, position.coords.latitude],
+                            remarks,
+                            droid: callsign,
+                            contact: { endpoint: '*:-1:stcp', callsign },
+                            group: { name: group, role },
+                        },
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [position.coords.longitude, position.coords.latitude, hae]
+                        }
+                    }
+                });
+            } catch (err) {
+                console.warn('Failed to submit background location via HTTP', err);
             }
         },
         initOverlays: async function() {
