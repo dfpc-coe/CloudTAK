@@ -471,32 +471,35 @@ export default class DrawTool {
     }
 
     async populateSnappingLayers(): Promise<void> {
-        if (this.mapStore.hasSnapping) {
-            const { data } = await server.GET('/api/basemap', {
-                params: {
-                    query: {
-                        limit: 100,
-                        page: 0,
-                        order: 'asc',
-                        sort: 'name',
-                        filter: '',
-                        snapping: true,
-                        hidden: 'all',
-                        overlay: true
-                    }
+        const { data } = await server.GET('/api/basemap', {
+            params: {
+                query: {
+                    limit: 100,
+                    page: 0,
+                    order: 'asc',
+                    sort: 'name',
+                    filter: '',
+                    snapping: true,
+                    hidden: 'all',
+                    overlay: true
                 }
-            });
-
-            if (data && data.items) {
-                this.route.definitions.clear();
-                for (const item of data.items) {
-                    item.minzoom = item.minzoom ? Number(item.minzoom) : 0;
-                    item.maxzoom = item.maxzoom ? Number(item.maxzoom) : 22;
-                    this.route.definitions.set(item.name, item);
-                }
-
-                this.snappingOptions = ['No Snapping'].concat(data.items.map((b) => b.name));
             }
+        });
+
+        this.route.definitions.clear();
+
+        if (data && data.items.length) {
+            for (const item of data.items) {
+                item.minzoom = item.minzoom ? Number(item.minzoom) : 0;
+                item.maxzoom = item.maxzoom ? Number(item.maxzoom) : 22;
+                this.route.definitions.set(item.name, item);
+            }
+
+            this.snappingOptions = ['No Snapping'].concat(data.items.map((b) => b.name));
+            this.mapStore.hasSnapping = true;
+        } else {
+            this.snappingOptions = ['No Snapping'];
+            this.mapStore.hasSnapping = false;
         }
     }
 

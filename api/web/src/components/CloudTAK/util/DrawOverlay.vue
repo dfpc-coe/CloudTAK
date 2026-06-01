@@ -410,13 +410,13 @@ const filteredOverlayNames = computed((): string[] => {
 });
 
 onMounted(async () => {
-    if (mapStore.hasSnapping && (mapStore.draw.mode === DrawToolMode.LINESTRING || mapStore.draw.mode === DrawToolMode.SNAPPING)) {
+    if (mapStore.draw.mode === DrawToolMode.LINESTRING || mapStore.draw.mode === DrawToolMode.SNAPPING) {
         await mapStore.draw.populateSnappingLayers();
     }
 });
 
-watch([() => mapStore.draw.mode, () => mapStore.hasSnapping], async () => {
-    if (mapStore.hasSnapping && (mapStore.draw.mode === DrawToolMode.LINESTRING || mapStore.draw.mode === DrawToolMode.SNAPPING)) {
+watch(() => mapStore.draw.mode, async () => {
+    if (mapStore.draw.mode === DrawToolMode.LINESTRING || mapStore.draw.mode === DrawToolMode.SNAPPING) {
         await mapStore.draw.populateSnappingLayers();
     }
 });
