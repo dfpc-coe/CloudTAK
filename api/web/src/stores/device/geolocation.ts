@@ -107,9 +107,7 @@ export class GeolocationPermission {
         if (isNativePlatform()) {
             this.context.setPermissionStatus('location', await GeolocationPermission.checkNativeLocationPermission());
             return;
-        }
-
-        if (!GeolocationPermission.supportsLocationRequests()) {
+        } else if (!GeolocationPermission.supportsLocationRequests()) {
             this.context.setPermissionStatus('location', 'unsupported');
             return;
         }
