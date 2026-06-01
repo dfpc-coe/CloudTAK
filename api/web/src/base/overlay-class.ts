@@ -325,6 +325,8 @@ export default class Overlay {
         const mapStore = useMapStore();
         const { value: token } = await Preferences.get({ key: 'token' });
 
+        this._error = undefined;
+
         if (this.type === 'raster' && this.url) {
             const url = stdurl(this.url);
             if (token) url.searchParams.set('token', token);
@@ -445,7 +447,9 @@ export default class Overlay {
         const mapStore = useMapStore();
 
         for (const l of this.styles) {
-            mapStore.map.removeLayer(String(l.id));
+            if (mapStore.map.getLayer(String(l.id))) {
+                mapStore.map.removeLayer(String(l.id));
+            }
         }
 
         if (this.iconset) {
