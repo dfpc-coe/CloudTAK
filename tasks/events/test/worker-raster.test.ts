@@ -9,6 +9,9 @@ import {
     S3Client,
     GetObjectCommand,
     PutObjectCommand,
+    CreateMultipartUploadCommand,
+    UploadPartCommand,
+    CompleteMultipartUploadCommand,
 } from '@aws-sdk/client-s3';
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 
@@ -81,26 +84,49 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-raster
                 });
             },
             (command) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    assert.equal(command.input.Bucket, 'test-bucket');
+                    assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+                    assert.ok(command.input.Key.endsWith(ext));
+                    return Promise.resolve({ UploadId: '123' });
+                }
+
                 assert.ok(command instanceof PutObjectCommand);
 
                 assert.equal(command.input.Bucket, 'test-bucket');
                 assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
                 assert.ok(command.input.Key.endsWith(ext));
 
-                return Promise.resolve({});
+                return Promise.resolve({ ETag: '"123"' });
             },
             (command) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    assert.equal(command.input.Bucket, 'test-bucket');
+                    assert.equal(command.input.Key, `profile/admin@example.com/${id}.pmtiles`);
+                    return Promise.resolve({ UploadId: '123' });
+                }
+
                 assert.ok(command instanceof PutObjectCommand);
 
                 assert.equal(command.input.Bucket, 'test-bucket');
                 assert.equal(command.input.Key, `profile/admin@example.com/${id}.pmtiles`);
 
-                return Promise.resolve({});
+                return Promise.resolve({ ETag: '"123"' });
             },
         ].reverse();
 
-        Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
-            return ExternalOperations.pop()(command);
+        Sinon.stub(S3Client.prototype, 'send').callsFake(async (command) => {
+            if (command instanceof UploadPartCommand) {
+                return { ETag: '"123"' };
+            }
+            if (command instanceof CompleteMultipartUploadCommand) {
+                return { Location: '...' };
+            }
+
+            const validator = ExternalOperations.pop();
+            if (!validator) throw new Error(`Unexpected command: ${command.constructor.name}`);
+
+            return validator(command);
         });
 
         const worker = new Worker({
