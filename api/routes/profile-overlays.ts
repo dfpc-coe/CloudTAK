@@ -131,7 +131,7 @@ export default async function router(schema: Schema, config: Config) {
                         return {
                             keep: true as const,
                             item,
-                            actions: fromProtocol(basemap.protocol).actions(),
+                            actions: fromProtocol(basemap.protocol, basemap).actions(),
                             encoding: basemap.type === 'raster-dem' ? basemap.encoding : undefined,
                         };
                     } catch (err) {
@@ -193,7 +193,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 res.json(serializeOverlay(
                     overlay,
-                    fromProtocol(basemap.protocol).actions(),
+                    fromProtocol(basemap.protocol, basemap).actions(),
                     basemap.type === 'raster-dem' ? basemap.encoding : undefined,
                 ));
             } else {
@@ -259,7 +259,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 res.json(serializeOverlay(
                     overlay,
-                    fromProtocol(basemap.protocol).actions(),
+                    fromProtocol(basemap.protocol, basemap).actions(),
                     basemap.type === 'raster-dem' ? basemap.encoding : undefined,
                 ));
             } else {

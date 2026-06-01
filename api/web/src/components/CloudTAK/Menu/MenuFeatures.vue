@@ -68,6 +68,36 @@
             </TablerDropdown>
         </template>
         <template #default>
+            <div class='d-flex justify-content-end pt-1'>
+                <TablerDropdown>
+                    <TablerIconButton title='Sort'>
+                        <component
+                            :is='sortTypeIcon'
+                            :size='20'
+                            stroke='1'
+                        />
+                        <component
+                            :is='sortDirectionIcon'
+                            :size='20'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <template #dropdown>
+                        <div style='min-width: 160px;'>
+                            <a
+                                v-for='option in sortOptions'
+                                :key='option'
+                                class='dropdown-item d-flex align-items-center'
+                                :class='{ active: sort === option }'
+                                href='#'
+                                @click.prevent='sort = option'
+                                v-text='option'
+                            />
+                        </div>
+                    </template>
+                </TablerDropdown>
+            </div>
+
             <div class='my-2'>
                 <TablerInput
                     v-model='query.filter'
@@ -133,7 +163,7 @@
                         class='mt-2'
                     >
                         <Feature
-                            v-for='cot of currentItems.values()'
+                            v-for='cot of sortedItems'
                             :id='cot.id'
                             :key='cot.id'
                             :select='true'
@@ -214,6 +244,10 @@ import {
     IconTrash,
     IconDownload,
     IconDotsVertical,
+    IconClock,
+    IconLetterCase,
+    IconArrowUp,
+    IconArrowDown,
 } from '@tabler/icons-vue';
 import Sortable from 'sortablejs';
 import type { SortableEvent } from 'sortablejs'
@@ -273,6 +307,42 @@ const folderModal = ref<{
 const dragging = ref(false);
 const draggedId = ref<string | undefined>();
 const loading = ref(true);
+
+const sortOptions = ['Newest → Oldest', 'Oldest → Newest', 'Alphabetical A→Z', 'Alphabetical Z→A'];
+const sort = ref('Newest → Oldest');
+
+const sortTypeIcon = computed(() => sort.value.startsWith('Alphabetical') ? IconLetterCase : IconClock);
+const sortDirectionIcon = computed(() => (sort.value === 'Oldest → Newest' || sort.value === 'Alphabetical A→Z') ? IconArrowUp : IconArrowDown);
+
+const sortedItems = computed((): COT[] => {
+    const arr = Array.from(currentItems.value);
+    if (sort.value === 'Oldest → Newest') {
+        return arr.sort((a, b) => {
+            const ta = a.properties.time ? new Date(a.properties.time).getTime() : 0;
+            const tb = b.properties.time ? new Date(b.properties.time).getTime() : 0;
+            return ta - tb;
+        });
+    } else if (sort.value === 'Alphabetical A→Z') {
+        return arr.sort((a, b) => {
+            const ca = (a.properties.callsign ?? '').toLowerCase();
+            const cb = (b.properties.callsign ?? '').toLowerCase();
+            return ca.localeCompare(cb);
+        });
+    } else if (sort.value === 'Alphabetical Z→A') {
+        return arr.sort((a, b) => {
+            const ca = (a.properties.callsign ?? '').toLowerCase();
+            const cb = (b.properties.callsign ?? '').toLowerCase();
+            return cb.localeCompare(ca);
+        });
+    } else {
+        // Newest → Oldest (default)
+        return arr.sort((a, b) => {
+            const ta = a.properties.time ? new Date(a.properties.time).getTime() : 0;
+            const tb = b.properties.time ? new Date(b.properties.time).getTime() : 0;
+            return tb - ta;
+        });
+    }
+});
 
 
 

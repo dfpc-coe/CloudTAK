@@ -360,6 +360,19 @@
                 :compact='noMenuShown'
             />
 
+            <div
+                v-if='mapStore.isLoaded && isMobileDetected && mode === "Default"'
+                class='position-absolute'
+                style='
+                    z-index: 4;
+                    bottom: var(--map-bottom-bar-size, 50px);
+                    right: 0;
+                    padding: 8px;
+                '
+            >
+                <ServerStatus :size='38' />
+            </div>
+
             <MultipleSelect
                 v-if='mapStore.select.feats.length'
                 @selected='selectFeat($event)'
@@ -447,6 +460,7 @@ import {
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
 import MainMenu from './MainMenu.vue';
+import ServerStatus from './ServerStatus.vue';
 import { from } from 'rxjs';
 import { useObservable } from '@vueuse/rxjs';
 import {
@@ -969,7 +983,7 @@ html[data-bs-theme='light'] .use-gps-btn {
     }
 
     .maplibregl-ctrl-bottom-right {
-        right: 4px;
+        right: 58px;
     }
 }
 </style>

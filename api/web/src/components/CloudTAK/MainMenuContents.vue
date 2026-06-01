@@ -300,38 +300,10 @@
                             </template>
                         </TablerDropdown>
                     </div>
-                    <div class='d-flex justify-content-center mb-2'>
-                        <div class='position-relative'>
-                            <img
-                                v-tooltip='"Return Home"'
-                                class='cursor-pointer'
-                                height='50'
-                                width='50'
-                                :src='logo'
-                                @click='returnHome'
-                                @keyup.enter='returnHome'
-                            >
-                        </div>
-                        <div
-                            class='position-absolute'
-                            style='
-                        bottom: 20px;
-                        right: 10px;
-                    '
-                        >
-                            <div
-                                class='status'
-                                :class='{
-                                    "status-green": mapStore.isOpen,
-                                    "status-red": !mapStore.isOpen
-                                }'
-                            />
-                        </div>
-                    </div>
                     <div class='d-flex justify-content-center mb-1'>
-                        <div
-                            class='subheader text-white'
-                            v-text='version'
+                        <ServerStatus
+                            :version='true'
+                            :size='50'
                         />
                     </div>
                 </div>
@@ -366,12 +338,13 @@ import {
     TablerInput,
     TablerNone,
 } from '@tak-ps/vue-tabler';
-import { openSecondaryView, supportsServiceWorker } from '../../base/capacitor.ts';
+import { openSecondaryView } from '../../base/capacitor.ts';
 import { useMapStore } from '../../stores/map.ts';
 import type { MenuItemConfig } from '../../stores/modules/menu.ts';
 import Config from '../../base/config.ts';
 import { useRouter, useRoute } from 'vue-router';
 import MenuItemCard from './Menu/MenuItemCard.vue';
+import ServerStatus from './ServerStatus.vue';
 import ProfileConfig from '../../base/profile.ts';
 
 const route = useRoute();
@@ -385,7 +358,6 @@ type AppSwitcherApplication = {
     url: string;
 };
 
-const logo = ref('/CloudTAKLogo.svg');
 const appSwitcherApplications = ref<AppSwitcherApplication[]>([]);
 
 let alive = false;
@@ -393,15 +365,9 @@ onMounted(() => { alive = true; });
 onUnmounted(() => { alive = false; });
 
 onMounted(async () => {
-    const loginConfig = await Config.list(['login::logo']);
     const applicationsConfig = await Config.list(['external::applications' as never]);
 
     if (!alive) return;
-
-    const loginLogo = loginConfig['login::logo'];
-    if (typeof loginLogo === 'string' && loginLogo) {
-        logo.value = loginLogo;
-    }
 
     appSwitcherApplications.value = normalizeApplications(applicationsConfig['external::applications' as never]);
 });
@@ -410,7 +376,6 @@ const emit = defineEmits<{
     (e: 'close'): void;
 }>();
 
-const version = ref('');
 const username = ref<string>('Username');
 
 const props = defineProps({
@@ -495,21 +460,6 @@ async function saveOrder() {
 }
 
 onMounted(async () => {
-    if (supportsServiceWorker()) {
-        const pkg = await navigator.serviceWorker.getRegistration();
-        if (pkg && pkg.active) {
-            const url = new URL(pkg.active.scriptURL);
-            if (alive && url.searchParams.get('v')) {
-                version.value = String(url.searchParams.get('v'));
-            }
-        }
-    }
-
-    if (alive && !version.value) {
-        version.value = (await mapStore.worker.profile.loadServer()).version;
-    }
-
-    if (!alive) return;
     const usernameConfig = await ProfileConfig.get('username');
     if (alive && usernameConfig) {
         username.value = usernameConfig.value;
@@ -540,11 +490,6 @@ function handleSelect(item: MenuItemConfig) {
     }
 }
 
-function returnHome() {
-    router.push("/");
-    mapStore.returnHome();
-}
-
 async function logout() {
     await Preferences.remove({ key: 'token' });
     router.push("/login");
@@ -566,22 +511,6 @@ function normalizeApplications(applications: unknown): AppSwitcherApplication[] 
 </script>
 
 <style scoped>
-.status {
-    height: 10px;
-    width: 10px;
-    margin: 0px;
-    padding: 0px;
-    border-radius: 50%;
-}
-
-.status-green {
-    background-color: #2fb344;
-}
-
-.status-red {
-    background-color: #d63939;
-}
-
 .noscroll {
     -ms-overflow-style: none;  /* Internet Explorer 10+ */
     scrollbar-width: none;  /* Firefox, Safari 18.2+, Chromium 121+ */
