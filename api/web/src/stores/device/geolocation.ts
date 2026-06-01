@@ -1,8 +1,16 @@
 import { Geolocation } from '@capacitor/geolocation';
 import type { CallbackID, Position, PositionOptions } from '@capacitor/geolocation';
+import { registerPlugin } from '@capacitor/core';
+import type {
+    BackgroundGeolocationPlugin,
+    CallbackError as BackgroundGeolocationError,
+    Location as BackgroundLocation
+} from '@capacitor-community/background-geolocation';
 import { isNativePlatform } from '../../base/capacitor.ts';
 import { queryPermissionStatus } from './shared.ts';
 import type { DevicePermissionContext } from './types.ts';
+
+const BackgroundGeolocation = registerPlugin<BackgroundGeolocationPlugin>('BackgroundGeolocation');
 
 function normalizeNativeLocationPermission(state: string | null | undefined): PermissionState | 'prompt' | 'unknown' {
     switch (state) {
@@ -49,11 +57,47 @@ export async function watchLocation(
     options: PositionOptions,
     callback: (position: Position | null, err?: unknown) => void
 ): Promise<CallbackID> {
+    if (isNativePlatform()) {
+        return BackgroundGeolocation.addWatcher({
+            backgroundTitle: 'CloudTAK GPS active',
+            backgroundMessage: 'CloudTAK is sharing your location.',
+            requestPermissions: true,
+            stale: (options.maximumAge ?? 0) > 0,
+            distanceFilter: 0
+        }, (location?: BackgroundLocation, err?: BackgroundGeolocationError) => {
+            callback(location ? backgroundLocationToPosition(location) : null, err);
+        });
+    }
+
     return Geolocation.watchPosition(options, callback);
 }
 
 export async function clearLocationWatch(id: CallbackID): Promise<void> {
+    if (isNativePlatform()) {
+        await BackgroundGeolocation.removeWatcher({ id });
+        return;
+    }
+
     await Geolocation.clearWatch({ id });
+}
+
+function backgroundLocationToPosition(location: BackgroundLocation): Position {
+    return {
+        timestamp: location.time ?? Date.now(),
+        coords: {
+            latitude: location.latitude,
+            longitude: location.longitude,
+            accuracy: location.accuracy,
+            altitude: location.altitude,
+            altitudeAccuracy: location.altitudeAccuracy,
+            speed: location.speed,
+            heading: location.bearing,
+            magneticHeading: null,
+            trueHeading: location.bearing,
+            headingAccuracy: null,
+            course: location.bearing
+        }
+    };
 }
 
 export class GeolocationPermission {
