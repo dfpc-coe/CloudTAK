@@ -16,13 +16,10 @@
             </TablerIconButton>
         </template>
         <template #default>
-            <div class='col-12 pb-2'>
-                <TablerInput
-                    v-model='paging.filter'
-                    icon='search'
-                    placeholder='Filter'
-                />
-            </div>
+            <SearchSortFilter
+                v-model='paging.filter'
+                placeholder='Filter'
+            />
 
             <TablerLoading v-if='loading' />
             <TablerAlert
@@ -100,7 +97,6 @@ import { server } from '../../../std.ts';
 import {
     TablerNone,
     TablerAlert,
-    TablerInput,
     TablerPager,
     TablerLoading,
     TablerIconButton,
@@ -111,6 +107,7 @@ import {
 } from '@tabler/icons-vue';
 
 import MenuTemplate from '../util/MenuTemplate.vue';
+import SearchSortFilter from '../util/SearchSortFilter.vue';
 import StandardItem from '../util/StandardItem.vue';
 import ConnectionStatus from './../../ETL/Connection/StatusDot.vue';
 import AgencyBadge from './../../ETL/Connection/AgencyBadge.vue';

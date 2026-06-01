@@ -20,13 +20,7 @@
             />
         </template>
         <template #default>
-            <div class='my-2'>
-                <TablerInput
-                    v-model='query.filter'
-                    icon='search'
-                    placeholder='Search'
-                />
-            </div>
+            <SearchSortFilter v-model='query.filter' />
             <TablerLoading
                 v-if='loading'
                 v-model='query.filter'
@@ -87,10 +81,10 @@ import { useRouter } from 'vue-router';
 import COT from '../../../base/cot.ts';
 import { server } from '../../../std.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import SearchSortFilter from '../util/SearchSortFilter.vue';
 import StandardItem from '../util/StandardItem.vue';
 import {
     TablerNone,
-    TablerInput,
     TablerDelete,
     TablerLoading,
     TablerIconButton,
