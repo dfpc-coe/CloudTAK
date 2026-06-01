@@ -33,7 +33,7 @@ import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
-import { clearLocationWatch, supportsLocationRequests, watchLocation } from '../base/capacitor.ts';
+import { clearLocationWatch, supportsLocationRequests, watchLocation } from './device/geolocation.ts';
 
 import type { ProfileOverlay, Basemap, APIList, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';

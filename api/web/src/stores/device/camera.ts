@@ -1,10 +1,50 @@
+import { Camera } from '@capacitor/camera';
+import { isNativePlatform } from '../../base/capacitor.ts';
 import { queryPermissionStatus } from './shared.ts';
 import type { DevicePermissionContext } from './types.ts';
+
+function normalizeNativeCameraPermission(state: string | null | undefined): PermissionState | 'prompt' | 'unknown' {
+    switch (state) {
+        case 'granted':
+        case 'denied':
+            return state;
+        case 'prompt':
+        case 'prompt-with-rationale':
+            return 'prompt';
+        default:
+            return 'unknown';
+    }
+}
+
+export async function checkNativeCameraPermission(): Promise<PermissionState | 'prompt' | 'unknown'> {
+    try {
+        const status = await Camera.checkPermissions();
+        return normalizeNativeCameraPermission(status.camera);
+    } catch (err) {
+        console.warn('Failed to query native camera permission status', err);
+        return 'unknown';
+    }
+}
+
+export async function requestNativeCameraPermission(): Promise<PermissionState | 'prompt' | 'unknown'> {
+    try {
+        const status = await Camera.requestPermissions({ permissions: ['camera'] });
+        return normalizeNativeCameraPermission(status.camera);
+    } catch (err) {
+        console.warn('Failed to request native camera permission', err);
+        return 'unknown';
+    }
+}
 
 export class CameraPermission {
     constructor(private readonly context: DevicePermissionContext) {}
 
     async refreshStatus(): Promise<void> {
+        if (isNativePlatform()) {
+            this.context.setPermissionStatus('camera', await checkNativeCameraPermission());
+            return;
+        }
+
         if (!navigator.mediaDevices?.getUserMedia) {
             this.context.setPermissionStatus('camera', 'unsupported');
             return;
@@ -20,15 +60,27 @@ export class CameraPermission {
     }
 
     async request(): Promise<void> {
+        if (isNativePlatform()) {
+            try {
+                this.context.setPermissionStatus('camera', await requestNativeCameraPermission());
+            } finally {
+                await this.refreshStatus();
+            }
+
+            return;
+        }
+
         if (!navigator.mediaDevices?.getUserMedia) {
             this.context.setPermissionStatus('camera', 'unsupported');
             return;
         }
 
         let stream: MediaStream | undefined;
+        let granted = false;
 
         try {
             stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            granted = true;
             this.context.setPermissionStatus('camera', 'granted');
         } finally {
             if (stream) {
@@ -37,7 +89,12 @@ export class CameraPermission {
                 }
             }
 
-            await this.refreshStatus();
+            const status = await queryPermissionStatus('camera', 'Failed to query camera permission status');
+            if (status) {
+                this.context.setPermissionStatus('camera', status.state);
+            } else if (!granted) {
+                this.context.setPermissionStatus('camera', 'unknown');
+            }
         }
     }
 }
