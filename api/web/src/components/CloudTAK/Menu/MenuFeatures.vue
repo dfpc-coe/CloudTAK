@@ -68,9 +68,13 @@
             </TablerDropdown>
         </template>
         <template #default>
-            <div class='d-flex justify-content-end pt-1'>
-                <TablerDropdown>
-                    <TablerIconButton title='Sort'>
+            <div class='my-2'>
+                <SearchSortFilter
+                    v-model='query.filter'
+                    v-model:sort='sort'
+                    :sort-options='sortOptions'
+                >
+                    <template #sort-icon>
                         <component
                             :is='sortTypeIcon'
                             :size='20'
@@ -81,29 +85,8 @@
                             :size='20'
                             stroke='1'
                         />
-                    </TablerIconButton>
-                    <template #dropdown>
-                        <div style='min-width: 160px;'>
-                            <a
-                                v-for='option in sortOptions'
-                                :key='option'
-                                class='dropdown-item d-flex align-items-center'
-                                :class='{ active: sort === option }'
-                                href='#'
-                                @click.prevent='sort = option'
-                                v-text='option'
-                            />
-                        </div>
                     </template>
-                </TablerDropdown>
-            </div>
-
-            <div class='my-2'>
-                <TablerInput
-                    v-model='query.filter'
-                    icon='search'
-                    placeholder='Search'
-                />
+                </SearchSortFilter>
             </div>
 
             <div class='my-2 d-flex align-items-center justify-content-between'>
@@ -220,6 +203,7 @@ import PathManager from '../../../base/path-manager.ts';
 import type { PathNode } from '../../../base/path-manager.ts';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import SearchSortFilter from '../util/SearchSortFilter.vue';
 import PathBrowser from '../util/PathBrowser.vue';
 import PathBreadcrumb from '../util/PathBreadcrumb.vue';
 import Feature from '../util/FeatureRow.vue';

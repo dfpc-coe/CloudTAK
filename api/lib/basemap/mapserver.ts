@@ -33,11 +33,11 @@ export default class MapServerBasemap extends FeatureServerBasemap {
      * Raster MapServer layers do not support feature querying or fetching.
      */
     actions(): Static<typeof TileJSONActions> {
-        if (this.basemap?.type === Basemap_Type.RASTER) {
-            return { feature: [] };
+        if (this.basemap?.type === Basemap_Type.VECTOR) {
+            return super.actions();
         }
 
-        return super.actions();
+        return { feature: [] };
     }
 
     protected async _tile(
@@ -45,9 +45,11 @@ export default class MapServerBasemap extends FeatureServerBasemap {
         res: Response,
         opts: Required<TileOpts>,
     ): Promise<void> {
-        if (this.basemap?.type === Basemap_Type.RASTER) {
+        if (this.basemap?.type === Basemap_Type.VECTOR) {
+            return super._tile(z, x, y, res, opts);
+        } else {
             try {
-                const url = ImageServerBasemap.esriRasterTileURL(this.basemap.url, z, x, y);
+                const url = ImageServerBasemap.esriRasterTileURL(this.basemap!.url, z, x, y);
 
                 const tileRes = await typedFetch(url);
 
@@ -67,8 +69,6 @@ export default class MapServerBasemap extends FeatureServerBasemap {
                 if (err instanceof Err) throw err;
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch ESRI MapServer tile');
             }
-        } else {
-            return super._tile(z, x, y, res, opts);
         }
     }
 }
