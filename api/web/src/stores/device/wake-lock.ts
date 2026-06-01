@@ -1,3 +1,5 @@
+import { KeepAwake } from '@capacitor-community/keep-awake';
+import { isNativePlatform } from '../../base/capacitor.ts';
 import { queryPermissionStatus } from './shared.ts';
 import type { DevicePermissionContext } from './types.ts';
 
@@ -5,13 +7,17 @@ export class WakeLockPermission {
     constructor(private readonly context: DevicePermissionContext) {}
 
     async refreshStatus(): Promise<void> {
-        if (!('wakeLock' in navigator) || !navigator.wakeLock?.request) {
+        if (!await this.isSupported()) {
             this.context.setPermissionStatus('wakeLock', 'unsupported');
             return;
         }
 
-        const wakeLockSentinel = this.context.getWakeLockSentinel();
-        if (wakeLockSentinel && !wakeLockSentinel.released) {
+        if (isNativePlatform()) {
+            this.context.setPermissionStatus('wakeLock', 'granted');
+            return;
+        }
+
+        if (await this.isKeptAwake()) {
             this.context.setPermissionStatus('wakeLock', 'granted');
             return;
         }
@@ -26,21 +32,15 @@ export class WakeLockPermission {
     }
 
     async request(): Promise<void> {
-        if (!('wakeLock' in navigator) || !navigator.wakeLock?.request) {
+        if (!await this.isSupported()) {
             this.context.setPermissionStatus('wakeLock', 'unsupported');
             return;
         }
 
         try {
-            const sentinel = await navigator.wakeLock.request('screen');
-            this.context.setWakeLockSentinel(sentinel);
+            await KeepAwake.keepAwake();
+            this.context.setWakeLockSentinel(null);
             this.context.setPermissionStatus('wakeLock', 'granted');
-
-            try {
-                await sentinel.release();
-            } catch {
-                // Ignore release errors; permission status has already been updated.
-            }
         } finally {
             await this.refreshStatus();
         }
@@ -48,6 +48,14 @@ export class WakeLockPermission {
 
     async releaseSentinel(): Promise<void> {
         const currentWakeLock = this.context.getWakeLockSentinel();
+
+        if (await this.isSupported()) {
+            try {
+                await KeepAwake.allowSleep();
+            } catch (err) {
+                console.warn('Failed to release wake lock', err);
+            }
+        }
 
         if (currentWakeLock && !currentWakeLock.released) {
             try {
@@ -58,5 +66,25 @@ export class WakeLockPermission {
         }
 
         this.context.setWakeLockSentinel(null);
+    }
+
+    private async isSupported(): Promise<boolean> {
+        try {
+            const status = await KeepAwake.isSupported();
+            return status.isSupported;
+        } catch (err) {
+            console.warn('Failed to query wake lock support', err);
+            return false;
+        }
+    }
+
+    private async isKeptAwake(): Promise<boolean> {
+        try {
+            const status = await KeepAwake.isKeptAwake();
+            return status.isKeptAwake;
+        } catch (err) {
+            console.warn('Failed to query wake lock state', err);
+            return false;
+        }
     }
 }

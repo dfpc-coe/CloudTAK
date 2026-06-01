@@ -29,6 +29,7 @@
         "url": "git+https://github.com/dfpc-coe/CloudTAK.git"
     },
     "dependencies": {
+        "@capacitor-community/keep-awake": "^8.0.1",
         "@capacitor-firebase/messaging": "^8.2.0",
         "@capacitor/browser": "^8.0.1",
         "@capacitor/camera": "^8.2.0",
