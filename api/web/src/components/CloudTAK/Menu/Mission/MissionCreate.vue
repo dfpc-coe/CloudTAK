@@ -225,7 +225,7 @@ import {
 } from '@tabler/icons-vue';
 import GroupSelect from '../../util/GroupSelect.vue';
 import TagEntry from '../../util/TagEntry.vue';
-import Overlay from '../../../../base/overlay-class.ts';
+import OverlayManager from '../../../../base/overlay.ts';
 import {
     TablerInput,
     TablerEnum,
@@ -365,18 +365,14 @@ async function createMission() {
 
         if (res.error) throw new Error(res.error.message);
 
-        const missionOverlay = await Overlay.create({
+        await OverlayManager.createLoaded({
             name: res.data.name,
             url: `/mission/${encodeURIComponent(res.data.name)}`,
             type: 'geojson',
             mode: 'mission',
             token: res.data.token,
             mode_id: res.data.guid,
-        }, {
-            before: mapStore.getOverlayBeforeId()
         })
-
-        mapStore.addOverlay(missionOverlay);
 
         await mapStore.loadMission(res.data.guid);
 

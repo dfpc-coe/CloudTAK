@@ -381,6 +381,7 @@ import GenericBottomPane from '../GenericBottomPane.vue';
 import CoordinateType from '../util/CoordinateType.vue';
 import { DrawToolMode } from '../../../stores/modules/draw.ts';
 import { useMapStore } from '../../../stores/map.ts';
+import OverlayManager from '../../../base/overlay.ts';
 import {
     TablerEnum,
     TablerIconButton
@@ -405,10 +406,7 @@ const mapStore = useMapStore();
 const opened = ref(false);
 
 const filteredOverlayNames = computed((): string[] => {
-    type O = { id: number; actions: { feature: string[] }; name: string };
-    return (mapStore.overlays as unknown as O[])
-        .filter(o => o.actions.feature.includes('query') || o.id === -1)
-        .map(o => o.name);
+    return OverlayManager.queryableOverlayNames();
 });
 
 onMounted(async () => {

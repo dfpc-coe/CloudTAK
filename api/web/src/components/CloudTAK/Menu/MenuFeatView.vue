@@ -176,7 +176,7 @@ const feature = computed(() => {
 
 const mode = ref('default');
 
-const overlay = computed(() => getFeatureOverlay(mapStore, feature.value));
+const overlay = computed(() => getFeatureOverlay(feature.value));
 
 const titleTemplate = ref<string | null>(null);
 

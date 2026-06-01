@@ -62,8 +62,6 @@ export default class Atlas {
     }
 
     async init(authToken: string) {
-        console.error('WORKER');
-        
         // Only skip if we know initialization has successfully completed before
         if (this.initialized) return;
 

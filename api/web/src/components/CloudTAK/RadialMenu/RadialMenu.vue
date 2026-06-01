@@ -329,7 +329,7 @@ async function genMenuItems() {
 
         menuItems.value.push({ id: 'view', icon: '#radial-view' })
     } else if (mapStore.radial.mode === 'feat') {
-        if (canCutOverlayFeature(mapStore, mapStore.radial.cot)) {
+        if (canCutOverlayFeature(mapStore.radial.cot)) {
             menuItems.value.push({ id: 'cut', icon: '#radial-scissors' })
         }
         menuItems.value.push({ id: 'view', icon: '#radial-view' })

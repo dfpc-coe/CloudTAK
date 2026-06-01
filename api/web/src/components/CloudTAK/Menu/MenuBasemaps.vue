@@ -171,7 +171,7 @@ import type { BasemapList, Basemap } from '../../../types.ts';
 import { openExternalUrl } from '../../../base/capacitor.ts';
 import ProfileConfig from '../../../base/profile.ts';
 import { server, stdurl } from '../../../std.ts';
-import Overlay from '../../../base/overlay-class.ts';
+import OverlayManager from '../../../base/overlay.ts';
 import BasemapEditModal from './Basemaps/EditModal.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import Share from '../util/Share.vue';
@@ -195,16 +195,9 @@ import {
 } from '@tabler/icons-vue'
 import type { LayerSpecification } from 'maplibre-gl'
 import { useRouter } from 'vue-router';
-import { useMapStore } from '../../../stores/map.ts';
-
-const mapStore = useMapStore();
 
 const overlayBasemapIds = computed<Set<string>>(() => {
-    return new Set(
-        mapStore.overlays
-            .filter((overlay) => overlay.mode === 'overlay' && overlay.mode_id)
-            .map((overlay) => String(overlay.mode_id))
-    );
+    return OverlayManager.loadedBasemapIds('overlay');
 });
 
 function basemapOverlayExists(basemap: Basemap): boolean {
@@ -246,16 +239,17 @@ watch(paging.value, async () => {
 });
 
 async function setBasemap(basemap: Basemap) {
-    const hasBasemap = mapStore.overlays.some((overlay) => {
+    const overlays = OverlayManager.loaded;
+    const hasBasemap = overlays.some((overlay) => {
         return overlay.mode === 'basemap';
     });
 
     if (hasBasemap) {
-        for (let i = 0; i < mapStore.overlays.length; i++) {
-            const overlay = mapStore.overlays[i];
+        for (let i = 0; i < overlays.length; i++) {
+            const overlay = overlays[i];
 
             if (overlay.mode === 'basemap') {
-                if (mapStore.overlays[i + 1]) {
+                if (overlays[i + 1]) {
                     await overlay.replace({
                         name: basemap.name,
                         type: basemap.type,
@@ -266,7 +260,7 @@ async function setBasemap(basemap: Basemap) {
                         mode_id: String(basemap.id),
                         styles: basemap.styles as Array<LayerSpecification>
                     }, {
-                        before: mapStore.overlays[i + 1].styles[0].id
+                        before: overlays[i + 1].styles[0].id
                     });
                 } else {
                     await overlay.replace({
@@ -284,9 +278,9 @@ async function setBasemap(basemap: Basemap) {
             }
         }
     } else {
-        const before = String(mapStore.overlays[0].styles[0].id);
+        const before = String(overlays[0].styles[0].id);
 
-        mapStore.overlays.unshift(await Overlay.create({
+        await OverlayManager.createLoaded({
             name: basemap.name,
             pos: -1,
             type: basemap.type,
@@ -297,7 +291,7 @@ async function setBasemap(basemap: Basemap) {
             mode: 'basemap',
             mode_id: String(basemap.id),
             styles: basemap.styles
-        }, { before }));
+        }, { before, position: 'prepend' });
     }
 }
 
@@ -312,7 +306,7 @@ function setCollection(name: string) {
 }
 
 function isCurrentBasemap(basemapId: number): boolean {
-    const currentBasemap = mapStore.overlays.find(overlay =>
+    const currentBasemap = OverlayManager.loaded.find(overlay =>
         overlay.mode === 'basemap' && overlay.mode_id === String(basemapId)
     );
     return !!currentBasemap;
@@ -320,8 +314,7 @@ function isCurrentBasemap(basemapId: number): boolean {
 
 async function addOverlay(basemap: Basemap) {
     try {
-        // Insert in 1st position after basemap where mapStore.overlays[0] is the basemap
-        mapStore.addOverlay(await Overlay.create({
+        await OverlayManager.createLoaded({
             url: String(stdurl(`/api/basemap/${basemap.id}/tiles`)),
             name: basemap.name,
             mode: 'overlay',
@@ -329,9 +322,7 @@ async function addOverlay(basemap: Basemap) {
             frequency: basemap.frequency,
             type: basemap.type,
             styles: basemap.styles
-        }, {
-            before: mapStore.getOverlayBeforeId()
-        }));
+        });
 
         loading.value = false;
 
