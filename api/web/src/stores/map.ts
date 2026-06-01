@@ -140,8 +140,7 @@ export const useMapStore = defineStore('cloudtak', {
             x: number;
             y: number;
             lngLat?: LngLat;
-        },
-        overlays: Array<Overlay>
+        }
     } => {
         const rawWorker = new Worker(AtlasWorker, { type: 'module' });
         const workerReady = waitForAtlasWorkerReady(rawWorker);
@@ -197,7 +196,6 @@ export const useMapStore = defineStore('cloudtak', {
                 x: 0, y: 0,
                 lngLat: undefined
             },
-            overlays: [],
 
             selected: new Map()
         }
@@ -270,29 +268,15 @@ export const useMapStore = defineStore('cloudtak', {
                     console.error(err);
                 }
             }
+            OverlayManager.clearLoaded();
             this.$reset();
-        },
-        getOverlayBeforeId: function(): string | undefined {
-            if (this.overlays.length > 1 && this.overlays[1].styles.length > 0) {
-                return String(this.overlays[1].styles[0].id);
-            }
-            return undefined;
-        },
-        addOverlay: function(overlay: Overlay): void {
-            if (this.overlays.length > 0) {
-                (this.overlays as unknown as Overlay[]).splice(1, 0, overlay);
-            } else {
-                (this.overlays as unknown as Overlay[]).push(overlay);
-            }
         },
         makeActiveMission: async function(mission?: Subscription): Promise<void> {
             this.mission = mission;
             await this.worker.db.makeActiveMission(mission ? mission.meta.guid : undefined);
 
             if (mission) {
-                for (const overlay of this.overlays) {
-                    if (overlay.mode !== 'mission' || !overlay.mode_id) continue;
-
+                for (const overlay of OverlayManager.missionOverlays()) {
                     if (overlay.mode_id !== mission.meta.guid && overlay.active) {
                         // The API call to make active will disable all active overlays on the backend so no need for networkIO
                         overlay.active = false;
@@ -303,44 +287,13 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                 }
             } else {
-                for (const overlay of this.overlays) {
-                    if (overlay.mode !== 'mission' || !overlay.mode_id) continue;
-
+                for (const overlay of OverlayManager.missionOverlays()) {
                     if (overlay.active) {
                         overlay.active = false;
                         await overlay.save();
                     }
                 }
             }
-        },
-        getOverlayById(id: number): Overlay | null {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            for (const overlay of (this.overlays as any[])) {
-
-                if (overlay.id === id) return overlay as Overlay
-            }
-
-            return null;
-        },
-        getOverlayByName(name: string): Overlay | null {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            for (const overlay of (this.overlays as any[])) {
-
-                if (overlay.name === name) return overlay as Overlay
-            }
-
-            return null;
-        },
-        getOverlayByMode(mode: string, mode_id: string): Overlay | null {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            for (const overlay of (this.overlays as any[])) {
-
-                if (overlay.mode === mode && overlay.mode_id === mode_id) {
-                    return overlay as Overlay;
-                }
-            }
-
-            return null;
         },
         // TODO: Convert to overlay
         addTerrain: async function(): Promise<void> {
@@ -536,7 +489,7 @@ export const useMapStore = defineStore('cloudtak', {
                 reload: boolean;
             }
         ): Promise<Subscription | null> {
-            const overlay = this.getOverlayByMode('mission', guid)
+            const overlay = OverlayManager.loadedByMode('mission', guid)
             if (!overlay || !overlay.mode_id) {
                 console.error(`Mission:${guid} not found in overlays`);
                 return null;
@@ -602,10 +555,8 @@ export const useMapStore = defineStore('cloudtak', {
 
             const { value: token } = await Preferences.get({ key: 'token' });
 
-            console.error('START', token);
             await this._workerReady;
             await this.worker.init(token || '');
-            console.error('END');
 
             this.channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
                 const msg = event.data;
@@ -915,12 +866,7 @@ export const useMapStore = defineStore('cloudtak', {
                 if (this.select.feats) this.select.feats = [];
 
                 // Ignore Non-Clickable Layer
-                const clickMap: Map<string, { type: string, id: string }> = new Map();
-                for (const overlay of this.overlays) {
-                    for (const c of overlay._clickable) {
-                        clickMap.set(c.id, c);
-                    }
-                }
+                const clickMap = OverlayManager.clickableLayerMap();
 
                 // Each Visual Layer will return a Feature for a click
                 // Since a single "feature" may exist in multiple layers (text, polygon, line) etc
@@ -1108,8 +1054,8 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             });
 
-            await OverlayManager.sync();
-            const profileOverlays = await OverlayManager.list();
+            OverlayManager.clearLoaded();
+            const profileOverlays = await OverlayManager.list({ localFirst: true });
 
             const hasBasemap = profileOverlays.some((o: ProfileOverlay) => {
                 return o.mode === 'basemap'
@@ -1156,8 +1102,7 @@ export const useMapStore = defineStore('cloudtak', {
                             mode_id: String(defaultBasemap.id)
                         });
 
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (this.overlays as any[]).push(basemap);
+                        OverlayManager.appendLoaded(basemap);
                     } catch (err) {
                         console.error('Failed to create default basemap overlay:', err);
                     }
@@ -1194,11 +1139,9 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this.overlays as any[]).push(...newOverlays);
+            OverlayManager.appendLoaded(...newOverlays);
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this.overlays as any[]).push(await Overlay.internal({
+            OverlayManager.appendLoaded(await Overlay.internal({
                 id: -1,
                 name: 'Map Features',
                 type: 'geojson',
@@ -1210,9 +1153,7 @@ export const useMapStore = defineStore('cloudtak', {
             // marked as `loading` while its mission data is being fetched
             // and the maplibre source/layer + overlay entry are already in
             // place from the steps above.
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const missionOverlays = (this.overlays as any[]).filter((overlay: Overlay) => overlay.mode === 'mission' && overlay.mode_id);
-            for (const overlay of missionOverlays) {
+            for (const overlay of OverlayManager.missionOverlays()) {
                 const source = map.getSource(String(overlay.id));
                 if (!source) continue;
 
@@ -1237,7 +1178,7 @@ export const useMapStore = defineStore('cloudtak', {
             await this.updateAttribution();
         },
         updateIconRotation: function(enabled: boolean): void {
-            for (const overlay of this.overlays) {
+            for (const overlay of OverlayManager.loaded) {
                 if (overlay.type === 'geojson') {
                     // Update icon rotation
                     const iconLayerId = `${overlay.id}-icon`;
@@ -1293,9 +1234,7 @@ export const useMapStore = defineStore('cloudtak', {
             }
         },
         updateAttribution: async function(): Promise<void> {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const attributionOverlays = (this.overlays as any[]).filter((o: Overlay) => o.mode === 'basemap' && o.mode_id && o.visible);
-            const attributionPromises = attributionOverlays.map(async (overlay: Overlay) => {
+            const attributionPromises = OverlayManager.visibleBasemaps().map(async (overlay) => {
                     try {
                         const basemap = await std(`/api/basemap/${overlay.mode_id}`) as { attribution?: string };
                         return basemap.attribution;
@@ -1319,12 +1258,7 @@ export const useMapStore = defineStore('cloudtak', {
          * Determine if the feature is from the CoT store or a clicked VT feature
          */
         featureSource: function(feat: MapGeoJSONFeature | Feature): string | void {
-            const clickMap: Map<string, { type: string, id: string }> = new Map();
-            for (const overlay of this.overlays) {
-                for (const c of overlay._clickable) {
-                    clickMap.set(c.id, c);
-                }
-            }
+            const clickMap = OverlayManager.clickableLayerMap();
 
             if (!('layer' in feat)) return;
             const click = clickMap.get(feat.layer.id);

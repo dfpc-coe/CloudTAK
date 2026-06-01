@@ -266,7 +266,7 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
-import Overlay from '../../../../base/overlay-class.ts';
+import OverlayManager from '../../../../base/overlay.ts';
 import { useMapStore } from '../../../../stores/map.ts';
 const mapStore = useMapStore();
 
@@ -417,21 +417,18 @@ async function updateDescription(description: string) {
 
 async function subscribe(subscribe: boolean) {
     loading.value.subscribe = true;
-    const overlay = mapStore.getOverlayByMode('mission', props.subscription.guid);
+    const overlay = OverlayManager.loadedByMode('mission', props.subscription.guid);
 
     if (subscribe === true && !overlay) {
-        const missionOverlay = await Overlay.create({
+        await OverlayManager.createLoaded({
             name: props.subscription.name,
             url: `/mission/${encodeURIComponent(props.subscription.guid)}`,
             type: 'geojson',
             mode: 'mission',
             token: props.subscription.missiontoken,
             mode_id: props.subscription.guid,
-        }, {
-            before: mapStore.getOverlayBeforeId()
         })
 
-        mapStore.addOverlay(missionOverlay);
         await mapStore.loadMission(props.subscription.guid);
 
         emit('refresh');
@@ -440,10 +437,7 @@ async function subscribe(subscribe: boolean) {
             await mapStore.makeActiveMission();
         }
 
-        const overlayIndex = mapStore.overlays.indexOf(overlay);
-        if (overlayIndex !== -1) mapStore.overlays.splice(overlayIndex, 1);
-
-        await overlay.delete();
+        await OverlayManager.deleteLoaded(overlay);
 
         emit('refresh');
     }

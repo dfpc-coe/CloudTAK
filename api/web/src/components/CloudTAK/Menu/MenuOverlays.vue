@@ -344,7 +344,7 @@ const opened = ref<Set<number>>(new Set());
 const overlayFilter = ref('');
 
 const isLoaded = mapStore.isLoaded;
-const overlays = (mapStore as unknown as { overlays: Overlay[] }).overlays;
+const overlays = OverlayManager.loaded;
 
 const sortableRef = useTemplateRef<HTMLElement>('sortableRef');
 
@@ -529,13 +529,13 @@ async function saveOrder(sortableEv: SortableEvent) {
 
     const overlay_ids = sortable.toArray().map((i) => parseInt(i));
 
-    await OverlayManager.reorderLoaded(overlays, overlay_ids, id);
+    await OverlayManager.reorderLoaded(overlay_ids, id);
 }
 
 async function removeOverlay(id: number) {
     loading.value = true;
     try {
-        await OverlayManager.deleteLoaded(overlays, id);
+        await OverlayManager.deleteLoaded(id);
     } finally {
         loading.value = false;
     }

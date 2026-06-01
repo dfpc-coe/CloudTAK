@@ -24,6 +24,7 @@ import { createCircleEllipseShape } from '../../base/cot/ellipse.ts';
 import { std, stdurl, server } from '../../std.ts';
 import type { Feature, FeatureCollection } from '../../types.ts';
 import type { paths } from '@cloudtak/api-types';
+import OverlayManager from '../../base/overlay.ts';
 
 type AugmentedBasemapResponse = paths['/api/basemap']['get']['responses']['200']['content']['application/json']['items'][0];
 import type { Polygon, Position, LineString, Feature as GeoJSONFeature, FeatureCollection as GeoJSONFeatureCollection } from 'geojson';
@@ -317,7 +318,7 @@ export default class DrawTool {
                             this.mapStore.selected.set(cot.id, cot);
                         }
                     } else {
-                        const ov = this.mapStore.getOverlayByName(this.lasso.overlay);
+                        const ov = OverlayManager.loadedByName(this.lasso.overlay);
                         if (!ov) throw new Error('Could not find overlay');
 
                         this.lasso.loading = true;
