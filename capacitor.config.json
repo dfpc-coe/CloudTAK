@@ -3,7 +3,19 @@
     "appName": "CloudTAK",
     "webDir": "api/web/dist",
     "ios": {
-        "path": "ios"
+        "path": "ios",
+        "includePlugins": [
+            "@capacitor-community/keep-awake",
+            "@capacitor/app",
+            "@capacitor/browser",
+            "@capacitor/camera",
+            "@capacitor/clipboard",
+            "@capacitor/geolocation",
+            "@capacitor/haptics",
+            "@capacitor/keyboard",
+            "@capacitor/preferences",
+            "@capacitor/status-bar"
+        ]
     },
     "android": {
         "path": "android"
