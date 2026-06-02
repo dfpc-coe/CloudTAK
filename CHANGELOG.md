@@ -16,6 +16,12 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.5.0 - 2026-06-02
+
+- :tada: Add Background Location support when running in an iOS context
+- :rocket: Add Feature sorting in Menu Features - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1465
+- :rocket: Add Raster/Vector parsing for MapServer Sources - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1466
+
 ### v13.5.0 - 2026-06-01
 
 - :rocket: Add sticky menu to deleted features - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1452
