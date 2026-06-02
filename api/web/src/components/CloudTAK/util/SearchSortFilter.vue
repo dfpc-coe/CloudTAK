@@ -84,7 +84,7 @@ export interface SearchSortFilterProps {
     placeholder?: string;
 }
 
-const props = withDefaults(defineProps<SearchSortFilterProps>(), {
+withDefaults(defineProps<SearchSortFilterProps>(), {
     sort: '',
     sortOptions: () => [],
     activeFilters: 0,
