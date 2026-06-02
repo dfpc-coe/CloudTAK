@@ -5,7 +5,6 @@ import type { Static } from '@sinclair/typebox';
 import { Basemap_Type } from '../enums.js';
 import { BasemapProtocol, TileJSONActions, TileOpts } from '../interface-basemap.js';
 import FeatureServerBasemap from './featureserver.js';
-import ImageServerBasemap from './imageserver.js';
 
 /**
  * @class
