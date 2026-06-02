@@ -299,7 +299,7 @@ async function requestPermission(type: PermissionKey): Promise<void> {
         switch (type) {
             case 'location':
                 await deviceStore.geolocation.request(() => {
-                    mapStore.startGPSWatch();
+                    deviceStore.geolocation.startWatch(mapStore.locationCallback);
                 });
                 break;
             case 'camera':
