@@ -9,6 +9,7 @@
 
 import { v4 as randomUUID } from 'uuid';
 import { Preferences } from '@capacitor/preferences';
+import { CapacitorHttp } from '@capacitor/core';
 import { defineStore } from 'pinia'
 import { markRaw } from 'vue';
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
@@ -26,7 +27,7 @@ import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay-class.ts';
 import OverlayManager from '../base/overlay.ts';
 import Subscription from '../base/subscription.ts';
-import { std, stdurl, server } from '../std.js';
+import { std, stdurl, server, getRuntimeToken, serverUrl } from '../std.js';
 import * as mapgl from 'maplibre-gl'
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-csp-worker.js?url'
 import type Atlas from '../workers/atlas.ts';
@@ -815,30 +816,43 @@ export const useMapStore = defineStore('cloudtak', {
                 const now = new Date();
                 const stale = new Date(now.getTime() + 60000);
 
-                await server.PUT('/api/profile/location', {
-                    body: {
-                        id: uid,
-                        path: '/',
-                        type: 'Feature',
-                        properties: {
-                            callsign,
-                            type,
-                            how: 'm-g',
-                            time: now.toISOString(),
-                            start: now.toISOString(),
-                            stale: stale.toISOString(),
-                            center: [position.coords.longitude, position.coords.latitude],
-                            remarks,
-                            droid: callsign,
-                            contact: { endpoint: '*:-1:stcp', callsign },
-                            group: { name: group, role },
-                        },
-                        geometry: {
-                            type: 'Point',
-                            coordinates: [position.coords.longitude, position.coords.latitude, hae]
-                        }
+                const body = {
+                    id: uid,
+                    path: '/',
+                    type: 'Feature',
+                    properties: {
+                        callsign,
+                        type,
+                        how: 'm-g',
+                        time: now.toISOString(),
+                        start: now.toISOString(),
+                        stale: stale.toISOString(),
+                        center: [position.coords.longitude, position.coords.latitude],
+                        remarks,
+                        droid: callsign,
+                        contact: { endpoint: '*:-1:stcp', callsign },
+                        group: { name: group, role },
+                    },
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [position.coords.longitude, position.coords.latitude, hae]
                     }
-                });
+                };
+
+                // Use CapacitorHttp for native background requests to avoid WebView throttling
+                if (isNativePlatform()) {
+                    const token = await getRuntimeToken();
+                    await CapacitorHttp.put({
+                        url: `${serverUrl}/api/profile/location`,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                        },
+                        data: body
+                    });
+                } else {
+                    await server.PUT('/api/profile/location', { body });
+                }
             } catch (err) {
                 console.warn('Failed to submit background location via HTTP', err);
             }
