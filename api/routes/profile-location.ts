@@ -34,9 +34,9 @@ export default async function router(schema: Schema, config: Config) {
                 pooledClient = await config.conns.add(
                     new ProfileConnConfig(config, user.email, profile.auth),
                 );
-                if (pooledClient.tak.client && !pooledClient.tak.client.authorized) {
+                if (pooledClient!.tak.client && !pooledClient!.tak.client.authorized) {
                     awaitSecure = new Promise<void>(resolve =>
-                        pooledClient.tak.once('secureConnect', resolve),
+                        pooledClient!.tak.once('secureConnect', resolve),
                     );
                 }
             }
