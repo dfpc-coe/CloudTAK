@@ -555,7 +555,7 @@ watch(isMobileDetected, () => {
 
 const displayZoom = computed(() => {
     if (mapStore.zoom === 'conditional') {
-        return isMobileDetected;
+        return !isMobileDetected.value;
     } else {
         return mapStore.zoom === 'always' ? true : false;
     }
