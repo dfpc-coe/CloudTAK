@@ -15,6 +15,8 @@ const BackgroundGeolocation = registerPlugin<BackgroundGeolocationPlugin>('Backg
 export class GeolocationPermission {
     constructor(private readonly context: DevicePermissionContext) {}
 
+    private watchId: CallbackID | null = null;
+
     private static normalizeNativeLocationPermission(state: string | null | undefined): PermissionState | 'prompt' | 'unknown' {
         switch (state) {
             case 'granted':
@@ -101,6 +103,37 @@ export class GeolocationPermission {
                 course: location.bearing
             }
         };
+    }
+
+    async stopWatch(): Promise<void> {
+        if (this.watchId === null) return;
+        const id = this.watchId;
+        this.watchId = null;
+        try {
+            await GeolocationPermission.clearLocationWatch(id);
+        } catch (err) {
+            console.warn('Failed to clear location watch', err);
+        }
+    }
+
+    async startWatch(onLocation: (position: Position) => void): Promise<void> {
+        if (!GeolocationPermission.supportsLocationRequests()) return;
+        await this.stopWatch();
+        try {
+            this.watchId = await GeolocationPermission.watchLocation({
+                maximumAge: 0,
+                timeout: 1500,
+                enableHighAccuracy: true
+            }, (position, err) => {
+                if (err) {
+                    console.error('Location Error', err);
+                    return;
+                }
+                if (position) onLocation(position);
+            });
+        } catch (err) {
+            console.error('Failed to start location watch', err);
+        }
     }
 
     async refreshStatus(): Promise<void> {

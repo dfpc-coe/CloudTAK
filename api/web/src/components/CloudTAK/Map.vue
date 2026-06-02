@@ -479,6 +479,7 @@ import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';
+import { useDeviceStore } from '../../stores/device.ts';
 import { DrawToolMode } from '../../stores/modules/draw.ts';
 import { useFloatStore } from '../../stores/float.ts';
 import { liveQuery } from 'dexie';
@@ -489,6 +490,7 @@ import Config from '../../base/config.ts';
 import { cutOverlayFeature } from './util/featureCut.ts';
 
 const mapStore = useMapStore();
+const deviceStore = useDeviceStore();
 const floatStore = useFloatStore();
 
 const hasTerrain = ref<boolean>(false);
@@ -764,7 +766,7 @@ async function exitManualMode() {
     await mapStore.worker.profile.update({ tak_loc: null });
 
     // Restart GPS watch to ensure fresh GPS acquisition
-    mapStore.startGPSWatch();
+    deviceStore.geolocation.startWatch(mapStore.locationCallback);
 
     await mapStore.refresh();
 }
