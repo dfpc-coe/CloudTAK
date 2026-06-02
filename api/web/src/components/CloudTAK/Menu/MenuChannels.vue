@@ -28,13 +28,10 @@
             />
         </template>
         <template #default>
-            <div class='col-12 pb-2 pt-2'>
-                <TablerInput
-                    v-model='paging.filter'
-                    icon='search'
-                    placeholder='Filter'
-                />
-            </div>
+            <SearchSortFilter
+                v-model='paging.filter'
+                placeholder='Filter'
+            />
 
             <EmptyInfo
                 v-if='mapStore.hasNoChannels'
@@ -112,9 +109,9 @@ import {
     TablerNone,
     TablerIconButton,
     TablerRefreshButton,
-    TablerInput,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import SearchSortFilter from '../util/SearchSortFilter.vue';
 import StandardItem from '../util/StandardItem.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
 import {

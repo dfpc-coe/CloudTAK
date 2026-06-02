@@ -400,7 +400,7 @@ export default async function router(schema: Schema, config: Config) {
                         ...basemap,
                         bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                         center: basemap.center ? basemap.center.coordinates : undefined,
-                        actions: fromProtocol(basemap.protocol).actions(),
+                        actions: fromProtocol(basemap.protocol, basemap).actions(),
                     };
                 }),
             });
@@ -474,6 +474,14 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.body.title) validateTemplate(req.body.title);
 
+            if (req.body.protocol === Basemap_Protocol.MapServer && !req.body.type) {
+                const metaURL = new URL(req.body.url);
+                metaURL.searchParams.set('f', 'json');
+                const metaRes = await fetch(metaURL);
+                const meta = await metaRes.json() as { geometryType?: string };
+                req.body.type = meta.geometryType ? Basemap_Type.VECTOR : Basemap_Type.RASTER;
+            }
+
             const collection = req.body.collection === '' ? null : req.body.collection;
 
             let username: string | null = null;
@@ -512,7 +520,7 @@ export default async function router(schema: Schema, config: Config) {
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                 center: basemap.center ? basemap.center.coordinates : undefined,
-                actions: fromProtocol(basemap.protocol).actions(),
+                actions: fromProtocol(basemap.protocol, basemap).actions(),
             });
         } catch (err) {
             Err.respond(err, res);
@@ -637,7 +645,7 @@ export default async function router(schema: Schema, config: Config) {
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                 center: basemap.center ? basemap.center.coordinates : undefined,
-                actions: fromProtocol(basemap.protocol).actions(),
+                actions: fromProtocol(basemap.protocol, basemap).actions(),
             });
         } catch (err) {
             Err.respond(err, res);
@@ -692,7 +700,7 @@ export default async function router(schema: Schema, config: Config) {
                     ...basemap,
                     bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                     center: basemap.center ? basemap.center.coordinates : undefined,
-                    actions: fromProtocol(basemap.protocol).actions(),
+                    actions: fromProtocol(basemap.protocol, basemap).actions(),
                 });
             }
         } catch (err) {
@@ -753,6 +761,7 @@ export default async function router(schema: Schema, config: Config) {
                 const json = BasemapProtocol.json({
                     ...basemap,
                     ...metadata,
+                    type: basemap.type,
                     minzoom: basemap.minzoom ?? metadata.minzoom,
                     maxzoom: basemap.maxzoom ?? metadata.maxzoom,
                     bounds: basemap.bounds ? bbox(basemap.bounds) : metadata.bounds,
@@ -762,7 +771,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 res.json({
                     ...json,
-                    actions: fromProtocol(basemap.protocol).actions(),
+                    actions: fromProtocol(basemap.protocol, basemap).actions(),
                 });
 
                 return;
@@ -786,7 +795,7 @@ export default async function router(schema: Schema, config: Config) {
                 res.json({
                     ...json,
                     type: basemap.type,
-                    actions: fromProtocol(basemap.protocol).actions(),
+                    actions: fromProtocol(basemap.protocol, basemap).actions(),
                 });
             } else {
                 const json = BasemapProtocol.json({
@@ -798,7 +807,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 res.json({
                     ...json,
-                    actions: fromProtocol(basemap.protocol).actions(),
+                    actions: fromProtocol(basemap.protocol, basemap).actions(),
                 });
             }
         } catch (err) {

@@ -492,16 +492,29 @@ class EsriProxyLayer {
         });
         const json = await esri.tilejson();
 
+        // esri-dump defaults to 'vector' for MapServer layers that lack both
+        // geometryType and serviceDataType in their metadata. Fetch the raw
+        // ArcGIS layer metadata and check the explicit type field to correctly
+        // identify Raster Layers (e.g. "type": "Raster Layer").
+        let isVector = json.type === 'vector';
+        if (isVector && this.type === EsriLayerType.MAP) {
+            const metaURL = new URL(url);
+            metaURL.searchParams.set('f', 'json');
+            const metaRes = await fetch(metaURL, { headers: this.esri.standardHeaderObject() });
+            const meta = await metaRes.json() as { type?: string };
+            if (meta.type === 'Raster Layer') isVector = false;
+        }
+
         return {
             name: json.name,
-            type: json.type === 'vector' ? Basemap_Type.VECTOR : Basemap_Type.RASTER,
+            type: isVector ? Basemap_Type.VECTOR : Basemap_Type.RASTER,
             url,
             bounds: json.bounds,
             center: json.center,
             minzoom: json.minzoom,
             maxzoom: json.maxzoom,
             style: Basemap_Scheme.XYZ,
-            format: json.type === 'vector' ? Basemap_Format.MVT : Basemap_Format.PNG,
+            format: isVector ? Basemap_Format.MVT : Basemap_Format.PNG,
             vector_layers: json.vector_layers,
         };
     }

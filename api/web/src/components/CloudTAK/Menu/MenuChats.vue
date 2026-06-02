@@ -25,13 +25,10 @@
             />
         </template>
         <template #default>
-            <div class='col-12 py-2'>
-                <TablerInput
-                    v-model='paging.filter'
-                    icon='search'
-                    placeholder='Filter'
-                />
-            </div>
+            <SearchSortFilter
+                v-model='paging.filter'
+                placeholder='Filter'
+            />
 
             <TablerAlert
                 v-if='error'
@@ -113,12 +110,12 @@ import {
     TablerNone,
     TablerAlert,
     TablerDelete,
-    TablerInput,
     TablerLoading,
     TablerIconButton,
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import SearchSortFilter from '../util/SearchSortFilter.vue';
 import {
     IconListCheck,
     IconUser,

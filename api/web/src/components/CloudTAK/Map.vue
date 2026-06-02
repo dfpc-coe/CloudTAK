@@ -360,6 +360,19 @@
                 :compact='noMenuShown'
             />
 
+            <div
+                v-if='mapStore.isLoaded && isMobileDetected && mode === "Default"'
+                class='position-absolute'
+                style='
+                    z-index: 4;
+                    bottom: var(--map-bottom-bar-size, 50px);
+                    right: 0;
+                    padding: 8px;
+                '
+            >
+                <ServerStatus :size='38' />
+            </div>
+
             <MultipleSelect
                 v-if='mapStore.select.feats.length'
                 @selected='selectFeat($event)'
@@ -447,6 +460,7 @@ import {
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
 import MainMenu from './MainMenu.vue';
+import ServerStatus from './ServerStatus.vue';
 import { from } from 'rxjs';
 import { useObservable } from '@vueuse/rxjs';
 import {
@@ -465,6 +479,7 @@ import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';
+import { useDeviceStore } from '../../stores/device.ts';
 import { DrawToolMode } from '../../stores/modules/draw.ts';
 import { useFloatStore } from '../../stores/float.ts';
 import { liveQuery } from 'dexie';
@@ -475,6 +490,7 @@ import Config from '../../base/config.ts';
 import { cutOverlayFeature } from './util/featureCut.ts';
 
 const mapStore = useMapStore();
+const deviceStore = useDeviceStore();
 const floatStore = useFloatStore();
 
 const hasTerrain = ref<boolean>(false);
@@ -541,7 +557,7 @@ watch(isMobileDetected, () => {
 
 const displayZoom = computed(() => {
     if (mapStore.zoom === 'conditional') {
-        return isMobileDetected;
+        return !isMobileDetected.value;
     } else {
         return mapStore.zoom === 'always' ? true : false;
     }
@@ -750,7 +766,7 @@ async function exitManualMode() {
     await mapStore.worker.profile.update({ tak_loc: null });
 
     // Restart GPS watch to ensure fresh GPS acquisition
-    mapStore.startGPSWatch();
+    deviceStore.geolocation.startWatch(mapStore.locationCallback);
 
     await mapStore.refresh();
 }
@@ -969,7 +985,7 @@ html[data-bs-theme='light'] .use-gps-btn {
     }
 
     .maplibregl-ctrl-bottom-right {
-        right: 4px;
+        right: 58px;
     }
 }
 </style>

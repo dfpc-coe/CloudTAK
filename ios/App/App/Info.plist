@@ -34,6 +34,10 @@
 	<string>CloudTAK shared location with other authenticated users for real-time team situational awareness</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>CloudTAK shared location with other authenticated users for real-time team situational awareness</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>CloudTAK allows the suer to upload photos from their photo gallery to attach to map markers</string>
 	<key>UILaunchStoryboardName</key>

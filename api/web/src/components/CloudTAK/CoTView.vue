@@ -622,15 +622,11 @@
         </div>
         <div
             v-else-if='mode === "raw"'
-            class='overflow-auto col-12 flex-grow-1'
+            class='overflow-auto flex-grow-1'
             style='min-height: 0;'
         >
             <CopyField
                 mode='pre'
-                style='
-                    width: calc(100% - 100px);
-                    height: 100%;
-                '
                 :model-value='JSON.stringify(cot.as_feature(), null, 4)'
             />
         </div>

@@ -69,11 +69,67 @@
         </template>
         <template #default>
             <div class='my-2'>
-                <TablerInput
+                <SearchSortFilter
                     v-model='query.filter'
-                    icon='search'
-                    placeholder='Search'
-                />
+                    v-model:sort='sort'
+                    :sort-options='sortOptions'
+                    :active-filters='activeFilterCount'
+                >
+                    <template #sort-icon>
+                        <component
+                            :is='sortTypeIcon'
+                            :size='20'
+                            stroke='1'
+                        />
+                        <component
+                            :is='sortDirectionIcon'
+                            :size='20'
+                            stroke='1'
+                        />
+                    </template>
+                    <template #filters>
+                        <div class='d-flex flex-column'>
+                            <div class='d-flex align-items-center justify-content-between px-3 py-2'>
+                                <strong class='small text-uppercase text-white-50'>Filters</strong>
+                                <button
+                                    v-if='activeFilterCount > 0'
+                                    type='button'
+                                    class='btn btn-link btn-sm p-0'
+                                    @click='clearGeometryFilters'
+                                >
+                                    Clear
+                                </button>
+                            </div>
+                            <div class='px-3 pb-2 d-flex flex-column gap-2'>
+                                <div>
+                                    <div class='small text-uppercase text-white-50 mb-1'>
+                                        Geometry
+                                    </div>
+                                    <label
+                                        v-for='opt in geometryFilterOptions'
+                                        :key='opt.value'
+                                        class='form-check mb-1'
+                                    >
+                                        <input
+                                            class='form-check-input'
+                                            type='checkbox'
+                                            :checked='geometryTypes.includes(opt.value)'
+                                            @change='toggleGeometryType(opt.value)'
+                                        >
+                                        <span class='form-check-label d-flex align-items-center gap-1'>
+                                            <component
+                                                :is='opt.icon'
+                                                :size='14'
+                                                stroke='1'
+                                            />
+                                            {{ opt.label }}
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </SearchSortFilter>
             </div>
 
             <div class='my-2 d-flex align-items-center justify-content-between'>
@@ -133,7 +189,7 @@
                         class='mt-2'
                     >
                         <Feature
-                            v-for='cot of currentItems.values()'
+                            v-for='cot of sortedItems'
                             :id='cot.id'
                             :key='cot.id'
                             :select='true'
@@ -190,6 +246,7 @@ import PathManager from '../../../base/path-manager.ts';
 import type { PathNode } from '../../../base/path-manager.ts';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import SearchSortFilter from '../util/SearchSortFilter.vue';
 import PathBrowser from '../util/PathBrowser.vue';
 import PathBreadcrumb from '../util/PathBreadcrumb.vue';
 import Feature from '../util/FeatureRow.vue';
@@ -214,6 +271,13 @@ import {
     IconTrash,
     IconDownload,
     IconDotsVertical,
+    IconClock,
+    IconLetterCase,
+    IconArrowUp,
+    IconArrowDown,
+    IconPoint,
+    IconLine,
+    IconPolygon,
 } from '@tabler/icons-vue';
 import Sortable from 'sortablejs';
 import type { SortableEvent } from 'sortablejs'
@@ -274,9 +338,70 @@ const dragging = ref(false);
 const draggedId = ref<string | undefined>();
 const loading = ref(true);
 
+const sortOptions = ['Newest → Oldest', 'Oldest → Newest', 'Alphabetical A→Z', 'Alphabetical Z→A'];
+const sort = ref('Newest → Oldest');
+
+const geometryFilterOptions = [
+    { value: 'Point', label: 'Point', icon: IconPoint },
+    { value: 'LineString', label: 'LineString', icon: IconLine },
+    { value: 'Polygon', label: 'Polygon', icon: IconPolygon },
+];
+
+const geometryTypes = ref<string[]>([]);
+const activeFilterCount = computed(() => geometryTypes.value.length);
+
+function toggleGeometryType(type: string): void {
+    if (geometryTypes.value.includes(type)) {
+        geometryTypes.value = geometryTypes.value.filter(t => t !== type);
+    } else {
+        geometryTypes.value = [...geometryTypes.value, type];
+    }
+}
+
+function clearGeometryFilters(): void {
+    geometryTypes.value = [];
+}
+
+const sortTypeIcon = computed(() => sort.value.startsWith('Alphabetical') ? IconLetterCase : IconClock);
+const sortDirectionIcon = computed(() => (sort.value === 'Oldest → Newest' || sort.value === 'Alphabetical A→Z') ? IconArrowUp : IconArrowDown);
+
+const sortedItems = computed((): COT[] => {
+    const arr = Array.from(currentItems.value);
+    if (sort.value === 'Oldest → Newest') {
+        return arr.sort((a, b) => {
+            const ta = a.properties.time ? new Date(a.properties.time).getTime() : 0;
+            const tb = b.properties.time ? new Date(b.properties.time).getTime() : 0;
+            return ta - tb;
+        });
+    } else if (sort.value === 'Alphabetical A→Z') {
+        return arr.sort((a, b) => {
+            const ca = (a.properties.callsign ?? '').toLowerCase();
+            const cb = (b.properties.callsign ?? '').toLowerCase();
+            return ca.localeCompare(cb);
+        });
+    } else if (sort.value === 'Alphabetical Z→A') {
+        return arr.sort((a, b) => {
+            const ca = (a.properties.callsign ?? '').toLowerCase();
+            const cb = (b.properties.callsign ?? '').toLowerCase();
+            return cb.localeCompare(ca);
+        });
+    } else {
+        // Newest → Oldest (default)
+        return arr.sort((a, b) => {
+            const ta = a.properties.time ? new Date(a.properties.time).getTime() : 0;
+            const tb = b.properties.time ? new Date(b.properties.time).getTime() : 0;
+            return tb - ta;
+        });
+    }
+});
+
 
 
 watch(query.value, async () => {
+    await refresh();
+})
+
+watch(geometryTypes, async () => {
     await refresh();
 })
 
@@ -478,11 +603,23 @@ async function onFolderDrop(node: PathNode<COT>) {
 async function refresh(load = false): Promise<void> {
     if (load) loading.value = true;
 
+    let geomFilter = '';
+    if (geometryTypes.value.length > 0) {
+        const clauses = geometryTypes.value.flatMap(t => {
+            if (t === 'Point') return ['geometry.type = "Point"', 'geometry.type = "MultiPoint"'];
+            if (t === 'LineString') return ['geometry.type = "LineString"', 'geometry.type = "MultiLineString"'];
+            if (t === 'Polygon') return ['geometry.type = "Polygon"', 'geometry.type = "MultiPolygon"'];
+            return [];
+        });
+        geomFilter = `and (${clauses.join(' or ')})`;
+    }
+
     cots.value = new Set(Array.from(await mapStore.worker.db
         .filter(`
             properties.archived
             and path = "/"
             and $contains($lowercase(properties.callsign), "${query.value.filter.toLowerCase()}")
+            ${geomFilter}
         `)))
 
     const flatPaths = (await mapStore.worker.db.paths())
@@ -597,3 +734,25 @@ async function deletePath(node: PathNode<COT>): Promise<void> {
 }
 
 </script>
+
+<style scoped>
+:deep(.form-check-input) {
+    background-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+:deep(.form-check-input:checked) {
+    background-color: var(--tblr-primary);
+    border-color: var(--tblr-primary);
+}
+
+[data-bs-theme='light'] :deep(.form-check-input) {
+    background-color: #fff;
+    border-color: rgba(0, 0, 0, 0.25);
+}
+
+[data-bs-theme='light'] :deep(.form-check-input:checked) {
+    background-color: var(--tblr-primary);
+    border-color: var(--tblr-primary);
+}
+</style>

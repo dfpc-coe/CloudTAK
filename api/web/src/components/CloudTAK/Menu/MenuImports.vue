@@ -29,13 +29,10 @@
                 />
             </div>
 
-            <div class='col-12 py-2'>
-                <TablerInput
-                    v-model='paging.filter'
-                    icon='search'
-                    placeholder='Filter'
-                />
-            </div>
+            <SearchSortFilter
+                v-model='paging.filter'
+                placeholder='Filter'
+            />
 
             <TablerLoading v-if='loading' />
             <TablerAlert
@@ -122,7 +119,6 @@ import type { ImportList } from '../../../../src/types.ts';
 import { server, stdurl } from '../../../../src/std.ts';
 import {
     TablerNone,
-    TablerInput,
     TablerAlert,
     TablerIconButton,
     TablerRefreshButton,
@@ -136,6 +132,7 @@ import {
     IconPackages,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import SearchSortFilter from '../util/SearchSortFilter.vue';
 import StandardItem from '../util/StandardItem.vue';
 import Status from '../../util/StatusDot.vue';
 import timeDiff from '../../../timediff.ts';

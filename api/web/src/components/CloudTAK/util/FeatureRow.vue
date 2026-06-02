@@ -58,9 +58,14 @@
             >
                 <div class='d-flex align-items-center gap-2'>
                     <span
+                        v-if='(feature.properties.callsign || "").trim().length > 0'
                         class='fw-semibold text-break'
-                        v-text='feature.properties.callsign || feature.properties.name || "Unnamed"'
+                        v-text='feature.properties.callsign'
                     />
+                    <span
+                        v-else
+                        class='fw-semibold text-break fst-italic text-muted'
+                    >No Callsign</span>
                 </div>
             </div>
 

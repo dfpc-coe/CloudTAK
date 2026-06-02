@@ -23,6 +23,7 @@
     },
     "homepage": "https://github.com/dfpc-coe/CloudTAK#readme",
     "dependencies": {
+        "@capacitor-community/background-geolocation": "^1.2.26",
         "@capacitor-community/keep-awake": "^8.0.1",
         "@capacitor-firebase/messaging": "^8.2.0",
         "@capacitor/app": "^8.1.0",

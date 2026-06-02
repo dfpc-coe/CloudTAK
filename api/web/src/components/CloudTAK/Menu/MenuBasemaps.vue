@@ -21,10 +21,8 @@
                 v-if='!share'
                 class='col-12 py-2 d-flex flex-column gap-2'
             >
-                <TablerInput
+                <SearchSortFilter
                     v-model='paging.filter'
-                    class='w-100'
-                    icon='search'
                     placeholder='Filter'
                 />
 
@@ -174,10 +172,10 @@ import { server, stdurl } from '../../../std.ts';
 import OverlayManager from '../../../base/overlay.ts';
 import BasemapEditModal from './Basemaps/EditModal.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import SearchSortFilter from '../util/SearchSortFilter.vue';
 import Share from '../util/Share.vue';
 import {
     TablerNone,
-    TablerInput,
     TablerPager,
     TablerAlert,
     TablerLoading,
