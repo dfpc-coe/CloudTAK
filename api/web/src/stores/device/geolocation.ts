@@ -68,7 +68,7 @@ export class GeolocationPermission {
                 backgroundMessage: 'CloudTAK is sharing your location.',
                 requestPermissions: true,
                 stale: (options.maximumAge ?? 0) > 0,
-                distanceFilter: 0
+                distanceFilter: 10
             }, (location?: BackgroundLocation, err?: BackgroundGeolocationError) => {
                 callback(location ? GeolocationPermission.backgroundLocationToPosition(location) : null, err);
             });
@@ -122,7 +122,7 @@ export class GeolocationPermission {
         try {
             this.watchId = await GeolocationPermission.watchLocation({
                 maximumAge: 0,
-                timeout: 1500,
+                timeout: 10000,
                 enableHighAccuracy: true
             }, (position, err) => {
                 if (err) {

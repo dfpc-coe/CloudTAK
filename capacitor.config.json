@@ -19,7 +19,8 @@
         ]
     },
     "android": {
-        "path": "android"
+        "path": "android",
+        "useLegacyBridge": true
     },
     "plugins": {
         "FirebaseMessaging": {
