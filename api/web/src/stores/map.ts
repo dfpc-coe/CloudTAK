@@ -238,7 +238,9 @@ export const useMapStore = defineStore('cloudtak', {
                 });
 
                 if (isNativePlatform() && document.hidden) {
-                    void this.submitLocationHttp(position);
+                    // Actions cannot be called from getters, so we use the store instance
+                    const mapStore = useMapStore();
+                    void mapStore.submitLocationHttp(position);
                 }
             };
         }
@@ -819,7 +821,7 @@ export const useMapStore = defineStore('cloudtak', {
                 const body = {
                     id: uid,
                     path: '/',
-                    type: 'Feature',
+                    type: 'Feature' as const,
                     properties: {
                         callsign,
                         type,
@@ -834,7 +836,7 @@ export const useMapStore = defineStore('cloudtak', {
                         group: { name: group, role },
                     },
                     geometry: {
-                        type: 'Point',
+                        type: 'Point' as const,
                         coordinates: [position.coords.longitude, position.coords.latitude, hae]
                     }
                 };
