@@ -20,7 +20,9 @@
             />
         </template>
         <template #default>
-            <SearchSortFilter v-model='query.filter' />
+            <div class='my-2'>
+                <SearchSortFilter v-model='query.filter' />
+            </div>
             <TablerLoading
                 v-if='loading'
                 v-model='query.filter'
