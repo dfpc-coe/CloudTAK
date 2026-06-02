@@ -16,6 +16,10 @@ export class GeolocationPermission {
     constructor(private readonly context: DevicePermissionContext) {}
 
     private watchId: CallbackID | null = null;
+    private backgroundWatchId: CallbackID | null = null;
+    private locationCallback: ((position: Position) => void) | null = null;
+    private visibilityHandler: (() => void) | null = null;
+    private isInBackground: boolean = false;
 
     private static normalizeNativeLocationPermission(state: string | null | undefined): PermissionState | 'prompt' | 'unknown' {
         switch (state) {
@@ -62,28 +66,31 @@ export class GeolocationPermission {
         options: PositionOptions,
         callback: (position: Position | null, err?: unknown) => void
     ): Promise<CallbackID> {
-        if (isNativePlatform()) {
-            return BackgroundGeolocation.addWatcher({
-                backgroundTitle: 'CloudTAK GPS active',
-                backgroundMessage: 'CloudTAK is sharing your location.',
-                requestPermissions: true,
-                stale: (options.maximumAge ?? 0) > 0,
-                distanceFilter: 10
-            }, (location?: BackgroundLocation, err?: BackgroundGeolocationError) => {
-                callback(location ? GeolocationPermission.backgroundLocationToPosition(location) : null, err);
-            });
-        }
-
+        // Use standard geolocation for foreground (more reliable on iOS)
         return Geolocation.watchPosition(options, callback);
     }
 
-    static async clearLocationWatch(id: CallbackID): Promise<void> {
-        if (isNativePlatform()) {
-            await BackgroundGeolocation.removeWatcher({ id });
-            return;
-        }
+    static async watchBackgroundLocation(
+        callback: (position: Position | null, err?: unknown) => void
+    ): Promise<CallbackID> {
+        // Use background-geolocation only when app is backgrounded
+        return BackgroundGeolocation.addWatcher({
+            backgroundTitle: 'CloudTAK GPS active',
+            backgroundMessage: 'CloudTAK is sharing your location.',
+            requestPermissions: true,
+            stale: false,
+            distanceFilter: 10
+        }, (location?: BackgroundLocation, err?: BackgroundGeolocationError) => {
+            callback(location ? GeolocationPermission.backgroundLocationToPosition(location) : null, err);
+        });
+    }
 
+    static async clearLocationWatch(id: CallbackID): Promise<void> {
         await Geolocation.clearWatch({ id });
+    }
+
+    static async clearBackgroundLocationWatch(id: CallbackID): Promise<void> {
+        await BackgroundGeolocation.removeWatcher({ id });
     }
 
     private static backgroundLocationToPosition(location: BackgroundLocation): Position {
@@ -106,34 +113,122 @@ export class GeolocationPermission {
     }
 
     async stopWatch(): Promise<void> {
-        if (this.watchId === null) return;
-        const id = this.watchId;
-        this.watchId = null;
-        try {
-            await GeolocationPermission.clearLocationWatch(id);
-        } catch (err) {
-            console.warn('Failed to clear location watch', err);
+        // Stop foreground watch
+        if (this.watchId !== null) {
+            const id = this.watchId;
+            this.watchId = null;
+            try {
+                await GeolocationPermission.clearLocationWatch(id);
+            } catch (err) {
+                console.warn('Failed to clear location watch', err);
+            }
         }
+        
+        // Stop background watch
+        if (this.backgroundWatchId !== null) {
+            const id = this.backgroundWatchId;
+            this.backgroundWatchId = null;
+            try {
+                await GeolocationPermission.clearBackgroundLocationWatch(id);
+            } catch (err) {
+                console.warn('Failed to clear background location watch', err);
+            }
+        }
+
+        // Remove visibility listener
+        if (this.visibilityHandler && typeof document !== 'undefined') {
+            document.removeEventListener('visibilitychange', this.visibilityHandler);
+            this.visibilityHandler = null;
+        }
+
+        this.locationCallback = null;
     }
 
     async startWatch(onLocation: (position: Position) => void): Promise<void> {
         if (!GeolocationPermission.supportsLocationRequests()) return;
         await this.stopWatch();
+        
+        this.locationCallback = onLocation;
+        
+        const locationHandler = (position: Position | null, err?: unknown) => {
+            if (err) {
+                console.error('Location Error', err);
+                return;
+            }
+            if (position && this.locationCallback) {
+                this.locationCallback(position);
+            }
+        };
+
         try {
-            this.watchId = await GeolocationPermission.watchLocation({
-                maximumAge: 0,
-                timeout: 10000,
-                enableHighAccuracy: true
-            }, (position, err) => {
-                if (err) {
-                    console.error('Location Error', err);
-                    return;
+            // Check initial visibility state
+            this.isInBackground = typeof document !== 'undefined' && document.hidden;
+
+            if (isNativePlatform()) {
+                // On native platforms, switch between foreground and background watchers
+                if (this.isInBackground) {
+                    await this.startBackgroundWatch(locationHandler);
+                } else {
+                    await this.startForegroundWatch(locationHandler);
                 }
-                if (position) onLocation(position);
-            });
+                this.setupVisibilityListener(locationHandler);
+            } else {
+                // On web, use standard geolocation only
+                await this.startForegroundWatch(locationHandler);
+            }
         } catch (err) {
             console.error('Failed to start location watch', err);
         }
+    }
+
+    private async startForegroundWatch(locationHandler: (position: Position | null, err?: unknown) => void): Promise<void> {
+        this.watchId = await GeolocationPermission.watchLocation({
+            maximumAge: 0,
+            timeout: 10000,
+            enableHighAccuracy: true
+        }, locationHandler);
+    }
+
+    private async startBackgroundWatch(locationHandler: (position: Position | null, err?: unknown) => void): Promise<void> {
+        this.backgroundWatchId = await GeolocationPermission.watchBackgroundLocation(locationHandler);
+    }
+
+    private setupVisibilityListener(locationHandler: (position: Position | null, err?: unknown) => void): void {
+        if (typeof document === 'undefined') return;
+
+        this.visibilityHandler = async () => {
+            const wasInBackground = this.isInBackground;
+            this.isInBackground = document.hidden;
+
+            // Only switch if state actually changed
+            if (wasInBackground === this.isInBackground) return;
+
+            try {
+                if (this.isInBackground) {
+                    // Switch to background watcher
+                    if (this.watchId !== null) {
+                        await GeolocationPermission.clearLocationWatch(this.watchId);
+                        this.watchId = null;
+                    }
+                    if (this.backgroundWatchId === null) {
+                        await this.startBackgroundWatch(locationHandler);
+                    }
+                } else {
+                    // Switch to foreground watcher
+                    if (this.backgroundWatchId !== null) {
+                        await GeolocationPermission.clearBackgroundLocationWatch(this.backgroundWatchId);
+                        this.backgroundWatchId = null;
+                    }
+                    if (this.watchId === null) {
+                        await this.startForegroundWatch(locationHandler);
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to switch location watcher', err);
+            }
+        };
+
+        document.addEventListener('visibilitychange', this.visibilityHandler);
     }
 
     async refreshStatus(): Promise<void> {
