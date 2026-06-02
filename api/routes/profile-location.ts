@@ -46,7 +46,7 @@ export default async function router(schema: Schema, config: Config) {
             const cot = await CoTParser.from_geojson(req.body);
 
             pooledClient.tak.write([cot], {
-                stripFlow: true
+                stripFlow: true,
             });
 
             res.json({

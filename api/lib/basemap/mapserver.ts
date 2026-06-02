@@ -55,7 +55,7 @@ export default class MapServerBasemap extends FeatureServerBasemap {
         // and strip it from the path, since /export only works at the service level
         const sublayerMatch = url.pathname.match(/\/MapServer\/(\d+)\/?$/);
         let sublayerId: string | undefined;
-        
+
         if (sublayerMatch) {
             sublayerId = sublayerMatch[1];
             // Remove the sublayer ID from the path: /MapServer/3 -> /MapServer
@@ -75,7 +75,7 @@ export default class MapServerBasemap extends FeatureServerBasemap {
         url.searchParams.append('bboxSR', '4326');
         url.searchParams.append('bbox', `${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`);
         url.searchParams.append('transparent', 'true');
-        
+
         // If we extracted a sublayer ID, add it as a layers parameter
         if (sublayerId) {
             url.searchParams.append('layers', `show:${sublayerId}`);
