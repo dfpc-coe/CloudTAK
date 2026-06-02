@@ -52,18 +52,35 @@ export default class MapServerBasemap extends FeatureServerBasemap {
     static esriMapServerTileURL(layer: string, z: number, x: number, y: number): URL {
         const url = new URL(layer);
 
+        // Extract sublayer ID if present (e.g., /MapServer/3 -> sublayerId=3)
+        // and strip it from the path, since /export only works at the service level
+        const sublayerMatch = url.pathname.match(/\/MapServer\/(\d+)\/?$/);
+        let sublayerId: string | undefined;
+        
+        if (sublayerMatch) {
+            sublayerId = sublayerMatch[1];
+            // Remove the sublayer ID from the path: /MapServer/3 -> /MapServer
+            url.pathname = url.pathname.replace(/\/\d+\/?$/, '');
+        }
+
         if (!url.pathname.endsWith('/export')) {
             url.pathname = url.pathname + '/export';
         }
 
         const bbox = BasemapProtocol.extent(z, x, y);
 
+        url.searchParams.append('f', 'image');
         url.searchParams.append('format', 'png');
         url.searchParams.append('imageSR', '3857');
         url.searchParams.append('size', '512,512');
         url.searchParams.append('bboxSR', '4326');
         url.searchParams.append('bbox', `${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`);
         url.searchParams.append('transparent', 'true');
+        
+        // If we extracted a sublayer ID, add it as a layers parameter
+        if (sublayerId) {
+            url.searchParams.append('layers', `show:${sublayerId}`);
+        }
 
         return url;
     }
