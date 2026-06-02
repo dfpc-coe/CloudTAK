@@ -102,7 +102,9 @@
                             </div>
                             <div class='px-3 pb-2 d-flex flex-column gap-2'>
                                 <div>
-                                    <div class='small text-uppercase text-white-50 mb-1'>Geometry</div>
+                                    <div class='small text-uppercase text-white-50 mb-1'>
+                                        Geometry
+                                    </div>
                                     <label
                                         v-for='opt in geometryFilterOptions'
                                         :key='opt.value'
