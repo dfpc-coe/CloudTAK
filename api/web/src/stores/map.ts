@@ -9,13 +9,14 @@
 
 import { v4 as randomUUID } from 'uuid';
 import { Preferences } from '@capacitor/preferences';
+import { CapacitorHttp } from '@capacitor/core';
 import { defineStore } from 'pinia'
 import { markRaw } from 'vue';
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import IconManager from './modules/icons.ts';
 import MenuManager from './modules/menu.ts';
 import BottomBarManager from './modules/bottombar.ts';
-import { useDeviceStore } from './device/index.ts';
+import { useDeviceStore } from './device.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
@@ -26,18 +27,18 @@ import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay-class.ts';
 import OverlayManager from '../base/overlay.ts';
 import Subscription from '../base/subscription.ts';
-import { std, stdurl } from '../std.js';
+import { std, stdurl, server, getRuntimeToken, serverUrl } from '../std.js';
 import * as mapgl from 'maplibre-gl'
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-csp-worker.js?url'
 import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
-import { clearLocationWatch, supportsLocationRequests, watchLocation } from './device/geolocation.ts';
+import { isNativePlatform } from '../base/capacitor.ts';
 
 import type { ProfileOverlay, Basemap, APIList, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
-import type { CallbackID } from '@capacitor/geolocation';
+import type { Position } from '@capacitor/geolocation';
 
 function waitForAtlasWorkerReady(worker: Worker): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -100,7 +101,7 @@ export const useMapStore = defineStore('cloudtak', {
         defaultPointType: string;
         manualLocationMode: boolean;
         isMobileDetected: boolean;
-        gpsWatchId: CallbackID | null;
+
         tokenExpiry: number | null;
         lastUpdateCOTErrorSignature: string | null;
 
@@ -171,7 +172,7 @@ export const useMapStore = defineStore('cloudtak', {
             defaultPointType: 'u-d-p',
             toastOffset: { x: 70, y: 60 },
             manualLocationMode: false,
-            gpsWatchId: null,
+
             tokenExpiry: null,
             lastUpdateCOTErrorSignature: null,
             isMobileDetected: false,
@@ -220,6 +221,28 @@ export const useMapStore = defineStore('cloudtak', {
         bottomBar: function(): BottomBarManager {
             if (!this._bottomBar) throw new Error('BottomBar Manager has not yet initialized');
             return this._bottomBar as BottomBarManager;
+        },
+        locationCallback: function(): (position: Position) => void {
+            return (position) => {
+                if (this.manualLocationMode) return;
+
+                this.locationAccuracy = position.coords.accuracy;
+
+                this.channel.postMessage({
+                    type: WorkerMessageType.Profile_Location_Coordinates,
+                    body: {
+                        accuracy: position.coords.accuracy,
+                        altitude: position.coords.altitude,
+                        coordinates: [ position.coords.longitude, position.coords.latitude ]
+                    }
+                });
+
+                if (isNativePlatform() && document.hidden) {
+                    // Actions cannot be called from getters, so we use the store instance
+                    const mapStore = useMapStore();
+                    void mapStore.submitLocationHttp(position);
+                }
+            };
         }
     },
     actions: {
@@ -247,7 +270,7 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
-            await this.stopGPSWatch();
+            await deviceStore.geolocation.stopWatch();
 
             this.channel.close();
 
@@ -619,14 +642,14 @@ export const useMapStore = defineStore('cloudtak', {
             let startedGPSWatchFromPermissionSubscription = false;
             await deviceStore.initializePermissionSubscriptions(() => {
                 startedGPSWatchFromPermissionSubscription = true;
-                void this.startGPSWatch();
+                void deviceStore.geolocation.startWatch(this.locationCallback);
             });
 
             if (
                 deviceStore.permissions.location !== 'unsupported'
                 && !startedGPSWatchFromPermissionSubscription
             ) {
-                await this.startGPSWatch();
+                await deviceStore.geolocation.startWatch(this.locationCallback);
             }
 
             const sprites = IconManager.defaultSprite();
@@ -769,58 +792,71 @@ export const useMapStore = defineStore('cloudtak', {
             this.isOpen = await this.worker.conn.isOpen;
 
         },
-        stopGPSWatch: async function(): Promise<void> {
-            if (this.gpsWatchId === null) {
-                return;
-            }
 
-            const watchId = this.gpsWatchId;
-            this.gpsWatchId = null;
-
+        submitLocationHttp: async function(position: Position): Promise<void> {
             try {
-                await clearLocationWatch(watchId);
-            } catch (err) {
-                console.warn('Failed to clear location watch', err);
-            }
-        },
-        startGPSWatch: async function(): Promise<void> {
-            if (!supportsLocationRequests()) return;
+                const [callsignConfig, typeConfig, remarksConfig, groupConfig, roleConfig, usernameConfig] = await Promise.all([
+                    ProfileConfig.get('tak_callsign'),
+                    ProfileConfig.get('tak_type'),
+                    ProfileConfig.get('tak_remarks'),
+                    ProfileConfig.get('tak_group'),
+                    ProfileConfig.get('tak_role'),
+                    ProfileConfig.get('username'),
+                ]);
 
-            await this.stopGPSWatch();
+                const username = usernameConfig?.value as string | undefined;
+                if (!username) return;
 
-            try {
-                this.gpsWatchId = await watchLocation({
-                    maximumAge: 0,
-                    timeout: 1500,
-                    enableHighAccuracy: true
-                }, (position, err) => {
-                    if (err) {
-                        const geolocationError = err as { code?: number };
+                const uid = `ANDROID-CloudTAK-${username}`;
+                const callsign = callsignConfig?.value as string || 'Unknown';
+                const type = typeConfig?.value as string || 'a-f-G-E-V-C';
+                const remarks = remarksConfig?.value as string || '';
+                const group = groupConfig?.value as string || 'Cyan';
+                const role = roleConfig?.value as string || 'Team Member';
 
-                        if (geolocationError.code !== 0) {
-                            console.error('Location Error', err);
-                        }
+                const hae = position.coords.altitude ?? 0;
+                const now = new Date();
+                const stale = new Date(now.getTime() + 60000);
 
-                        return;
+                const body = {
+                    id: uid,
+                    path: '/',
+                    type: 'Feature' as const,
+                    properties: {
+                        callsign,
+                        type,
+                        how: 'm-g',
+                        time: now.toISOString(),
+                        start: now.toISOString(),
+                        stale: stale.toISOString(),
+                        center: [position.coords.longitude, position.coords.latitude],
+                        remarks,
+                        droid: callsign,
+                        contact: { endpoint: '*:-1:stcp', callsign },
+                        group: { name: group, role },
+                    },
+                    geometry: {
+                        type: 'Point' as const,
+                        coordinates: [position.coords.longitude, position.coords.latitude, hae]
                     }
+                };
 
-                    if (!position || this.manualLocationMode) {
-                        return;
-                    }
-
-                    this.locationAccuracy = position.coords.accuracy;
-
-                    this.channel.postMessage({
-                        type: WorkerMessageType.Profile_Location_Coordinates,
-                        body: {
-                            accuracy: position.coords.accuracy,
-                            altitude: position.coords.altitude,
-                            coordinates: [ position.coords.longitude, position.coords.latitude ]
-                        }
+                // Use CapacitorHttp for native background requests to avoid WebView throttling
+                if (isNativePlatform()) {
+                    const token = await getRuntimeToken();
+                    await CapacitorHttp.put({
+                        url: `${serverUrl}/api/profile/location`,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                        },
+                        data: body
                     });
-                });
+                } else {
+                    await server.PUT('/api/profile/location', { body });
+                }
             } catch (err) {
-                console.error('Failed to start location watch', err);
+                console.warn('Failed to submit background location via HTTP', err);
             }
         },
         initOverlays: async function() {

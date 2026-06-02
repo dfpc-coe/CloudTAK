@@ -44,13 +44,7 @@
             />
         </template>
         <template #default>
-            <div class='my-2'>
-                <TablerInput
-                    v-model='query.filter'
-                    icon='search'
-                    placeholder='Search'
-                />
-            </div>
+            <SearchSortFilter v-model='query.filter' />
             <TablerLoading
                 v-if='loading'
                 v-model='query.filter'
@@ -102,11 +96,11 @@
 import { ref, onMounted, computed, useTemplateRef } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import SearchSortFilter from '../util/SearchSortFilter.vue';
 import FeatureRow from '../util/FeatureRow.vue';
 import GenericSelect from '../util/GenericSelect.vue';
 import {
     TablerNone,
-    TablerInput,
     TablerLoading,
     TablerDropdown,
     TablerIconButton,

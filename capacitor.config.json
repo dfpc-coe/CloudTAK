@@ -5,6 +5,7 @@
     "ios": {
         "path": "ios",
         "includePlugins": [
+            "@capacitor-community/background-geolocation",
             "@capacitor-community/keep-awake",
             "@capacitor/app",
             "@capacitor/browser",
@@ -18,7 +19,8 @@
         ]
     },
     "android": {
-        "path": "android"
+        "path": "android",
+        "useLegacyBridge": true
     },
     "plugins": {
         "FirebaseMessaging": {
