@@ -40,6 +40,34 @@ export default class MapServerBasemap extends FeatureServerBasemap {
         return { feature: [] };
     }
 
+    /**
+     * Build an ESRI MapServer export URL for the given tile coordinates.
+     * MapServer uses the /export endpoint (not /exportImage like ImageServer).
+     *
+     * @param layer - MapServer base URL
+     * @param z     - Zoom level
+     * @param x     - Tile column
+     * @param y     - Tile row
+     */
+    static esriMapServerTileURL(layer: string, z: number, x: number, y: number): URL {
+        const url = new URL(layer);
+
+        if (!url.pathname.endsWith('/export')) {
+            url.pathname = url.pathname + '/export';
+        }
+
+        const bbox = BasemapProtocol.extent(z, x, y);
+
+        url.searchParams.append('format', 'png');
+        url.searchParams.append('imageSR', '3857');
+        url.searchParams.append('size', '512,512');
+        url.searchParams.append('bboxSR', '4326');
+        url.searchParams.append('bbox', `${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`);
+        url.searchParams.append('transparent', 'true');
+
+        return url;
+    }
+
     protected async _tile(
         z: number, x: number, y: number,
         res: Response,
@@ -49,7 +77,7 @@ export default class MapServerBasemap extends FeatureServerBasemap {
             return super._tile(z, x, y, res, opts);
         } else {
             try {
-                const url = ImageServerBasemap.esriRasterTileURL(this.basemap!.url, z, x, y);
+                const url = MapServerBasemap.esriMapServerTileURL(this.basemap!.url, z, x, y);
 
                 const tileRes = await typedFetch(url);
 
@@ -59,7 +87,7 @@ export default class MapServerBasemap extends FeatureServerBasemap {
 
                 res.writeHead(200, {
                     ...opts.headers,
-                    'Content-Type': 'image/jpeg',
+                    'Content-Type': 'image/png',
                     'Content-Length': Buffer.byteLength(tile),
                 });
 
