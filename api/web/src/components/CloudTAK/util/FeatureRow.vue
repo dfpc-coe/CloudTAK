@@ -60,6 +60,7 @@
                     <span
                         v-if='(feature.properties.callsign || "").trim().length > 0'
                         class='fw-semibold text-break'
+                        :class='{ "text-muted": hidden }'
                         v-text='feature.properties.callsign'
                     />
                     <span
@@ -70,6 +71,23 @@
             </div>
 
             <div class='align-self-center me-2 btn-list cloudtak-hover-hidden'>
+                <TablerIconButton
+                    v-if='hideButton'
+                    :title='hidden ? "Show feature" : "Hide feature"'
+                    @click.stop.prevent='emit("toggleHidden")'
+                >
+                    <IconEyeOff
+                        v-if='hidden'
+                        :size='20'
+                        stroke='1'
+                    />
+                    <IconEye
+                        v-else
+                        :size='20'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
                 <TablerIconButton
                     v-if='infoButton'
                     title='View Info'
@@ -117,6 +135,8 @@ import {
     IconListDetails,
     IconGripVertical,
     IconTrash,
+    IconEye,
+    IconEyeOff,
 } from '@tabler/icons-vue';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
@@ -153,11 +173,19 @@ const props = defineProps({
     compact: {
         type: Boolean,
         default: true
+    },
+    hideButton: {
+        type: Boolean,
+        default: false
+    },
+    hidden: {
+        type: Boolean,
+        default: false
     }
 });
 
 const router = useRouter();
-const emit = defineEmits(['delete']);
+const emit = defineEmits(['delete', 'toggleHidden']);
 
 const isDeleted = ref(false);
 const isDeleting = ref(false);

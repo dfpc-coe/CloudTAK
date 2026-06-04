@@ -169,6 +169,9 @@
                                     v-for='cot of markers[marker]'
                                     :key='cot.id'
                                     :feature='cot'
+                                    :hide-button='true'
+                                    :hidden='isCotHidden(cot.id)'
+                                    @toggle-hidden='toggleCotHidden(cot)'
                                 />
                             </div>
                         </div>
@@ -228,6 +231,9 @@
                                 v-for='cot of paths[path]'
                                 :key='cot.id'
                                 :feature='cot'
+                                :hide-button='true'
+                                :hidden='isCotHidden(cot.id)'
+                                @toggle-hidden='toggleCotHidden(cot)'
                             />
                         </template>
                     </template>
@@ -278,6 +284,9 @@
                                     v-for='cot of paths[path]'
                                     :key='cot.id'
                                     :feature='cot'
+                                    :hide-button='true'
+                                    :hidden='isCotHidden(cot.id)'
+                                    @toggle-hidden='toggleCotHidden(cot)'
                                 />
                             </template>
                         </div>
@@ -306,6 +315,8 @@ import {
     IconFolder,
 } from '@tabler/icons-vue';
 import { useMapStore } from '../../../../stores/map.ts';
+import { db } from '../../../../database.ts';
+import Filter from '../../../../base/filter.ts';
 import type Overlay from '../../../../base/overlay-class.ts';
 import type COT from '../../../../base/cot.ts';
 import type { Contact as ContactData } from '../../../../types.ts';
@@ -315,6 +326,60 @@ const mapStore = useMapStore();
 defineProps<{
     element: Overlay;
 }>();
+
+// ---------------------------------------------------------------------------
+// Per-CoT visibility toggles for the internal id=-1 "self" overlay.
+//
+// State of truth: DB Filter rows keyed by external="tree-hidden-<cot.id>".
+// On mount we read those rows back and re-establish the in-memory hide on the
+// atlas worker (worker.pendingHidden lives only for the process lifetime,
+// so without this step a page refresh would visually un-hide everything that
+// was hidden in the previous session).
+//
+// Pattern mirrors stores/modules/draw.ts which uses Filter.create +
+// worker.db.hide() for its "edit this CoT" temporary-hide.
+// ---------------------------------------------------------------------------
+
+const HIDDEN_EXTERNAL_PREFIX = 'tree-hidden-';
+const hiddenIds = ref<Set<string>>(new Set());
+
+function isCotHidden(id: string): boolean {
+    return hiddenIds.value.has(id);
+}
+
+async function reloadHiddenIds(): Promise<void> {
+    const rows = await db.filter
+        .where('external')
+        .startsWith(HIDDEN_EXTERNAL_PREFIX)
+        .toArray();
+    hiddenIds.value = new Set(rows.map((r) => r.external.slice(HIDDEN_EXTERNAL_PREFIX.length)));
+}
+
+async function reapplyHiddenToWorker(): Promise<void> {
+    // Re-issue the worker.db.hide() call for every persisted hidden CoT so
+    // the worker drops them from the next diff. Safe to call repeatedly.
+    for (const id of hiddenIds.value) {
+        await mapStore.worker.db.hide(id);
+    }
+    if (hiddenIds.value.size > 0) {
+        await mapStore.refresh();
+    }
+}
+
+async function toggleCotHidden(cot: COT): Promise<void> {
+    const id = cot.id;
+    const external = `${HIDDEN_EXTERNAL_PREFIX}${id}`;
+    if (hiddenIds.value.has(id)) {
+        await Filter.delete({ external });
+        await mapStore.worker.db.unhide(id);
+    } else {
+        const displayName = String(cot.properties?.callsign ?? cot.properties?.name ?? id);
+        await Filter.create(displayName, external, 'AtlasDatabase', true, `id = "${id}"`);
+        await mapStore.worker.db.hide(id);
+    }
+    await reloadHiddenIds();
+    await mapStore.refresh();
+}
 
 interface TreeNodeState {
     _shown: boolean;
@@ -375,6 +440,8 @@ const treeState = ref<TreeState>({
 
 onMounted(async () => {
     loading.value = true;
+    await reloadHiddenIds();
+    await reapplyHiddenToWorker();
     await refresh();
     loading.value = false;
 });

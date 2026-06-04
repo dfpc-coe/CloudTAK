@@ -1,5 +1,7 @@
 import { db } from '../database.ts'
+import { v4 as randomUUID } from 'uuid';
 import { std, stdurl } from '../std.ts';
+import Filter from './filter.ts';
 import SubscriptionLog from './subscription-log.ts';
 import SubscriptionChanges from './subscription-changes.ts';
 import SubscriptionContents from './subscription-contents.ts';
@@ -195,6 +197,8 @@ export default class Subscription {
                 });
             }
 
+            await exists.loadHiddenFeatureIds();
+
             if (exists.templateid) {
                 try {
                     await MissionTemplate.load(exists.templateid);
@@ -239,6 +243,8 @@ export default class Subscription {
             });
 
             await sub.refresh();
+
+            await sub.loadHiddenFeatureIds();
 
             if (sub.templateid) {
                 try {
@@ -584,5 +590,102 @@ export default class Subscription {
             token: this.token,
             headers: Subscription.headers(this.missiontoken)
         })
+    }
+
+    // ---------------------------------------------------------------------
+    // Feature visibility (hide/show) — persisted as DB filter rows.
+    //
+    // Each hidden feature gets its own Filter row keyed by an external id of
+    // `mission-<guid>-hide-<featId>` and a JSONata query of `id = "<featId>"`.
+    // Subscription.feature.collection(false) already applies all DB filters
+    // when loading mission features for rendering, so the persisted filter
+    // becomes the single source of truth — surviving page refresh, scaling
+    // via IndexedDB, and re-using the existing global filter pipeline.
+    //
+    // The mirrored in-memory `hiddenFeatureIds` is a presentation-only
+    // convenience for the Mission Layers UI so it can reactively render the
+    // correct eye/eye-off icon without re-querying the DB on every paint.
+    // It is reloaded from IndexedDB in loadHiddenFeatureIds() and refreshed
+    // after each mutation here.
+    // ---------------------------------------------------------------------
+
+    hiddenFeatureIds: Set<string> = new Set();
+
+    _hideExternalPrefix(): string {
+        return `mission-${this.guid}-hide-`;
+    }
+
+    _hideExternalFor(featId: string): string {
+        return `${this._hideExternalPrefix()}${featId}`;
+    }
+
+    async loadHiddenFeatureIds(): Promise<void> {
+        const prefix = this._hideExternalPrefix();
+        const rows = await db.filter
+            .where('external')
+            .startsWith(prefix)
+            .toArray();
+        this.hiddenFeatureIds = new Set(
+            rows.map((r) => r.external.slice(prefix.length))
+        );
+    }
+
+    async hideFeature(
+        featId: string,
+        opts: { displayName?: string } = {}
+    ): Promise<void> {
+        if (this.hiddenFeatureIds.has(featId)) return;
+        await Filter.create(
+            opts.displayName ?? featId,
+            this._hideExternalFor(featId),
+            'Mission',
+            true,
+            `id = "${featId}"`
+        );
+        this.hiddenFeatureIds.add(featId);
+    }
+
+    async hideFeatures(
+        featIds: string[],
+        opts: { displayNames?: Record<string, string> } = {}
+    ): Promise<void> {
+        const toAdd = featIds.filter((id) => !this.hiddenFeatureIds.has(id));
+        if (!toAdd.length) return;
+        await db.filter.bulkAdd(toAdd.map((id) => ({
+            id: randomUUID(),
+            name: opts.displayNames?.[id] ?? id,
+            external: this._hideExternalFor(id),
+            source: 'Mission',
+            internal: true,
+            query: `id = "${id}"`,
+        })));
+        for (const id of toAdd) this.hiddenFeatureIds.add(id);
+    }
+
+    async showFeature(featId: string): Promise<void> {
+        if (!this.hiddenFeatureIds.has(featId)) return;
+        await Filter.delete({ external: this._hideExternalFor(featId) });
+        this.hiddenFeatureIds.delete(featId);
+    }
+
+    async showFeatures(featIds: string[]): Promise<void> {
+        const toRemove = featIds.filter((id) => this.hiddenFeatureIds.has(id));
+        if (!toRemove.length) return;
+        // Dexie has no bulk-delete-by-external; do them serially. The size
+        // here is the number of features being un-hidden in a single user
+        // action which is small in practice (one layer's subtree).
+        for (const id of toRemove) {
+            await Filter.delete({ external: this._hideExternalFor(id) });
+            this.hiddenFeatureIds.delete(id);
+        }
+    }
+
+    async showAll(): Promise<void> {
+        if (this.hiddenFeatureIds.size === 0) return;
+        await db.filter
+            .where('external')
+            .startsWith(this._hideExternalPrefix())
+            .delete();
+        this.hiddenFeatureIds.clear();
     }
 }
