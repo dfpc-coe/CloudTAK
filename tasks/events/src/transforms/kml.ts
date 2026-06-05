@@ -117,15 +117,19 @@ export default class KML implements Transform {
                     }
                 }
 
+                let url: URL;
                 // Skip isSafeUrl check when StackName=test (test mode)
                 const urlObj = new URL(href);
                 const hostname = urlObj.hostname.toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, '');
                 if (process.env.StackName !== 'test' && hostname !== 'localhost' && !hostname.endsWith('.localhost') && hostname !== '127.0.0.1') {
-                    const { safe, url, reason } = await isSafeUrl(href);
-                    if (!safe || !url) {
+                    const { safe, url: safeUrl, reason } = await isSafeUrl(href);
+                    if (!safe || !safeUrl) {
                         console.warn(`NetworkLink ${href} skipped — ${reason}`);
                         continue;
                     }
+                    url = safeUrl;
+                } else {
+                    url = urlObj;
                 }
 
                 // Normalise the URL for deduplication (strip trailing slash, lowercase host)
