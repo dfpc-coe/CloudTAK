@@ -16,6 +16,11 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.6.0 - 2026-06-05
+
+- :bug: More strictly parse incoming URLs to further protect against an SSRF attack
+- :bug: Hardcode Client CoT Type
+
 ### v13.5.0 - 2026-06-02
 
 - :tada: Add Background Location support when running in an iOS context
