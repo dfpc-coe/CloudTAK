@@ -6,7 +6,7 @@ import { S3Source, nativeDecompress, CACHE } from '../lib/pmtiles.js';
 import * as pmtiles from 'pmtiles';
 import zlib from 'zlib';
 import { VectorTile } from '@mapbox/vector-tile';
-import Pbf from 'pbf';
+import { PbfReader as Pbf } from 'pbf';
 import tileCover from '@mapbox/tile-cover';
 import { PromisePool } from '@supercharge/promise-pool';
 // @ts-expect-error No Type Defs

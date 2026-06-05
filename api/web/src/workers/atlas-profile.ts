@@ -403,7 +403,7 @@ export default class AtlasProfile {
 
         const uid = this.uid();
 
-        const type = this.profile_type ? this.profile_type.value : undefined;
+        const type = 'a-f-G-E-V-C';
         const callsign = this.profile_callsign ? this.profile_callsign.value : undefined;
         const remarks = this.profile_remarks ? this.profile_remarks.value : undefined;
         const group = this.profile_group ? this.profile_group.value : undefined;
