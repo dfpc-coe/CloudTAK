@@ -8,6 +8,7 @@ import { VideoLease } from '../schema.js';
 import { VideoLeaseResponse } from '../types.js';
 import { VideoLease_SourceType } from '../enums.js';
 import fetch from '../fetch.js';
+import { isSafeUrl } from '@tak-ps/node-safeurl';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export enum ProtocolPopulation {
@@ -518,6 +519,9 @@ export default class VideoServiceControl {
 
         if (lease.proxy) {
             try {
+                const { safe, reason } = await isSafeUrl(lease.proxy);
+                if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
+
                 const proxy = new URL(lease.proxy);
 
                 // Check for HLS Errors
