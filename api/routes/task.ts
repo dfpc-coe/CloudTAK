@@ -9,6 +9,7 @@ import { Task } from '../lib/schema.js';
 import { Layer as LayerSchema } from '../lib/schema.js';
 import { StandardResponse, TaskResponse } from '../lib/types.js';
 import * as Default from '../lib/limits.js';
+import { isSafeUrl } from '@tak-ps/node-safeurl';
 
 export enum TaskSchemaEnum {
     OUTPUT = 'schema:output',
@@ -285,6 +286,8 @@ export default async function router(schema: Schema, config: Config) {
             const task = await config.models.Task.from(req.params.task);
 
             if (task.readme) {
+                const { safe, reason } = await isSafeUrl(task.readme);
+                if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
                 const readmeres = await fetch(task.readme);
                 res.json({
                     body: await readmeres.text(),
