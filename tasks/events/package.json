@@ -18,6 +18,7 @@
         "@aws-sdk/lib-storage": "^3.787.0",
         "@aws-sdk/node-http-handler": "^3.370.0",
         "@tak-ps/node-cot": "^14.0.0",
+        "@tak-ps/node-safeurl": "^1.0.0",
         "@tmcw/togeojson": "^7.1.0",
         "@xmldom/xmldom": "^0.9.8",
         "glob": "^13.0.0",

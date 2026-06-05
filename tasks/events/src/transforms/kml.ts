@@ -6,7 +6,7 @@ import { glob } from 'glob';
 import StreamZip from 'node-stream-zip';
 import { kml } from '@tmcw/togeojson';
 import { DOMParser } from '@xmldom/xmldom';
-import { isSafeUrl } from '../safeurl.ts';
+import { isSafeUrl } from '@tak-ps/node-safeurl';
 import { fetch } from 'undici';
 
 const MAX_NETWORK_LINK_DEPTH = 3;
