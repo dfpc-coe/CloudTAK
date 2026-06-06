@@ -574,9 +574,16 @@ function uploadComplete(event: unknown) {
     router.push(`/menu/imports/${imp.imports[0].uid}`)
 }
 
-async function downloadAsset(asset: ProfileFile) {
+async function downloadAsset(asset: ProfileFile, type: 'original' | 'pmtiles') {
     const { value: token } = await Preferences.get({ key: 'token' });
-    const url = stdurl(`/api/profile/asset/${asset.id}.${asset.name.split('.').pop()}`);
+    
+    let url: URL;
+    if (type === 'pmtiles') {
+        url = stdurl(`/api/profile/asset/${asset.id}.pmtiles`);
+    } else {
+        url = stdurl(`/api/profile/asset/${asset.id}.${asset.name.split('.').pop()}`);
+    }
+    
     if (token) url.searchParams.set('token', token);
     window.open(url, "_blank")
 }
