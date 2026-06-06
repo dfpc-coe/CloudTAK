@@ -10,6 +10,7 @@ import cp from 'node:child_process';
 
 import Tippecanoe from './tippecanoe.ts';
 import { countFeatures } from './utils.ts';
+import { isPMTiles } from './sniff.ts';
 
 // Formats
 import KML from './transforms/kml.ts';
@@ -255,12 +256,19 @@ export default class DataTransform {
             console.log(`ok - converted: ${path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')}`);
         }
 
+        // Validate PMTiles format before uploading
+        const pmtilesPath = path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles');
+        if (!await isPMTiles(pmtilesPath)) {
+            throw new Error(`Invalid PMTiles file: ${pmtilesPath}. The file does not have a valid PMTiles magic number.`);
+        }
+        console.log(`Validated PMTiles format for ${pmtilesPath}`);
+
         const pmuploader = new Upload({
             client: s3,
             params: {
                 Bucket: this.msg.bucket,
                 Key: `profile/${this.msg.job.username}/${this.asset.id}.pmtiles`,
-                Body: fs.createReadStream(path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')),
+                Body: fs.createReadStream(pmtilesPath),
             },
         });
 
