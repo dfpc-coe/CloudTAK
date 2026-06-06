@@ -524,11 +524,10 @@ async function createOverlay(asset: ProfileFile) {
     loading.value = true;
 
     try {
-        const { data, error } = await server.GET('/api/profile/asset/{:asset}.{ext}/tile', {
+        const { data, error } = await server.GET('/api/profile/asset/{:asset}.pmtiles/tile', {
             params: {
                 path: {
-                    ':asset': asset.id,
-                    ext: 'pmtiles'
+                    ':asset': asset.id
                 }
             }
         });
