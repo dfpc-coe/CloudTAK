@@ -304,6 +304,45 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/profile/asset/:asset.pmtiles', {
+        name: 'Download PMTiles',
+        group: 'ProfileFile',
+        description: 'Download PMTiles archive',
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+        }),
+        params: Type.Object({
+            asset: Type.String({
+                format: 'uuid',
+            }),
+        }),
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { token: true });
+
+            const file = await config.models.ProfileFile.from(req.params.asset);
+
+            if (file.username !== user.email) {
+                throw new Err(403, null, 'You do not have permission to download this asset');
+            }
+
+            const pmtilesPath = `profile/${user.email}/${req.params.asset}.pmtiles`;
+            
+            if (!await S3.exists(pmtilesPath)) {
+                throw new Err(404, null, 'PMTiles archive does not exist for this asset');
+            }
+
+            const stream = await S3.get(pmtilesPath);
+
+            res.setHeader('Content-Type', 'application/octet-stream');
+            res.setHeader('Content-Disposition', `attachment; filename="${file.name}.pmtiles"`);
+
+            stream.pipe(res);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
     await schema.get('/profile/asset/:asset.pmtiles/tile', {
         name: 'PMTiles TileJSON',
         group: 'ProfileFile',
