@@ -303,4 +303,54 @@ export default async function router(schema: Schema, config: Config) {
             Err.respond(err, res);
         }
     });
+
+    await schema.get('/profile/asset/:asset.pmtiles/tile', {
+        name: 'PMTiles TileJSON',
+        group: 'ProfileFile',
+        description: 'Get TileJSON for PMTiles asset',
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+        }),
+        params: Type.Object({
+            asset: Type.String(),
+        }),
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { token: true });
+
+            const file = await config.models.ProfileFile.augmented_from(req.params.asset);
+
+            if (file.username !== user.email) {
+                const fileChannels = (file.channels || []).map(c => Number(c));
+                if (fileChannels.length === 0) {
+                    throw new Err(403, null, 'You do not have permission to view this asset');
+                }
+
+                const profile = await config.models.Profile.from(user.email);
+                const api = config.conns.get(user.email)?.api
+                    ?? await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+                const activeChannels = await config.conns.activeChannels(user.email, api);
+
+                if (!fileChannels.some(bp => activeChannels.has(bp))) {
+                    throw new Err(403, null, 'You do not have permission to view this asset');
+                }
+            }
+
+            if (!await S3.exists(`profile/${file.username}/${req.params.asset}.pmtiles`)) {
+                throw new Err(404, null, 'Asset does not exist');
+            }
+
+            const token = jwt.sign({
+                access: 'profile',
+                email: user.email,
+                file: `${file.username}/${req.params.asset}`,
+            }, config.SigningSecret);
+            const url = new URL(`${config.PMTILES_URL}/tiles/profile/${file.username}/${req.params.asset}`);
+            url.searchParams.append('token', token);
+
+            res.redirect(String(url));
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
 }
