@@ -9,6 +9,7 @@ import path from 'node:path';
 import cp from 'node:child_process';
 
 import Tippecanoe from './tippecanoe.ts';
+import { countFeatures } from './utils.ts';
 
 // Formats
 import KML from './transforms/kml.ts';
@@ -217,6 +218,13 @@ export default class DataTransform {
             }
 
             const tp = new Tippecanoe();
+
+            // Check for zero features before tiling
+            const featureCount = await countFeatures(conversion.asset);
+            if (featureCount === 0) {
+                throw new Error(`No features found in ${conversion.asset}. Cannot create tileset.`);
+            }
+            console.log(`Found ${featureCount} features to tile`);
 
             console.log(`ok - tiling ${conversion.asset}`);
             await tp.tile(
