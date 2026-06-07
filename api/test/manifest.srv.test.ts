@@ -19,8 +19,8 @@ test('GET: /api/manifest.webmanifest - no logo configured', async () => {
         }, true);
 
         assert.equal(res.status, 200, 'http 200');
-        assert.equal(res.body.name, 'Test Runner');
-        assert.equal(res.body.short_name, 'Test Runner');
+        assert.equal(res.body.name, 'Test Server');
+        assert.equal(res.body.short_name, 'Test Server');
         assert.equal(res.body.display, 'standalone');
         assert.equal(res.body.start_url, '/');
         assert.ok(Array.isArray(res.body.icons), 'icons is array');
