@@ -8,6 +8,7 @@ import tileCover from '@mapbox/tile-cover';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { Type } from '@sinclair/typebox';
 import sharp from 'sharp';
+import { fetch } from '@tak-ps/node-safeurl';
 import s3client from './s3.js';
 
 const DEFAULT_CONCURRENCY = 8;

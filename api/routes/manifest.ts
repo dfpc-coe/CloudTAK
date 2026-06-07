@@ -152,7 +152,7 @@ export default async function router(schema: Schema, config: Config) {
                     { src: '/logos/ios/512.png', sizes: '512x512' },
                     { src: '/logos/ios/1024.png', sizes: '1024x1024' },
                 ],
-                orientation: 'landscape',
+                orientation: 'any',
                 categories: ['utilities', 'productivity', 'navigation', 'government'],
             });
         } catch (err) {

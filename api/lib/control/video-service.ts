@@ -7,8 +7,7 @@ import { Type, Static } from '@sinclair/typebox';
 import { VideoLease } from '../schema.js';
 import { VideoLeaseResponse } from '../types.js';
 import { VideoLease_SourceType } from '../enums.js';
-import fetch from '../fetch.js';
-import { isSafeUrl } from '@tak-ps/node-safeurl';
+import { fetch, isSafeUrl } from '@tak-ps/node-safeurl';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export enum ProtocolPopulation {
@@ -215,7 +214,7 @@ export default class VideoServiceControl {
         const url = new URL('/v3/config/global/get', video.url);
         url.port = '9997';
 
-        const res = await fetch(url, { headers: Object.fromEntries(headers.entries()) });
+        const res = await fetch(url, { headers: Object.fromEntries(headers.entries()), safeUrlAllow: [video.url!] });
         if (!res.ok) throw new Err(500, null, await res.text());
         const body = await res.typed(VideoConfig);
 
@@ -223,7 +222,7 @@ export default class VideoServiceControl {
         const urlPaths = new URL('/path', video.url);
         urlPaths.port = '9997';
 
-        const resPaths = await fetch(urlPaths, { headers: Object.fromEntries(headers.entries()) });
+        const resPaths = await fetch(urlPaths, { headers: Object.fromEntries(headers.entries()), safeUrlAllow: [video.url!] });
         if (!resPaths.ok) throw new Err(500, null, await resPaths.text());
 
         const paths = await resPaths.typed(PathsList);
@@ -540,6 +539,7 @@ export default class VideoServiceControl {
                     const res = await fetch(url, {
                         method: 'POST',
                         headers: Object.fromEntries(headers.entries()),
+                        safeUrlAllow: [video.url!],
                         body: JSON.stringify({
                             name: lease.path,
                             source: lease.proxy,
@@ -563,6 +563,7 @@ export default class VideoServiceControl {
             const res = await fetch(url, {
                 method: 'POST',
                 headers: Object.fromEntries(headers.entries()),
+                safeUrlAllow: [video.url!],
                 body: JSON.stringify({
                     name: lease.path,
                     record: lease.recording,
@@ -733,6 +734,7 @@ export default class VideoServiceControl {
             const res = await fetch(url, {
                 method: 'PATCH',
                 headers: Object.fromEntries(headers.entries()),
+                safeUrlAllow: [video.url!],
                 body: JSON.stringify({
                     name: lease.path,
                     source: lease.proxy,
@@ -752,6 +754,7 @@ export default class VideoServiceControl {
                 const res = await fetch(url, {
                     method: 'POST',
                     headers: Object.fromEntries(headers.entries()),
+                    safeUrlAllow: [video.url!],
                     body: JSON.stringify({
                         name: lease.path,
                         source: lease.proxy,
@@ -783,6 +786,7 @@ export default class VideoServiceControl {
         const res = await fetch(url, {
             method: 'GET',
             headers: Object.fromEntries(headers.entries()),
+            safeUrlAllow: [video.url!],
         });
 
         if (res.ok) {
@@ -804,6 +808,7 @@ export default class VideoServiceControl {
         const res = await fetch(url, {
             method: 'GET',
             headers: Object.fromEntries(headers.entries()),
+            safeUrlAllow: [video.url!],
         });
 
         if (res.ok) {
@@ -849,6 +854,7 @@ export default class VideoServiceControl {
         await fetch(url, {
             method: 'DELETE',
             headers: Object.fromEntries(headers.entries()),
+            safeUrlAllow: [video.url!],
         });
 
         try {

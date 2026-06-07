@@ -1,4 +1,4 @@
-import fetch from '../fetch.js';
+import { fetch } from '@tak-ps/node-safeurl';
 import { Static } from '@sinclair/typebox';
 import { WeatherInterface, FetchHourly } from '../interface-weather.js';
 

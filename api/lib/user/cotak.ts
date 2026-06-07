@@ -1,4 +1,4 @@
-import fetch from '../fetch.js';
+import { fetch } from '@tak-ps/node-safeurl';
 import Err from '@openaddresses/batch-error';
 import Config from '../config.js';
 import { Static, Type } from '@sinclair/typebox';
@@ -66,6 +66,7 @@ export default class CoTAKUser implements UserInterface {
             const expires = new Date();
             const authres = await fetch(new URL(`/oauth/token`, this.provider.url), {
                 method: 'POST',
+                safeUrlAllow: [this.provider.url],
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
@@ -132,6 +133,7 @@ export default class CoTAKUser implements UserInterface {
 
         const intres = await fetch(url, {
             method: 'POST',
+            safeUrlAllow: [this.provider.url],
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
@@ -152,6 +154,7 @@ export default class CoTAKUser implements UserInterface {
         murl.searchParams.append('proxy_user_id', String(uid));
 
         const musres = await fetch(murl, {
+            safeUrlAllow: [this.provider.url],
             headers: {
                 Accept: 'application/json',
                 Authorization: `Bearer ${creds.token}`,
@@ -177,6 +180,7 @@ export default class CoTAKUser implements UserInterface {
 
             const userres = await fetch(url, {
                 method: 'GET',
+                safeUrlAllow: [this.provider.url],
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
@@ -197,6 +201,7 @@ export default class CoTAKUser implements UserInterface {
         url.searchParams.append('proxy_user_id', String(uid));
 
         const userres = await fetch(url, {
+            safeUrlAllow: [this.provider.url],
             headers: {
                 Accept: 'application/json',
                 Authorization: `Bearer ${creds.token}`,
@@ -238,6 +243,7 @@ export default class CoTAKUser implements UserInterface {
 
             const userres = await fetch(url, {
                 method: 'PATCH',
+                safeUrlAllow: [this.provider.url],
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
@@ -254,6 +260,7 @@ export default class CoTAKUser implements UserInterface {
             murl.searchParams.append('proxy_user_id', String(uid));
 
             const musres = await fetch(murl, {
+                safeUrlAllow: [this.provider.url],
                 headers: {
                     Accept: 'application/json',
                     Authorization: `Bearer ${creds.token}`,
@@ -285,6 +292,7 @@ export default class CoTAKUser implements UserInterface {
 
                 const userres = await fetch(url, {
                     method: 'PATCH',
+                    safeUrlAllow: [this.provider.url],
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
@@ -303,6 +311,7 @@ export default class CoTAKUser implements UserInterface {
             } else {
                 const userres = await fetch(url, {
                     method: 'GET',
+                    safeUrlAllow: [this.provider.url],
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
@@ -334,6 +343,7 @@ export default class CoTAKUser implements UserInterface {
 
         await fetch(url, {
             method: 'DELETE',
+            safeUrlAllow: [this.provider.url],
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
@@ -350,6 +360,7 @@ export default class CoTAKUser implements UserInterface {
         const url = new URL(`/api/v1/proxy/agencies/${agency_id}`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
         const agencyres = await fetch(url, {
+            safeUrlAllow: [this.provider.url],
             headers: {
                 Accept: 'application/json',
                 Authorization: `Bearer ${creds.token}`,
@@ -385,6 +396,7 @@ export default class CoTAKUser implements UserInterface {
         }
 
         const channelres = await fetch(url, {
+            safeUrlAllow: [this.provider.url],
             headers: {
                 Accept: 'application/json',
                 Authorization: `Bearer ${creds.token}`,
@@ -420,6 +432,7 @@ export default class CoTAKUser implements UserInterface {
         url.searchParams.append('filter', filter);
 
         const agencyres = await fetch(url, {
+            safeUrlAllow: [this.provider.url],
             headers: {
                 Accept: 'application/json',
                 Authorization: `Bearer ${creds.token}`,
@@ -454,6 +467,7 @@ export default class CoTAKUser implements UserInterface {
 
         const userres = await fetch(new URL(`/api/v1/server/users/email/${encodeURIComponent(username)}`, this.provider.url), {
             method: 'GET',
+            safeUrlAllow: [this.provider.url],
             headers: {
                 Accept: 'application/json',
                 Authorization: `Bearer ${creds.token}`,

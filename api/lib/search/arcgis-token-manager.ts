@@ -1,4 +1,4 @@
-import fetch from '../fetch.js';
+import { fetch } from '@tak-ps/node-safeurl';
 import { Type } from '@sinclair/typebox';
 
 export interface ArcGISConfig {
