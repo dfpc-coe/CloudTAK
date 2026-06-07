@@ -795,49 +795,11 @@ export const useMapStore = defineStore('cloudtak', {
 
         submitLocationHttp: async function(position: Position): Promise<void> {
             try {
-                const [callsignConfig, typeConfig, remarksConfig, groupConfig, roleConfig] = await Promise.all([
-                    ProfileConfig.get('tak_callsign'),
-                    ProfileConfig.get('tak_type'),
-                    ProfileConfig.get('tak_remarks'),
-                    ProfileConfig.get('tak_group'),
-                    ProfileConfig.get('tak_role'),
-                ]);
-
-                // Use the store's in-memory callsign as a reliable fallback; the Dexie
-                // read may return undefined when IndexedDB is throttled in background.
-                const callsign = (callsignConfig?.value as string) || this.callsign || 'Unknown';
-                const type = typeConfig?.value as string || 'a-f-G-E-V-C';
-                const remarks = remarksConfig?.value as string || '';
-                const group = groupConfig?.value as string || 'Cyan';
-                const role = roleConfig?.value as string || 'Team Member';
-
-                const hae = position.coords.altitude ?? 0;
-                const now = new Date();
-                const stale = new Date(now.getTime() + 60000);
-
-                // id is intentionally omitted — the server derives the CoT UID
-                // from the authenticated user's email, avoiding any need to read
-                // the username from IndexedDB (which can be throttled on iOS background).
                 const body = {
-                    path: '/',
-                    type: 'Feature' as const,
-                    properties: {
-                        callsign,
-                        type,
-                        how: 'm-g',
-                        time: now.toISOString(),
-                        start: now.toISOString(),
-                        stale: stale.toISOString(),
-                        center: [position.coords.longitude, position.coords.latitude],
-                        remarks,
-                        droid: callsign,
-                        contact: { endpoint: '*:-1:stcp', callsign },
-                        group: { name: group, role },
-                    },
-                    geometry: {
-                        type: 'Point' as const,
-                        coordinates: [position.coords.longitude, position.coords.latitude, hae]
-                    }
+                    longitude: position.coords.longitude,
+                    latitude: position.coords.latitude,
+                    altitude: position.coords.altitude ?? undefined,
+                    accuracy: position.coords.accuracy ?? undefined,
                 };
 
                 // Use CapacitorHttp for native background requests to avoid WebView throttling
