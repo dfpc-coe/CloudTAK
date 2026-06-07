@@ -7,7 +7,7 @@ import StreamZip from 'node-stream-zip';
 import { kml } from '@tmcw/togeojson';
 import { DOMParser } from '@xmldom/xmldom';
 import { isSafeUrl } from '@tak-ps/node-safeurl';
-import { fetch } from 'undici';
+import { fetch } from '@tak-ps/node-safeurl';
 
 const MAX_NETWORK_LINK_DEPTH = 3;
 const NETWORK_LINK_FETCH_TIMEOUT_MS = 10_000;

@@ -18,7 +18,7 @@ import Translate from './transforms/translate.ts';
 import GeoJSON from './transforms/geojson.ts';
 import MBTiles from './transforms/mbtiles.ts';
 import { createImportResult } from './api.ts';
-import { fetch } from 'undici';
+import { fetch } from '@tak-ps/node-safeurl';
 
 const FORMATS = [KML, Translate, GeoJSON, MBTiles];
 const formats = new Map();
@@ -66,6 +66,7 @@ export default class DataTransform {
             const iconset = randomUUID();
 
             const iconsetRes = await fetch(new URL(`/api/iconset`, this.msg.api), {
+                safeUrlAllow: [this.msg.api],
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -113,6 +114,7 @@ export default class DataTransform {
                     }
 
                     const iconRes = await fetch(url, {
+                        safeUrlAllow: [this.msg.api],
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -130,6 +132,7 @@ export default class DataTransform {
                 }
 
                 const regen = await fetch(new URL(`/api/iconset/${iconset}/regen`, this.msg.api), {
+                    safeUrlAllow: [this.msg.api],
                     method: 'POST',
                     headers: {
                         Authorization: `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
@@ -141,6 +144,7 @@ export default class DataTransform {
                 }
 
                 const res = await fetch(new URL(`/api/profile/asset/${this.asset.id}`, this.msg.api), {
+                    safeUrlAllow: [this.msg.api],
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -204,6 +208,7 @@ export default class DataTransform {
 
             artifacts.push({ ext: '.geojsonld' });
             const res = await fetch(new URL(`/api/profile/asset/${this.asset.id}`, this.msg.api), {
+                safeUrlAllow: [this.msg.api],
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -276,6 +281,7 @@ export default class DataTransform {
 
         artifacts.push({ ext: '.pmtiles' });
         const res = await fetch(new URL(`/api/profile/asset/${this.asset.id}`, this.msg.api), {
+            safeUrlAllow: [this.msg.api],
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
