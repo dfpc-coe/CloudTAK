@@ -4,7 +4,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { CoTParser } from '@tak-ps/node-cot';
 import { Type } from '@sinclair/typebox';
-import { StandardResponse, FeatureResponse } from '../lib/types.js';
+import { StandardResponse } from '../lib/types.js';
 import { ProfileConnConfig } from '../lib/connection-config.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -13,27 +13,29 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ProfileLocation',
         description: `
             Submit a live location update for the authenticated user.
-            The feature is converted to CoT and written to the user's TAK
-            server connection. The CoT UID is always derived server-side from
-            the authenticated user's email, so the id field in the request body
-            is ignored.
+            Only the raw coordinates are required — all profile fields
+            (callsign, TAK type, group, role, remarks) are read from the
+            authenticated user's saved profile, and the CoT UID is derived
+            server-side from their email.
         `,
-        body: Type.Composite([FeatureResponse, Type.Object({ id: Type.Optional(Type.String()) })]),
+        body: Type.Object({
+            longitude: Type.Number(),
+            latitude: Type.Number(),
+            altitude: Type.Optional(Type.Number()),
+            accuracy: Type.Optional(Type.Number()),
+        }),
         res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
 
-            // Always derive the CoT UID from the authenticated identity so the
-            // client never needs to read its own username from local storage.
-            req.body.id = `ANDROID-CloudTAK-${user.email}`;
+            const profile = await config.models.Profile.from(user.email);
 
             // Ensure the user's TAK profile connection exists and is ready
             let pooledClient = config.conns.get(user.email);
             let awaitSecure: Promise<void> | undefined;
 
             if (!pooledClient) {
-                const profile = await config.models.Profile.from(user.email);
                 if (!profile.auth.cert || !profile.auth.key) {
                     throw new Err(400, null, 'Profile auth certificate not configured');
                 }
@@ -50,11 +52,37 @@ export default async function router(schema: Schema, config: Config) {
 
             if (awaitSecure) await awaitSecure;
 
-            const cot = await CoTParser.from_geojson(req.body);
+            const now = new Date();
+            const stale = new Date(now.getTime() + 60_000);
+            const callsign = profile.tak_callsign || 'Unknown';
+            const uid = `ANDROID-CloudTAK-${user.email}`;
 
-            pooledClient.tak.write([cot], {
-                stripFlow: true,
-            });
+            const feature = {
+                id: uid,
+                type: 'Feature' as const,
+                path: '/',
+                properties: {
+                    callsign,
+                    type: profile.tak_type || 'a-f-G-E-V-C',
+                    how: 'm-g',
+                    time: now.toISOString(),
+                    start: now.toISOString(),
+                    stale: stale.toISOString(),
+                    center: [req.body.longitude, req.body.latitude],
+                    remarks: profile.tak_remarks || '',
+                    droid: callsign,
+                    contact: { endpoint: '*:-1:stcp', callsign },
+                    group: { name: profile.tak_group || 'Cyan', role: profile.tak_role || 'Team Member' },
+                },
+                geometry: {
+                    type: 'Point' as const,
+                    coordinates: [req.body.longitude, req.body.latitude, req.body.altitude ?? 0],
+                },
+            };
+
+            const cot = await CoTParser.from_geojson(feature);
+
+            pooledClient.tak.write([cot], { stripFlow: true });
 
             res.json({
                 status: 200,
