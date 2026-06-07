@@ -3,7 +3,7 @@ import { GeoJSONVT } from '@maplibre/geojson-vt';
 import vtpbf from 'vt-pbf';
 import type { Response } from 'express';
 import Err from '@openaddresses/batch-error';
-import typedFetch from '../fetch.js';
+import { fetch as typedFetch } from '@tak-ps/node-safeurl';
 import { Feature } from '@tak-ps/node-cot';
 import { Static } from '@sinclair/typebox';
 import { Basemap_FeatureAction } from '../enums.js';
