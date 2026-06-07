@@ -81,10 +81,10 @@ export default class Tippecanoe {
             if (options.limit.size === false) base.push('--no-tile-size-limit');
             if (options.zoom.max !== undefined) base.push(...['--maximum-zoom', String(options.zoom.max)]);
             if (options.zoom.min !== undefined) base.push(...['--minimum-zoom', String(options.zoom.min)]);
-            if (options.zoom.base !== undefined) base.push(...['--base-zoom', String(options.zoom.min)]);
+            if (options.zoom.base !== undefined) base.push(...['--base-zoom', String(options.zoom.base)]);
             if (options.name) base.push(...['-n', options.name]);
             if (options.attribution) base.push(...['-A', options.attribution]);
-            if (options.description) base.concat(...['-N', options.description]);
+            if (options.description) base.push(...['-N', options.description]);
             if (options.quiet) base.push('--quiet');
 
             console.log(`tippecanoe ${base.join(' ')}`);
@@ -92,7 +92,12 @@ export default class Tippecanoe {
                 env: process.env,
             })
                 .on('error', reject)
-                .on('close', resolve);
+                .on('close', (code) => {
+                    if (code !== 0) {
+                        return reject(new Error(`tippecanoe exited with code ${code}`));
+                    }
+                    resolve(code);
+                });
 
             if (options.std) {
                 tippecanoe.stdout.pipe(process.stdout);

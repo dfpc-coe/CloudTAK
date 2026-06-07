@@ -2,6 +2,7 @@ import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox';
 import type { paths } from '@cloudtak/api-types';
+import { fetch } from '@tak-ps/node-safeurl';
 import auth from '../lib/auth.js';
 import getElevationProfile, {
     ElevationProfileType,
@@ -12,7 +13,8 @@ type CloudTAKBasemap = paths['/api/basemap/{:basemapid}']['get']['responses'][20
 type CloudTAKTileJSON = paths['/api/basemap/{:basemapid}/tiles']['get']['responses'][200]['content']['application/json'];
 
 async function fetchCloudTAKJSON<T>(url: URL): Promise<T> {
-    const res = await fetch(url);
+    const apiUrl = process.env.API_URL || 'http://localhost:5001';
+    const res = await fetch(url, { safeUrlAllow: [apiUrl] });
 
     if (!res.ok) {
         let message = `CloudTAK API request failed with status ${res.status}`;

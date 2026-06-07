@@ -1,4 +1,4 @@
-import fetch from '../fetch.js';
+import { fetch } from '@tak-ps/node-safeurl';
 import Err from '@openaddresses/batch-error';
 import Config from '../config.js';
 import { EsriSpatialReference, EsriExtent } from '../esri/types.js';

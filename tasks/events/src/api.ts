@@ -1,6 +1,6 @@
 import type { Message } from './types.ts';
 import jwt from 'jsonwebtoken';
-import { fetch } from 'undici';
+import { fetch } from '@tak-ps/node-safeurl';
 
 export async function createImportResult(
     msg: Message,
@@ -16,6 +16,7 @@ export async function createImportResult(
 
     try {
         const res = await fetch(new URL(`/api/import/${msg.job.id}/result`, msg.api), {
+            safeUrlAllow: [msg.api],
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

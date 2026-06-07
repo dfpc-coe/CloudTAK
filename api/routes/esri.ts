@@ -3,6 +3,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
+import { isSafeUrl } from '@tak-ps/node-safeurl';
 import { EsriType, EsriBase, EsriProxyPortal, EsriProxyServer, EsriProxyLayer } from '../lib/esri.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -40,6 +41,11 @@ export default async function router(schema: Schema, config: Config) {
                 url = new URL(req.body.url);
             } catch (err) {
                 throw new Err(400, null, err instanceof Error ? err.message : String(err));
+            }
+
+            if (process.env.StackName !== 'test') {
+                const { safe, reason } = await isSafeUrl(url.href);
+                if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
             }
 
             let base;
@@ -82,6 +88,11 @@ export default async function router(schema: Schema, config: Config) {
                 anyResources: true,
             });
 
+            if (process.env.StackName !== 'test') {
+                const { safe, reason } = await isSafeUrl(req.query.portal);
+                if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
+            }
+
             const base = new EsriBase(req.query.portal);
             if (req.query.token && req.query.expires) {
                 base.token = {
@@ -117,6 +128,11 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.is_auth(config, req, {
                 anyResources: true,
             });
+
+            if (process.env.StackName !== 'test') {
+                const { safe, reason } = await isSafeUrl(req.query.portal);
+                if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
+            }
 
             const base = new EsriBase(req.query.portal);
             if (req.query.token && req.query.expires) {
@@ -158,6 +174,11 @@ export default async function router(schema: Schema, config: Config) {
                 anyResources: true,
             });
 
+            if (process.env.StackName !== 'test') {
+                const { safe, reason } = await isSafeUrl(req.query.portal);
+                if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
+            }
+
             const base = new EsriBase(req.query.portal);
             base.token = {
                 token: req.query.token,
@@ -194,6 +215,11 @@ export default async function router(schema: Schema, config: Config) {
                 anyResources: true,
             });
 
+            if (process.env.StackName !== 'test') {
+                const { safe, reason } = await isSafeUrl(req.query.portal);
+                if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
+            }
+
             const base = new EsriBase(req.query.portal);
             base.token = {
                 token: req.query.token,
@@ -227,6 +253,11 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.is_auth(config, req, {
                 anyResources: true,
             });
+
+            if (process.env.StackName !== 'test') {
+                const { safe, reason } = await isSafeUrl(req.query.server);
+                if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
+            }
 
             const base = new EsriBase(req.query.server);
             if (req.query.token && req.query.expires) {
@@ -266,6 +297,11 @@ export default async function router(schema: Schema, config: Config) {
                 anyResources: true,
             });
 
+            if (process.env.StackName !== 'test') {
+                const { safe, reason } = await isSafeUrl(req.query.server);
+                if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
+            }
+
             const base = new EsriBase(req.query.server);
             base.token = {
                 token: req.query.token,
@@ -297,6 +333,11 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.is_auth(config, req, {
                 anyResources: true,
             });
+
+            if (process.env.StackName !== 'test') {
+                const { safe, reason } = await isSafeUrl(req.query.server);
+                if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
+            }
 
             const url = new URL(req.query.server.replace(/\/\d+$/, ''));
 
@@ -335,6 +376,11 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.is_auth(config, req, {
                 anyResources: true,
             });
+
+            if (process.env.StackName !== 'test') {
+                const { safe, reason } = await isSafeUrl(req.query.layer);
+                if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
+            }
 
             const base = new EsriBase(req.query.layer);
 

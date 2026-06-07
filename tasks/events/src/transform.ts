@@ -9,6 +9,8 @@ import path from 'node:path';
 import cp from 'node:child_process';
 
 import Tippecanoe from './tippecanoe.ts';
+import { countFeatures } from './utils.ts';
+import { isPMTiles } from './sniff.ts';
 
 // Formats
 import KML from './transforms/kml.ts';
@@ -16,7 +18,7 @@ import Translate from './transforms/translate.ts';
 import GeoJSON from './transforms/geojson.ts';
 import MBTiles from './transforms/mbtiles.ts';
 import { createImportResult } from './api.ts';
-import { fetch } from 'undici';
+import { fetch } from '@tak-ps/node-safeurl';
 
 const FORMATS = [KML, Translate, GeoJSON, MBTiles];
 const formats = new Map();
@@ -64,6 +66,7 @@ export default class DataTransform {
             const iconset = randomUUID();
 
             const iconsetRes = await fetch(new URL(`/api/iconset`, this.msg.api), {
+                safeUrlAllow: [this.msg.api],
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -111,6 +114,7 @@ export default class DataTransform {
                     }
 
                     const iconRes = await fetch(url, {
+                        safeUrlAllow: [this.msg.api],
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -128,6 +132,7 @@ export default class DataTransform {
                 }
 
                 const regen = await fetch(new URL(`/api/iconset/${iconset}/regen`, this.msg.api), {
+                    safeUrlAllow: [this.msg.api],
                     method: 'POST',
                     headers: {
                         Authorization: `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
@@ -139,6 +144,7 @@ export default class DataTransform {
                 }
 
                 const res = await fetch(new URL(`/api/profile/asset/${this.asset.id}`, this.msg.api), {
+                    safeUrlAllow: [this.msg.api],
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -202,6 +208,7 @@ export default class DataTransform {
 
             artifacts.push({ ext: '.geojsonld' });
             const res = await fetch(new URL(`/api/profile/asset/${this.asset.id}`, this.msg.api), {
+                safeUrlAllow: [this.msg.api],
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -217,6 +224,13 @@ export default class DataTransform {
             }
 
             const tp = new Tippecanoe();
+
+            // Check for zero features before tiling
+            const featureCount = await countFeatures(conversion.asset);
+            if (featureCount === 0) {
+                throw new Error(`No features found in ${conversion.asset}. Cannot create tileset.`);
+            }
+            console.log(`Found ${featureCount} features to tile`);
 
             console.log(`ok - tiling ${conversion.asset}`);
             await tp.tile(
@@ -247,12 +261,19 @@ export default class DataTransform {
             console.log(`ok - converted: ${path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')}`);
         }
 
+        // Validate PMTiles format before uploading
+        const pmtilesPath = path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles');
+        if (!await isPMTiles(pmtilesPath)) {
+            throw new Error(`Invalid PMTiles file: ${pmtilesPath}. The file does not have a valid PMTiles magic number.`);
+        }
+        console.log(`Validated PMTiles format for ${pmtilesPath}`);
+
         const pmuploader = new Upload({
             client: s3,
             params: {
                 Bucket: this.msg.bucket,
                 Key: `profile/${this.msg.job.username}/${this.asset.id}.pmtiles`,
-                Body: fs.createReadStream(path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')),
+                Body: fs.createReadStream(pmtilesPath),
             },
         });
 
@@ -260,6 +281,7 @@ export default class DataTransform {
 
         artifacts.push({ ext: '.pmtiles' });
         const res = await fetch(new URL(`/api/profile/asset/${this.asset.id}`, this.msg.api), {
+            safeUrlAllow: [this.msg.api],
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',

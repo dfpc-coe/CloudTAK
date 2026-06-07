@@ -5,7 +5,7 @@ import { Worker } from 'node:worker_threads';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import jwt from 'jsonwebtoken';
-import { fetch } from 'undici';
+import { fetch } from '@tak-ps/node-safeurl';
 
 export default class WorkerPool extends EventEmitter {
     interval: NodeJS.Timer;
@@ -99,6 +99,7 @@ export default class WorkerPool extends EventEmitter {
 
     async success(importid: number): Promise<boolean> {
         const res = await fetch(new URL(`/api/import/${importid}`, this.api), {
+            safeUrlAllow: [this.api],
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -116,6 +117,7 @@ export default class WorkerPool extends EventEmitter {
 
     async lock(importid: number): Promise<Import> {
         const res = await fetch(new URL(`/api/import/${importid}`, this.api), {
+            safeUrlAllow: [this.api],
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -136,6 +138,7 @@ export default class WorkerPool extends EventEmitter {
         error: string,
     ): Promise<boolean> {
         const res = await fetch(new URL(`/api/import/${importid}`, this.api), {
+            safeUrlAllow: [this.api],
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -166,6 +169,7 @@ export default class WorkerPool extends EventEmitter {
         url.searchParams.set('status', 'Pending');
 
         const res = await fetch(url, {
+            safeUrlAllow: [this.api],
             method: 'GET',
             headers: {
                 Authorization: `Bearer etl.${jwt.sign({ access: 'import', internal: true }, this.secret)}`,

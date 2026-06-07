@@ -118,16 +118,48 @@
                 </div>
 
                 <template v-if='!isSharedAsset(asset)'>
-                    <div
-                        class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
-                        @click.stop.prevent='emit("download", asset)'
-                    >
-                        <IconDownload
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span class='mx-2'>Download Original</span>
-                    </div>
+                    <TablerDropdown>
+                        <template #default>
+                            <div
+                                class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
+                            >
+                                <IconDownload
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <span class='mx-2'>Download</span>
+                            </div>
+                        </template>
+                        <template #dropdown>
+                            <div
+                                class='cursor-pointer cloudtak-hover d-flex align-items-center px-3 py-2 user-select-none'
+                                role='menuitem'
+                                tabindex='0'
+                                @click.stop.prevent='emit("download", asset, "original")'
+                                @keyup.enter='emit("download", asset, "original")'
+                            >
+                                <IconFile
+                                    :size='24'
+                                    stroke='1'
+                                />
+                                <span class='mx-2'>{{ asset.name }}</span>
+                            </div>
+                            <div
+                                v-if='assetSupportsOverlay(asset)'
+                                class='cursor-pointer cloudtak-hover d-flex align-items-center px-3 py-2 user-select-none'
+                                role='menuitem'
+                                tabindex='0'
+                                @click.stop.prevent='emit("download", asset, "pmtiles")'
+                                @keyup.enter='emit("download", asset, "pmtiles")'
+                            >
+                                <IconMap
+                                    :size='24'
+                                    stroke='1'
+                                />
+                                <span class='mx-2'>{{ pmtilesName(asset) }}</span>
+                            </div>
+                        </template>
+                    </TablerDropdown>
                     <div
                         class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
                         role='menuitem'
@@ -230,7 +262,8 @@ import {
     TablerIconButton,
     TablerInput,
     TablerBytes,
-    TablerEpoch
+    TablerEpoch,
+    TablerDropdown
 } from '@tak-ps/vue-tabler';
 import {
     IconAmbulance,
@@ -240,7 +273,9 @@ import {
     IconDownload,
     IconCursorText,
     IconFolderSymlink,
-    IconBroadcast
+    IconBroadcast,
+    IconFile,
+    IconMap
 } from '@tabler/icons-vue';
 
 const props = defineProps<{
@@ -256,7 +291,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     'create-overlay': [asset: ProfileFile];
-    'download': [asset: ProfileFile];
+    'download': [asset: ProfileFile, type: 'original' | 'pmtiles'];
     'share-mission': [asset: ProfileFile];
     'share-package': [asset: ProfileFile];
     'share-channel': [asset: ProfileFile];
@@ -279,6 +314,12 @@ function isSharedAsset(asset: ProfileFile): boolean {
 
 function assetSupportsOverlay(asset: ProfileFile): boolean {
     return asset.artifacts.some((artifact) => artifact.ext === '.pmtiles');
+}
+
+function pmtilesName(asset: ProfileFile): string {
+    const dot = asset.name.lastIndexOf('.');
+    const base = dot > 0 ? asset.name.slice(0, dot) : asset.name;
+    return base + '.pmtiles';
 }
 
 function hasSharedChannels(asset: ProfileFile): boolean {

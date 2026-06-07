@@ -1,6 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import type { Response } from 'express';
-import typedFetch from '../fetch.js';
+import { fetch as typedFetch } from '@tak-ps/node-safeurl';
 import type { Static } from '@sinclair/typebox';
 import { Basemap_Type } from '../enums.js';
 import { BasemapProtocol, TileJSONActions, TileOpts } from '../interface-basemap.js';

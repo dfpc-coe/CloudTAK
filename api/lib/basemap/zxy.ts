@@ -1,4 +1,5 @@
 import undici from 'undici';
+import { isSafeUrl } from '@tak-ps/node-safeurl';
 import type { Response } from 'express';
 import Err from '@openaddresses/batch-error';
 import { BasemapProtocol, TileOpts } from '../interface-basemap.js';
@@ -38,6 +39,9 @@ export default class ZXYBasemap extends BasemapProtocol {
         );
 
         try {
+            const { safe, reason } = await isSafeUrl(url.href);
+            if (!safe) throw new Err(400, null, `Blocked tile URL: ${reason}`);
+
             const stream = await undici.pipeline(url, {
                 method: 'GET',
                 headers: opts.headers as Record<string, string>,

@@ -2,6 +2,7 @@ import { Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { fetch, Headers, Response } from 'undici';
+import { isSafeUrl } from '@tak-ps/node-safeurl';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 
@@ -251,6 +252,9 @@ export default async function router(schema: Schema, config: Config) {
             if (!whitelist.has(parsed.origin)) {
                 throw new Err(403, null, `Proxy origin ${parsed.origin} is not allowed`);
             }
+
+            const { safe, reason } = await isSafeUrl(parsed.href, { allow: [...whitelist] });
+            if (!safe) throw new Err(403, null, `Blocked proxy URL: ${reason}`);
 
             const method = String(req.body.method || 'GET').toUpperCase() as typeof ALLOWED_METHODS[number];
             if (!ALLOWED_METHODS.includes(method)) {
