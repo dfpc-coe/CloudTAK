@@ -3,7 +3,7 @@ import EsriDump from 'esri-dump';
 import { Static, Type } from '@sinclair/typebox';
 import { OptionalTileJSON } from './types.js';
 import { Basemap_Format, Basemap_Type, Basemap_Scheme } from './enums.js';
-import { fetch } from '@tak-ps/etl';
+import { fetch } from '@tak-ps/node-safeurl';
 import { ESRILayerList } from './esri/types.js';
 import {
     DefaultLayerPoints,
@@ -169,9 +169,7 @@ export class EsriBase {
                 error: Type.Optional(Type.Object({
                     message: Type.String(),
                 })),
-            }), {
-                verbose: true,
-            });
+            }), { verbose: true });
 
             if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
             if (!json.currentVersion) throw new Err(400, null, 'Could not determine ESRI Server Version, is this an ESRI Server?');
@@ -311,9 +309,7 @@ class EsriProxyPortal {
                 }
             }
 
-            return await res.typed(ESRIPortal, {
-                verbose: true,
-            });
+            return await res.typed(ESRIPortal, { verbose: true });
         } catch (err) {
             if (err instanceof Error && err.name === 'PublicError') throw err;
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
