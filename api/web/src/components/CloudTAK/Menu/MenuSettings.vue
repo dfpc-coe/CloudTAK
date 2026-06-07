@@ -67,6 +67,19 @@
                 </div>
             </StandardItem>
             <StandardItem
+                @click='router.push("/menu/settings/sessions")'
+            >
+                <div class='d-flex align-items-center px-2 py-2'>
+                    <IconDeviceDesktop
+                        :size='32'
+                        stroke='1'
+                    />
+                    <div class='ms-2 flex-grow-1 font-weight-bold'>
+                        Login Sessions
+                    </div>
+                </div>
+            </StandardItem>
+            <StandardItem
                 @click='refreshApp()'
             >
                 <div class='d-flex align-items-center px-2 py-2'>
@@ -95,6 +108,7 @@ import {
     IconAdjustments,
     IconLock,
     IconFingerprint,
+    IconDeviceDesktop,
 } from '@tabler/icons-vue';
 import { useMapStore } from '../../../stores/map.ts';
 
