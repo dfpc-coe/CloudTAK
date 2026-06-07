@@ -3,6 +3,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { CoTParser } from '@tak-ps/node-cot';
+import { Type } from '@sinclair/typebox';
 import { StandardResponse, FeatureResponse } from '../lib/types.js';
 import { ProfileConnConfig } from '../lib/connection-config.js';
 
@@ -13,13 +14,19 @@ export default async function router(schema: Schema, config: Config) {
         description: `
             Submit a live location update for the authenticated user.
             The feature is converted to CoT and written to the user's TAK
-            server connection.
+            server connection. The CoT UID is always derived server-side from
+            the authenticated user's email, so the id field in the request body
+            is ignored.
         `,
-        body: FeatureResponse,
+        body: Type.Composite([FeatureResponse, Type.Object({ id: Type.Optional(Type.String()) })]),
         res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
+
+            // Always derive the CoT UID from the authenticated identity so the
+            // client never needs to read its own username from local storage.
+            req.body.id = `ANDROID-CloudTAK-${user.email}`;
 
             // Ensure the user's TAK profile connection exists and is ready
             let pooledClient = config.conns.get(user.email);

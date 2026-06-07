@@ -170,6 +170,10 @@ export class GeolocationPermission {
                     await this.startBackgroundWatch(locationHandler);
                 } else {
                     await this.startForegroundWatch(locationHandler);
+                    // Proactively request "Always" location permission while in the foreground.
+                    // iOS will only show the upgrade dialog when the app is visible; calling
+                    // addWatcher inside visibilitychange (background transition) is too late.
+                    void this.requestBackgroundPermission();
                 }
                 this.setupVisibilityListener(locationHandler);
             } else {
@@ -178,6 +182,19 @@ export class GeolocationPermission {
             }
         } catch (err) {
             console.error('Failed to start location watch', err);
+        }
+    }
+
+    /**
+     * Briefly starts and removes a background watcher solely to trigger
+     * iOS's "Always Allow" location permission upgrade dialog in the foreground.
+     */
+    private async requestBackgroundPermission(): Promise<void> {
+        try {
+            const id = await GeolocationPermission.watchBackgroundLocation(() => { /* permission probe only */ });
+            await GeolocationPermission.clearBackgroundLocationWatch(id);
+        } catch (err) {
+            console.warn('Background location permission request failed', err);
         }
     }
 
