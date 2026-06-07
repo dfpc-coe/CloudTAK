@@ -133,7 +133,10 @@
                         <template #dropdown>
                             <div
                                 class='cursor-pointer cloudtak-hover d-flex align-items-center px-3 py-2 user-select-none'
+                                role='menuitem'
+                                tabindex='0'
                                 @click.stop.prevent='emit("download", asset, "original")'
+                                @keyup.enter='emit("download", asset, "original")'
                             >
                                 <IconFile
                                     :size='24'
@@ -144,7 +147,10 @@
                             <div
                                 v-if='assetSupportsOverlay(asset)'
                                 class='cursor-pointer cloudtak-hover d-flex align-items-center px-3 py-2 user-select-none'
+                                role='menuitem'
+                                tabindex='0'
                                 @click.stop.prevent='emit("download", asset, "pmtiles")'
+                                @keyup.enter='emit("download", asset, "pmtiles")'
                             >
                                 <IconMap
                                     :size='24'

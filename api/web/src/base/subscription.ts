@@ -207,7 +207,7 @@ export default class Subscription {
         } else {
             if (!opts.subscribed) opts.subscribed = false;
 
-            const { data: mission } = await server.GET('/api/marti/missions/{:name}', {
+            const { data: mission, error: missionError } = await server.GET('/api/marti/missions/{:name}', {
                 params: {
                     path: { ':name': guid },
                     query: { changes: false, logs: false }
@@ -215,12 +215,16 @@ export default class Subscription {
                 headers: Subscription.headers(opts.missiontoken)
             });
 
-            const { data: role } = await server.GET('/api/marti/missions/{:name}/role', {
+            if (missionError || !mission) throw new Error('Failed to load mission');
+
+            const { data: role, error: roleError } = await server.GET('/api/marti/missions/{:name}/role', {
                 params: {
                     path: { ':name': guid }
                 },
                 headers: Subscription.headers(opts.missiontoken)
             });
+
+            if (roleError || !role) throw new Error('Failed to load mission role');
 
             const sub = new Subscription(
                 mission as unknown as Mission,
@@ -377,13 +381,15 @@ export default class Subscription {
     };
 
     async fetch(): Promise<Mission> {
-        const { data } = await server.GET('/api/marti/missions/{:name}', {
+        const { data, error } = await server.GET('/api/marti/missions/{:name}', {
             params: {
                 path: { ':name': this.guid },
                 query: { changes: false, logs: false }
             },
             headers: Subscription.headers(this.missiontoken)
         });
+
+        if (error || !data) throw new Error('Failed to fetch mission');
 
         const meta = data as unknown as Mission;
 
@@ -484,7 +490,7 @@ export default class Subscription {
     }
 
     async invite(invitee: string, role = 'MISSION_SUBSCRIBER'): Promise<void> {
-        await server.POST('/api/marti/missions/{:guid}/invite', {
+        const { error } = await server.POST('/api/marti/missions/{:guid}/invite', {
             params: {
                 path: { ':guid': this.guid }
             },
@@ -495,15 +501,19 @@ export default class Subscription {
                 role: role as 'MISSION_OWNER' | 'MISSION_SUBSCRIBER' | 'MISSION_READONLY_SUBSCRIBER'
             }
         });
+
+        if (error) throw new Error('Failed to invite user to mission');
     }
 
     async invites(): Promise<MissionInvite[]> {
-        const { data } = await server.GET('/api/marti/missions/{:guid}/invite', {
+        const { data, error } = await server.GET('/api/marti/missions/{:guid}/invite', {
             params: {
                 path: { ':guid': this.guid }
             },
             headers: Subscription.headers(this.missiontoken)
         });
+
+        if (error || !data) throw new Error('Failed to fetch mission invites');
 
         return (data as unknown as { data: MissionInvite[] }).data;
     }
