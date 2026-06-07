@@ -16,6 +16,13 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.7.0 - 2026-06-07
+
+- :rocket: Allow downloading PMTiles files from the Profile Files pane
+- :bug: Fix issue where an MBTiles would be generated instead of a PMTiles output
+- :rocket: Migrate Data Sync Subscription manager to be type safe
+- :rocket: Support `any` orientation when running as a PWA - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1469
+
 ### v13.6.0 - 2026-06-05
 
 - :bug: More strictly parse incoming URLs to further protect against an SSRF attack
