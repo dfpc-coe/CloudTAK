@@ -210,15 +210,16 @@ export default class Subscription {
             const { data: mission } = await server.GET('/api/marti/missions/{:name}', {
                 params: {
                     path: { ':name': guid },
-                    header: Subscription.headers(opts.missiontoken)
-                }
+                    query: { changes: false, logs: false }
+                },
+                headers: Subscription.headers(opts.missiontoken)
             });
 
             const { data: role } = await server.GET('/api/marti/missions/{:name}/role', {
                 params: {
-                    path: { ':name': guid },
-                    header: Subscription.headers(opts.missiontoken)
-                }
+                    path: { ':name': guid }
+                },
+                headers: Subscription.headers(opts.missiontoken)
             });
 
             const sub = new Subscription(
@@ -294,9 +295,9 @@ export default class Subscription {
 
             const { data } = await server.PATCH('/api/marti/missions/{:name}', {
                 params: {
-                    path: { ':name': this.guid },
-                    header: Subscription.headers(this.missiontoken)
+                    path: { ':name': this.guid }
                 },
+                headers: Subscription.headers(this.missiontoken),
                 body: patch
             });
 
@@ -320,9 +321,9 @@ export default class Subscription {
     async delete(): Promise<void> {
         const { data } = await server.DELETE('/api/marti/missions/{:name}', {
             params: {
-                path: { ':name': this.guid },
-                header: Subscription.headers(this.missiontoken)
-            }
+                path: { ':name': this.guid }
+            },
+            headers: Subscription.headers(this.missiontoken)
         });
 
         if (!data) throw new Error('Mission Error');
@@ -379,8 +380,9 @@ export default class Subscription {
         const { data } = await server.GET('/api/marti/missions/{:name}', {
             params: {
                 path: { ':name': this.guid },
-                header: Subscription.headers(this.missiontoken)
-            }
+                query: { changes: false, logs: false }
+            },
+            headers: Subscription.headers(this.missiontoken)
         });
 
         const meta = data as unknown as Mission;
@@ -484,13 +486,13 @@ export default class Subscription {
     async invite(invitee: string, role = 'MISSION_SUBSCRIBER'): Promise<void> {
         await server.POST('/api/marti/missions/{:guid}/invite', {
             params: {
-                path: { ':guid': this.guid },
-                header: Subscription.headers(this.missiontoken)
+                path: { ':guid': this.guid }
             },
+            headers: Subscription.headers(this.missiontoken),
             body: {
                 type: 'callsign',
                 invitee: invitee,
-                role: role
+                role: role as 'MISSION_OWNER' | 'MISSION_SUBSCRIBER' | 'MISSION_READONLY_SUBSCRIBER'
             }
         });
     }
@@ -498,9 +500,9 @@ export default class Subscription {
     async invites(): Promise<MissionInvite[]> {
         const { data } = await server.GET('/api/marti/missions/{:guid}/invite', {
             params: {
-                path: { ':guid': this.guid },
-                header: Subscription.headers(this.missiontoken)
-            }
+                path: { ':guid': this.guid }
+            },
+            headers: Subscription.headers(this.missiontoken)
         });
 
         return (data as unknown as { data: MissionInvite[] }).data;
@@ -511,11 +513,11 @@ export default class Subscription {
             params: {
                 path: { ':guid': this.guid },
                 query: {
-                    type: invite.type,
+                    type: invite.type as 'callsign' | 'group' | 'team' | 'clientUid' | 'userName',
                     invitee: invite.invitee
-                },
-                header: Subscription.headers(this.missiontoken)
-            }
+                }
+            },
+            headers: Subscription.headers(this.missiontoken)
         });
     }
 
@@ -523,18 +525,18 @@ export default class Subscription {
         await server.DELETE('/api/marti/missions/{:guid}/user', {
             params: {
                 path: { ':guid': this.guid },
-                query: { uid },
-                header: Subscription.headers(this.missiontoken)
-            }
+                query: { uid }
+            },
+            headers: Subscription.headers(this.missiontoken)
         });
     }
 
     async subscriptions(): Promise<MissionSubscriptions> {
         const { data } = await server.GET('/api/marti/missions/{:name}/subscriptions/roles', {
             params: {
-                path: { ':name': this.guid },
-                header: Subscription.headers(this.missiontoken)
-            }
+                path: { ':name': this.guid }
+            },
+            headers: Subscription.headers(this.missiontoken)
         });
 
         return (data as unknown as { data: MissionSubscriptions }).data;
@@ -543,9 +545,9 @@ export default class Subscription {
     async layerList(): Promise<MissionLayerList> {
         const { data } = await server.GET('/api/marti/missions/{:name}/layer', {
             params: {
-                path: { ':name': this.guid },
-                header: Subscription.headers(this.missiontoken)
-            }
+                path: { ':name': this.guid }
+            },
+            headers: Subscription.headers(this.missiontoken)
         });
 
         const list = data as unknown as MissionLayerList;
@@ -564,9 +566,9 @@ export default class Subscription {
     ): Promise<MissionLayer> {
         const { data } = await server.PATCH('/api/marti/missions/{:name}/layer/{:uid}', {
             params: {
-                path: { ':name': this.guid, ':uid': layerid },
-                header: Subscription.headers(this.missiontoken)
+                path: { ':name': this.guid, ':uid': layerid }
             },
+            headers: Subscription.headers(this.missiontoken),
             body: layer
         });
 
@@ -578,9 +580,9 @@ export default class Subscription {
     ): Promise<MissionLayer> {
         const { data } = await server.POST('/api/marti/missions/{:name}/layer', {
             params: {
-                path: { ':name': this.guid },
-                header: Subscription.headers(this.missiontoken)
+                path: { ':name': this.guid }
             },
+            headers: Subscription.headers(this.missiontoken),
             body: layer
         });
 
@@ -592,9 +594,9 @@ export default class Subscription {
     ): Promise<void> {
         await server.DELETE('/api/marti/missions/{:name}/layer/{:uid}', {
             params: {
-                path: { ':name': this.guid, ':uid': layeruid },
-                header: Subscription.headers(this.missiontoken)
-            }
+                path: { ':name': this.guid, ':uid': layeruid }
+            },
+            headers: Subscription.headers(this.missiontoken)
         });
     }
 }
