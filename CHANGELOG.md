@@ -16,6 +16,10 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.8.0 - 2026-06-07
+
+- :tada: Use customer provided logo for generating PWA logos
+
 ### v13.7.0 - 2026-06-07
 
 - :rocket: Allow downloading PMTiles files from the Profile Files pane
