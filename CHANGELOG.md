@@ -16,7 +16,7 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
-### v13.8.0 - 2026-06-07
+### v13.9.0 - 2026-06-07
 
 - :tada: Use customer provided logo for generating PWA logos
 
