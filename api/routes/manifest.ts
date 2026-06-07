@@ -45,7 +45,7 @@ export default async function router(schema: Schema, config: Config) {
                 lang: 'en',
                 scope: '/',
                 icons: Array.from(logos.keys()).map(size => ({
-                    src: `/manifest.webmanifest/logos/${size}`,
+                    src: `/api/manifest.webmanifest/logos/${size}`,
                     sizes: `${size}x${size}`,
                     type: 'image/png',
                 })),
