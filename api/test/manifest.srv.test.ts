@@ -60,7 +60,7 @@ test('GET: /api/manifest.webmanifest - logo configured', async () => {
 
         for (const icon of res.body.icons) {
             assert.equal(icon.type, 'image/png');
-            assert.match(icon.src, /^\/manifest\.webmanifest\/logos\/\d+$/);
+            assert.match(icon.src, /^\/api\/manifest\.webmanifest\/logos\/\d+$/);
         }
     } catch (err) {
         assert.ifError(err);
