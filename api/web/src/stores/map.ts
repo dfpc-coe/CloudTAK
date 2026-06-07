@@ -795,20 +795,17 @@ export const useMapStore = defineStore('cloudtak', {
 
         submitLocationHttp: async function(position: Position): Promise<void> {
             try {
-                const [callsignConfig, typeConfig, remarksConfig, groupConfig, roleConfig, usernameConfig] = await Promise.all([
+                const [callsignConfig, typeConfig, remarksConfig, groupConfig, roleConfig] = await Promise.all([
                     ProfileConfig.get('tak_callsign'),
                     ProfileConfig.get('tak_type'),
                     ProfileConfig.get('tak_remarks'),
                     ProfileConfig.get('tak_group'),
                     ProfileConfig.get('tak_role'),
-                    ProfileConfig.get('username'),
                 ]);
 
-                const username = usernameConfig?.value as string | undefined;
-                if (!username) return;
-
-                const uid = `ANDROID-CloudTAK-${username}`;
-                const callsign = callsignConfig?.value as string || 'Unknown';
+                // Use the store's in-memory callsign as a reliable fallback; the Dexie
+                // read may return undefined when IndexedDB is throttled in background.
+                const callsign = (callsignConfig?.value as string) || this.callsign || 'Unknown';
                 const type = typeConfig?.value as string || 'a-f-G-E-V-C';
                 const remarks = remarksConfig?.value as string || '';
                 const group = groupConfig?.value as string || 'Cyan';
@@ -818,8 +815,10 @@ export const useMapStore = defineStore('cloudtak', {
                 const now = new Date();
                 const stale = new Date(now.getTime() + 60000);
 
+                // id is intentionally omitted — the server derives the CoT UID
+                // from the authenticated user's email, avoiding any need to read
+                // the username from IndexedDB (which can be throttled on iOS background).
                 const body = {
-                    id: uid,
                     path: '/',
                     type: 'Feature' as const,
                     properties: {
