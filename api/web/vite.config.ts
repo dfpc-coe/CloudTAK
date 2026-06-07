@@ -1,7 +1,6 @@
 import { defineConfig, type ViteDevServer } from 'vite'
 import path from 'node:path';
 import vue from '@vitejs/plugin-vue'
-import icons from './public/logos/icons.ts';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 const milsymbolBrowserBundle = path.resolve(__dirname, 'node_modules/milsymbol/dist/milsymbol.js');
