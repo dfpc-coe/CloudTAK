@@ -6,8 +6,11 @@ import { CoTParser } from '@tak-ps/node-cot';
 import { Type } from '@sinclair/typebox';
 import { StandardResponse } from '../lib/types.js';
 import { ProfileConnConfig } from '../lib/connection-config.js';
+import ProfileControl from '../lib/control/profile.js';
 
 export default async function router(schema: Schema, config: Config) {
+    const profileControl = new ProfileControl(config);
+
     await schema.put('/profile/location', {
         name: 'Submit Location',
         group: 'ProfileLocation',
@@ -29,14 +32,14 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const profile = await config.models.Profile.from(user.email);
+            const profile = await profileControl.from(user.email);
 
             // Ensure the user's TAK profile connection exists and is ready
             let pooledClient = config.conns.get(user.email);
             let awaitSecure: Promise<void> | undefined;
 
             if (!pooledClient) {
-                if (!profile.auth.cert || !profile.auth.key) {
+                if (!profile.auth?.cert || !profile.auth?.key) {
                     throw new Err(400, null, 'Profile auth certificate not configured');
                 }
 
@@ -70,6 +73,7 @@ export default async function router(schema: Schema, config: Config) {
                     stale: stale.toISOString(),
                     center: [req.body.longitude, req.body.latitude],
                     remarks: profile.tak_remarks || '',
+                    ...(req.body.accuracy !== undefined && { ce: req.body.accuracy }),
                     droid: callsign,
                     contact: { endpoint: '*:-1:stcp', callsign },
                     group: { name: profile.tak_group || 'Cyan', role: profile.tak_role || 'Team Member' },

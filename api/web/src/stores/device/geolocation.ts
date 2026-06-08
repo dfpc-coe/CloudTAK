@@ -190,11 +190,20 @@ export class GeolocationPermission {
      * iOS's "Always Allow" location permission upgrade dialog in the foreground.
      */
     private async requestBackgroundPermission(): Promise<void> {
+        let id: CallbackID | undefined;
         try {
-            const id = await GeolocationPermission.watchBackgroundLocation(() => { /* permission probe only */ });
-            await GeolocationPermission.clearBackgroundLocationWatch(id);
+            id = await GeolocationPermission.watchBackgroundLocation(() => { /* permission probe only */ });
         } catch (err) {
             console.warn('Background location permission request failed', err);
+            return;
+        } finally {
+            if (id !== undefined) {
+                try {
+                    await GeolocationPermission.clearBackgroundLocationWatch(id);
+                } catch (cleanupErr) {
+                    console.warn('Failed to clear background location permission probe watcher', cleanupErr);
+                }
+            }
         }
     }
 
