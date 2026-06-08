@@ -384,6 +384,10 @@ export default async function router(schema: Schema, config: Config) {
                 iconset: iconset.uid,
             });
 
+            await config.models.Iconset.commit(iconset.uid, {
+                updated: new Date()
+            });
+
             res.json(icon);
 
             if (req.query.regen) {
@@ -545,6 +549,10 @@ export default async function router(schema: Schema, config: Config) {
 
             icon = await config.models.Icon.commit(icon.id, req.body);
 
+            await config.models.Iconset.commit(iconset.uid, {
+                updated: new Date()
+            });
+
             res.json(icon);
 
             await Sprites.regen(config, iconset.uid);
@@ -578,6 +586,10 @@ export default async function router(schema: Schema, config: Config) {
                 iconset = ${req.params.iconset}
                 AND id = ${req.params.icon}
             `);
+
+            await config.models.Iconset.commit(iconset.uid, {
+                updated: new Date()
+            });
 
             res.json({
                 status: 200,
