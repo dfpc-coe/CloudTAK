@@ -1,5 +1,5 @@
 import { db } from '../database.ts';
-import { std, stdurl } from '../std.ts';
+import { server } from '../std.ts';
 import type {
     MissionChanges,
     MissionChange
@@ -34,13 +34,14 @@ export default class SubscriptionChanges {
     }
 
     async refresh(): Promise<void> {
-        const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.guid) + '/changes');
-
-        const list = await std(url, {
-            method: 'GET',
-            token: this.token,
+        const { data, error } = await server.GET('/api/marti/missions/{:name}/changes', {
+            params: { path: { ':name': this.guid } },
             headers: this.headers()
-        }) as MissionChanges;
+        });
+
+        if (error || !data) throw new Error('Failed to fetch mission changes');
+
+        const list = data as unknown as MissionChanges;
 
         await db.transaction('rw', db.subscription_changes, async () => {
             await db.subscription_changes

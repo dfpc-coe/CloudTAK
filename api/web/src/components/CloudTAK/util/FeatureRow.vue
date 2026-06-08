@@ -27,8 +27,7 @@
                 "cloudtak-hover": hover
             }'
             :hover='hover'
-            @click.exact='flyToClick'
-            @click.ctrl='selectClick'
+            @click='(e: MouseEvent) => { if (e.ctrlKey) selectClick(); else flyToClick(); }'
         >
             <div
                 v-if='props.gripHandle'

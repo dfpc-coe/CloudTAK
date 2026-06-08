@@ -105,10 +105,13 @@ function mercatorFraction(lon: number, lat: number, zoom: number): { x: number; 
     };
 }
 
+export type ElevationFetch = (url: string) => Promise<Pick<Response, 'ok' | 'status' | 'statusText' | 'arrayBuffer'>>;
+
 export async function getElevationProfile(
     tileurl: string,
     geometry: LineString,
     opts: ElevationProfileOptions,
+    fetchFn: ElevationFetch = url => fetch(url),
 ): Promise<ElevationProfile> {
     for (const token of ['{z}', '{x}', '{y}']) {
         if (!tileurl.includes(token)) {
@@ -224,7 +227,7 @@ export async function getElevationProfile(
                     throw new Err(502, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch tile from S3');
                 }
             } else {
-                const response = await fetch(resolved);
+                const response = await fetchFn(resolved);
 
                 if (response.status === 204 || response.status === 404) return null;
                 if (!response.ok) {

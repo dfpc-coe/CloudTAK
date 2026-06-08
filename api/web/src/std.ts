@@ -130,9 +130,17 @@ export async function std(
         err.body = bdy;
         throw err;
     } else if (res.status === 401) {
-        if (!isWebWorker()) {
+        // Verify the token is actually invalid before removing it.
+        // An upstream service may return an unrelated 401 that does not
+        // mean the stored token has expired or been revoked.
+        const loginHeaders: Record<string, string> = {};
+        if (authToken) loginHeaders['Authorization'] = `Bearer ${authToken}`;
+        const loginRes = await fetch(stdurl('/login'), { headers: loginHeaders });
+
+        if (loginRes.status === 401 && !isWebWorker()) {
             await Preferences.remove({ key: 'token' });
         }
+
         throw new Error('401');
     }
 

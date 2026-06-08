@@ -1,5 +1,5 @@
 import { db } from '../database.ts';
-import { std } from '../std.ts';
+import { server } from '../std.ts';
 import type { DBSubscriptionContent } from '../database.ts';
 import type { Mission } from '../types.ts';
 
@@ -64,8 +64,8 @@ export default class SubscriptionContents {
      * Delete/detach a content entry from the mission and remove it from the local database
      */
     async delete(hash: string): Promise<void> {
-        await std(`/api/marti/missions/${this.guid}/upload/${hash}`, {
-            method: 'DELETE',
+        await server.DELETE('/api/marti/missions/{:name}/upload/{:hash}', {
+            params: { path: { ':name': this.guid, ':hash': hash } },
             headers: this.headers(),
         });
 

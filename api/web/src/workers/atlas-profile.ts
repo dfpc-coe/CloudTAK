@@ -205,9 +205,7 @@ export default class AtlasProfile {
         if (!this.username) {
             await this.loadServer();
 
-            await ProfileConfig.sync({
-                token: this.atlas.token
-            });
+            await ProfileConfig.sync();
 
             const callsign = await ProfileConfig.get('tak_callsign');
             const display_zoom = await ProfileConfig.get('display_zoom');
@@ -294,7 +292,7 @@ export default class AtlasProfile {
     async updateChannels(channels: Array<GroupChannel>): Promise<Array<GroupChannel>> {
         await this.postChannelStatus();
 
-        await GroupManager.update(channels, this.atlas.token);
+        await GroupManager.update(channels);
 
         return channels;
     }
@@ -308,7 +306,7 @@ export default class AtlasProfile {
     }
 
     async loadChannels(): Promise<Array<GroupChannel>> {
-        const channels = await GroupManager.list({ token: this.atlas.token });
+        const channels = await GroupManager.list();
 
         await this.postChannelStatus();
 
