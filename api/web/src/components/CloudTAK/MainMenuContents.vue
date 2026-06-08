@@ -242,7 +242,7 @@
                 >
                     <div class='d-flex justify-content-center mb-2'>
                         <TablerDropdown
-                            position='right'
+                            position='left'
                         >
                             <template #default>
                                 <TablerIconButton
