@@ -355,6 +355,8 @@ async function saveOverlay(): Promise<void> {
                     name: apiBody.name || '',
                     url: apiBody.url || '',
                     overlay: apiBody.overlay ?? false,
+                    hidden: apiBody.hidden ?? false,
+                    tilesize: apiBody.tilesize ?? 256,
                     sharing_enabled: apiBody.sharing_enabled ?? true,
                     snapping_enabled: apiBody.snapping_enabled ?? false,
                 },
