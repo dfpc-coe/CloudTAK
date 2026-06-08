@@ -33,18 +33,19 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
 
             const profile = await profileControl.from(user.email);
+            const rawProfile = await config.models.Profile.from(user.email);
 
             // Ensure the user's TAK profile connection exists and is ready
             let pooledClient = config.conns.get(user.email);
             let awaitSecure: Promise<void> | undefined;
 
             if (!pooledClient) {
-                if (!profile.auth?.cert || !profile.auth?.key) {
+                if (!rawProfile.auth?.cert || !rawProfile.auth?.key) {
                     throw new Err(400, null, 'Profile auth certificate not configured');
                 }
 
                 pooledClient = await config.conns.add(
-                    new ProfileConnConfig(config, user.email, profile.auth),
+                    new ProfileConnConfig(config, user.email, rawProfile.auth),
                 );
                 if (pooledClient!.tak.client && !pooledClient!.tak.client.authorized) {
                     awaitSecure = new Promise<void>(resolve =>
