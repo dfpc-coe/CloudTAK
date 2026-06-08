@@ -1,6 +1,6 @@
 import { db } from '../database.ts';
 import type { DBSubscriptionLog } from '../database.ts';
-import { server } from '../std.ts';
+import { server, downloadUrl } from '../std.ts';
 import type {
     MissionLog,
     MissionLogList
@@ -185,5 +185,15 @@ export default class SubscriptionLog {
         });
 
         await db.subscription_log.delete(logid);
+    }
+
+    async download(format: string): Promise<void> {
+        await downloadUrl(
+            `/api/marti/missions/${encodeURIComponent(this.guid)}/log?download=true&format=${format}`,
+            {
+                filename: `mission-logs.${format}`,
+                token: true
+            }
+        );
     }
 }

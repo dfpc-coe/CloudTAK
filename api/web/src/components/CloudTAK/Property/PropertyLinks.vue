@@ -220,11 +220,24 @@
                 </template>
 
                 <div class='overflow-hidden'>
-                    <div class='row row-cards mx-2 pt-2'>
+                    <div
+                        v-if='statusSummary.length'
+                        class='d-flex flex-wrap gap-1 mx-3 my-2'
+                    >
+                        <TablerBadge
+                            v-for='entry of statusSummary'
+                            :key='entry.status'
+                            class='d-flex align-items-center gap-1'
+                        >
+                            <span>{{ entry.status || 'Unknown' }}:</span>
+                            <span class='fw-bold'>{{ entry.count }}</span>
+                        </TablerBadge>
+                    </div>
+                    <div class='row row-cards mx-2'>
                         <div
                             v-for='(link, link_it) of responder_links'
                             :key='link_it'
-                            class='col-12 mb-2'
+                            class='col-12'
                         >
                             <div class='card cloudtak-accent border-0'>
                                 <div class='card-body p-2'>
@@ -307,6 +320,17 @@ const responder_links = computed(() => {
     return links.value.filter((link) => {
         return link.relation === 't-s';
     });
+});
+
+const statusSummary = computed(() => {
+    const counts = new Map<string, number>();
+    for (const link of responder_links.value) {
+        const status = link.remarks || 'Unknown';
+        counts.set(status, (counts.get(status) || 0) + 1);
+    }
+    return Array.from(counts.entries())
+        .map(([status, count]) => ({ status, count }))
+        .sort((a, b) => b.count - a.count);
 });
 
 function updateLinks(nextLinks: LinkEntry[]): void {

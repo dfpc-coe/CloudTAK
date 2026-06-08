@@ -157,7 +157,7 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { std, stdurl } from '../../std.ts';
+import { server } from '../../std.ts';
 import type { ETLLayer } from '../../types.ts';
 import PageFooter from '../PageFooter.vue';
 import LayerTemplateSelect from '../util/LayerTemplateSelect.vue';
@@ -219,14 +219,33 @@ onMounted(async () => {
 
 async function fetch() {
     loading.value.layer = true;
-    layer.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`) as LayerForm;
+    const res = await server.GET('/api/connection/{:connectionid}/layer/{:layerid}', {
+        params: {
+            query: {
+                alarms: true,
+                download: false
+            },
+            path: {
+                ':connectionid': Number(route.params.connectionid),
+                ':layerid': Number(route.params.layerid)
+            }
+        }
+    });
+    if (res.error) throw new Error(res.error.message);
+    layer.value = res.data as LayerForm;
     loading.value.layer = false;
 }
 
 async function deleteLayer() {
-    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`, {
-        method: 'DELETE'
+    const res = await server.DELETE('/api/connection/{:connectionid}/layer/{:layerid}', {
+        params: {
+            path: {
+                ':connectionid': Number(route.params.connectionid),
+                ':layerid': Number(route.params.layerid)
+            }
+        }
     });
+    if (res.error) throw new Error(res.error.message);
 
     router.push(`/connection/${route.params.connectionid}/layer`);
 }
@@ -246,11 +265,15 @@ async function create() {
     let savedLayer: ETLLayer;
 
     try {
-        let url: URL;
         if (route.params.layerid) {
-            url = stdurl(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`);
-            savedLayer = await std(url, {
-                method: 'PATCH',
+            const res = await server.PATCH('/api/connection/{:connectionid}/layer/{:layerid}', {
+                params: {
+                    query: { alarms: true },
+                    path: {
+                        ':connectionid': Number(route.params.connectionid),
+                        ':layerid': Number(route.params.layerid)
+                    }
+                },
                 body: {
                     name: layer.value.name,
                     description: layer.value.description,
@@ -258,10 +281,10 @@ async function create() {
                     logging: layer.value.logging,
                     protected: layer.value.protected,
                 }
-            }) as ETLLayer;
+            });
+            if (res.error) throw new Error(res.error.message);
+            savedLayer = res.data as ETLLayer;
         } else {
-            url = stdurl(`/api/connection/${route.params.connectionid}/layer`);
-
             let body = JSON.parse(JSON.stringify(layer.value));
             if (type.value === "template" && template.value) {
                 // These should be overwritten
@@ -269,7 +292,17 @@ async function create() {
                 body = { ...template.value, ...body };
             }
 
-            savedLayer = await std(url, { method: 'POST', body }) as ETLLayer;
+            const res = await server.POST('/api/connection/{:connectionid}/layer', {
+                params: {
+                    query: { alarms: true },
+                    path: {
+                        ':connectionid': Number(route.params.connectionid)
+                    }
+                },
+                body
+            });
+            if (res.error) throw new Error(res.error.message);
+            savedLayer = res.data as ETLLayer;
         }
 
         loading.value.layer = false;

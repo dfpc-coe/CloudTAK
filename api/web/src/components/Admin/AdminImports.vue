@@ -137,8 +137,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { Preferences } from '@capacitor/preferences';
-import { std, stdurl, server } from '../../std.ts';
+import { stdurl, server, downloadUrl } from '../../std.ts';
 import type { paths } from '@cloudtak/api-types';
 import type { Import, ImportList } from '../../types.ts';
 import StatusDot from '../util/StatusDot.vue';
@@ -234,8 +233,10 @@ async function listImportSchema() {
 
 async function retryImport(id: string) {
     try {
-        const url = stdurl(`/api/import/${id}/retry`);
-        await std(url, { method: 'POST' });
+        const res = await server.POST('/api/import/{:import}/retry', {
+            params: { path: { ':import': id } },
+        });
+        if (res.error) throw new Error(res.error.message);
         await fetchList();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
@@ -243,13 +244,9 @@ async function retryImport(id: string) {
 }
 
 async function downloadImport(id: string) {
-    const url = stdurl(`/api/import/${id}/raw`)
-    const { value: token } = await Preferences.get({ key: 'token' });
-    if (token) url.searchParams.set('token', token);
-    url.searchParams.set('download', String(true));
-    await std(url, {
-        download: true
-    })
+    const url = stdurl(`/api/import/${id}/raw`);
+    url.searchParams.set('download', 'true');
+    await downloadUrl(url, { token: true });
 }
 
 async function fetchList() {

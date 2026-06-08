@@ -155,7 +155,7 @@
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { std } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import type { ETLLayer, ETLLayerTaskCapabilities } from '../../../types.ts';
 import { validateJSON } from '../../../base/validators.ts';
 import {
@@ -282,13 +282,24 @@ async function reload() {
 async function saveLayer() {
     loading.value.save = true;
 
-    await std(`/api/connection/${props.layer.connection}/layer/${props.layer.id}/${direction.value}`, {
-        method: 'PATCH',
-        body: {
-            environment: environment.value,
-            config: config.value
+    const res = await server.PATCH(
+        direction.value === 'incoming'
+            ? '/api/connection/{:connectionid}/layer/{:layerid}/incoming'
+            : '/api/connection/{:connectionid}/layer/{:layerid}/outgoing',
+        {
+            params: {
+                path: {
+                    ':connectionid': Number(props.layer.connection),
+                    ':layerid': Number(props.layer.id)
+                }
+            },
+            body: {
+                environment: environment.value,
+                config: config.value
+            }
         }
-    });
+    );
+    if (res.error) throw new Error(res.error.message);
 
     disabled.value = true;
     loading.value.save = false;
