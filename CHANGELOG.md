@@ -16,6 +16,13 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.11.0 - 2026-06-08
+
+- :rocket: Ensure the user is prompted to allow background location updates
+- :rocket: Simplify use of background location reporting API to avoid need for IndexDB calls
+- :bug: Fixes dropdowns getting places behind GPU Canvas for maplibre by using the same teleport style for dropdiowns as is already used for modals - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1473
+- :bug: Continued improvements to Data Sync handling when they are deleted or access is removed upstream
+
 ### v13.10.1 - 2026-06-08
 
 - :bug: Fix failing PMTiles Test
