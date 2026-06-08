@@ -189,7 +189,7 @@ export default class SubscriptionLog {
 
     async download(format: string): Promise<void> {
         await downloadUrl(
-            `/api/marti/missions/${encodeURIComponent(this.guid)}/log?download=true&format=${format}`,
+            `/api/marti/missions/${encodeURIComponent(this.guid)}/log?download=true&format=${encodeURIComponent(format)}`,
             {
                 filename: `mission-logs.${format}`,
                 token: true
