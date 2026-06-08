@@ -36,7 +36,7 @@ export default class SubscriptionLog {
 
     async refresh(): Promise<void> {
         const { data, error } = await server.GET('/api/marti/missions/{:name}/log', {
-            params: { path: { ':name': this.guid } },
+            params: { path: { ':name': this.guid }, query: { format: 'json' as const, download: false } },
             headers: this.headers()
         });
 
@@ -143,7 +143,7 @@ export default class SubscriptionLog {
     async update(
         logid: string,
         body: {
-            dtg?: string;
+            dtg: string;
             content: string;
             contentHashes?: Array<string>;
             keywords?: Array<string>;

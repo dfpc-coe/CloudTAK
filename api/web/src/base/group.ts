@@ -1,6 +1,6 @@
 import { db } from '../database.ts';
 import { liveQuery, type Observable } from 'dexie';
-import { std, stdurl } from '../std.ts';
+import { server } from '../std.ts';
 import type { Group, GroupChannel } from '../types.ts';
 
 export default class GroupManager {
@@ -56,13 +56,12 @@ export default class GroupManager {
     }
 
     static async list(opts: {
-        token?: string;
         active?: boolean;
         direction?: string;
     } = {}): Promise<GroupChannel[]> {
         const cache = await db.cache.get('group');
         if (!cache) {
-            await GroupManager.sync(opts.token);
+            await GroupManager.sync();
         }
 
         let collection = db.group.toCollection();
@@ -93,13 +92,14 @@ export default class GroupManager {
         await db.group.bulkPut(channels);
     }
 
-    static async sync(token?: string): Promise<GroupChannel[]> {
-        const url = stdurl('/api/marti/group');
-        url.searchParams.set('useCache', 'true');
+    static async sync(): Promise<GroupChannel[]> {
+        const { data, error } = await server.GET('/api/marti/group', {
+            params: { query: { useCache: true } }
+        });
 
-        const res = await std(url, { token }) as { data: Group[] };
+        if (error || !data) throw new Error('Failed to sync groups');
 
-        const channels = GroupManager.merge(res.data);
+        const channels = GroupManager.merge(data.data as Group[]);
 
         await db.group.clear();
         await db.group.bulkPut(channels);
@@ -108,17 +108,15 @@ export default class GroupManager {
         return channels;
     }
 
-    static async update(channels: GroupChannel[], token?: string): Promise<GroupChannel[]> {
-        const url = stdurl('/api/marti/group');
-
+    static async update(channels: GroupChannel[]): Promise<GroupChannel[]> {
         // Explode merged channels back to individual direction entries for the API
         const apiGroups = GroupManager.explode(channels);
 
-        await std(url, {
-            method: 'PUT',
-            token,
+        const { error } = await server.PUT('/api/marti/group', {
             body: apiGroups
         });
+
+        if (error) throw new Error('Failed to update groups');
 
         await db.group.clear();
         await db.group.bulkPut(channels);

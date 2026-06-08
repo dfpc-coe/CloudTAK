@@ -165,7 +165,7 @@ async function updateLog(body: { content?: string; dtg?: string; keywords?: stri
             props.log.id,
             {
                 content: body.content ?? props.log.content,
-                dtg: body.dtg ?? props.log.dtg,
+                dtg: body.dtg ?? props.log.dtg ?? new Date().toISOString(),
                 keywords: body.keywords ?? props.log.keywords
             }
         );

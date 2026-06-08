@@ -798,8 +798,8 @@ export const useMapStore = defineStore('cloudtak', {
                 const body = {
                     longitude: position.coords.longitude,
                     latitude: position.coords.latitude,
-                    altitude: position.coords.altitude ?? undefined,
-                    accuracy: position.coords.accuracy ?? undefined,
+                    ...(position.coords.altitude !== null ? { altitude: position.coords.altitude } : {}),
+                    accuracy: position.coords.accuracy,
                 };
 
                 // Use CapacitorHttp for native background requests to avoid WebView throttling
