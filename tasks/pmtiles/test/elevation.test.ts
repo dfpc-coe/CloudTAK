@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { PNG } from 'pngjs';
 import sharp from 'sharp';
 import type { LineString } from 'geojson';
-import getElevationProfile from '../lib/elevation.js';
+import getElevationProfile, { type ElevationFetch } from '../lib/elevation.js';
 
 function encodeMapboxElevation(elevation: number): [number, number, number] {
     const value = Math.round((elevation + 10000) * 10);
@@ -30,7 +30,6 @@ function createTile(elevation: number): Buffer {
 }
 
 test('getElevationProfile samples elevations across covered tiles', async () => {
-    const originalFetch = globalThis.fetch;
     const requests: string[] = [];
     const leftTile = createTile(100);
     const rightTile = createTile(200);
@@ -42,7 +41,7 @@ test('getElevationProfile samples elevations across covered tiles', async () => 
         ],
     };
 
-    globalThis.fetch = async (input) => {
+    const mockFetch: ElevationFetch = async (input: string) => {
         const url = String(input);
         requests.push(url);
 
@@ -67,37 +66,32 @@ test('getElevationProfile samples elevations across covered tiles', async () => 
         return new Response(null, { status: 404 });
     };
 
-    try {
-        const profile = await getElevationProfile('https://example.test/terrain/{z}/{x}/{y}.png', geometry, {
-            zoom: 2,
-            encoding: 'mapbox',
-            minSampleDistance: 500,
-            maxSampleDistance: 500,
-            concurrency: 4,
-        });
+    const profile = await getElevationProfile('https://example.test/terrain/{z}/{x}/{y}.png', geometry, {
+        zoom: 2,
+        encoding: 'mapbox',
+        minSampleDistance: 500,
+        maxSampleDistance: 500,
+        concurrency: 4,
+    }, mockFetch);
 
-        assert.equal(profile.zoom, 2);
-        assert.equal(profile.tileCount, 2);
-        assert.equal(profile.encoding, 'mapbox');
-        assert.equal(profile.stepDistance, 500);
-        assert.ok(profile.distance > 2000);
-        assert.ok(profile.samples.length >= 5);
-        assert.equal(profile.samples[0]?.elevation, 100);
-        assert.equal(profile.samples.at(-1)?.elevation, 200);
-        assert.ok(profile.samples.some(sample => sample.elevation === 100));
-        assert.ok(profile.samples.some(sample => sample.elevation === 200));
+    assert.equal(profile.zoom, 2);
+    assert.equal(profile.tileCount, 2);
+    assert.equal(profile.encoding, 'mapbox');
+    assert.equal(profile.stepDistance, 500);
+    assert.ok(profile.distance > 2000);
+    assert.ok(profile.samples.length >= 5);
+    assert.equal(profile.samples[0]?.elevation, 100);
+    assert.equal(profile.samples.at(-1)?.elevation, 200);
+    assert.ok(profile.samples.some(sample => sample.elevation === 100));
+    assert.ok(profile.samples.some(sample => sample.elevation === 200));
 
-        assert.deepEqual(new Set(requests), new Set([
-            'https://example.test/terrain/2/1/1.png',
-            'https://example.test/terrain/2/2/1.png',
-        ]));
-    } finally {
-        globalThis.fetch = originalFetch;
-    }
+    assert.deepEqual(new Set(requests), new Set([
+        'https://example.test/terrain/2/1/1.png',
+        'https://example.test/terrain/2/2/1.png',
+    ]));
 });
 
 test('getElevationProfile decodes WebP raster-dem tiles', async () => {
-    const originalFetch = globalThis.fetch;
     const webp = await sharp(createTile(321)).webp({ lossless: true }).toBuffer();
     const webpTile = webp.buffer.slice(webp.byteOffset, webp.byteOffset + webp.byteLength) as ArrayBuffer;
     const geometry: LineString = {
@@ -108,7 +102,7 @@ test('getElevationProfile decodes WebP raster-dem tiles', async () => {
         ],
     };
 
-    globalThis.fetch = async (input) => {
+    const mockFetch: ElevationFetch = async (input: string) => {
         const url = String(input);
 
         if (url === 'https://example.test/terrain/2/1/1.webp' || url === 'https://example.test/terrain/2/2/1.webp') {
@@ -123,16 +117,12 @@ test('getElevationProfile decodes WebP raster-dem tiles', async () => {
         return new Response(null, { status: 404 });
     };
 
-    try {
-        const profile = await getElevationProfile('https://example.test/terrain/{z}/{x}/{y}.webp', geometry, {
-            zoom: 2,
-            encoding: 'mapbox',
-            minSampleDistance: 500,
-            maxSampleDistance: 500,
-        });
+    const profile = await getElevationProfile('https://example.test/terrain/{z}/{x}/{y}.webp', geometry, {
+        zoom: 2,
+        encoding: 'mapbox',
+        minSampleDistance: 500,
+        maxSampleDistance: 500,
+    }, mockFetch);
 
-        assert.ok(profile.samples.every(sample => sample.elevation === 321));
-    } finally {
-        globalThis.fetch = originalFetch;
-    }
+    assert.ok(profile.samples.every(sample => sample.elevation === 321));
 });

@@ -158,7 +158,7 @@ async function listData() {
             },
             query: {
                 filter: '',
-                limit: 1000,
+                limit: 100,
                 page: 0,
                 order: 'asc',
                 sort: 'name'

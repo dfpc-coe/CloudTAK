@@ -29,8 +29,7 @@
                         v-model='newName'
                         placeholder='Passkey Name'
                         :autofocus='true'
-                        @keyup.enter='registerPasskey'
-                        @keyup.escape='creating = false'
+                        @keyup='(e: KeyboardEvent) => { if (e.key === "Enter") registerPasskey(); else if (e.key === "Escape") creating = false; }'
                     />
                     <button
                         class='btn btn-primary'

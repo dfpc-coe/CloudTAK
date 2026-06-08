@@ -1,6 +1,6 @@
 import { db } from '../database.ts'
 import type { DBProfileConfig } from '../database.ts';
-import { std } from '../std.ts';
+import { server } from '../std.ts';
 import type { Profile } from '../types.ts';
 import { liveQuery, type Subscription } from 'dexie';
 
@@ -41,10 +41,10 @@ export default class ProfileConfig<K extends keyof Profile = keyof Profile> {
         return new ProfileConfig<K>(entry.key as K, entry.value as Profile[K]);
     }
 
-    static async fetch(token?: string): Promise<Profile> {
-        return await std('/api/profile', {
-            token
-        }) as Profile;
+    static async fetch(): Promise<Profile> {
+        const { data, error } = await server.GET('/api/profile', {});
+        if (error || !data) throw new Error('Failed to fetch profile');
+        return data as unknown as Profile;
     }
 
     async commit(value: Profile[K]): Promise<void> {
@@ -53,12 +53,8 @@ export default class ProfileConfig<K extends keyof Profile = keyof Profile> {
             value
         });
 
-        await std('/api/profile', {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ [this.key]: value })
+        await server.PATCH('/api/profile', {
+            body: { [this.key]: value } as Record<string, unknown>
         });
     }
 
@@ -68,12 +64,11 @@ export default class ProfileConfig<K extends keyof Profile = keyof Profile> {
 
     static async sync(opts: {
         refresh?: boolean,
-        token?: string
     }  = {}): Promise<void> {
         const count = await db.profile.count();
         if (count > 0 && !opts.refresh) return;
 
-        const fresh = await this.fetch(opts.token);
+        const fresh = await this.fetch();
         await this.saveAll(fresh);
     }
 
