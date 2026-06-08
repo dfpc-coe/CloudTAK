@@ -111,7 +111,7 @@ export async function getElevationProfile(
     tileurl: string,
     geometry: LineString,
     opts: ElevationProfileOptions,
-    fetchFn: ElevationFetch = (url) => fetch(url),
+    fetchFn: ElevationFetch = url => fetch(url),
 ): Promise<ElevationProfile> {
     for (const token of ['{z}', '{x}', '{y}']) {
         if (!tileurl.includes(token)) {
