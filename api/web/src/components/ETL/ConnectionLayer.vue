@@ -390,9 +390,8 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
-import { Preferences } from '@capacitor/preferences';
 import type { ETLLayer, ETLLayerTask, ETLLayerTaskCapabilities } from '../../types.ts';
-import { server, std } from '../../std.ts';
+import { server, downloadUrl } from '../../std.ts';
 import { useRoute, useRouter } from 'vue-router';
 import PageFooter from '../PageFooter.vue';
 import LayerStatus from './Layer/utils/StatusDot.vue';
@@ -497,10 +496,17 @@ async function createOutgoing() {
     loading.value.outgoing = true;
 
     if (route.params.connectionid === 'template') {
-        await std(`/api/connection/template/layer/${route.params.layerid}/outgoing`, {
-            method: 'POST',
+        // Template connections don't have typed API paths, use numeric connection
+        const { error } = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/outgoing', {
+            params: {
+                path: {
+                    ':connectionid': 0,
+                    ':layerid': Number(route.params.layerid)
+                }
+            },
             body: {}
         });
+        if (error) throw new Error(error.message);
     } else {
         const { error } = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/outgoing', {
             params: {
@@ -517,15 +523,21 @@ async function createOutgoing() {
 
     loading.value.outgoing = false;
 }
-
 async function createIncoming() {
     loading.value.incoming = true;
 
     if (route.params.connectionid === 'template') {
-        await std(`/api/connection/template/layer/${route.params.layerid}/incoming`, {
-            method: 'POST',
+        // Template connections don't have typed API paths, use numeric connection
+        const { error } = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/incoming', {
+            params: {
+                path: {
+                    ':connectionid': 0,
+                    ':layerid': Number(route.params.layerid)
+                }
+            },
             body: {}
         });
+        if (error) throw new Error(error.message);
     } else {
         const { error } = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/incoming', {
             params: {
@@ -579,9 +591,28 @@ async function deleteConfig(direction: string) {
     loading.value.layer = true;
 
     if (route.params.connectionid === 'template') {
-        await std(`/api/connection/template/layer/${route.params.layerid}/${direction}`, {
-            method: 'DELETE'
-        });
+        // Template connections don't have typed API paths, use numeric connection
+        if (direction === 'incoming') {
+            const { error } = await server.DELETE('/api/connection/{:connectionid}/layer/{:layerid}/incoming', {
+                params: {
+                    path: {
+                        ':connectionid': 0,
+                        ':layerid': Number(route.params.layerid)
+                    }
+                }
+            });
+            if (error) throw new Error(error.message);
+        } else {
+            const { error } = await server.DELETE('/api/connection/{:connectionid}/layer/{:layerid}/outgoing', {
+                params: {
+                    path: {
+                        ':connectionid': 0,
+                        ':layerid': Number(route.params.layerid)
+                    }
+                }
+            });
+            if (error) throw new Error(error.message);
+        }
     } else if (direction === 'incoming') {
         const { error } = await server.DELETE('/api/connection/{:connectionid}/layer/{:layerid}/incoming', {
             params: {
@@ -623,10 +654,8 @@ async function fetchStatus(load = false) {
 }
 
 async function downloadConfig() {
-    const { value: token } = await Preferences.get({ key: 'token' });
-    const url = `/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}?download=true${token ? `&token=${encodeURIComponent(token)}` : ''}`;
-    await std(url, {
-        download: true
+    await downloadUrl(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}?download=true`, {
+        token: true
     });
 }
 

@@ -180,7 +180,7 @@
 import { v4 as randomUUID } from 'uuid';
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { std } from '../../../src/std.ts';
+import { server } from '../../../src/std.ts';
 import {
     TablerInput,
     TablerAlert,
@@ -251,18 +251,28 @@ async function saveLog() {
 
     try {
         if (route.params.log === "new") {
-            log.value = await std(`/api/template/mission/${route.params.template}/log`, {
-                method: 'POST',
-                body: log.value
-            }) as MissionTemplateLog;
+            const res = await server.POST('/api/template/mission/{:mission}/log', {
+                params: { path: { ':mission': route.params.template as string } },
+                body: {
+                    name: log.value.name,
+                    icon: log.value.icon ?? undefined,
+                    keywords: log.value.keywords,
+                    description: log.value.description,
+                    schema: log.value.schema,
+                },
+            });
+            if (res.error) throw new Error(res.error.message);
+            log.value = res.data as MissionTemplateLog;
 
             disabled.value = true;
             router.push(`/admin/template/${route.params.template}/log/${log.value.id}`);
         } else {
-            log.value = await std(`/api/template/mission/${route.params.template}/log/${route.params.log}`, {
-                method: 'PATCH',
-                body: log.value
-            }) as MissionTemplateLog;
+            const res = await server.PATCH('/api/template/mission/{:mission}/log/{:log}', {
+                params: { path: { ':mission': route.params.template as string, ':log': route.params.log as string } },
+                body: log.value,
+            });
+            if (res.error) throw new Error(res.error.message);
+            log.value = res.data as MissionTemplateLog;
 
             disabled.value = true;
         }
@@ -277,9 +287,10 @@ async function deleteLog() {
     loading.value = true;
 
     try {
-        await std(`/api/template/mission/${route.params.template}/log/${route.params.log}`, {
-            method: 'DELETE'
+        const res = await server.DELETE('/api/template/mission/{:mission}/log/{:log}', {
+            params: { path: { ':mission': route.params.template as string, ':log': route.params.log as string } },
         });
+        if (res.error) throw new Error(res.error.message);
 
         router.push(`/admin/template/${route.params.template}`);
     } catch (err) {
@@ -291,7 +302,11 @@ async function deleteLog() {
 async function fetchLog() {
     loading.value = true;
     try {
-        log.value = await std(`/api/template/mission/${route.params.template}/log/${route.params.log}`) as MissionTemplateLog;
+        const res = await server.GET('/api/template/mission/{:mission}/log/{:log}', {
+            params: { path: { ':mission': route.params.template as string, ':log': route.params.log as string } },
+        });
+        if (res.error) throw new Error(res.error.message);
+        log.value = res.data as MissionTemplateLog;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {

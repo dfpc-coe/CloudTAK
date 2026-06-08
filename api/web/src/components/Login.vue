@@ -322,7 +322,7 @@
 </template>
 
 <script setup lang='ts'>
-import type { Login_Create, Login_CreateRes, ConfigLogin } from '../types.ts'
+import type { Login_Create, ConfigLogin } from '../types.ts'
 import { ref, computed, onMounted, reactive, watch } from 'vue';
 import { version } from '../../package.json';
 import { IconSettings, IconTrash, IconLock, IconFingerprint } from '@tabler/icons-vue';
@@ -335,7 +335,7 @@ import KV from '../base/kv.ts';
 import { isNativePlatform, supportsServiceWorker } from '../base/capacitor.ts';
 import { getCurrentEntryBuildId } from '../base/service-worker.ts';
 import { useRouter, useRoute } from 'vue-router'
-import { std } from '../std.ts';
+import { server } from '../std.ts';
 import {
     TablerBadge,
     TablerLoading,
@@ -523,13 +523,14 @@ async function createLogin() {
     loading.value = true;
 
     try {
-        const login = await std('/api/login', {
-            method: 'POST',
+        const res = await server.POST('/api/login', {
             body: {
                 username: body.value.username,
                 password: body.value.password
              }
-        }) as Login_CreateRes
+        });
+        if (res.error) throw new Error(res.error.message);
+        const login = res.data;
 
         await Preferences.set({ key: 'token', value: login.token });
         await persistNativeSession(login.token);
@@ -548,13 +549,13 @@ async function startConditionalPasskey() {
             || !(await PublicKeyCredential.isConditionalMediationAvailable())
         ) return;
 
-        const optionsRes = await std('/api/login/passkey/authenticate/options', {
-            method: 'POST',
+        const optionsRes = await server.POST('/api/login/passkey/authenticate/options', {
             body: {}
         });
+        if (optionsRes.error) throw new Error(optionsRes.error.message);
 
         const credential = await startAuthentication({
-            optionsJSON: optionsRes as unknown as PublicKeyCredentialRequestOptionsJSON,
+            optionsJSON: optionsRes.data as unknown as PublicKeyCredentialRequestOptionsJSON,
             useBrowserAutofill: true,
         });
 
@@ -568,12 +569,12 @@ async function authenticatePasskey() {
     loading.value = true;
 
     try {
-        const optionsRes = await std('/api/login/passkey/authenticate/options', {
-            method: 'POST',
+        const optionsRes = await server.POST('/api/login/passkey/authenticate/options', {
             body: {}
         });
+        if (optionsRes.error) throw new Error(optionsRes.error.message);
 
-        const credential = await startAuthentication({ optionsJSON: optionsRes as unknown as PublicKeyCredentialRequestOptionsJSON });
+        const credential = await startAuthentication({ optionsJSON: optionsRes.data as unknown as PublicKeyCredentialRequestOptionsJSON });
 
         await completePasskeyLogin(credential);
     } catch (err) {
@@ -586,10 +587,25 @@ async function completePasskeyLogin(credential: AuthenticationResponseJSON) {
     loading.value = true;
 
     try {
-        const login = await std('/api/login/passkey/authenticate', {
-            method: 'POST',
-            body: { credential }
-        }) as Login_CreateRes & { certRenewalRequired?: boolean };
+        const res = await server.POST('/api/login/passkey/authenticate', {
+            body: {
+                credential: {
+                    id: credential.id,
+                    rawId: credential.rawId,
+                    response: {
+                        clientDataJSON: credential.response.clientDataJSON,
+                        authenticatorData: credential.response.authenticatorData,
+                        signature: credential.response.signature,
+                        userHandle: credential.response.userHandle,
+                    },
+                    authenticatorAttachment: credential.authenticatorAttachment,
+                    clientExtensionResults: credential.clientExtensionResults as Record<string, unknown>,
+                    type: credential.type,
+                }
+            }
+        });
+        if (res.error) throw new Error(res.error.message);
+        const login = res.data;
 
         await Preferences.set({ key: 'token', value: login.token });
         await persistNativeSession(login.token);
@@ -649,13 +665,14 @@ async function renewCertificate() {
     loading.value = true;
 
     try {
-        const login = await std('/api/login', {
-            method: 'POST',
+        const res = await server.POST('/api/login', {
             body: {
                 username: certRenewal.email,
                 password: certRenewal.password,
             }
-        }) as Login_CreateRes;
+        });
+        if (res.error) throw new Error(res.error.message);
+        const login = res.data;
 
         await Preferences.set({ key: 'token', value: login.token });
         await persistNativeSession(login.token);
