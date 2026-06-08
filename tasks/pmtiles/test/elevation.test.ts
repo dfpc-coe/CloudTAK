@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { PNG } from 'pngjs';
 import sharp from 'sharp';
 import type { LineString } from 'geojson';
-import getElevationProfile from '../lib/elevation.js';
+import getElevationProfile, { type ElevationFetch } from '../lib/elevation.js';
 
 function encodeMapboxElevation(elevation: number): [number, number, number] {
     const value = Math.round((elevation + 10000) * 10);
@@ -41,7 +41,7 @@ test('getElevationProfile samples elevations across covered tiles', async () => 
         ],
     };
 
-    const mockFetch = async (input: string) => {
+    const mockFetch: ElevationFetch = async (input: string) => {
         const url = String(input);
         requests.push(url);
 
@@ -72,7 +72,7 @@ test('getElevationProfile samples elevations across covered tiles', async () => 
         minSampleDistance: 500,
         maxSampleDistance: 500,
         concurrency: 4,
-    }, mockFetch as unknown as Parameters<typeof getElevationProfile>[3]);
+    }, mockFetch);
 
     assert.equal(profile.zoom, 2);
     assert.equal(profile.tileCount, 2);
@@ -102,7 +102,7 @@ test('getElevationProfile decodes WebP raster-dem tiles', async () => {
         ],
     };
 
-    const mockFetch = async (input: string) => {
+    const mockFetch: ElevationFetch = async (input: string) => {
         const url = String(input);
 
         if (url === 'https://example.test/terrain/2/1/1.webp' || url === 'https://example.test/terrain/2/2/1.webp') {
@@ -122,7 +122,7 @@ test('getElevationProfile decodes WebP raster-dem tiles', async () => {
         encoding: 'mapbox',
         minSampleDistance: 500,
         maxSampleDistance: 500,
-    }, mockFetch as unknown as Parameters<typeof getElevationProfile>[3]);
+    }, mockFetch);
 
     assert.ok(profile.samples.every(sample => sample.elevation === 321));
 });
