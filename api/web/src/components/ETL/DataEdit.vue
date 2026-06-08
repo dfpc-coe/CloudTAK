@@ -216,9 +216,8 @@ async function create() {
     try {
         const body = JSON.parse(JSON.stringify(data.value));
 
-        let res;
-        if (route.params.dataid) {
-            res = await server.PATCH('/api/connection/{:connectionid}/data/{:dataid}', {
+        const res = route.params.dataid
+            ? await server.PATCH('/api/connection/{:connectionid}/data/{:dataid}', {
                 params: {
                     path: {
                         ':connectionid': Number(route.params.connectionid),
@@ -226,18 +225,18 @@ async function create() {
                     }
                 },
                 body
-            });
-        } else {
-            body.connection = parseInt(String(route.params.connectionid));
-            res = await server.POST('/api/connection/{:connectionid}/data', {
+            })
+            : await server.POST('/api/connection/{:connectionid}/data', {
                 params: {
                     path: {
                         ':connectionid': Number(route.params.connectionid)
                     }
                 },
-                body
+                body: {
+                    ...body,
+                    connection: parseInt(String(route.params.connectionid))
+                }
             });
-        }
 
         if (res.error) throw new Error(res.error.message);
 

@@ -475,13 +475,6 @@ function layerPathParams(): { ':connectionid': 'template' | number; ':layerid': 
     };
 }
 
-function numericLayerPathParams(): { ':connectionid': number; ':layerid': number } {
-    return {
-        ':connectionid': Number(String(route.params.connectionid)),
-        ':layerid': Number(String(route.params.layerid))
-    };
-}
-
 function throwIfError(error: { message: string } | undefined) {
     if (error) throw new Error(error.message);
 }
@@ -495,28 +488,14 @@ async function refresh(full = false) {
 async function createOutgoing() {
     loading.value.outgoing = true;
 
-    if (route.params.connectionid === 'template') {
-        // Template connections don't have typed API paths, use numeric connection
-        const { error } = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/outgoing', {
-            params: {
-                path: {
-                    ':connectionid': 0,
-                    ':layerid': Number(route.params.layerid)
-                }
-            },
-            body: {}
-        });
-        if (error) throw new Error(error.message);
-    } else {
-        const { error } = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/outgoing', {
-            params: {
-                path: numericLayerPathParams()
-            },
-            body: {}
-        });
+    const { error } = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/outgoing', {
+        params: {
+            path: layerPathParams()
+        },
+        body: {}
+    });
 
-        throwIfError(error);
-    }
+    throwIfError(error);
 
     await fetch();
     await fetchStatus();
@@ -526,28 +505,14 @@ async function createOutgoing() {
 async function createIncoming() {
     loading.value.incoming = true;
 
-    if (route.params.connectionid === 'template') {
-        // Template connections don't have typed API paths, use numeric connection
-        const { error } = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/incoming', {
-            params: {
-                path: {
-                    ':connectionid': 0,
-                    ':layerid': Number(route.params.layerid)
-                }
-            },
-            body: {}
-        });
-        if (error) throw new Error(error.message);
-    } else {
-        const { error } = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/incoming', {
-            params: {
-                path: numericLayerPathParams()
-            },
-            body: {}
-        });
+    const { error } = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/incoming', {
+        params: {
+            path: layerPathParams()
+        },
+        body: {}
+    });
 
-        throwIfError(error);
-    }
+    throwIfError(error);
 
     await fetch();
     await fetchStatus();
@@ -590,33 +555,10 @@ async function cancelUpdate() {
 async function deleteConfig(direction: string) {
     loading.value.layer = true;
 
-    if (route.params.connectionid === 'template') {
-        // Template connections don't have typed API paths, use numeric connection
-        if (direction === 'incoming') {
-            const { error } = await server.DELETE('/api/connection/{:connectionid}/layer/{:layerid}/incoming', {
-                params: {
-                    path: {
-                        ':connectionid': 0,
-                        ':layerid': Number(route.params.layerid)
-                    }
-                }
-            });
-            if (error) throw new Error(error.message);
-        } else {
-            const { error } = await server.DELETE('/api/connection/{:connectionid}/layer/{:layerid}/outgoing', {
-                params: {
-                    path: {
-                        ':connectionid': 0,
-                        ':layerid': Number(route.params.layerid)
-                    }
-                }
-            });
-            if (error) throw new Error(error.message);
-        }
-    } else if (direction === 'incoming') {
+    if (direction === 'incoming') {
         const { error } = await server.DELETE('/api/connection/{:connectionid}/layer/{:layerid}/incoming', {
             params: {
-                path: numericLayerPathParams()
+                path: layerPathParams()
             }
         });
 
@@ -624,7 +566,7 @@ async function deleteConfig(direction: string) {
     } else {
         const { error } = await server.DELETE('/api/connection/{:connectionid}/layer/{:layerid}/outgoing', {
             params: {
-                path: numericLayerPathParams()
+                path: layerPathParams()
             }
         });
 
