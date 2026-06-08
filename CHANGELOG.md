@@ -16,6 +16,10 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.10.1 - 2026-06-08
+
+- :bug: Fix failing PMTiles Test
+
 ### v13.10.0 - 2026-06-07
 
 - :tada: Allow users to see their Login Sessions
