@@ -11,6 +11,17 @@ import {
     DefaultLayerPolys,
 } from './esri/layer.js';
 
+type EsriErrorResponse = { message: string; details?: unknown };
+
+function isEsriError(json: unknown): json is { error: EsriErrorResponse } {
+    return (
+        typeof json === 'object' && json !== null &&
+        'error' in json &&
+        typeof (json as Record<string, unknown>).error === 'object' &&
+        (json as Record<string, unknown>).error !== null
+    );
+}
+
 export enum EsriType {
     AGOL = 'AGOL', // ArcGIS Online Portal
     PORTAL = 'PORTAL', // Enterprise Portal
@@ -285,7 +296,7 @@ class EsriProxyPortal {
 
         const json = await res.json();
 
-        if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+        if (isEsriError(json)) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
         return json as { username: string };
     }
@@ -302,7 +313,7 @@ class EsriProxyPortal {
 
             if (!res.ok) {
                 const json = await res.json();
-                if (json.error) {
+                if (isEsriError(json)) {
                     throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
                 } else {
                     throw new Err(400, null, `ESRI Server returned HTTP ${res.status} ${res.statusText}`);
@@ -330,7 +341,7 @@ class EsriProxyPortal {
 
         const json = await res.json();
 
-        if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+        if (isEsriError(json)) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
         return json as { username: string };
     }
@@ -347,7 +358,7 @@ class EsriProxyPortal {
 
         const json = await res.json();
 
-        if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+        if (isEsriError(json)) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
         return json as {
             servers: any[];
@@ -381,7 +392,7 @@ class EsriProxyPortal {
 
         const json = await res.json();
 
-        if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+        if (isEsriError(json)) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
         return json as object;
     }
@@ -413,7 +424,7 @@ class EsriProxyServer {
 
         const json = await res.json();
 
-        if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+        if (isEsriError(json)) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
         return json as object;
     }
@@ -437,7 +448,7 @@ class EsriProxyServer {
 
         const json = await res.json();
 
-        if (json.error) throw new Err(400, new Error(JSON.stringify(json.error)), 'ESRI Server Error: ' + json.error.message);
+        if (isEsriError(json)) throw new Err(400, new Error(JSON.stringify(json.error)), 'ESRI Server Error: ' + json.error.message);
 
         return json as object;
     }
@@ -552,7 +563,7 @@ class EsriProxyLayer {
 
         const json = await res.json();
 
-        if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+        if (isEsriError(json)) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
         return json as object;
     }
