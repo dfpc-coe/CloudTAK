@@ -257,12 +257,18 @@
                                 </TablerIconButton>
                             </template>
                             <template #dropdown>
-                                <div class='d-flex flex-column gap-1'>
-                                    <template v-if='appSwitcherApplications.length'>
+                                <div
+                                    class='py-1'
+                                    style='min-width: 200px;'
+                                >
+                                    <div class='px-3 pt-2 pb-1 fw-bold'>
+                                        Applications
+                                    </div>
+                                    <div class='px-2 pb-2'>
                                         <div
                                             v-for='application in appSwitcherApplications'
                                             :key='application.url'
-                                            class='px-2 py-2 d-flex align-items-center cloudtak-hover rounded cursor-pointer'
+                                            class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
                                             @click='external(application.url)'
                                         >
                                             <img
@@ -273,27 +279,24 @@
                                             >
                                             <IconWorld
                                                 v-else
-                                                size='32'
+                                                :size='25'
                                                 stroke='1'
                                             />
-                                            <div class='mx-2'>
-                                                {{ application.name }}
-                                            </div>
+                                            <span class='ps-2'>{{ application.name }}</span>
                                         </div>
-
-                                        <div class='dropdown-divider my-1' />
-                                    </template>
-
-                                    <div
-                                        class='px-2 py-2 d-flex align-items-center cloudtak-hover rounded cursor-pointer'
-                                        @click='external("/video")'
-                                    >
-                                        <IconDeviceTv
-                                            size='32'
-                                            stroke='1'
+                                        <div
+                                            v-if='appSwitcherApplications.length'
+                                            class='dropdown-divider my-1'
                                         />
-                                        <div class='mx-2'>
-                                            Video Wall
+                                        <div
+                                            class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
+                                            @click='external("/video")'
+                                        >
+                                            <IconDeviceTv
+                                                :size='25'
+                                                stroke='1'
+                                            />
+                                            <span class='ps-2'>Video Wall</span>
                                         </div>
                                     </div>
                                 </div>
