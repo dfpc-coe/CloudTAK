@@ -120,7 +120,7 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { std } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import type { ETLLayerOutgoing } from '../../../types.ts';
 import {
     TablerIconButton,
@@ -185,10 +185,19 @@ async function saveOutgoing() {
     loading.value.save = true;
 
     try {
-        outgoing.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing`, {
-            method: 'PATCH',
+        const res = await server.PATCH('/api/connection/{:connectionid}/layer/{:layerid}/outgoing', {
+            params: {
+                path: {
+                    ':connectionid': Number(String(route.params.connectionid)),
+                    ':layerid': Number(String(route.params.layerid))
+                }
+            },
             body: outgoing.value
-        }) as ETLLayerOutgoing;
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        outgoing.value = res.data as ETLLayerOutgoing;
 
         disabled.value = true;
 
