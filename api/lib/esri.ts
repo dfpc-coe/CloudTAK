@@ -176,7 +176,7 @@ export class EsriBase {
             const res = await fetch(url);
 
             const json = await res.typed(Type.Object({
-                currentVersion: Type.Optional(Type.String()),
+                currentVersion: Type.Optional(Type.Union([Type.String(), Type.Number()])),
                 error: Type.Optional(Type.Object({
                     message: Type.String(),
                 })),
