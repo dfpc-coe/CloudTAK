@@ -16,6 +16,10 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.11.1 - 2026-06-08
+
+- :bug: Allow a string or number server version when adding ESRI overlays - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1474
+
 ### v13.11.0 - 2026-06-08
 
 - :rocket: Ensure the user is prompted to allow background location updates
