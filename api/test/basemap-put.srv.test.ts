@@ -152,6 +152,55 @@ test('PUT: api/basemap - import basemap from multipart TAK XML', async () => {
     assert.equal(res.body.serverParts, 'a,b,c');
 });
 
+test('PUT: api/basemap - import ArcGIS MapServer layer', async () => {
+    const ARCGIS_MAPSERVER_URL = 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer/1';
+
+    try {
+        const res = await flight.fetch('/api/basemap', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                type: 'mapserver',
+                url: ARCGIS_MAPSERVER_URL,
+            },
+        }, true);
+
+        assert.equal(res.status, 200);
+        assert.equal(res.body.url, ARCGIS_MAPSERVER_URL);
+        assert.ok(typeof res.body.name === 'string' && res.body.name.length > 0, 'Expected a non-empty name');
+        assert.ok(['raster', 'vector'].includes(res.body.type), `Unexpected type: ${res.body.type}`);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PUT: api/basemap - import ArcGIS FeatureServer layer', async () => {
+    const ARCGIS_FEATURESERVER_URL = 'https://services1.arcgis.com/Rlvx5g8pKeK13apH/arcgis/rest/services/Adopted_Districts/FeatureServer/0';
+
+    try {
+        const res = await flight.fetch('/api/basemap', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                type: 'featureserver',
+                url: ARCGIS_FEATURESERVER_URL,
+            },
+        }, true);
+
+        assert.equal(res.status, 200);
+        assert.equal(res.body.url, ARCGIS_FEATURESERVER_URL);
+        assert.ok(typeof res.body.name === 'string' && res.body.name.length > 0, 'Expected a non-empty name');
+        assert.equal(res.body.type, 'vector');
+        assert.equal(res.body.format, 'mvt');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('stop upstream basemap import server', async () => {
     await new Promise<void>((resolve, reject) => {
         upstream.close((err) => {
