@@ -15,10 +15,10 @@ type EsriErrorResponse = { message: string; details?: unknown };
 
 function isEsriError(json: unknown): json is { error: EsriErrorResponse } {
     return (
-        typeof json === 'object' && json !== null &&
-        'error' in json &&
-        typeof (json as Record<string, unknown>).error === 'object' &&
-        (json as Record<string, unknown>).error !== null
+        typeof json === 'object' && json !== null
+        && 'error' in json
+        && typeof (json as Record<string, unknown>).error === 'object'
+        && (json as Record<string, unknown>).error !== null
     );
 }
 
