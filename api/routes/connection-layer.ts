@@ -252,7 +252,10 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Register a new incoming layer config',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Union([
+                Type.Literal('template'),
+                Type.Integer({ minimum: 1 }),
+            ]),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
@@ -267,14 +270,24 @@ export default async function router(schema: Schema, config: Config) {
         res: LayerIncomingResponse,
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: req.params.layerid },
-                ],
-            }, req.params.connectionid);
-
-            let layer = await layerControl.from(connection, req.params.layerid);
+            let connection = null;
+            let layer;
+            if (req.params.connectionid === 'template') {
+                await Auth.as_user(config, req, { admin: true });
+                layer = await layerControl.from(null, req.params.layerid);
+                if (layer.connection !== null) {
+                    throw new Err(400, null, 'Layer is not a template layer');
+                }
+            } else {
+                const auth = await Auth.is_connection(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                        { access: AuthResourceAccess.LAYER, id: req.params.layerid },
+                    ],
+                }, req.params.connectionid);
+                connection = auth.connection;
+                layer = await layerControl.from(connection, req.params.layerid);
+            }
 
             if (req.body.styles) {
                 await Style.validate(req.body.styles);
@@ -472,20 +485,33 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Remove an incoming config from a layer',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Union([
+                Type.Literal('template'),
+                Type.Integer({ minimum: 1 }),
+            ]),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: req.params.layerid },
-                ],
-            }, req.params.connectionid);
-
-            let layer = await layerControl.from(connection, req.params.layerid);
+            let connection = null;
+            let layer;
+            if (req.params.connectionid === 'template') {
+                await Auth.as_user(config, req, { admin: true });
+                layer = await layerControl.from(null, req.params.layerid);
+                if (layer.connection !== null) {
+                    throw new Err(400, null, 'Layer is not a template layer');
+                }
+            } else {
+                const auth = await Auth.is_connection(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                        { access: AuthResourceAccess.LAYER, id: req.params.layerid },
+                    ],
+                }, req.params.connectionid);
+                connection = auth.connection;
+                layer = await layerControl.from(connection, req.params.layerid);
+            }
 
             if (!layer.incoming) {
                 throw new Err(400, null, 'Layer does not have an incoming configuration');
@@ -516,9 +542,12 @@ export default async function router(schema: Schema, config: Config) {
     await schema.post('/connection/:connectionid/layer/:layerid/outgoing', {
         name: 'Create Outgoing',
         group: 'Layer',
-        description: 'Register a new incoming layer config',
+        description: 'Register a new outgoing layer config',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Union([
+                Type.Literal('template'),
+                Type.Integer({ minimum: 1 }),
+            ]),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
@@ -527,14 +556,24 @@ export default async function router(schema: Schema, config: Config) {
         res: LayerOutgoingResponse,
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: req.params.layerid },
-                ],
-            }, req.params.connectionid);
-
-            let layer = await layerControl.from(connection, req.params.layerid);
+            let connection = null;
+            let layer;
+            if (req.params.connectionid === 'template') {
+                await Auth.as_user(config, req, { admin: true });
+                layer = await layerControl.from(null, req.params.layerid);
+                if (layer.connection !== null) {
+                    throw new Err(400, null, 'Layer is not a template layer');
+                }
+            } else {
+                const auth = await Auth.is_connection(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                        { access: AuthResourceAccess.LAYER, id: req.params.layerid },
+                    ],
+                }, req.params.connectionid);
+                connection = auth.connection;
+                layer = await layerControl.from(connection, req.params.layerid);
+            }
 
             if (req.body.filters) {
                 await Filter.validate(req.body.filters);
@@ -619,20 +658,33 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Remove an outgoing config from a layer',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Union([
+                Type.Literal('template'),
+                Type.Integer({ minimum: 1 }),
+            ]),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: req.params.layerid },
-                ],
-            }, req.params.connectionid);
-
-            let layer = await layerControl.from(connection, req.params.layerid);
+            let connection = null;
+            let layer;
+            if (req.params.connectionid === 'template') {
+                await Auth.as_user(config, req, { admin: true });
+                layer = await layerControl.from(null, req.params.layerid);
+                if (layer.connection !== null) {
+                    throw new Err(400, null, 'Layer is not a template layer');
+                }
+            } else {
+                const auth = await Auth.is_connection(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                        { access: AuthResourceAccess.LAYER, id: req.params.layerid },
+                    ],
+                }, req.params.connectionid);
+                connection = auth.connection;
+                layer = await layerControl.from(connection, req.params.layerid);
+            }
 
             if (!layer.outgoing) {
                 throw new Err(400, null, 'Layer does not have an outgoing configuration');
