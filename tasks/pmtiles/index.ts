@@ -56,7 +56,16 @@ const schema = new Schema(express.Router(), {
 app.disable('x-powered-by');
 
 app.use(cors({
-    origin: '*',
+    origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, Capacitor, curl, etc.)
+        // Allow 'null' origin (iOS Capacitor apps)
+        // Allow any other origin (web browsers)
+        if (!origin || origin === 'null') {
+            callback(null, true);
+        } else {
+            callback(null, origin);
+        }
+    },
     allowedHeaders: [
         'ETAG',
         'Content-Type',
