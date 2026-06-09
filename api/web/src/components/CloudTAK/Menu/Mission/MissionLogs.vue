@@ -139,7 +139,6 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { from } from 'rxjs';
 import type { Ref, ComputedRef } from 'vue';
-import { std } from '../../../../std.ts';
 import TagEntry from '../../util/TagEntry.vue';
 import MissionLogItem from './MissionLog.vue';
 import MissionTemplateLogs from '../../../../base/mission-template-logs.ts';
@@ -249,9 +248,7 @@ watch(selectedTemplateLog, (log) => {
 });
 
 async function exportLogs(format: string): Promise<void> {
-    await std(`/api/marti/missions/${encodeURIComponent(props.subscription.guid)}/log?download=true&format=${format}`, {
-        download: true
-    })
+    await props.subscription.log.download(format);
 }
 
 async function submitLog() {

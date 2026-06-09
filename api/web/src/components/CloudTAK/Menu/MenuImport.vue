@@ -192,9 +192,8 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { Preferences } from '@capacitor/preferences';
 import { useRoute, useRouter } from 'vue-router';
-import { downloadBlob, server } from '../../../../src/std.ts';
+import { downloadUrl, server } from '../../../../src/std.ts';
 import type { Import } from '../../../../src/types.ts';
 import Status from '../../util/StatusDot.vue';
 import timeDiff from '../../../timediff.ts';
@@ -248,23 +247,10 @@ onUnmounted(() => {
 });
 
 async function downloadImport() {
-    const { value: token } = await Preferences.get({ key: 'token' });
-    const res = await server.GET('/api/import/{:import}/raw', {
-        params: {
-            path: {
-                ':import': String(route.params.import)
-            },
-            query: {
-                token: token || '',
-                download: true
-            }
-        },
-        parseAs: 'blob'
+    await downloadUrl(`/api/import/${route.params.import}/raw?download=true`, {
+        token: true,
+        filename: `import-${String(route.params.import)}`
     });
-
-    if (res.error) throw new Error(res.error.message);
-
-    downloadBlob(res.data, res.response, `import-${String(route.params.import)}`);
 }
 
 async function retryImport() {

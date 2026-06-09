@@ -217,8 +217,8 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import TaskModal from './utils/TaskModal.vue';
-import { std } from '../../../std.ts';
-import type { ETLLayer, ETLLayerTask, ETLTaskVersions } from '../../../types.ts';
+import { server } from '../../../std.ts';
+import type { ETLLayer, ETLLayerTask } from '../../../types.ts';
 import {
     TablerAlert,
     TablerIconButton,
@@ -292,9 +292,15 @@ async function redeploy(showLoading = true) {
     errors.value.cloudformation = false;
 
     try {
-        await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/redeploy`, {
-            method: 'POST'
+        const res = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/redeploy', {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid),
+                    ':layerid': Number(route.params.layerid)
+                }
+            }
         });
+        if (res.error) throw new Error(res.error.message);
 
         emit('stack');
     } catch (err) {
@@ -315,8 +321,16 @@ async function fetchLogs(showLoading = true) {
     errors.value.cloudwatch = false;
 
     try {
-        const res = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task/logs`) as { logs: { message: string }[] };
-        logs.value = res.logs
+        const res = await server.GET('/api/connection/{:connectionid}/layer/{:layerid}/task/logs', {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid),
+                    ':layerid': Number(route.params.layerid)
+                }
+            }
+        });
+        if (res.error) throw new Error(res.error.message);
+        logs.value = res.data.logs
             .map((log) => { return log.message })
             .reverse()
             .join('\n');
@@ -330,9 +344,15 @@ async function fetchLogs(showLoading = true) {
 
 async function postStack() {
     loading.value.full = true;
-    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task`, {
-        method: 'POST'
+    const res = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/task', {
+        params: {
+            path: {
+                ':connectionid': Number(route.params.connectionid),
+                ':layerid': Number(route.params.layerid)
+            }
+        }
     });
+    if (res.error) throw new Error(res.error.message);
 
     emit('stack');
 
@@ -343,10 +363,17 @@ async function saveLayer() {
     loading.value.full = true;
 
     try {
-        await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`, {
-            method: 'PATCH',
+        const res = await server.PATCH('/api/connection/{:connectionid}/layer/{:layerid}', {
+            params: {
+                query: { alarms: true },
+                path: {
+                    ':connectionid': Number(route.params.connectionid),
+                    ':layerid': Number(route.params.layerid)
+                }
+            },
             body: config.value
         });
+        if (res.error) throw new Error(res.error.message);
 
         disabled.value = true;
         loading.value.full = false;
@@ -371,8 +398,15 @@ async function latestVersion() {
     const task = match[1];
     const version = match[2];
 
-    const res = await std(`/api/task/raw/${task}`) as ETLTaskVersions;
-    const versions = res.versions.map((v) => v.version);
+    const res = await server.GET('/api/task/raw/{:task}', {
+        params: {
+            path: {
+                ':task': task
+            }
+        }
+    });
+    if (res.error) throw new Error(res.error.message);
+    const versions = res.data.versions.map((v) => v.version);
 
     if (versions.indexOf(version) !== 0) {
         newTaskVersion.value = versions[0];
