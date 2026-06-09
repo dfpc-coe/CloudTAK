@@ -70,7 +70,7 @@
                         </TablerButton>
 
                         <template #dropdown>
-                            <div class='card-body'>
+                            <div class='py-1'>
                                 <div
                                     class='cursor-pointer col-12 cloudtak-hover rounded d-flex align-items-center px-2'
                                     @click.stop='share = ShareType.PACKAGE'
