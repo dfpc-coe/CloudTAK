@@ -16,6 +16,10 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.11.3 - 2026-06-08
+
+- :rocket: Allow Mobile CORS
+
 ### v13.11.2 - 2026-06-08
 
 - :rocket: Continue to migrate the Web project to use server instead of std for stronger type safety
