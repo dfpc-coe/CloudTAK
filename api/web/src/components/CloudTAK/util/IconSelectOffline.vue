@@ -234,8 +234,8 @@ const setsName = computed<string[]>(() => {
 });
 
 const filteredIcons = computed<DBIcon[]>(() => {
-    if (!params.filter) return icons.value;
-    const f = params.filter.toLowerCase();
+    if (!params.value.filter) return icons.value;
+    const f = params.value.filter.toLowerCase();
     return icons.value.filter((icon) => icon.path.toLowerCase().includes(f));
 });
 
@@ -249,7 +249,7 @@ watch(() => params.value.iconset, async () => {
     await fetchIcons();
 });
 
-watch(() => params.filter, async () => {
+watch(() => params.value.filter, async () => {
     await fetchIcons();
 });
 

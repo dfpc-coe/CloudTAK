@@ -171,8 +171,7 @@ import { server } from '../../std.ts';
 import {
     IconInfoSquare,
     IconTrash,
-    IconPhotoSearch,
-    IconSearch
+    IconPhotoSearch
 } from '@tabler/icons-vue';
 import {
     TablerInlineAlert,
