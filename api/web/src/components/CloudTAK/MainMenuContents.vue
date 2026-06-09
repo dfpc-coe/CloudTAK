@@ -269,7 +269,7 @@
                                             v-for='application in appSwitcherApplications'
                                             :key='application.url'
                                             class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
-                                            @click='external(application.url)'
+                                            @click.stop='external(application.url)'
                                         >
                                             <img
                                                 v-if='application.icon'
@@ -290,7 +290,7 @@
                                         />
                                         <div
                                             class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
-                                            @click='external("/video")'
+                                            @click.stop='external("/video")'
                                         >
                                             <IconDeviceTv
                                                 :size='25'

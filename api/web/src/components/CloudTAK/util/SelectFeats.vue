@@ -70,10 +70,10 @@
                         </TablerButton>
 
                         <template #dropdown>
-                            <div class='card-body'>
+                            <div class='py-1'>
                                 <div
                                     class='cursor-pointer col-12 cloudtak-hover rounded d-flex align-items-center px-2'
-                                    @click='share = ShareType.PACKAGE'
+                                    @click.stop='share = ShareType.PACKAGE'
                                 >
                                     <IconPackages
                                         :size='32'
@@ -84,7 +84,7 @@
                                 </div>
                                 <div
                                     class='cursor-pointer col-12 cloudtak-hover rounded d-flex align-items-center px-2'
-                                    @click='share = ShareType.MISSION'
+                                    @click.stop='share = ShareType.MISSION'
                                 >
                                     <IconAmbulance
                                         :size='32'
@@ -95,7 +95,7 @@
                                 </div>
                                 <div
                                     class='cursor-pointer col-12 cloudtak-hover rounded d-flex align-items-center px-2'
-                                    @click='deleteFeatures'
+                                    @click.stop='deleteFeatures'
                                 >
                                     <IconTrash
                                         :size='32'

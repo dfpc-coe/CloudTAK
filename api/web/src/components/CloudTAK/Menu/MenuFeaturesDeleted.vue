@@ -68,7 +68,7 @@
                         <TablerIconButton
                             title='Restore Features'
                             :disabled='disabled'
-                            @click='restoreFeatures'
+                            @click.stop='restoreFeatures'
                         >
                             <IconRestore
                                 :size='32'

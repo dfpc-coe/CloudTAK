@@ -56,7 +56,7 @@
                     :key='mode.value'
                     class='tabler-dropdown__item cloudtak-hover cursor-pointer px-3 py-2 text-body'
                     :class='{ "tabler-dropdown__item--active": mapStore.coordFormat === mode.value }'
-                    @click='void setCoordFormat(mode.value)'
+                    @click.stop='void setCoordFormat(mode.value)'
                 >
                     <span class='fw-semibold'>{{ mode.label }}</span>
                     <span class='text-secondary ms-2 small'>{{ mode.title }}</span>

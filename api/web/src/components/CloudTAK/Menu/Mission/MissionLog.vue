@@ -39,18 +39,19 @@
                                         label='Log Time'
                                         type='datetime-local'
                                         :model-value='dtgEdit ?? toDatetimeLocal(log.dtg)'
+                                        @click.stop
                                         @update:model-value='dtgEdit = String($event)'
                                     />
                                     <div class='d-flex justify-content-end gap-2 mt-2'>
                                         <button
                                             class='btn btn-sm btn-secondary'
-                                            @click='cancelEdit'
+                                            @click.stop='cancelEdit'
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             class='btn btn-sm btn-primary'
-                                            @click='saveDtg'
+                                            @click.stop='saveDtg'
                                         >
                                             Save
                                         </button>
