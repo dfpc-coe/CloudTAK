@@ -16,6 +16,11 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.11.4 - 2026-06-09
+
+- :bug: The move to use teleport broke some implicit size rules on dropdowns - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1477
+- :bug: Ensure Dropdowns don't close if they require multiple click events before a submission step
+
 ### v13.11.3 - 2026-06-08
 
 - :rocket: Allow Mobile CORS
