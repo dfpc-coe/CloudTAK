@@ -128,7 +128,7 @@
 <script setup lang='ts'>
 import { useRoute } from 'vue-router';
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import CopyField from '../../CloudTAK/util/CopyField.vue';
 import {
     IconMapPin,
@@ -186,11 +186,24 @@ async function fetchList() {
     error.value = undefined;
 
     try {
-        const url = stdurl(`/api/connection/${route.params.connectionid}/feature`);
-        url.searchParams.set('limit', String(paging.value.limit));
-        url.searchParams.set('page', String(paging.value.page));
-        if (paging.value.filter) url.searchParams.set('filter', paging.value.filter);
-        list.value = await std(url) as typeof list.value;
+        const res = await server.GET('/api/connection/{:connectionid}/feature', {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid)
+                },
+                query: {
+                    format: 'geojson',
+                    download: false,
+                    limit: paging.value.limit,
+                    page: paging.value.page,
+                    filter: paging.value.filter || '',
+                    sort: 'id',
+                    order: 'desc',
+                }
+            }
+        });
+        if (res.error) throw new Error(res.error.message);
+        list.value = res.data as typeof list.value;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
@@ -203,9 +216,14 @@ async function deleteAll() {
     error.value = undefined;
 
     try {
-        await std(`/api/connection/${route.params.connectionid}/feature`, {
-            method: 'DELETE'
+        const res = await server.DELETE('/api/connection/{:connectionid}/feature', {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid)
+                }
+            }
         });
+        if (res.error) throw new Error(res.error.message);
         await fetchList();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
@@ -219,9 +237,15 @@ async function deleteFeature(feature: { id: number | string }) {
     error.value = undefined;
 
     try {
-        await std(`/api/connection/${route.params.connectionid}/feature/${feature.id}`, {
-            method: 'DELETE'
+        const res = await server.DELETE('/api/connection/{:connectionid}/feature/{:id}', {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid),
+                    ':id': String(feature.id)
+                }
+            }
         });
+        if (res.error) throw new Error(res.error.message);
         await fetchList();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));

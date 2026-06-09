@@ -118,8 +118,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { std, stdurl } from '../../std.ts';
-import type { ETLData } from '../../types.ts';
+import { server } from '../../std.ts';
 import PageFooter from '../PageFooter.vue';
 import {
     TablerBreadCrumb,
@@ -179,14 +178,29 @@ onMounted(async () => {
 
 async function fetch() {
     loading.value.data = true;
-    data.value = await std(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}`) as DataForm;
+    const res = await server.GET('/api/connection/{:connectionid}/data/{:dataid}', {
+        params: {
+            path: {
+                ':connectionid': Number(route.params.connectionid),
+                ':dataid': Number(route.params.dataid)
+            }
+        }
+    });
+    if (res.error) throw new Error(res.error.message);
+    data.value = res.data as DataForm;
     loading.value.data = false;
 }
 
 async function deleteData() {
-    await std(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}`, {
-        method: 'DELETE'
+    const res = await server.DELETE('/api/connection/{:connectionid}/data/{:dataid}', {
+        params: {
+            path: {
+                ':connectionid': Number(route.params.connectionid),
+                ':dataid': Number(route.params.dataid)
+            }
+        }
     });
+    if (res.error) throw new Error(res.error.message);
 
     router.push(`/connection/${route.params.connectionid}/data`);
 }
@@ -200,24 +214,35 @@ async function create() {
     loading.value.data = true;
 
     try {
-        let url: URL;
-        let method: string;
         const body = JSON.parse(JSON.stringify(data.value));
 
-        if (route.params.dataid) {
-            url = stdurl(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}`);
-            method = 'PATCH'
-        } else {
-            url = stdurl(`/api/connection/${route.params.connectionid}/data`);
-            method = 'POST'
-            body.connection = parseInt(String(route.params.connectionid));
-        }
+        const res = route.params.dataid
+            ? await server.PATCH('/api/connection/{:connectionid}/data/{:dataid}', {
+                params: {
+                    path: {
+                        ':connectionid': Number(route.params.connectionid),
+                        ':dataid': Number(route.params.dataid)
+                    }
+                },
+                body
+            })
+            : await server.POST('/api/connection/{:connectionid}/data', {
+                params: {
+                    path: {
+                        ':connectionid': Number(route.params.connectionid)
+                    }
+                },
+                body: {
+                    ...body,
+                    connection: parseInt(String(route.params.connectionid))
+                }
+            });
 
-        const res = await std(url, { method, body }) as ETLData;
+        if (res.error) throw new Error(res.error.message);
 
         loading.value.data = false;
 
-        router.push(`/connection/${route.params.connectionid}/data/${res.id}`);
+        router.push(`/connection/${route.params.connectionid}/data/${res.data.id}`);
     } catch (err) {
         loading.value.data = false;
         throw err;

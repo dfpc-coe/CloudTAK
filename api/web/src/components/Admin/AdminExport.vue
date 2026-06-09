@@ -61,7 +61,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { std, stdurl } from '../../std.ts';
+import { server, downloadBlob } from '../../std.ts';
 import GroupSelect from '../util/GroupSelect.vue';
 import {
     TablerLoading,
@@ -86,17 +86,20 @@ const data = ref({
 async function postExport() {
     loading.value = true;
     try {
-        const url = stdurl('/api/marti/export');
-        url.searchParams.set('download', 'true');
-        await std(url, {
-            method: 'POST',
-            download: `export.${data.value.format}`,
+        const res = await server.POST('/api/marti/export', {
+            params: { query: { download: true } },
             body: {
                 ...data.value,
-                startTime: (new Date(data.value.startTime)).toISOString(),
-                endTime: (new Date(data.value.endTime)).toISOString(),
-            }
+                format: data.value.format as 'kml' | 'kmz',
+                startTime: new Date(data.value.startTime).toISOString(),
+                endTime: new Date(data.value.endTime).toISOString(),
+            },
+            parseAs: 'blob',
         });
+        if (res.error) throw new Error(res.error.message);
+        if (res.data) {
+            downloadBlob(res.data as Blob, res.response, `export.${data.value.format}`);
+        }
         loading.value = false;
     } catch (err) {
         loading.value = false;

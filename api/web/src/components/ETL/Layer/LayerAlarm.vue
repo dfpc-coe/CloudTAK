@@ -206,7 +206,7 @@
 <script setup lang='ts'>
 import { ref, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { std } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import type { ETLLayer, ETLLayerTask } from '../../../types.ts';
 import {
     TablerInlineAlert,
@@ -245,10 +245,17 @@ async function saveLayer() {
     loading.value = true;
 
     try {
-        await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`, {
-            method: 'PATCH',
+        const res = await server.PATCH('/api/connection/{:connectionid}/layer/{:layerid}', {
+            params: {
+                query: { alarms: true },
+                path: {
+                    ':connectionid': Number(route.params.connectionid),
+                    ':layerid': Number(route.params.layerid)
+                }
+            },
             body: config.value
         });
+        if (res.error) throw new Error(res.error.message);
 
         disabled.value = true;
         loading.value = false;

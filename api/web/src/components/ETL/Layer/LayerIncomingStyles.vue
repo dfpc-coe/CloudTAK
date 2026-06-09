@@ -231,7 +231,7 @@
 import { ref, onMounted } from 'vue';
 import { openExternalUrl } from '../../../base/capacitor.ts';
 import { useRoute } from 'vue-router'
-import { std } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import type { ETLLayer, ETLLayerTaskCapabilities } from '../../../types.ts';
 import {
     IconX,
@@ -321,8 +321,13 @@ async function saveLayer() {
     loading.value.save = true;
 
     try {
-        await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming`, {
-            method: 'PATCH',
+        const res = await server.PATCH('/api/connection/{:connectionid}/layer/{:layerid}/incoming', {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid),
+                    ':layerid': Number(route.params.layerid)
+                }
+            },
             body: {
                 enabled_styles: enabled.value,
                 styles: {
@@ -331,6 +336,7 @@ async function saveLayer() {
                 }
             }
         });
+        if (res.error) throw new Error(res.error.message);
 
         disabled.value = true;
         loading.value.save = false;
