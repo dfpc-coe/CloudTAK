@@ -82,6 +82,7 @@
                                     <TablerToggle
                                         v-model='submitOnEnter'
                                         label='Submit on Enter'
+                                        @click.stop
                                     />
                                 </template>
                             </TablerDropdown>

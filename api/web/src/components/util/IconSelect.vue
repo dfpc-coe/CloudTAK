@@ -76,75 +76,93 @@
                         @click='removeIcon'
                     />
 
-                    <TablerDropdown>
-                        <template #default>
-                            <IconPhotoSearch
-                                v-tooltip='"Select Icon"'
-                                :size='32'
-                                stroke='1'
-                                class='cursor-pointer'
-                            />
-                        </template>
-                        <template #dropdown>
-                            <div
-                                class='py-1'
-                                style='max-width: 300px; max-height: 80vh; overflow-y: auto;'
-                            >
-                                <div class='px-3 pt-2 pb-1 d-flex align-items-center fw-bold'>
-                                    Icons
-                                    <IconSearch
-                                        :size='20'
-                                        stroke='1'
-                                        class='ms-auto cursor-pointer'
-                                        :color='params.showFilter ? "#83b7e8" : "currentColor"'
-                                        @click.stop.prevent='params.showFilter = !params.showFilter'
-                                    />
-                                </div>
-                                <div class='px-2 pb-2 row g-2'>
-                                    <div class='col-12'>
-                                        <TablerEnum
-                                            v-model='params.iconset'
-                                            :options='setsName'
-                                            @click.stop
-                                        />
-                                    </div>
-                                    <div class='col-12'>
-                                        <TablerInput
-                                            v-if='params.showFilter'
-                                            v-model='params.filter'
-                                            placeholder='Icon Search'
-                                            @click.stop
-                                        />
-                                    </div>
-                                    <TablerLoading
-                                        v-if='loading.icons'
-                                        desc='Loading Icons'
-                                    />
-                                    <div
-                                        v-else
-                                        class='row my-2'
-                                    >
-                                        <div
-                                            v-for='icon of list.items'
-                                            :key='icon.id'
-                                            class='col-auto cursor-pointer'
-                                            @click='selected = icon; err = null'
-                                        >
-                                            <img
-                                                v-tooltip='icon.name'
-                                                :src='icon.data'
-                                                class='img-thumbnail'
-                                                style='width: 40px; height: 40px; margin-right: 5px;'
-                                            >
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-                    </TablerDropdown>
+                    <IconPhotoSearch
+                        v-tooltip='"Select Icon"'
+                        :size='32'
+                        stroke='1'
+                        class='cursor-pointer'
+                        @click='modal = true'
+                    />
                 </div>
             </div>
         </template>
+
+        <TablerModal
+            v-if='modal'
+            size='xl'
+            @close='modal = false'
+        >
+            <div class='modal-status bg-blue' />
+            <div class='modal-body'>
+                <div class='d-flex align-items-center justify-content-between mb-3'>
+                    <h3 class='modal-title'>Select Icon</h3>
+                    <button
+                        type='button'
+                        class='btn-close'
+                        @click='modal = false'
+                    />
+                </div>
+                <div class='row g-2'>
+                    <div class='col-12'>
+                        <TablerEnum
+                            v-model='params.iconset'
+                            :options='setsName'
+                            @click.stop
+                        />
+                    </div>
+                    <div class='col-12'>
+                        <TablerInput
+                            v-model='params.filter'
+                            placeholder='Icon Search'
+                            placeholder='Icon Search'
+                            @click.stop
+                        />
+                    </div>
+                    <div class='col-12'>
+                        <TablerToggle
+                            v-model='params.showNames'
+                            label='Show Icon Names'
+                            :off-value='false'
+                            :on-value='true'
+                        />
+                    </div>
+                </div>
+                <TablerLoading
+                    v-if='loading.icons'
+                    desc='Loading Icons'
+                />
+                <div
+                    v-else
+                    class='row mt-2'
+                    :class='{ "g-2": params.showNames }'
+                    style='max-height: 60vh; overflow-y: auto;'
+                >
+                    <div
+                        v-for='icon of list.items'
+                        :key='icon.id'
+                        class='col-6 col-md-4 col-lg-3 col-xl-2 cursor-pointer'
+                        :class='{ "text-center": params.showNames }'
+                        @click='selected = icon; err = null; modal = false'
+                    >
+                        <div class='card'>
+                            <div class='card-body text-center p-1' :class='{ "py-2": params.showNames }'>
+                                <img
+                                    :src='icon.data'
+                                    class='img-thumbnail'
+                                    :style='params.showNames ? "width: 64px; height: 64px;" : "width: 40px; height: 40px;"'
+                                />
+                                <div
+                                    v-if='params.showNames'
+                                    class='mt-1'
+                                    style='font-size: 0.85rem;'
+                                    v-text='icon.name'
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </TablerModal>
     </div>
 </template>
 
@@ -154,8 +172,8 @@ import { server } from '../../std.ts';
 import {
     IconInfoSquare,
     IconTrash,
-    IconSearch,
-    IconPhotoSearch
+    IconPhotoSearch,
+    IconSearch
 } from '@tabler/icons-vue';
 import {
     TablerInlineAlert,
@@ -163,8 +181,9 @@ import {
     TablerEnum,
     TablerNone,
     TablerInput,
-    TablerDropdown,
-    TablerLoading
+    TablerModal,
+    TablerLoading,
+    TablerToggle
 } from '@tak-ps/vue-tabler';
 import type { Iconset, Icon, IconList } from '../../types.ts';
 
@@ -195,10 +214,11 @@ const loading = ref({
     icons: true,
 });
 
+const modal = ref(false);
 const params = ref({
     iconset: '',
-    showFilter: false,
     filter: '',
+    showNames: false,
 });
 
 const selected = ref<Partial<Icon>>({});
