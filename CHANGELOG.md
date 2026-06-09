@@ -16,6 +16,12 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.11.2 - 2026-06-08
+
+- :rocket: Continue to migrate the Web project to use server instead of std for stronger type safety
+- :rocket: Set Iconset updated value when a child icon is mutated
+- :rocket: Add high level stats to "Tasked Personnel" Section
+
 ### v13.11.1 - 2026-06-08
 
 - :bug: Allow a string or number server version when adding ESRI overlays - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1474
