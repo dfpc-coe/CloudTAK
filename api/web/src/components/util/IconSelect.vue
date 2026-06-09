@@ -20,11 +20,7 @@
                     @click='help = false'
                 />
             </span>
-            <div
-                class='align-self-center subheader'
-                :class='{ "required": required }'
-                v-text='label'
-            />
+            <div class='align-self-center subheader' :class='{ "required": required }' v-text='label' />
             <div class='ms-auto align-self-center'>
                 <slot />
             </div>
@@ -69,7 +65,7 @@
 
                 <div
                     v-if='!disabled'
-                    class='btn-list ms-auto'
+                    class='ms-auto'
                 >
                     <IconTrash
                         v-if='selected.name'
@@ -92,7 +88,7 @@
                         <template #dropdown>
                             <div
                                 class='py-1'
-                                style='min-width: 300px;'
+                                style='max-width: 300px; max-height: 80vh; overflow-y: auto;'
                             >
                                 <div class='px-3 pt-2 pb-1 d-flex align-items-center fw-bold'>
                                     Icons
@@ -109,6 +105,7 @@
                                         <TablerEnum
                                             v-model='params.iconset'
                                             :options='setsName'
+                                            @click.stop
                                         />
                                     </div>
                                     <div class='col-12'>
@@ -116,6 +113,7 @@
                                             v-if='params.showFilter'
                                             v-model='params.filter'
                                             placeholder='Icon Search'
+                                            @click.stop
                                         />
                                     </div>
                                     <TablerLoading
