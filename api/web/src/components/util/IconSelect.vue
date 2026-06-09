@@ -114,7 +114,6 @@
                         <TablerInput
                             v-model='params.filter'
                             placeholder='Icon Search'
-                            placeholder='Icon Search'
                             @click.stop
                         />
                     </div>
