@@ -199,7 +199,7 @@
                                     <div
                                         role='button'
                                         class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
-                                        @click='openBufferInput'
+                                        @click.stop='openBufferInput'
                                     >
                                         <IconAdjustments
                                             stroke='1'
@@ -263,7 +263,7 @@
                                             v-if='cot.properties.attachments === undefined'
                                             role='button'
                                             class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
-                                            @click='updatePropertyAttachment([])'
+                                            @click.stop='updatePropertyAttachment([])'
                                         >
                                             <IconPaperclip
                                                 stroke='1'
@@ -276,7 +276,7 @@
                                             v-if='cot.properties.links === undefined'
                                             role='button'
                                             class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
-                                            @click='updateProperty("links", [])'
+                                            @click.stop='updateProperty("links", [])'
                                         >
                                             <IconLink
                                                 stroke='1'
@@ -289,7 +289,7 @@
                                             v-if='cot.properties.video === undefined'
                                             role='button'
                                             class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
-                                            @click='updateProperty("video", { url: "" })'
+                                            @click.stop='updateProperty("video", { url: "" })'
                                         >
                                             <IconMovie
                                                 stroke='1'
@@ -302,7 +302,7 @@
                                             v-if='cot.properties.sensor === undefined'
                                             role='button'
                                             class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
-                                            @click='updateProperty("sensor", {})'
+                                            @click.stop='updateProperty("sensor", {})'
                                         >
                                             <IconCone
                                                 stroke='1'
@@ -315,7 +315,7 @@
                                             v-if='cot.properties.geofence === undefined && cot.geometry.type === "Polygon"'
                                             role='button'
                                             class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
-                                            @click='updateProperty("geofence", { elevationMonitored: false, tracking: false })'
+                                            @click.stop='updateProperty("geofence", { elevationMonitored: false, tracking: false })'
                                         >
                                             <IconFence
                                                 stroke='1'

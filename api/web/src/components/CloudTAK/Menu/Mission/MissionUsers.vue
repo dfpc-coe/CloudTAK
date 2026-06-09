@@ -29,12 +29,13 @@
                             :input='true'
                             placeholder='Username'
                             :groups='typeof subscription.meta.groups === "string" ? [subscription.meta.groups] : subscription.meta.groups'
+                            @click.stop
                             @select='inviteUser($event)'
                         />
                         <button
                             class='btn btn-primary w-100 mt-2'
                             :disabled='!inviteUsername'
-                            @click='inviteUser()'
+                            @click.stop='inviteUser()'
                         >
                             Invite
                         </button>

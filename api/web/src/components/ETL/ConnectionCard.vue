@@ -105,14 +105,18 @@
                         </button>
                     </template>
                     <template #dropdown>
-                        <div class='card'>
-                            <div class='card-body row g-2'>
+                        <div
+                            class='py-1'
+                            style='max-width: 300px;'
+                        >
+                            <div class='row g-2 px-3 pt-2 pb-2'>
                                 <div class='col-12'>
                                     <TablerInput
                                         v-model='certificate.truststorePassword'
                                         label='Choose Certificate Password'
                                         type='password'
                                         autocomplete='new-password'
+                                        @click.stop
                                     />
                                 </div>
                                 <div class='col-12'>
@@ -143,14 +147,18 @@
                         </button>
                     </template>
                     <template #dropdown>
-                        <div class='card'>
-                            <div class='card-body row g-2'>
+                        <div
+                            class='py-1'
+                            style='max-width: 300px;'
+                        >
+                            <div class='row g-2 px-3 pt-2 pb-2'>
                                 <div class='col-12'>
                                     <TablerInput
                                         v-model='certificate.clientPassword'
                                         label='Choose Certificate Password'
                                         type='password'
                                         autocomplete='new-password'
+                                        @click.stop
                                     />
                                 </div>
                                 <div class='col-12'>

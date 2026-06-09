@@ -50,6 +50,7 @@
                                                 class='form-check-input'
                                                 type='checkbox'
                                                 :checked='h.display'
+                                                @click.stop
                                                 @change='displayHeader(h_it, $event)'
                                             >
                                             <span
