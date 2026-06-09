@@ -49,7 +49,7 @@
                                             v-for='d of data.items'
                                             :key='d.id'
                                             class='cursor-pointer'
-                                            @click='update(d)'
+                                            @click.stop='update(d)'
                                         >
                                             <td>
                                                 <div class='d-flex align-items-center'>

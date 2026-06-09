@@ -61,7 +61,7 @@
                                         tabindex='0'
                                         class='cursor-pointer my-1 cloudtak-hover px-2 py-1'
                                         @keyup.enter='selected = user'
-                                        @click='selected = user'
+                                        @click.stop='selected = user'
                                     >
                                         <div class='d-flex'>
                                             <span style='width: 24px;'>

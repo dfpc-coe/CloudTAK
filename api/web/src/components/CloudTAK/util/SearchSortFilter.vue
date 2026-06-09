@@ -53,7 +53,7 @@
                             class='dropdown-item d-flex align-items-center'
                             :class='{ active: sort === option }'
                             href='#'
-                            @click.prevent='emit("update:sort", option)'
+                            @click.stop.prevent='emit("update:sort", option)'
                             v-text='option'
                         />
                     </div>

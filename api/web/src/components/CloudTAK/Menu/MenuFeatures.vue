@@ -61,6 +61,7 @@
                             displaytype='menu'
                             class='cloudtak-hover'
                             label='Delete All Features'
+                            @click.stop
                             @delete='deleteFeatures'
                         />
                     </div>
