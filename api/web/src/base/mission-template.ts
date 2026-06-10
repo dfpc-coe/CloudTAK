@@ -1,6 +1,6 @@
 import { db } from '../database.ts'
 import type { DBMissionTemplate } from '../database.ts';
-import { std, stdurl } from '../std.ts';
+import { server } from '../std.ts';
 import MissionTemplateLogs from './mission-template-logs.ts';
 import type {
     MissionTemplate as APIMissionTemplate,
@@ -74,8 +74,13 @@ export default class MissionTemplate {
     }
 
     async refresh(): Promise<void> {
-        const url = stdurl(`/api/template/mission/${this.id}`);
-        const data = await std(url) as APIMissionTemplate;
+        const res = await server.GET('/api/template/mission/{:mission}', {
+            params: { path: { ':mission': this.id } }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        const data: APIMissionTemplate = res.data;
 
         const update: DBMissionTemplate = {
             id: data.id,
@@ -131,9 +136,13 @@ export default class MissionTemplate {
     }
 
     static async sync(): Promise<MissionTemplateList> {
-        const url = stdurl('/api/template/mission');
+        const res = await server.GET('/api/template/mission', {
+            params: { query: { limit: 100, page: 0, order: 'asc', sort: 'name', filter: '' } }
+        });
 
-        const list = await std(url) as MissionTemplateList;
+        if (res.error) throw new Error(res.error.message);
+
+        const list: MissionTemplateList = res.data;
 
         const serverIds = new Set(list.items.map(c => c.id));
         const local = await db.mission_template.toArray();
