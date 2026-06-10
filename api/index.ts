@@ -242,6 +242,10 @@ export default async function server(config: Config): Promise<ServerManager> {
                 config.wsClients.set(parsedParams.connection, webClients);
                 ws.send(JSON.stringify({ type: 'connected' }));
             } else if (parsedParams.connection === 'admin') {
+                if (!(auth instanceof AuthUser) || !auth.is_admin()) {
+                    throw new Error('Unauthorized');
+                }
+
                 // Admin connection using server auth profile
                 let client: ConnectionClient | undefined;
                 let awaitSecure: Promise<void> | undefined;
