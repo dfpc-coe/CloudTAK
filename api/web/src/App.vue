@@ -336,6 +336,8 @@ async function initializeApp(): Promise<void> {
         }
     }
 
+    loadingStage.value = 'Setting up styles…';
+
     if (isNativePlatform()) {
         try {
             await StatusBar.setOverlaysWebView({ overlay: false });
