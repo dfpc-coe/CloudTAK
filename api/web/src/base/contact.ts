@@ -1,7 +1,7 @@
 import { db } from '../database.ts';
 import { liveQuery, type Observable } from 'dexie';
 import type { Contact as TAKContact } from '../types.ts';
-import { std, stdurl } from '../std.ts';
+import { server } from '../std.ts';
 import BaseInterface from './interface.ts';
 import type {
     BaseInterface_ListOptions,
@@ -9,13 +9,10 @@ import type {
 } from './interface.ts';
 
 export type Contact_ListOptions = BaseInterface_ListOptions & {
-    token?: string;
     filter?: string;
 };
 
-export type Contact_FromOptions = BaseInterface_FromOptions & {
-    token?: string;
-};
+export type Contact_FromOptions = BaseInterface_FromOptions;
 
 export default class ContactManager extends BaseInterface {
     static readonly listCacheKey = 'contact';
@@ -40,7 +37,7 @@ export default class ContactManager extends BaseInterface {
         const cache = await this.hydrated();
 
         if (!cache || opts.sync) {
-            await this.sync(opts.token);
+            await this.sync();
         }
 
         let collection = db.contact.toCollection();
@@ -60,7 +57,7 @@ export default class ContactManager extends BaseInterface {
         opts?: Contact_FromOptions
     ): Promise<TAKContact | undefined> {
         if (opts?.sync) {
-            await this.sync(opts?.token);
+            await this.sync();
         }
 
         return await db.contact.get(uid);
@@ -80,13 +77,13 @@ export default class ContactManager extends BaseInterface {
         await db.contact.put(contact);
     }
 
-    static async sync(token?: string): Promise<void> {
-        const url = stdurl('/api/marti/api/contacts/all');
+    static async sync(): Promise<void> {
+        const res = await server.GET('/api/marti/api/contacts/all');
 
-        const res = await std(url, { token }) as TAKContact[];
+        if (res.error) throw new Error(res.error.message);
 
         await db.contact.clear();
-        await db.contact.bulkPut(res);
+        await db.contact.bulkPut(res.data);
         await db.cache.put({
             key: this.listCacheKey,
             updated: Date.now()
