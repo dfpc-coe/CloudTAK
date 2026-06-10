@@ -84,7 +84,7 @@
         "qr-image": "^3.2.0",
         "sanitize-html": "^2.17.0",
         "semver-sort": "^1.0.0",
-        "sharp": "^0.35.0",
+        "sharp": "^0.34.0",
         "spritesmith": "^3.4.1",
         "suncalc": "^1.9.0",
         "tokml": "^0.4.0",
