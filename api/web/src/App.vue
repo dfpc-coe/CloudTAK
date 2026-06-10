@@ -149,11 +149,6 @@
             :err='error'
             @close='error = undefined'
         />
-        <MissionInviteModal
-            v-if='inviteMission'
-            :mission='inviteMission'
-            @close='inviteMission = undefined'
-        />
         <ChannelChangeModal
             v-if='channelChange'
             @close='channelChange = false'
@@ -185,7 +180,6 @@ import {
     TablerBadge,
     TablerError
 } from '@tak-ps/vue-tabler';
-import MissionInviteModal from './components/CloudTAK/Menu/Mission/MissionInviteModal.vue';
 import ChannelChangeModal from './components/CloudTAK/Menu/ChannelChangeModal.vue';
 import { WorkerMessageType } from './base/events.ts';
 import type { WorkerMessage } from './base/events.ts';
@@ -232,14 +226,6 @@ type ResolvedThemeMode = 'light' | 'dark';
 const loading = ref(true);
 const resolvedTheme = ref<ResolvedThemeMode>('dark');
 const displayStyle = ref<DisplayStyleMode>('System Default');
-const inviteMission = ref<{
-    name: string;
-    guid: string;
-    token: string;
-    authorUid: string;
-    tool: string;
-    type: string;
-} | undefined>();
 const channelChange = ref(false);
 const mounted = ref(false);
 const user = ref(false);
@@ -268,18 +254,6 @@ function applyTheme(style: string | undefined = displayStyle.value): void {
 function onSystemThemeChange(): void {
     if (displayStyle.value === 'System Default') {
         applyTheme(displayStyle.value);
-    }
-}
-
-async function configureStatusBar(): Promise<void> {
-    if (!isNativePlatform()) {
-        return;
-    }
-
-    try {
-        await StatusBar.setOverlaysWebView({ overlay: false });
-    } catch (err) {
-        console.warn('Failed to configure native status bar overlay', err);
     }
 }
 
@@ -315,6 +289,20 @@ onErrorCaptured((err) => {
 });
 
 onMounted(async () => {
+    // Always clear the loading splash, even if initialization throws (e.g. a
+    // request times out on a native cold-start). Otherwise the app can get
+    // permanently stuck on the loading component before the login page.
+    try {
+        await initializeApp();
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        loading.value = false;
+        mounted.value = true;
+    }
+});
+
+async function initializeApp(): Promise<void> {
     // Register before any awaits so early promise rejections are captured
     window.addEventListener('unhandledrejection', (e) => {
         error.value = e.reason instanceof Error ? e.reason : new Error(String(e.reason));
@@ -339,7 +327,13 @@ onMounted(async () => {
         }
     }
 
-    await configureStatusBar();
+    if (isNativePlatform()) {
+        try {
+            await StatusBar.setOverlaysWebView({ overlay: false });
+        } catch (err) {
+            console.warn('Failed to configure native status bar overlay', err);
+        }
+    }
 
     applyTheme();
 
@@ -367,6 +361,19 @@ onMounted(async () => {
         }
     }
 
+    if (status === 'unconfigured') {
+        await Preferences.remove({ key: 'token' });
+        router.push("/configure");
+    } else {
+        const { value: token } = await Preferences.get({ key: 'token' });
+
+        if (token) {
+            await refreshLogin();
+        } else if (route.name !== 'login') {
+            routeLogin();
+        }
+    }
+
     const config = await Config.list([
         'login::name',
         'login::logo',
@@ -386,25 +393,10 @@ onMounted(async () => {
     const channel = new BroadcastChannel('cloudtak');
     channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
         const msg = event.data;
-        if (msg && msg.type === WorkerMessageType.Mission_Invite) {
-            inviteMission.value = msg.body;
-        } else if (msg && msg.type === WorkerMessageType.Channel_Change) {
+        if (msg && msg.type === WorkerMessageType.Channel_Change) {
             channelChange.value = true;
         }
     };
-
-    if (status === 'unconfigured') {
-        await Preferences.remove({ key: 'token' });
-        router.push("/configure");
-    } else {
-        const { value: token } = await Preferences.get({ key: 'token' });
-
-        if (token) {
-            await refreshLogin();
-        } else if (route.name !== 'login') {
-            routeLogin();
-        }
-    }
 
     if (supportsServiceWorker()) {
         navigator.serviceWorker.getRegistrations().then(async (registrations) => {
@@ -451,10 +443,7 @@ onMounted(async () => {
             } catch { /* ignore */ }
         });
     }
-
-    loading.value = false;
-    mounted.value = true;
-});
+}
 
 onUnmounted(() => {
     window.removeEventListener('sw:update-available', onSwUpdateAvailable);
@@ -485,12 +474,6 @@ function routeLogin() {
 async function refreshLogin() {
     loading.value = true;
 
-    await checkToken();
-
-    loading.value = false;
-}
-
-async function checkToken() {
     try {
         const { value: token } = await Preferences.get({ key: 'token' });
         if (!token) throw new Error('No token found');
@@ -502,6 +485,8 @@ async function checkToken() {
         if (now > expirationDate) {
             throw new Error('Token expired');
         }
+
+        user.value = true;
     } catch (err) {
         console.error(err);
         mapStore.tokenExpiry = null;
@@ -509,7 +494,7 @@ async function checkToken() {
         logout();
     }
 
-    return true;
+    loading.value = false;
 }
 </script>
 
