@@ -374,16 +374,17 @@ async function initializeApp(): Promise<void> {
 
     if (status === 'unconfigured') {
         await Preferences.remove({ key: 'token' });
-        router.push("/configure");
-    } else {
-        const { value: token } = await Preferences.get({ key: 'token' });
+        await router.push("/configure");
+        return;
+    }
 
-        if (token) {
-            loadingStage.value = 'Signing you in…';
-            await refreshLogin();
-        } else if (route.name !== 'login') {
-            routeLogin();
-        }
+    const { value: token } = await Preferences.get({ key: 'token' });
+
+    if (token) {
+        loadingStage.value = 'Signing you in…';
+        await refreshLogin();
+    } else if (route.name !== 'login') {
+        routeLogin();
     }
 
     loadingStage.value = 'Loading app settings…';
