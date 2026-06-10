@@ -1,6 +1,6 @@
 import { db } from '../database.ts'
 import type { DBChatroom } from '../database.ts';
-import { std, stdurl } from '../std.ts';
+import { server } from '../std.ts';
 import ChatroomChats from './chatroom-chats.ts';
 import { liveQuery, type Observable } from 'dexie';
 import type {
@@ -88,14 +88,11 @@ export default class Chatroom {
     }
 
     static async delete(names: string[]): Promise<void> {
-        const url = stdurl('/api/profile/chatroom');
-        for (const name of names) {
-            url.searchParams.append('chatroom', name);
-        }
-
-        await std(url, {
-            method: 'DELETE'
+        const res = await server.DELETE('/api/profile/chatroom', {
+            params: { query: { chatroom: names } }
         });
+
+        if (res.error) throw new Error(res.error.message);
 
         await db.chatroom.bulkDelete(names);
     }
@@ -120,29 +117,37 @@ export default class Chatroom {
     };
 
     async fetch(): Promise<void> {
-        const url = stdurl('/api/profile/chatroom');
+        const res = await server.GET('/api/profile/chatroom');
 
-        const list = await std(url) as ProfileChatroomList;
+        if (res.error) throw new Error(res.error.message);
 
-        const found = list.items.find((c) => c.chatroom === this.name);
+        const found = res.data.items.find((c) => c.chatroom === this.name);
         if (found) {
             this.name = found.chatroom;
         }
     }
 
     async getChats(): Promise<ProfileChatList> {
-        const url = stdurl(`/api/profile/chatroom/${encodeURIComponent(this.name)}/chat`);
-        return await std(url) as ProfileChatList;
+        const res = await server.GET('/api/profile/chatroom/{:chatroom}/chat', {
+            params: {
+                path: { ':chatroom': this.name },
+                query: { limit: 100, page: 0, order: 'desc', sort: 'created' }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        return res.data;
     }
     async deleteChats(ids: string[]): Promise<void> {
-        const url = stdurl(`/api/profile/chatroom/${encodeURIComponent(this.name)}/chat`);
-        for (const id of ids) {
-            url.searchParams.append('chat', id);
-        }
-
-        await std(url, {
-            method: 'DELETE'
+        const res = await server.DELETE('/api/profile/chatroom/{:chatroom}/chat', {
+            params: {
+                path: { ':chatroom': this.name },
+                query: { chat: ids }
+            }
         });
+
+        if (res.error) throw new Error(res.error.message);
     }
 
     /**
@@ -179,9 +184,11 @@ export default class Chatroom {
     }
 
     static async sync(): Promise<ProfileChatroomList> {
-        const url = stdurl('/api/profile/chatroom');
+        const res = await server.GET('/api/profile/chatroom');
 
-        const list = await std(url) as ProfileChatroomList;
+        if (res.error) throw new Error(res.error.message);
+
+        const list = res.data;
 
         const serverNames = new Set(list.items.map(c => c.chatroom));
         const local = await db.chatroom.toArray();

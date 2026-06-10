@@ -1,5 +1,5 @@
 import { db } from '../database.ts';
-import { std, stdurl } from '../std.ts';
+import { server } from '../std.ts';
 import type {
     ProfileChatList,
     APIProfileChat
@@ -19,10 +19,16 @@ export default class ChatroomChats {
     }
 
     async refresh(): Promise<void> {
-        const url = stdurl(`/api/profile/chatroom/${encodeURIComponent(this.chatroom)}/chat`);
-        url.searchParams.append('limit', '50');
+        const res = await server.GET('/api/profile/chatroom/{:chatroom}/chat', {
+            params: {
+                path: { ':chatroom': this.chatroom },
+                query: { limit: 50, page: 0, order: 'desc', sort: 'created' }
+            }
+        });
 
-        const list = await std(url) as ProfileChatList;
+        if (res.error) throw new Error(res.error.message);
+
+        const list = res.data as ProfileChatList;
 
         await db.transaction('rw', db.chatroom_chats, async () => {
             await db.chatroom_chats
