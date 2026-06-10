@@ -26,7 +26,7 @@ export default async function router(schema: Schema, config: Config) {
                 res.json({
                     id: 1,
                     status: 'unconfigured',
-                    connection_status: config.conns.status(0),
+                    connection_status: 'dead',
                     name: 'Default Server',
                     version: pkg.version,
                     created: new Date().toISOString(),
