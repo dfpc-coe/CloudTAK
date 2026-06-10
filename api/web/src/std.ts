@@ -131,7 +131,7 @@ export async function std(
         res = await fetch(url, { ...(opts as RequestInit), signal });
     } catch (err) {
         if (timeoutController.signal.aborted) {
-            throw new Error(`Request timed out after ${timeoutMs}ms: ${String(url)}`);
+            throw new Error(`Request timed out after ${timeoutMs}ms: ${String(url)}`, { cause: err });
         }
         throw err;
     } finally {
