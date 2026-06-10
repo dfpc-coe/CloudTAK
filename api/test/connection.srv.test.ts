@@ -54,7 +54,7 @@ test('GET: api/connection - Admin (empty)', async () => {
             total: 0,
             items: [],
             status: {
-                dead: 0,
+                dead: 1,
                 live: 0,
                 unknown: 0,
             },
