@@ -254,6 +254,17 @@
                         </div>
                     </div>
                     <div class='card-body p-0'>
+                        <div
+                            v-if='isNativePlatform()'
+                            class='px-3 pt-2 pb-2 border-bottom'
+                        >
+                            <button
+                                class='btn btn-sm btn-outline-secondary w-100'
+                                @click='switchServers'
+                            >
+                                Switch Servers
+                            </button>
+                        </div>
                         <div class='px-3 pt-2 pb-1 border-bottom'>
                             <span class='text-muted small'>Running </span>
                             <code class='small'>v{{ version }}</code>
@@ -445,6 +456,11 @@ const fetchWorkers = async () => {
 const unregister = async (r: ServiceWorkerRegistration) => {
     await r.unregister();
     await fetchWorkers();
+}
+
+async function switchServers(): Promise<void> {
+    await Preferences.remove({ key: 'serverUrl' });
+    window.location.href = '/setup.html';
 }
 
 watch(showSettings, (val) => {
