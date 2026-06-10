@@ -206,6 +206,11 @@ export const IconsetResponse = Type.Object({
 export const ServerResponse = Type.Object({
     id: Type.Integer(),
     status: Type.String(),
+    connection_status: Type.Union([
+        Type.Literal('live'),
+        Type.Literal('dead'),
+        Type.Literal('unknown'),
+    ], { default: 'unknown', description: 'The connected status of the Admin Connection (connection 0)' }),
     created: Type.String(),
     updated: Type.String(),
     version: Type.String(),
