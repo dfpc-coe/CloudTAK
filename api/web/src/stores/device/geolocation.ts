@@ -18,8 +18,6 @@ export class GeolocationPermission {
     private watchId: CallbackID | null = null;
     private backgroundWatchId: CallbackID | null = null;
     private locationCallback: ((position: Position) => void) | null = null;
-    private visibilityHandler: (() => void) | null = null;
-    private isInBackground: boolean = false;
 
     private static normalizeNativeLocationPermission(state: string | null | undefined): PermissionState | 'prompt' | 'unknown' {
         switch (state) {
@@ -73,13 +71,15 @@ export class GeolocationPermission {
     static async watchBackgroundLocation(
         callback: (position: Position | null, err?: unknown) => void
     ): Promise<CallbackID> {
-        // Use background-geolocation only when app is backgrounded
+        // Background-capable watcher. Runs alongside the foreground watcher and
+        // is the source that keeps delivering once iOS suspends the JS-based
+        // foreground watchPosition in the background.
         return BackgroundGeolocation.addWatcher({
             backgroundTitle: 'CloudTAK GPS active',
             backgroundMessage: 'CloudTAK is sharing your location.',
             requestPermissions: true,
             stale: false,
-            distanceFilter: 10
+            distanceFilter: 0
         }, (location?: BackgroundLocation, err?: BackgroundGeolocationError) => {
             callback(location ? GeolocationPermission.backgroundLocationToPosition(location) : null, err);
         });
@@ -135,12 +135,6 @@ export class GeolocationPermission {
             }
         }
 
-        // Remove visibility listener
-        if (this.visibilityHandler && typeof document !== 'undefined') {
-            document.removeEventListener('visibilitychange', this.visibilityHandler);
-            this.visibilityHandler = null;
-        }
-
         this.locationCallback = null;
     }
 
@@ -161,49 +155,34 @@ export class GeolocationPermission {
         };
 
         try {
-            // Check initial visibility state
-            this.isInBackground = typeof document !== 'undefined' && document.hidden;
-
             if (isNativePlatform()) {
-                // On native platforms, switch between foreground and background watchers
-                if (this.isInBackground) {
-                    await this.startBackgroundWatch(locationHandler);
-                } else {
-                    await this.startForegroundWatch(locationHandler);
-                    // Proactively request "Always" location permission while in the foreground.
-                    // iOS will only show the upgrade dialog when the app is visible; calling
-                    // addWatcher inside visibilitychange (background transition) is too late.
-                    void this.requestBackgroundPermission();
-                }
-                this.setupVisibilityListener(locationHandler);
+                // Start the foreground watcher first. @capacitor/geolocation's
+                // watchPosition delivers an immediate, reliable fix on iOS
+                // (including the simulator), which is what clears the initial
+                // "Acquiring GPS" state. The background-capable watcher is then
+                // started concurrently so location keeps flowing once the app is
+                // suspended — iOS suspends the foreground watchPosition in the
+                // background while @capacitor-community/background-geolocation
+                // continues. Reporting still branches on foreground vs.
+                // background in the location callback (Option B): the worker
+                // WebSocket handles foreground while CapacitorHttp handles the
+                // background.
+                //
+                // The background watcher is started fire-and-forget so a slow or
+                // stalled addWatcher (e.g. while resolving "Always" permission)
+                // can never block foreground location acquisition. Starting it
+                // also surfaces iOS's "Always Allow" upgrade prompt while the app
+                // is in the foreground.
+                await this.startForegroundWatch(locationHandler);
+                void this.startBackgroundWatch(locationHandler).catch((err: unknown) => {
+                    console.warn('Failed to start background location watch', err);
+                });
             } else {
                 // On web, use standard geolocation only
                 await this.startForegroundWatch(locationHandler);
             }
         } catch (err) {
             console.error('Failed to start location watch', err);
-        }
-    }
-
-    /**
-     * Briefly starts and removes a background watcher solely to trigger
-     * iOS's "Always Allow" location permission upgrade dialog in the foreground.
-     */
-    private async requestBackgroundPermission(): Promise<void> {
-        let id: CallbackID | undefined;
-        try {
-            id = await GeolocationPermission.watchBackgroundLocation(() => { /* permission probe only */ });
-        } catch (err) {
-            console.warn('Background location permission request failed', err);
-            return;
-        } finally {
-            if (id !== undefined) {
-                try {
-                    await GeolocationPermission.clearBackgroundLocationWatch(id);
-                } catch (cleanupErr) {
-                    console.warn('Failed to clear background location permission probe watcher', cleanupErr);
-                }
-            }
         }
     }
 
@@ -217,44 +196,6 @@ export class GeolocationPermission {
 
     private async startBackgroundWatch(locationHandler: (position: Position | null, err?: unknown) => void): Promise<void> {
         this.backgroundWatchId = await GeolocationPermission.watchBackgroundLocation(locationHandler);
-    }
-
-    private setupVisibilityListener(locationHandler: (position: Position | null, err?: unknown) => void): void {
-        if (typeof document === 'undefined') return;
-
-        this.visibilityHandler = async () => {
-            const wasInBackground = this.isInBackground;
-            this.isInBackground = document.hidden;
-
-            // Only switch if state actually changed
-            if (wasInBackground === this.isInBackground) return;
-
-            try {
-                if (this.isInBackground) {
-                    // Switch to background watcher
-                    if (this.watchId !== null) {
-                        await GeolocationPermission.clearLocationWatch(this.watchId);
-                        this.watchId = null;
-                    }
-                    if (this.backgroundWatchId === null) {
-                        await this.startBackgroundWatch(locationHandler);
-                    }
-                } else {
-                    // Switch to foreground watcher
-                    if (this.backgroundWatchId !== null) {
-                        await GeolocationPermission.clearBackgroundLocationWatch(this.backgroundWatchId);
-                        this.backgroundWatchId = null;
-                    }
-                    if (this.watchId === null) {
-                        await this.startForegroundWatch(locationHandler);
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to switch location watcher', err);
-            }
-        };
-
-        document.addEventListener('visibilitychange', this.visibilityHandler);
     }
 
     async refreshStatus(): Promise<void> {

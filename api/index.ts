@@ -7,7 +7,7 @@ import { StandardResponse } from './lib/types.js';
 import Bulldozer from './lib/initialization.js';
 import history, { Context } from 'connect-history-api-fallback';
 import Schema from '@openaddresses/batch-schema';
-import { ProfileConnConfig } from './lib/connection-config.js';
+import { ProfileConnConfig, AdminConnConfig } from './lib/connection-config.js';
 import { ConnectionClient } from './lib/connection-pool.js';
 import { ConnectionWebSocket } from './lib/connection-web.js';
 import sleep from './lib/sleep.js';
@@ -127,7 +127,18 @@ export default async function server(config: Config): Promise<ServerManager> {
 
     app.disable('x-powered-by');
     app.use(cors({
-        origin: '*',
+        origin: (origin, callback) => {
+            // Reflect the request origin rather than using '*', which is
+            // incompatible with credentials:true and causes iOS WKWebView to
+            // refuse cross-origin 3xx redirects (e.g. the PMTiles tile
+            // endpoint).  Allow no-origin (native/curl) and the 'null' origin
+            // that Capacitor and cross-origin redirects produce.
+            if (!origin || origin === 'null') {
+                callback(null, true);
+            } else {
+                callback(null, origin);
+            }
+        },
         exposedHeaders: [
             'Content-Disposition',
         ],
@@ -229,6 +240,52 @@ export default async function server(config: Config): Promise<ServerManager> {
                 if (!webClients) webClients = [];
                 webClients.push(new ConnectionWebSocket(ws, parsedParams.format));
                 config.wsClients.set(parsedParams.connection, webClients);
+                ws.send(JSON.stringify({ type: 'connected' }));
+            } else if (parsedParams.connection === 'admin') {
+                if (!(auth instanceof AuthUser) || !auth.is_admin()) {
+                    throw new Error('Unauthorized');
+                }
+
+                // Admin connection using server auth profile
+                let client: ConnectionClient | undefined;
+                let awaitSecure: Promise<void> | undefined;
+
+                if (!config.conns.has(0)) {
+                    // Admin connection should already be created in init(), but check anyway
+                    if (config.server.auth.cert && config.server.auth.key) {
+                        client = await config.conns.add(new AdminConnConfig(config));
+                        if (client.tak.client && !client.tak.client.authorized) {
+                            awaitSecure = new Promise<void>(resolve => (client as ConnectionClient).tak.once('secureConnect', resolve));
+                        }
+                    } else {
+                        throw new Error('Admin connection not configured');
+                    }
+                } else {
+                    client = config.conns.get(0) as ConnectionClient;
+                }
+
+                const connClient = new ConnectionWebSocket(ws, parsedParams.format, client, auth instanceof AuthUser ? auth.session : undefined);
+
+                let webClients = config.wsClients.get('admin');
+                if (!webClients) webClients = [];
+                webClients.push(connClient);
+                config.wsClients.set('admin', webClients);
+
+                ws.on('close', () => {
+                    const conns = config.wsClients.get('admin');
+                    if (!conns || !conns.length) return;
+
+                    const i = webClients.indexOf(connClient);
+                    if (i < 0) return;
+                    webClients[i].destroy();
+                    webClients.splice(i, 1);
+
+                    if (webClients.length !== 0) return;
+
+                    config.wsClients.delete('admin');
+                });
+
+                if (awaitSecure) await awaitSecure;
                 ws.send(JSON.stringify({ type: 'connected' }));
             } else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
                 let client: ConnectionClient | undefined;

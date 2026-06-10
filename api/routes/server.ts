@@ -26,6 +26,7 @@ export default async function router(schema: Schema, config: Config) {
                 res.json({
                     id: 1,
                     status: 'unconfigured',
+                    connection_status: 'dead',
                     name: 'Default Server',
                     version: pkg.version,
                     created: new Date().toISOString(),
@@ -46,6 +47,7 @@ export default async function router(schema: Schema, config: Config) {
                 if (user.access === AuthUserAccess.ADMIN) {
                     const response: Static<typeof ServerResponse> = {
                         status: 'configured',
+                        connection_status: config.conns.status(0),
                         version: pkg.version,
                         ...config.server,
                         auth,
@@ -61,6 +63,7 @@ export default async function router(schema: Schema, config: Config) {
                     res.json({
                         id: config.server.id,
                         status: 'configured',
+                        connection_status: config.conns.status(0),
                         version: pkg.version,
                         name: config.server.name,
                         created: config.server.created,
@@ -145,6 +148,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const response: Static<typeof ServerResponse> = {
                 status: 'configured',
+                connection_status: config.conns.status(0),
                 version: pkg.version,
                 ...config.server,
                 auth,

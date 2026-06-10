@@ -36536,6 +36536,8 @@ export interface paths {
                         "application/json": {
                             id: number;
                             status: string;
+                            /** @description The connected status of the Admin Connection (connection 0) */
+                            connection_status: "live" | "dead" | "unknown";
                             created: string;
                             updated: string;
                             version: string;
@@ -36654,6 +36656,8 @@ export interface paths {
                         "application/json": {
                             id: number;
                             status: string;
+                            /** @description The connected status of the Admin Connection (connection 0) */
+                            connection_status: "live" | "dead" | "unknown";
                             created: string;
                             updated: string;
                             version: string;

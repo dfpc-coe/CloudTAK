@@ -120,6 +120,7 @@ test('Reset Server to Unconfigured', async () => {
     try {
         flight.config!.server = await flight.config!.models.Server.commit(1, {
             name: 'Default Server',
+            connection_status: 'dead',
             url: '',
             api: '',
             webtak: '',
@@ -147,6 +148,7 @@ test('GET: api/server - Unconfigured - Admin', async () => {
             id: 1,
             status: 'unconfigured',
             name: 'Default Server',
+            connection_status: 'dead',
             url: '',
             api: '',
             webtak: '',
@@ -174,6 +176,7 @@ test('GET: api/server - Unconfigured - User', async () => {
             id: 1,
             status: 'unconfigured',
             name: 'Default Server',
+            connection_status: 'dead',
             url: '',
             api: '',
             webtak: '',
@@ -198,6 +201,7 @@ test('GET: api/server - Unconfigured - No Auth', async () => {
             id: 1,
             status: 'unconfigured',
             name: 'Default Server',
+            connection_status: 'dead',
             url: '',
             api: '',
             webtak: '',
@@ -212,6 +216,9 @@ test('PATCH: api/server - Unconfigured without username/password', async () => {
     try {
         const res = await flight.fetch('/api/server', {
             method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
             body: {
                 name: 'Test Server',
                 url: 'ssl://localhost:8089',

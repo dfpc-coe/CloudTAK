@@ -18,6 +18,18 @@
                                     >
                                 </div>
                                 <TablerLoading desc='Loading CloudTAK' />
+                                <Transition
+                                    name='stage-fade'
+                                    mode='out-in'
+                                >
+                                    <div
+                                        v-if='props.stage'
+                                        :key='props.stage'
+                                        class='text-center text-muted mt-1'
+                                        style='font-size: 0.85rem;'
+                                        v-text='props.stage'
+                                    />
+                                </Transition>
                                 <Transition name='reset-fade'>
                                     <div
                                         v-if='showReset'
@@ -50,6 +62,10 @@
 import Config from '../base/config.ts';
 import { supportsServiceWorker } from '../base/capacitor.ts';
 import { ref, onMounted, onUnmounted } from 'vue'
+
+const props = defineProps<{
+    stage?: string;
+}>();
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler'
@@ -86,6 +102,15 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.stage-fade-enter-active,
+.stage-fade-leave-active {
+    transition: opacity 0.4s ease;
+}
+.stage-fade-enter-from,
+.stage-fade-leave-to {
+    opacity: 0;
+}
+
 .reset-fade-enter-active {
     transition: opacity 1s ease-in;
 }

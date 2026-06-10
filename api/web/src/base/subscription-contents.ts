@@ -1,5 +1,5 @@
 import { db } from '../database.ts';
-import { server } from '../std.ts';
+import { server, downloadUrl } from '../std.ts';
 import type { DBSubscriptionContent } from '../database.ts';
 import type { Mission } from '../types.ts';
 
@@ -74,6 +74,16 @@ export default class SubscriptionContents {
             .equals(this.guid)
             .filter((c) => c.hash === hash)
             .delete();
+    }
+
+    async download(name: string, hash: string): Promise<void> {
+        await downloadUrl(
+            `/api/marti/api/files/${encodeURIComponent(hash)}?name=${encodeURIComponent(name)}`,
+            {
+                filename: name,
+                token: true
+            }
+        );
     }
 
     async list(

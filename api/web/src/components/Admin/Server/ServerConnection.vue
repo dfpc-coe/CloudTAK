@@ -63,17 +63,38 @@
                 <h3 class='card-title'>
                     Admin Certificate
                 </h3>
-                <div
-                    v-if='regen && edit'
-                    class='ms-auto btn-list'
-                >
-                    <IconPlus
-                        v-tooltip='"Upload P12"'
-                        :size='32'
-                        stroke='1'
-                        class='cursor-pointer'
-                        @click='modal.upload = true'
+                <div class='ms-auto d-flex align-items-center gap-2'>
+                    <span
+                        v-if='server.auth'
+                        class='text-muted'
+                        style='font-size: 0.85rem;'
+                        v-text='server.connection_status === "live" ? "Connected" : server.connection_status === "dead" ? "Disconnected" : "Unknown"'
                     />
+                    <span
+                        v-if='server.auth'
+                        class='status-indicator status-indicator-animated'
+                        :class='{
+                            "status-green": server.connection_status === "live",
+                            "status-red": server.connection_status === "dead",
+                            "status-dark": server.connection_status === "unknown",
+                        }'
+                    >
+                        <span class='status-indicator-circle' />
+                        <span class='status-indicator-circle' />
+                        <span class='status-indicator-circle' />
+                    </span>
+                    <div
+                        v-if='regen && edit'
+                        class='btn-list'
+                    >
+                        <IconPlus
+                            v-tooltip='"Upload P12"'
+                            :size='32'
+                            stroke='1'
+                            class='cursor-pointer'
+                            @click='modal.upload = true'
+                        />
+                    </div>
                 </div>
             </div>
             <div class='card-body row'>
@@ -233,6 +254,7 @@ const server = ref<Server>({
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
     status: 'unconfigured',
+    connection_status: 'unknown',
     auth: false,
     name: '',
     url: '',
