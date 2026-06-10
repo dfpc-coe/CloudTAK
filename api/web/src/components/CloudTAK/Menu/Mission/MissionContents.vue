@@ -129,7 +129,7 @@
                             />
                             <TablerIconButton
                                 title='Download Asset'
-                                @click='downloadFile(content.name, content.hash)'
+                                @click='props.subscription.contents.download(content.name, content.hash)'
                             >
                                 <IconDownload
                                     :size='24'
@@ -186,7 +186,7 @@
                             </TablerIconButton>
                             <TablerIconButton
                                 title='Download Asset'
-                                @click='downloadFile(content.name, content.hash)'
+                                @click='props.subscription.contents.download(content.name, content.hash)'
                             >
                                 <IconDownload
                                     :size='32'
@@ -211,7 +211,7 @@ import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { std, stdurl, server } from '../../../../std.ts';
+import { stdurl, server } from '../../../../std.ts';
 import Subscription from '../../../../base/subscription.ts';
 import type { DBSubscriptionContent } from '../../../../database.ts';
 import type { Attachment } from '../../../../types.ts';
@@ -316,16 +316,6 @@ async function uploadStaged(ev: { name: string }) {
     }
 
     await props.subscription.fetch();
-}
-
-async function downloadFile(name: string, hash: string): Promise<void> {
-    const url = stdurl(`/api/marti/api/files/${hash}`)
-    if (token.value) url.searchParams.set('token', token.value);
-    url.searchParams.set('name', name);
-
-    await std(url, {
-        download: true
-    })
 }
 
 async function importFile(name: string, hash: string) {
