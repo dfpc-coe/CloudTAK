@@ -20,7 +20,11 @@
                     @click='help = false'
                 />
             </span>
-            <div class='align-self-center subheader' :class='{ "required": required }' v-text='label' />
+            <div
+                class='align-self-center subheader'
+                :class='{ "required": required }'
+                v-text='label'
+            />
             <div class='ms-auto align-self-center'>
                 <slot />
             </div>
@@ -95,7 +99,9 @@
             <div class='modal-status bg-blue' />
             <div class='modal-body'>
                 <div class='d-flex align-items-center justify-content-between mb-3'>
-                    <h3 class='modal-title'>Select Icon</h3>
+                    <h3 class='modal-title'>
+                        Select Icon
+                    </h3>
                     <button
                         type='button'
                         class='btn-close'
@@ -145,12 +151,15 @@
                         @click='selectIcon(icon); modal = false'
                     >
                         <div class='card'>
-                            <div class='card-body text-center p-1' :class='{ "py-2": params.showNames }'>
+                            <div
+                                class='card-body text-center p-1'
+                                :class='{ "py-2": params.showNames }'
+                            >
                                 <img
                                     :src='iconUrls.get(icon.name)'
                                     class='img-thumbnail'
                                     :style='params.showNames ? "width: 64px; height: 64px;" : "width: 40px; height: 40px;"'
-                                />
+                                >
                                 <div
                                     v-if='params.showNames'
                                     class='mt-1'
