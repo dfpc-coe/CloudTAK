@@ -16,6 +16,13 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.12.0 - 2026-06-10
+
+- :tada: Make an Admin Connection to the TAK Server for future configuration-free ETLs
+- :bug: Fix edge case where initial loading would hang when in iOS mode
+- :bug: Dynamic Origin in CORS for iOS apps to be able to load overlays
+- :rocket: Continue migrating from std() to server()
+
 ### v13.11.4 - 2026-06-09
 
 - :bug: The move to use teleport broke some implicit size rules on dropdowns - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1477
