@@ -314,7 +314,10 @@ async function initializeApp(): Promise<void> {
 
     if (!isNativePlatform()) {
         await KV.generate('serverUrl', window.location.origin);
-        await Preferences.set({ key: 'serverUrl', value: window.location.origin });
+        await Preferences.set({
+            key: 'serverUrl',
+            value: window.location.origin
+        });
     } else {
         const { value } = await Preferences.get({ key: 'serverUrl' });
         const serverUrl = value?.trim();
