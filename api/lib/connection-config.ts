@@ -234,11 +234,11 @@ export class AdminConnConfig implements ConnectionConfig {
 
     uid(): string {
         const cert = new X509Certificate(this.auth.cert);
-        const subject = (cert.subject || "").split('\n').reverse().join(',');
+        const subject = (cert.subject || '').split('\n').reverse().join(',');
         return subject;
     }
 
-    async subscription(name: string): Promise<null | MissionSub> {
+    async subscription(): Promise<null | MissionSub> {
         return null;
     }
 
@@ -250,7 +250,7 @@ export class AdminConnConfig implements ConnectionConfig {
         return [];
     }
 
-    async geofence(id: string): Promise<Feature | null> {
+    async geofence(): Promise<Feature | null> {
         return null;
     }
 }
