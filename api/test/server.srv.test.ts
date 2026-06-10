@@ -212,6 +212,9 @@ test('PATCH: api/server - Unconfigured without username/password', async () => {
     try {
         const res = await flight.fetch('/api/server', {
             method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
             body: {
                 name: 'Test Server',
                 url: 'ssl://localhost:8089',
