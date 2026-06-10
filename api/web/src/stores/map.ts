@@ -27,16 +27,16 @@ import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay-class.ts';
 import OverlayManager from '../base/overlay.ts';
 import Subscription from '../base/subscription.ts';
-import { std, stdurl, server, getRuntimeToken, serverUrl } from '../std.js';
+import { stdurl, server, getRuntimeToken, serverUrl } from '../std.js';
 import * as mapgl from 'maplibre-gl'
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-csp-worker.js?url'
 import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
-import { isNativePlatform } from '../base/capacitor.ts';
+import { isNativePlatform, addBackgroundStateListener } from '../base/capacitor.ts';
 
-import type { ProfileOverlay, Basemap, APIList, Feature } from '../types.ts';
+import type { ProfileOverlay, Basemap, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 import type { Position } from '@capacitor/geolocation';
 
@@ -81,6 +81,7 @@ export const useMapStore = defineStore('cloudtak', {
         _boundOnOffline?: () => void;
         _boundOnDeviceOrientation?: (event: DeviceOrientationEvent) => void;
         _boundOnVisibilityChange?: () => Promise<void>;
+        _removeBackgroundStateListener?: () => void;
 
         db: DatabaseType;
         channel: BroadcastChannel;
@@ -101,6 +102,7 @@ export const useMapStore = defineStore('cloudtak', {
         defaultPointType: string;
         manualLocationMode: boolean;
         isMobileDetected: boolean;
+        isBackgrounded: boolean;
 
         tokenExpiry: number | null;
         lastUpdateCOTErrorSignature: string | null;
@@ -176,6 +178,7 @@ export const useMapStore = defineStore('cloudtak', {
             tokenExpiry: null,
             lastUpdateCOTErrorSignature: null,
             isMobileDetected: false,
+            isBackgrounded: false,
             locked: [],
             terrainEnabled: false,
             hasNoChannels: false,
@@ -237,7 +240,7 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                 });
 
-                if (isNativePlatform() && document.hidden) {
+                if (isNativePlatform() && this.isBackgrounded) {
                     // Actions cannot be called from getters, so we use the store instance
                     const mapStore = useMapStore();
                     void mapStore.submitLocationHttp(position);
@@ -282,6 +285,10 @@ export const useMapStore = defineStore('cloudtak', {
                 deviceStore.orientation.removeListener(this._boundOnDeviceOrientation);
             }
             if (this._boundOnVisibilityChange) document.removeEventListener('visibilitychange', this._boundOnVisibilityChange);
+            if (this._removeBackgroundStateListener) {
+                this._removeBackgroundStateListener();
+                this._removeBackgroundStateListener = undefined;
+            }
 
             if (this._map) {
                 try {
@@ -325,8 +332,11 @@ export const useMapStore = defineStore('cloudtak', {
             if (!terrainId) return;
             if (this.map.getSource('-2')) return;
 
-            const burl = stdurl(`/api/basemap/${terrainId}`);
-            const terrain = await std(burl) as Basemap;
+            const terrainRes = await server.GET('/api/basemap/{:basemapid}', {
+                params: { path: { ':basemapid': terrainId } }
+            });
+            if (terrainRes.error) throw new Error(terrainRes.error.message);
+            const terrain = terrainRes.data as Basemap;
 
             if (terrain.type !== 'raster-dem') {
                 throw new Error(`Terrain basemap ${terrainId} is not a raster-dem type`);
@@ -575,6 +585,14 @@ export const useMapStore = defineStore('cloudtak', {
             window.addEventListener('offline', this._boundOnOffline);
             deviceStore.orientation.addListener(this._boundOnDeviceOrientation);
             document.addEventListener('visibilitychange', this._boundOnVisibilityChange);
+
+            // Track foreground/background transitions using a native-reliable
+            // signal so background location reporting (submitLocationHttp) is
+            // gated correctly on iOS, where document.hidden is unreliable.
+            this.isBackgrounded = false;
+            this._removeBackgroundStateListener = await addBackgroundStateListener((isBackgrounded) => {
+                this.isBackgrounded = isBackgrounded;
+            });
 
             const { value: token } = await Preferences.get({ key: 'token' });
 
@@ -1067,20 +1085,24 @@ export const useMapStore = defineStore('cloudtak', {
 
                 if (basemapId) {
                     try {
-                        const burl = stdurl(`/api/basemap/${basemapId}`);
-                        defaultBasemap = await std(burl) as Basemap;
+                        const basemapRes = await server.GET('/api/basemap/{:basemapid}', {
+                            params: { path: { ':basemapid': basemapId } }
+                        });
+                        if (basemapRes.error) throw new Error(basemapRes.error.message);
+                        defaultBasemap = basemapRes.data as Basemap;
                     } catch (err) {
                         console.warn('Failed to load configured basemap:', err);
                     }
                 }
 
                 if (!defaultBasemap) {
-                    const burl = stdurl('/api/basemap');
-                    burl.searchParams.set('type', 'raster');
-                    const basemaps = await std(burl) as APIList<Basemap>;
+                    const basemapsRes = await server.GET('/api/basemap', {
+                        params: { query: { type: 'raster', limit: 1, page: 0, order: 'asc', sort: 'name', filter: '', overlay: false, hidden: 'false' } }
+                    });
+                    if (basemapsRes.error) throw new Error(basemapsRes.error.message);
 
-                    if (basemaps.items.length > 0) {
-                        defaultBasemap = basemaps.items[0];
+                    if (basemapsRes.data.items.length > 0) {
+                        defaultBasemap = basemapsRes.data.items[0] as Basemap;
                     }
                 }
 
@@ -1233,8 +1255,11 @@ export const useMapStore = defineStore('cloudtak', {
         updateAttribution: async function(): Promise<void> {
             const attributionPromises = OverlayManager.visibleBasemaps().map(async (overlay) => {
                     try {
-                        const basemap = await std(`/api/basemap/${overlay.mode_id}`) as { attribution?: string };
-                        return basemap.attribution;
+                        const basemapRes = await server.GET('/api/basemap/{:basemapid}', {
+                            params: { path: { ':basemapid': Number(overlay.mode_id) } }
+                        });
+                        if (basemapRes.error) return null;
+                        return (basemapRes.data as Basemap).attribution;
                     } catch (err) {
                         console.warn('Failed to load basemap attribution:', err);
                         return null;

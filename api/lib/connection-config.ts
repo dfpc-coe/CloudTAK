@@ -213,3 +213,44 @@ export class ProfileConnConfig implements ConnectionConfig {
         } as Feature;
     }
 }
+
+export class AdminConnConfig implements ConnectionConfig {
+    id: number;
+    name: string;
+    enabled: boolean;
+    auth: Static<typeof ConnectionAuth>;
+    config: Config;
+
+    constructor(config: Config) {
+        this.config = config;
+        this.id = 0;
+        this.name = 'admin';
+        this.enabled = true;
+        this.auth = {
+            cert: config.server.auth.cert!,
+            key: config.server.auth.key!,
+        };
+    }
+
+    uid(): string {
+        const cert = new X509Certificate(this.auth.cert);
+        const subject = (cert.subject || '').split('\n').reverse().join(',');
+        return subject;
+    }
+
+    async subscription(): Promise<null | MissionSub> {
+        return null;
+    }
+
+    async subscriptions(): Promise<Array<MissionSub>> {
+        return [];
+    }
+
+    async geofences(): Promise<Array<Feature>> {
+        return [];
+    }
+
+    async geofence(): Promise<Feature | null> {
+        return null;
+    }
+}

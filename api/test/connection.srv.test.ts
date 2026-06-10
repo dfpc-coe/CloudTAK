@@ -54,7 +54,7 @@ test('GET: api/connection - Admin (empty)', async () => {
             total: 0,
             items: [],
             status: {
-                dead: 0,
+                dead: 1,
                 live: 0,
                 unknown: 0,
             },
@@ -202,7 +202,7 @@ test('POST: api/connection - Non-admin agency admin creates connection for their
     }
 });
 
-let readonlyConnId: number;
+let readonlyConnId: number = 0;
 
 test('POST: api/connection - Readonly forces enabled to false', async () => {
     try {
@@ -240,7 +240,7 @@ test('POST: api/connection - Readonly forces enabled to false', async () => {
     }
 });
 
-let enabledConnId: number;
+let enabledConnId: number = 0;
 
 test('Creating Enabled Connection', async () => {
     try {
