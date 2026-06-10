@@ -138,6 +138,7 @@
 
         <Loading
             v-if='!mounted || (loading && !route.path.includes("configure") && !route.path.includes("login"))'
+            :stage='loadingStage'
         />
         <router-view
             v-else
@@ -224,6 +225,7 @@ type DisplayStyleMode = 'System Default' | 'Light' | 'Dark';
 type ResolvedThemeMode = 'light' | 'dark';
 
 const loading = ref(true);
+const loadingStage = ref('');
 const resolvedTheme = ref<ResolvedThemeMode>('dark');
 const displayStyle = ref<DisplayStyleMode>('System Default');
 const channelChange = ref(false);
@@ -303,6 +305,8 @@ onMounted(async () => {
 });
 
 async function initializeApp(): Promise<void> {
+    loadingStage.value = 'Starting up…';
+
     // Register before any awaits so early promise rejections are captured
     window.addEventListener('unhandledrejection', (e) => {
         error.value = e.reason instanceof Error ? e.reason : new Error(String(e.reason));
@@ -311,6 +315,8 @@ async function initializeApp(): Promise<void> {
     if (supportsServiceWorker()) {
         window.addEventListener('sw:update-available', onSwUpdateAvailable);
     }
+
+    loadingStage.value = 'Connecting to server…';
 
     if (!isNativePlatform()) {
         await KV.generate('serverUrl', window.location.origin);
@@ -348,6 +354,8 @@ async function initializeApp(): Promise<void> {
 
     systemThemeQuery?.addEventListener('change', onSystemThemeChange);
 
+    loadingStage.value = 'Checking your account…';
+
     let status;
 
     const username = await db.profile.get('username');
@@ -371,11 +379,14 @@ async function initializeApp(): Promise<void> {
         const { value: token } = await Preferences.get({ key: 'token' });
 
         if (token) {
+            loadingStage.value = 'Signing you in…';
             await refreshLogin();
         } else if (route.name !== 'login') {
             routeLogin();
         }
     }
+
+    loadingStage.value = 'Loading app settings…';
 
     const config = await Config.list([
         'login::name',
@@ -400,6 +411,8 @@ async function initializeApp(): Promise<void> {
             channelChange.value = true;
         }
     };
+
+    loadingStage.value = 'Checking for updates…';
 
     if (supportsServiceWorker()) {
         navigator.serviceWorker.getRegistrations().then(async (registrations) => {
