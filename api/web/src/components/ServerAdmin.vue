@@ -388,7 +388,7 @@
 import { onMounted, ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { Profile } from '../types.ts';
-import { std } from '../std.ts';
+import { server } from '../std.ts';
 import PageFooter from './PageFooter.vue';
 import {
     TablerAlert,
@@ -424,7 +424,8 @@ const nest = computed(() => {
 });
 
 onMounted(async () => {
-    const profile = await std('/api/profile') as Profile;
-    isAdmin.value = profile.system_admin;
+    const res = await server.GET('/api/profile');
+    if (res.error) throw new Error(res.error.message);
+    isAdmin.value = (res.data as Profile).system_admin;
 });
 </script>

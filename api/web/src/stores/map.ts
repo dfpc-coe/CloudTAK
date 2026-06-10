@@ -27,7 +27,7 @@ import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay-class.ts';
 import OverlayManager from '../base/overlay.ts';
 import Subscription from '../base/subscription.ts';
-import { std, stdurl, server, getRuntimeToken, serverUrl } from '../std.js';
+import { stdurl, server, getRuntimeToken, serverUrl } from '../std.js';
 import * as mapgl from 'maplibre-gl'
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-csp-worker.js?url'
 import type Atlas from '../workers/atlas.ts';
@@ -325,8 +325,11 @@ export const useMapStore = defineStore('cloudtak', {
             if (!terrainId) return;
             if (this.map.getSource('-2')) return;
 
-            const burl = stdurl(`/api/basemap/${terrainId}`);
-            const terrain = await std(burl) as Basemap;
+            const terrainRes = await server.GET('/api/basemap/{:basemapid}', {
+                params: { path: { ':basemapid': terrainId } }
+            });
+            if (terrainRes.error) throw new Error(terrainRes.error.message);
+            const terrain = terrainRes.data as Basemap;
 
             if (terrain.type !== 'raster-dem') {
                 throw new Error(`Terrain basemap ${terrainId} is not a raster-dem type`);
@@ -1067,20 +1070,24 @@ export const useMapStore = defineStore('cloudtak', {
 
                 if (basemapId) {
                     try {
-                        const burl = stdurl(`/api/basemap/${basemapId}`);
-                        defaultBasemap = await std(burl) as Basemap;
+                        const basemapRes = await server.GET('/api/basemap/{:basemapid}', {
+                            params: { path: { ':basemapid': basemapId } }
+                        });
+                        if (basemapRes.error) throw new Error(basemapRes.error.message);
+                        defaultBasemap = basemapRes.data as Basemap;
                     } catch (err) {
                         console.warn('Failed to load configured basemap:', err);
                     }
                 }
 
                 if (!defaultBasemap) {
-                    const burl = stdurl('/api/basemap');
-                    burl.searchParams.set('type', 'raster');
-                    const basemaps = await std(burl) as APIList<Basemap>;
+                    const basemapsRes = await server.GET('/api/basemap', {
+                        params: { query: { type: 'raster', limit: 1, page: 0, order: 'asc', sort: 'name', filter: '', overlay: false, hidden: 'false' } }
+                    });
+                    if (basemapsRes.error) throw new Error(basemapsRes.error.message);
 
-                    if (basemaps.items.length > 0) {
-                        defaultBasemap = basemaps.items[0];
+                    if (basemapsRes.data.items.length > 0) {
+                        defaultBasemap = basemapsRes.data.items[0] as Basemap;
                     }
                 }
 
@@ -1233,8 +1240,11 @@ export const useMapStore = defineStore('cloudtak', {
         updateAttribution: async function(): Promise<void> {
             const attributionPromises = OverlayManager.visibleBasemaps().map(async (overlay) => {
                     try {
-                        const basemap = await std(`/api/basemap/${overlay.mode_id}`) as { attribution?: string };
-                        return basemap.attribution;
+                        const basemapRes = await server.GET('/api/basemap/{:basemapid}', {
+                            params: { path: { ':basemapid': Number(overlay.mode_id) } }
+                        });
+                        if (basemapRes.error) return null;
+                        return (basemapRes.data as Basemap).attribution;
                     } catch (err) {
                         console.warn('Failed to load basemap attribution:', err);
                         return null;
