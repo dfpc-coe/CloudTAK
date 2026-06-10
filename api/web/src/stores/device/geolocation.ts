@@ -71,7 +71,9 @@ export class GeolocationPermission {
     static async watchBackgroundLocation(
         callback: (position: Position | null, err?: unknown) => void
     ): Promise<CallbackID> {
-        // Use background-geolocation only when app is backgrounded
+        // Background-capable watcher. Runs alongside the foreground watcher and
+        // is the source that keeps delivering once iOS suspends the JS-based
+        // foreground watchPosition in the background.
         return BackgroundGeolocation.addWatcher({
             backgroundTitle: 'CloudTAK GPS active',
             backgroundMessage: 'CloudTAK is sharing your location.',
@@ -154,17 +156,27 @@ export class GeolocationPermission {
 
         try {
             if (isNativePlatform()) {
-                // On native platforms use a single always-on, background-capable
-                // watcher. The @capacitor-community/background-geolocation plugin
-                // delivers updates in both the foreground and background, so there
-                // is no need to swap plugins on visibilitychange — a swap that on
-                // iOS frequently ran too late (the WebView is suspended on the
-                // background transition) and left the app with no background
-                // location source. Reporting still branches on foreground vs.
+                // Start the foreground watcher first. @capacitor/geolocation's
+                // watchPosition delivers an immediate, reliable fix on iOS
+                // (including the simulator), which is what clears the initial
+                // "Acquiring GPS" state. The background-capable watcher is then
+                // started concurrently so location keeps flowing once the app is
+                // suspended — iOS suspends the foreground watchPosition in the
+                // background while @capacitor-community/background-geolocation
+                // continues. Reporting still branches on foreground vs.
                 // background in the location callback (Option B): the worker
                 // WebSocket handles foreground while CapacitorHttp handles the
                 // background.
-                await this.startBackgroundWatch(locationHandler);
+                //
+                // The background watcher is started fire-and-forget so a slow or
+                // stalled addWatcher (e.g. while resolving "Always" permission)
+                // can never block foreground location acquisition. Starting it
+                // also surfaces iOS's "Always Allow" upgrade prompt while the app
+                // is in the foreground.
+                await this.startForegroundWatch(locationHandler);
+                void this.startBackgroundWatch(locationHandler).catch((err: unknown) => {
+                    console.warn('Failed to start background location watch', err);
+                });
             } else {
                 // On web, use standard geolocation only
                 await this.startForegroundWatch(locationHandler);
