@@ -34,7 +34,7 @@ import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
-import { isNativePlatform } from '../base/capacitor.ts';
+import { isNativePlatform, addBackgroundStateListener } from '../base/capacitor.ts';
 
 import type { ProfileOverlay, Basemap, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
@@ -81,6 +81,7 @@ export const useMapStore = defineStore('cloudtak', {
         _boundOnOffline?: () => void;
         _boundOnDeviceOrientation?: (event: DeviceOrientationEvent) => void;
         _boundOnVisibilityChange?: () => Promise<void>;
+        _removeBackgroundStateListener?: () => void;
 
         db: DatabaseType;
         channel: BroadcastChannel;
@@ -101,6 +102,7 @@ export const useMapStore = defineStore('cloudtak', {
         defaultPointType: string;
         manualLocationMode: boolean;
         isMobileDetected: boolean;
+        isBackgrounded: boolean;
 
         tokenExpiry: number | null;
         lastUpdateCOTErrorSignature: string | null;
@@ -176,6 +178,7 @@ export const useMapStore = defineStore('cloudtak', {
             tokenExpiry: null,
             lastUpdateCOTErrorSignature: null,
             isMobileDetected: false,
+            isBackgrounded: false,
             locked: [],
             terrainEnabled: false,
             hasNoChannels: false,
@@ -237,7 +240,7 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                 });
 
-                if (isNativePlatform() && document.hidden) {
+                if (isNativePlatform() && this.isBackgrounded) {
                     // Actions cannot be called from getters, so we use the store instance
                     const mapStore = useMapStore();
                     void mapStore.submitLocationHttp(position);
@@ -282,6 +285,10 @@ export const useMapStore = defineStore('cloudtak', {
                 deviceStore.orientation.removeListener(this._boundOnDeviceOrientation);
             }
             if (this._boundOnVisibilityChange) document.removeEventListener('visibilitychange', this._boundOnVisibilityChange);
+            if (this._removeBackgroundStateListener) {
+                this._removeBackgroundStateListener();
+                this._removeBackgroundStateListener = undefined;
+            }
 
             if (this._map) {
                 try {
@@ -578,6 +585,14 @@ export const useMapStore = defineStore('cloudtak', {
             window.addEventListener('offline', this._boundOnOffline);
             deviceStore.orientation.addListener(this._boundOnDeviceOrientation);
             document.addEventListener('visibilitychange', this._boundOnVisibilityChange);
+
+            // Track foreground/background transitions using a native-reliable
+            // signal so background location reporting (submitLocationHttp) is
+            // gated correctly on iOS, where document.hidden is unreliable.
+            this.isBackgrounded = false;
+            this._removeBackgroundStateListener = await addBackgroundStateListener((isBackgrounded) => {
+                this.isBackgrounded = isBackgrounded;
+            });
 
             const { value: token } = await Preferences.get({ key: 'token' });
 
