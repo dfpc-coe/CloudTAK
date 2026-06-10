@@ -11,7 +11,7 @@ import sleep from './sleep.js';
 import TAK, { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
 import type ConnectionConfig from './connection-config.js';
-import { MachineConnConfig, ProfileConnConfig } from './connection-config.js';
+import { MachineConnConfig, ProfileConnConfig, AdminConnConfig } from './connection-config.js';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf-8')) as {
     version: string;
@@ -196,6 +196,11 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
      */
     async init(): Promise<void> {
         const conns: Promise<ConnectionClient>[] = [];
+
+        // Create admin connection (connection 0) using server auth profile
+        if (this.config.server.auth.cert && this.config.server.auth.key) {
+            conns.push(this.add(new AdminConnConfig(this.config)));
+        }
 
         const ConnectionModel = new Modeler(this.config.pg, Connection);
         for await (const conn of ConnectionModel.iter()) {
