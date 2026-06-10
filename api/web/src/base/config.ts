@@ -1,6 +1,6 @@
 import { db } from '../database.ts'
 import type { DBConfig } from '../database.ts';
-import { std, stdurl } from '../std.ts';
+import { server } from '../std.ts';
 import { liveQuery, type Subscription } from 'dexie';
 import type { paths } from '@cloudtak/api-types';
 
@@ -99,16 +99,19 @@ export default class Config<K extends keyof FullConfig = keyof FullConfig> {
     static async refresh(keys: (keyof FullConfig)[]): Promise<Partial<FullConfig>> {
         if (keys.length === 0) return {};
 
-        const url = stdurl('/api/config');
-        url.searchParams.append('keys', keys.join(','));
+        const res = await server.GET('/api/config', {
+            params: { query: { keys: keys.join(',') } }
+        });
 
-        const res = await std(url) as Partial<FullConfig>;
+        if (res.error) throw new Error(res.error.message);
+
+        const data = res.data as Partial<FullConfig>;
 
         const ops: DBConfig[] = [];
-        for (const key of Object.keys(res)) {
+        for (const key of Object.keys(data)) {
             ops.push({
                 key: key,
-                value: res[key as keyof FullConfig]
+                value: data[key as keyof FullConfig]
             });
         }
 
@@ -116,6 +119,6 @@ export default class Config<K extends keyof FullConfig = keyof FullConfig> {
             await db.config.bulkPut(ops);
         }
 
-        return res;
+        return data;
     }
 }

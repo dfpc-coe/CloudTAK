@@ -96,6 +96,8 @@ export async function std(
         headers?: Record<string, string>;
         body?: unknown;
         method?: string;
+        signal?: AbortSignal;
+        timeout?: number;
     } = {}
 ): Promise<unknown> {
     url = stdurl(url)
@@ -114,7 +116,27 @@ export async function std(
         opts.headers['Authorization'] = 'Bearer ' + authToken;
     }
 
-    const res = await fetch(url, opts as RequestInit);
+    // Guard every request with a timeout so a stalled connection (common on
+    // native cold-starts where the network stack is not yet warm) rejects
+    // instead of hanging forever and trapping the UI on the loading splash.
+    const timeoutMs = opts.timeout ?? DEFAULT_REQUEST_TIMEOUT_MS;
+    const timeoutController = new AbortController();
+    const timeoutId = setTimeout(() => timeoutController.abort(), timeoutMs);
+    const signal = opts.signal
+        ? anySignal([opts.signal, timeoutController.signal])
+        : timeoutController.signal;
+
+    let res: Response;
+    try {
+        res = await fetch(url, { ...(opts as RequestInit), signal });
+    } catch (err) {
+        if (timeoutController.signal.aborted) {
+            throw new Error(`Request timed out after ${timeoutMs}ms: ${String(url)}`);
+        }
+        throw err;
+    } finally {
+        clearTimeout(timeoutId);
+    }
 
     if ((res.status < 200 || res.status >= 400) && ![401].includes(res.status)) {
         let bdy: Record<string, unknown> | APIError;
@@ -154,6 +176,31 @@ export async function std(
     } else {
         return res;
     }
+}
+
+/**
+ * Default timeout applied to every API request issued through `std()`.
+ */
+const DEFAULT_REQUEST_TIMEOUT_MS = 20000;
+
+/**
+ * Combine multiple AbortSignals into a single signal that aborts when any of
+ * the inputs abort. Avoids relying on `AbortSignal.any`, which is unavailable
+ * in older WebKit/WKWebView runtimes.
+ */
+function anySignal(signals: AbortSignal[]): AbortSignal {
+    const controller = new AbortController();
+
+    for (const signal of signals) {
+        if (signal.aborted) {
+            controller.abort();
+            break;
+        }
+
+        signal.addEventListener('abort', () => controller.abort(), { once: true });
+    }
+
+    return controller.signal;
 }
 
 export function downloadBlob(blob: Blob, response: Response, fallbackName: string): void {

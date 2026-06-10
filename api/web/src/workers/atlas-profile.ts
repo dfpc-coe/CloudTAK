@@ -195,7 +195,7 @@ export default class AtlasProfile {
 
     async loadServer(): Promise<Server> {
         if (!this.server) {
-            this.server = await ServerManager.get(this.atlas.token);
+            this.server = await ServerManager.get();
         }
 
         return this.server;

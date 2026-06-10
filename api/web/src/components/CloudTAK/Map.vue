@@ -421,6 +421,12 @@
                     </div>
                 </TablerModal>
             </template>
+
+            <MissionInviteModal
+                v-if='inviteMission'
+                :mission='inviteMission'
+                @close='inviteMission = undefined'
+            />
         </template>
     </div>
 </template>
@@ -468,7 +474,8 @@ import {
     TablerDropdown,
     TablerModal,
 } from '@tak-ps/vue-tabler';
-import { LocationState } from '../../base/events.ts';
+import { LocationState, WorkerMessageType } from '../../base/events.ts';
+import type { WorkerMessage } from '../../base/events.ts';
 import TAKNotification, { NotificationType } from '../../base/notification.ts';
 import { v4 as randomUUID } from 'uuid';
 import { lineString as turfLineString, point as turfPoint } from '@turf/helpers';
@@ -488,6 +495,7 @@ import { stdurl } from '../../std.ts';
 import ProfileConfig from '../../base/profile.ts';
 import Config from '../../base/config.ts';
 import { cutOverlayFeature } from './util/featureCut.ts';
+import MissionInviteModal from './Menu/Mission/MissionInviteModal.vue';
 
 const mapStore = useMapStore();
 const deviceStore = useDeviceStore();
@@ -523,6 +531,17 @@ const upload = ref({
 })
 
 const bufferCotId = ref<string | null>(null)
+
+const inviteMission = ref<{
+    name: string;
+    guid: string;
+    token: string;
+    authorUid: string;
+    tool: string;
+    type: string;
+} | undefined>();
+
+let inviteChannel: BroadcastChannel | undefined;
 
 const loading = ref(true)
 
@@ -667,9 +686,18 @@ onMounted(async () => {
             }
         }
     });
+
+    inviteChannel = new BroadcastChannel('cloudtak');
+    inviteChannel.onmessage = (event: MessageEvent<WorkerMessage>) => {
+        const msg = event.data;
+        if (msg && msg.type === WorkerMessageType.Mission_Invite) {
+            inviteMission.value = msg.body;
+        }
+    };
 });
 
 onBeforeUnmount(() => {
+    inviteChannel?.close();
     void mapStore.destroy();
 });
 

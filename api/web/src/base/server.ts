@@ -1,6 +1,6 @@
 import { db } from '../database.ts';
 import { liveQuery, type Observable } from 'dexie';
-import { std, stdurl } from '../std.ts';
+import { server as apiServer } from '../std.ts';
 import type { Server, Server_Update } from '../types.ts';
 import type { DBServer } from '../database.ts';
 
@@ -12,19 +12,20 @@ export default class ServerManager {
         });
     }
 
-    static async get(token?: string): Promise<Server> {
+    static async get(): Promise<Server> {
         const server = await db.server.get('server');
 
         if (server) return server;
 
-        return await ServerManager.sync(token);
+        return await ServerManager.sync();
     }
 
-    static async sync(token?: string): Promise<Server> {
-        const url = stdurl('/api/server');
-        const res = await std(url, { token }) as Server;
+    static async sync(): Promise<Server> {
+        const res = await apiServer.GET('/api/server');
 
-        const server = res as DBServer;
+        if (res.error) throw new Error(res.error.message);
+
+        const server = res.data as DBServer;
         server._id = 'server';
 
         await db.server.put(server);
@@ -32,15 +33,14 @@ export default class ServerManager {
         return server;
     }
 
-    static async update(server: Server_Update, token?: string): Promise<Server> {
-        const url = stdurl('/api/server');
-        const res = await std(url, {
-            method: 'PATCH',
-            token,
+    static async update(server: Server_Update): Promise<Server> {
+        const res = await apiServer.PATCH('/api/server', {
             body: server
-        }) as Server;
+        });
 
-        const s = res as DBServer;
+        if (res.error) throw new Error(res.error.message);
+
+        const s = res.data as DBServer;
         s._id = 'server';
 
         await db.server.put(s);
@@ -48,20 +48,10 @@ export default class ServerManager {
         return s;
     }
 
-    static async create(server: Server_Update, token?: string): Promise<Server> {
-        const url = stdurl('/api/server');
-        const res = await std(url, {
-            method: 'POST',
-            token,
-            body: server
-        }) as Server;
-
-        const s = res as DBServer;
-        s._id = 'server';
-
-        await db.server.put(s);
-
-        return s;
+    static async create(server: Server_Update): Promise<Server> {
+        // The backend exposes PATCH /api/server for both initial configuration
+        // and subsequent updates.
+        return await ServerManager.update(server);
     }
 }
 
