@@ -202,7 +202,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             conns.push(
                 this.add(new AdminConnConfig(this.config)).catch((err) => {
                     console.error(`not ok - admin - failed to connect: ${err instanceof Error ? err.message : String(err)}`);
-                })
+                }),
             );
         }
 
@@ -216,7 +216,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         await Promise.all(conns);
     }
 
-    status(id: number | string): string {
+    status(id: number | string): 'live' | 'dead' | 'unknown' {
         const conn = this.get(id);
 
         if (conn) {

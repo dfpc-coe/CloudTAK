@@ -12,7 +12,7 @@ flight.user();
 
 test('POST: api/connection - Invalid X509 Certificate', async () => {
     const key = String(fs.readFileSync(flight.tak.keys.key));
-    
+
     // Clear any requests from admin connection initialization
     flight.tak.martiRequests.length = 0;
 
@@ -38,7 +38,7 @@ test('POST: api/connection - Invalid X509 Certificate', async () => {
 
 test('POST: api/connection - Invalid Private Key', async () => {
     const cert = String(fs.readFileSync(flight.tak.keys.cert));
-    
+
     // Clear any requests from admin connection initialization
     flight.tak.martiRequests.length = 0;
 
@@ -65,7 +65,7 @@ test('POST: api/connection - Invalid Private Key', async () => {
 test('PATCH: api/connection/:id - Invalid Private Key', async () => {
     // Clear any requests from admin connection initialization
     flight.tak.martiRequests.length = 0;
-    
+
     // Generate valid keys for initial creation
     CP.execSync(`
         openssl req \
