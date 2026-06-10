@@ -195,11 +195,15 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
      * Page through connections and start a connection for each one
      */
     async init(): Promise<void> {
-        const conns: Promise<ConnectionClient>[] = [];
+        const conns: Promise<unknown>[] = [];
 
         // Create admin connection (connection 0) using server auth profile
         if (this.config.server.auth.cert && this.config.server.auth.key) {
-            conns.push(this.add(new AdminConnConfig(this.config)));
+            conns.push(
+                this.add(new AdminConnConfig(this.config)).catch((err) => {
+                    console.error(`not ok - admin - failed to connect: ${err instanceof Error ? err.message : String(err)}`);
+                })
+            );
         }
 
         const ConnectionModel = new Modeler(this.config.pg, Connection);
