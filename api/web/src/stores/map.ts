@@ -36,7 +36,7 @@ import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
 import { isNativePlatform } from '../base/capacitor.ts';
 
-import type { ProfileOverlay, Basemap, APIList, Feature } from '../types.ts';
+import type { ProfileOverlay, Basemap, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 import type { Position } from '@capacitor/geolocation';
 
