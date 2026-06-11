@@ -77,9 +77,12 @@ async function importBasemapURL(
         type: Basemap_Type.RASTER,
     };
 
+    // Strip quotes from URL if present (can happen when URL is passed as JSON string)
+    const cleanURL = String(rawURL).replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+
     let url: URL;
     try {
-        url = new URL(rawURL);
+        url = new URL(cleanURL);
     } catch (err) {
         throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid URL');
     }
@@ -87,7 +90,7 @@ async function importBasemapURL(
     // Skip isSafeUrl check when StackName=test (test mode)
     // In production, these URLs would be blocked for SSRF protection
     if (process.env.StackName !== 'test') {
-        const { safe, reason } = await isSafeUrl(rawURL);
+        const { safe, reason } = await isSafeUrl(cleanURL);
         if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
     }
 
