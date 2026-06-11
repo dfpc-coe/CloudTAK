@@ -517,12 +517,12 @@ class EsriProxyLayer {
         return {
             name: json.name,
             type: isVector ? Basemap_Type.VECTOR : Basemap_Type.RASTER,
-            url,
+            tiles: [url],
             bounds: json.bounds,
-            center: json.center,
+            center: Array.isArray(json.center) ? json.center : [0, 0],
             minzoom: json.minzoom,
             maxzoom: json.maxzoom,
-            style: Basemap_Scheme.XYZ,
+            scheme: Basemap_Scheme.XYZ,
             format: isVector ? Basemap_Format.MVT : Basemap_Format.PNG,
             vector_layers: json.vector_layers,
         };

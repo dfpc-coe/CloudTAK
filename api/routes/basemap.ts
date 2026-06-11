@@ -117,17 +117,17 @@ async function importBasemapURL(
     if (tjbody.attribution) imported.attribution = tjbody.attribution;
     if (tjbody.maxzoom !== undefined) imported.maxzoom = tjbody.maxzoom;
     if (tjbody.minzoom !== undefined) imported.minzoom = tjbody.minzoom;
-    else if (tjbody.tileSize !== undefined) imported.tilesize = tjbody.tileSize;
+    else if (tjbody.tileSize !== undefined) imported.tileSize = tjbody.tileSize;
     if (Array.isArray(tjbody.vector_layers)) imported.vector_layers = tjbody.vector_layers;
     if (Array.isArray(tjbody.tiles) && tjbody.tiles.length) {
-        imported.url = tjbody.tiles[0]
+        imported.tiles = [tjbody.tiles[0]
             .replace('{z}', '{$z}')
             .replace('{x}', '{$x}')
-            .replace('{y}', '{$y}');
+            .replace('{y}', '{$y}')];
     }
 
-    if (imported.url) {
-        const tileURL = new URL(imported.url);
+    if (imported.tiles && imported.tiles.length) {
+        const tileURL = new URL(imported.tiles[0]);
         imported.format = toEnum.fromString(
             Type.Enum(Basemap_Format),
             normalizeBasemapFormat(path.parse(tileURL.pathname).ext.replace('.', '')),
@@ -171,10 +171,10 @@ export default async function router(schema: Schema, config: Config) {
                 const imported: {
                     name?: string;
                     type: Basemap_Type;
-                    url?: string;
+                    tiles?: string[];
                     attribution?: string;
-                    bounds?: object;
-                    center?: object;
+                    bounds?: [number, number, number, number];
+                    center?: number[];
                     minzoom?: number;
                     maxzoom?: number;
                     format?: Basemap_Format;
@@ -211,7 +211,7 @@ export default async function router(schema: Schema, config: Config) {
                             imported.name = map.name._text;
                             imported.minzoom = map.minZoom._text;
                             imported.maxzoom = map.maxZoom._text;
-                            if (map.url) imported.url = map.url._text;
+                            if (map.url) imported.tiles = [map.url._text];
 
                             if (map.serverParts?._text) {
                                 imported.serverParts = map.serverParts._text;

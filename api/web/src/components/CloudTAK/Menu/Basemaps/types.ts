@@ -201,13 +201,21 @@ export function inferBasemapType(url?: string | null): BasemapSourceType | null 
 }
 
 export function normalizeEditing(data: Basemap | BasemapImport | BasemapListItem): EditingBasemap {
+    // Handle both tiles (array) and url (string) for backwards compatibility
+    let url = '';
+    if (data.tiles && Array.isArray(data.tiles) && data.tiles.length > 0) {
+        url = data.tiles[0];
+    } else if (data.url) {
+        url = data.url;
+    }
+
     return {
         name: data.name ?? '',
-        url: data.url ?? '',
+        url: url,
         type: data.type ?? 'raster',
         minzoom: data.minzoom ?? 0,
         maxzoom: data.maxzoom ?? 16,
-        tilesize: ('tilesize' in data ? data.tilesize : undefined) ?? 256,
+        tilesize: ('tileSize' in data ? data.tileSize : ('tilesize' in data ? data.tilesize : undefined)) ?? 256,
         attribution: ('attribution' in data ? data.attribution : undefined) ?? '',
         sharing_enabled: ('sharing_enabled' in data ? data.sharing_enabled : undefined) ?? true,
         format: data.format ?? 'png',
