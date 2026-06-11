@@ -1,7 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import EsriDump from 'esri-dump';
 import { Static, Type } from '@sinclair/typebox';
-import { OptionalTileJSON } from './types.js';
+import { TileJSON } from './types.js';
 import { Basemap_Format, Basemap_Type, Basemap_Scheme } from './enums.js';
 import { fetch } from '@tak-ps/node-safeurl';
 import { ESRILayerList } from './esri/types.js';
@@ -10,6 +10,8 @@ import {
     DefaultLayerLines,
     DefaultLayerPolys,
 } from './esri/layer.js';
+
+const OptionalTileJSON = Type.Partial(TileJSON);
 
 type EsriErrorResponse = { message: string; details?: unknown };
 
