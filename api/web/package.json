@@ -29,7 +29,6 @@
         "url": "git+https://github.com/dfpc-coe/CloudTAK.git"
     },
     "dependencies": {
-        "@capacitor-community/background-geolocation": "^1.2.26",
         "@capacitor-community/keep-awake": "^8.0.1",
         "@capacitor-firebase/messaging": "^8.2.0",
         "@capacitor/app": "^8.1.0",
@@ -42,6 +41,7 @@
         "@capacitor/keyboard": "^8.0.3",
         "@capacitor/preferences": "^8.0.1",
         "@capacitor/status-bar": "^8.0.2",
+        "@capgo/background-geolocation": "^8.0.39",
         "@mapbox/tile-cover": "^3.0.2",
         "@simplewebauthn/browser": "^13.3.0",
         "@tabler/core": "^1.4.0",

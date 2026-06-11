@@ -1,22 +1,19 @@
 import { Geolocation } from '@capacitor/geolocation';
 import type { CallbackID, Position, PositionOptions } from '@capacitor/geolocation';
-import { registerPlugin } from '@capacitor/core';
+import { BackgroundGeolocation } from '@capgo/background-geolocation';
 import type {
-    BackgroundGeolocationPlugin,
     CallbackError as BackgroundGeolocationError,
     Location as BackgroundLocation
-} from '@capacitor-community/background-geolocation';
+} from '@capgo/background-geolocation';
 import { isNativePlatform } from '../../base/capacitor.ts';
 import { PermissionQuery } from './shared.ts';
 import type { DevicePermissionContext } from './types.ts';
-
-const BackgroundGeolocation = registerPlugin<BackgroundGeolocationPlugin>('BackgroundGeolocation');
 
 export class GeolocationPermission {
     constructor(private readonly context: DevicePermissionContext) {}
 
     private watchId: CallbackID | null = null;
-    private backgroundWatchId: CallbackID | null = null;
+    private backgroundWatchActive: boolean = false;
     private locationCallback: ((position: Position) => void) | null = null;
 
     private static normalizeNativeLocationPermission(state: string | null | undefined): PermissionState | 'prompt' | 'unknown' {
@@ -68,13 +65,13 @@ export class GeolocationPermission {
         return Geolocation.watchPosition(options, callback);
     }
 
-    static async watchBackgroundLocation(
+    static async startBackgroundLocation(
         callback: (position: Position | null, err?: unknown) => void
-    ): Promise<CallbackID> {
+    ): Promise<void> {
         // Background-capable watcher. Runs alongside the foreground watcher and
         // is the source that keeps delivering once iOS suspends the JS-based
         // foreground watchPosition in the background.
-        return BackgroundGeolocation.addWatcher({
+        await BackgroundGeolocation.start({
             backgroundTitle: 'CloudTAK GPS active',
             backgroundMessage: 'CloudTAK is sharing your location.',
             requestPermissions: true,
@@ -89,8 +86,8 @@ export class GeolocationPermission {
         await Geolocation.clearWatch({ id });
     }
 
-    static async clearBackgroundLocationWatch(id: CallbackID): Promise<void> {
-        await BackgroundGeolocation.removeWatcher({ id });
+    static async stopBackgroundLocation(): Promise<void> {
+        await BackgroundGeolocation.stop();
     }
 
     private static backgroundLocationToPosition(location: BackgroundLocation): Position {
@@ -125,11 +122,10 @@ export class GeolocationPermission {
         }
         
         // Stop background watch
-        if (this.backgroundWatchId !== null) {
-            const id = this.backgroundWatchId;
-            this.backgroundWatchId = null;
+        if (this.backgroundWatchActive) {
+            this.backgroundWatchActive = false;
             try {
-                await GeolocationPermission.clearBackgroundLocationWatch(id);
+                await GeolocationPermission.stopBackgroundLocation();
             } catch (err) {
                 console.warn('Failed to clear background location watch', err);
             }
@@ -162,7 +158,7 @@ export class GeolocationPermission {
                 // "Acquiring GPS" state. The background-capable watcher is then
                 // started concurrently so location keeps flowing once the app is
                 // suspended — iOS suspends the foreground watchPosition in the
-                // background while @capacitor-community/background-geolocation
+                // background while @capgo/background-geolocation
                 // continues. Reporting still branches on foreground vs.
                 // background in the location callback (Option B): the worker
                 // WebSocket handles foreground while CapacitorHttp handles the
@@ -195,7 +191,8 @@ export class GeolocationPermission {
     }
 
     private async startBackgroundWatch(locationHandler: (position: Position | null, err?: unknown) => void): Promise<void> {
-        this.backgroundWatchId = await GeolocationPermission.watchBackgroundLocation(locationHandler);
+        await GeolocationPermission.startBackgroundLocation(locationHandler);
+        this.backgroundWatchActive = true;
     }
 
     async refreshStatus(): Promise<void> {
