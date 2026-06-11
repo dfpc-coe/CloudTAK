@@ -5,7 +5,6 @@ import { Busboy } from '@fastify/busboy';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
-import jwt from 'jsonwebtoken';
 import { includesWithGlob } from 'array-includes-with-glob';
 import assetList from '../lib/asset.js';
 import Config from '../lib/config.js';

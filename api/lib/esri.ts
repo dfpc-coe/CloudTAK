@@ -11,8 +11,6 @@ import {
     DefaultLayerPolys,
 } from './esri/layer.js';
 
-const OptionalTileJSON = Type.Partial(TileJSON);
-
 type EsriErrorResponse = { message: string; details?: unknown };
 
 function isEsriError(json: unknown): json is { error: EsriErrorResponse } {
@@ -494,7 +492,7 @@ class EsriProxyLayer {
         }
     }
 
-    async tilejson(): Promise<Static<typeof OptionalTileJSON>> {
+    async tilejson(): Promise<Static<typeof TileJSON>> {
         const url = `${this.esri.base}${this.esri.postfix}`;
         const esri = new EsriDump(url, {
             headers: this.esri.standardHeaderObject(),
@@ -515,10 +513,13 @@ class EsriProxyLayer {
         }
 
         return {
-            name: json.name,
+            name: json.name || 'Unknown',
+            tilejson: '3.0.0',
+            version: '1.0.0',
+            description: '',
             type: isVector ? Basemap_Type.VECTOR : Basemap_Type.RASTER,
             tiles: [url],
-            bounds: json.bounds,
+            bounds: json.bounds || [-180, -85.0511, 180, 85.0511],
             center: Array.isArray(json.center) ? json.center : [0, 0],
             minzoom: json.minzoom,
             maxzoom: json.maxzoom,
