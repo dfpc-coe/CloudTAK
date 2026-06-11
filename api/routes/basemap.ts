@@ -2,7 +2,7 @@ import path from 'node:path';
 import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
 import { bbox } from '@turf/bbox';
-import { BasemapProtocol, TileJSONType, TileJSONActions } from '../lib/interface-basemap.js';
+import { BasemapProtocol, TileJSONActions } from '../lib/interface-basemap.js';
 import { fromProtocol } from '../lib/factory-basemap.js';
 import Auth, { AuthUserAccess, AuthUser, AuthResource, ResourceCreationScope, AuthResourceAccess } from '../lib/auth.js';
 import { Busboy } from '@fastify/busboy';
@@ -16,7 +16,7 @@ import Schema from '@openaddresses/batch-schema';
 import { validateTemplate, renderTemplate } from '../lib/style.js';
 import { Geometry, BBox } from 'geojson';
 import { Static, Type } from '@sinclair/typebox';
-import { StandardResponse, BasemapResponse, OptionalTileJSON, MultiGeoJSONFeature, MultiGeoJSONFeatureCollection } from '../lib/types.js';
+import { StandardResponse, BasemapResponse, TileJSON, MultiGeoJSONFeature, MultiGeoJSONFeatureCollection } from '../lib/types.js';
 import { BasemapCollection } from '../lib/models/Basemap.js';
 import { Basemap as BasemapParser, Feature } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
@@ -34,8 +34,10 @@ const AugmentedBasemapResponse = Type.Composite([
     }),
 ]);
 
-const AugmentedTileJSONType = Type.Composite([
-    TileJSONType,
+const OptionalTileJSON = Type.Partial(TileJSON);
+
+const AugmentedTileJSON = Type.Composite([
+    TileJSON,
     Type.Object({
         actions: TileJSONActions,
     }),
@@ -731,7 +733,7 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             token: Type.Optional(Type.String()),
         }),
-        res: AugmentedTileJSONType,
+        res: AugmentedTileJSON,
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
