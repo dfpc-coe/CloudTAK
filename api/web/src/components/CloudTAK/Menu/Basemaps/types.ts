@@ -203,22 +203,25 @@ export function inferBasemapType(url?: string | null): BasemapSourceType | null 
 export function normalizeEditing(data: Basemap | BasemapImport | BasemapListItem): EditingBasemap {
     // Handle both tiles (array) and url (string) for backwards compatibility
     let url = '';
-    if (data.tiles && Array.isArray(data.tiles) && data.tiles.length > 0) {
+    if ('tiles' in data && Array.isArray(data.tiles) && data.tiles.length > 0) {
         url = data.tiles[0];
-    } else if (data.url) {
+    } else if ('url' in data && data.url) {
         url = data.url;
     }
+
+    const rawType = 'type' in data ? data.type : undefined;
+    const rawFormat = 'format' in data ? data.format : undefined;
 
     return {
         name: data.name ?? '',
         url: url,
-        type: data.type ?? 'raster',
+        type: (rawType === 'raster' || rawType === 'raster-dem' || rawType === 'vector') ? rawType : 'raster',
         minzoom: data.minzoom ?? 0,
         maxzoom: data.maxzoom ?? 16,
         tilesize: ('tileSize' in data ? data.tileSize : ('tilesize' in data ? data.tilesize : undefined)) ?? 256,
         attribution: ('attribution' in data ? data.attribution : undefined) ?? '',
         sharing_enabled: ('sharing_enabled' in data ? data.sharing_enabled : undefined) ?? true,
-        format: data.format ?? 'png',
+        format: (rawFormat === 'png' || rawFormat === 'jpeg' || rawFormat === 'mvt' || rawFormat === 'webp') ? rawFormat : 'png',
         bounds: ('bounds' in data && Array.isArray(data.bounds) ? data.bounds : null) ?? [-180, -90, 180, 90],
         center: ('center' in data && Array.isArray(data.center) ? data.center : null) ?? [0, 0],
         collection: ('collection' in data ? data.collection : undefined) ?? '',
@@ -230,7 +233,7 @@ export function normalizeEditing(data: Basemap | BasemapImport | BasemapListItem
         snapping_layer: ('snapping_layer' in data ? data.snapping_layer : undefined) ?? '',
         styles: ('styles' in data && Array.isArray(data.styles) ? data.styles : null) ?? [],
         tilejson: String(('tilejson' in data ? data.tilejson : undefined) ?? ''),
-        encoding: ('encoding' in data ? (data.encoding as 'mapbox' | 'terrarium' | null) : null) ?? null,
+        encoding: ('encoding' in data ? (data.encoding === 'mapbox' || data.encoding === 'terrarium' ? data.encoding : null) : null) ?? null,
     };
 }
 
