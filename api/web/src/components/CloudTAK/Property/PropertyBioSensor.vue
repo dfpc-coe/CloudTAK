@@ -17,42 +17,76 @@
                 <div class='rounded px-2 cloudtak-accent pb-2'>
                     <!-- Sensor Info -->
                     <div class='d-flex align-items-center mt-2 mb-3'>
-                        <IconInfoCircle :size='16' stroke='1' class='me-2 text-muted' />
+                        <IconInfoCircle
+                            :size='16'
+                            stroke='1'
+                            class='me-2 text-muted'
+                        />
                         <label class='subheader m-0'>Sensor Information</label>
                     </div>
                     <div class='datagrid'>
                         <div class='datagrid-item'>
-                            <div class='datagrid-title'>Manufacturer</div>
-                            <div class='datagrid-content' v-text='biosensordetail.sensor_data.manufacturer' />
+                            <div class='datagrid-title'>
+                                Manufacturer
+                            </div>
+                            <div
+                                class='datagrid-content'
+                                v-text='biosensordetail.sensor_data.manufacturer'
+                            />
                         </div>
                         <div class='datagrid-item'>
-                            <div class='datagrid-title'>Model</div>
-                            <div class='datagrid-content' v-text='biosensordetail.sensor_data.model' />
+                            <div class='datagrid-title'>
+                                Model
+                            </div>
+                            <div
+                                class='datagrid-content'
+                                v-text='biosensordetail.sensor_data.model'
+                            />
                         </div>
                         <div class='datagrid-item'>
-                            <div class='datagrid-title'>Serial Number</div>
-                            <div class='datagrid-content' v-text='biosensordetail.sensor_data.serialnumber' />
+                            <div class='datagrid-title'>
+                                Serial Number
+                            </div>
+                            <div
+                                class='datagrid-content'
+                                v-text='biosensordetail.sensor_data.serialnumber'
+                            />
                         </div>
                         <div
                             v-if='biosensordetail.sensor_data.batterylevel !== undefined'
                             class='datagrid-item'
                         >
-                            <div class='datagrid-title'>Battery</div>
-                            <div class='datagrid-content' v-text='biosensordetail.sensor_data.batterylevel + "%"' />
+                            <div class='datagrid-title'>
+                                Battery
+                            </div>
+                            <div
+                                class='datagrid-content'
+                                v-text='biosensordetail.sensor_data.batterylevel + "%"'
+                            />
                         </div>
                         <div
                             v-if='biosensordetail.sensor_data.status'
                             class='datagrid-item'
                         >
-                            <div class='datagrid-title'>Status</div>
-                            <div class='datagrid-content' v-text='biosensordetail.sensor_data.status' />
+                            <div class='datagrid-title'>
+                                Status
+                            </div>
+                            <div
+                                class='datagrid-content'
+                                v-text='biosensordetail.sensor_data.status'
+                            />
                         </div>
                         <div
                             v-if='biosensordetail.sensor_data.callsign'
                             class='datagrid-item'
                         >
-                            <div class='datagrid-title'>Callsign</div>
-                            <div class='datagrid-content' v-text='biosensordetail.sensor_data.callsign' />
+                            <div class='datagrid-title'>
+                                Callsign
+                            </div>
+                            <div
+                                class='datagrid-content'
+                                v-text='biosensordetail.sensor_data.callsign'
+                            />
                         </div>
                     </div>
 
@@ -62,7 +96,11 @@
                         class='mt-4'
                     >
                         <div class='d-flex align-items-center mb-3'>
-                            <IconActivity :size='16' stroke='1' class='me-2 text-muted' />
+                            <IconActivity
+                                :size='16'
+                                stroke='1'
+                                class='me-2 text-muted'
+                            />
                             <label class='subheader m-0'>Measurements</label>
                         </div>
                         <div class='table-responsive rounded mt-1'>
