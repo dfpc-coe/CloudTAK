@@ -5,7 +5,6 @@ import { Busboy } from '@fastify/busboy';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
-import jwt from 'jsonwebtoken';
 import { includesWithGlob } from 'array-includes-with-glob';
 import assetList from '../lib/asset.js';
 import Config from '../lib/config.js';
@@ -255,44 +254,6 @@ export default async function router(schema: Schema, config: Config) {
             const stream = await S3.get(`data/${req.params.dataid}/${req.params.asset}.${req.params.ext}`);
 
             stream.pipe(res);
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/connection/:connectionid/data/:dataid/asset/:asset.pmtiles/tile', {
-        name: 'PMTiles TileJSON',
-        group: 'DataAssets',
-        description: 'Get TileJSON ',
-        params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
-            dataid: Type.Integer({ minimum: 1 }),
-            asset: Type.String(),
-        }),
-    }, async (req, res) => {
-        try {
-            const { connection } = await Auth.is_connection(config, req, {
-                token: true,
-                resources: [
-                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                ],
-            }, req.params.connectionid);
-
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
-
-            const data = await config.models.Data.from(req.params.dataid);
-            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
-
-            if (!await S3.exists(`data/${req.params.dataid}/${req.params.asset}.pmtiles`)) {
-                throw new Err(404, null, 'Asset does not exist');
-            }
-
-            const token = jwt.sign({ access: 'user' }, config.SigningSecret);
-            const url = new URL(`${config.PMTILES_URL}/tiles/data/${data.id}/${req.params.asset}`);
-            url.searchParams.append('token', token);
-
-            return res.redirect(String(url));
         } catch (err) {
             Err.respond(err, res);
         }

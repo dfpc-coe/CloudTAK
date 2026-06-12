@@ -17,6 +17,7 @@
             <ConfigGroups />
             <ConfigMap />
             <ConfigProvider />
+            <ConfigCoturn />
         </div>
     </div>
 </template>
@@ -33,4 +34,5 @@ import ConfigApplications from './AdminConfig/ConfigApplications.vue';
 import ConfigGroups from './AdminConfig/ConfigGroups.vue';
 import ConfigMap from './AdminConfig/ConfigMap.vue';
 import ConfigProvider from './AdminConfig/ConfigProvider.vue';
+import ConfigCoturn from './AdminConfig/ConfigCoturn.vue';
 </script>

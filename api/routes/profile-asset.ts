@@ -2,6 +2,7 @@ import path from 'node:path';
 import { Type } from '@sinclair/typebox';
 import { StandardResponse, ProfileFileResponse } from '../lib/types.js';
 import { sql, eq } from 'drizzle-orm';
+import { fetch } from '@tak-ps/node-safeurl';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -345,10 +346,16 @@ export default async function router(schema: Schema, config: Config) {
                 email: user.email,
                 file: `${file.username}/${req.params.asset}`,
             }, config.SigningSecret);
+
             const url = new URL(`${config.PMTILES_URL}/tiles/profile/${file.username}/${req.params.asset}`);
             url.searchParams.append('token', token);
 
-            res.redirect(String(url));
+            const tilejson = await fetch(url);
+            if (!tilejson.ok) {
+                throw new Err(tilejson.status, null, `Failed to retrieve TileJSON: ${await tilejson.text()}`);
+            }
+
+            res.json(await tilejson.json());
         } catch (err) {
             Err.respond(err, res);
         }

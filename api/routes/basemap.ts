@@ -2,7 +2,7 @@ import path from 'node:path';
 import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
 import { bbox } from '@turf/bbox';
-import { BasemapProtocol, TileJSONType, TileJSONActions } from '../lib/interface-basemap.js';
+import { BasemapProtocol, TileJSONActions } from '../lib/interface-basemap.js';
 import { fromProtocol } from '../lib/factory-basemap.js';
 import Auth, { AuthUserAccess, AuthUser, AuthResource, ResourceCreationScope, AuthResourceAccess } from '../lib/auth.js';
 import { Busboy } from '@fastify/busboy';
@@ -16,7 +16,7 @@ import Schema from '@openaddresses/batch-schema';
 import { validateTemplate, renderTemplate } from '../lib/style.js';
 import { Geometry, BBox } from 'geojson';
 import { Static, Type } from '@sinclair/typebox';
-import { StandardResponse, BasemapResponse, OptionalTileJSON, MultiGeoJSONFeature, MultiGeoJSONFeatureCollection } from '../lib/types.js';
+import { StandardResponse, BasemapResponse, TileJSON, MultiGeoJSONFeature, MultiGeoJSONFeatureCollection } from '../lib/types.js';
 import { BasemapCollection } from '../lib/models/Basemap.js';
 import { Basemap as BasemapParser, Feature } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
@@ -34,8 +34,10 @@ const AugmentedBasemapResponse = Type.Composite([
     }),
 ]);
 
-const AugmentedTileJSONType = Type.Composite([
-    TileJSONType,
+const OptionalTileJSON = Type.Partial(TileJSON);
+
+const AugmentedTileJSON = Type.Composite([
+    TileJSON,
     Type.Object({
         actions: TileJSONActions,
     }),
@@ -75,9 +77,12 @@ async function importBasemapURL(
         type: Basemap_Type.RASTER,
     };
 
+    // Strip quotes from URL if present (can happen when URL is passed as JSON string)
+    const cleanURL = String(rawURL).replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+
     let url: URL;
     try {
-        url = new URL(rawURL);
+        url = new URL(cleanURL);
     } catch (err) {
         throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid URL');
     }
@@ -85,7 +90,7 @@ async function importBasemapURL(
     // Skip isSafeUrl check when StackName=test (test mode)
     // In production, these URLs would be blocked for SSRF protection
     if (process.env.StackName !== 'test') {
-        const { safe, reason } = await isSafeUrl(rawURL);
+        const { safe, reason } = await isSafeUrl(cleanURL);
         if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
     }
 
@@ -115,17 +120,17 @@ async function importBasemapURL(
     if (tjbody.attribution) imported.attribution = tjbody.attribution;
     if (tjbody.maxzoom !== undefined) imported.maxzoom = tjbody.maxzoom;
     if (tjbody.minzoom !== undefined) imported.minzoom = tjbody.minzoom;
-    else if (tjbody.tileSize !== undefined) imported.tilesize = tjbody.tileSize;
+    else if (tjbody.tileSize !== undefined) imported.tileSize = tjbody.tileSize;
     if (Array.isArray(tjbody.vector_layers)) imported.vector_layers = tjbody.vector_layers;
     if (Array.isArray(tjbody.tiles) && tjbody.tiles.length) {
-        imported.url = tjbody.tiles[0]
+        imported.tiles = [tjbody.tiles[0]
             .replace('{z}', '{$z}')
             .replace('{x}', '{$x}')
-            .replace('{y}', '{$y}');
+            .replace('{y}', '{$y}')];
     }
 
-    if (imported.url) {
-        const tileURL = new URL(imported.url);
+    if (imported.tiles && imported.tiles.length) {
+        const tileURL = new URL(imported.tiles[0]);
         imported.format = toEnum.fromString(
             Type.Enum(Basemap_Format),
             normalizeBasemapFormat(path.parse(tileURL.pathname).ext.replace('.', '')),
@@ -169,10 +174,10 @@ export default async function router(schema: Schema, config: Config) {
                 const imported: {
                     name?: string;
                     type: Basemap_Type;
-                    url?: string;
+                    tiles?: string[];
                     attribution?: string;
-                    bounds?: object;
-                    center?: object;
+                    bounds?: [number, number, number, number];
+                    center?: number[];
                     minzoom?: number;
                     maxzoom?: number;
                     format?: Basemap_Format;
@@ -209,7 +214,7 @@ export default async function router(schema: Schema, config: Config) {
                             imported.name = map.name._text;
                             imported.minzoom = map.minZoom._text;
                             imported.maxzoom = map.maxZoom._text;
-                            if (map.url) imported.url = map.url._text;
+                            if (map.url) imported.tiles = [map.url._text];
 
                             if (map.serverParts?._text) {
                                 imported.serverParts = map.serverParts._text;
@@ -731,7 +736,7 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             token: Type.Optional(Type.String()),
         }),
-        res: AugmentedTileJSONType,
+        res: AugmentedTileJSON,
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
