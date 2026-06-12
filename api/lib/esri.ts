@@ -1,7 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import EsriDump from 'esri-dump';
 import { Static, Type } from '@sinclair/typebox';
-import { OptionalTileJSON } from './types.js';
+import { TileJSON } from './types.js';
 import { Basemap_Format, Basemap_Type, Basemap_Scheme } from './enums.js';
 import { fetch } from '@tak-ps/node-safeurl';
 import { ESRILayerList } from './esri/types.js';
@@ -492,7 +492,7 @@ class EsriProxyLayer {
         }
     }
 
-    async tilejson(): Promise<Static<typeof OptionalTileJSON>> {
+    async tilejson(): Promise<Static<typeof TileJSON>> {
         const url = `${this.esri.base}${this.esri.postfix}`;
         const esri = new EsriDump(url, {
             headers: this.esri.standardHeaderObject(),
@@ -513,14 +513,17 @@ class EsriProxyLayer {
         }
 
         return {
-            name: json.name,
+            name: json.name || 'Unknown',
+            tilejson: '3.0.0',
+            version: '1.0.0',
+            description: '',
             type: isVector ? Basemap_Type.VECTOR : Basemap_Type.RASTER,
-            url,
-            bounds: json.bounds,
-            center: json.center,
+            tiles: [url],
+            bounds: json.bounds || [-180, -85.0511, 180, 85.0511],
+            center: Array.isArray(json.center) ? json.center : [0, 0],
             minzoom: json.minzoom,
             maxzoom: json.maxzoom,
-            style: Basemap_Scheme.XYZ,
+            scheme: Basemap_Scheme.XYZ,
             format: isVector ? Basemap_Format.MVT : Basemap_Format.PNG,
             vector_layers: json.vector_layers,
         };
