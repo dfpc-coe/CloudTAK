@@ -16,6 +16,12 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.13.0 - 2026-06-12
+
+- :rocket: Consolidate TileJSON Type to a single Type Definition
+- :rocket: Remove unused Connection Data TileJSON support (the service hasn't returned actual tiles in > 1yr)
+- :rocket: proxy tilejson calls to enure they work on mobile
+
 ### v13.12.0 - 2026-06-10
 
 - :tada: Make an Admin Connection to the TAK Server for future configuration-free ETLs
