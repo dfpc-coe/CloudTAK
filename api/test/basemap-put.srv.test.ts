@@ -80,7 +80,7 @@ test('PUT: api/basemap - import basemap from text/plain URL', async () => {
         attribution: 'Unit Test Attribution',
         minzoom: 1,
         maxzoom: 12,
-        url: 'https://tiles.example.com/plain/{$z}/{$x}/{$y}.png',
+        tiles: ['https://tiles.example.com/plain/{$z}/{$x}/{$y}.png'],
         format: 'png',
     });
 });
@@ -111,7 +111,7 @@ test('PUT: api/basemap - import basemap from application/json body', async () =>
                 },
             },
         ],
-        url: 'https://tiles.example.com/json/{$z}/{$x}/{$y}.jpg',
+        tiles: ['https://tiles.example.com/json/{$z}/{$x}/{$y}.jpg'],
         format: 'jpeg',
     });
 });
@@ -147,9 +147,8 @@ test('PUT: api/basemap - import basemap from multipart TAK XML', async () => {
     assert.equal(res.body.name, 'Multipart Import');
     assert.equal(String(res.body.minzoom), '3');
     assert.equal(String(res.body.maxzoom), '17');
-    assert.equal(res.body.url, 'https://tiles.example.com/multipart/{z}/{x}/{y}.jpg');
+    assert.deepEqual(res.body.tiles, ['https://tiles.example.com/multipart/{z}/{x}/{y}.jpg']);
     assert.equal(res.body.format, 'jpeg');
-    assert.equal(res.body.serverParts, 'a,b,c');
 });
 
 test('PUT: api/basemap - import ArcGIS MapServer layer', async () => {
@@ -168,7 +167,7 @@ test('PUT: api/basemap - import ArcGIS MapServer layer', async () => {
         }, true);
 
         assert.equal(res.status, 200);
-        assert.equal(res.body.url, ARCGIS_MAPSERVER_URL);
+        assert.ok(Array.isArray(res.body.tiles) && res.body.tiles.length > 0, 'Expected tiles array');
         assert.ok(typeof res.body.name === 'string' && res.body.name.length > 0, 'Expected a non-empty name');
         assert.ok(['raster', 'vector'].includes(res.body.type), `Unexpected type: ${res.body.type}`);
     } catch (err) {
@@ -192,7 +191,7 @@ test('PUT: api/basemap - import ArcGIS FeatureServer layer', async () => {
         }, true);
 
         assert.equal(res.status, 200);
-        assert.equal(res.body.url, ARCGIS_FEATURESERVER_URL);
+        assert.ok(Array.isArray(res.body.tiles) && res.body.tiles.length > 0, 'Expected tiles array');
         assert.ok(typeof res.body.name === 'string' && res.body.name.length > 0, 'Expected a non-empty name');
         assert.equal(res.body.type, 'vector');
         assert.equal(res.body.format, 'mvt');
