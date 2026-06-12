@@ -16,6 +16,12 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.14.0 - 2026-06-12
+
+- :tada: Add support for visualizing Radiation Data on CoT Features
+- :tada: Add support for visualizing Chemical Data on CoT Features
+- :tada: Add support for visualizing Bio Data on CoT Features
+
 ### v13.13.0 - 2026-06-12
 
 - :rocket: Consolidate TileJSON Type to a single Type Definition
