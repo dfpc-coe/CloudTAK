@@ -586,6 +586,21 @@
                 :cot='cot'
             />
 
+            <PropertyRadSensor
+                v-if='cot.properties.radsensordetail'
+                :radsensordetail='cot.properties.radsensordetail'
+            />
+
+            <PropertyChemSensor
+                v-if='cot.properties.chemsensordetail'
+                :chemsensordetail='cot.properties.chemsensordetail'
+            />
+
+            <PropertyBioSensor
+                v-if='cot.properties.biosensordetail'
+                :biosensordetail='cot.properties.biosensordetail'
+            />
+
             <PropertyMilSym
                 v-if='cot.properties.milsym'
                 :key='cot.properties.id'
@@ -688,6 +703,9 @@ import PropertyTimes from './Property/PropertyTimes.vue';
 import PropertyMetadata from './Property/PropertyMetadata.vue';
 import PropertyStyle from './Property/PropertyStyle.vue';
 import PropertyGeofence from './Property/PropertyGeofence.vue';
+import PropertyRadSensor from './Property/PropertyRadSensor.vue';
+import PropertyChemSensor from './Property/PropertyChemSensor.vue';
+import PropertyBioSensor from './Property/PropertyBioSensor.vue';
 import SlideDownHeader from './util/SlideDownHeader.vue';
 import {
     IconPencil,
