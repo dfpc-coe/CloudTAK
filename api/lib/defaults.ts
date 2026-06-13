@@ -1,6 +1,6 @@
 import { Static } from '@sinclair/typebox';
 import fs from 'node:fs';
-import { Profile_Style } from './enums.js';
+import { Profile_Style, Profile_Radiation_Dose } from './enums.js';
 import { FullConfig } from './types.js';
 
 export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
@@ -16,6 +16,7 @@ export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'map::pitch': 0,
     'map::bearing': 0,
     'display::style': Profile_Style.SYSTEM_DEFAULT,
+    'display::radiation_dose': Profile_Radiation_Dose.SIEVERTS,
     'proxy::enabled': false,
     'proxy::whitelist': [],
     'login::name': 'CloudTAK',

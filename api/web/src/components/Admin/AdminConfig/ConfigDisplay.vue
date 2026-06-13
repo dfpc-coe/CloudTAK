@@ -82,7 +82,7 @@ import {
     IconX
 } from '@tabler/icons-vue';
 
-type DisplayKey = 'stale' | 'distance' | 'elevation' | 'speed' | 'projection' | 'zoom' | 'style' | 'coordinate' | 'text' | 'icon_rotation';
+type DisplayKey = 'stale' | 'distance' | 'elevation' | 'speed' | 'projection' | 'zoom' | 'style' | 'coordinate' | 'text' | 'icon_rotation' | 'radiation_dose';
 type DisplayConfigKey = `display::${DisplayKey}`;
 type DisplayResponse = paths['/api/config/display']['get']['responses']['200']['content']['application/json'];
 type DisplayConfig = {
@@ -103,6 +103,7 @@ const displayKeys: DisplayConfigKey[] = [
     'display::coordinate',
     'display::text',
     'display::icon_rotation',
+    'display::radiation_dose',
 ];
 
 function createDisplayConfig(): DisplayConfig {
@@ -117,6 +118,7 @@ function createDisplayConfig(): DisplayConfig {
         'display::coordinate': 'dd',
         'display::text': 'Medium',
         'display::icon_rotation': true,
+        'display::radiation_dose': 'sieverts',
     };
 }
 
@@ -132,6 +134,7 @@ function createDisplayOptions(): DisplayOptions {
         'display::coordinate': [],
         'display::text': [],
         'display::icon_rotation': [],
+        'display::radiation_dose': [],
     };
 }
 
@@ -183,6 +186,7 @@ async function fetch(): Promise<void> {
             'display::coordinate': data.coordinate.options,
             'display::text': data.text.options,
             'display::icon_rotation': data.icon_rotation.options,
+            'display::radiation_dose': data.radiation_dose.options,
         };
 
         config.value = {
@@ -196,6 +200,7 @@ async function fetch(): Promise<void> {
             'display::coordinate': data.coordinate.value,
             'display::text': data.text.value,
             'display::icon_rotation': data.icon_rotation.value,
+            'display::radiation_dose': data.radiation_dose.value,
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));

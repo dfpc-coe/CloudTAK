@@ -276,6 +276,7 @@ export const Profile = Type.Object({
     display_distance: Type.Enum(Profile_Distance),
     display_elevation: Type.Enum(Profile_Elevation),
     display_speed: Type.Enum(Profile_Speed),
+    display_radiation_dose: Type.Enum(Profile_Radiation_Dose),
 
     geometry_point_type: Type.String(),
     geometry_point_color: Type.String(),
@@ -533,6 +534,7 @@ export const FullConfig = Type.Object({
     'display::coordinate': Type.Enum(Profile_Coordinate),
     'display::text': Type.Enum(Profile_Text),
     'display::icon_rotation': Type.Boolean(),
+    'display::radiation_dose': Type.Enum(Profile_Radiation_Dose),
     'group::Yellow': Type.String(),
     'group::Cyan': Type.String(),
     'group::Green': Type.String(),

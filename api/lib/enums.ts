@@ -166,3 +166,8 @@ export enum Profile_Elevation {
     METER = 'meter',
     FEET = 'feet',
 }
+
+export enum Profile_Radiation_Dose {
+    SIEVERTS = 'sieverts',
+    REMS = 'rems',
+}
