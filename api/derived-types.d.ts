@@ -43988,6 +43988,610 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/search/reverse/{:longitude}/{:latitude}/sun": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get sun phase information for a given point */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    altitude: number;
+                };
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":latitude": number;
+                    /** @description No Description */
+                    ":longitude": number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            sun: {
+                                /** @description sunrise (top edge of the sun appears on the horizon) */
+                                sunrise: string | null;
+                                /** @description sunrise ends (bottom edge of the sun touches the horizon) */
+                                sunriseEnd: string | null;
+                                /** @description morning golden hour (soft light, best time for photography) ends */
+                                goldenHourEnd: string | null;
+                                /** @description solar noon (sun is in the highest position) */
+                                solarNoon: string | null;
+                                /** @description evening golden hour starts */
+                                goldenHour: string | null;
+                                /** @description sunset starts (bottom edge of the sun touches the horizon) */
+                                sunsetStart: string | null;
+                                /** @description sunset (sun disappears below the horizon, evening civil twilight starts) */
+                                sunset: string | null;
+                                /** @description dusk (evening nautical twilight starts) */
+                                dusk: string | null;
+                                /** @description nautical dusk (evening astronomical twilight starts) */
+                                nauticalDusk: string | null;
+                                /** @description night starts (dark enough for astronomical observations) */
+                                night: string | null;
+                                /** @description nadir (darkest moment of the night, sun is in the lowest position) */
+                                nadir: string | null;
+                                /** @description night ends (morning astronomical twilight starts) */
+                                nightEnd: string | null;
+                                /** @description nautical dawn (morning nautical twilight starts) */
+                                nauticalDawn: string | null;
+                                /** @description dawn (morning nautical twilight ends, morning civil twilight starts) */
+                                dawn: string | null;
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/search/reverse/{:longitude}/{:latitude}/magnetic": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get magnetic declination information for a given point */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":latitude": number;
+                    /** @description No Description */
+                    ":longitude": number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            magnetic: {
+                                declination: number;
+                                inclination: number;
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/search/reverse/{:longitude}/{:latitude}/weather": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get weather forecast for a given point */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":latitude": number;
+                    /** @description No Description */
+                    ":longitude": number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            weather: null | {
+                                type: string;
+                                properties: {
+                                    units: string;
+                                    forecastGenerator: string;
+                                    generatedAt: string;
+                                    updateTime: string;
+                                    validTimes: string;
+                                    elevation: {
+                                        unitCode: string;
+                                        value: number;
+                                    };
+                                    periods: {
+                                        number: number;
+                                        name: string;
+                                        startTime: string;
+                                        endTime: string;
+                                        isDaytime: boolean;
+                                        temperature: number;
+                                        temperatureUnit: string;
+                                        temperatureTrend: unknown;
+                                        probabilityOfPrecipitation: {
+                                            unitCode: string;
+                                            value: number;
+                                        };
+                                        dewpoint: {
+                                            unitCode: string;
+                                            value: number;
+                                        };
+                                        relativeHumidity: {
+                                            unitCode: string;
+                                            value: number;
+                                        };
+                                        windSpeed: string;
+                                        windDirection: string;
+                                        icon: string;
+                                        shortForecast: string;
+                                        detailedForecast: string;
+                                    }[];
+                                };
+                                geometry: {
+                                    type: string;
+                                    coordinates: number[][][];
+                                };
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/search/reverse/{:longitude}/{:latitude}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get reverse geocoding information for a given point */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    provider?: string;
+                };
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":latitude": number;
+                    /** @description No Description */
+                    ":longitude": number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            reverse: null | {
+                                LongLabel: string;
+                                ShortLabel: string;
+                                AddrType: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/search/reverse/{:longitude}/{:latitude}/elevation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get elevation information for a given point */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    elevation?: number;
+                };
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":latitude": number;
+                    /** @description No Description */
+                    ":longitude": number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            elevation: null | string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/search/route": {
         parameters: {
             query?: never;

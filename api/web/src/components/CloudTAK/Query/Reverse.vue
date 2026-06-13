@@ -3,8 +3,16 @@
         <div class='col-12'>
             <label class='subheader mx-2'>Location</label>
         </div>
+        <TablerLoading
+            v-if='loading'
+            desc='Loading location...'
+        />
+        <TablerAlert
+            v-else-if='error'
+            :err='error'
+        />
         <div
-            v-if='props.reverse'
+            v-else-if='reverse'
             class='col-12 d-flex align-items-center py-2 px-2 rounded'
             style='border: 1px solid var(--tblr-border-color);'
         >
@@ -16,15 +24,15 @@
             <div class='mx-2'>
                 <div
                     class='h3 mb-0'
-                    v-text='props.reverse.ShortLabel'
+                    v-text='reverse.ShortLabel'
                 />
                 <div
                     class='text-muted small'
-                    v-text='props.reverse.LongLabel.replace(new RegExp(`^.*${props.reverse.ShortLabel}, `), "")'
+                    v-text='reverse.LongLabel.replace(new RegExp(`^.*${reverse.ShortLabel}, `), "")'
                 />
             </div>
             <div
-                v-if='props.elevation'
+                v-if='elevation'
                 class='ms-auto text-end'
             >
                 <div class='d-flex align-items-center text-muted'>
@@ -33,7 +41,7 @@
                         stroke='1'
                         class='me-1'
                     />
-                    <span class='small'>{{ props.elevation }}m</span>
+                    <span class='small'>{{ elevation }}</span>
                 </div>
             </div>
         </div>
@@ -52,14 +60,64 @@
 </template>
 
 <script setup lang='ts'>
-import type { SearchReverse } from '../../../types.ts';
+import { ref, onMounted } from 'vue';
+import type { SearchReverseReverse, SearchReverseElevation } from '../../../types.ts';
+import { server } from '../../../std.ts';
+import { useMapStore } from '../../../stores/map.ts';
 import {
     IconMapPin,
     IconMountain
 } from '@tabler/icons-vue';
+import {
+    TablerLoading,
+    TablerAlert
+} from '@tak-ps/vue-tabler';
 
 const props = defineProps<{
-    reverse: SearchReverse["reverse"],
-    elevation?: SearchReverse["elevation"]
-}>()
+    longitude: number;
+    latitude: number;
+}>();
+
+const mapStore = useMapStore();
+
+const loading = ref(true);
+const error = ref<Error | undefined>();
+const reverse = ref<SearchReverseReverse['reverse']>(null);
+const elevation = ref<SearchReverseElevation['elevation']>(null);
+
+onMounted(async () => {
+    try {
+        let terrainElevation: number | undefined;
+        try {
+            const raw = mapStore.map.queryTerrainElevation([props.longitude, props.latitude]);
+            terrainElevation = raw !== null ? raw : undefined;
+        } catch {
+            // No terrain data available
+        }
+
+        const [reverseRes, elevationRes] = await Promise.all([
+            server.GET('/api/search/reverse/{:longitude}/{:latitude}/reverse', {
+                params: {
+                    path: { ':longitude': props.longitude, ':latitude': props.latitude },
+                },
+            }),
+            server.GET('/api/search/reverse/{:longitude}/{:latitude}/elevation', {
+                params: {
+                    path: { ':longitude': props.longitude, ':latitude': props.latitude },
+                    query: { elevation: terrainElevation },
+                },
+            }),
+        ]);
+
+        if (reverseRes.error) throw new Error(String(reverseRes.error));
+        if (elevationRes.error) throw new Error(String(elevationRes.error));
+
+        reverse.value = reverseRes.data.reverse;
+        elevation.value = elevationRes.data.elevation;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        loading.value = false;
+    }
+});
 </script>

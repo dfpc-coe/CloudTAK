@@ -206,6 +206,11 @@ export type ProfileTokenList = paths["/api/profile/token"]["get"]["responses"]["
 export type ProfileToken = ProfileTokenList["items"][0]
 
 export type SearchReverse = paths["/api/search/reverse/{:longitude}/{:latitude}"]["get"]["responses"]["200"]["content"]["application/json"]
+export type SearchReverseSun = paths["/api/search/reverse/{:longitude}/{:latitude}/sun"]["get"]["responses"]["200"]["content"]["application/json"]
+export type SearchReverseMagnetic = paths["/api/search/reverse/{:longitude}/{:latitude}/magnetic"]["get"]["responses"]["200"]["content"]["application/json"]
+export type SearchReverseWeather = paths["/api/search/reverse/{:longitude}/{:latitude}/weather"]["get"]["responses"]["200"]["content"]["application/json"]
+export type SearchReverseReverse = paths["/api/search/reverse/{:longitude}/{:latitude}/reverse"]["get"]["responses"]["200"]["content"]["application/json"]
+export type SearchReverseElevation = paths["/api/search/reverse/{:longitude}/{:latitude}/elevation"]["get"]["responses"]["200"]["content"]["application/json"]
 
 // Below are CloudTAK ETL Specific Data Types
 

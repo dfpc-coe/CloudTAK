@@ -3,7 +3,16 @@
         <div class='col-12'>
             <label class='subheader mx-2'>Sun Phase</label>
         </div>
+        <TablerLoading
+            v-if='loading'
+            desc='Loading sun data...'
+        />
+        <TablerAlert
+            v-else-if='error'
+            :err='error'
+        />
         <div
+            v-else-if='sun'
             class='col-12 px-2 py-2 rounded'
             style='border: 1px solid var(--tblr-border-color);'
         >
@@ -97,8 +106,9 @@
 </template>
 
 <script setup lang='ts'>
-import { computed, type Component } from 'vue';
-import type { SearchReverse } from '../../../types.ts';
+import { ref, computed, onMounted, type Component } from 'vue';
+import type { SearchReverseSun } from '../../../types.ts';
+import { server } from '../../../std.ts';
 import {
     IconSunrise,
     IconSunset,
@@ -107,10 +117,37 @@ import {
     IconMoon,
     IconMoonStars
 } from '@tabler/icons-vue';
+import {
+    TablerLoading,
+    TablerAlert
+} from '@tak-ps/vue-tabler';
 
 const props = defineProps<{
-    sun: SearchReverse["sun"]
+    longitude: number;
+    latitude: number;
 }>();
+
+const loading = ref(true);
+const error = ref<Error | undefined>();
+const sun = ref<SearchReverseSun['sun'] | null>(null);
+
+onMounted(async () => {
+    try {
+        const { data, error: reqError } = await server.GET('/api/search/reverse/{:longitude}/{:latitude}/sun', {
+            params: {
+                path: { ':longitude': props.longitude, ':latitude': props.latitude },
+                query: { altitude: 0 },
+            },
+        });
+
+        if (reqError) throw new Error(String(reqError));
+        sun.value = data.sun;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        loading.value = false;
+    }
+});
 
 type TimelineEvent = {
     name: string;
@@ -121,6 +158,8 @@ type TimelineEvent = {
 };
 
 const timeline = computed(() => {
+    if (!sun.value) return [];
+
     const events: TimelineEvent[] = [];
 
     const addEvent = (name: string, time: string | null, icon: Component, color: string) => {
@@ -129,12 +168,12 @@ const timeline = computed(() => {
         events.push({ name, time, icon, color, type: 'event' });
     };
 
-    addEvent('Sunrise', props.sun.sunrise, IconSunrise, 'text-orange');
-    addEvent('Sunset', props.sun.sunset, IconSunset, 'text-orange');
-    addEvent('Dawn', props.sun.dawn, IconSun, 'text-yellow');
-    addEvent('Dusk', props.sun.dusk, IconMoon, 'text-blue');
-    addEvent('Solar Noon', props.sun.solarNoon, IconSunHigh, 'text-yellow');
-    addEvent('Nadir', props.sun.nadir, IconMoonStars, 'text-blue');
+    addEvent('Sunrise', sun.value.sunrise, IconSunrise, 'text-orange');
+    addEvent('Sunset', sun.value.sunset, IconSunset, 'text-orange');
+    addEvent('Dawn', sun.value.dawn, IconSun, 'text-yellow');
+    addEvent('Dusk', sun.value.dusk, IconMoon, 'text-blue');
+    addEvent('Solar Noon', sun.value.solarNoon, IconSunHigh, 'text-yellow');
+    addEvent('Nadir', sun.value.nadir, IconMoonStars, 'text-blue');
 
     events.push({
         name: 'Current Time',
