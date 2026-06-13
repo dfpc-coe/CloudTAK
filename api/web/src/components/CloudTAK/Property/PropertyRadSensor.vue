@@ -127,7 +127,7 @@
                                             class='text-capitalize'
                                             v-text='measurement.name'
                                         />
-                                        <td v-text='measurement.measurement.toFixed(2) + (measurement.name === "doserate" ? " mR/Hr" : " CPS")' />
+                                        <td v-text='formatMeasurement(measurement)' />
                                         <td>
                                             <span
                                                 :class='measurement.alarm === 1 ? "text-danger fw-bold" : "text-muted"'
@@ -182,9 +182,10 @@
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { IconRadioactive, IconInfoCircle, IconChartBar, IconAtom } from '@tabler/icons-vue';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
+import ProfileConfig from '../../../base/profile.ts';
 
 interface RadSensorData {
     manufacturer: string;
@@ -220,4 +221,26 @@ defineProps<{
 }>();
 
 const expanded = ref(false);
+const doseUnit = ref<'sieverts' | 'rems'>('sieverts');
+
+onMounted(async () => {
+    const setting = await ProfileConfig.get('display_radiation_dose');
+    if (setting?.value === 'sieverts' || setting?.value === 'rems') {
+        doseUnit.value = setting.value;
+    }
+});
+
+function formatMeasurement(measurement: RadMeasurement): string {
+    if (measurement.name !== 'doserate') {
+        return measurement.measurement.toFixed(2) + ' CPS';
+    }
+
+    if (doseUnit.value === 'sieverts') {
+        // 1 mR/hr ≈ 10 µSv/hr
+        return (measurement.measurement * 10).toFixed(2) + ' µSv/hr';
+    } else {
+        // 1 mR/hr ≈ 1 mrem/hr
+        return measurement.measurement.toFixed(2) + ' mrem/hr';
+    }
+}
 </script>
