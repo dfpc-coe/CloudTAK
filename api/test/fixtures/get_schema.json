@@ -1244,6 +1244,11 @@
         "query": false,
         "res": true
     },
+    "POST /retention": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /server/injector": {
         "body": false,
         "query": false,
@@ -1257,11 +1262,6 @@
     "DELETE /server/injector": {
         "body": false,
         "query": true,
-        "res": true
-    },
-    "POST /retention": {
-        "body": true,
-        "query": false,
         "res": true
     },
     "GET /server/repeater": {
@@ -1280,6 +1280,31 @@
         "res": true
     },
     "GET /search/reverse/:longitude/:latitude": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /search/reverse/:longitude/:latitude/sun": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /search/reverse/:longitude/:latitude/magnetic": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /search/reverse/:longitude/:latitude/weather": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /search/reverse/:longitude/:latitude/reverse": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /search/reverse/:longitude/:latitude/elevation": {
         "body": false,
         "query": true,
         "res": true

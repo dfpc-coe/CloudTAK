@@ -47,6 +47,13 @@
                 class='py-2'
             />
 
+            <QueryElevation
+                :key='`elevation-${refreshKey}`'
+                :longitude='coords[0]'
+                :latitude='coords[1]'
+                class='py-2'
+            />
+
             <QueryWeather
                 :key='`weather-${refreshKey}`'
                 :longitude='coords[0]'
@@ -83,6 +90,7 @@ import QueryWeather from './Query/Weather.vue';
 import QuerySun from './Query/Sun.vue';
 import QueryMagnetic from './Query/Magnetic.vue';
 import QueryReverse from './Query/Reverse.vue';
+import QueryElevation from './Query/Elevation.vue';
 import {
     TablerIconButton
 } from '@tak-ps/vue-tabler';
