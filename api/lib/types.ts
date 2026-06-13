@@ -244,17 +244,7 @@ export const ProfileListResponse = Type.Object({
     agency_admin: Type.Array(Type.Integer()),
 });
 
-export const ProfileResponse = Type.Object({
-    username: Type.String(),
-    created: Type.String(),
-    updated: Type.String(),
-    phone: Type.String(),
-    last_login: Type.String(),
-    active: Type.Boolean({
-        description: 'Does the user have an active CloudTAK Session',
-    }),
-    system_admin: Type.Boolean(),
-    agency_admin: Type.Array(Type.Integer()),
+export const Profile = Type.Object({
     tak_callsign: Type.String(),
     tak_remarks: Type.String(),
     tak_group: Type.Enum(TAKGroup),
@@ -286,7 +276,29 @@ export const ProfileResponse = Type.Object({
     display_distance: Type.Enum(Profile_Distance),
     display_elevation: Type.Enum(Profile_Elevation),
     display_speed: Type.Enum(Profile_Speed),
+
+    geometry_point_type: Type.String(),
+    geometry_point_color: Type.String(),
+    geometry_point_icon: Type.String(),
 });
+
+export const ProfilePatchBody = Type.Partial(Profile);
+
+export const ProfileResponse = Type.Composite([
+    Type.Object({
+        username: Type.String(),
+        created: Type.String(),
+        updated: Type.String(),
+        phone: Type.String(),
+        last_login: Type.String(),
+        active: Type.Boolean({
+            description: 'Does the user have an active CloudTAK Session',
+        }),
+        system_admin: Type.Boolean(),
+        agency_admin: Type.Array(Type.Integer()),
+    }),
+    Profile,
+]);
 
 export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
     id: Type.Integer(),
