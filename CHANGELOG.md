@@ -12,7 +12,7 @@
 
 ### Deprecation Notices
 
-None at this time, but any breaking changes will be prefaced with a deprecation notice in the previous major version to allow users to prepare for the change
+- `GET /api/search/reverse/:long/:lat` endpoint is deprecated and will be removed in v14, use `GET /api/search/reverse/:long/:lat/<type>` instead
 
 ### Pending Release
 

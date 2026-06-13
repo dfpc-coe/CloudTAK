@@ -278,9 +278,9 @@ export const Profile = Type.Object({
     display_speed: Type.Enum(Profile_Speed),
     display_radiation_dose: Type.Enum(Profile_Radiation_Dose),
 
-    geometry_point_type: Type.String(),
-    geometry_point_color: Type.String(),
-    geometry_point_icon: Type.String(),
+    geometry_point_type: Type.Optional(Type.String()),
+    geometry_point_color: Type.Optional(Type.String()),
+    geometry_point_icon: Type.Optional(Type.String()),
 });
 
 export const ProfilePatchBody = Type.Partial(Profile);
