@@ -16,6 +16,11 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.14.1 - 2026-06-13
+
+- :bug: Fix consistent version updates - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1479
+- :bug: Fix parsing of some ATAK created data objects - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1485
+
 ### v13.14.0 - 2026-06-12
 
 - :tada: Add support for visualizing Radiation Data on CoT Features
