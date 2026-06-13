@@ -63,6 +63,16 @@
                 </div>
                 <div class='col-12'>
                     <TablerEnum
+                        v-model='profile.display_radiation_dose'
+                        label='Radiation Dose Unit'
+                        :options='[
+                            "sieverts",
+                            "rems"
+                        ]'
+                    />
+                </div>
+                <div class='col-12'>
+                    <TablerEnum
                         v-model='profile.display_projection'
                         label='Display Projection'
                         :options='[
@@ -152,6 +162,7 @@ async function getProfile() {
         display_distance: (await ProfileConfig.get('display_distance'))?.value,
         display_elevation: (await ProfileConfig.get('display_elevation'))?.value,
         display_speed: (await ProfileConfig.get('display_speed'))?.value,
+        display_radiation_dose: (await ProfileConfig.get('display_radiation_dose'))?.value,
         display_projection: (await ProfileConfig.get('display_projection'))?.value,
         display_style: (await ProfileConfig.get('display_style' as keyof Profile))?.value as DisplayStyleMode | undefined,
         display_coordinate: (await ProfileConfig.get('display_coordinate'))?.value,
