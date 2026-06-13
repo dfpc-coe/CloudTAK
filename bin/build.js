@@ -54,6 +54,7 @@ if (!target) {
     if (target === 'api') {
         await cloudtak_api(plugins);
     } else if (target === '.') {
+        console.error('ETL');
         await cloudtak_etl();
     } else {
         await cloudtak_task(target);
