@@ -164,6 +164,193 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/search/reverse/:longitude/:latitude/sun', {
+        name: 'Reverse Sun',
+        group: 'Search',
+        description: 'Get sun phase information for a given point',
+        params: Type.Object({
+            latitude: Type.Number(),
+            longitude: Type.Number(),
+        }),
+        query: Type.Object({
+            altitude: Type.Number({
+                default: 0,
+            }),
+        }),
+        res: Type.Object({
+            sun: Type.Object({
+                sunrise: SunTime('sunrise (top edge of the sun appears on the horizon)'),
+                sunriseEnd: SunTime('sunrise ends (bottom edge of the sun touches the horizon)'),
+                goldenHourEnd: SunTime('morning golden hour (soft light, best time for photography) ends'),
+                solarNoon: SunTime('solar noon (sun is in the highest position)'),
+                goldenHour: SunTime('evening golden hour starts'),
+                sunsetStart: SunTime('sunset starts (bottom edge of the sun touches the horizon)'),
+                sunset: SunTime('sunset (sun disappears below the horizon, evening civil twilight starts)'),
+                dusk: SunTime('dusk (evening nautical twilight starts)'),
+                nauticalDusk: SunTime('nautical dusk (evening astronomical twilight starts)'),
+                night: SunTime('night starts (dark enough for astronomical observations)'),
+                nadir: SunTime('nadir (darkest moment of the night, sun is in the lowest position)'),
+                nightEnd: SunTime('night ends (morning astronomical twilight starts)'),
+                nauticalDawn: SunTime('nautical dawn (morning nautical twilight starts)'),
+                dawn: SunTime('dawn (morning nautical twilight ends, morning civil twilight starts)'),
+            }),
+        }),
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            const sun = SunCalc.getTimes(new Date(), req.params.latitude, req.params.longitude, req.query.altitude);
+
+            res.json({
+                sun: {
+                    sunrise: optionalISOString(sun.sunrise),
+                    sunriseEnd: optionalISOString(sun.sunriseEnd),
+                    goldenHourEnd: optionalISOString(sun.goldenHourEnd),
+                    solarNoon: optionalISOString(sun.solarNoon),
+                    goldenHour: optionalISOString(sun.goldenHour),
+                    sunsetStart: optionalISOString(sun.sunsetStart),
+                    sunset: optionalISOString(sun.sunset),
+                    dusk: optionalISOString(sun.dusk),
+                    nauticalDusk: optionalISOString(sun.nauticalDusk),
+                    night: optionalISOString(sun.night),
+                    nadir: optionalISOString(sun.nadir),
+                    nightEnd: optionalISOString(sun.nightEnd),
+                    nauticalDawn: optionalISOString(sun.nauticalDawn),
+                    dawn: optionalISOString(sun.dawn),
+                },
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/search/reverse/:longitude/:latitude/magnetic', {
+        name: 'Reverse Magnetic',
+        group: 'Search',
+        description: 'Get magnetic declination information for a given point',
+        params: Type.Object({
+            latitude: Type.Number(),
+            longitude: Type.Number(),
+        }),
+        res: Type.Object({
+            magnetic: Type.Object({
+                declination: Type.Number(),
+                inclination: Type.Number(),
+            }),
+        }),
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            const magnetic = geomagnetism.model().point([req.params.latitude, req.params.longitude]);
+
+            res.json({
+                magnetic: {
+                    declination: magnetic.decl,
+                    inclination: magnetic.incl,
+                },
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/search/reverse/:longitude/:latitude/weather', {
+        name: 'Reverse Weather',
+        group: 'Search',
+        description: 'Get weather forecast for a given point',
+        params: Type.Object({
+            latitude: Type.Number(),
+            longitude: Type.Number(),
+        }),
+        res: Type.Object({
+            weather: Type.Union([Type.Null(), FetchHourly]),
+        }),
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            let weather = null;
+            try {
+                weather = await config.weather.get(req.params.longitude, req.params.latitude);
+            } catch (err) {
+                console.error('Weather Fetch Error', err);
+            }
+
+            res.json({ weather });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/search/reverse/:longitude/:latitude/reverse', {
+        name: 'Reverse Geocode Only',
+        group: 'Search',
+        description: 'Get reverse geocoding information for a given point',
+        params: Type.Object({
+            latitude: Type.Number(),
+            longitude: Type.Number(),
+        }),
+        query: Type.Object({
+            provider: Type.Optional(Type.String()),
+        }),
+        res: Type.Object({
+            reverse: Type.Union([Type.Null(), FetchReverse]),
+        }),
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            let reverse = null;
+            if (searchManager.defaultProvider) {
+                try {
+                    reverse = await searchManager.reverse(
+                        req.query.provider || searchManager.defaultProvider,
+                        req.params.longitude,
+                        req.params.latitude,
+                    );
+                } catch (err) {
+                    console.error('ESRI Fetch Error', err);
+                }
+            }
+
+            res.json({ reverse });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/search/reverse/:longitude/:latitude/elevation', {
+        name: 'Reverse Elevation',
+        group: 'Search',
+        description: 'Get elevation information for a given point',
+        params: Type.Object({
+            latitude: Type.Number(),
+            longitude: Type.Number(),
+        }),
+        query: Type.Object({
+            elevation: Type.Optional(Type.Number()),
+        }),
+        res: Type.Object({
+            elevation: Type.Union([Type.Null(), Type.String()]),
+        }),
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const elevationUnit = await config.models.ProfileConfig.from(user.email).then(p => p['display::elevation'] as string).catch(() => 'feet');
+
+            const elevation = req.query.elevation !== undefined
+                ? (elevationUnit === 'feet' || elevationUnit === 'FEET'
+                        ? ((req.query.elevation / 1.5) * 3.28084).toFixed(2) + ' ft'
+                        : (req.query.elevation / 1.5).toFixed(2) + ' m')
+                : null;
+
+            res.json({ elevation });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
     await schema.get('/search/route', {
         name: 'Route',
         group: 'Search',

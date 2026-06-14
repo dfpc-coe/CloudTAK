@@ -19,7 +19,7 @@
                 </TablerIconButton>
                 <TablerIconButton
                     title='Refresh'
-                    @click='fetch'
+                    @click='refreshKey++'
                 >
                     <IconRefresh
                         :size='32'
@@ -39,34 +39,39 @@
             class='py-2'
         />
 
-        <TablerAlert
-            v-if='error'
-            :err='error'
-        />
-        <TablerLoading
-            v-else-if='!query'
-            desc='Querying...'
-        />
-        <template v-else>
+        <template v-if='coords && coords.length >= 2'>
             <QueryReverse
-                :reverse='query.reverse'
-                :elevation='query.elevation'
+                :key='`reverse-${refreshKey}`'
+                :longitude='coords[0]'
+                :latitude='coords[1]'
+                class='py-2'
+            />
+
+            <QueryElevation
+                :key='`elevation-${refreshKey}`'
+                :longitude='coords[0]'
+                :latitude='coords[1]'
                 class='py-2'
             />
 
             <QueryWeather
-                :weather='query.weather'
+                :key='`weather-${refreshKey}`'
+                :longitude='coords[0]'
+                :latitude='coords[1]'
                 class='py-2'
             />
 
             <QuerySun
-                :sun='query.sun'
+                :key='`sun-${refreshKey}`'
+                :longitude='coords[0]'
+                :latitude='coords[1]'
                 class='py-2'
             />
 
             <QueryMagnetic
-                v-if='query.magnetic'
-                :magnetic='query.magnetic'
+                :key='`magnetic-${refreshKey}`'
+                :longitude='coords[0]'
+                :latitude='coords[1]'
                 class='py-2'
             />
         </template>
@@ -74,32 +79,26 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { SearchReverse } from '../../types.ts';
 import {
     IconRefresh,
     IconRoute
 } from '@tabler/icons-vue';
-import { server } from '../../std.ts';
-import { useMapStore } from '../../stores/map.ts';
 import QueryWeather from './Query/Weather.vue';
 import QuerySun from './Query/Sun.vue';
 import QueryMagnetic from './Query/Magnetic.vue';
 import QueryReverse from './Query/Reverse.vue';
+import QueryElevation from './Query/Elevation.vue';
 import {
-    TablerAlert,
-    TablerLoading,
     TablerIconButton
 } from '@tak-ps/vue-tabler';
 import Coordinate from './util/Coordinate.vue';
 
 const route = useRoute();
 const router = useRouter();
-const mapStore = useMapStore();
 
-const error = ref<Error | undefined>();
-const query = ref<SearchReverse | undefined>();
+const refreshKey = ref(0);
 
 const coords = computed<number[] | undefined>(() => {
     return route.params.coords
@@ -107,54 +106,13 @@ const coords = computed<number[] | undefined>(() => {
         : undefined
 });
 
-watch(coords, async () => {
-    await fetch();
-})
-
-onMounted(async () => {
-    await fetch();
+watch(coords, () => {
+    refreshKey.value++;
 });
 
 function openRoute() {
     if (coords.value && coords.value.length >= 2) {
         router.push(`/menu/routes/new?end=${coords.value[0]},${coords.value[1]}`);
-    }
-}
-
-async function fetch() {
-    query.value = undefined;
-
-    if (coords.value && coords.value.length >= 2) {
-        try {
-            error.value = undefined;
-            
-            // Query MapLibre terrain elevation if available
-            let elevation: number | undefined;
-            try {
-                const terrainElevation = mapStore.map.queryTerrainElevation([coords.value[0], coords.value[1]]);
-                elevation = terrainElevation !== null ? terrainElevation : undefined;
-            } catch {
-                // No terrain data available
-            }
-            
-            const { data, error: reqError } = await server.GET('/api/search/reverse/{:longitude}/{:latitude}', {
-                params: {
-                    path: {
-                        ':longitude': coords.value[0],
-                        ':latitude': coords.value[1]
-                    },
-                    query: {
-                        elevation,
-                        altitude: 0
-                    }
-                }
-            });
-
-            if (reqError) throw new Error(String(reqError));
-            query.value = data;
-        } catch (err) {
-            error.value = err instanceof Error ? err : new Error(String(err));
-        }
     }
 }
 </script>

@@ -26,6 +26,10 @@ export default async function router(schema: Schema, config: Config) {
             latitude: Type.Number(),
             altitude: Type.Optional(Type.Number()),
             accuracy: Type.Optional(Type.Number()),
+            altitudeAccuracy: Type.Optional(Type.Number()),
+            speed: Type.Optional(Type.Number()),
+            bearing: Type.Optional(Type.Number()),
+            time: Type.Optional(Type.Number()),
         }),
         res: StandardResponse,
     }, async (req, res) => {
@@ -56,7 +60,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (awaitSecure) await awaitSecure;
 
-            const now = new Date();
+            const now = req.body.time ? new Date(req.body.time) : new Date();
             const stale = new Date(now.getTime() + 60_000);
             const callsign = profile.tak_callsign || 'Unknown';
             const uid = `ANDROID-CloudTAK-${user.email}`;
@@ -75,6 +79,8 @@ export default async function router(schema: Schema, config: Config) {
                     center: [req.body.longitude, req.body.latitude],
                     remarks: profile.tak_remarks || '',
                     ...(req.body.accuracy !== undefined && { ce: req.body.accuracy }),
+                    ...(req.body.speed !== undefined && { speed: req.body.speed }),
+                    ...(req.body.bearing !== undefined && { course: req.body.bearing }),
                     droid: callsign,
                     contact: { endpoint: '*:-1:stcp', callsign },
                     group: { name: profile.tak_group || 'Cyan', role: profile.tak_role || 'Team Member' },

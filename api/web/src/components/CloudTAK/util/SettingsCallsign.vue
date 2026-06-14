@@ -1,64 +1,103 @@
 <template>
     <TablerLoading v-if='loading || !profile' />
     <template v-else>
-        <div class='col-12'>
+        <div class='col-12 d-flex flex-column gap-2 py-2'>
             <TablerInput
-                v-model='profile.tak_callsign'
-                :error='validateTextNotEmpty(profile.tak_callsign)'
-                :required='true'
-                label='User Callsign'
+                v-model='search'
+                icon='search'
+                placeholder='Search settings...'
             />
-        </div>
-        <div class='col-12'>
-            <TablerEnum
-                v-model='profile.tak_group'
-                label='User Group'
-                :options='tak_groups'
-            />
-        </div>
-        <div class='col-12'>
-            <TablerEnum
-                v-model='profile.tak_role'
-                label='User Role'
-                :options='roles'
-            />
-        </div>
-        <div
-            v-if='mode === "router"'
-            class='col-12'
-        >
-            <TablerInput
-                v-model='profile.tak_loc_freq'
-                label='Location Reporting Frequency (ms)'
-            />
-        </div>
-        <div class='col-12 py-2'>
-            <label class='subheader mb-1'>Default Point Type</label>
-            <div class='d-flex justify-content-center'>
-                <CoordinateType
-                    v-model='profile.tak_type'
-                    :size='24'
-                />
-            </div>
-        </div>
-        <div class='col-12 d-flex py-3'>
-            <div class='ms-auto'>
-                <button
-                    class='btn btn-primary'
-                    :disabled='!!validateTextNotEmpty(profile.tak_callsign)'
-                    @click='updateProfile'
+
+            <div class='d-flex flex-column gap-2'>
+                <StandardItem
+                    v-for='item of filteredSettings'
+                    :key='item.key'
+                    :hover='false'
+                    class='position-relative'
                 >
-                    Update
-                </button>
+                    <Transition name='saved-fade'>
+                        <div
+                            v-if='savedKey === item.key'
+                            class='saved-indicator position-absolute d-flex align-items-center gap-1'
+                        >
+                            <IconCircleCheck
+                                :size='16'
+                                stroke='1.5'
+                                class='text-success'
+                            />
+                            <span class='text-success small fw-medium'>Saved</span>
+                        </div>
+                    </Transition>
+                    <div class='d-flex flex-column gap-2 px-3 py-3'>
+                        <div class='d-flex align-items-center gap-3'>
+                            <div class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 flex-shrink-0' style='width: 40px; height: 40px;'>
+                                <component
+                                    :is='item.icon'
+                                    :size='24'
+                                    stroke='1.5'
+                                />
+                            </div>
+                            <div class='fw-bold text-white'>
+                                {{ item.label }}
+                            </div>
+                        </div>
+                        <div class='col-12'>
+                            <TablerInput
+                                v-if='item.type === "input"'
+                                v-model='(profile as any)[item.key]'
+                                :error='item.key === "tak_callsign" ? validateTextNotEmpty(profile.tak_callsign) : ""'
+                                :required='item.key === "tak_callsign"'
+                            />
+                            <TablerEnum
+                                v-else-if='item.type === "enum"'
+                                v-model='(profile as any)[item.key]'
+                                :options='item.options'
+                            />
+                            <CoordinateType
+                                v-else-if='item.type === "coordinate"'
+                                v-model='profile.tak_type'
+                                :size='24'
+                            />
+                        </div>
+                        <div
+                            v-if='item.type === "input" && hasChanged(item.key)'
+                            class='d-flex justify-content-end'
+                        >
+                            <button
+                                class='btn btn-primary btn-sm'
+                                :disabled='item.key === "tak_callsign" && !!validateTextNotEmpty(profile.tak_callsign)'
+                                @click='saveField(item.key)'
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </StandardItem>
+
+                <div
+                    v-if='filteredSettings.length === 0'
+                    class='text-center text-secondary py-4'
+                >
+                    No settings match "{{ search }}"
+                </div>
             </div>
         </div>
     </template>
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, watch } from 'vue';
+import type { Component } from 'vue';
+import {
+    IconUser,
+    IconUsers,
+    IconShield,
+    IconClock,
+    IconMapPin,
+    IconCircleCheck,
+} from '@tabler/icons-vue';
 import CoordinateType from './CoordinateType.vue';
+import StandardItem from './StandardItem.vue';
 import type { Profile } from '../../../../src/types.ts';
 import Config from '../../../base/config.ts';
 import type { FullConfig } from '../../../base/config.ts';
@@ -83,15 +122,25 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits([ 'update' ]);
+type SettingItem = {
+    key: string;
+    label: string;
+    icon: Component;
+    type: 'input' | 'enum' | 'coordinate';
+    options?: string[];
+    routerOnly?: boolean;
+};
 
 const loading = ref(true);
 const profile = ref<Profile | undefined>();
 const groups = ref<Record<string, string>>({});
+const search = ref('');
+const savedKey = ref<string | undefined>();
+const changedFields = ref<Set<string>>(new Set());
+let previousValues: Record<string, unknown> = {};
+let saveTimeout: ReturnType<typeof setTimeout> | undefined;
 
 const roles = ['Team Member', 'Team Lead', 'HQ', 'Sniper', 'Medic', 'Forward Observer', 'RTO', 'K9'];
-
-const router = useRouter();
 
 const tak_groups = computed(() => {
     const result = [];
@@ -105,6 +154,58 @@ const tak_groups = computed(() => {
 
     return result;
 });
+
+const settings = computed<SettingItem[]>(() => {
+    const items: SettingItem[] = [
+        {
+            key: 'tak_callsign',
+            label: 'User Callsign',
+            icon: IconUser,
+            type: 'input',
+        },
+        {
+            key: 'tak_group',
+            label: 'User Group',
+            icon: IconUsers,
+            type: 'enum',
+            options: tak_groups.value,
+        },
+        {
+            key: 'tak_role',
+            label: 'User Role',
+            icon: IconShield,
+            type: 'enum',
+            options: roles,
+        },
+        {
+            key: 'tak_loc_freq',
+            label: 'Location Reporting Frequency (ms)',
+            icon: IconClock,
+            type: 'input',
+            routerOnly: true,
+        },
+        {
+            key: 'tak_type',
+            label: 'Default Point Type',
+            icon: IconMapPin,
+            type: 'coordinate',
+        },
+    ];
+
+    return items.filter(item => !item.routerOnly || props.mode === 'router');
+});
+
+const filteredSettings = computed(() => {
+    const query = search.value.trim().toLowerCase();
+    if (!query) return settings.value;
+    return settings.value.filter((item) =>
+        item.label.toLowerCase().includes(query)
+    );
+});
+
+function hasChanged(key: string): boolean {
+    return changedFields.value.has(key);
+}
 
 onMounted(async () => {
     loading.value = true;
@@ -128,6 +229,12 @@ onMounted(async () => {
     }
 
     profile.value = p;
+
+    // Snapshot initial values
+    for (const item of settings.value) {
+        previousValues[item.key] = (profile.value as Profile)[item.key as keyof Profile];
+    }
+
     loading.value = false;
 });
 
@@ -158,25 +265,95 @@ async function fetchConfig() {
     groups.value = result;
 }
 
-async function updateProfile() {
-    const p = JSON.parse(JSON.stringify(profile.value)) as Profile;
+async function saveField(key: string) {
+    if (!profile.value) return;
 
+    const p = JSON.parse(JSON.stringify(profile.value)) as Profile;
     p.tak_group = p.tak_group.replace(/\s-\s.*$/, '') as Profile["tak_group"];
 
     await mapStore.worker.profile.update({
-        tak_callsign: p.tak_callsign,
-        tak_type: p.tak_type,
-        tak_role: p.tak_role,
-        tak_group: p.tak_group.replace(/\s-\s.*$/, '') as Profile["tak_group"],
-        tak_loc_freq: p.tak_loc_freq
+        [key]: (p as Profile)[key as keyof Profile]
     });
 
-    mapStore.defaultPointType = p.tak_type || 'u-d-p';
-
-    if (props.mode === 'router') {
-        router.push("/menu/settings");
-    } else {
-        emit('update');
+    if (key === 'tak_type') {
+        mapStore.defaultPointType = p.tak_type || 'u-d-p';
     }
+
+    // Show saved indicator
+    savedKey.value = key;
+    changedFields.value.delete(key);
+    previousValues[key] = (profile.value as Profile)[key as keyof Profile];
+
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+        savedKey.value = undefined;
+    }, 2000);
 }
+
+// Watch for changes to auto-save non-input fields
+watch(
+    () => profile.value,
+    async (newProfile) => {
+        if (!newProfile || loading.value) return;
+
+        // Detect which fields changed
+        for (const item of settings.value) {
+            const current = (newProfile as Profile)[item.key as keyof Profile];
+            if (current !== previousValues[item.key]) {
+                if (item.type === 'input') {
+                    // Track changed state for input fields (manual save)
+                    changedFields.value.add(item.key);
+                } else {
+                    // Auto-save non-input fields
+                    savedKey.value = item.key;
+
+                    const p = JSON.parse(JSON.stringify(newProfile)) as Profile;
+                    p.tak_group = p.tak_group.replace(/\s-\s.*$/, '') as Profile["tak_group"];
+
+                    await mapStore.worker.profile.update({
+                        [item.key]: (p as Profile)[item.key as keyof Profile]
+                    });
+
+                    if (item.key === 'tak_type') {
+                        mapStore.defaultPointType = p.tak_type || 'u-d-p';
+                    }
+
+                    previousValues[item.key] = current;
+
+                    if (saveTimeout) clearTimeout(saveTimeout);
+                    saveTimeout = setTimeout(() => {
+                        savedKey.value = undefined;
+                    }, 2000);
+                }
+            }
+        }
+    },
+    { deep: true }
+);
 </script>
+
+<style scoped>
+.saved-indicator {
+    top: 10px;
+    right: 12px;
+    z-index: 1;
+}
+
+.saved-fade-enter-active {
+    transition: opacity 0.2s ease-in;
+}
+
+.saved-fade-leave-active {
+    transition: opacity 1.4s ease-out;
+}
+
+.saved-fade-enter-from,
+.saved-fade-leave-to {
+    opacity: 0;
+}
+
+.saved-fade-enter-to,
+.saved-fade-leave-from {
+    opacity: 1;
+}
+</style>
