@@ -87,7 +87,6 @@
 
 <script setup lang='ts'>
 import { ref, computed, onMounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
 import type { Component } from 'vue';
 import {
     IconUser,
@@ -123,8 +122,6 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits([ 'update' ]);
-
 type SettingItem = {
     key: string;
     label: string;
@@ -144,8 +141,6 @@ let previousValues: Record<string, unknown> = {};
 let saveTimeout: ReturnType<typeof setTimeout> | undefined;
 
 const roles = ['Team Member', 'Team Lead', 'HQ', 'Sniper', 'Medic', 'Forward Observer', 'RTO', 'K9'];
-
-const router = useRouter();
 
 const tak_groups = computed(() => {
     const result = [];
@@ -237,7 +232,7 @@ onMounted(async () => {
 
     // Snapshot initial values
     for (const item of settings.value) {
-        previousValues[item.key] = (profile.value as any)[item.key];
+        previousValues[item.key] = (profile.value as Profile)[item.key as keyof Profile];
     }
 
     loading.value = false;
@@ -277,7 +272,7 @@ async function saveField(key: string) {
     p.tak_group = p.tak_group.replace(/\s-\s.*$/, '') as Profile["tak_group"];
 
     await mapStore.worker.profile.update({
-        [key]: (p as any)[key]
+        [key]: (p as Profile)[key as keyof Profile]
     });
 
     if (key === 'tak_type') {
@@ -287,7 +282,7 @@ async function saveField(key: string) {
     // Show saved indicator
     savedKey.value = key;
     changedFields.value.delete(key);
-    previousValues[key] = (profile.value as any)[key];
+    previousValues[key] = (profile.value as Profile)[key as keyof Profile];
 
     if (saveTimeout) clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => {
@@ -303,7 +298,7 @@ watch(
 
         // Detect which fields changed
         for (const item of settings.value) {
-            const current = (newProfile as any)[item.key];
+            const current = (newProfile as Profile)[item.key as keyof Profile];
             if (current !== previousValues[item.key]) {
                 if (item.type === 'input') {
                     // Track changed state for input fields (manual save)
@@ -316,7 +311,7 @@ watch(
                     p.tak_group = p.tak_group.replace(/\s-\s.*$/, '') as Profile["tak_group"];
 
                     await mapStore.worker.profile.update({
-                        [item.key]: (p as any)[item.key]
+                        [item.key]: (p as Profile)[item.key as keyof Profile]
                     });
 
                     if (item.key === 'tak_type') {

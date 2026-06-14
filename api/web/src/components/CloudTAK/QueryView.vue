@@ -85,7 +85,6 @@ import {
     IconRefresh,
     IconRoute
 } from '@tabler/icons-vue';
-import { useMapStore } from '../../stores/map.ts';
 import QueryWeather from './Query/Weather.vue';
 import QuerySun from './Query/Sun.vue';
 import QueryMagnetic from './Query/Magnetic.vue';
@@ -98,7 +97,6 @@ import Coordinate from './util/Coordinate.vue';
 
 const route = useRoute();
 const router = useRouter();
-const mapStore = useMapStore();
 
 const refreshKey = ref(0);
 
