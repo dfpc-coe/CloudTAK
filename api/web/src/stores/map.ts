@@ -236,6 +236,10 @@ export const useMapStore = defineStore('cloudtak', {
                     body: {
                         accuracy: position.coords.accuracy,
                         altitude: position.coords.altitude,
+                        altitudeAccuracy: position.coords.altitudeAccuracy,
+                        speed: position.coords.speed,
+                        heading: position.coords.heading,
+                        timestamp: position.timestamp,
                         coordinates: [ position.coords.longitude, position.coords.latitude ]
                     }
                 });
@@ -818,6 +822,10 @@ export const useMapStore = defineStore('cloudtak', {
                     latitude: position.coords.latitude,
                     ...(position.coords.altitude !== null ? { altitude: position.coords.altitude } : {}),
                     accuracy: position.coords.accuracy,
+                    ...(position.coords.altitudeAccuracy !== null ? { altitudeAccuracy: position.coords.altitudeAccuracy } : {}),
+                    ...(position.coords.speed !== null ? { speed: position.coords.speed } : {}),
+                    ...(position.coords.heading !== null ? { bearing: position.coords.heading } : {}),
+                    time: position.timestamp,
                 };
 
                 // Use CapacitorHttp for native background requests to avoid WebView throttling
