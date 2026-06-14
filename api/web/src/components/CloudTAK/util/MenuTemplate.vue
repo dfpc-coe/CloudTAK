@@ -6,90 +6,71 @@
         <div
             class='main-menu-modal-frame w-100 px-0 d-flex flex-column overflow-hidden'
         >
-            <template v-if='bare'>
-                <div class='d-flex align-items-center cloudtak-bg flex-shrink-0 px-2 py-1'>
+            <div class='modal-header d-flex align-items-center py-2 px-2 flex-shrink-0'>
+                <TablerIconButton
+                    v-if='backType === "back"'
+                    title='Back'
+                    @click='routerBack'
+                >
+                    <IconCircleArrowLeft
+                        :size='28'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <div
+                    v-if='$slots.header'
+                    class='flex-grow-1 d-flex align-items-center'
+                    style='min-width: 0'
+                >
+                    <slot
+                        name='header'
+                        :is-modal='true'
+                    />
+                </div>
+                <div
+                    v-else
+                    class='modal-title flex-grow-1 text-break px-1'
+                    style='min-width: 0'
+                    v-text='name'
+                />
+
+                <div class='btn-list align-items-center flex-nowrap'>
+                    <slot name='buttons' />
+
                     <TablerIconButton
-                        title='Back'
-                        @click='routerBack'
+                        title='Close Menu'
+                        @click='router.push("/")'
                     >
-                        <IconCircleArrowLeft
+                        <IconCircleX
                             :size='28'
                             stroke='1'
                         />
                     </TablerIconButton>
-                    <button
-                        type='button'
-                        class='btn-close ms-auto'
-                        aria-label='Close'
-                        @click='router.push("/")'
-                    />
                 </div>
-                <div
-                    class='flex-grow-1 overflow-hidden'
-                    style='min-height: 0'
-                >
-                    <slot />
-                </div>
-            </template>
-            <template v-else>
-                <div class='modal-header d-flex align-items-center py-2 px-2 flex-shrink-0 flex-wrap row-gap-2'>
-                    <TablerIconButton
-                        v-if='backType === "back"'
-                        title='Back'
-                        @click='routerBack'
-                    >
-                        <IconCircleArrowLeft
-                            :size='28'
-                            stroke='1'
-                        />
-                    </TablerIconButton>
+            </div>
 
-                    <div
-                        class='modal-title flex-grow-1 text-break px-1'
-                        style='min-width: 0'
-                        v-text='name'
-                    />
+            <div
+                class='d-flex flex-column overflow-x-hidden flex-grow-1 px-2'
+                :class='scroll ? "overflow-y-auto" : "overflow-hidden"'
+                style='min-height: 0'
+            >
+                <TablerLoading
+                    v-if='loading'
+                    :desc='`Loading ${name}`'
+                />
+                <TablerNone
+                    v-else-if='none'
+                    :label='name'
+                    :create='false'
+                />
+                <slot v-else />
+                <div class='menu-scroll-spacer flex-shrink-0' />
+            </div>
 
-                    <div class='btn-list align-items-center'>
-                        <slot name='buttons' />
-                    </div>
-
-                    <button
-                        type='button'
-                        class='btn-close ms-1'
-                        aria-label='Close'
-                        @click='router.push("/")'
-                    />
-                </div>
-
-                <div
-                    class='d-flex flex-column overflow-x-hidden flex-grow-1 px-2'
-                    :class='scroll ? "overflow-y-auto" : "overflow-hidden"'
-                    style='min-height: 0'
-                >
-                    <TablerLoading
-                        v-if='loading'
-                        :desc='`Loading ${name}`'
-                    />
-                    <TablerNone
-                        v-else-if='none'
-                        :label='name'
-                        :create='false'
-                    />
-                    <slot v-else />
-                    <div class='menu-scroll-spacer flex-shrink-0' />
-                </div>
-
-                <slot name='footer' />
-            </template>
+            <slot name='footer' />
         </div>
     </TablerModal>
-    <div
-        v-else-if='bare'
-        class='w-100 h-100 px-0 overflow-hidden'
-    >
-        <slot />
-    </div>
     <div
         v-else
         class='w-100 px-0 d-flex flex-column overflow-hidden'
@@ -112,18 +93,8 @@
                     style='min-width: 0'
                 >
                     <TablerIconButton
-                        v-if='backType === "close"'
-                        title='Close Menu'
-                        @click='router.push("/")'
-                    >
-                        <IconCircleX
-                            :size='32'
-                            stroke='1'
-                        />
-                    </TablerIconButton>
-                    <TablerIconButton
                         v-if='backType === "back"'
-                        title='Close Menu'
+                        title='Back'
                         icon='IconCircleArrowLeft'
                         @click='routerBack'
                     >
@@ -135,6 +106,17 @@
                     <div v-else />
 
                     <div
+                        v-if='$slots.header'
+                        class='flex-grow-1 d-flex align-items-center'
+                        style='min-width: 0'
+                    >
+                        <slot
+                            name='header'
+                            :is-modal='false'
+                        />
+                    </div>
+                    <div
+                        v-else
                         class='strong user-select-none text-break px-2'
                         v-text='name'
                     />
@@ -220,10 +202,6 @@ const props = defineProps({
     scroll: {
         type: Boolean,
         default: true,
-    },
-    bare: {
-        type: Boolean,
-        default: false,
     }
 });
 
