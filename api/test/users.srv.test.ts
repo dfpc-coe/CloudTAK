@@ -88,6 +88,7 @@ test('PATCH: api/user/admin@example.com', async () => {
             display_coordinate: 'dd',
             display_text: 'Medium',
             display_icon_rotation: true,
+            display_radiation_dose: 'sieverts',
             system_admin: true,
             agency_admin: [],
         });
@@ -134,6 +135,7 @@ test('GET: api/user/admin@example.com', async () => {
             display_coordinate: 'dd',
             display_text: 'Medium',
             display_icon_rotation: true,
+            display_radiation_dose: 'sieverts',
             system_admin: true,
             agency_admin: [],
         });

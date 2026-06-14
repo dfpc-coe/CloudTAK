@@ -58,6 +58,10 @@ test('GET api/config/display', async () => {
                 value: true,
                 options: [true, false],
             },
+            radiation_dose: {
+                value: 'sieverts',
+                options: ['sieverts', 'rems'],
+            },
         });
     } catch (err) {
         assert.ifError(err);
@@ -77,6 +81,7 @@ test('PUT api/config', async () => {
                 'display::elevation': 'meter',
                 'display::style': 'Light',
                 'display::icon_rotation': false,
+                'display::radiation_dose': 'rems',
             },
         }, false);
 
@@ -86,6 +91,7 @@ test('PUT api/config', async () => {
             'display::elevation': 'meter',
             'display::style': 'Light',
             'display::icon_rotation': false,
+            'display::radiation_dose': 'rems',
         });
     } catch (err) {
         assert.ifError(err);
@@ -185,6 +191,7 @@ test('GET api/profile', async () => {
             display_coordinate: 'dd',
             display_text: 'Medium',
             display_icon_rotation: true,
+            display_radiation_dose: 'rems',
             system_admin: false,
             agency_admin: [],
         });
