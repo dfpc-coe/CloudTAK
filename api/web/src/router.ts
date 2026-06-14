@@ -19,8 +19,11 @@ const router = VueRouter.createRouter({
                 component: () => import('./components/CloudTAK/CoTView.vue'),
             },{
                 path: 'menu',
-                name: 'home-menu',
                 children: [{
+                    path: '',
+                    name: 'home-menu',
+                    component: () => import('./components/CloudTAK/MainMenuContents.vue')
+                },{
                     path: 'settings',
                     name: 'home-menu-settings',
                     component: MenuSettings
