@@ -47,6 +47,9 @@ test('GET: api/profile', async () => {
             display_icon_rotation: true,
             display_text: 'Medium',
             display_radiation_dose: 'sieverts',
+            geometry_point_type: 'u-d-p',
+            geometry_point_color: '#ff0000',
+            geometry_point_icon: '',
             system_admin: true,
             agency_admin: [],
         });
@@ -97,6 +100,9 @@ test('PATCH: api/profile', async () => {
             display_text: 'Medium',
             display_icon_rotation: true,
             display_radiation_dose: 'sieverts',
+            geometry_point_type: 'u-d-p',
+            geometry_point_color: '#ff0000',
+            geometry_point_icon: '',
             system_admin: true,
             agency_admin: [],
         });
@@ -174,6 +180,9 @@ test('GET: api/profile - New User / New Defaults', async () => {
             display_text: 'Large',
             display_icon_rotation: false,
             display_radiation_dose: 'rems',
+            geometry_point_type: 'u-d-p',
+            geometry_point_color: '#ff0000',
+            geometry_point_icon: '',
             system_admin: false,
             agency_admin: [],
         });
