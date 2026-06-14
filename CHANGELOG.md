@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.16.1 - 2026-06-14
+
+- :rocket: Hide cursor coordinates on mobile
+
 ### v13.16.0 - 2026-06-14
 
 - :rocket: Redesign Menu System so that MenuTemplate owns the entire styling system including Modal creation. This leads to more compact menus when on mobile
