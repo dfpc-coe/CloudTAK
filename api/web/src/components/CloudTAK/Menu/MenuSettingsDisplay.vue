@@ -234,7 +234,7 @@ onMounted(async () => {
 
     // Snapshot initial values so the watcher doesn't fire on first load
     for (const item of settings) {
-        previousValues[item.key] = (profile.value as any)[item.key];
+        previousValues[item.key] = (profile.value as DisplayProfile)[item.key as keyof DisplayProfile];
     }
 
     loading.value = false;
@@ -250,7 +250,7 @@ watch(
 
         // Determine which key changed by comparing against the snapshot taken after last save
         for (const item of settings) {
-            const current = (newProfile as any)[item.key];
+            const current = (newProfile as DisplayProfile)[item.key as keyof DisplayProfile];
             if (current !== previousValues[item.key]) {
                 savedKey.value = item.key;
                 break;
@@ -260,7 +260,7 @@ watch(
         // Snapshot current values before the async save
         previousValues = {};
         for (const item of settings) {
-            previousValues[item.key] = (newProfile as any)[item.key];
+            previousValues[item.key] = (newProfile as DisplayProfile)[item.key as keyof DisplayProfile];
         }
 
         await mapStore.worker.profile.update(toRaw(newProfile) as DisplayProfileUpdate);

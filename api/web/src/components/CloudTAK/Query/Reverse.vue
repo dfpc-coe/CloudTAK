@@ -72,6 +72,7 @@ onMounted(async () => {
         const { data, error: reqError } = await server.GET('/api/search/reverse/{:longitude}/{:latitude}/reverse', {
             params: {
                 path: { ':longitude': props.longitude, ':latitude': props.latitude },
+                query: {},
             },
         });
 
