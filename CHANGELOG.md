@@ -16,6 +16,13 @@
 
 ### Pending Release
 
+### v13.15.0 - 2026-06-13
+
+- :rocket: Add altitude accuracy, speed, bearing to Background Location API
+- :rocket: Seperate out reverse APIs to allow responses to return as they finish on the server instead of a single response type holding up then entire payload
+- :rocket: Add support for Rad Dose selection in the UI
+- :rocket: Redesign Callsign & Device Preferences and Display Preferences menus to use StandardItem and support auto-save
+
 ### v13.14.1 - 2026-06-13
 
 - :bug: Fix consistent version updates - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1479
