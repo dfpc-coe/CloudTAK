@@ -68,6 +68,7 @@
                 :create='false'
             />
             <slot v-else />
+            <div class='menu-scroll-spacer flex-shrink-0' />
         </div>
     </div>
 </template>
@@ -146,3 +147,19 @@ const backType = computed(() => {
     }
 });
 </script>
+
+<style scoped>
+/*
+ * Ensure the final menu item is never flush against the bottom of the
+ * display. env(safe-area-inset-bottom) accounts for device hardware that
+ * intrudes on the viewport (notches, home indicators, curved screen edges)
+ * while the additional buffer keeps the last item comfortably reachable.
+ *
+ * Note: padding-bottom on overflow-y:auto flex containers is ignored by many
+ * browsers, so a spacer element is used instead to guarantee scroll clearance.
+ */
+.menu-scroll-spacer {
+    height: calc(env(safe-area-inset-bottom, 0px) + 32px);
+}
+</style>
+
