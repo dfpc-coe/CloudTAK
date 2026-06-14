@@ -23,7 +23,7 @@
                 <div class='px-2 pb-2'>
                     <div
                         class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
-                        @click.stop='modal = ModalInputType.POINT'
+                        @click='modal = ModalInputType.POINT'
                     >
                         <IconCursorText
                             :size='25'
@@ -33,7 +33,7 @@
                     </div>
                     <div
                         class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
-                        @click.stop='modal = ModalInputType.RANGE'
+                        @click='modal = ModalInputType.RANGE'
                     >
                         <IconCompass
                             :size='25'
@@ -43,7 +43,7 @@
                     </div>
                     <div
                         class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
-                        @click.stop='modal = ModalInputType.RANGE_RINGS'
+                        @click='modal = ModalInputType.RANGE_RINGS'
                     >
                         <IconTarget
                             :size='25'
@@ -53,7 +53,7 @@
                     </div>
                     <div
                         class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
-                        @click.stop='mapStore.draw.start(DrawToolMode.POINT)'
+                        @click='mapStore.draw.start(DrawToolMode.POINT)'
                     >
                         <IconPoint
                             :size='25'
@@ -63,7 +63,7 @@
                     </div>
                     <div
                         class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
-                        @click.stop='mapStore.draw.start(DrawToolMode.LINESTRING)'
+                        @click='mapStore.draw.start(DrawToolMode.LINESTRING)'
                     >
                         <IconLine
                             :size='25'
@@ -73,7 +73,7 @@
                     </div>
                     <div
                         class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
-                        @click.stop='mapStore.draw.start(DrawToolMode.POLYGON)'
+                        @click='mapStore.draw.start(DrawToolMode.POLYGON)'
                     >
                         <IconPolygon
                             :size='25'
@@ -83,7 +83,7 @@
                     </div>
                     <div
                         class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
-                        @click.stop='mapStore.draw.start(DrawToolMode.RECTANGLE)'
+                        @click='mapStore.draw.start(DrawToolMode.RECTANGLE)'
                     >
                         <IconVector
                             :size='25'
@@ -93,7 +93,7 @@
                     </div>
                     <div
                         class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
-                        @click.stop='mapStore.draw.start(DrawToolMode.CIRCLE)'
+                        @click='mapStore.draw.start(DrawToolMode.CIRCLE)'
                     >
                         <IconCircle
                             :size='25'
@@ -103,7 +103,7 @@
                     </div>
                     <div
                         class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
-                        @click.stop='mapStore.draw.start(DrawToolMode.SECTOR)'
+                        @click='mapStore.draw.start(DrawToolMode.SECTOR)'
                     >
                         <IconCone
                             :size='25'
@@ -113,7 +113,7 @@
                     </div>
                     <div
                         class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
-                        @click.stop='mapStore.draw.start(DrawToolMode.FREEHAND)'
+                        @click='mapStore.draw.start(DrawToolMode.FREEHAND)'
                     >
                         <IconLasso
                             :size='25'
@@ -123,7 +123,7 @@
                     </div>
                     <div
                         class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
-                        @click.stop='modal = ModalInputType.IMPORT'
+                        @click='modal = ModalInputType.IMPORT'
                     >
                         <IconFileImport
                             :size='25'
