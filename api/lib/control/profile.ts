@@ -4,7 +4,7 @@ import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types';
 import Config from '../config.js';
 import { Profile } from '../schema.js';
 import {
-    toEnum, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom, Profile_Style, Profile_Coordinate,
+    toEnum, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom, Profile_Style, Profile_Coordinate, Profile_Radiation_Dose,
 } from '../enums.js';
 import { ProfileResponse } from '../types.js';
 
@@ -19,6 +19,7 @@ export const ProfileConfigDefaults = {
     'display::coordinate': Profile_Coordinate.DD,
     'display::text': Profile_Text.Medium,
     'display::icon_rotation': true,
+    'display::radiation_dose': Profile_Radiation_Dose.SIEVERTS,
 
     'geometry::point::type': 'u-d-p',
     'geometry::point::color': '#ff0000',
@@ -96,6 +97,12 @@ export const DefaultUnits = Type.Object({
         }),
         options: Type.Array(Type.Boolean()),
     }),
+    radiation_dose: Type.Object({
+        value: Type.Enum(Profile_Radiation_Dose, {
+            default: ProfileConfigDefaults['display::radiation_dose'],
+        }),
+        options: Type.Array(Type.String()),
+    }),
 });
 
 export default class ProfileControl {
@@ -115,7 +122,7 @@ export default class ProfileControl {
         };
 
         for (const key of Object.keys(full_config)) {
-            (profile as any)[key.replace('::', '_')] = full_config[key as keyof typeof full_config];
+            (profile as any)[key.replace(/::/g, '_')] = full_config[key as keyof typeof full_config];
         }
 
         // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
@@ -145,6 +152,7 @@ export default class ProfileControl {
             'display::coordinate': ProfileConfigDefaults['display::coordinate'],
             'display::text': ProfileConfigDefaults['display::text'],
             'display::icon_rotation': ProfileConfigDefaults['display::icon_rotation'],
+            'display::radiation_dose': ProfileConfigDefaults['display::radiation_dose'],
         };
 
         const systemDisplayDefaults = await this.config.models.Setting.typedMany(displayDefaults);
@@ -179,6 +187,7 @@ export default class ProfileControl {
             'display::coordinate',
             'display::text',
             'display::icon_rotation',
+            'display::radiation_dose',
         ];
 
         const final: Record<string, string> = {};
@@ -229,6 +238,10 @@ export default class ProfileControl {
             icon_rotation: {
                 value: final.icon_rotation === 'false' ? false : true,
                 options: [true, false],
+            },
+            radiation_dose: {
+                value: toEnum.fromString(Type.Enum(Profile_Radiation_Dose), final.radiation_dose || Profile_Radiation_Dose.SIEVERTS),
+                options: Object.values(Profile_Radiation_Dose),
             },
         };
     }

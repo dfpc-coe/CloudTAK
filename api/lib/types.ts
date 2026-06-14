@@ -2,7 +2,7 @@ import { createSelectSchema } from 'drizzle-typebox';
 import { Type, Static } from '@sinclair/typebox';
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
-import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text } from './enums.js';
+import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text, Profile_Radiation_Dose } from './enums.js';
 import { VideoLease_SourceType } from './enums.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
@@ -244,17 +244,7 @@ export const ProfileListResponse = Type.Object({
     agency_admin: Type.Array(Type.Integer()),
 });
 
-export const ProfileResponse = Type.Object({
-    username: Type.String(),
-    created: Type.String(),
-    updated: Type.String(),
-    phone: Type.String(),
-    last_login: Type.String(),
-    active: Type.Boolean({
-        description: 'Does the user have an active CloudTAK Session',
-    }),
-    system_admin: Type.Boolean(),
-    agency_admin: Type.Array(Type.Integer()),
+export const Profile = Type.Object({
     tak_callsign: Type.String(),
     tak_remarks: Type.String(),
     tak_group: Type.Enum(TAKGroup),
@@ -286,7 +276,30 @@ export const ProfileResponse = Type.Object({
     display_distance: Type.Enum(Profile_Distance),
     display_elevation: Type.Enum(Profile_Elevation),
     display_speed: Type.Enum(Profile_Speed),
+    display_radiation_dose: Type.Enum(Profile_Radiation_Dose),
+
+    geometry_point_type: Type.Optional(Type.String()),
+    geometry_point_color: Type.Optional(Type.String()),
+    geometry_point_icon: Type.Optional(Type.String()),
 });
+
+export const ProfilePatchBody = Type.Partial(Profile);
+
+export const ProfileResponse = Type.Composite([
+    Type.Object({
+        username: Type.String(),
+        created: Type.String(),
+        updated: Type.String(),
+        phone: Type.String(),
+        last_login: Type.String(),
+        active: Type.Boolean({
+            description: 'Does the user have an active CloudTAK Session',
+        }),
+        system_admin: Type.Boolean(),
+        agency_admin: Type.Array(Type.Integer()),
+    }),
+    Profile,
+]);
 
 export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
     id: Type.Integer(),
@@ -521,6 +534,7 @@ export const FullConfig = Type.Object({
     'display::coordinate': Type.Enum(Profile_Coordinate),
     'display::text': Type.Enum(Profile_Text),
     'display::icon_rotation': Type.Boolean(),
+    'display::radiation_dose': Type.Enum(Profile_Radiation_Dose),
     'group::Yellow': Type.String(),
     'group::Cyan': Type.String(),
     'group::Green': Type.String(),

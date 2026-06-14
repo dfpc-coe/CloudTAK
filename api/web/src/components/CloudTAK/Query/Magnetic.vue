@@ -3,7 +3,16 @@
         <div class='col-12'>
             <label class='subheader mx-2'>Magnetic Declination</label>
         </div>
+        <TablerLoading
+            v-if='loading'
+            desc='Loading magnetic data...'
+        />
+        <TablerAlert
+            v-else-if='error'
+            :err='error'
+        />
         <div
+            v-else-if='magnetic'
             class='col-12 px-2 py-2 rounded'
             style='border: 1px solid var(--tblr-border-color);'
         >
@@ -38,7 +47,7 @@
                     <div
                         class='position-absolute d-flex flex-column align-items-center'
                         style='height: 100%; top: 0; transition: transform 0.3s ease;'
-                        :style='{ transform: `rotate(${props.magnetic.declination}deg)` }'
+                        :style='{ transform: `rotate(${magnetic.declination}deg)` }'
                     >
                         <div class='small font-weight-bold text-red mb-1'>
                             MN
@@ -60,10 +69,10 @@
 
                 <div class='ms-4'>
                     <div class='h2 mb-0'>
-                        {{ Math.abs(props.magnetic.declination).toFixed(1) }}° {{ props.magnetic.declination > 0 ? 'E' : 'W' }}
+                        {{ Math.abs(magnetic.declination).toFixed(1) }}° {{ magnetic.declination > 0 ? 'E' : 'W' }}
                     </div>
                     <div class='text-muted small'>
-                        Inclination: {{ props.magnetic.inclination.toFixed(1) }}°
+                        Inclination: {{ magnetic.inclination.toFixed(1) }}°
                     </div>
                 </div>
             </div>
@@ -72,9 +81,37 @@
 </template>
 
 <script setup lang='ts'>
-import type { SearchReverse } from '../../../types.ts';
+import { ref, onMounted } from 'vue';
+import type { SearchReverseMagnetic } from '../../../types.ts';
+import { server } from '../../../std.ts';
+import {
+    TablerLoading,
+    TablerAlert
+} from '@tak-ps/vue-tabler';
 
 const props = defineProps<{
-    magnetic: SearchReverse["magnetic"]
+    longitude: number;
+    latitude: number;
 }>();
+
+const loading = ref(true);
+const error = ref<Error | undefined>();
+const magnetic = ref<SearchReverseMagnetic['magnetic'] | null>(null);
+
+onMounted(async () => {
+    try {
+        const { data, error: reqError } = await server.GET('/api/search/reverse/{:longitude}/{:latitude}/magnetic', {
+            params: {
+                path: { ':longitude': props.longitude, ':latitude': props.latitude },
+            },
+        });
+
+        if (reqError) throw new Error(String(reqError));
+        magnetic.value = data.magnetic;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        loading.value = false;
+    }
+});
 </script>
