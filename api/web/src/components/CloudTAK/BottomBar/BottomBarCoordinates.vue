@@ -10,7 +10,8 @@
         >
             <template #default>
                 <div
-                    class='px-2 py-2 d-flex flex-column justify-content-center cursor-pointer cloudtak-hover h-100 pe-5'
+                    class='px-2 py-2 d-flex flex-column justify-content-center h-100'
+                    :class='isNative ? "" : "cursor-pointer cloudtak-hover pe-5"'
                 >
                     <span
                         class='d-block text-uppercase text-white-50'
@@ -25,6 +26,7 @@
 
             <template #dropdown>
                 <li
+                    v-if='!isNative'
                     class='px-3 py-2'
                     @click.stop
                 >
@@ -103,6 +105,7 @@ import {
 } from '@tabler/icons-vue';
 import { formatCoordPair, COORD_MODES, type CoordMode } from '../../../base/utils/coordinateFormat.ts';
 import { useMapStore } from '../../../stores/map.ts';
+import { isNativePlatform } from '../../../base/capacitor.ts';
 import CopyButton from '../util/CopyButton.vue';
 
 const props = defineProps<{
@@ -111,7 +114,9 @@ const props = defineProps<{
 
 const mapStore = useMapStore();
 
-const coordSource = ref<string>('cursor');
+const isNative = isNativePlatform();
+
+const coordSource = ref<string>(isNative ? 'gps' : 'cursor');
 
 const sourceOptions = [
     { value: 'cursor', label: 'Cursor' },
@@ -136,7 +141,7 @@ async function setCoordFormat(mode: CoordMode): Promise<void> {
 const formattedCoord = computed(() => {
     const c = displayCoord.value;
 
-    if (!c) return coordSource.value === 'cursor' ? 'Cursor Offscreen' : '';
+    if (!c) return coordSource.value === 'cursor' ? 'Cursor Offscreen' : 'No GPS Fix';
 
     return formatCoordPair(
         c.lat,
