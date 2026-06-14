@@ -16,6 +16,12 @@
 
 ### Pending Release
 
+### v13.16.0 - 2026-06-14
+
+- :rocket: Redesign Menu System so that MenuTemplate owns the entire styling system including Modal creation. This leads to more compact menus when on mobile
+- :bug: Ensure scroll within menu can see all components - Ref: https://github.com/dfpc-coe/CloudTAK/issues/1491
+- :bug: Move Coordinate Copy into dropdown on mobile to ensure it can be clicked if on a phone with aggresive corner cutouts
+
 ### v13.15.0 - 2026-06-13
 
 - :rocket: Add altitude accuracy, speed, bearing to Background Location API
