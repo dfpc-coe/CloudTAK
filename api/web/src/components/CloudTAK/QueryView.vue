@@ -1,38 +1,26 @@
 <template>
-    <div
-        class='sticky-top col-12 border-bottom border-light cloudtak-bg'
-        style='border-radius: 0px;'
-    >
-        <div class='modal-header px-0 mx-2 d-flex align-items-center'>
-            <div class='modal-title'>
-                Query Mode
-            </div>
-            <div class='ms-auto btn-list'>
-                <TablerIconButton
-                    title='Create Route'
-                    @click='openRoute'
-                >
-                    <IconRoute
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-                <TablerIconButton
-                    title='Refresh'
-                    @click='refreshKey++'
-                >
-                    <IconRefresh
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-            </div>
-        </div>
-    </div>
-    <div
-        class='col-12 overflow-auto'
-        style='height: calc(100% - 106px)'
-    >
+    <MenuTemplate name='Query Mode'>
+        <template #buttons>
+            <TablerIconButton
+                title='Create Route'
+                @click='openRoute'
+            >
+                <IconRoute
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+            <TablerIconButton
+                title='Refresh'
+                @click='refreshKey++'
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+        </template>
+
         <Coordinate
             v-if='coords'
             :model-value='coords'
@@ -75,7 +63,7 @@
                 class='py-2'
             />
         </template>
-    </div>
+    </MenuTemplate>
 </template>
 
 <script setup lang='ts'>
@@ -94,6 +82,7 @@ import {
     TablerIconButton
 } from '@tak-ps/vue-tabler';
 import Coordinate from './util/Coordinate.vue';
+import MenuTemplate from './util/MenuTemplate.vue';
 
 const route = useRoute();
 const router = useRouter();

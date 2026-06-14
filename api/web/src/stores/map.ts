@@ -230,6 +230,10 @@ export const useMapStore = defineStore('cloudtak', {
                 if (this.manualLocationMode) return;
 
                 this.locationAccuracy = position.coords.accuracy;
+                this.gpsCoordinates = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
 
                 this.channel.postMessage({
                     type: WorkerMessageType.Profile_Location_Coordinates,
