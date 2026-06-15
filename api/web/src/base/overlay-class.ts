@@ -13,6 +13,7 @@ import { std, stdurl } from '../std.js';
 import { useMapStore } from '../stores/map.js';
 import ProfileConfig from './profile.ts';
 import Subscription from './subscription.ts';
+import FeatureVisibility from './feature-visibility.ts';
 
 /**
  * @class
@@ -254,6 +255,10 @@ export default class Overlay {
             }
             mapStore.map.setLayoutProperty(l.id, 'visibility', this.visible ? 'visible' : 'none');
         }
+
+        // addLayer registers layers with their pristine base filter, so
+        // re-apply any active feature/folder visibility filters for this source.
+        FeatureVisibility.applyToOverlay(this);
 
         // Update attribution if this is a basemap
         if (this.mode === 'basemap') {
