@@ -241,8 +241,9 @@
 
 <script setup lang='ts'>
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
-import { Preferences } from '@capacitor/preferences';
 import COT from '../../../base/cot.ts';
+import FeatureManager from '../../../base/feature.ts';
+import type { Feature_ExportFormat } from '../../../base/feature.ts';
 import PathManager from '../../../base/path-manager.ts';
 import type { PathNode } from '../../../base/path-manager.ts';
 import { useRouter } from 'vue-router';
@@ -263,7 +264,6 @@ import {
     TablerModal,
     TablerButton
 } from '@tak-ps/vue-tabler';
-import { std } from '../../../std.ts';
 import type { WorkerMessage } from '../../../base/events.ts';
 import { WorkerMessageType } from '../../../base/events.ts';
 import {
@@ -655,11 +655,8 @@ async function refresh(load = false): Promise<void> {
     })
 }
 
-async function download(format: string): Promise<void> {
-    const { value: token } = await Preferences.get({ key: 'token' });
-    await std(`/api/profile/feature?format=${format}&download=true${token ? `&token=${encodeURIComponent(token)}` : ''}`, {
-        download: true
-    });
+async function download(format: Feature_ExportFormat): Promise<void> {
+    await FeatureManager.download({ format });
 }
 
 async function navigateToFolder(node: PathNode<COT>): Promise<void> {
@@ -700,9 +697,7 @@ async function deleteFeatures(): Promise<void> {
             skipNetwork: true
         });
 
-        await std('/api/profile/feature', {
-            method: 'DELETE'
-        });
+        await FeatureManager.delete();
 
         loading.value = false;
     } catch (err) {
