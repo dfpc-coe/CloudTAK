@@ -83,7 +83,10 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { liveQuery } from 'dexie';
+import { useObservable } from '@vueuse/rxjs';
+import { from } from 'rxjs';
 import {
     IconFolderPlus,
 } from '@tabler/icons-vue';
@@ -94,6 +97,7 @@ import {
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import type {
+    Feature,
     MissionLayer
 } from '../../../../types.ts';
 import Subscription from '../../../../base/subscription.ts';
@@ -109,10 +113,65 @@ const props = withDefaults(defineProps<{
 })
 
 const createLayer = ref(false)
-const loading = ref(true);
-const feats = ref(new Map());
-const orphaned = ref<Set<string>>(new Set());
-const layers = ref<Array<MissionLayer>>([]);
+const refreshing = ref(false);
+
+const featList = useObservable<Array<Feature> | undefined>(
+    from(liveQuery(async () => {
+        return await props.subscription.feature.list();
+    }))
+);
+
+const layerObs = useObservable<Array<MissionLayer> | undefined>(
+    from(liveQuery(async () => {
+        return await props.subscription.layer.list();
+    }))
+);
+
+const loading = computed<boolean>(() => {
+    return refreshing.value
+        || featList.value === undefined
+        || layerObs.value === undefined;
+});
+
+const layers = computed<Array<MissionLayer>>(() => {
+    return layerObs.value || [];
+});
+
+const feats = computed<Map<string, Feature>>(() => {
+    const map = new Map<string, Feature>();
+    for (const feat of featList.value || []) {
+        map.set(String(feat.id), feat);
+    }
+    return map;
+});
+
+const orphaned = computed<Set<string>>(() => {
+    const assigned = new Set<string>();
+
+    const collect = (mlayers: MissionLayer[]): void => {
+        for (const layer of mlayers) {
+            if (layer.type === 'UID' && layer.uids && layer.uids.length) {
+                for (const cot of layer.uids) {
+                    assigned.add(cot.data);
+                }
+            }
+
+            if (layer.mission_layers) {
+                // @ts-expect-error Due to recursive type limits this is unknown
+                collect(layer.mission_layers);
+            }
+        }
+    };
+
+    collect(layers.value);
+
+    const result = new Set<string>();
+    for (const id of feats.value.keys()) {
+        if (!assigned.has(id)) result.add(id);
+    }
+
+    return result;
+});
 
 onMounted(async () => {
     await refresh();
@@ -120,41 +179,14 @@ onMounted(async () => {
 
 async function refresh() {
     createLayer.value = false;
-    loading.value = true;
-    await fetchFeats();
-    await fetchLayers();
-    loading.value = false;
-}
-
-async function fetchFeats() {
-    const features = await props.subscription.feature.list();
-
-    for (const feat of features) {
-        feats.value.set(feat.id, feat);
-        orphaned.value.add(String(feat.id));
-    }
-}
-
-function removeFeatures(mlayers: MissionLayer[]): void {
-    for (const layer of mlayers) {
-        if (layer.type === 'UID' && layer.uids && layer.uids.length) {
-            for (const cot of layer.uids) {
-                orphaned.value.delete(cot.data);
-            }
-        }
-
-        if (layer.mission_layers) {
-            // @ts-expect-error Due to recursive type limits this is unknown
-            removeFeatures(layer.mission_layers);
-        }
-    }
-}
-
-async function fetchLayers(): Promise<void> {
-    layers.value = (await props.subscription.layerList()).data;
-
-    if (layers.value) {
-        removeFeatures(layers.value);
+    refreshing.value = true;
+    try {
+        await Promise.all([
+            props.subscription.feature.refresh(),
+            props.subscription.layer.refresh(),
+        ]);
+    } finally {
+        refreshing.value = false;
     }
 }
 </script>

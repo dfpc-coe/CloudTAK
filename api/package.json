@@ -45,7 +45,7 @@
         "@iwpnd/tile38-ts": "^2.4.5",
         "@mapbox/tilebelt": "^2.0.0",
         "@maplibre/geojson-vt": "^6.0.0",
-        "@maplibre/maplibre-gl-style-spec": "^24.0.0",
+        "@maplibre/maplibre-gl-style-spec": "^25.0.0",
         "@openaddresses/batch-error": "^2.13.1",
         "@openaddresses/batch-generic": "^24.14.0",
         "@openaddresses/batch-schema": "^10.21.0",
