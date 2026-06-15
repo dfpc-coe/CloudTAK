@@ -33,7 +33,10 @@
                         </Transition>
                         <div class='d-flex flex-column gap-2 px-3 py-3'>
                             <div class='d-flex align-items-center gap-3'>
-                                <div class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 flex-shrink-0' style='width: 40px; height: 40px;'>
+                                <div
+                                    class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 flex-shrink-0'
+                                    style='width: 40px; height: 40px;'
+                                >
                                     <component
                                         :is='item.icon'
                                         :size='24'
@@ -65,8 +68,6 @@
                         No settings match "{{ search }}"
                     </div>
                 </div>
-
-
             </div>
         </template>
     </MenuTemplate>

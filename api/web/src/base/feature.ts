@@ -12,7 +12,7 @@
 import { liveQuery, type Observable } from 'dexie';
 import { db, type DBFeature } from '../database.ts';
 import type { paths } from '@cloudtak/api-types';
-import { server, downloadBlob } from '../std.ts';
+import { server, downloadUrl } from '../std.ts';
 import BaseInterface from './interface.ts';
 import type {
     BaseInterface_ListOptions,
@@ -99,20 +99,10 @@ export default class FeatureManager extends BaseInterface {
     static async download(opts: Feature_DownloadOptions = {}): Promise<void> {
         const format = opts.format ?? 'geojson';
 
-        const res = await server.GET('/api/profile/feature', {
-            params: {
-                query: {
-                    format,
-                    download: true
-                }
-            },
-            parseAs: 'blob'
+        await downloadUrl(`/api/profile/feature?format=${encodeURIComponent(format)}&download=true`, {
+            token: true,
+            filename: `download.${format}`
         });
-
-        if (res.error) throw new Error(res.error.message);
-        if (!res.data) throw new Error('Failed to export features');
-
-        downloadBlob(res.data as Blob, res.response, `download.${format}`);
     }
 
     /**
