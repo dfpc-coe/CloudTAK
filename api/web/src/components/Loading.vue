@@ -81,6 +81,7 @@ async function hardReset(): Promise<void> {
             await registration.unregister();
         }
     }
+
     location.reload();
 }
 

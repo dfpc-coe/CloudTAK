@@ -81,7 +81,30 @@
                                 </template>
                                 <template v-else>
                                     <div class='mb-3'>
+                                        <template v-if='storedUsername'>
+                                            <label class='form-label'>
+                                                {{ brandStore.login?.username || "Username or Email" }}
+                                            </label>
+                                            <div class='d-flex align-items-center justify-content-between border rounded px-3 py-2'>
+                                                <div class='d-flex align-items-center text-truncate'>
+                                                    <IconUser
+                                                        :size='20'
+                                                        stroke='1.5'
+                                                        class='me-2 text-muted flex-shrink-0'
+                                                    />
+                                                    <span class='text-truncate'>{{ storedUsername }}</span>
+                                                </div>
+                                                <button
+                                                    type='button'
+                                                    class='btn btn-sm btn-link text-decoration-none flex-shrink-0 ms-2'
+                                                    @click='notMe'
+                                                >
+                                                    Not Me
+                                                </button>
+                                            </div>
+                                        </template>
                                         <TablerInput
+                                            v-else
                                             v-model='body.username'
                                             icon='user'
                                             :label='brandStore.login?.username || "Username or Email"'
@@ -336,17 +359,17 @@
 import type { Login_Create, ConfigLogin } from '../types.ts'
 import { ref, computed, onMounted, reactive, watch } from 'vue';
 import { version } from '../../package.json';
-import { IconSettings, IconTrash, IconLock, IconFingerprint } from '@tabler/icons-vue';
+import { IconSettings, IconTrash, IconLock, IconFingerprint, IconUser } from '@tabler/icons-vue';
 import { Preferences } from '@capacitor/preferences';
 import { startAuthentication } from '@simplewebauthn/browser';
 import type { PublicKeyCredentialRequestOptionsJSON, AuthenticationResponseJSON } from '@simplewebauthn/browser';
 import Config from '../base/config.ts';
 import type { FullConfig } from '../base/config.ts';
-import KV from '../base/kv.ts';
 import { isNativePlatform, supportsServiceWorker } from '../base/capacitor.ts';
 import { getCurrentEntryBuildId } from '../base/service-worker.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { server } from '../std.ts';
+import Session from '../session.ts';
 import {
     TablerBadge,
     TablerLoading,
@@ -468,6 +491,7 @@ watch(showSettings, (val) => {
 });
 
 const loading = ref(false);
+const storedUsername = ref<string | null>(null);
 const body = ref<Login_Create>({
     username: '',
     password: ''
@@ -528,12 +552,46 @@ onMounted(async () => {
         startConditionalPasskey();
     }
 
-    const deleteDB = indexedDB.deleteDatabase('CloudTAK');
-
-    deleteDB.onerror = (event) => {
-        console.error('Failed to delete existing database', event);
-    };
+    // Detect an existing (un-cleared) session left behind by a previous login.
+    // The database is intentionally NOT deleted here - it is only cleared on an
+    // explicit sign-out or when a different user logs in. This avoids a costly
+    // resync when a token simply expires.
+    try {
+        const existing = await Session.username();
+        if (existing) {
+            storedUsername.value = existing;
+            body.value.username = existing;
+        }
+    } catch (err) {
+        console.error('Failed to read existing session', err);
+    }
 });
+
+// Clear the stored session and wipe the local database. Triggered by the
+// "Not Me" button when the user wants to log in as a different account.
+async function notMe(): Promise<void> {
+    try {
+        await Session.destroy();
+    } catch (err) {
+        console.error('Failed to clear existing session', err);
+    }
+
+    storedUsername.value = null;
+    body.value.username = '';
+    body.value.password = '';
+}
+
+// Persist a successful login. If the authenticated user differs from the one
+// whose data is already cached locally, wipe the database first so the new
+// user does not inherit the previous user's data.
+async function applySession(login: { token: string; email: string }): Promise<void> {
+    if (storedUsername.value && storedUsername.value !== login.email) {
+        await Session.destroy();
+    }
+
+    await Session.login({ token: login.token, username: login.email });
+    storedUsername.value = login.email;
+}
 
 async function createLogin() {
     loading.value = true;
@@ -548,8 +606,7 @@ async function createLogin() {
         if (res.error) throw new Error(res.error.message);
         const login = res.data;
 
-        await Preferences.set({ key: 'token', value: login.token });
-        await persistNativeSession(login.token);
+        await applySession({ token: login.token, email: login.email });
 
         navigateAfterLogin();
     } catch (err) {
@@ -623,8 +680,7 @@ async function completePasskeyLogin(credential: AuthenticationResponseJSON) {
         if (res.error) throw new Error(res.error.message);
         const login = res.data;
 
-        await Preferences.set({ key: 'token', value: login.token });
-        await persistNativeSession(login.token);
+        await applySession({ token: login.token, email: login.email });
 
         if (login.certRenewalRequired) {
             certRenewal.required = true;
@@ -639,12 +695,6 @@ async function completePasskeyLogin(credential: AuthenticationResponseJSON) {
         loading.value = false;
         throw err;
     }
-}
-
-async function persistNativeSession(token: string): Promise<void> {
-    if (!isNativePlatform()) return;
-
-    await KV.generate('token', token);
 }
 
 function navigateAfterLogin() {
@@ -690,8 +740,7 @@ async function renewCertificate() {
         if (res.error) throw new Error(res.error.message);
         const login = res.data;
 
-        await Preferences.set({ key: 'token', value: login.token });
-        await persistNativeSession(login.token);
+        await applySession({ token: login.token, email: login.email });
         certRenewal.required = false;
         certRenewal.password = '';
 
