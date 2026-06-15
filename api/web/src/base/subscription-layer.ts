@@ -121,6 +121,7 @@ export default class SubscriptionLayer {
         await this.refresh();
 
         return data as unknown as MissionLayer;
+    }
 
     /**
      * Update an existing mission layer, then refresh the local store.
@@ -142,6 +143,7 @@ export default class SubscriptionLayer {
         await this.refresh();
 
         return data as unknown as MissionLayer;
+    }
 
     /**
      * Delete a mission layer, then refresh the local store.
@@ -159,4 +161,5 @@ export default class SubscriptionLayer {
         if (error) throw new Error('Failed to delete mission layer');
 
         await this.refresh();
+    }
 }
