@@ -545,17 +545,27 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             const { value: token } = await Preferences.get({ key: 'token' });
-            const sub = await Subscription.load(guid, {
-                token: token || '',
-                reload: opts?.reload || false,
-                subscribed: true,
-                missiontoken: overlay.token || undefined
-            });
+
+            let sub: Subscription | null = null;
+            if (!opts?.reload) {
+                sub = (await Subscription.from(guid, token || '')) || null;
+            }
+
+            if (!sub) {
+                sub = await Subscription.load(guid, {
+                    token: token || '',
+                    reload: opts?.reload || false,
+                    subscribed: true,
+                    missiontoken: overlay.token || undefined
+                });
+            }
 
             // @ts-expect-error Source.setData is not defined
             oStore.setData(await sub.feature.collection(false));
 
-            await sub.update({ dirty: false });
+            if (sub.dirty) {
+                await sub.update({ dirty: false });
+            }
 
             return sub;
         },
