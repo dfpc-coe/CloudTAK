@@ -1,7 +1,6 @@
 import { Preferences } from '@capacitor/preferences';
 import KV from './base/kv.ts';
 import { db } from './database.ts';
-import { isNativePlatform } from './base/capacitor.ts';
 
 export default class Session {
     /**
