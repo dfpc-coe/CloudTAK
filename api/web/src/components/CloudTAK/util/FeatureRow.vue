@@ -97,14 +97,36 @@
                     />
                 </TablerIconButton>
             </div>
+
+            <div
+                v-if='visibilityToggle'
+                class='align-self-center me-2'
+            >
+                <TablerIconButton
+                    :title='isHidden ? "Show Feature" : "Hide Feature"'
+                    @click.stop.prevent='toggleVisibility'
+                >
+                    <IconEyeOff
+                        v-if='isHidden'
+                        :size='20'
+                        stroke='1'
+                    />
+                    <IconEye
+                        v-else
+                        :size='20'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+            </div>
         </StandardItem>
     </div>
 </template>
 
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import COT from '../../../base/cot.ts';
+import FeatureVisibility from '../../../base/feature-visibility.ts';
 import FeatureIcon from './FeatureIcon.vue';
 import Contact from './Contact.vue';
 import StandardItem from './StandardItem.vue';
@@ -116,6 +138,8 @@ import {
     IconListDetails,
     IconGripVertical,
     IconTrash,
+    IconEye,
+    IconEyeOff,
 } from '@tabler/icons-vue';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
@@ -145,6 +169,10 @@ const props = defineProps({
         type: Boolean,
         default: false
     },
+    visibilityToggle: {
+        type: Boolean,
+        default: true
+    },
     hover: {
         type: Boolean,
         default: true
@@ -161,6 +189,12 @@ const emit = defineEmits(['delete']);
 const isDeleted = ref(false);
 const isDeleting = ref(false);
 const isZoomable = ref(false);
+
+const isHidden = computed(() => FeatureVisibility.isFeatureHidden(props.feature.id));
+
+function toggleVisibility() {
+    FeatureVisibility.toggleFeature(props.feature.id);
+}
 
 onMounted(async () => {
     const cot = await mapStore.worker.db.get(props.feature.id, {

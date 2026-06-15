@@ -96,9 +96,12 @@
                         :nodes='currentFolders'
                         :renamable='writable'
                         :deletable='writable'
+                        :visibility-toggle='true'
+                        :is-node-hidden='isMissionFolderHidden'
                         @navigate='navigateToFolder'
                         @delete='deleteLayer'
                         @rename='openEdit'
+                        @toggle-visibility='toggleMissionFolderVisibility'
                     />
                     <div class='mt-2'>
                         <FeatureRow
@@ -176,9 +179,12 @@
                     :nodes='currentFolders'
                     :renamable='writable'
                     :deletable='writable'
+                    :visibility-toggle='true'
+                    :is-node-hidden='isMissionFolderHidden'
                     @navigate='navigateToFolder'
                     @delete='deleteLayer'
                     @rename='openEdit'
+                    @toggle-visibility='toggleMissionFolderVisibility'
                 />
                 <div class='mt-2'>
                     <FeatureRow
@@ -215,6 +221,7 @@ import type {
 } from '../../../../types.ts';
 import type { PathNode } from '../../../../base/path-manager.ts';
 import PathManager from '../../../../base/path-manager.ts';
+import FeatureVisibility from '../../../../base/feature-visibility.ts';
 import Subscription from '../../../../base/subscription.ts';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import PathBrowser from '../../util/PathBrowser.vue';
@@ -360,6 +367,34 @@ const currentItems = computed<Feature[]>(() => {
     const node = PathManager.findNodeById(tree.value.nodes, currentUid.value);
     return node ? Array.from(node.items) : orphanedFeats.value;
 });
+
+/**
+ * Collect every feature id contained within a mission folder node, recursing
+ * into child folders. Mission "folders" are server-defined layer groups rather
+ * than feature `path` values, so visibility is toggled by the contained ids.
+ */
+function collectNodeIds(node: PathNode<Feature>): string[] {
+    const ids: string[] = [];
+
+    for (const feat of node.items) {
+        ids.push(feat.id);
+    }
+
+    for (const child of node.children) {
+        ids.push(...collectNodeIds(child));
+    }
+
+    return ids;
+}
+
+function isMissionFolderHidden(node: PathNode<Feature>): boolean {
+    return FeatureVisibility.areFeaturesHidden(collectNodeIds(node));
+}
+
+function toggleMissionFolderVisibility(node: PathNode<Feature>): void {
+    const ids = collectNodeIds(node);
+    FeatureVisibility.setFeaturesHidden(ids, !FeatureVisibility.areFeaturesHidden(ids));
+}
 
 function navigateHome(): void {
     currentUid.value = null;

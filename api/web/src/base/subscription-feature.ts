@@ -163,7 +163,18 @@ export default class SubscriptionFeature {
                     }
                 }
 
-                if (!blocked) filtered.push(feat);
+                if (!blocked) {
+                    // Surface the folder path into properties so MapLibre
+                    // filter expressions can toggle feature/folder visibility
+                    // (top-level GeoJSON members are not queryable in filters).
+                    filtered.push({
+                        ...feat,
+                        properties: {
+                            ...feat.properties,
+                            path: feat.path || '/',
+                        }
+                    });
+                }
             }
 
             return {

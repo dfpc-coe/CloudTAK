@@ -397,6 +397,7 @@ export default class COT {
             properties: {
                 id: input.id,        //Vector Tiles only support integer IDs so store in props
                 callsign: input.properties.callsign,
+                path: input.path || '/',
             },
             geometry: input.geometry
         };
