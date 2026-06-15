@@ -128,7 +128,7 @@ export default class SubscriptionLayer {
         layerid: string,
         layer: MissionLayer_Update
     ): Promise<MissionLayer> {
-        const { data } = await server.PATCH('/api/marti/missions/{:name}/layer/{:uid}', {
+        const { data, error } = await server.PATCH('/api/marti/missions/{:name}/layer/{:uid}', {
             params: {
                 path: { ':name': this.parent.guid, ':uid': layerid }
             },
@@ -136,10 +136,11 @@ export default class SubscriptionLayer {
             body: layer
         });
 
+        if (error || !data) throw new Error('Failed to update mission layer');
+
         await this.refresh();
 
         return data as unknown as MissionLayer;
-    }
 
     /**
      * Delete a mission layer, then refresh the local store.
