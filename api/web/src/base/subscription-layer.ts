@@ -147,13 +147,14 @@ export default class SubscriptionLayer {
     async delete(
         layeruid: string
     ): Promise<void> {
-        await server.DELETE('/api/marti/missions/{:name}/layer/{:uid}', {
+        const { error } = await server.DELETE('/api/marti/missions/{:name}/layer/{:uid}', {
             params: {
                 path: { ':name': this.parent.guid, ':uid': layeruid }
             },
             headers: this.headers()
         });
 
+        if (error) throw new Error('Failed to delete mission layer');
+
         await this.refresh();
-    }
 }
