@@ -36,6 +36,7 @@
                             {{ node.count }}
                         </TablerBadge>
                         <TablerIconButton
+                            v-if='renamable'
                             title='Rename Folder'
                             @click.stop='emit("rename", node)'
                         >
@@ -45,6 +46,7 @@
                             />
                         </TablerIconButton>
                         <TablerDelete
+                            v-if='deletable'
                             displaytype='icon'
                             :size='20'
                             @delete='emit("delete", node)'
@@ -76,9 +78,14 @@ import {
     IconPencil,
 } from '@tabler/icons-vue';
 
-defineProps<{
+withDefaults(defineProps<{
     nodes: PathNode[];
-}>();
+    renamable?: boolean;
+    deletable?: boolean;
+}>(), {
+    renamable: true,
+    deletable: true
+});
 
 const hoverNodeId = ref<string | undefined>();
 
