@@ -108,7 +108,7 @@ export default class SubscriptionLayer {
     async create(
         layer: MissionLayer_Create
     ): Promise<MissionLayer> {
-        const { data } = await server.POST('/api/marti/missions/{:name}/layer', {
+        const { data, error } = await server.POST('/api/marti/missions/{:name}/layer', {
             params: {
                 path: { ':name': this.parent.guid }
             },
@@ -116,10 +116,11 @@ export default class SubscriptionLayer {
             body: layer
         });
 
+        if (error || !data) throw new Error('Failed to create mission layer');
+
         await this.refresh();
 
         return data as unknown as MissionLayer;
-    }
 
     /**
      * Update an existing mission layer, then refresh the local store.
@@ -128,7 +129,7 @@ export default class SubscriptionLayer {
         layerid: string,
         layer: MissionLayer_Update
     ): Promise<MissionLayer> {
-        const { data } = await server.PATCH('/api/marti/missions/{:name}/layer/{:uid}', {
+        const { data, error } = await server.PATCH('/api/marti/missions/{:name}/layer/{:uid}', {
             params: {
                 path: { ':name': this.parent.guid, ':uid': layerid }
             },
@@ -136,10 +137,11 @@ export default class SubscriptionLayer {
             body: layer
         });
 
+        if (error || !data) throw new Error('Failed to update mission layer');
+
         await this.refresh();
 
         return data as unknown as MissionLayer;
-    }
 
     /**
      * Delete a mission layer, then refresh the local store.
@@ -147,13 +149,14 @@ export default class SubscriptionLayer {
     async delete(
         layeruid: string
     ): Promise<void> {
-        await server.DELETE('/api/marti/missions/{:name}/layer/{:uid}', {
+        const { error } = await server.DELETE('/api/marti/missions/{:name}/layer/{:uid}', {
             params: {
                 path: { ':name': this.parent.guid, ':uid': layeruid }
             },
             headers: this.headers()
         });
 
+        if (error) throw new Error('Failed to delete mission layer');
+
         await this.refresh();
-    }
 }
