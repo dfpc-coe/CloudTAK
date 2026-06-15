@@ -108,7 +108,7 @@ export default class SubscriptionLayer {
     async create(
         layer: MissionLayer_Create
     ): Promise<MissionLayer> {
-        const { data } = await server.POST('/api/marti/missions/{:name}/layer', {
+        const { data, error } = await server.POST('/api/marti/missions/{:name}/layer', {
             params: {
                 path: { ':name': this.parent.guid }
             },
@@ -116,10 +116,11 @@ export default class SubscriptionLayer {
             body: layer
         });
 
+        if (error || !data) throw new Error('Failed to create mission layer');
+
         await this.refresh();
 
         return data as unknown as MissionLayer;
-    }
 
     /**
      * Update an existing mission layer, then refresh the local store.
