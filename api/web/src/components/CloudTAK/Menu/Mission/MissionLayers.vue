@@ -76,7 +76,7 @@
                         <span
                             class='fw-semibold cursor-pointer'
                             @click='navigateToCrumb(idx)'
-                        >{{ crumb.name }}</span>
+                        >{{ tree.layerMap.get(crumb.uid)?.name ?? '(deleted)' }}</span>
                     </template>
                     <span
                         v-if='!pathStack.length'
@@ -156,7 +156,7 @@
                     <span
                         class='fw-semibold cursor-pointer'
                         @click='navigateToCrumb(idx)'
-                    >{{ crumb.name }}</span>
+                    >{{ tree.layerMap.get(crumb.uid)?.name ?? '(deleted)' }}</span>
                 </template>
                 <span
                     v-if='!pathStack.length'
