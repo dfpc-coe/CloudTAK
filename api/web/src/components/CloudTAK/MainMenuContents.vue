@@ -265,7 +265,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, onUnmounted, computed, watch, onBeforeUnmount } from 'vue';
-import { Preferences } from '@capacitor/preferences';
+import Session from '../../session.ts';
 import {
     IconUser,
     IconLogout,
@@ -436,7 +436,7 @@ function handleSelect(item: MenuItemConfig) {
 }
 
 async function logout() {
-    await Preferences.remove({ key: 'token' });
+    await Session.destroy();
     router.push("/login");
 }
 

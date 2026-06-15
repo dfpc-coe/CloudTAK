@@ -175,7 +175,7 @@ import {
 } from '@tabler/icons-vue';
 import { Preferences } from '@capacitor/preferences';
 import { StatusBar } from '@capacitor/status-bar';
-import KV from './base/kv.ts';
+import Session from './session.ts';
 import Loading from './components/Loading.vue';
 import {
     TablerBadge,
@@ -319,11 +319,7 @@ async function initializeApp(): Promise<void> {
     loadingStage.value = 'Connecting to server…';
 
     if (!isNativePlatform()) {
-        await KV.generate('serverUrl', window.location.origin);
-        await Preferences.set({
-            key: 'serverUrl',
-            value: window.location.origin
-        });
+        await Session.serverUrl(window.location.origin);
     } else {
         const { value } = await Preferences.get({ key: 'serverUrl' });
         const serverUrl = value?.trim();
@@ -332,7 +328,7 @@ async function initializeApp(): Promise<void> {
             window.location.href = '/setup.html';
             return;
         } else {
-            await KV.generate('serverUrl', serverUrl);
+            await Session.serverUrl(serverUrl);
         }
     }
 
@@ -375,7 +371,7 @@ async function initializeApp(): Promise<void> {
     }
 
     if (status === 'unconfigured') {
-        await Preferences.remove({ key: 'token' });
+        await Session.clear();
         await router.push("/configure");
         return;
     }
@@ -473,7 +469,10 @@ onUnmounted(() => {
 async function logout() {
     user.value = false;
     mapStore.tokenExpiry = null;
-    await Preferences.remove({ key: 'token' });
+
+    // Explicit sign-out: clear the token AND wipe the local database so the
+    // next user starts from a clean state.
+    await Session.destroy();
 
     window.location.href = '/login';
 }
@@ -510,7 +509,11 @@ async function refreshLogin() {
         console.error(err);
         mapStore.tokenExpiry = null;
 
-        logout();
+        // The token is missing/expired/invalid. Do NOT wipe the local database -
+        // only clear the token and send the user back to the login screen so
+        // their cached data is preserved for a quick re-login.
+        await Session.clear();
+        routeLogin();
     }
 
     loading.value = false;
