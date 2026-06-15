@@ -114,7 +114,7 @@ export default class BaseInterface {
      *
      * @param id - The unique identifier of the item to delete
      */
-    static async delete(id: string): Promise<void> {
+    static async delete(id?: unknown): Promise<void> {
         throw new Error('Method not implemented.');
     }
 }
