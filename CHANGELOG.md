@@ -16,6 +16,11 @@
 
 ### Pending Release
 
+### v13.17.0 - 2026-06-15
+
+- :tada: First pass at unified feature API that inherits BaseInterface
+- :rocket: Rewrite to session handling to avoid nuking the database unless the user explicitly logs out.
+
 ### v13.16.1 - 2026-06-14
 
 - :rocket: Hide cursor coordinates on mobile
