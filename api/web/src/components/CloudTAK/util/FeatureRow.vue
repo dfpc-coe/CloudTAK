@@ -68,7 +68,23 @@
                 </div>
             </div>
 
-            <div class='align-self-center me-2 btn-list cloudtak-hover-hidden'>
+            <div class='align-self-center me-2 btn-list'>
+                <TablerIconButton
+                    v-if='visibilityToggle'
+                    :title='isHidden ? "Show Feature" : "Hide Feature"'
+                    @click.stop.prevent='toggleVisibility'
+                >
+                    <IconEyeOff
+                        v-if='isHidden'
+                        :size='20'
+                        stroke='1'
+                    />
+                    <IconEye
+                        v-else
+                        :size='20'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <TablerIconButton
                     v-if='infoButton'
                     title='View Info'
@@ -92,27 +108,6 @@
                     @click.stop.prevent='deleteCOT'
                 >
                     <IconTrash
-                        :size='20'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-            </div>
-
-            <div
-                v-if='visibilityToggle'
-                class='align-self-center me-2'
-            >
-                <TablerIconButton
-                    :title='isHidden ? "Show Feature" : "Hide Feature"'
-                    @click.stop.prevent='toggleVisibility'
-                >
-                    <IconEyeOff
-                        v-if='isHidden'
-                        :size='20'
-                        stroke='1'
-                    />
-                    <IconEye
-                        v-else
                         :size='20'
                         stroke='1'
                     />
