@@ -26,7 +26,7 @@ import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay-class.ts';
 import OverlayManager from '../base/overlay.ts';
-import FeatureVisibility from '../base/feature-visibility.ts';
+import { FeatureVisibility } from '../base/filter.ts';
 import Subscription from '../base/subscription.ts';
 import { stdurl, server, getRuntimeToken, serverUrl } from '../std.js';
 import * as mapgl from 'maplibre-gl'
@@ -1095,8 +1095,6 @@ export const useMapStore = defineStore('cloudtak', {
             OverlayManager.clearLoaded();
             const profileOverlays = await OverlayManager.list({ localFirst: true });
 
-            // Restore persisted feature/folder visibility before overlays add
-            // their layers so applyToOverlay can compose the correct filters.
             await FeatureVisibility.load();
 
             const hasBasemap = profileOverlays.some((o: ProfileOverlay) => {
@@ -1193,9 +1191,7 @@ export const useMapStore = defineStore('cloudtak', {
                 type: 'geojson',
             }));
 
-            // Compose any persisted visibility filters across every loaded
-            // overlay now that all sources/layers are registered.
-            FeatureVisibility.apply();
+            await FeatureVisibility.apply();
 
             // Data Syncs are specially loaded as they are dynamic
             // Mission loading is fire-and-forget so logs/changes/features

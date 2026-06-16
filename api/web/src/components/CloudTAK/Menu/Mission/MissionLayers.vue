@@ -221,7 +221,7 @@ import type {
 } from '../../../../types.ts';
 import type { PathNode } from '../../../../base/path-manager.ts';
 import PathManager from '../../../../base/path-manager.ts';
-import FeatureVisibility from '../../../../base/feature-visibility.ts';
+import { FeatureVisibility } from '../../../../base/filter.ts';
 import Subscription from '../../../../base/subscription.ts';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import PathBrowser from '../../util/PathBrowser.vue';

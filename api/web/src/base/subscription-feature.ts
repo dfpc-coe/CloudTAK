@@ -164,9 +164,6 @@ export default class SubscriptionFeature {
                 }
 
                 if (!blocked) {
-                    // Surface the folder path into properties so MapLibre
-                    // filter expressions can toggle feature/folder visibility
-                    // (top-level GeoJSON members are not queryable in filters).
                     filtered.push({
                         ...feat,
                         properties: {

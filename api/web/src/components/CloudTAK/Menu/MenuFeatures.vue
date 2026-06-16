@@ -249,7 +249,7 @@ import FeatureManager from '../../../base/feature.ts';
 import type { Feature_ExportFormat } from '../../../base/feature.ts';
 import PathManager from '../../../base/path-manager.ts';
 import type { PathNode } from '../../../base/path-manager.ts';
-import FeatureVisibility, { GENERAL_SOURCE_ID } from '../../../base/feature-visibility.ts';
+import { FeatureVisibility, GENERAL_SOURCE_ID } from '../../../base/filter.ts';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import SearchSortFilter from '../util/SearchSortFilter.vue';

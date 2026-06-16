@@ -126,7 +126,7 @@
 import { useRouter } from 'vue-router';
 import { ref, computed, onMounted } from 'vue';
 import COT from '../../../base/cot.ts';
-import FeatureVisibility from '../../../base/feature-visibility.ts';
+import { FeatureVisibility } from '../../../base/filter.ts';
 import FeatureIcon from './FeatureIcon.vue';
 import Contact from './Contact.vue';
 import StandardItem from './StandardItem.vue';
