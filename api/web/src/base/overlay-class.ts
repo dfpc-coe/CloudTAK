@@ -13,7 +13,7 @@ import { std, stdurl } from '../std.js';
 import { useMapStore } from '../stores/map.js';
 import ProfileConfig from './profile.ts';
 import Subscription from './subscription.ts';
-import { FeatureVisibility } from './filter.ts';
+import { FeatureVisibility } from '../stores/modules/feature-visibility.ts';
 
 /**
  * @class
