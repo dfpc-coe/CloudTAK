@@ -1,5 +1,5 @@
 import { db } from '../database.ts';
-import Subscription from './subscription.ts';
+import type Subscription from './subscription.ts';
 import { server } from '../std.ts';
 import type {
     MissionLayer,

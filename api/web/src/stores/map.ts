@@ -549,7 +549,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             let sub: Subscription | null = null;
             if (!opts?.reload) {
-                sub = (await Subscription.from(guid, token || '')) || null;
+                sub = (await Subscription.from(guid, token || '', { subscribed: true })) || null;
             }
 
             if (!sub) {

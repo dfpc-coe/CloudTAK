@@ -373,13 +373,15 @@ export class FeatureVisibility {
     }
 
     static async apply(): Promise<void> {
-        const { useMapStore, OverlayManager } = await loadBrowserModules();
+        try {
+            const { useMapStore, OverlayManager } = await loadBrowserModules();
 
-        const mapStore = useMapStore();
-        if (!mapStore._map) return;
+            const mapStore = useMapStore();
+            if (!mapStore._map) return;
 
-        for (const overlay of OverlayManager.listLoaded()) {
-            await this.applyToOverlay(overlay);
+            await Promise.all(OverlayManager.listLoaded().map((overlay) => this.applyToOverlay(overlay)));
+        } catch (err) {
+            console.error('Failed to apply visibility filters:', err);
         }
     }
 }
