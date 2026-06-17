@@ -85,17 +85,6 @@ export default class GDALTranslate implements Transform {
 
         args[0] = translateInput;
 
-        // Use 512x512 tiles with GoogleMapsCompatible tiling scheme for proper
-        // zoom level alignment with web map standards. This ensures tiles at
-        // each zoom level have the expected ground resolution, preventing the
-        // blurry appearance at moderate zoom levels.
-        args.push(
-            '-co', 'TILING_SCHEME=GoogleMapsCompatible',
-            '-co', 'BLOCKXSIZE=512',
-            '-co', 'BLOCKYSIZE=512',
-            '-co', 'RESAMPLING=cubic'
-        );
-
         cp.execFileSync('gdal_translate', args, { env });
 
         cp.execFileSync('gdaladdo', ['-r', 'cubic', output, '2', '4', '8', '16', '32', '64', '128', '256'], { env });
