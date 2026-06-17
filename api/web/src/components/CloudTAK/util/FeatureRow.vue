@@ -68,7 +68,7 @@
                 </div>
             </div>
 
-            <div class='align-self-center me-2 btn-list'>
+            <div class='align-self-center me-2 btn-list flex-shrink-0'>
                 <TablerIconButton
                     v-if='visibilityToggle'
                     :title='isHidden ? "Show Feature" : "Hide Feature"'
