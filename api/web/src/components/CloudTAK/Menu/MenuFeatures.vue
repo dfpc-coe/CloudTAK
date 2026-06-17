@@ -738,7 +738,7 @@ async function deletePath(node: PathNode<COT>): Promise<void> {
     for (const p of allPaths) {
         await FeatureManager.delete({ path: p, permanent: true });
         const cots = await mapStore.worker.db.pathFeatures(p);
-        await Promise.allSettled(cots.map((cot) => mapStore.worker.db.remove(cot.id, { skipNetwork: true })));
+        await Promise.allSettled([...cots].map((cot) => mapStore.worker.db.remove(cot.id, { skipNetwork: true })));
     }
 
     await refresh();
