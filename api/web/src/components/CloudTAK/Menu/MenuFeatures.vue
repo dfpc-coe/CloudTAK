@@ -200,6 +200,7 @@
                             :grip-handle='true'
                             :delete-button='true'
                             :info-button='true'
+                            :visibility-toggle='true'
                             :feature='cot'
                         />
                     </div>
