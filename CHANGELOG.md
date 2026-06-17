@@ -16,6 +16,12 @@
 
 ### Pending Release
 
+### v13.18.0 - 2026-06-16
+
+- :rocket: Migrate to use liveQuery for Mission Features - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1495
+- :rocket: Introduce high level subscription_layers database
+- :rocket: Migrate Mission List to generic PathBrowser
+
 ### v13.17.0 - 2026-06-15
 
 - :tada: First pass at unified feature API that inherits BaseInterface
