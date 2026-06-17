@@ -140,6 +140,7 @@
                             <div
                                 class='py-1'
                                 style='min-width: 260px;'
+                                @click.stop
                             >
                                 <Breadcrumb
                                     :uid='cot.id'
