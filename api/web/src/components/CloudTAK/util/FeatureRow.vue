@@ -166,7 +166,7 @@ const props = defineProps({
     },
     visibilityToggle: {
         type: Boolean,
-        default: true
+        default: false
     },
     hover: {
         type: Boolean,
