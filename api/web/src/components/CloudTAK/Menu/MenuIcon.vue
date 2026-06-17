@@ -50,7 +50,7 @@
                     </div>
 
                     <div class='col-12'>
-                        <UploadLogo
+                        <TablerUploadLogo
                             v-model='icon.data'
                             label='Icon Data'
                             @file-name='updateName'
@@ -154,11 +154,11 @@ import {
     TablerLoading,
     TablerIconButton,
     TablerRefreshButton,
-    TablerInput
+    TablerInput,
+    TablerUploadLogo
 } from '@tak-ps/vue-tabler';
 import { IconPencil } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import UploadLogo from '../../util/UploadLogo.vue';
 import ProfileConfig from '../../../base/profile.ts';
 import type { Iconset } from '../../../types.ts';
 import type { DBIcon } from '../../../database.ts';

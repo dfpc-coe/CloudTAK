@@ -71,7 +71,7 @@
                         />
                     </div>
                     <div class='col-12'>
-                        <UploadLogo
+                        <TablerUploadLogo
                             v-model='template.icon'
                             label='Template Logo'
                         />
@@ -286,14 +286,14 @@ import {
     TablerIconButton,
     TablerLoading,
     TablerEpoch,
-    TablerNone
+    TablerNone,
+    TablerUploadLogo
 } from '@tak-ps/vue-tabler';
 import {
     IconCircleArrowLeft,
     IconPencil,
     IconPlus
 } from '@tabler/icons-vue'
-import UploadLogo from '../util/UploadLogo.vue';
 
 const route = useRoute();
 const router = useRouter();
