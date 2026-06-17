@@ -109,11 +109,9 @@ export default async function router(schema: Schema, config: Config) {
                             coordinates: [composite.geometry.coordinates],
                         };
                     } else if (feat.geometry.coordinates[0] !== 0 && feat.geometry.coordinates[1]) {
-                        // @ts-expect-error Need to be more explicit with Geometry Defs to lock point to number[]
-                        const coords = composite.geometry.coordinates;
-                        // @ts-expect-error Need to be more explicit with Geometry Defs to lock point to number[]
+                        const coords = composite.geometry.coordinates as number[][];
                         const prev = coords[coords.length - 1];
-                        const next = feat.geometry.coordinates;
+                        const next = feat.geometry.coordinates as number[];
                         if (prev[0] === next[0] && prev[1] === next[1] && prev[2] === next[2]) continue;
                         // @ts-expect-error Need to be more explicit with Geometry Defs to lock point to number[]
                         composite.geometry.coordinates.push(feat.geometry.coordinates);
