@@ -1,4 +1,4 @@
-FROM node:24-alpine3.23 AS build
+FROM node:26-alpine3.24 AS build
 
 ENV HOME=/home/etl
 WORKDIR $HOME

@@ -26,6 +26,7 @@ import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay-class.ts';
 import OverlayManager from '../base/overlay.ts';
+import { FeatureVisibility } from './modules/feature-visibility.ts';
 import Subscription from '../base/subscription.ts';
 import { stdurl, server, getRuntimeToken, serverUrl } from '../std.js';
 import * as mapgl from 'maplibre-gl'
@@ -545,17 +546,27 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             const { value: token } = await Preferences.get({ key: 'token' });
-            const sub = await Subscription.load(guid, {
-                token: token || '',
-                reload: opts?.reload || false,
-                subscribed: true,
-                missiontoken: overlay.token || undefined
-            });
+
+            let sub: Subscription | null = null;
+            if (!opts?.reload) {
+                sub = (await Subscription.from(guid, token || '', { subscribed: true })) || null;
+            }
+
+            if (!sub) {
+                sub = await Subscription.load(guid, {
+                    token: token || '',
+                    reload: opts?.reload || false,
+                    subscribed: true,
+                    missiontoken: overlay.token || undefined
+                });
+            }
 
             // @ts-expect-error Source.setData is not defined
             oStore.setData(await sub.feature.collection(false));
 
-            await sub.update({ dirty: false });
+            if (sub.dirty) {
+                await sub.update({ dirty: false });
+            }
 
             return sub;
         },
@@ -1084,6 +1095,8 @@ export const useMapStore = defineStore('cloudtak', {
             OverlayManager.clearLoaded();
             const profileOverlays = await OverlayManager.list({ localFirst: true });
 
+            await FeatureVisibility.load();
+
             const hasBasemap = profileOverlays.some((o: ProfileOverlay) => {
                 return o.mode === 'basemap'
             });
@@ -1177,6 +1190,8 @@ export const useMapStore = defineStore('cloudtak', {
                 name: 'Map Features',
                 type: 'geojson',
             }));
+
+            await FeatureVisibility.apply();
 
             // Data Syncs are specially loaded as they are dynamic
             // Mission loading is fire-and-forget so logs/changes/features

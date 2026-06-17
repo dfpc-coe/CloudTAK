@@ -25,6 +25,19 @@ export const SpatialRefSys = pgTable('spatial_ref_sys', {
     proj4text: varchar({ length: 2048 }),
 });
 
+export const CoreIncident = pgTable('core_incident', {
+    id: serial().primaryKey(),
+    name: text().notNull(),
+    external_id: text(),
+    status: text().notNull().default('Active'),
+    description: text().notNull().default(''),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
+    center: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(),
+    metadata: jsonb().notNull().default({}),
+});
+
 export const Palette = pgTable('palette', {
     uuid: uuid().primaryKey().default(sql`gen_random_uuid()`),
     name: text().notNull(),

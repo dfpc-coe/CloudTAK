@@ -1,4 +1,4 @@
-FROM node:24-alpine3.23
+FROM node:26-alpine3.24
 
 ENV APP_ROOT=/workspace
 WORKDIR $APP_ROOT/tasks/retention

@@ -1205,6 +1205,13 @@
       "when": 1779916241406,
       "tag": "0172_polite_war_machine",
       "breakpoints": true
+    },
+    {
+      "idx": 173,
+      "version": "7",
+      "when": 1781561181932,
+      "tag": "0173_empty_skin",
+      "breakpoints": true
     }
   ]
 }

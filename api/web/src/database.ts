@@ -5,6 +5,7 @@ import type {
     Mission,
     MissionRole,
     MissionChange,
+    MissionLayer,
     MissionLog,
     Contact,
     Server,
@@ -125,6 +126,12 @@ export interface DBSubscriptionFeature {
     geometry: Feature["geometry"];
 }
 
+export interface DBSubscriptionLayer {
+    uid: string;
+    mission: string;
+    layer: MissionLayer;
+}
+
 export interface DBSubscriptionContent {
     uid: string;
     mission: string;
@@ -242,6 +249,7 @@ export type DatabaseType = Dexie & {
     subscription_log: EntityTable<DBSubscriptionLog, 'id'>,
     subscription_feature: EntityTable<DBSubscriptionFeature, 'id'>,
     subscription_chat: EntityTable<DBSubscriptionChat, 'id'>,
+    subscription_layer: EntityTable<DBSubscriptionLayer, 'uid'>,
     mission_template: EntityTable<DBMissionTemplate, 'id'>,
     mission_template_log: EntityTable<DBMissionTemplateLog, 'id'>,
     kv: EntityTable<DBKV, 'key'>,
@@ -253,7 +261,7 @@ export type DatabaseType = Dexie & {
 
 export const db = new Dexie('CloudTAK') as DatabaseType;
 
-db.version(1).stores({
+db.version(2).stores({
     kv: 'key',
 
     server: '_id',
@@ -283,6 +291,7 @@ db.version(1).stores({
     subscription_log: 'id, [mission+id]',
     subscription_chat: 'id, mission, [mission+id]',
     subscription_feature: 'id, mission, [mission+id]',
+    subscription_layer: 'uid, mission, [mission+uid]',
     subscription_contents: 'uid, mission, [mission+uid]',
     subscription_changes: '++id, mission',
 
