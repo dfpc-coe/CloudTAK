@@ -73,7 +73,7 @@
                             />
                         </div>
 
-                        <UploadLogo
+                        <TablerUploadLogo
                             v-model='edit.logo'
                             label='Task Logo'
                         />
@@ -193,7 +193,6 @@ import { server } from '../../../std.ts';
 import type { APIList } from '../../../types.ts';
 import TableHeader from '../../util/TableHeader.vue'
 import TableFooter from '../../util/TableFooter.vue'
-import UploadLogo from '../../util/UploadLogo.vue';
 import {
     TablerNone,
     TablerInput,
@@ -202,6 +201,7 @@ import {
     TablerLoading,
     TablerIconButton,
     TablerRefreshButton,
+    TablerUploadLogo
 } from '@tak-ps/vue-tabler';
 import {
     IconStar,
