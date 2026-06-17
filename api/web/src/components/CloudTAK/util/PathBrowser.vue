@@ -36,6 +36,23 @@
                             {{ node.count }}
                         </TablerBadge>
                         <TablerIconButton
+                            v-if='visibilityToggle'
+                            :title='isNodeHidden(node) ? "Show Folder" : "Hide Folder"'
+                            @click.stop='emit("toggle-visibility", node)'
+                        >
+                            <IconEyeOff
+                                v-if='isNodeHidden(node)'
+                                :size='20'
+                                stroke='1'
+                            />
+                            <IconEye
+                                v-else
+                                :size='20'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                        <TablerIconButton
+                            v-if='renamable'
                             title='Rename Folder'
                             @click.stop='emit("rename", node)'
                         >
@@ -45,6 +62,7 @@
                             />
                         </TablerIconButton>
                         <TablerDelete
+                            v-if='deletable'
                             displaytype='icon'
                             :size='20'
                             @delete='emit("delete", node)'
@@ -74,11 +92,22 @@ import {
 import {
     IconFolder,
     IconPencil,
+    IconEye,
+    IconEyeOff,
 } from '@tabler/icons-vue';
 
-defineProps<{
+withDefaults(defineProps<{
     nodes: PathNode[];
-}>();
+    renamable?: boolean;
+    deletable?: boolean;
+    visibilityToggle?: boolean;
+    isNodeHidden?: (node: PathNode) => boolean;
+}>(), {
+    renamable: true,
+    deletable: true,
+    visibilityToggle: false,
+    isNodeHidden: () => false
+});
 
 const hoverNodeId = ref<string | undefined>();
 
@@ -87,6 +116,7 @@ const emit = defineEmits<{
     delete: [node: PathNode];
     rename: [node: PathNode];
     'folder-drop': [node: PathNode];
+    'toggle-visibility': [node: PathNode];
 }>();
 
 function onDrop(node: PathNode) {

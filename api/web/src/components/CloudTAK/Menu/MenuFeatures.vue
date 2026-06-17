@@ -178,10 +178,13 @@
                     <PathBrowser
                         v-if='currentFolders.length'
                         :nodes='currentFolders'
+                        :visibility-toggle='true'
+                        :is-node-hidden='isFolderHidden'
                         @navigate='navigateToFolder'
                         @delete='deletePath'
                         @rename='openEditModal'
                         @folder-drop='onFolderDrop'
+                        @toggle-visibility='toggleFolderVisibility'
                     />
 
                     <div
@@ -246,6 +249,7 @@ import FeatureManager from '../../../base/feature.ts';
 import type { Feature_ExportFormat } from '../../../base/feature.ts';
 import PathManager from '../../../base/path-manager.ts';
 import type { PathNode } from '../../../base/path-manager.ts';
+import { FeatureVisibility, GENERAL_SOURCE_ID } from '../../../stores/modules/feature-visibility.ts';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import SearchSortFilter from '../util/SearchSortFilter.vue';
@@ -325,6 +329,14 @@ const currentFolders = computed(() => {
     const node = PathManager.findNode(paths.value, currentPath.value);
     return node ? node.children : [];
 });
+
+function isFolderHidden(node: PathNode<COT>): boolean {
+    return FeatureVisibility.isPathHidden(GENERAL_SOURCE_ID, node.fullPath);
+}
+
+function toggleFolderVisibility(node: PathNode<COT>): void {
+    FeatureVisibility.togglePath(GENERAL_SOURCE_ID, node.fullPath);
+}
 
 const folderModal = ref<{
     shown: boolean;

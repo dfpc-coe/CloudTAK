@@ -4,16 +4,13 @@ import SubscriptionLog from './subscription-log.ts';
 import SubscriptionChanges from './subscription-changes.ts';
 import SubscriptionContents from './subscription-contents.ts';
 import SubscriptionFeature from './subscription-feature.ts';
+import SubscriptionLayer from './subscription-layer.ts';
 import SubscriptionChat from './subscription-chat.ts';
 import MissionTemplate from './mission-template.ts';
 import type {
     Mission,
     MissionRole,
     MissionList,
-    MissionLayer,
-    MissionLayerList,
-    MissionLayer_Create,
-    MissionLayer_Update,
     MissionSubscriptions,
     MissionInvite
 } from '../types.ts';
@@ -56,6 +53,7 @@ export default class Subscription {
     change: SubscriptionChanges;
     contents: SubscriptionContents;
     feature: SubscriptionFeature;
+    layer: SubscriptionLayer;
     chat: SubscriptionChat;
 
     token: string;
@@ -101,6 +99,11 @@ export default class Subscription {
         });
 
         this.feature = new SubscriptionFeature(this, {
+            missiontoken: opts.missiontoken,
+            token: opts.token
+        });
+
+        this.layer = new SubscriptionLayer(this, {
             missiontoken: opts.missiontoken,
             token: opts.token
         });
@@ -376,6 +379,7 @@ export default class Subscription {
         await Promise.all([
             this.log.refresh(),
             this.feature.refresh(),
+            this.layer.refresh(),
             this.change.refresh(),
         ]);
     };
@@ -550,63 +554,5 @@ export default class Subscription {
         });
 
         return (data as unknown as { data: MissionSubscriptions }).data;
-    }
-
-    async layerList(): Promise<MissionLayerList> {
-        const { data } = await server.GET('/api/marti/missions/{:name}/layer', {
-            params: {
-                path: { ':name': this.guid }
-            },
-            headers: Subscription.headers(this.missiontoken)
-        });
-
-        const list = data as unknown as MissionLayerList;
-
-        list.data.sort((a, b) => {
-            // Consistent sort by name
-            return a.name.localeCompare(b.name);
-        });
-
-        return list;
-    }
-
-    async layerUpdate(
-        layerid: string,
-        layer: MissionLayer_Update
-    ): Promise<MissionLayer> {
-        const { data } = await server.PATCH('/api/marti/missions/{:name}/layer/{:uid}', {
-            params: {
-                path: { ':name': this.guid, ':uid': layerid }
-            },
-            headers: Subscription.headers(this.missiontoken),
-            body: layer
-        });
-
-        return data as unknown as MissionLayer;
-    }
-
-    async layerCreate(
-        layer: MissionLayer_Create
-    ): Promise<MissionLayer> {
-        const { data } = await server.POST('/api/marti/missions/{:name}/layer', {
-            params: {
-                path: { ':name': this.guid }
-            },
-            headers: Subscription.headers(this.missiontoken),
-            body: layer
-        });
-
-        return data as unknown as MissionLayer;
-    }
-
-    async layerDelete(
-        layeruid: string
-    ): Promise<void> {
-        await server.DELETE('/api/marti/missions/{:name}/layer/{:uid}', {
-            params: {
-                path: { ':name': this.guid, ':uid': layeruid }
-            },
-            headers: Subscription.headers(this.missiontoken)
-        });
     }
 }

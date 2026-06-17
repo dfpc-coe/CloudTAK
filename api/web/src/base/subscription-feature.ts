@@ -163,7 +163,15 @@ export default class SubscriptionFeature {
                     }
                 }
 
-                if (!blocked) filtered.push(feat);
+                if (!blocked) {
+                    filtered.push({
+                        ...feat,
+                        properties: {
+                            ...feat.properties,
+                            path: feat.path || '/',
+                        }
+                    });
+                }
             }
 
             return {
