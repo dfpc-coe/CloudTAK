@@ -68,7 +68,7 @@
                         />
                     </div>
                     <div class='col-12'>
-                        <UploadLogo
+                        <TablerUploadLogo
                             v-model='log.icon'
                             label='Log Icon'
                         />
@@ -190,13 +190,13 @@ import {
     TablerEpoch,
     TablerSchemaBuilder,
     TablerSchema,
-    TablerNone
+    TablerNone,
+    TablerUploadLogo
 } from '@tak-ps/vue-tabler';
 import {
     IconCircleArrowLeft,
     IconPencil,
 } from '@tabler/icons-vue'
-import UploadLogo from '../util/UploadLogo.vue';
 import Keywords from '../CloudTAK/util/Keywords.vue';
 import TagEntry from '../CloudTAK/util/TagEntry.vue';
 

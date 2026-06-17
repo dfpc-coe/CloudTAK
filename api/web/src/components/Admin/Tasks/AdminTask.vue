@@ -85,7 +85,7 @@
                             />
                         </div>
 
-                        <UploadLogo
+                        <TablerUploadLogo
                             v-model='edit.logo'
                             label='Task Logo'
                         />
@@ -237,7 +237,6 @@ import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { server } from '../../../std.ts';
 import type { ETLTaskVersions } from '../../../types.ts';
-import UploadLogo from '../../util/UploadLogo.vue';
 import {
     TablerNone,
     TablerBadge,
@@ -247,7 +246,8 @@ import {
     TablerLoading,
     TablerIconButton,
     TablerRefreshButton,
-    TablerDelete
+    TablerDelete,
+    TablerUploadLogo
 } from '@tak-ps/vue-tabler';
 import {
     IconStar,
