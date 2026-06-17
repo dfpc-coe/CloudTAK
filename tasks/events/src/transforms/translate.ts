@@ -58,6 +58,22 @@ export default class GDALTranslate implements Transform {
                 'raster', 'info', '--format=json', ...openOpts, input,
             ], { env }).toString();
             const gdalinfo = JSON.parse(info);
+
+            // Validate that PDF contains geospatial information (GeoPDF vs regular PDF)
+            if (isPDF) {
+                const hasGeoTransform = Array.isArray(gdalinfo.geoTransform);
+                const hasCoordinateSystem = !!gdalinfo.coordinateSystem;
+                const hasGCPs = Array.isArray(gdalinfo.gcps) && gdalinfo.gcps.length > 0;
+
+                if (!hasGeoTransform && !hasCoordinateSystem && !hasGCPs) {
+                    throw new Error(
+                        'The uploaded PDF does not contain geospatial information. ' +
+                        'Please upload a GeoPDF file with embedded georeferencing data ' +
+                        '(coordinate system, geo transform, or ground control points).'
+                    );
+                }
+            }
+
             const geoTransform = gdalinfo.geoTransform;
             if (
                 Array.isArray(geoTransform)
@@ -100,7 +116,6 @@ export default class GDALTranslate implements Transform {
 
         cp.execFileSync('gdal', [
             'raster', 'convert',
-            ...openOpts,
             '--overwrite',
             convertInput, output,
         ], { env });
