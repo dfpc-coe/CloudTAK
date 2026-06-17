@@ -115,7 +115,7 @@
                                     placeholder='https://example.com'
                                 />
 
-                                <UploadLogo
+                                <TablerUploadLogo
                                     v-if='edit'
                                     v-model='application.icon'
                                     :input-id='`external-application-logo-${index}`'
@@ -146,9 +146,9 @@ import {
     TablerNone,
     TablerInput,
     TablerIconButton,
-    TablerAlert
+    TablerAlert,
+    TablerUploadLogo
 } from '@tak-ps/vue-tabler';
-import UploadLogo from '../../util/UploadLogo.vue';
 import {
     IconPencil,
     IconDeviceFloppy,

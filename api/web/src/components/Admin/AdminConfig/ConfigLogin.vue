@@ -70,7 +70,7 @@
                             desc='Label for the username field on the login page ie: Email, Callsign, etc.'
                         />
 
-                        <UploadLogo
+                        <TablerUploadLogo
                             v-model='config["login::logo"]'
                             label='Login Logo'
                             :disabled='!edit'
@@ -87,7 +87,7 @@
                             ]'
                         />
 
-                        <UploadLogo
+                        <TablerUploadLogo
                             v-if='config["login::brand::enabled"] === "enabled"'
                             v-model='config["login::brand::logo"]'
                             label='Large Brand Logo'
@@ -162,7 +162,7 @@
                                 placeholder='openid profile email'
                                 :disabled='!edit'
                             />
-                            <UploadLogo
+                            <TablerUploadLogo
                                 v-model='config["oidc::logo"]'
                                 label='OIDC Logo'
                                 :disabled='!edit'
@@ -194,9 +194,9 @@ import {
     TablerIconButton,
     TablerAlert,
     TablerInlineAlert,
-    TablerToggle
+    TablerToggle,
+    TablerUploadLogo
 } from '@tak-ps/vue-tabler';
-import UploadLogo from '../../util/UploadLogo.vue';
 import {
     IconPencil,
     IconDeviceFloppy,
