@@ -67,9 +67,9 @@ export default class GDALTranslate implements Transform {
 
                 if (!hasGeoTransform && !hasCoordinateSystem && !hasGCPs) {
                     throw new Error(
-                        'The uploaded PDF does not contain geospatial information. ' +
-                        'Please upload a GeoPDF file with embedded georeferencing data ' +
-                        '(coordinate system, geo transform, or ground control points).'
+                        'The uploaded PDF does not contain geospatial information. '
+                        + 'Please upload a GeoPDF file with embedded georeferencing data '
+                        + '(coordinate system, geo transform, or ground control points).',
                     );
                 }
             }
