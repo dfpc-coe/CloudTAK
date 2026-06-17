@@ -108,6 +108,7 @@
                             v-for='feat of currentItems'
                             :key='feat.id'
                             :delete-button='false'
+                            :visibility-toggle='true'
                             :feature='feat'
                         />
                     </div>
@@ -191,6 +192,7 @@
                         v-for='feat of currentItems'
                         :key='feat.id'
                         :delete-button='false'
+                        :visibility-toggle='true'
                         :feature='feat'
                     />
                 </div>

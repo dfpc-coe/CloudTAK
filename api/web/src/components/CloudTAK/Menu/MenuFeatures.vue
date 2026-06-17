@@ -200,6 +200,7 @@
                             :grip-handle='true'
                             :delete-button='true'
                             :info-button='true'
+                            :visibility-toggle='true'
                             :feature='cot'
                         />
                     </div>
@@ -735,7 +736,9 @@ async function deletePath(node: PathNode<COT>): Promise<void> {
     // Delete COTs for this path and all descendant paths
     const allPaths = PathManager.flatPaths([node]);
     for (const p of allPaths) {
-        await mapStore.worker.db.filterRemove(`path = "${p}" and properties.archived`);
+        await FeatureManager.delete({ path: p, permanent: true });
+        const cots = await mapStore.worker.db.pathFeatures(p);
+        await Promise.allSettled([...cots].map((cot) => mapStore.worker.db.remove(cot.id, { skipNetwork: true })));
     }
 
     await refresh();

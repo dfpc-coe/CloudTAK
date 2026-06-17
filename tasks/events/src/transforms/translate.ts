@@ -28,66 +28,117 @@ export default class GDALTranslate implements Transform {
         const input = path.resolve(this.local.tmpdir, this.local.raw);
         const output = path.resolve(this.local.tmpdir, path.parse(this.local.raw).name + '.mbtiles');
 
+        const isPDF = path.parse(this.local.raw).ext === '.pdf';
+
         const env: Record<string, string> = {
             ...process.env as Record<string, string>,
             GDAL_NUM_THREADS: 'ALL_CPUS',
             GDAL_CACHEMAX: '512',
         };
-        if (path.parse(this.local.raw).ext === '.pdf') {
+
+        if (isPDF) {
             env['GDAL_PDF_DPI'] = '300';
         }
 
-        const args = [input, output];
+        // Open options for the source dataset (PDF-specific georeferencing)
+        const openOpts: string[] = [];
+        if (isPDF) {
+            // Handle GeoPDFs that store georeferencing in PDF structure
+            // rather than as standard GeoTransform or GCPs
+            openOpts.push('--oo', 'SRC_METHOD=NO_GEOTRANSFORM');
+        }
 
         // Downsample excessively high-resolution rasters before tiling.
         // MBTiles raster zoom is derived from pixel resolution — there is no
         // creation option to cap it, so we warp down to zoom-22-equivalent
         // resolution (~0.0000134 degrees ≈ ~1.49 m at the equator) first.
-        let translateInput = input;
+        let convertInput = input;
+
+        let gdalinfo;
         try {
-            const info = cp.execFileSync('gdalinfo', ['-json', input], { env }).toString();
-            const gdalinfo = JSON.parse(info);
-            const geoTransform = gdalinfo.geoTransform;
-            if (
-                Array.isArray(geoTransform)
-                && typeof geoTransform[1] === 'number'
-                && typeof geoTransform[5] === 'number'
-            ) {
-                const pixelWidth = Math.abs(geoTransform[1]);
-                const pixelHeight = Math.abs(geoTransform[5]);
-                const minRes = Math.min(pixelWidth, pixelHeight);
+            // Run gdal raster info WITHOUT SRC_METHOD=NO_GEOTRANSFORM to detect
+            // whether the file actually contains geospatial information
+            const info = cp.execFileSync('gdal', [
+                'raster', 'info', '--format=json', input,
+            ], { env }).toString();
+            gdalinfo = JSON.parse(info);
 
-                if (minRes > 0) {
-                    let resDegrees = minRes;
-                    let maxRes = MAX_RESOLUTION_DEGREES;
-                    const srs: string | undefined = gdalinfo.coordinateSystem?.wkt;
-                    if (srs && /(^|[[,])PROJ(?:CRS|CS)\[/i.test(srs)) {
-                        resDegrees = minRes / 111320;
-                        maxRes = MAX_RESOLUTION_DEGREES * EQUATOR_METERS_PER_DEGREE;
-                    }
+            // Validate that PDF contains geospatial information (GeoPDF vs regular PDF)
+            if (isPDF) {
+                const geoTransform = gdalinfo.geoTransform;
+                const hasGeoTransform = Array.isArray(geoTransform) && geoTransform.length === 6;
+                const hasGCPs = Array.isArray(gdalinfo.gcps) && gdalinfo.gcps.length > 0;
 
-                    // zoom = log2(360 / (resDegrees * 256))
-                    const zoom = Math.ceil(Math.log2(360 / (resDegrees * 256)));
-                    if (zoom > MAX_ZOOM) {
-                        const warped = path.resolve(this.local.tmpdir, path.parse(this.local.raw).name + '-warped.tif');
-                        cp.execFileSync('gdalwarp', [
-                            '-tr', String(maxRes), String(maxRes),
-                            '-r', 'cubic',
-                            input, warped,
-                        ], { env });
-                        translateInput = warped;
+                if (!hasGeoTransform && !hasGCPs) {
+                    throw new Error(
+                        'The uploaded PDF does not contain geospatial information. '
+                        + 'Please upload a GeoPDF file with embedded georeferencing data '
+                        + '(coordinate system, geo transform, or ground control points).',
+                    );
+                }
+            }
+        } catch (err) {
+            if (err instanceof Error && err.message.includes('geospatial information')) {
+                throw err;
+            }
+            // For non-PDF rasters, continue without zoom clamping
+        }
+
+        try {
+            if (gdalinfo) {
+                const geoTransform = gdalinfo.geoTransform;
+                if (
+                    Array.isArray(geoTransform)
+                    && typeof geoTransform[1] === 'number'
+                    && typeof geoTransform[5] === 'number'
+                ) {
+                    const pixelWidth = Math.abs(geoTransform[1]);
+                    const pixelHeight = Math.abs(geoTransform[5]);
+                    const minRes = Math.min(pixelWidth, pixelHeight);
+
+                    if (minRes > 0) {
+                        let resDegrees = minRes;
+                        let maxRes = MAX_RESOLUTION_DEGREES;
+                        const srs: string | undefined = gdalinfo.coordinateSystem?.wkt;
+                        if (srs && /(^|[[,])PROJ(?:CRS|CS)\[/i.test(srs)) {
+                            resDegrees = minRes / 111320;
+                            maxRes = MAX_RESOLUTION_DEGREES * EQUATOR_METERS_PER_DEGREE;
+                        }
+
+                        // zoom = log2(360 / (resDegrees * 256))
+                        const zoom = Math.ceil(Math.log2(360 / (resDegrees * 256)));
+                        if (zoom > MAX_ZOOM) {
+                            const warped = path.resolve(this.local.tmpdir, path.parse(this.local.raw).name + '-warped.tif');
+                            cp.execFileSync('gdal', [
+                                'raster', 'reproject',
+                                '--resolution', `${maxRes},${maxRes}`,
+                                '--resampling', 'cubic',
+                                ...openOpts,
+                                '--overwrite',
+                                input, warped,
+                            ], { env });
+
+                            convertInput = warped;
+                        }
                     }
                 }
             }
         } catch {
-            // If metadata sniffing fails, continue without zoom clamping
+            // If zoom clamping fails, continue without it
         }
 
-        args[0] = translateInput;
+        cp.execFileSync('gdal', [
+            'raster', 'convert',
+            '--overwrite',
+            convertInput, output,
+        ], { env });
 
-        cp.execFileSync('gdal_translate', args, { env });
-
-        cp.execFileSync('gdaladdo', ['-r', 'cubic', output, '2', '4', '8', '16', '32', '64', '128', '256'], { env });
+        cp.execFileSync('gdal', [
+            'raster', 'overview', 'add',
+            '--resampling', 'cubic',
+            '--levels', '2,4,8,16,32,64,128,256',
+            output,
+        ], { env });
 
         return {
             asset: output,
