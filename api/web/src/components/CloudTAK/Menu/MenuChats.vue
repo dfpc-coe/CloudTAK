@@ -25,10 +25,12 @@
             />
         </template>
         <template #default>
-            <SearchSortFilter
-                v-model='paging.filter'
-                placeholder='Filter'
-            />
+            <div class='my-2'>
+                <SearchSortFilter
+                    v-model='paging.filter'
+                    placeholder='Filter'
+                />
+            </div>
 
             <TablerAlert
                 v-if='error'
