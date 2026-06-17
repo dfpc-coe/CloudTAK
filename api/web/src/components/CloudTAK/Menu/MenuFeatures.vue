@@ -735,7 +735,10 @@ async function deletePath(node: PathNode<COT>): Promise<void> {
     // Delete COTs for this path and all descendant paths
     const allPaths = PathManager.flatPaths([node]);
     for (const p of allPaths) {
-        await mapStore.worker.db.filterRemove(`path = "${p}" and properties.archived`);
+        const cots = await mapStore.worker.db.pathFeatures(p);
+        for (const cot of cots) {
+            await mapStore.worker.db.remove(cot.id);
+        }
     }
 
     await refresh();
