@@ -16,6 +16,11 @@
 
 ### Pending Release
 
+### v13.18.1 - 2026-06-17
+
+- :bug: Ensure folder feature delete works correctly - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1499
+- :bug: Fix track loading error - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1503
+
 ### v13.18.0 - 2026-06-16
 
 - :rocket: Migrate to use liveQuery for Mission Features - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1495
