@@ -7,6 +7,9 @@ import {
     S3Client,
     GetObjectCommand,
     PutObjectCommand,
+    CreateMultipartUploadCommand,
+    UploadPartCommand,
+    CompleteMultipartUploadCommand,
 } from '@aws-sdk/client-s3';
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 
@@ -53,6 +56,13 @@ test('Worker Data Transform: Non-GeoPDF should throw geospatial error', async (t
             });
         },
         (command) => {
+            if (command instanceof CreateMultipartUploadCommand) {
+                assert.equal(command.input.Bucket, 'test-bucket');
+                assert.ok(command.input.Key.startsWith('profile/admin@example.com/'));
+                assert.ok(command.input.Key.endsWith('.pdf'));
+                return Promise.resolve({ UploadId: '123' });
+            }
+
             assert.ok(command instanceof PutObjectCommand);
             assert.equal(command.input.Bucket, 'test-bucket');
             assert.ok(command.input.Key.startsWith('profile/admin@example.com/'));
@@ -63,6 +73,13 @@ test('Worker Data Transform: Non-GeoPDF should throw geospatial error', async (t
     ].reverse();
 
     Sinon.stub(S3Client.prototype, 'send').callsFake(async (command) => {
+        if (command instanceof UploadPartCommand) {
+            return { ETag: '"123"' };
+        }
+        if (command instanceof CompleteMultipartUploadCommand) {
+            return { Location: '...' };
+        }
+
         const validator = ExternalOperations.pop();
         if (!validator) throw new Error(`Unexpected command: ${command.constructor.name}`);
 
