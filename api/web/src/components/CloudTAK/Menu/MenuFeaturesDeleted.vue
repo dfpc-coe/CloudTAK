@@ -44,7 +44,9 @@
             />
         </template>
         <template #default>
-            <SearchSortFilter v-model='query.filter' />
+            <div class='my-2'>
+                <SearchSortFilter v-model='query.filter' />
+            </div>
             <TablerLoading
                 v-if='loading'
                 v-model='query.filter'
@@ -93,7 +95,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, computed, useTemplateRef } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed, useTemplateRef } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import SearchSortFilter from '../util/SearchSortFilter.vue';
@@ -107,6 +109,8 @@ import {
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import { std, server } from '../../../std.ts';
+import { WorkerMessageType } from '../../../base/events.ts';
+import type { WorkerMessage } from '../../../base/events.ts';
 import type { ComponentExposed } from 'vue-component-type-helpers'
 import type { FeatureCollection } from '../../../types.ts';
 import {
@@ -143,8 +147,21 @@ const filteredList = computed(() => {
 });
 
 onMounted(async () => {
+    channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
+        const msg = event.data;
+        if (msg?.type === WorkerMessageType.Feature_Archived_Removed) {
+            await refresh();
+        }
+    };
+
     await refresh();
 });
+
+onBeforeUnmount(() => {
+    channel.close();
+});
+
+const channel = new BroadcastChannel('cloudtak');
 
 async function refresh() {
     loading.value = true;

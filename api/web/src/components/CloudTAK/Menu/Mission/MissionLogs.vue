@@ -330,9 +330,9 @@ const filteredLogs: ComputedRef<Array<DBSubscriptionLog>> = computed(() => {
 
     result = [...result].sort((a, b) => {
         if (sort.value === 'Newest \u2192 Oldest') {
-            return new Date(b.dtg).getTime() - new Date(a.dtg).getTime();
-        } else if (sort.value === 'Oldest \u2192 Newest') {
-            return new Date(a.dtg).getTime() - new Date(b.dtg).getTime();
+            return new Date(b.dtg ?? 0).getTime() - new Date(a.dtg ?? 0).getTime();
+        } else if (sort.value === 'Oldest → Newest') {
+            return new Date(a.dtg ?? 0).getTime() - new Date(b.dtg ?? 0).getTime();
         } else if (sort.value === 'A \u2192 Z') {
             return a.content.localeCompare(b.content);
         } else if (sort.value === 'Z \u2192 A') {
