@@ -20,9 +20,9 @@
         <template #default>
             <div class='d-flex flex-column'>
                 <SearchSortFilter
-                    class='pt-2'
                     v-model='paging.filter'
                     v-model:sort='sort'
+                    class='pt-2'
                     :sort-options='sortOptions'
                     :active-filters='activeFilterCount'
                     placeholder='Filter data syncs'
