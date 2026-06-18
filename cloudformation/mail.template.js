@@ -6,17 +6,17 @@ export default cf.merge({
         Environment: {
             Description: 'VPC/ECS Stack to deploy into',
             Type: 'String',
-            Default: 'prod',
+            Default: 'prod'
         },
         SubdomainPrefix: {
             Type: 'String',
             Description: 'Subdomain prefix for the mail ingress point, e.g. "mail.map" yields mail.map.<domain>',
-            Default: 'mail.map',
+            Default: 'mail.map'
         },
         MaxMessageSizeBytes: {
             Type: 'Number',
             Description: 'Maximum allowed inbound message size in bytes',
-            Default: 10485760,
+            Default: 10485760
         },
         RetentionPeriod: {
             Type: 'String',
@@ -38,9 +38,9 @@ export default cf.merge({
                 'EIGHT_YEARS',
                 'NINE_YEARS',
                 'TEN_YEARS',
-                'PERMANENT',
-            ],
-        },
+                'PERMANENT'
+            ]
+        }
     },
     Resources: {
         /**
@@ -52,8 +52,8 @@ export default cf.merge({
                 TrafficPolicyName: cf.stackName,
                 DefaultAction: 'ALLOW',
                 MaxMessageSizeBytes: cf.ref('MaxMessageSizeBytes'),
-                PolicyStatements: [],
-            },
+                PolicyStatements: []
+            }
         },
 
         /**
@@ -65,9 +65,9 @@ export default cf.merge({
             Properties: {
                 ArchiveName: cf.stackName,
                 Retention: {
-                    RetentionPeriod: cf.ref('RetentionPeriod'),
-                },
-            },
+                    RetentionPeriod: cf.ref('RetentionPeriod')
+                }
+            }
         },
 
         /**
@@ -82,11 +82,11 @@ export default cf.merge({
                     Conditions: [],
                     Actions: [{
                         Archive: {
-                            TargetArchive: cf.getAtt('PagingArchive', 'ArchiveId'),
-                        },
-                    }],
-                }],
-            },
+                            TargetArchive: cf.getAtt('PagingArchive', 'ArchiveId')
+                        }
+                    }]
+                }]
+            }
         },
 
         /**
@@ -100,8 +100,8 @@ export default cf.merge({
                 Type: 'OPEN',
                 TlsPolicy: 'OPTIONAL',
                 RuleSetId: cf.getAtt('PagingRuleSet', 'RuleSetId'),
-                TrafficPolicyId: cf.getAtt('PagingTrafficPolicy', 'TrafficPolicyId'),
-            },
+                TrafficPolicyId: cf.getAtt('PagingTrafficPolicy', 'TrafficPolicyId')
+            }
         },
 
         /**
@@ -115,15 +115,15 @@ export default cf.merge({
                 Name: cf.join([
                     cf.ref('SubdomainPrefix'),
                     '.',
-                    cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name'])),
+                    cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))
                 ]),
                 Type: 'MX',
                 TTL: '300',
                 ResourceRecords: [
-                    cf.join(['10 ', cf.getAtt('PagingIngressPoint', 'ARecord')]),
+                    cf.join(['10 ', cf.getAtt('PagingIngressPoint', 'ARecord')])
                 ],
-                Comment: cf.join(' ', [cf.stackName, 'Mail Manager MX Record']),
-            },
+                Comment: cf.join(' ', [cf.stackName, 'Mail Manager MX Record'])
+            }
         },
 
         /**
@@ -138,49 +138,49 @@ export default cf.merge({
                     '_dmarc.',
                     cf.ref('SubdomainPrefix'),
                     '.',
-                    cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name'])),
+                    cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))
                 ]),
                 Type: 'TXT',
                 TTL: '300',
                 ResourceRecords: [
-                    '"v=DMARC1; p=none;"',
+                    '"v=DMARC1; p=none;"'
                 ],
-                Comment: cf.join(' ', [cf.stackName, 'DMARC Record']),
-            },
-        },
+                Comment: cf.join(' ', [cf.stackName, 'DMARC Record'])
+            }
+        }
     },
     Outputs: {
         IngressPointId: {
             Description: 'Mail Manager Ingress Point ID',
             Value: cf.getAtt('PagingIngressPoint', 'IngressPointId'),
             Export: {
-                Name: cf.join([cf.stackName, '-ingress-point-id']),
-            },
+                Name: cf.join([cf.stackName, '-ingress-point-id'])
+            }
         },
         IngressPointARecord: {
             Description: 'A-record hostname used by the MX entry',
             Value: cf.getAtt('PagingIngressPoint', 'ARecord'),
             Export: {
-                Name: cf.join([cf.stackName, '-ingress-point-arecord']),
-            },
+                Name: cf.join([cf.stackName, '-ingress-point-arecord'])
+            }
         },
         MailDomain: {
             Description: 'Fully-qualified domain name that receives inbound mail',
             Value: cf.join([
                 cf.ref('SubdomainPrefix'),
                 '.',
-                cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name'])),
+                cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))
             ]),
             Export: {
-                Name: cf.join([cf.stackName, '-mail-domain']),
-            },
+                Name: cf.join([cf.stackName, '-mail-domain'])
+            }
         },
         ArchiveId: {
             Description: 'Mail Manager Archive ID',
             Value: cf.getAtt('PagingArchive', 'ArchiveId'),
             Export: {
-                Name: cf.join([cf.stackName, '-archive-id']),
-            },
-        },
-    },
+                Name: cf.join([cf.stackName, '-archive-id'])
+            }
+        }
+    }
 });
