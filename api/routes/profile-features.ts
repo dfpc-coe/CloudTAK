@@ -33,8 +33,11 @@ export default async function router(schema: Schema, config: Config) {
                 default: false,
                 description: 'Set Content-Disposition to download the file',
             }),
+            filter: Type.Optional(Type.String({
+                description: 'Filter features by callsign (case-insensitive)',
+            })),
             token: Type.Optional(Type.String()),
-            limit: Type.Integer({ default: 1000 }),
+            limit: Type.Integer({ default: 25 }),
             sort: Type.String({
                 default: 'id',
                 enum: Object.keys(ProfileFeature),
@@ -59,6 +62,7 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`
                     username = ${user.email}
                     AND deleted = ${req.query.deleted}
+                    ${req.query.filter ? sql`AND properties->>'callsign' ILIKE ${'%' + req.query.filter + '%'}` : sql``}
                 `,
             });
 

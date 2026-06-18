@@ -123,22 +123,19 @@
 
                 <EmptyInfo v-if='mapStore.hasNoChannels' />
 
-                <TablerLoading v-if='loading' />
-                <template v-else>
-                    <TablerAlert
-                        v-if='error'
-                        :err='error'
-                    />
-                    <template v-else>
-                        <TablerNone
-                            v-if='!filteredList.length'
-                            :create='false'
-                            label='No data syncs match your filter'
-                        />
-                        <div
-                            v-else
-                            class='d-flex flex-column gap-3'
-                        >
+                <TablerAlert
+                    v-if='error'
+                    :err='error'
+                />
+                <TablerNone
+                    v-if='!loading && !error && !filteredList.length'
+                    :create='false'
+                    label='No data syncs match your filter'
+                />
+                <div
+                    v-if='filteredList.length'
+                    class='d-flex flex-column gap-3'
+                >
                             <PendingInvites
                                 v-model:invites='invites'
                                 @open-mission='openMission($event, false)'
@@ -220,9 +217,8 @@
                                     />
                                 </div>
                             </StandardItem>
-                        </div>
-                    </template>
-                </template>
+                </div>
+                <TablerLoading v-if='loading' />
             </div>
         </template>
     </MenuTemplate>
@@ -281,6 +277,7 @@ import { useMapStore } from '../../../stores/map.ts';
 import EmptyInfo from '../util/EmptyInfo.vue';
 import Subscription from '../../../base/subscription.ts';
 import OverlayManager from '../../../base/overlay.ts';
+import { db } from '../../../database.ts';
 
 const mapStore = useMapStore();
 
@@ -356,6 +353,7 @@ function clearFilters(): void {
 }
 
 onMounted(async () => {
+    await loadFromLocalDB();
     await fetchMissions();
 });
 
@@ -481,12 +479,24 @@ function missionKeywords(mission: Mission): string[] {
         .filter((keyword) => !keyword.startsWith('template:'));
 }
 
+async function loadFromLocalDB() {
+    const subs = await db.subscription
+        .filter((sub) => sub.subscribed === true)
+        .toArray();
+
+    for (const sub of subs) {
+        subscribed.value.add(sub.guid);
+    }
+
+    list.value = subs.map((sub) => sub.meta);
+    await generateFilteredList();
+}
+
 async function fetchMissions() {
     error.value = undefined;
+    loading.value = true;
 
     try {
-        loading.value = true;
-
         const res = await Subscription.list();
         list.value = res.items;
         invites.value = res.invites;
@@ -495,8 +505,7 @@ async function fetchMissions() {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
 
-    await generateFilteredList()
-
+    await generateFilteredList();
     loading.value = false;
 }
 
