@@ -19,111 +19,105 @@
         </template>
         <template #default>
             <div class='d-flex flex-column'>
-                <div class='d-flex pt-2 flex-row align-items-sm-center gap-2'>
-                    <TablerInput
-                        v-model='paging.filter'
-                        :autofocus='true'
-                        icon='search'
-                        placeholder='Filter data syncs'
-                        class='flex-grow-1'
-                    />
-                    <TablerDropdown
-                        :width='280'
-                        autoclose='outside'
-                    >
-                        <button
-                            type='button'
-                            class='btn btn-outline-secondary d-flex align-items-center gap-1 position-relative filter-btn'
-                            title='Filter data syncs'
-                        >
-                            <IconFilter
+                <SearchSortFilter
+                    class='pt-2'
+                    v-model='paging.filter'
+                    v-model:sort='sort'
+                    :sort-options='sortOptions'
+                    :active-filters='activeFilterCount'
+                    placeholder='Filter data syncs'
+                >
+                    <template #sort-icon>
+                        <template v-if='sort'>
+                            <component
+                                :is='sortTypeIcon'
                                 :size='20'
                                 stroke='1'
                             />
-                            <span
-                                v-if='activeFilterCount > 0'
-                                class='badge bg-primary ms-1'
-                                v-text='activeFilterCount'
+                            <component
+                                :is='sortDirectionIcon'
+                                :size='20'
+                                stroke='1'
                             />
-                        </button>
-                        <template #dropdown>
-                            <div
-                                class='filter-dropdown d-flex flex-column'
-                                style='max-height: 320px; overflow-y: auto;'
-                            >
-                                <div class='filter-dropdown__header d-flex align-items-center justify-content-between px-3 py-2'>
-                                    <strong class='small text-uppercase text-white-50'>Filters</strong>
-                                    <button
-                                        v-if='activeFilterCount > 0'
-                                        type='button'
-                                        class='btn btn-link btn-sm p-0'
-                                        @click='clearFilters'
+                        </template>
+                        <IconArrowsSort
+                            v-else
+                            :size='20'
+                            stroke='1'
+                        />
+                    </template>
+                    <template #filters>
+                        <div class='d-flex flex-column'>
+                            <div class='d-flex align-items-center justify-content-between px-3 py-2'>
+                                <strong class='small text-uppercase text-white-50'>Filters</strong>
+                                <button
+                                    v-if='activeFilterCount > 0'
+                                    type='button'
+                                    class='btn btn-link btn-sm p-0'
+                                    @click='clearFilters'
+                                >
+                                    Clear
+                                </button>
+                            </div>
+                            <div class='px-3 pb-2 d-flex flex-column gap-2'>
+                                <div>
+                                    <div class='small text-uppercase text-white-50 mb-1'>
+                                        Channels
+                                    </div>
+                                    <div
+                                        v-if='!availableChannels.length'
+                                        class='small text-secondary'
                                     >
-                                        Clear
-                                    </button>
+                                        No channels available
+                                    </div>
+                                    <label
+                                        v-for='channel in availableChannels'
+                                        :key='"channel-" + channel'
+                                        class='form-check mb-1'
+                                    >
+                                        <input
+                                            class='form-check-input'
+                                            type='checkbox'
+                                            :checked='selectedChannels.includes(channel)'
+                                            @change='toggleChannel(channel)'
+                                        >
+                                        <span
+                                            class='form-check-label'
+                                            v-text='channel'
+                                        />
+                                    </label>
                                 </div>
-
-                                <div class='px-3 pb-2 d-flex flex-column gap-2'>
-                                    <div>
-                                        <div class='small text-uppercase text-white-50 mb-1'>
-                                            Channels
-                                        </div>
-                                        <div
-                                            v-if='!availableChannels.length'
-                                            class='small text-secondary'
-                                        >
-                                            No channels available
-                                        </div>
-                                        <label
-                                            v-for='channel in availableChannels'
-                                            :key='"channel-" + channel'
-                                            class='form-check mb-1'
-                                        >
-                                            <input
-                                                class='form-check-input'
-                                                type='checkbox'
-                                                :checked='selectedChannels.includes(channel)'
-                                                @change='toggleChannel(channel)'
-                                            >
-                                            <span
-                                                class='form-check-label'
-                                                v-text='channel'
-                                            />
-                                        </label>
+                                <div>
+                                    <div class='small text-uppercase text-white-50 mb-1'>
+                                        Keywords
                                     </div>
-
-                                    <div>
-                                        <div class='small text-uppercase text-white-50 mb-1'>
-                                            Keywords
-                                        </div>
-                                        <div
-                                            v-if='!availableKeywords.length'
-                                            class='small text-secondary'
-                                        >
-                                            No keywords available
-                                        </div>
-                                        <label
-                                            v-for='keyword in availableKeywords'
-                                            :key='"keyword-" + keyword'
-                                            class='form-check mb-1'
-                                        >
-                                            <input
-                                                class='form-check-input'
-                                                type='checkbox'
-                                                :checked='selectedKeywords.includes(keyword)'
-                                                @change='toggleKeyword(keyword)'
-                                            >
-                                            <span
-                                                class='form-check-label'
-                                                v-text='keyword'
-                                            />
-                                        </label>
+                                    <div
+                                        v-if='!availableKeywords.length'
+                                        class='small text-secondary'
+                                    >
+                                        No keywords available
                                     </div>
+                                    <label
+                                        v-for='keyword in availableKeywords'
+                                        :key='"keyword-" + keyword'
+                                        class='form-check mb-1'
+                                    >
+                                        <input
+                                            class='form-check-input'
+                                            type='checkbox'
+                                            :checked='selectedKeywords.includes(keyword)'
+                                            @change='toggleKeyword(keyword)'
+                                        >
+                                        <span
+                                            class='form-check-label'
+                                            v-text='keyword'
+                                        />
+                                    </label>
                                 </div>
                             </div>
-                        </template>
-                    </TablerDropdown>
-                </div>
+                        </div>
+                    </template>
+                </SearchSortFilter>
 
                 <ChannelInfo />
 
@@ -259,15 +253,14 @@ import PendingInvites from './Mission/PendingInvites.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import Keywords from '../util/Keywords.vue';
+import SearchSortFilter from '../util/SearchSortFilter.vue';
 import { useRouter } from 'vue-router';
 import {
     TablerIconButton,
     TablerRefreshButton,
-    TablerInput,
     TablerNone,
     TablerAlert,
     TablerModal,
-    TablerDropdown,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import type { Mission, MissionInvite } from '../../../types.ts';
@@ -276,8 +269,12 @@ import {
     IconPlus,
     IconLock,
     IconLockOpen,
-    IconFilter,
-    IconAccessPoint
+    IconAccessPoint,
+    IconLetterCase,
+    IconClock,
+    IconArrowUp,
+    IconArrowDown,
+    IconArrowsSort,
 } from '@tabler/icons-vue';
 import ChannelInfo from '../util/ChannelInfo.vue';
 import { useMapStore } from '../../../stores/map.ts';
@@ -299,6 +296,11 @@ const list = ref<Array<Mission>>([]);
 const invites = ref<MissionInvite[]>([]);
 const selectedChannels = ref<string[]>([]);
 const selectedKeywords = ref<string[]>([]);
+const sort = ref('');
+const sortOptions = ['Newest → Oldest', 'Oldest → Newest', 'A → Z', 'Z → A'];
+
+const sortTypeIcon = computed(() => (sort.value === 'A → Z' || sort.value === 'Z → A') ? IconLetterCase : IconClock);
+const sortDirectionIcon = computed(() => (sort.value === 'Oldest → Newest' || sort.value === 'A → Z') ? IconArrowUp : IconArrowDown);
 
 function missionGroups(mission: Mission): string[] {
     const groups = mission.groups;
@@ -364,6 +366,10 @@ watch(paging.value, async () => {
     await generateFilteredList();
 });
 
+watch(sort, async () => {
+    await generateFilteredList();
+});
+
 async function generateFilteredList() {
     const filtered = [];
 
@@ -398,9 +404,19 @@ async function generateFilteredList() {
     }
 
     filtered.sort((a, b) => {
+        if (sort.value === 'Newest → Oldest') {
+            return new Date(b.createTime).getTime() - new Date(a.createTime).getTime();
+        } else if (sort.value === 'Oldest → Newest') {
+            return new Date(a.createTime).getTime() - new Date(b.createTime).getTime();
+        } else if (sort.value === 'A → Z') {
+            return a.name.localeCompare(b.name);
+        } else if (sort.value === 'Z → A') {
+            return b.name.localeCompare(a.name);
+        }
+
+        // Default: subscribed missions first
         const aSub = subscribed.value.has(a.guid);
         const bSub = subscribed.value.has(b.guid);
-
         if (aSub && !bSub) return -1;
         if (!aSub && bSub) return 1;
         return 0;

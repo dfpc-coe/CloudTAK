@@ -1,9 +1,10 @@
 <template>
-    <label
-        v-if='label'
-        class='mx-1'
-        v-text='props.label'
-    />
+    <div v-bind='$attrs'>
+        <label
+            v-if='label'
+            class='mx-1'
+            v-text='props.label'
+        />
 
     <div
         v-if='editing'
@@ -150,10 +151,13 @@
             />
         </template>
     </div>
+    </div>
 </template>
 
 <script setup lang='ts'>
 import { ref, watch, computed, useTemplateRef } from 'vue';
+
+defineOptions({ inheritAttrs: false });
 import CopyButton from './CopyButton.vue';
 import {
     TablerInput,
