@@ -162,10 +162,9 @@
                             @keyup.enter='submitOnEnter ? submitLog() : undefined'
                         />
 
-                        <TagEntry
-                            placeholder='Keyword Entry'
-                            :model-value='createLog.keywords'
-                            @update:model-value='createLog.keywords = $event'
+                        <Keywords
+                            v-model:keywords='createLog.keywords'
+                            :relevant='availableKeywords'
                         />
 
                         <div class='d-flex my-2'>
@@ -206,13 +205,14 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { from } from 'rxjs';
 import type { Ref, ComputedRef } from 'vue';
-import TagEntry from '../../util/TagEntry.vue';
+import Keywords from '../../util/Keywords.vue';
 import MissionLogItem from './MissionLog.vue';
 import SearchSortFilter from '../../util/SearchSortFilter.vue';
 import MissionTemplateLogs from '../../../../base/mission-template-logs.ts';
 import type { DBMissionTemplateLog, DBSubscriptionLog } from '../../../../database.ts';
 import {
     TablerNone,
+    TablerInput,
     TablerToggle,
     TablerLoading,
     TablerDropdown,
