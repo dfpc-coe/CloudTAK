@@ -1239,7 +1239,7 @@ export const useMapStore = defineStore('cloudtak', {
                             // When rotation enabled, only show course arrows for grouped features
                             this.map.setFilter(courseLayerId, [
                                 'all',
-                                ['==', '$type', 'Point'],
+                                ['==', ['geometry-type'], 'Point'],
                                 ['has', 'course'],
                                 ['has', 'group']
                             ]);
@@ -1247,7 +1247,7 @@ export const useMapStore = defineStore('cloudtak', {
                             // When rotation disabled, show course arrows for all features with course
                             this.map.setFilter(courseLayerId, [
                                 'all',
-                                ['==', '$type', 'Point'],
+                                ['==', ['geometry-type'], 'Point'],
                                 ['has', 'course']
                             ]);
                         }
