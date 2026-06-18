@@ -44,7 +44,7 @@
                     style='height: 22px; width: 110px; font-size: 0.75rem;'
                     placeholder='keyword...'
                     @keyup.esc='cancelAdd'
-                />
+                >
             </form>
             <span
                 v-else
