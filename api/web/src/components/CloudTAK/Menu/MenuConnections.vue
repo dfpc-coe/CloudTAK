@@ -19,8 +19,30 @@
             <div class='my-2'>
                 <SearchSortFilter
                     v-model='paging.filter'
+                    v-model:sort='sort'
+                    :sort-options='sortOptions'
                     placeholder='Filter'
-                />
+                >
+                    <template #sort-icon>
+                        <template v-if='sort'>
+                            <component
+                                :is='sortTypeIcon'
+                                :size='20'
+                                stroke='1'
+                            />
+                            <component
+                                :is='sortDirectionIcon'
+                                :size='20'
+                                stroke='1'
+                            />
+                        </template>
+                        <IconArrowsSort
+                            v-else
+                            :size='20'
+                            stroke='1'
+                        />
+                    </template>
+                </SearchSortFilter>
             </div>
 
             <TablerLoading v-if='loading' />
@@ -93,7 +115,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import type { ETLConnectionList } from '../../../types.ts';
 import { server } from '../../../std.ts';
 import {
@@ -106,6 +128,11 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
+    IconLetterCase,
+    IconClock,
+    IconArrowUp,
+    IconArrowDown,
+    IconArrowsSort,
 } from '@tabler/icons-vue';
 
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -123,6 +150,11 @@ const paging = ref({
     page: 0
 });
 
+const sort = ref('Newest → Oldest');
+const sortOptions = ['Newest → Oldest', 'Oldest → Newest', 'A → Z', 'Z → A'];
+const sortTypeIcon = computed(() => (sort.value === 'A → Z' || sort.value === 'Z → A') ? IconLetterCase : IconClock);
+const sortDirectionIcon = computed(() => (sort.value === 'Oldest → Newest' || sort.value === 'A → Z') ? IconArrowUp : IconArrowDown);
+
 const list = ref<ETLConnectionList>({
     total: 0,
     status: {
@@ -135,6 +167,10 @@ const list = ref<ETLConnectionList>({
 
 watch(paging.value, async () => {
     await fetchList()
+});
+
+watch(sort, async () => {
+    await fetchList();
 });
 
 onMounted(async () => {
@@ -152,8 +188,8 @@ async function fetchList() {
                     filter: paging.value.filter,
                     limit: paging.value.limit,
                     page: paging.value.page,
-                    sort: 'created',
-                    order: 'desc'
+                    sort: (sort.value === 'A → Z' || sort.value === 'Z → A') ? 'name' : 'created',
+                    order: (sort.value === 'Oldest → Newest' || sort.value === 'A → Z') ? 'asc' : 'desc'
                 }
             }
         });

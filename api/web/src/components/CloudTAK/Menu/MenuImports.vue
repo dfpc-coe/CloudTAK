@@ -31,8 +31,30 @@
 
             <SearchSortFilter
                 v-model='paging.filter'
+                v-model:sort='sort'
+                :sort-options='sortOptions'
                 placeholder='Filter'
-            />
+            >
+                <template #sort-icon>
+                    <template v-if='sort'>
+                        <component
+                            :is='sortTypeIcon'
+                            :size='20'
+                            stroke='1'
+                        />
+                        <component
+                            :is='sortDirectionIcon'
+                            :size='20'
+                            stroke='1'
+                        />
+                    </template>
+                    <IconArrowsSort
+                        v-else
+                        :size='20'
+                        stroke='1'
+                    />
+                </template>
+            </SearchSortFilter>
 
             <TablerLoading v-if='loading' />
             <TablerAlert
@@ -113,7 +135,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import type { ImportList } from '../../../../src/types.ts';
 import { server, stdurl } from '../../../../src/std.ts';
@@ -130,6 +152,11 @@ import {
     IconFile,
     IconAmbulance,
     IconPackages,
+    IconLetterCase,
+    IconClock,
+    IconArrowUp,
+    IconArrowDown,
+    IconArrowsSort,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import SearchSortFilter from '../util/SearchSortFilter.vue';
@@ -149,6 +176,11 @@ const paging = ref({
     page: 0
 });
 
+const sort = ref('Newest → Oldest');
+const sortOptions = ['Newest → Oldest', 'Oldest → Newest', 'A → Z', 'Z → A'];
+const sortTypeIcon = computed(() => (sort.value === 'A → Z' || sort.value === 'Z → A') ? IconLetterCase : IconClock);
+const sortDirectionIcon = computed(() => (sort.value === 'Oldest → Newest' || sort.value === 'A → Z') ? IconArrowUp : IconArrowDown);
+
 const list = ref<ImportList>({
     total: 0,
     items: []
@@ -156,6 +188,10 @@ const list = ref<ImportList>({
 
 watch(paging.value, async function() {
     await fetchList()
+});
+
+watch(sort, async () => {
+    await fetchList();
 });
 
 onMounted(async () => {
@@ -176,11 +212,11 @@ async function fetchList() {
         const res = await server.GET('/api/import', {
             params: {
                 query: {
-                    order: 'desc',
+                    order: (sort.value === 'Oldest → Newest' || sort.value === 'A → Z') ? 'asc' : 'desc',
                     page: paging.value.page,
                     limit: paging.value.limit,
                     filter: paging.value.filter,
-                    sort: 'created',
+                    sort: (sort.value === 'A → Z' || sort.value === 'Z → A') ? 'name' : 'created',
                 }
             }
         });

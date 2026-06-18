@@ -21,11 +21,77 @@
                 v-if='logs && logs.length'
                 class='col-12 pb-2 px-2'
             >
-                <TablerInput
+                <SearchSortFilter
                     v-model='paging.filter'
-                    icon='search'
+                    v-model:sort='sort'
+                    :sort-options='sortOptions'
+                    :active-filters='selectedKeywords.length'
                     placeholder='Filter'
-                />
+                >
+                    <template #sort-icon>
+                        <template v-if='sort'>
+                            <component
+                                :is='sortTypeIcon'
+                                :size='20'
+                                stroke='1'
+                            />
+                            <component
+                                :is='sortDirectionIcon'
+                                :size='20'
+                                stroke='1'
+                            />
+                        </template>
+                        <IconArrowsSort
+                            v-else
+                            :size='20'
+                            stroke='1'
+                        />
+                    </template>
+                    <template #filters>
+                        <div class='d-flex flex-column'>
+                            <div class='d-flex align-items-center justify-content-between px-3 py-2'>
+                                <strong class='small text-uppercase text-white-50'>Filters</strong>
+                                <button
+                                    v-if='selectedKeywords.length'
+                                    type='button'
+                                    class='btn btn-link btn-sm p-0'
+                                    @click='selectedKeywords = []'
+                                >
+                                    Clear
+                                </button>
+                            </div>
+                            <div class='px-3 pb-2 d-flex flex-column gap-2'>
+                                <div>
+                                    <div class='small text-uppercase text-white-50 mb-1'>
+                                        Keywords
+                                    </div>
+                                    <div
+                                        v-if='!availableKeywords.length'
+                                        class='small text-secondary'
+                                    >
+                                        No keywords available
+                                    </div>
+                                    <label
+                                        v-for='keyword in availableKeywords'
+                                        :key='keyword'
+                                        class='form-check mb-1'
+                                    >
+                                        <input
+                                            class='form-check-input'
+                                            type='checkbox'
+                                            :checked='selectedKeywords.includes(keyword)'
+                                            @change='toggleKeyword(keyword)'
+                                        >
+                                        <span
+                                            class='form-check-label'
+                                            v-text='keyword'
+                                        />
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </SearchSortFilter>
             </div>
 
             <TablerNone
@@ -142,11 +208,11 @@ import { from } from 'rxjs';
 import type { Ref, ComputedRef } from 'vue';
 import TagEntry from '../../util/TagEntry.vue';
 import MissionLogItem from './MissionLog.vue';
+import SearchSortFilter from '../../util/SearchSortFilter.vue';
 import MissionTemplateLogs from '../../../../base/mission-template-logs.ts';
 import type { DBMissionTemplateLog, DBSubscriptionLog } from '../../../../database.ts';
 import {
     TablerNone,
-    TablerInput,
     TablerToggle,
     TablerLoading,
     TablerDropdown,
@@ -158,6 +224,11 @@ import {
 import {
     IconSettings,
     IconDownload,
+    IconLetterCase,
+    IconClock,
+    IconArrowUp,
+    IconArrowDown,
+    IconArrowsSort,
 } from '@tabler/icons-vue';
 import { liveQuery } from "dexie";
 import MenuTemplate from '../../util/MenuTemplate.vue';
@@ -177,7 +248,11 @@ const logs: Ref<Array<DBSubscriptionLog>> = useObservable(
 
 const submitOnEnter = ref(true);
 const paging = ref({ filter: '' });
-
+const sort = ref('');
+const sortOptions = ['Newest \u2192 Oldest', 'Oldest \u2192 Newest', 'A \u2192 Z', 'Z \u2192 A'];
+const selectedKeywords = ref<string[]>([]);
+const sortTypeIcon = computed(() => (sort.value === 'A → Z' || sort.value === 'Z → A') ? IconLetterCase : IconClock);
+const sortDirectionIcon = computed(() => (sort.value === 'Oldest → Newest' || sort.value === 'A → Z') ? IconArrowUp : IconArrowDown);
 const createLog = ref<{
     content: string;
     keywords: string[];
@@ -198,6 +273,22 @@ const loading = ref<{
 
 const templateLogs = ref<DBMissionTemplateLog[]>([]);
 const selectedLogType = ref('Default');
+
+const availableKeywords = computed<string[]>(() => {
+    const set = new Set<string>();
+    for (const log of (logs.value || [])) {
+        for (const k of (log.keywords || [])) {
+            if (!k.startsWith('template:')) set.add(k);
+        }
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+});
+
+function toggleKeyword(keyword: string): void {
+    const idx = selectedKeywords.value.indexOf(keyword);
+    if (idx === -1) selectedKeywords.value.push(keyword);
+    else selectedKeywords.value.splice(idx, 1);
+}
 
 const selectedTemplateLog = computed(() => {
     return templateLogs.value.find((l: DBMissionTemplateLog) => {
@@ -224,16 +315,33 @@ const logTypeOptions = computed<Array<string>>(() => {
 
 const filteredLogs: ComputedRef<Array<DBSubscriptionLog>> = computed(() => {
     const allLogs = logs.value || [];
+    const filter = paging.value.filter.toLowerCase().trim();
 
-    if (paging.value.filter.trim() === '') {
-        return allLogs;
-    } else {
-        const filter = paging.value.filter.toLowerCase();
+    let result = allLogs.filter((log: DBSubscriptionLog) => {
+        if (filter && !log.content.toLowerCase().includes(filter)) return false;
 
-        return allLogs.filter((log: DBSubscriptionLog) => {
-            return log.content.toLowerCase().includes(filter);
-        })
-    }
+        if (selectedKeywords.value.length) {
+            const logKeywords = log.keywords || [];
+            if (!selectedKeywords.value.some((k) => logKeywords.includes(k))) return false;
+        }
+
+        return true;
+    });
+
+    result = [...result].sort((a, b) => {
+        if (sort.value === 'Newest \u2192 Oldest') {
+            return new Date(b.dtg).getTime() - new Date(a.dtg).getTime();
+        } else if (sort.value === 'Oldest \u2192 Newest') {
+            return new Date(a.dtg).getTime() - new Date(b.dtg).getTime();
+        } else if (sort.value === 'A \u2192 Z') {
+            return a.content.localeCompare(b.content);
+        } else if (sort.value === 'Z \u2192 A') {
+            return b.content.localeCompare(a.content);
+        }
+        return 0;
+    });
+
+    return result;
 });
 
 watch(selectedTemplateLog, (log) => {
