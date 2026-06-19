@@ -37,7 +37,7 @@ export default async function router(schema: Schema, config: Config) {
                 description: 'Filter features by callsign (case-insensitive)',
             })),
             token: Type.Optional(Type.String()),
-            limit: Type.Integer({ default: 25 }),
+            limit: Type.Integer({ default: 1000 }),
             sort: Type.String({
                 default: 'id',
                 enum: Object.keys(ProfileFeature),
