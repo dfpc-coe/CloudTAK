@@ -19,11 +19,20 @@
         </template>
         <template #default>
             <div class='d-flex flex-column'>
+                <TablerPillGroup
+                    v-model='tab'
+                    class='pt-2'
+                    :options='[
+                        { value: "subscribed", label: "Subscribed" },
+                        { value: "available", label: "Available" },
+                    ]'
+                />
+
                 <SearchSortFilter
                     v-model='paging.filter'
                     v-model:sort='sort'
                     class='pt-2'
-                    :sort-options='sortOptions'
+                    :sort-options='tab === "available" ? sortOptions : []'
                     :active-filters='activeFilterCount'
                     placeholder='Filter data syncs'
                 >
@@ -130,95 +139,96 @@
                 <TablerNone
                     v-if='!loading && !error && !filteredList.length'
                     :create='false'
-                    label='No data syncs match your filter'
+                    :label='tab === "subscribed" ? "No subscribed data syncs" : "No data syncs match your filter"'
                 />
                 <div
                     v-if='filteredList.length'
                     class='d-flex flex-column gap-3'
                 >
-                            <PendingInvites
-                                v-model:invites='invites'
-                                @open-mission='openMission($event, false)'
-                                @error='error = $event'
+                    <PendingInvites
+                        v-if='tab === "available"'
+                        v-model:invites='invites'
+                        @open-mission='openMission($event, false)'
+                        @error='error = $event'
+                    />
+
+                    <StandardItem
+                        v-for='(mission, mission_it) in filteredList'
+                        :key='mission_it'
+                        class='d-flex flex-row gap-3 position-relative'
+                        @click='openMission(mission, false)'
+                    >
+                        <div class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ms-2 mt-2'>
+                            <IconLock
+                                v-if='mission.passwordProtected'
+                                :size='24'
+                                stroke='1'
                             />
+                            <IconLockOpen
+                                v-else
+                                :size='24'
+                                stroke='1'
+                            />
+                        </div>
 
-                            <StandardItem
-                                v-for='(mission, mission_it) in filteredList'
-                                :key='mission_it'
-                                class='d-flex flex-row gap-3 position-relative'
-                                @click='openMission(mission, false)'
+                        <div class='flex-grow-1 d-flex flex-column gap-2 py-2'>
+                            <div class='d-flex flex-wrap align-items-center gap-2'>
+                                <span
+                                    class='fw-semibold text-break'
+                                    v-text='mission.name'
+                                />
+                            </div>
+
+                            <Keywords :keywords='missionKeywords(mission)' />
+
+                            <div
+                                v-if='typeof missionPasswords[mission.guid] === "string"'
+                                class='d-flex flex-column mx-2 flex-lg-row align-items-start gap-2'
                             >
-                                <div class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ms-2 mt-2'>
-                                    <IconLock
-                                        v-if='mission.passwordProtected'
-                                        :size='24'
-                                        stroke='1'
-                                    />
-                                    <IconLockOpen
-                                        v-else
-                                        :size='24'
-                                        stroke='1'
-                                    />
-                                </div>
+                                <TablerInput
+                                    v-model='missionPasswords[mission.guid]'
+                                    type='password'
+                                    autocomplete='new-password'
+                                    placeholder='Password'
+                                    :error='errors[mission.guid]'
+                                    class='flex-grow-1 w-100'
+                                    @keyup.enter='openMission(mission, true)'
+                                />
 
-                                <div class='flex-grow-1 d-flex flex-column gap-2 py-2'>
-                                    <div class='d-flex flex-wrap align-items-center gap-2'>
-                                        <span
-                                            class='fw-semibold text-break'
-                                            v-text='mission.name'
-                                        />
-                                    </div>
+                                <button
+                                    class='btn btn-primary px-3'
+                                    type='button'
+                                    @click.stop='openMission(mission, true)'
+                                >
+                                    Unlock
+                                </button>
+                            </div>
+                            <div
+                                v-else
+                                class='text-secondary small d-flex flex-wrap align-items-center gap-2'
+                            >
+                                <span
+                                    v-text='mission.createTime.replace(/T.*/, "")'
+                                />
+                                <span class='text-white-50'>•</span>
+                                <span
+                                    v-text='mission.contents.length + " Items"'
+                                />
+                            </div>
+                        </div>
 
-                                    <Keywords :keywords='missionKeywords(mission)' />
-
-                                    <div
-                                        v-if='typeof missionPasswords[mission.guid] === "string"'
-                                        class='d-flex flex-column mx-2 flex-lg-row align-items-start gap-2'
-                                    >
-                                        <TablerInput
-                                            v-model='missionPasswords[mission.guid]'
-                                            type='password'
-                                            autocomplete='new-password'
-                                            placeholder='Password'
-                                            :error='errors[mission.guid]'
-                                            class='flex-grow-1 w-100'
-                                            @keyup.enter='openMission(mission, true)'
-                                        />
-
-                                        <button
-                                            class='btn btn-primary px-3'
-                                            type='button'
-                                            @click.stop='openMission(mission, true)'
-                                        >
-                                            Unlock
-                                        </button>
-                                    </div>
-                                    <div
-                                        v-else
-                                        class='text-secondary small d-flex flex-wrap align-items-center gap-2'
-                                    >
-                                        <span
-                                            v-text='mission.createTime.replace(/T.*/, "")'
-                                        />
-                                        <span class='text-white-50'>•</span>
-                                        <span
-                                            v-text='mission.contents.length + " Items"'
-                                        />
-                                    </div>
-                                </div>
-
-                                <div class='d-flex align-items-center gap-2 pe-2'>
-                                    <IconAccessPoint
-                                        v-if='subscribed.has(mission.guid)'
-                                        v-tooltip='"Subscribed"'
-                                        class='text-success'
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                </div>
-                            </StandardItem>
+                        <div class='d-flex align-items-center gap-2 pe-2'>
+                            <IconAccessPoint
+                                v-if='subscribed.has(mission.guid)'
+                                v-tooltip='"Subscribed"'
+                                class='text-success'
+                                :size='32'
+                                stroke='1'
+                            />
+                        </div>
+                    </StandardItem>
                 </div>
-                <TablerLoading v-if='loading' />
+                <TablerLoading v-if='loading && tab === "available"' />
             </div>
         </template>
     </MenuTemplate>
@@ -257,7 +267,8 @@ import {
     TablerNone,
     TablerAlert,
     TablerModal,
-    TablerLoading
+    TablerLoading,
+    TablerPillGroup,
 } from '@tak-ps/vue-tabler';
 import type { Mission, MissionInvite } from '../../../types.ts';
 import { server } from '../../../std.ts';
@@ -293,6 +304,7 @@ const list = ref<Array<Mission>>([]);
 const invites = ref<MissionInvite[]>([]);
 const selectedChannels = ref<string[]>([]);
 const selectedKeywords = ref<string[]>([]);
+const tab = ref<'subscribed' | 'available'>('subscribed');
 const sort = ref('');
 const sortOptions = ['Newest → Oldest', 'Oldest → Newest', 'A → Z', 'Z → A'];
 
@@ -368,6 +380,11 @@ watch(sort, async () => {
     await generateFilteredList();
 });
 
+watch(tab, async () => {
+    if (tab.value === 'subscribed') sort.value = '';
+    await generateFilteredList();
+});
+
 async function generateFilteredList() {
     const filtered = [];
 
@@ -380,6 +397,11 @@ async function generateFilteredList() {
     }
 
     for (const mission of list.value) {
+        const isSub = subscribed.value.has(mission.guid);
+
+        if (tab.value === 'subscribed' && !isSub) continue;
+        if (tab.value === 'available' && isSub) continue;
+
         if (!mission.name.toLowerCase().includes(paging.value.filter.toLowerCase())) {
             continue;
         }
@@ -401,24 +423,20 @@ async function generateFilteredList() {
         filtered.push(mission);
     }
 
-    filtered.sort((a, b) => {
-        if (sort.value === 'Newest → Oldest') {
-            return new Date(b.createTime).getTime() - new Date(a.createTime).getTime();
-        } else if (sort.value === 'Oldest → Newest') {
-            return new Date(a.createTime).getTime() - new Date(b.createTime).getTime();
-        } else if (sort.value === 'A → Z') {
-            return a.name.localeCompare(b.name);
-        } else if (sort.value === 'Z → A') {
-            return b.name.localeCompare(a.name);
-        }
-
-        // Default: subscribed missions first
-        const aSub = subscribed.value.has(a.guid);
-        const bSub = subscribed.value.has(b.guid);
-        if (aSub && !bSub) return -1;
-        if (!aSub && bSub) return 1;
-        return 0;
-    })
+    if (tab.value === 'available') {
+        filtered.sort((a, b) => {
+            if (sort.value === 'Newest → Oldest') {
+                return new Date(b.createTime).getTime() - new Date(a.createTime).getTime();
+            } else if (sort.value === 'Oldest → Newest') {
+                return new Date(a.createTime).getTime() - new Date(b.createTime).getTime();
+            } else if (sort.value === 'A → Z') {
+                return a.name.localeCompare(b.name);
+            } else if (sort.value === 'Z → A') {
+                return b.name.localeCompare(a.name);
+            }
+            return 0;
+        });
+    }
 
     filteredList.value = filtered;
 }
@@ -487,6 +505,8 @@ async function loadFromLocalDB() {
     for (const sub of subs) {
         subscribed.value.add(sub.guid);
     }
+
+    if (subs.length === 0) tab.value = 'available';
 
     list.value = subs.map((sub) => sub.meta);
     await generateFilteredList();
