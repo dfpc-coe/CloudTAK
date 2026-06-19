@@ -50,19 +50,12 @@
                 </div>
             </template>
 
-            <template v-if='editing'>
-                <TagEntry
-                    :model-value='draftValue'
-                    :placeholder='inputPlaceholder'
-                    @update:model-value='draftValue = $event'
-                />
-            </template>
-
             <Keywords
-                v-else
-                :keywords='value'
-                :placeholder='placeholder'
+                :keywords='editing ? draftValue : value'
+                :relevant='editing ? [] : undefined'
+                :placeholder='editing ? inputPlaceholder : placeholder'
                 :tone='tone'
+                @update:keywords='draftValue = $event'
             />
         </TablerBorder>
     </div>
@@ -73,7 +66,6 @@ import { IconDeviceFloppy, IconPencil, IconX } from '@tabler/icons-vue';
 import { TablerBorder, TablerIconButton } from '@tak-ps/vue-tabler';
 import { ref, watch } from 'vue';
 import Keywords from './Keywords.vue';
-import TagEntry from './TagEntry.vue';
 
 const props = withDefaults(defineProps<{
     value: string[];

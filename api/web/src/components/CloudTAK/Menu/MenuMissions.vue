@@ -13,7 +13,7 @@
                 />
             </TablerIconButton>
             <TablerRefreshButton
-                :loading='loading'
+                :loading='loading && tab === "available"'
                 @click='fetchMissions'
             />
         </template>
@@ -141,8 +141,9 @@
                     :create='false'
                     :label='tab === "subscribed" ? "No subscribed data syncs" : "No data syncs match your filter"'
                 />
+                <TablerLoading v-if='loading && tab === "available"' />
                 <div
-                    v-if='filteredList.length'
+                    v-if='filteredList.length && !(loading && tab === "available")'
                     class='d-flex flex-column gap-3'
                 >
                     <PendingInvites
@@ -228,7 +229,6 @@
                         </div>
                     </StandardItem>
                 </div>
-                <TablerLoading v-if='loading && tab === "available"' />
             </div>
         </template>
     </MenuTemplate>
@@ -366,7 +366,7 @@ function clearFilters(): void {
 
 onMounted(async () => {
     await loadFromLocalDB();
-    await fetchMissions();
+    if (tab.value === 'available') await fetchMissions();
 });
 
 const subscribed = ref<Set<string>>(new Set())
@@ -382,7 +382,11 @@ watch(sort, async () => {
 
 watch(tab, async () => {
     if (tab.value === 'subscribed') sort.value = '';
-    await generateFilteredList();
+    if (tab.value === 'available') {
+        await fetchMissions();
+    } else {
+        await generateFilteredList();
+    }
 });
 
 async function generateFilteredList() {
@@ -513,6 +517,7 @@ async function loadFromLocalDB() {
 }
 
 async function fetchMissions() {
+    if (tab.value !== 'available') return;
     error.value = undefined;
     loading.value = true;
 

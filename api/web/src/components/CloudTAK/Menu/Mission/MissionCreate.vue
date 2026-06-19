@@ -162,10 +162,11 @@
                     <div class='row g-2'>
                         <div class='col-12'>
                             <label class='px-2 w-100'>Keywords</label>
-                            <TagEntry
+                            <Keywords
                                 placeholder='Enter Keywords'
-                                :model-value='mission.keywords'
-                                @update:model-value='mission.keywords = $event'
+                                :keywords='mission.keywords'
+                                :relevant='[]'
+                                @update:keywords='mission.keywords = $event'
                             />
                         </div>
 
@@ -224,7 +225,7 @@ import {
     IconLayout
 } from '@tabler/icons-vue';
 import GroupSelect from '../../util/GroupSelect.vue';
-import TagEntry from '../../util/TagEntry.vue';
+import Keywords from '../../util/Keywords.vue';
 import OverlayManager from '../../../../base/overlay.ts';
 import {
     TablerInput,
