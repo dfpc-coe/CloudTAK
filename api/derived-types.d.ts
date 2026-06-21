@@ -2150,6 +2150,10 @@ export interface paths {
                             "retention::import::enabled"?: boolean;
                             /** @description Number of days to retain imports */
                             "retention::import::days"?: number;
+                            /** @description Enable retention processing for recently deleted features */
+                            "retention::feature::enabled"?: boolean;
+                            /** @description Number of days to retain recently deleted features */
+                            "retention::feature::days"?: number;
                             /** @description Enable ArcGIS Online Integration */
                             "agol::enabled"?: boolean;
                             /**
@@ -2370,6 +2374,10 @@ export interface paths {
                         "retention::import::enabled"?: boolean;
                         /** @description Number of days to retain imports */
                         "retention::import::days"?: number;
+                        /** @description Enable retention processing for recently deleted features */
+                        "retention::feature::enabled"?: boolean;
+                        /** @description Number of days to retain recently deleted features */
+                        "retention::feature::days"?: number;
                         /** @description Enable ArcGIS Online Integration */
                         "agol::enabled"?: boolean;
                         /**
@@ -2525,6 +2533,10 @@ export interface paths {
                             "retention::import::enabled"?: boolean;
                             /** @description Number of days to retain imports */
                             "retention::import::days"?: number;
+                            /** @description Enable retention processing for recently deleted features */
+                            "retention::feature::enabled"?: boolean;
+                            /** @description Number of days to retain recently deleted features */
+                            "retention::feature::days"?: number;
                             /** @description Enable ArcGIS Online Integration */
                             "agol::enabled"?: boolean;
                             /**

@@ -10,6 +10,7 @@ import { bbox } from '@turf/bbox'
 import type { LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource } from 'maplibre-gl'
 import cotStyles from './utils/styles.ts'
 import { std, stdurl } from '../std.js';
+import { db, type DBOverlay } from '../database.ts';
 import { useMapStore } from '../stores/map.js';
 import ProfileConfig from './profile.ts';
 import Subscription from './subscription.ts';
@@ -88,6 +89,8 @@ export default class Overlay {
             });
 
             await overlay.init(opts);
+
+            await db.overlay.put(overlay.toDBOverlay());
 
             return overlay;
         } else {
@@ -585,6 +588,8 @@ export default class Overlay {
             await std(`/api/profile/overlay?id=${this.id}`, {
                 method: 'DELETE'
             });
+
+            await db.overlay.delete(this.id);
         }
 
         // Update attribution if this was a basemap
@@ -664,5 +669,33 @@ export default class Overlay {
                 styles: dropStyles ? [] : this.styles
             }
         })
+
+        await db.overlay.put(this.toDBOverlay());
+    }
+
+    toDBOverlay(): DBOverlay {
+        const dropStyles = ['mission', 'internal'].includes(this.mode);
+
+        return {
+            id: this.id,
+            name: this.name,
+            active: this.active,
+            username: this.username,
+            frequency: this.frequency,
+            iconset: this.iconset,
+            created: this.created,
+            updated: this.updated,
+            pos: this.pos,
+            type: this.type,
+            opacity: this.opacity,
+            visible: this.visible,
+            mode: this.mode,
+            mode_id: this.mode_id,
+            encoding: this.encoding,
+            actions: this.actions,
+            url: this.url,
+            styles: dropStyles ? [] : this.styles,
+            token: this.token
+        } as DBOverlay;
     }
 }
