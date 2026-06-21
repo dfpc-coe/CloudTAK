@@ -172,13 +172,6 @@ const filteredList = computed(() => {
     })
 });
 
-const filteredListToast = computed(() => {
-    if (!list.value) return [];
-    return list.value.filter((n) => {
-        return n.toast && !n.read;
-    })
-});
-
 const list = useObservable(
     from(liveQuery(async () => {
         return await TAKNotification.list();
