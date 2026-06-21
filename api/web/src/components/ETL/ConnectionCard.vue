@@ -66,14 +66,19 @@
                 >
                     <div v-text='connection.certificate.validTo' />
                     <TablerBadge
-                        v-if='certificateStatus'
+                        v-if='certificateStatus === "expired"'
                         class='ms-auto'
-                        :background-color='certificateStatus === "expired" ? "rgba(220, 38, 38, 0.15)" : "rgba(249, 115, 22, 0.15)"'
-                        :border-color='certificateStatus === "expired" ? "rgba(220, 38, 38, 0.35)" : "rgba(249, 115, 22, 0.35)"'
-                        :text-color='certificateStatus === "expired" ? "#b91c1c" : "#c2410c"'
-                    >
-                        {{ certificateStatus === 'expired' ? 'Expired Certificate' : 'Near Expiry' }}
-                    </TablerBadge>
+                        background-color='rgba(220, 38, 38, 0.15)'
+                        border-color='rgba(220, 38, 38, 0.35)'
+                        text-color='#b91c1c'
+                    >Expired Certificate</TablerBadge>
+                    <TablerBadge
+                        v-else-if='certificateStatus'
+                        class='ms-auto'
+                        background-color='rgba(249, 115, 22, 0.15)'
+                        border-color='rgba(249, 115, 22, 0.35)'
+                        text-color='#c2410c'
+                    >Near Expiry</TablerBadge>
                 </div>
             </div>
             <div class='datagrid-item'>

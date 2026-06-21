@@ -6,32 +6,35 @@
         <TablerBadge
             v-for='keyword in filteredKeywords'
             :key='keyword'
-            class='text-uppercase rounded-pill px-3 py-1 small'
-            :class='{ "cursor-pointer user-select-none": props.relevant !== undefined }'
-            :background-color='hoveredKeyword === keyword ? "rgba(var(--tblr-danger-rgb, 214, 57, 57), 0.15)" : badgeColors.backgroundColor'
-            :border-color='hoveredKeyword === keyword ? "rgba(var(--tblr-danger-rgb, 214, 57, 57), 0.5)" : badgeColors.borderColor'
-            :text-color='badgeColors.textColor'
-            @mouseenter='props.relevant !== undefined ? hoveredKeyword = keyword : undefined'
+            class='text-uppercase rounded-pill px-3 py-1'
+            :class='{ "cursor-pointer user-select-none": relevant !== undefined }'
+            :background-color='COLORS.primary.bg'
+            :border-color='COLORS.primary.border'
+            :text-color='COLORS.primary.text'
+            :hover-background-color='relevant !== undefined ? COLORS.danger.bg : undefined'
+            :hover-border-color='relevant !== undefined ? COLORS.danger.border : undefined'
+            :hover-text-color='relevant !== undefined ? COLORS.danger.text : undefined'
+            @mouseenter='relevant !== undefined ? hoveredKeyword = keyword : undefined'
             @mouseleave='hoveredKeyword = null'
-            @click='props.relevant !== undefined ? removeKeyword(keyword) : undefined'
+            @click='relevant !== undefined ? removeKeyword(keyword) : undefined'
         >
-            <span :style='hoveredKeyword === keyword ? "text-decoration: line-through" : undefined'>{{ keyword }}</span>
+            <span :class='{ "text-decoration-line-through": hoveredKeyword === keyword }'>{{ keyword }}</span>
         </TablerBadge>
 
-        <span
+        <TablerBadge
             v-for='keyword in unselectedRelevant.slice(0, 5)'
             :key='"rel-" + keyword'
-            class='text-uppercase rounded-pill px-3 py-1 small cursor-pointer user-select-none d-inline-flex align-items-center'
-            :style='{
-                backgroundColor: badgeColors.backgroundColor,
-                border: `1px dashed ${badgeColors.borderColor}`,
-                color: badgeColors.textColor,
-            }'
+            class='text-uppercase rounded-pill px-3 py-1 cursor-pointer user-select-none'
+            :background-color='COLORS.muted.bg'
+            :border-color='COLORS.muted.border'
+            :text-color='COLORS.muted.text'
+            :hover-background-color='COLORS.primary.bg'
+            :hover-border-color='COLORS.primary.border'
+            :hover-text-color='COLORS.primary.text'
             @click='addKeyword(keyword)'
-            v-text='keyword'
-        />
+        >{{ keyword }}</TablerBadge>
 
-        <template v-if='props.relevant !== undefined'>
+        <template v-if='relevant !== undefined'>
             <form
                 v-if='adding'
                 class='d-inline-flex'
@@ -40,34 +43,29 @@
                 <input
                     ref='addInput'
                     v-model='addText'
-                    class='form-control form-control-sm py-0'
-                    style='height: 22px; width: 110px; font-size: 0.75rem;'
+                    class='kw-input form-control form-control-sm py-0'
                     placeholder='keyword...'
                     @keyup.esc='cancelAdd'
                 >
             </form>
-            <span
+            <TablerBadge
                 v-else
-                class='text-uppercase rounded-pill px-2 py-1 small cursor-pointer user-select-none d-flex align-items-center'
-                :style='{
-                    backgroundColor: badgeColors.backgroundColor,
-                    border: `1px solid ${badgeColors.borderColor}`,
-                    color: badgeColors.textColor,
-                }'
+                class='text-uppercase rounded-pill px-3 py-1 cursor-pointer user-select-none d-inline-flex align-items-center gap-1'
+                :background-color='COLORS.success.bg'
+                :border-color='COLORS.success.border'
+                :text-color='COLORS.success.text'
                 title='Add keyword'
                 @click='startAdd'
             >
-                <IconPlus
-                    :size='12'
-                    stroke='2'
-                />
-            </span>
+                <IconPlus :size='12' stroke='2' />
+                New Keyword
+            </TablerBadge>
         </template>
     </div>
     <div
         v-else
         class='text-white-50 small fst-italic'
-        v-text='props.placeholder'
+        v-text='placeholder'
     />
 </template>
 
@@ -78,6 +76,29 @@ import { IconPlus } from '@tabler/icons-vue';
 
 const FILTERED_PREFIXES = ['template:'];
 
+const COLORS = {
+    primary: {
+        bg: 'rgba(var(--tblr-primary-rgb, 32, 107, 196), 0.15)',
+        border: 'rgba(var(--tblr-primary-rgb, 32, 107, 196), 0.5)',
+        text: 'var(--tblr-primary, rgb(32, 107, 196))',
+    },
+    danger: {
+        bg: 'rgba(var(--tblr-danger-rgb, 214, 57, 57), 0.15)',
+        border: 'rgba(var(--tblr-danger-rgb, 214, 57, 57), 0.5)',
+        text: 'var(--tblr-danger, rgb(214, 57, 57))',
+    },
+    success: {
+        bg: 'rgba(var(--tblr-success-rgb, 47, 179, 135), 0.15)',
+        border: 'rgba(var(--tblr-success-rgb, 47, 179, 135), 0.5)',
+        text: 'var(--tblr-success, #2fb387)',
+    },
+    muted: {
+        bg: 'rgba(107, 114, 128, 0.2)',
+        border: 'rgba(107, 114, 128, 0.55)',
+        text: '#6b7280',
+    },
+} as const;
+
 const emit = defineEmits<{
     'update:keywords': [value: string[]];
 }>();
@@ -85,23 +106,23 @@ const emit = defineEmits<{
 const props = withDefaults(defineProps<{
     keywords?: string[];
     placeholder?: string;
-    tone?: 'muted' | 'accent';
     relevant?: string[];
 }>(), {
     keywords: () => [],
     placeholder: 'No Keywords',
-    tone: 'muted'
 });
 
+const { relevant, placeholder } = props;
+
 const filteredKeywords = computed(() => {
-    return (props.keywords || []).filter((keyword) => {
+    return props.keywords.filter((keyword) => {
         return FILTERED_PREFIXES.some((prefix) => keyword.startsWith(prefix)) === false;
     });
 });
 
 const unselectedRelevant = computed(() => {
-    if (props.relevant === undefined) return [];
-    return props.relevant.filter((keyword) => {
+    if (relevant === undefined) return [];
+    return relevant.filter((keyword) => {
         return FILTERED_PREFIXES.some((prefix) => keyword.startsWith(prefix)) === false
             && !filteredKeywords.value.includes(keyword);
     });
@@ -110,7 +131,7 @@ const unselectedRelevant = computed(() => {
 const hasContent = computed(() => {
     return filteredKeywords.value.length > 0
         || unselectedRelevant.value.length > 0
-        || props.relevant !== undefined;
+        || relevant !== undefined;
 });
 
 const adding = ref(false);
@@ -118,31 +139,14 @@ const addText = ref('');
 const addInput = useTemplateRef<HTMLInputElement>('addInput');
 const hoveredKeyword = ref<string | null>(null);
 
-const badgeColors = computed(() => {
-    if (props.tone === 'accent') {
-        return {
-            backgroundColor: 'rgba(var(--tblr-primary-rgb, 32, 107, 196), 0.18)',
-            borderColor: 'rgba(var(--tblr-primary-rgb, 32, 107, 196), 0.42)',
-            textColor: 'var(--tblr-primary-text-emphasis, rgb(var(--tblr-primary-rgb, 32, 107, 196)))'
-        };
-    }
-
-    return {
-        backgroundColor: 'rgba(107, 114, 128, 0.2)',
-        borderColor: 'rgba(107, 114, 128, 0.5)',
-        textColor: '#6b7280'
-    };
-});
-
 function addKeyword(keyword: string) {
-    const current = props.keywords || [];
-    if (!current.includes(keyword)) {
-        emit('update:keywords', [...current, keyword]);
+    if (!props.keywords.includes(keyword)) {
+        emit('update:keywords', [...props.keywords, keyword]);
     }
 }
 
 function removeKeyword(keyword: string) {
-    emit('update:keywords', (props.keywords || []).filter((k) => k !== keyword));
+    emit('update:keywords', props.keywords.filter((k) => k !== keyword));
 }
 
 function startAdd() {
@@ -162,3 +166,11 @@ function cancelAdd() {
     addText.value = '';
 }
 </script>
+
+<style scoped>
+.kw-input {
+    height: 22px;
+    width: 110px;
+    font-size: 0.75rem;
+}
+</style>

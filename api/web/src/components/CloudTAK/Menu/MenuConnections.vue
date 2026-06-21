@@ -87,10 +87,7 @@
                                         v-text='timeDiff(conn.created)'
                                     />
                                     <div class='ms-auto'>
-                                        <AgencyBadge
-                                            :connection='conn'
-                                            :muted='true'
-                                        />
+                                        <AgencyBadge :connection='conn' />
                                     </div>
                                 </div>
                             </div>
