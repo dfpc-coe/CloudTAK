@@ -1,66 +1,80 @@
 <template>
     <div
         v-if='hasContent'
-        class='d-flex flex-wrap gap-2 mt-1 align-items-center'
+        class='d-flex flex-column gap-2 mt-1'
     >
-        <TablerBadge
-            v-for='keyword in filteredKeywords'
-            :key='keyword'
-            class='text-uppercase rounded-pill px-3 py-1'
-            :class='{ "cursor-pointer user-select-none": relevant !== undefined }'
-            :background-color='COLORS.primary.bg'
-            :border-color='COLORS.primary.border'
-            :text-color='COLORS.primary.text'
-            :hover-background-color='relevant !== undefined ? COLORS.danger.bg : undefined'
-            :hover-border-color='relevant !== undefined ? COLORS.danger.border : undefined'
-            :hover-text-color='relevant !== undefined ? COLORS.danger.text : undefined'
-            @mouseenter='relevant !== undefined ? hoveredKeyword = keyword : undefined'
-            @mouseleave='hoveredKeyword = null'
-            @click='relevant !== undefined ? removeKeyword(keyword) : undefined'
+        <div
+            v-if='filteredKeywords.length > 0'
+            class='d-flex flex-wrap gap-2 align-items-center'
         >
-            <span :class='{ "text-decoration-line-through": hoveredKeyword === keyword }'>{{ keyword }}</span>
-        </TablerBadge>
-
-        <TablerBadge
-            v-for='keyword in unselectedRelevant.slice(0, 5)'
-            :key='"rel-" + keyword'
-            class='text-uppercase rounded-pill px-3 py-1 cursor-pointer user-select-none'
-            :background-color='COLORS.muted.bg'
-            :border-color='COLORS.muted.border'
-            :text-color='COLORS.muted.text'
-            :hover-background-color='COLORS.primary.bg'
-            :hover-border-color='COLORS.primary.border'
-            :hover-text-color='COLORS.primary.text'
-            @click='addKeyword(keyword)'
-        >{{ keyword }}</TablerBadge>
-
-        <template v-if='relevant !== undefined'>
-            <form
-                v-if='adding'
-                class='d-inline-flex'
-                @submit.prevent='submitAdd'
-            >
-                <input
-                    ref='addInput'
-                    v-model='addText'
-                    class='kw-input form-control form-control-sm py-0'
-                    placeholder='keyword...'
-                    @keyup.esc='cancelAdd'
-                >
-            </form>
             <TablerBadge
-                v-else
-                class='text-uppercase rounded-pill px-3 py-1 cursor-pointer user-select-none d-inline-flex align-items-center gap-1'
-                :background-color='COLORS.success.bg'
-                :border-color='COLORS.success.border'
-                :text-color='COLORS.success.text'
-                title='Add keyword'
-                @click='startAdd'
+                v-for='keyword in filteredKeywords'
+                :key='keyword'
+                class='text-uppercase rounded-pill px-3 py-1'
+                :class='{ "cursor-pointer user-select-none": relevant !== undefined }'
+                :background-color='COLORS.primary.bg'
+                :border-color='COLORS.primary.border'
+                :text-color='COLORS.primary.text'
+                :hover-background-color='relevant !== undefined ? COLORS.danger.bg : undefined'
+                :hover-border-color='relevant !== undefined ? COLORS.danger.border : undefined'
+                :hover-text-color='relevant !== undefined ? COLORS.danger.text : undefined'
+                @mouseenter='relevant !== undefined ? hoveredKeyword = keyword : undefined'
+                @mouseleave='hoveredKeyword = null'
+                @click='relevant !== undefined ? removeKeyword(keyword) : undefined'
             >
-                <IconPlus :size='12' stroke='2' />
-                New Keyword
+                <span :class='{ "text-decoration-line-through": hoveredKeyword === keyword }'>{{ keyword }}</span>
             </TablerBadge>
-        </template>
+        </div>
+
+        <div
+            v-if='unselectedRelevant.length > 0 || relevant !== undefined'
+            class='d-flex flex-column gap-2'
+        >
+            <span class='text-white-50 small fst-italic'>Suggested</span>
+
+            <div class='d-flex flex-wrap gap-2 align-items-center'>
+            <TablerBadge
+                v-for='keyword in unselectedRelevant.slice(0, 5)'
+                :key='"rel-" + keyword'
+                class='text-uppercase rounded-pill px-3 py-1 cursor-pointer user-select-none'
+                :background-color='COLORS.muted.bg'
+                :border-color='COLORS.muted.border'
+                :text-color='COLORS.muted.text'
+                :hover-background-color='COLORS.primary.bg'
+                :hover-border-color='COLORS.primary.border'
+                :hover-text-color='COLORS.primary.text'
+                @click='addKeyword(keyword)'
+            >{{ keyword }}</TablerBadge>
+            </div>
+
+            <template v-if='relevant !== undefined'>
+                <form
+                    v-if='adding'
+                    class='d-inline-flex'
+                    @submit.prevent='submitAdd'
+                >
+                    <input
+                        ref='addInput'
+                        v-model='addText'
+                        class='kw-input form-control form-control-sm py-0'
+                        placeholder='keyword...'
+                        @keyup.esc='cancelAdd'
+                    >
+                </form>
+                <TablerBadge
+                    v-else
+                    class='text-uppercase rounded-pill px-3 py-1 cursor-pointer user-select-none d-inline-flex align-items-center gap-1'
+                    :background-color='COLORS.success.bg'
+                    :border-color='COLORS.success.border'
+                    :text-color='COLORS.success.text'
+                    title='Add keyword'
+                    @click='startAdd'
+                >
+                    <IconPlus :size='12' stroke='2' />
+                    New Keyword
+                </TablerBadge>
+            </template>
+        </div>
     </div>
     <div
         v-else

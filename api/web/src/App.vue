@@ -197,6 +197,7 @@ import { isNativePlatform, supportsServiceWorker } from './base/capacitor.ts';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
 import { getPageServiceWorkerBuildId, markUpdateRequestedByThisTab } from './base/service-worker.ts';
+import { db } from './database.ts';
 
 import { useMapStore } from './stores/map.ts';
 
