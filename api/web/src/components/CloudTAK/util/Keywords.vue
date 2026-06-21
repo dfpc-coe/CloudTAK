@@ -33,18 +33,20 @@
             <span class='text-white-50 small fst-italic'>Suggested</span>
 
             <div class='d-flex flex-wrap gap-2 align-items-center'>
-            <TablerBadge
-                v-for='keyword in unselectedRelevant.slice(0, 5)'
-                :key='"rel-" + keyword'
-                class='text-uppercase rounded-pill px-3 py-1 cursor-pointer user-select-none'
-                :background-color='COLORS.muted.bg'
-                :border-color='COLORS.muted.border'
-                :text-color='COLORS.muted.text'
-                :hover-background-color='COLORS.primary.bg'
-                :hover-border-color='COLORS.primary.border'
-                :hover-text-color='COLORS.primary.text'
-                @click='addKeyword(keyword)'
-            >{{ keyword }}</TablerBadge>
+                <TablerBadge
+                    v-for='keyword in unselectedRelevant.slice(0, 5)'
+                    :key='"rel-" + keyword'
+                    class='text-uppercase rounded-pill px-3 py-1 cursor-pointer user-select-none'
+                    :background-color='COLORS.muted.bg'
+                    :border-color='COLORS.muted.border'
+                    :text-color='COLORS.muted.text'
+                    :hover-background-color='COLORS.primary.bg'
+                    :hover-border-color='COLORS.primary.border'
+                    :hover-text-color='COLORS.primary.text'
+                    @click='addKeyword(keyword)'
+                >
+                    {{ keyword }}
+                </TablerBadge>
             </div>
 
             <template v-if='relevant !== undefined'>
@@ -70,7 +72,10 @@
                     title='Add keyword'
                     @click='startAdd'
                 >
-                    <IconPlus :size='12' stroke='2' />
+                    <IconPlus
+                        :size='12'
+                        stroke='2'
+                    />
                     New Keyword
                 </TablerBadge>
             </template>

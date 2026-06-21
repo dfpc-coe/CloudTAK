@@ -71,14 +71,18 @@
                         background-color='rgba(220, 38, 38, 0.15)'
                         border-color='rgba(220, 38, 38, 0.35)'
                         text-color='#b91c1c'
-                    >Expired Certificate</TablerBadge>
+                    >
+                        Expired Certificate
+                    </TablerBadge>
                     <TablerBadge
                         v-else-if='certificateStatus'
                         class='ms-auto'
                         background-color='rgba(249, 115, 22, 0.15)'
                         border-color='rgba(249, 115, 22, 0.35)'
                         text-color='#c2410c'
-                    >Near Expiry</TablerBadge>
+                    >
+                        Near Expiry
+                    </TablerBadge>
                 </div>
             </div>
             <div class='datagrid-item'>

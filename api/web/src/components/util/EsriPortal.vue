@@ -184,21 +184,27 @@
                                             background-color='rgba(34, 197, 94, 0.2)'
                                             border-color='rgba(34, 197, 94, 0.5)'
                                             text-color='#16a34a'
-                                        >{{ res.access }}</TablerBadge>
+                                        >
+                                            {{ res.access }}
+                                        </TablerBadge>
                                         <TablerBadge
                                             v-else-if='res.access === "org"'
                                             class='mx-1 mb-1'
                                             background-color='rgba(245, 158, 11, 0.2)'
                                             border-color='rgba(245, 158, 11, 0.5)'
                                             text-color='#d97706'
-                                        >{{ res.access }}</TablerBadge>
+                                        >
+                                            {{ res.access }}
+                                        </TablerBadge>
                                         <TablerBadge
                                             v-else
                                             class='mx-1 mb-1'
                                             background-color='rgba(239, 68, 68, 0.2)'
                                             border-color='rgba(239, 68, 68, 0.5)'
                                             text-color='#dc2626'
-                                        >{{ res.access }}</TablerBadge>
+                                        >
+                                            {{ res.access }}
+                                        </TablerBadge>
                                     </td>
                                 </tr>
                             </tbody>
