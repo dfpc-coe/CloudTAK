@@ -165,6 +165,7 @@ export default async function router(schema: Schema, config: Config) {
                             AND username = ${user.email}
                         `, {
                             deleted: true,
+                            properties: sql`jsonb_set(${ProfileFeature.properties}, '{time}', to_jsonb(${new Date().toISOString()}::text))`,
                         });
                     } catch (err) {
                         // Ignore features not found
@@ -178,6 +179,7 @@ export default async function router(schema: Schema, config: Config) {
                             username = ${user.email}
                         `, {
                             deleted: true,
+                            properties: sql`jsonb_set(${ProfileFeature.properties}, '{time}', to_jsonb(${new Date().toISOString()}::text))`,
                         });
                     } catch (err) {
                         if (!(err instanceof Error) || !('status' in err) || ('status' in err && err.status !== 404)) {
@@ -284,6 +286,7 @@ export default async function router(schema: Schema, config: Config) {
                     id = ${req.params.id} AND username = ${user.email}
                 `, {
                     deleted: true,
+                    properties: sql`jsonb_set(${ProfileFeature.properties}, '{time}', to_jsonb(${new Date().toISOString()}::text))`,
                 });
             }
 
