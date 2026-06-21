@@ -280,7 +280,6 @@ import { useRouter, useRoute } from 'vue-router';
 import { server, stdclick } from '../../../src/std.ts';
 import type { MissionTemplate, PaletteList } from '../../../src/types.ts';
 import Keywords from '../CloudTAK/util/Keywords.vue';
-import Keywords from '../CloudTAK/util/Keywords.vue';
 import {
     TablerInput,
     TablerAlert,
