@@ -200,7 +200,6 @@ import {
     IconPencil,
 } from '@tabler/icons-vue'
 import Keywords from '../CloudTAK/util/Keywords.vue';
-import Keywords from '../CloudTAK/util/Keywords.vue';
 
 interface MissionTemplateLog {
     id: string;
