@@ -108,6 +108,30 @@
                             :min='1'
                         />
                     </div>
+
+                    <div
+                        v-if='config["retention::enabled"]'
+                        class='col-lg-12'
+                    >
+                        <TablerToggle
+                            v-model='config["retention::feature::enabled"]'
+                            :disabled='!edit'
+                            label='Enable Recently Deleted Feature Retention'
+                        />
+                    </div>
+
+                    <div
+                        v-if='config["retention::enabled"] && config["retention::feature::enabled"]'
+                        class='col-lg-12'
+                    >
+                        <TablerInput
+                            v-model='config["retention::feature::days"]'
+                            :disabled='!edit'
+                            type='number'
+                            label='Recently Deleted Feature Retention (Days)'
+                            :min='1'
+                        />
+                    </div>
                 </div>
             </template>
         </div>
@@ -138,6 +162,8 @@ interface RetentionConfig {
     'retention::chat::days': number;
     'retention::import::enabled': boolean;
     'retention::import::days': number;
+    'retention::feature::enabled': boolean;
+    'retention::feature::days': number;
 }
 
 const isOpen = ref<boolean>(false);
@@ -152,6 +178,8 @@ const config = ref<RetentionConfig>({
     'retention::chat::days': 30,
     'retention::import::enabled': false,
     'retention::import::days': 30,
+    'retention::feature::enabled': false,
+    'retention::feature::days': 30,
 });
 
 onMounted(() => {
@@ -183,6 +211,8 @@ async function fetch(): Promise<void> {
             'retention::chat::days': data['retention::chat::days'] ?? 30,
             'retention::import::enabled': data['retention::import::enabled'] ?? false,
             'retention::import::days': data['retention::import::days'] ?? 30,
+            'retention::feature::enabled': data['retention::feature::enabled'] ?? false,
+            'retention::feature::days': data['retention::feature::days'] ?? 30,
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));

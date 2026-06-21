@@ -368,7 +368,7 @@ async function createMission() {
 
         await OverlayManager.createLoaded({
             name: res.data.name,
-            url: `/mission/${encodeURIComponent(res.data.name)}`,
+            url: `/mission/${encodeURIComponent(res.data.guid)}`,
             type: 'geojson',
             mode: 'mission',
             token: res.data.token,

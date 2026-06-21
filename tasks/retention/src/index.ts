@@ -6,6 +6,7 @@ export interface RetentionTaskConfig {
     'retention::connection-feature::enabled'?: boolean;
     'retention::chat::enabled'?: boolean;
     'retention::import::enabled'?: boolean;
+    'retention::feature::enabled'?: boolean;
 }
 
 export interface RetentionTaskResult {
@@ -112,6 +113,36 @@ const tasks: RetentionTask[] = [{
 
         return await res.json() as RetentionTaskResult;
     },
+}, {
+    name: 'feature',
+    enabled: (config: RetentionTaskConfig): boolean => {
+        return config['retention::feature::enabled'] === true;
+    },
+    run: async (): Promise<RetentionTaskResult> => {
+        const apiUrl = process.env.API_URL;
+        const signingSecret = process.env.SigningSecret;
+
+        if (!apiUrl || !signingSecret) {
+            throw new Error('API_URL or SigningSecret not set');
+        }
+
+        const res = await fetch(new URL('/api/retention', apiUrl), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret, { expiresIn: '5m' })}`,
+            },
+            body: JSON.stringify({
+                action: 'feature',
+            }),
+        });
+
+        if (!res.ok) {
+            throw new Error(`Failed to execute feature retention: HTTP ${res.status}`);
+        }
+
+        return await res.json() as RetentionTaskResult;
+    },
 }];
 
 async function runOnce(): Promise<void> {
@@ -124,7 +155,7 @@ async function runOnce(): Promise<void> {
     }
 
     const url = new URL('/api/config', apiUrl);
-    url.searchParams.set('keys', 'retention::enabled,retention::connection-feature::enabled,retention::chat::enabled,retention::import::enabled');
+    url.searchParams.set('keys', 'retention::enabled,retention::connection-feature::enabled,retention::chat::enabled,retention::import::enabled,retention::feature::enabled');
 
     const res = await fetch(url, {
         headers: {

@@ -342,7 +342,7 @@ export default class OverlayManager extends BaseInterface {
         const overlayId = this.overlayId(id);
 
         if (!opts.localOnly) {
-            const { error } = await server.DELETE('/api/profile/overlay', {
+            const { error, response } = await server.DELETE('/api/profile/overlay', {
                 params: {
                     query: {
                         id: String(overlayId),
@@ -350,7 +350,7 @@ export default class OverlayManager extends BaseInterface {
                 }
             });
 
-            if (error) throw new Error(error.message);
+            if (error && response.status !== 404) throw new Error(error.message);
         }
 
         await db.overlay.delete(overlayId);
