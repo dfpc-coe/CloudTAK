@@ -172,9 +172,7 @@ async function listLayers() {
         const { data, error: serverError } = await server.GET('/api/connection/{:connectionid}/layer', {
             params: {
                 path: {
-                    ':connectionid': route.params.connectionid === 'admin'
-                        ? 'admin'
-                        : Number(route.params.connectionid)
+                    ':connectionid': Number(route.params.connectionid)
                 },
                 query: {
                     alarms: true,

@@ -466,11 +466,9 @@ onUnmounted(() => {
     }
 });
 
-function layerPathParams(): { ':connectionid': 'admin' | number; ':layerid': number } {
+function layerPathParams(): { ':connectionid': number; ':layerid': number } {
     return {
-        ':connectionid': route.params.connectionid === 'admin'
-            ? 'admin'
-            : Number(String(route.params.connectionid)),
+        ':connectionid': Number(String(route.params.connectionid)),
         ':layerid': Number(String(route.params.layerid))
     };
 }
