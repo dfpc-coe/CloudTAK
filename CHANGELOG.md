@@ -16,6 +16,14 @@
 
 ### Pending Release
 
+### v13.19.0 - 2026-06-21
+
+- :tada: Introduce Deleted Features retention policy
+- :rocket: Introduce database support for Overlay Parent relationships
+- :rocket: Rewrite Data Sync Log Keyword Component for more intuitive keyword additional and removal
+- :rocket: Use SearchSortFilter component for displaying Data Syncs and Logs
+- :rocket: Introduce AWS Mail Manager for outgoing email
+
 ### v13.18.1 - 2026-06-17
 
 - :bug: Ensure folder feature delete works correctly - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1499
