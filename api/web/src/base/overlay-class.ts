@@ -676,6 +676,11 @@ export default class Overlay {
     toDBOverlay(): DBOverlay {
         const dropStyles = ['mission', 'internal'].includes(this.mode);
 
+        // IndexedDB uses the structured clone algorithm which cannot clone Vue
+        // reactive Proxy objects. JSON round-trip strips any Proxy wrappers so
+        // only plain objects reach the database.
+        const styles = dropStyles ? [] : JSON.parse(JSON.stringify(this.styles)) as Array<LayerSpecification>;
+
         return {
             id: this.id,
             name: this.name,
@@ -694,7 +699,7 @@ export default class Overlay {
             encoding: this.encoding,
             actions: this.actions,
             url: this.url,
-            styles: dropStyles ? [] : this.styles,
+            styles,
             token: this.token
         } as DBOverlay;
     }
