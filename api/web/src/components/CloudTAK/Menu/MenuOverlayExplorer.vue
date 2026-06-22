@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import type { Basemap, BasemapList } from '../../../types.ts';
 import { server, stdurl } from '../../../std.ts';
@@ -117,6 +117,7 @@ import StandardItemBasemap from '../util/StandardItemBasemap.vue';
 import StandardItemFolder from '../util/StandardItemFolder.vue';
 import PathBreadcrumb from '../util/PathBreadcrumb.vue';
 import OverlayManager from '../../../base/overlay.ts';
+import type { Subscription } from 'dexie';
 const router = useRouter();
 
 const loading = ref(false);
@@ -134,8 +135,23 @@ const list = ref<BasemapList>({
     items: []
 });
 
-const overlayBasemapIds = computed<Set<string>>(() => {
-    return OverlayManager.loadedBasemapIds('overlay');
+const overlayBasemapIds = ref<Set<string>>(new Set());
+let overlaySubscription: Subscription | undefined;
+
+onMounted(() => {
+    overlaySubscription = OverlayManager.liveList().subscribe({
+        next: (items) => {
+            overlayBasemapIds.value = new Set(
+                items
+                    .filter((overlay) => overlay.mode === 'overlay' && overlay.mode_id)
+                    .map((overlay) => String(overlay.mode_id))
+            );
+        }
+    });
+});
+
+onUnmounted(() => {
+    overlaySubscription?.unsubscribe();
 });
 
 watch(

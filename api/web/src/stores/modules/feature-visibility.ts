@@ -217,7 +217,7 @@ export class FeatureVisibility {
             const mapStore = useMapStore();
             if (!mapStore._map) return;
 
-            await Promise.all(OverlayManager.listLoaded().map((overlay) => this.applyToOverlay(overlay)));
+            await Promise.all(OverlayManager.loaded.map((overlay) => this.applyToOverlay(overlay)));
         } catch (err) {
             console.error('Failed to apply visibility filters:', err);
         }

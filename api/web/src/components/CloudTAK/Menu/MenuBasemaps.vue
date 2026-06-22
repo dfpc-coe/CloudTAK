@@ -175,7 +175,7 @@
 </template>
 
 <script setup lang='ts'>
-import { onMounted, ref, watch, computed } from 'vue';
+import { onMounted, onUnmounted, ref, watch, computed } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import StandardItemBasemap from '../util/StandardItemBasemap.vue';
 import StandardItemFolder from '../util/StandardItemFolder.vue';
@@ -185,6 +185,7 @@ import { openExternalUrl } from '../../../base/capacitor.ts';
 import ProfileConfig from '../../../base/profile.ts';
 import { server, stdurl } from '../../../std.ts';
 import OverlayManager from '../../../base/overlay.ts';
+import type { Subscription } from 'dexie';
 import BasemapEditModal from './Basemaps/EditModal.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import SearchSortFilter from '../util/SearchSortFilter.vue';
@@ -212,8 +213,23 @@ import {
 import type { LayerSpecification } from 'maplibre-gl'
 import { useRouter } from 'vue-router';
 
-const overlayBasemapIds = computed<Set<string>>(() => {
-    return OverlayManager.loadedBasemapIds('overlay');
+const overlayBasemapIds = ref<Set<string>>(new Set());
+let overlaySubscription: Subscription | undefined;
+
+onMounted(() => {
+    overlaySubscription = OverlayManager.liveList().subscribe({
+        next: (items) => {
+            overlayBasemapIds.value = new Set(
+                items
+                    .filter((overlay) => overlay.mode === 'overlay' && overlay.mode_id)
+                    .map((overlay) => String(overlay.mode_id))
+            );
+        }
+    });
+});
+
+onUnmounted(() => {
+    overlaySubscription?.unsubscribe();
 });
 
 function basemapOverlayExists(basemap: Basemap): boolean {
