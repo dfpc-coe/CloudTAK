@@ -214,6 +214,7 @@ import type { LayerSpecification } from 'maplibre-gl'
 import { useRouter } from 'vue-router';
 
 const overlayBasemapIds = ref<Set<string>>(new Set());
+const currentBasemapModeIds = ref<Set<string>>(new Set());
 let overlaySubscription: Subscription | undefined;
 
 onMounted(() => {
@@ -222,6 +223,11 @@ onMounted(() => {
             overlayBasemapIds.value = new Set(
                 items
                     .filter((overlay) => overlay.mode === 'overlay' && overlay.mode_id)
+                    .map((overlay) => String(overlay.mode_id))
+            );
+            currentBasemapModeIds.value = new Set(
+                items
+                    .filter((overlay) => overlay.mode === 'basemap' && overlay.mode_id)
                     .map((overlay) => String(overlay.mode_id))
             );
         }
@@ -347,10 +353,7 @@ function setCollection(name: string) {
 }
 
 function isCurrentBasemap(basemapId: number): boolean {
-    const currentBasemap = OverlayManager.loaded.find(overlay =>
-        overlay.mode === 'basemap' && overlay.mode_id === String(basemapId)
-    );
-    return !!currentBasemap;
+    return currentBasemapModeIds.value.has(String(basemapId));
 }
 
 async function addOverlay(basemap: Basemap) {
