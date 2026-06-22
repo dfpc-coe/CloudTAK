@@ -8,6 +8,7 @@
             "@capacitor-community/keep-awake",
             "@capacitor/app",
             "@capacitor/browser",
+            "@capacitor/network",
             "@capacitor/camera",
             "@capacitor/clipboard",
             "@capacitor/geolocation",
