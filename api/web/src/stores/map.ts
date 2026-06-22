@@ -113,9 +113,9 @@ export const useMapStore = defineStore('cloudtak', {
 
         timer: ReturnType<typeof setInterval> | null;
 
-        _rawWorker: Worker;
-        _workerReady: Promise<void>;
-        worker: Comlink.Remote<Atlas>;
+        _rawWorker?: Worker;
+        _workerReady?: Promise<void>;
+        _worker?: Comlink.Remote<Atlas>;
         mission: Subscription | undefined;
         terrainEnabled: boolean;
         container?: HTMLElement;
@@ -143,19 +143,10 @@ export const useMapStore = defineStore('cloudtak', {
             lngLat?: LngLat;
         }
     } => {
-        const rawWorker = new Worker(AtlasWorker, { type: 'module' });
-        const workerReady = waitForAtlasWorkerReady(rawWorker);
-        const worker = Comlink.wrap<Atlas>(rawWorker);
-
-        new CloudTAKTransferHandler(
-            Comlink.transferHandlers,
-            true
-        );
-
         return {
-            _rawWorker: rawWorker,
-            _workerReady: workerReady,
-            worker,
+            _rawWorker: undefined,
+            _workerReady: undefined,
+            _worker: undefined,
             _bottomBar: markRaw(new BottomBarManager()),
             timer: null,
             callsign: 'Unknown',
@@ -222,6 +213,10 @@ export const useMapStore = defineStore('cloudtak', {
             if (!this._bottomBar) throw new Error('BottomBar Manager has not yet initialized');
             return this._bottomBar as BottomBarManager;
         },
+        worker: function(): Comlink.Remote<Atlas> {
+            if (!this._worker) throw new Error('Atlas worker has not yet started');
+            return this._worker as Comlink.Remote<Atlas>;
+        },
         locationCallback: function(): (position: Position) => void {
             return (position) => {
                 if (this.manualLocationMode) return;
@@ -254,9 +249,23 @@ export const useMapStore = defineStore('cloudtak', {
         }
     },
     actions: {
+        startWorker: function() {
+            if (this._rawWorker) return;
+
+            const rawWorker = new Worker(AtlasWorker, { type: 'module' });
+
+            new CloudTAKTransferHandler(
+                Comlink.transferHandlers,
+                true
+            );
+
+            this._rawWorker = rawWorker;
+            this._workerReady = waitForAtlasWorkerReady(rawWorker);
+            this._worker = Comlink.wrap<Atlas>(rawWorker);
+        },
         destroy: async function() {
             // Capture current worker instances to avoid races with $reset()/state() creating new ones.
-            const currentWorker = this.worker;
+            const currentWorker = this._worker;
             const currentRawWorker = this._rawWorker;
             const deviceStore = useDeviceStore();
 
@@ -565,6 +574,12 @@ export const useMapStore = defineStore('cloudtak', {
             return sub;
         },
         init: async function(container: HTMLElement) {
+            // Start the worker here rather than in state() so that std.ts
+            // inside the worker resolves serverUrl from KV only after
+            // initializeApp() has written it — eliminating the race that
+            // caused the worker to fall back to capacitor://localhost.
+            this.startWorker();
+
             const deviceStore = useDeviceStore();
 
             this.container = container;
@@ -604,7 +619,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             const { value: token } = await Preferences.get({ key: 'token' });
 
-            await this._workerReady;
+            await this._workerReady!;
             await this.worker.init(token || '');
 
             this.channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
