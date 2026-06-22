@@ -510,6 +510,8 @@ export const FullConfig = Type.Object({
     'retention::chat::days': Type.Integer({ description: 'Number of days to retain chat messages', minimum: 1 }),
     'retention::import::enabled': Type.Boolean({ description: 'Enable retention processing for imports' }),
     'retention::import::days': Type.Integer({ description: 'Number of days to retain imports', minimum: 1 }),
+    'retention::feature::enabled': Type.Boolean({ description: 'Enable retention processing for recently deleted features' }),
+    'retention::feature::days': Type.Integer({ description: 'Number of days to retain recently deleted features', minimum: 1 }),
     'agol::enabled': Type.Boolean({ description: 'Enable ArcGIS Online Integration' }),
     'agol::auth_method': Type.String({ description: 'AGOL Auth Type', enum: ['oauth2', 'legacy'] }),
     'agol::token': Type.String({ description: 'AGOL Legacy Token' }),

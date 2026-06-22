@@ -228,7 +228,7 @@ export default class IconsetManager extends BaseInterface {
     static async delete(uid: string, opts: Iconset_DeleteOptions = {}): Promise<void> {
         if (!opts.localOnly) {
             const token = await getRuntimeToken();
-            const { error } = await server.DELETE('/api/iconset/{:iconset}', {
+            const { error, response } = await server.DELETE('/api/iconset/{:iconset}', {
                 params: {
                     path: {
                         ':iconset': uid,
@@ -237,7 +237,7 @@ export default class IconsetManager extends BaseInterface {
                 headers: token ? { Authorization: `Bearer ${token}` } : undefined
             });
 
-            if (error) throw new Error(error.message);
+            if (error && response.status !== 404) throw new Error(error.message);
         }
 
         const cached = await db.iconset.get(uid);

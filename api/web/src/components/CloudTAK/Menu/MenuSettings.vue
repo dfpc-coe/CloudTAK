@@ -110,13 +110,13 @@ import {
     IconFingerprint,
     IconDeviceDesktop,
 } from '@tabler/icons-vue';
-import { useMapStore } from '../../../stores/map.ts';
+import { useDeviceStore } from '../../../stores/device.ts';
 
-const mapStore = useMapStore();
+const deviceStore = useDeviceStore();
 const router = useRouter();
 
 async function refreshApp() {
-    if (!mapStore.isOnline) {
+    if (!deviceStore.network.isOnline) {
         throw new Error('Cannot refresh app while offline.');
     }
 

@@ -65,9 +65,11 @@
                     </div>
                     <div class='col-12'>
                         <label class='form-label mx-2'>Default Keywords</label>
-                        <TagEntry
-                            v-model='template.keywords'
+                        <Keywords
+                            :keywords='template.keywords'
+                            :relevant='[]'
                             placeholder='Default Keywords'
+                            @update:keywords='template.keywords = $event'
                         />
                     </div>
                     <div class='col-12'>
@@ -278,7 +280,6 @@ import { useRouter, useRoute } from 'vue-router';
 import { server, stdclick } from '../../../src/std.ts';
 import type { MissionTemplate, PaletteList } from '../../../src/types.ts';
 import Keywords from '../CloudTAK/util/Keywords.vue';
-import TagEntry from '../CloudTAK/util/TagEntry.vue';
 import {
     TablerInput,
     TablerAlert,

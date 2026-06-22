@@ -92,7 +92,7 @@ export default class Chatroom {
             params: { query: { chatroom: names } }
         });
 
-        if (res.error) throw new Error(res.error.message);
+        if (res.error && res.response.status !== 404) throw new Error(res.error.message);
 
         await db.chatroom.bulkDelete(names);
     }

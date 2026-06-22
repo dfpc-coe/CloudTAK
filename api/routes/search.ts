@@ -1,5 +1,5 @@
 import { Type, Static } from '@sinclair/typebox';
-import SunCalc from 'suncalc';
+import * as SunCalc from 'suncalc';
 import geomagnetism from 'geomagnetism';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -10,7 +10,8 @@ import { SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from '.
 import { Feature } from '@tak-ps/node-cot';
 import Config from '../lib/config.js';
 
-function optionalISOString(date: Date): string | null {
+function optionalISOString(date: Date | null): string | null {
+    if (date === null) return null;
     return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 

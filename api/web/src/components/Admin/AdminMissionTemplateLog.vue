@@ -62,9 +62,11 @@
                     </div>
                     <div class='col-12'>
                         <label class='form-label mx-2'>Keywords</label>
-                        <TagEntry
-                            v-model='log.keywords'
+                        <Keywords
+                            :keywords='log.keywords'
+                            :relevant='[]'
                             placeholder='Keywords'
+                            @update:keywords='log.keywords = $event'
                         />
                     </div>
                     <div class='col-12'>
@@ -198,7 +200,6 @@ import {
     IconPencil,
 } from '@tabler/icons-vue'
 import Keywords from '../CloudTAK/util/Keywords.vue';
-import TagEntry from '../CloudTAK/util/TagEntry.vue';
 
 interface MissionTemplateLog {
     id: string;

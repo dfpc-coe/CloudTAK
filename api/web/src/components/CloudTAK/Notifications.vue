@@ -118,13 +118,6 @@
             </div>
         </div>
     </div>
-
-    <NotificationToast
-        v-for='n in filteredListToast'
-        :id='n.id'
-        :key='n.id'
-        @close='TAKNotification.update(n.id, { toast: false })'
-    />
 </template>
 
 <script setup lang='ts'>
@@ -135,7 +128,6 @@ import { useRouter } from 'vue-router';
 import { useObservable } from '@vueuse/rxjs';
 import TAKNotification_, { NotificationType } from '../../base/notification.ts';
 const TAKNotification = TAKNotification_;
-import NotificationToast from './util/NotificationToast.vue';
 import NotificationIcon from './util/NotificationIcon.vue';
 import timeDiff from '../../timediff.ts';
 import {
@@ -177,13 +169,6 @@ const filteredList = computed(() => {
         if (!selectedTypes.value.includes(n.type)) return false;
         return n.name.toLowerCase().includes(paging.value.filter.toLowerCase())
             || n.body.toLowerCase().includes(paging.value.filter.toLowerCase());
-    })
-});
-
-const filteredListToast = computed(() => {
-    if (!list.value) return [];
-    return list.value.filter((n) => {
-        return n.toast && !n.read;
     })
 });
 
