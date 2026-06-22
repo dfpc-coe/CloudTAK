@@ -823,8 +823,11 @@ export default async function router(schema: Schema, config: Config) {
                 });
             } else if (basemap.url.includes(new URL(config.PMTILES_URL || 'http://localhost:5001').hostname)) {
                 // Hosted PMTiles basemap without a stored tilejson URL.
-                const tilejsonPath = basemap.url.replace(/\/tiles\/\{\$?[^}]+\}\/\{\$?[^}]+\}\/\{\$?[^}]+\}(\.[^?]*)?(\?.*)?$/, '');
-                const tilejsonUrl = new URL(tilejsonPath);
+                // Reconstruct the TileJSON endpoint using the known PMTiles host and the
+                // path up to (but not including) the tile-coordinate template segment.
+                const parsedUrl = new URL(basemap.url);
+                const tilejsonUrl = new URL(config.PMTILES_URL);
+                tilejsonUrl.pathname = parsedUrl.pathname.replace(/\/tiles\/\{[^}]+\}.*$/, '');
                 tilejsonUrl.searchParams.set('token', auth.token);
 
                 const tj = await fetch(tilejsonUrl);
