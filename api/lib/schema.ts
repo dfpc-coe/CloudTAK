@@ -546,6 +546,8 @@ export const ProfileInterest = pgTable('profile_interests', {
 export const ProfilePaging = pgTable('profile_paging', {
     id: serial().primaryKey(),
     username: text().notNull().references(() => Profile.username),
+    seed: text().notNull(),
+    verified: boolean().notNull().default(false),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     enabled: boolean().notNull().default(false),
