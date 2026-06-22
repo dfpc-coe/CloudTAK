@@ -56,7 +56,9 @@
                                 <p
                                     v-else-if='isOffline'
                                     class='text-white fw-semibold p-0 mb-0'
-                                >—</p>
+                                >
+                                    —
+                                </p>
                                 <p
                                     v-else
                                     class='text-white fw-semibold p-0 mb-0'
@@ -273,7 +275,6 @@ import MenuTemplate from '../../util/MenuTemplate.vue';
 import OverlayManager from '../../../../base/overlay.ts';
 import { useMapStore } from '../../../../stores/map.ts';
 import { useDeviceStore } from '../../../../stores/device.ts';
-import Offline from '../../../util/Offline.vue';
 const mapStore = useMapStore();
 const deviceStore = useDeviceStore();
 const isOffline = computed(() => !deviceStore.network.isOnline);
