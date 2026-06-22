@@ -821,6 +821,27 @@ export default async function router(schema: Schema, config: Config) {
                     type: basemap.type,
                     actions: fromProtocol(basemap.protocol, basemap).actions(),
                 });
+            } else if (basemap.url.includes(new URL(config.PMTILES_URL || 'http://localhost:5001').hostname)) {
+                // Hosted PMTiles basemap without a stored tilejson URL.
+                // Reconstruct the TileJSON endpoint using the known PMTiles host and the
+                // path up to (but not including) the tile-coordinate template segment.
+                const parsedUrl = new URL(basemap.url);
+                const tilejsonUrl = new URL(config.PMTILES_URL);
+                tilejsonUrl.pathname = parsedUrl.pathname.replace(/\/tiles\/\{[^}]+\}.*$/, '');
+                tilejsonUrl.searchParams.set('token', auth.token);
+
+                const tj = await fetch(tilejsonUrl);
+                if (!tj.ok) {
+                    throw new Err(400, null, 'Unable to fetch TileJSON from hosted basemap');
+                }
+                const tjJson = await tj.json();
+
+                res.json({
+                    ...tjJson,
+                    type: basemap.type,
+                    tiles: [tileURL],
+                    actions: fromProtocol(basemap.protocol, basemap).actions(),
+                });
             } else {
                 const json = BasemapProtocol.json({
                     ...basemap,
