@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.19.1 - 2026-06-22
+
+- :bug: Fix `vector_layers` field not being proxied for PMTiles Layers
+
 ### v13.19.0 - 2026-06-21
 
 - :tada: Introduce Deleted Features retention policy
