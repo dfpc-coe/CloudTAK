@@ -295,7 +295,7 @@ async function refresh() {
     try {
         let data: ETLConnection;
         if (props.connection.id === 0) {
-            const res = await server.GET('/api/connection/admin');
+            const res = await server.GET('/api/connection/0');
             if (res.error) throw new Error(res.error.message);
             data = res.data as ETLConnection;
         } else {

@@ -18,10 +18,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Task Status',
         group: 'Task',
         params: Type.Object({
-            connectionid: Type.Union([
-                Type.Literal('admin'),
-                Type.Integer({ minimum: 1 }),
-            ]),
+            connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer(),
         }),
         description: 'Get the status of a task stack in relation to a given layer',
@@ -31,8 +28,8 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             let layer;
-            if (req.params.connectionid === 'admin') {
-                await Auth.is_auth(config, req);
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
@@ -53,10 +50,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Cancel Update',
         group: 'Task',
         params: Type.Object({
-            connectionid: Type.Union([
-                Type.Literal('admin'),
-                Type.Integer({ minimum: 1 }),
-            ]),
+            connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer(),
         }),
         description: 'If a stack is currently updating, cancel the stack update',
@@ -64,8 +58,8 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             let layer;
-            if (req.params.connectionid === 'admin') {
-                await Auth.is_auth(config, req);
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
@@ -91,10 +85,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Run Task',
         group: 'Task',
         params: Type.Object({
-            connectionid: Type.Union([
-                Type.Literal('admin'),
-                Type.Integer({ minimum: 1 }),
-            ]),
+            connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer(),
         }),
         description: 'Manually invoke a Task',
@@ -102,8 +93,8 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             let layer;
-            if (req.params.connectionid === 'admin') {
-                await Auth.is_auth(config, req);
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
@@ -129,10 +120,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Task Logs',
         group: 'Task',
         params: Type.Object({
-            connectionid: Type.Union([
-                Type.Literal('admin'),
-                Type.Integer({ minimum: 1 }),
-            ]),
+            connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer(),
         }),
         description: 'Get the logs related to the given task',
@@ -142,8 +130,8 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             let layer;
-            if (req.params.connectionid === 'admin') {
-                await Auth.is_auth(config, req);
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
@@ -164,10 +152,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Task Capabilities',
         group: 'Task',
         params: Type.Object({
-            connectionid: Type.Union([
-                Type.Literal('admin'),
-                Type.Integer({ minimum: 1 }),
-            ]),
+            connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer(),
         }),
         description: 'Get the Capabilities object',
@@ -175,8 +160,8 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             let layer;
-            if (req.params.connectionid === 'admin') {
-                await Auth.is_auth(config, req);
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
@@ -199,10 +184,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Task Deploy',
         group: 'Task',
         params: Type.Object({
-            connectionid: Type.Union([
-                Type.Literal('admin'),
-                Type.Integer({ minimum: 1 }),
-            ]),
+            connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer(),
         }),
         description: 'Deploy a task stack',
@@ -212,8 +194,8 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             let layer;
-            if (req.params.connectionid === 'admin') {
-                await Auth.is_auth(config, req);
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {

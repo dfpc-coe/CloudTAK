@@ -267,7 +267,7 @@ async function invoke() {
         await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/task/invoke', {
             params: {
                 path: {
-                    ':connectionid': route.params.connectionid === 'admin' ? 'admin' : Number(route.params.connectionid),
+                    ':connectionid': Number(route.params.connectionid),
                     ':layerid': Number(String(route.params.layerid))
                 }
             }
@@ -303,7 +303,7 @@ async function saveIncoming() {
         const res = await server.PATCH(`/api/connection/{:connectionid}/layer/{:layerid}/incoming`, {
             params: {
                 path: {
-                    ':connectionid': route.params.connectionid === 'admin' ? 'admin' : Number(route.params.connectionid),
+                    ':connectionid': Number(route.params.connectionid),
                     ':layerid': Number(String(route.params.layerid))
                 }
             },

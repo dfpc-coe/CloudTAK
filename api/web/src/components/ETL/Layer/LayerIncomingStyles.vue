@@ -70,7 +70,7 @@
                     :schema='(capabilities.incoming?.schema?.output ?? { properties: {} }) as Record<string, unknown>'
                     :disabled='disabled'
                     :disable-marti='!!props.layer.incoming?.data'
-                    :connection='route.params.connectionid === "admin" ? 0 : Number(route.params.connectionid)'
+                    :connection='Number(route.params.connectionid)'
                 />
             </div>
 
@@ -218,7 +218,7 @@
                             :schema='(capabilities.incoming?.schema?.output ?? {}) as Record<string, unknown>'
                             :disabled='disabled'
                             :disable-marti='!!props.layer.incoming?.data'
-                            :connection='route.params.connectionid === "admin" ? 0 : Number(route.params.connectionid)'
+                            :connection='Number(route.params.connectionid)'
                         />
                     </template>
                 </div>
@@ -324,7 +324,7 @@ async function saveLayer() {
         const res = await server.PATCH('/api/connection/{:connectionid}/layer/{:layerid}/incoming', {
             params: {
                 path: {
-                    ':connectionid': route.params.connectionid === 'admin' ? 'admin' : Number(route.params.connectionid),
+                    ':connectionid': Number(route.params.connectionid),
                     ':layerid': Number(route.params.layerid)
                 }
             },

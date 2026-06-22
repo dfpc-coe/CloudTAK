@@ -99,10 +99,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'List layers',
         params: Type.Object({
-            connectionid: Type.Union([
-                Type.Literal('admin'),
-                Type.Integer({ minimum: 1 }),
-            ]),
+            connectionid: Type.Integer({ minimum: 0 }),
         }),
         query: Type.Object({
             alarms: Type.Boolean({
@@ -133,8 +130,8 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const resources = [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }];
 
-            if (req.params.connectionid === 'admin') {
-                await Auth.is_auth(config, req, { resources });
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
             } else {
                 const { connection } = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
                 if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -147,7 +144,7 @@ export default async function router(schema: Schema, config: Config) {
                 sort: req.query.sort,
                 where: sql`
                     layers.name ~* ${req.query.filter}
-                    AND connection = ${Param(req.params.connectionid === 'admin' ? null : req.params.connectionid)}
+                    AND connection = ${Param(req.params.connectionid === 0 ? null : req.params.connectionid)}
                     AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers_incoming.data)
                 `,
             });
@@ -252,10 +249,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Register a new incoming layer config',
         params: Type.Object({
-            connectionid: Type.Union([
-                Type.Literal('admin'),
-                Type.Integer({ minimum: 1 }),
-            ]),
+            connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
@@ -272,7 +266,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             let connection = null;
             let layer;
-            if (req.params.connectionid === 'admin') {
+            if (req.params.connectionid === 0) {
                 await Auth.as_user(config, req, { admin: true });
                 layer = await layerControl.from(null, req.params.layerid);
                 if (layer.connection !== null) {
@@ -485,10 +479,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Remove an incoming config from a layer',
         params: Type.Object({
-            connectionid: Type.Union([
-                Type.Literal('admin'),
-                Type.Integer({ minimum: 1 }),
-            ]),
+            connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
@@ -496,7 +487,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             let connection = null;
             let layer;
-            if (req.params.connectionid === 'admin') {
+            if (req.params.connectionid === 0) {
                 await Auth.as_user(config, req, { admin: true });
                 layer = await layerControl.from(null, req.params.layerid);
                 if (layer.connection !== null) {
@@ -544,10 +535,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Register a new outgoing layer config',
         params: Type.Object({
-            connectionid: Type.Union([
-                Type.Literal('admin'),
-                Type.Integer({ minimum: 1 }),
-            ]),
+            connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
@@ -558,7 +546,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             let connection = null;
             let layer;
-            if (req.params.connectionid === 'admin') {
+            if (req.params.connectionid === 0) {
                 await Auth.as_user(config, req, { admin: true });
                 layer = await layerControl.from(null, req.params.layerid);
                 if (layer.connection !== null) {
@@ -658,10 +646,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Remove an outgoing config from a layer',
         params: Type.Object({
-            connectionid: Type.Union([
-                Type.Literal('admin'),
-                Type.Integer({ minimum: 1 }),
-            ]),
+            connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
@@ -669,7 +654,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             let connection = null;
             let layer;
-            if (req.params.connectionid === 'admin') {
+            if (req.params.connectionid === 0) {
                 await Auth.as_user(config, req, { admin: true });
                 layer = await layerControl.from(null, req.params.layerid);
                 if (layer.connection !== null) {
@@ -723,10 +708,7 @@ export default async function router(schema: Schema, config: Config) {
             }),
         }),
         params: Type.Object({
-            connectionid: Type.Union([
-                Type.Literal('admin'),
-                Type.Integer({ minimum: 1 }),
-            ]),
+            connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
@@ -762,7 +744,7 @@ export default async function router(schema: Schema, config: Config) {
 
             let connection = null;
             let layer;
-            if (req.params.connectionid === 'admin') {
+            if (req.params.connectionid === 0) {
                 await Auth.as_user(config, req, { admin: true });
                 layer = await layerControl.from(null, req.params.layerid);
                 if (layer.connection !== null) {
@@ -847,10 +829,7 @@ export default async function router(schema: Schema, config: Config) {
             }),
         }),
         params: Type.Object({
-            connectionid: Type.Union([
-                Type.Literal('admin'),
-                Type.Integer({ minimum: 1 }),
-            ]),
+            connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: LayerResponse,
@@ -862,10 +841,8 @@ export default async function router(schema: Schema, config: Config) {
             ];
 
             let layer;
-            if (req.params.connectionid === 'admin') {
-                await Auth.is_auth(config, req, {
-                    token: true, resources,
-                });
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true, token: true });
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
@@ -910,10 +887,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Redeploy a specific Layer with latest CloudFormation output',
         params: Type.Object({
-            connectionid: Type.Union([
-                Type.Literal('admin'),
-                Type.Integer({ minimum: 1 }),
-            ]),
+            connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
@@ -924,8 +898,8 @@ export default async function router(schema: Schema, config: Config) {
             ];
 
             let layer;
-            if (req.params.connectionid === 'admin') {
-                await Auth.is_auth(config, req, { resources });
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
@@ -957,10 +931,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Delete a layer',
         params: Type.Object({
-            connectionid: Type.Union([
-                Type.Literal('admin'),
-                Type.Integer({ minimum: 1 }),
-            ]),
+            connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
@@ -971,8 +942,8 @@ export default async function router(schema: Schema, config: Config) {
             ];
 
             let layer;
-            if (req.params.connectionid === 'admin') {
-                await Auth.is_auth(config, req, { resources });
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
                 const { connection } = await Auth.is_connection(config, req, { resources }, req.params.connectionid);

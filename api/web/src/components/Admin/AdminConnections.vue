@@ -8,7 +8,7 @@
             <div class='ms-auto btn-list'>
                 <TablerIconButton
                     title='View Admin Connection'
-                    @click='navTo("/connection/admin")'
+                    @click='navTo("/connection/0")'
                 >
                     <IconServerBolt
                         :size='32'

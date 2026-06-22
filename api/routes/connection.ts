@@ -270,7 +270,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/connection/admin', {
+    await schema.get('/connection/0', {
         name: 'Get Admin Connection',
         group: 'Connection',
         description: 'Get the admin connection (server-level connection using the server certificate)',
