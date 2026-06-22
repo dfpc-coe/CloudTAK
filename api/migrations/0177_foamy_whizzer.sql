@@ -1,1 +1,1 @@
-ALTER TABLE "profile_sessions" DROP COLUMN "fcm";
+ALTER TABLE "profile_sessions" DROP COLUMN IF EXISTS "fcm";
