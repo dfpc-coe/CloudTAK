@@ -49,15 +49,35 @@ export default async function router(schema: Schema, config: Config) {
     await schema.post('/profile/paging', {
         name: 'Create Paging Source',
         group: 'ProfilePaging',
-        description: 'Create a new paging source. A verification code will be sent to the provided address/number.',
+        description: 'Create a new paging source. For SMS/Email a verification code is sent to the provided address/number. Push sources are device-managed and require no verification.',
         body: Type.Object({
             type: Type.Enum(ProfilePaging_Type),
-            value: Type.String({ minLength: 1 }),
+            value: Type.Optional(Type.String()),
         }),
         res: ProfilePagingResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
+
+            if (req.body.type === ProfilePaging_Type.PUSH) {
+                // Push notifications are device-managed: the FCM token is stored in
+                // `value` and require no out-of-band code verification.
+                const paging = await config.models.ProfilePaging.generate({
+                    username: user.email,
+                    type: req.body.type,
+                    value: req.body.value || '',
+                    seed: await generateSecret(),
+                    verified: true,
+                    enabled: true,
+                });
+
+                res.json(paging);
+                return;
+            }
+
+            if (!req.body.value) {
+                throw new Err(400, null, 'A value is required for this paging type');
+            }
 
             const seed = await generateSecret();
             const code = await generateCode(seed);

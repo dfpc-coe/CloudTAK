@@ -557,7 +557,6 @@ export const ProfilePaging = pgTable('profile_paging', {
 
 export const ProfileSession = pgTable('profile_sessions', {
     id: serial().primaryKey(),
-    fcm: text(),
     username: text().notNull().references(() => Profile.username),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     ip: text().notNull(),

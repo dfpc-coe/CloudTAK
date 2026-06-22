@@ -45,7 +45,7 @@ export async function sendCode(
             console.log(`[PagingSender] Email to ${value}: Your verification code is ${code}`);
             break;
         case ProfilePaging_Type.PUSH:
-            // TODO: integrate Firebase Cloud Messaging using profile_sessions.fcm
+            // TODO: integrate Firebase Cloud Messaging using the stored FCM token (value)
             console.log(`[PagingSender] Push to ${value}: Your verification code is ${code}`);
             break;
         default:
