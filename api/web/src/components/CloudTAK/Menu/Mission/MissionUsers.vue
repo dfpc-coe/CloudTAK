@@ -54,99 +54,98 @@
 
         <Offline v-if='isOffline' />
         <template v-else>
-
-        <div
-            v-if='invites.length'
-            class='col-12 px-2 py-2'
-        >
-            <StandardItem
-                class='d-flex flex-column px-2 py-2'
-                @click='showInvites = !showInvites'
+            <div
+                v-if='invites.length'
+                class='col-12 px-2 py-2'
             >
-                <div class='d-flex align-items-center gap-2'>
-                    <IconMail
-                        :size='24'
-                        stroke='1'
-                    />
-                    <span class='fw-bold'>Pending Invites</span>
-                    <TablerBadge
-                        class='rounded-pill small ms-auto'
-                        background-color='rgba(239, 68, 68, 0.2)'
-                        border-color='rgba(239, 68, 68, 0.5)'
-                        text-color='#dc2626'
-                    >
-                        {{ invites.length }}
-                    </TablerBadge>
-                    <IconChevronDown
-                        v-if='!showInvites'
-                        :size='20'
-                        stroke='1'
-                        class='ms-2'
-                    />
-                    <IconChevronUp
-                        v-else
-                        :size='20'
-                        stroke='1'
-                        class='ms-2'
-                    />
-                </div>
-
-                <transition name='menu-overlays-fade'>
-                    <div
-                        v-if='showInvites'
-                        class='mt-2 pt-2 px-3 rounded-3 border border-white border-opacity-10 bg-black bg-opacity-25'
-                        @click.stop
-                    >
-                        <div
-                            v-for='invite in invites'
-                            :key='invite.invitee'
-                            class='d-flex align-items-center justify-content-between mb-2'
+                <StandardItem
+                    class='d-flex flex-column px-2 py-2'
+                    @click='showInvites = !showInvites'
+                >
+                    <div class='d-flex align-items-center gap-2'>
+                        <IconMail
+                            :size='24'
+                            stroke='1'
+                        />
+                        <span class='fw-bold'>Pending Invites</span>
+                        <TablerBadge
+                            class='rounded-pill small ms-auto'
+                            background-color='rgba(239, 68, 68, 0.2)'
+                            border-color='rgba(239, 68, 68, 0.5)'
+                            text-color='#dc2626'
                         >
-                            <div class='d-flex flex-column'>
-                                <div v-text='invite.invitee' />
-                                <div
-                                    class='small text-muted'
-                                    v-text='invite.role ? invite.role.name : "Unknown Role"'
+                            {{ invites.length }}
+                        </TablerBadge>
+                        <IconChevronDown
+                            v-if='!showInvites'
+                            :size='20'
+                            stroke='1'
+                            class='ms-2'
+                        />
+                        <IconChevronUp
+                            v-else
+                            :size='20'
+                            stroke='1'
+                            class='ms-2'
+                        />
+                    </div>
+
+                    <transition name='menu-overlays-fade'>
+                        <div
+                            v-if='showInvites'
+                            class='mt-2 pt-2 px-3 rounded-3 border border-white border-opacity-10 bg-black bg-opacity-25'
+                            @click.stop
+                        >
+                            <div
+                                v-for='invite in invites'
+                                :key='invite.invitee'
+                                class='d-flex align-items-center justify-content-between mb-2'
+                            >
+                                <div class='d-flex flex-column'>
+                                    <div v-text='invite.invitee' />
+                                    <div
+                                        class='small text-muted'
+                                        v-text='invite.role ? invite.role.name : "Unknown Role"'
+                                    />
+                                </div>
+                                <TablerDelete
+                                    label='Revoke Invite'
+                                    displaytype='icon'
+                                    @delete='removeInvite(invite)'
                                 />
                             </div>
-                            <TablerDelete
-                                label='Revoke Invite'
-                                displaytype='icon'
-                                @delete='removeInvite(invite)'
-                            />
                         </div>
-                    </div>
-                </transition>
-            </StandardItem>
-        </div>
+                    </transition>
+                </StandardItem>
+            </div>
 
-        <TablerNone
-            v-if='!filteredSubscriptions.length'
-            :create='false'
-            label='No Mission Subscribers'
-        />
-        <div
-            v-for='sub of filteredSubscriptions'
-            v-else
-            :key='sub.clientUid'
-            class='col-lg-12'
-        >
-            <Contact
-                :contact='toContact(sub)'
-                @chat='router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
+            <TablerNone
+                v-if='!filteredSubscriptions.length'
+                :create='false'
+                label='No Mission Subscribers'
+            />
+            <div
+                v-for='sub of filteredSubscriptions'
+                v-else
+                :key='sub.clientUid'
+                class='col-lg-12'
             >
-                <template
-                    v-if='canInvite'
-                    #actions
+                <Contact
+                    :contact='toContact(sub)'
+                    @chat='router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
                 >
-                    <TablerDelete
-                        label='Remove User'
-                        displaytype='icon'
-                        @delete='removeUser(sub)'
-                    />
-                </template>
-            </Contact>
-        </div>
+                    <template
+                        v-if='canInvite'
+                        #actions
+                    >
+                        <TablerDelete
+                            label='Remove User'
+                            displaytype='icon'
+                            @delete='removeUser(sub)'
+                        />
+                    </template>
+                </Contact>
+            </div>
         </template>
     </MenuTemplate>
 </template>
