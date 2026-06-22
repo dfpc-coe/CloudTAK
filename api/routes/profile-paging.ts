@@ -4,37 +4,11 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { ProfilePaging } from '../lib/schema.js';
-import type { Static } from '@sinclair/typebox';
 import { ProfilePagingResponse, StandardResponse } from '../lib/types.js';
 import { ProfilePaging_Type } from '../lib/enums.js';
 import { generateSecret, generateCode, verifyCode, sendCode } from '../lib/paging.js';
 import { sql } from 'drizzle-orm';
 import * as Default from '../lib/limits.js';
-
-type PagingResponseShape = Static<typeof ProfilePagingResponse>;
-
-function toSafe(paging: {
-    id: number;
-    username: string;
-    seed: string;
-    verified: boolean;
-    enabled: boolean;
-    type: string;
-    value: string;
-    created: string;
-    updated: string;
-}): PagingResponseShape {
-    return {
-        id: paging.id,
-        username: paging.username,
-        verified: paging.verified,
-        enabled: paging.enabled,
-        type: paging.type,
-        value: paging.value,
-        created: paging.created,
-        updated: paging.updated,
-    };
-}
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile/paging', {
@@ -99,9 +73,7 @@ export default async function router(schema: Schema, config: Config) {
 
             await sendCode(req.body.type, req.body.value, code);
 
-            // Omit seed from response by returning only the safe fields
-            const { seed: _seed, ...safe } = paging;
-            res.json(safe);
+            res.json(paging);
         } catch (err) {
             Err.respond(err, res);
         }
@@ -125,8 +97,7 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(403, null, 'You do not own this paging source');
             }
 
-            const { seed: _seed, ...safe } = paging;
-            res.json(safe);
+            res.json(paging);
         } catch (err) {
             Err.respond(err, res);
         }
@@ -178,8 +149,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const paging = await config.models.ProfilePaging.commit(req.params.pagingid, updates);
 
-            const { seed: _seed, ...safe } = paging;
-            res.json(safe);
+            res.json(paging);
         } catch (err) {
             Err.respond(err, res);
         }
@@ -218,8 +188,7 @@ export default async function router(schema: Schema, config: Config) {
                 verified: true,
             });
 
-            const { seed: _seed, ...safe } = updated;
-            res.json(safe);
+            res.json(updated);
         } catch (err) {
             Err.respond(err, res);
         }
