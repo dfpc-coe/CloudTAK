@@ -82,6 +82,12 @@ export enum VideoLease_SourceType {
     UAS_FIXEDWING = 'uas-fixedwing',
 }
 
+export enum ProfilePaging_Type {
+    SMS = 'sms',
+    EMAIL = 'email',
+    PUSH = 'push',
+}
+
 export enum Profile_Zoom {
     ALWAYS = 'always',
     CONDITIONAL = 'conditional',
