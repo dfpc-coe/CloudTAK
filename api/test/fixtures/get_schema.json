@@ -1274,11 +1274,6 @@
         "query": false,
         "res": true
     },
-    "POST /retention": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "GET /search": {
         "body": false,
         "query": false,
@@ -1330,6 +1325,11 @@
         "res": true
     },
     "POST /server/tileset": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "POST /retention": {
         "body": true,
         "query": false,
         "res": true
@@ -1427,11 +1427,6 @@
     "GET /user/:username/session": {
         "body": false,
         "query": true,
-        "res": true
-    },
-    "GET /video/ice": {
-        "body": false,
-        "query": false,
         "res": true
     },
     "POST /video/auth": {
