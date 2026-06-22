@@ -325,6 +325,18 @@ export const ProfileInterestResponse = createSelectSchema(schemas.ProfileInteres
     bounds: Feature.Geometry,
 });
 
+/** seed is intentionally excluded — it must never be returned to the client */
+export const ProfilePagingResponse = Type.Object({
+    id: Type.Integer(),
+    username: Type.String(),
+    verified: Type.Boolean(),
+    enabled: Type.Boolean(),
+    type: Type.String(),
+    value: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+});
+
 export const ProfileVideoResponse = createSelectSchema(schemas.ProfileVideo, {
     lease: Type.Integer(),
 });
