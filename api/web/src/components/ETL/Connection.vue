@@ -200,8 +200,8 @@ onMounted(async () => {
 async function fetch() {
     connection.value = undefined;
 
-    if (route.params.connectionid === 'admin') {
-        const res = await server.GET('/api/connection/admin');
+    if (Number(route.params.connectionid) === 0) {
+        const res = await server.GET('/api/connection/0');
         if (res.error) throw new Error(res.error.message);
         connection.value = res.data as ETLConnection;
     } else {

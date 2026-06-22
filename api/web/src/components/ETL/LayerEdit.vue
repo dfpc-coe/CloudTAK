@@ -226,7 +226,7 @@ async function fetch() {
                 download: false
             },
             path: {
-                ':connectionid': route.params.connectionid === 'admin' ? 'admin' : Number(route.params.connectionid),
+                ':connectionid': Number(route.params.connectionid),
                 ':layerid': Number(route.params.layerid)
             }
         }
@@ -240,7 +240,7 @@ async function deleteLayer() {
     const res = await server.DELETE('/api/connection/{:connectionid}/layer/{:layerid}', {
         params: {
             path: {
-                ':connectionid': route.params.connectionid === 'admin' ? 'admin' : Number(route.params.connectionid),
+                ':connectionid': Number(route.params.connectionid),
                 ':layerid': Number(route.params.layerid)
             }
         }
@@ -270,7 +270,7 @@ async function create() {
                 params: {
                     query: { alarms: true },
                     path: {
-                        ':connectionid': route.params.connectionid === 'admin' ? 'admin' : Number(route.params.connectionid),
+                        ':connectionid': Number(route.params.connectionid),
                         ':layerid': Number(route.params.layerid)
                     }
                 },

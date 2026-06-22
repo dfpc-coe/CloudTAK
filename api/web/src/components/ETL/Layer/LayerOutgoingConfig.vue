@@ -188,7 +188,7 @@ async function saveOutgoing() {
         const res = await server.PATCH('/api/connection/{:connectionid}/layer/{:layerid}/outgoing', {
             params: {
                 path: {
-                    ':connectionid': route.params.connectionid === 'admin' ? 'admin' : Number(route.params.connectionid),
+                    ':connectionid': Number(route.params.connectionid),
                     ':layerid': Number(String(route.params.layerid))
                 }
             },

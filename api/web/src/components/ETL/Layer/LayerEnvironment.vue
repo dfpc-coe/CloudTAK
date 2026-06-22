@@ -289,7 +289,7 @@ async function saveLayer() {
         {
             params: {
                 path: {
-                    ':connectionid': props.layer.connection === null ? 'admin' : Number(props.layer.connection),
+                    ':connectionid': props.layer.connection ?? 0,
                     ':layerid': Number(props.layer.id)
                 }
             },

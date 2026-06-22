@@ -142,8 +142,8 @@ onMounted(async () => {
     await fetchList();
 });
 
-function layerConnectionId(layer: AdminLayerUpdate): 'admin' | number {
-    return layer.connection ?? 'admin';
+function layerConnectionId(layer: AdminLayerUpdate): number {
+    return layer.connection ?? 0;
 }
 
 async function fetchList(): Promise<void> {
@@ -235,6 +235,6 @@ function canManageLayer(layer: AdminLayerUpdate): boolean {
 }
 
 function openLayer(layer: AdminLayerUpdate): void {
-    void openSecondaryView(`/connection/${layer.connection ?? 'admin'}/layer/${layer.id}`);
+    void openSecondaryView(`/connection/${layer.connection ?? 0}/layer/${layer.id}`);
 }
 </script>
