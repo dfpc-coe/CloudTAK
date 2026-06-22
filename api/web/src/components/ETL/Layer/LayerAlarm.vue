@@ -249,7 +249,7 @@ async function saveLayer() {
             params: {
                 query: { alarms: true },
                 path: {
-                    ':connectionid': Number(route.params.connectionid),
+                    ':connectionid': route.params.connectionid === 'admin' ? 'admin' : Number(route.params.connectionid),
                     ':layerid': Number(route.params.layerid)
                 }
             },

@@ -19,7 +19,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Task',
         params: Type.Object({
             connectionid: Type.Union([
-                Type.Literal('template'),
+                Type.Literal('admin'),
                 Type.Integer({ minimum: 1 }),
             ]),
             layerid: Type.Integer(),
@@ -31,7 +31,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             let layer;
-            if (req.params.connectionid === 'template') {
+            if (req.params.connectionid === 'admin') {
                 await Auth.is_auth(config, req);
 
                 layer = await layerControl.from(null, req.params.layerid);
@@ -54,7 +54,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Task',
         params: Type.Object({
             connectionid: Type.Union([
-                Type.Literal('template'),
+                Type.Literal('admin'),
                 Type.Integer({ minimum: 1 }),
             ]),
             layerid: Type.Integer(),
@@ -64,7 +64,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             let layer;
-            if (req.params.connectionid === 'template') {
+            if (req.params.connectionid === 'admin') {
                 await Auth.is_auth(config, req);
 
                 layer = await layerControl.from(null, req.params.layerid);
@@ -92,7 +92,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Task',
         params: Type.Object({
             connectionid: Type.Union([
-                Type.Literal('template'),
+                Type.Literal('admin'),
                 Type.Integer({ minimum: 1 }),
             ]),
             layerid: Type.Integer(),
@@ -102,7 +102,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             let layer;
-            if (req.params.connectionid === 'template') {
+            if (req.params.connectionid === 'admin') {
                 await Auth.is_auth(config, req);
 
                 layer = await layerControl.from(null, req.params.layerid);
@@ -130,7 +130,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Task',
         params: Type.Object({
             connectionid: Type.Union([
-                Type.Literal('template'),
+                Type.Literal('admin'),
                 Type.Integer({ minimum: 1 }),
             ]),
             layerid: Type.Integer(),
@@ -142,7 +142,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             let layer;
-            if (req.params.connectionid === 'template') {
+            if (req.params.connectionid === 'admin') {
                 await Auth.is_auth(config, req);
 
                 layer = await layerControl.from(null, req.params.layerid);
@@ -165,7 +165,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Task',
         params: Type.Object({
             connectionid: Type.Union([
-                Type.Literal('template'),
+                Type.Literal('admin'),
                 Type.Integer({ minimum: 1 }),
             ]),
             layerid: Type.Integer(),
@@ -175,7 +175,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             let layer;
-            if (req.params.connectionid === 'template') {
+            if (req.params.connectionid === 'admin') {
                 await Auth.is_auth(config, req);
 
                 layer = await layerControl.from(null, req.params.layerid);
@@ -200,7 +200,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Task',
         params: Type.Object({
             connectionid: Type.Union([
-                Type.Literal('template'),
+                Type.Literal('admin'),
                 Type.Integer({ minimum: 1 }),
             ]),
             layerid: Type.Integer(),
@@ -212,7 +212,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             let layer;
-            if (req.params.connectionid === 'template') {
+            if (req.params.connectionid === 'admin') {
                 await Auth.is_auth(config, req);
 
                 layer = await layerControl.from(null, req.params.layerid);
