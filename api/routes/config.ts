@@ -32,6 +32,13 @@ export const PublicConfigKeys: (keyof Static<typeof FullConfig>)[] = [
 
 // Allow Authenticated but Non-Admin Access to these Config Keys
 export const UserConfigKeys: (keyof Static<typeof FullConfig>)[] = [
+    'notification::enabled',
+    'notification::email::enabled',
+    'notification::email::service',
+    'notification::sms::enabled',
+    'notification::sms::service',
+    'notification::push::enabled',
+    'notification::push::service',
     'map::center',
     'map::pitch',
     'map::bearing',
