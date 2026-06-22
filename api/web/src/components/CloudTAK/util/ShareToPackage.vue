@@ -85,10 +85,11 @@
                     direction='IN'
                 />
 
-                <TagEntry
+                <Keywords
                     placeholder='Hashtags'
-                    :model-value='body.keywords'
-                    @update:model-value='body.keywords = $event'
+                    :keywords='body.keywords'
+                    :relevant='[]'
+                    @update:keywords='body.keywords = $event'
                 />
 
                 <div class='col-12 pt-3'>
@@ -108,7 +109,7 @@
 <script setup lang='ts'>
 import { ref, computed, useTemplateRef } from 'vue';
 import type { PropType } from 'vue';
-import TagEntry from './TagEntry.vue';
+import Keywords from './Keywords.vue';
 import Upload from '../../util/Upload.vue';
 import {
     TablerNone,

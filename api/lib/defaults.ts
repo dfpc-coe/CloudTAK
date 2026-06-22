@@ -11,6 +11,8 @@ export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'retention::chat::days': 30,
     'retention::import::enabled': false,
     'retention::import::days': 30,
+    'retention::feature::enabled': false,
+    'retention::feature::days': 30,
     'map::center': '-100,40',
     'map::zoom': 4,
     'map::pitch': 0,

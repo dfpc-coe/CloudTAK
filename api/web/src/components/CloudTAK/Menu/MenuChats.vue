@@ -28,8 +28,30 @@
             <div class='my-2'>
                 <SearchSortFilter
                     v-model='paging.filter'
+                    v-model:sort='sort'
+                    :sort-options='sortOptions'
                     placeholder='Filter'
-                />
+                >
+                    <template #sort-icon>
+                        <template v-if='sort'>
+                            <component
+                                :is='sortTypeIcon'
+                                :size='20'
+                                stroke='1'
+                            />
+                            <component
+                                :is='sortDirectionIcon'
+                                :size='20'
+                                stroke='1'
+                            />
+                        </template>
+                        <IconArrowsSort
+                            v-else
+                            :size='20'
+                            stroke='1'
+                        />
+                    </template>
+                </SearchSortFilter>
             </div>
 
             <TablerAlert
@@ -47,7 +69,7 @@
                     role='menu'
                     :disabled='!multiselect'
                     :hover='false'
-                    :items='chats'
+                    :items='sortedChats'
                 >
                     <template #buttons='{disabled}'>
                         <TablerDelete
@@ -102,7 +124,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, useTemplateRef, watch, onUnmounted } from 'vue'
+import { ref, computed, onMounted, useTemplateRef, watch, onUnmounted } from 'vue'
 import type { ComponentExposed } from 'vue-component-type-helpers'
 import Chatroom from '../../../base/chatroom.ts';
 import type { DBChatroom } from '../../../database.ts';
@@ -122,6 +144,11 @@ import {
     IconListCheck,
     IconUser,
     IconPlus,
+    IconLetterCase,
+    IconClock,
+    IconArrowUp,
+    IconArrowDown,
+    IconArrowsSort,
 } from '@tabler/icons-vue';
 import { useRouter } from 'vue-router';
 import { liveQuery } from "dexie";
@@ -135,6 +162,22 @@ const multiselect = ref(false)
 
 const paging = ref({
     filter: ''
+});
+
+const sort = ref('');
+const sortOptions = ['Newest → Oldest', 'Oldest → Newest', 'A → Z', 'Z → A'];
+const sortTypeIcon = computed(() => (sort.value === 'A → Z' || sort.value === 'Z → A') ? IconLetterCase : IconClock);
+const sortDirectionIcon = computed(() => (sort.value === 'Oldest → Newest' || sort.value === 'A → Z') ? IconArrowUp : IconArrowDown);
+
+const sortedChats = computed(() => {
+    const data = chats.value ? [...chats.value] : [];
+    return data.sort((a, b) => {
+        if (sort.value === 'Newest → Oldest') return new Date(b.updated).getTime() - new Date(a.updated).getTime();
+        if (sort.value === 'Oldest → Newest') return new Date(a.updated).getTime() - new Date(b.updated).getTime();
+        if (sort.value === 'A → Z') return a.name.localeCompare(b.name);
+        if (sort.value === 'Z → A') return b.name.localeCompare(a.name);
+        return 0;
+    });
 });
 
 const chats = ref<Array<DBChatroom> | undefined>(undefined);

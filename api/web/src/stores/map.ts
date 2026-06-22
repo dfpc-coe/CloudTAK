@@ -78,8 +78,6 @@ export const useMapStore = defineStore('cloudtak', {
         _menu?: unknown;
         _bottomBar?: unknown;
 
-        _boundOnOnline?: () => void;
-        _boundOnOffline?: () => void;
         _boundOnDeviceOrientation?: (event: DeviceOrientationEvent) => void;
         _boundOnVisibilityChange?: () => Promise<void>;
         _removeBackgroundStateListener?: () => void;
@@ -125,7 +123,6 @@ export const useMapStore = defineStore('cloudtak', {
         hasNoChannels: boolean;
         isLoaded: boolean;
         isOpen: boolean;
-        isOnline: boolean;
         userOrientationMode: boolean;
         pitch: number;
         bearing: number;
@@ -185,7 +182,6 @@ export const useMapStore = defineStore('cloudtak', {
             hasNoChannels: false,
             isOpen: false,
             isLoaded: false,
-            isOnline: navigator.onLine,
             userOrientationMode: false,
             pitch: 0,
             bearing: 0,
@@ -288,8 +284,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             await deviceStore.wakeLock.releaseSentinel();
 
-            if (this._boundOnOnline) window.removeEventListener('online', this._boundOnOnline);
-            if (this._boundOnOffline) window.removeEventListener('offline', this._boundOnOffline);
             if (this._boundOnDeviceOrientation) {
                 deviceStore.orientation.removeListener(this._boundOnDeviceOrientation);
             }
@@ -575,9 +569,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.container = container;
 
-            this.isOnline = navigator.onLine;
-            this._boundOnOnline = (): void => { this.isOnline = true; };
-            this._boundOnOffline = (): void => { this.isOnline = false; };
             this._boundOnDeviceOrientation = (event: DeviceOrientationEvent): void => {
                 if (!this.userOrientationMode) return;
 
@@ -600,8 +591,6 @@ export const useMapStore = defineStore('cloudtak', {
                 await this.updateCOT();
             };
 
-            window.addEventListener('online', this._boundOnOnline);
-            window.addEventListener('offline', this._boundOnOffline);
             deviceStore.orientation.addListener(this._boundOnDeviceOrientation);
             document.addEventListener('visibilitychange', this._boundOnVisibilityChange);
 
@@ -1239,7 +1228,7 @@ export const useMapStore = defineStore('cloudtak', {
                             // When rotation enabled, only show course arrows for grouped features
                             this.map.setFilter(courseLayerId, [
                                 'all',
-                                ['==', '$type', 'Point'],
+                                ['==', ['geometry-type'], 'Point'],
                                 ['has', 'course'],
                                 ['has', 'group']
                             ]);
@@ -1247,7 +1236,7 @@ export const useMapStore = defineStore('cloudtak', {
                             // When rotation disabled, show course arrows for all features with course
                             this.map.setFilter(courseLayerId, [
                                 'all',
-                                ['==', '$type', 'Point'],
+                                ['==', ['geometry-type'], 'Point'],
                                 ['has', 'course']
                             ]);
                         }

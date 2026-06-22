@@ -41,10 +41,6 @@ export default class OverlayManager extends BaseInterface {
     static readonly listCacheKey = 'overlay';
     static readonly loaded = loadedOverlays;
 
-    static listLoaded(): Overlay[] {
-        return this.loaded;
-    }
-
     static clearLoaded(): void {
         this.loaded.splice(0);
     }
@@ -63,24 +59,12 @@ export default class OverlayManager extends BaseInterface {
         return this.loaded.find((overlay) => overlay.mode === mode && overlay.mode_id === modeId);
     }
 
-    static loadedBeforeId(): string | undefined {
+    private static loadedBeforeId(): string | undefined {
         if (this.loaded.length > 1 && this.loaded[1].styles.length > 0) {
             return String(this.loaded[1].styles[0].id);
         }
 
         return undefined;
-    }
-
-    static addLoaded(overlay: Overlay): void {
-        if (this.loaded.length > 0) {
-            this.loaded.splice(1, 0, overlay);
-        } else {
-            this.loaded.push(overlay);
-        }
-    }
-
-    static prependLoaded(overlay: Overlay): void {
-        this.loaded.unshift(overlay);
     }
 
     static appendLoaded(...overlays: Overlay[]): void {
@@ -98,9 +82,11 @@ export default class OverlayManager extends BaseInterface {
         });
 
         if (position === 'prepend') {
-            this.prependLoaded(overlay);
+            this.loaded.unshift(overlay);
+        } else if (this.loaded.length > 0) {
+            this.loaded.splice(1, 0, overlay);
         } else {
-            this.addLoaded(overlay);
+            this.loaded.push(overlay);
         }
 
         return overlay;
@@ -140,22 +126,6 @@ export default class OverlayManager extends BaseInterface {
         if (pos !== -1) this.loaded.splice(pos, 1);
 
         await overlay.delete();
-    }
-
-    static loadedBasemapIds(mode = 'overlay'): Set<string> {
-        return new Set(
-            this.loaded
-                .filter((overlay) => overlay.mode === mode && overlay.mode_id)
-                .map((overlay) => String(overlay.mode_id))
-        );
-    }
-
-    static loadedProfileUrls(): Set<string> {
-        return new Set(
-            this.loaded
-                .filter((overlay) => overlay.mode === 'profile' && overlay.url)
-                .map((overlay) => overlay.url as string)
-        );
     }
 
     static queryableOverlayNames(): string[] {
@@ -342,7 +312,7 @@ export default class OverlayManager extends BaseInterface {
         const overlayId = this.overlayId(id);
 
         if (!opts.localOnly) {
-            const { error } = await server.DELETE('/api/profile/overlay', {
+            const { error, response } = await server.DELETE('/api/profile/overlay', {
                 params: {
                     query: {
                         id: String(overlayId),
@@ -350,7 +320,7 @@ export default class OverlayManager extends BaseInterface {
                 }
             });
 
-            if (error) throw new Error(error.message);
+            if (error && response.status !== 404) throw new Error(error.message);
         }
 
         await db.overlay.delete(overlayId);

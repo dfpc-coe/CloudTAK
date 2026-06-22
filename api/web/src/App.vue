@@ -154,6 +154,12 @@
             v-if='channelChange'
             @close='channelChange = false'
         />
+        <NotificationToast
+            v-for='n in toastNotifications'
+            :id='n.id'
+            :key='n.id'
+            @close='TAKNotification.update(n.id, { toast: false })'
+        />
     </div>
 </template>
 
@@ -182,11 +188,16 @@ import {
     TablerError
 } from '@tak-ps/vue-tabler';
 import ChannelChangeModal from './components/CloudTAK/Menu/ChannelChangeModal.vue';
+import NotificationToast from './components/CloudTAK/util/NotificationToast.vue';
+import TAKNotification_ from './base/notification.ts';
+const TAKNotification = TAKNotification_;
 import { WorkerMessageType } from './base/events.ts';
 import type { WorkerMessage } from './base/events.ts';
 import { isNativePlatform, supportsServiceWorker } from './base/capacitor.ts';
-import { db } from './database.ts';
+import { useObservable } from '@vueuse/rxjs';
+import { from } from 'rxjs';
 import { getPageServiceWorkerBuildId, markUpdateRequestedByThisTab } from './base/service-worker.ts';
+import { db } from './database.ts';
 
 import { useMapStore } from './stores/map.ts';
 
@@ -195,6 +206,11 @@ const route = useRoute();
 
 const mapStore = useMapStore();
 
+const toastNotifications = useObservable(
+    from(liveQuery(async () => {
+        return (await TAKNotification.list()).filter((n) => n.toast && !n.read);
+    }))
+);
 const loginLogo = ref<string>();
 const loginName = ref<string>();
 

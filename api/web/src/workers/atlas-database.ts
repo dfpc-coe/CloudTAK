@@ -286,6 +286,7 @@ export default class AtlasDatabase {
         const expression = jsonata(filter);
 
         for (const cot of this.cots.values()) {
+            if (this.pendingDelete.has(cot.id)) continue;
             if (await expression.evaluate(cot.as_feature()) === true) {
                 cots.add(cot);
             }
@@ -449,16 +450,16 @@ export default class AtlasDatabase {
             this.pendingDelete.add(id);
 
             if (cot.properties.archived) {
-                this.atlas.postMessage({
-                    type: WorkerMessageType.Feature_Archived_Removed
-                });
-
                 if (!opts.skipNetwork) {
                     await std(`/api/profile/feature/${id}`, {
                         token: this.atlas.token,
                         method: 'DELETE'
                     });
                 }
+
+                this.atlas.postMessage({
+                    type: WorkerMessageType.Feature_Archived_Removed
+                });
             }
         } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
             const subscription = await Subscription.from(cot.origin.mode_id, this.atlas.token, {

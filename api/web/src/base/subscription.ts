@@ -326,14 +326,14 @@ export default class Subscription {
     }
 
     async delete(): Promise<void> {
-        const { data } = await server.DELETE('/api/marti/missions/{:name}', {
+        const { data, response } = await server.DELETE('/api/marti/missions/{:name}', {
             params: {
                 path: { ':name': this.guid }
             },
             headers: Subscription.headers(this.missiontoken)
         });
 
-        if (!data) throw new Error('Mission Error');
+        if (!data && response.status !== 404) throw new Error('Mission Error');
 
         await db.subscription.delete(this.meta.guid);
 
@@ -546,6 +546,8 @@ export default class Subscription {
     }
 
     async subscriptions(): Promise<MissionSubscriptions> {
+        if (!navigator.onLine) return [];
+
         const { data } = await server.GET('/api/marti/missions/{:name}/subscriptions/roles', {
             params: {
                 path: { ':name': this.guid }

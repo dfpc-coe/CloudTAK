@@ -33,6 +33,9 @@ export default async function router(schema: Schema, config: Config) {
                 default: false,
                 description: 'Set Content-Disposition to download the file',
             }),
+            filter: Type.Optional(Type.String({
+                description: 'Filter features by callsign (case-insensitive)',
+            })),
             token: Type.Optional(Type.String()),
             limit: Type.Integer({ default: 1000 }),
             sort: Type.String({
@@ -59,6 +62,7 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`
                     username = ${user.email}
                     AND deleted = ${req.query.deleted}
+                    ${req.query.filter ? sql`AND properties->>'callsign' ILIKE ${'%' + req.query.filter + '%'}` : sql``}
                 `,
             });
 
@@ -161,6 +165,7 @@ export default async function router(schema: Schema, config: Config) {
                             AND username = ${user.email}
                         `, {
                             deleted: true,
+                            properties: sql`jsonb_set(${ProfileFeature.properties}, '{time}', to_jsonb(${new Date().toISOString()}::text))`,
                         });
                     } catch (err) {
                         // Ignore features not found
@@ -174,6 +179,7 @@ export default async function router(schema: Schema, config: Config) {
                             username = ${user.email}
                         `, {
                             deleted: true,
+                            properties: sql`jsonb_set(${ProfileFeature.properties}, '{time}', to_jsonb(${new Date().toISOString()}::text))`,
                         });
                     } catch (err) {
                         if (!(err instanceof Error) || !('status' in err) || ('status' in err && err.status !== 404)) {
@@ -280,6 +286,7 @@ export default async function router(schema: Schema, config: Config) {
                     id = ${req.params.id} AND username = ${user.email}
                 `, {
                     deleted: true,
+                    properties: sql`jsonb_set(${ProfileFeature.properties}, '{time}', to_jsonb(${new Date().toISOString()}::text))`,
                 });
             }
 

@@ -241,6 +241,10 @@ test('GET: api/profile/feature/123-no-path', async () => {
             },
         }, true);
 
+        // time is stamped to the soft-deletion instant for retention purposes
+        assert.notEqual(res.body.properties.time, time);
+        assert.ok(!isNaN(new Date(res.body.properties.time).getTime()));
+
         assert.deepEqual(res.body, {
             id: '123-no-path',
             type: 'Feature',
@@ -248,7 +252,7 @@ test('GET: api/profile/feature/123-no-path', async () => {
             properties: {
                 type: 'a-f-g',
                 how: 'm-g',
-                time: time,
+                time: res.body.properties.time,
                 start: time,
                 stale: time,
                 callsign: 'Test Callsign',

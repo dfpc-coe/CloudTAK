@@ -216,7 +216,7 @@
 
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
-import { ref, watch, onMounted, computed } from 'vue';
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import type { ProfileFile, ProfileFileList } from '../../../types.ts';
 import PathManager from '../../../base/path-manager.ts';
@@ -247,10 +247,26 @@ import PathBrowser from '../util/PathBrowser.vue';
 import FileRow from './MenuFilesRow.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import OverlayManager from '../../../base/overlay.ts';
+import type { Subscription } from 'dexie';
 import Upload from '../../util/Upload.vue';
 
-const overlayUrls = computed<Set<string>>(() => {
-    return OverlayManager.loadedProfileUrls();
+const overlayUrls = ref<Set<string>>(new Set());
+let overlaySubscription: Subscription | undefined;
+
+onMounted(() => {
+    overlaySubscription = OverlayManager.liveList().subscribe({
+        next: (items) => {
+            overlayUrls.value = new Set(
+                items
+                    .filter((overlay) => overlay.mode === 'profile' && overlay.url)
+                    .map((overlay) => String(overlay.url))
+            );
+        }
+    });
+});
+
+onUnmounted(() => {
+    overlaySubscription?.unsubscribe();
 });
 
 const router = useRouter();
