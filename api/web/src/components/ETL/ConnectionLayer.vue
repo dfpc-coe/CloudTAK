@@ -30,7 +30,7 @@
 
                                 <a
                                     class='card-title cursor-pointer mx-2'
-                                    @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${layer.id}`)'
+                                    @click='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${layer.id}`)'
                                     v-text='layer.name'
                                 />
 
@@ -57,7 +57,7 @@
                                         </TablerIconButton>
                                         <TablerIconButton
                                             title='Edit'
-                                            @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${layer.id}/edit`)'
+                                            @click='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${layer.id}/edit`)'
                                         >
                                             <IconPencil
                                                 :size='32'
@@ -160,8 +160,8 @@
                                                     "active": route.name === "layer-deployment",
                                                     "cursor-pointer": route.name !== "layer-deployment"
                                                 }'
-                                                @keyup.enter='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/deployment`)'
-                                                @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/deployment`)'
+                                                @keyup.enter='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${route.params.layerid}/deployment`)'
+                                                @click='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${route.params.layerid}/deployment`)'
                                             ><IconPlaneDeparture
                                                 :size='32'
                                                 stroke='1'
@@ -175,8 +175,8 @@
                                                     "active": route.name === "layer-alarm",
                                                     "cursor-pointer": route.name !== "layer-alarm"
                                                 }'
-                                                @keyup.enter='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/alarm`)'
-                                                @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/alarm`)'
+                                                @keyup.enter='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${route.params.layerid}/alarm`)'
+                                                @click='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${route.params.layerid}/alarm`)'
                                             ><IconAlarm
                                                  :size='32'
                                                  stroke='1'
@@ -253,8 +253,8 @@
                                                             "active": route.name === "layer-incoming-config",
                                                             "cursor-pointer": route.name !== "layer-incoming-config"
                                                         }'
-                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/incoming/config`)'
-                                                        @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/incoming/config`)'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${route.params.layerid}/incoming/config`)'
+                                                        @click='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${route.params.layerid}/incoming/config`)'
                                                     ><IconAdjustments
                                                         :size='32'
                                                         stroke='1'
@@ -268,8 +268,8 @@
                                                             "active": route.name === "layer-incoming-environment",
                                                             "cursor-pointer": route.name !== "layer-incoming-environment"
                                                         }'
-                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/incoming/environment`)'
-                                                        @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/incoming/environment`)'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${route.params.layerid}/incoming/environment`)'
+                                                        @click='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${route.params.layerid}/incoming/environment`)'
                                                     ><IconBeach
                                                         :size='32'
                                                         stroke='1'
@@ -282,8 +282,8 @@
                                                             "active": route.name === "layer-incoming-schema",
                                                             "cursor-pointer": route.name !== "layer-incoming-schema"
                                                         }'
-                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/incoming/schema`)'
-                                                        @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/incoming/schema`)'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${route.params.layerid}/incoming/schema`)'
+                                                        @click='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${route.params.layerid}/incoming/schema`)'
                                                     ><IconSchema
                                                         :size='32'
                                                         stroke='1'
@@ -296,8 +296,8 @@
                                                             "active": route.name === "layer-incoming-styles",
                                                             "cursor-pointer": route.name !== "layer-incoming-styles"
                                                         }'
-                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/incoming/styles`)'
-                                                        @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/incoming/styles`)'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${route.params.layerid}/incoming/styles`)'
+                                                        @click='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${route.params.layerid}/incoming/styles`)'
                                                     ><IconPaint
                                                         :size='32'
                                                         stroke='1'
@@ -332,8 +332,8 @@
                                                             "active": route.name === "layer-outgoing-config",
                                                             "cursor-pointer": route.name !== "layer-outgoing-config"
                                                         }'
-                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/outgoing/config`)'
-                                                        @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/outgoing/config`)'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${route.params.layerid}/outgoing/config`)'
+                                                        @click='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${route.params.layerid}/outgoing/config`)'
                                                     ><IconAdjustments
                                                         :size='32'
                                                         stroke='1'
@@ -347,8 +347,8 @@
                                                             "active": route.name === "layer-outgoing-environment",
                                                             "cursor-pointer": route.name !== "layer-outgoing-environment"
                                                         }'
-                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/outgoing/environment`)'
-                                                        @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/outgoing/environment`)'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${route.params.layerid}/outgoing/environment`)'
+                                                        @click='router.push(`/connection/${route.params.connectionid || "admin"}/layer/${route.params.layerid}/outgoing/environment`)'
                                                     ><IconBeach
                                                         :size='32'
                                                         stroke='1'
@@ -466,10 +466,10 @@ onUnmounted(() => {
     }
 });
 
-function layerPathParams(): { ':connectionid': 'template' | number; ':layerid': number } {
+function layerPathParams(): { ':connectionid': 'admin' | number; ':layerid': number } {
     return {
-        ':connectionid': route.params.connectionid === 'template'
-            ? 'template'
+        ':connectionid': route.params.connectionid === 'admin'
+            ? 'admin'
             : Number(String(route.params.connectionid)),
         ':layerid': Number(String(route.params.layerid))
     };
@@ -576,7 +576,7 @@ async function deleteConfig(direction: string) {
     await fetch();
     await fetchStatus();
 
-    router.push(`/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}/deployment`);
+    router.push(`/connection/${route.params.connectionid || 'admin'}/layer/${route.params.layerid}/deployment`);
 
     loading.value.layer = false;
 }
@@ -596,7 +596,7 @@ async function fetchStatus(load = false) {
 }
 
 async function downloadConfig() {
-    await downloadUrl(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}?download=true`, {
+    await downloadUrl(`/api/connection/${route.params.connectionid || 'admin'}/layer/${route.params.layerid}?download=true`, {
         token: true
     });
 }

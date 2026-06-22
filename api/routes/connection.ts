@@ -270,6 +270,39 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/connection/admin', {
+        name: 'Get Admin Connection',
+        group: 'Connection',
+        description: 'Get the admin connection (server-level connection using the server certificate)',
+        res: ConnectionResponse,
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, { admin: true });
+
+            if (!config.server.auth.cert || !config.server.auth.key) {
+                throw new Err(400, null, 'Server certificate is not configured');
+            }
+
+            const { validFrom, validTo, subject } = new X509Certificate(config.server.auth.cert);
+
+            res.json({
+                id: 0,
+                status: config.conns.status(0),
+                agency: null,
+                certificate: { validFrom, validTo, subject },
+                created: config.server.created,
+                updated: config.server.updated,
+                readonly: false,
+                username: null,
+                name: 'Admin Connection',
+                description: 'Server-level admin connection. Layers here are available to all connections as templates.',
+                enabled: true,
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
     await schema.get('/connection/:connectionid', {
         name: 'Get Connection',
         group: 'Connection',

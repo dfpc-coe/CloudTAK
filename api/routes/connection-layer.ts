@@ -100,7 +100,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List layers',
         params: Type.Object({
             connectionid: Type.Union([
-                Type.Literal('template'),
+                Type.Literal('admin'),
                 Type.Integer({ minimum: 1 }),
             ]),
         }),
@@ -133,7 +133,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const resources = [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }];
 
-            if (req.params.connectionid === 'template') {
+            if (req.params.connectionid === 'admin') {
                 await Auth.is_auth(config, req, { resources });
             } else {
                 const { connection } = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
@@ -147,7 +147,7 @@ export default async function router(schema: Schema, config: Config) {
                 sort: req.query.sort,
                 where: sql`
                     layers.name ~* ${req.query.filter}
-                    AND connection = ${Param(req.params.connectionid === 'template' ? null : req.params.connectionid)}
+                    AND connection = ${Param(req.params.connectionid === 'admin' ? null : req.params.connectionid)}
                     AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers_incoming.data)
                 `,
             });
@@ -253,7 +253,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Register a new incoming layer config',
         params: Type.Object({
             connectionid: Type.Union([
-                Type.Literal('template'),
+                Type.Literal('admin'),
                 Type.Integer({ minimum: 1 }),
             ]),
             layerid: Type.Integer({ minimum: 1 }),
@@ -272,11 +272,11 @@ export default async function router(schema: Schema, config: Config) {
         try {
             let connection = null;
             let layer;
-            if (req.params.connectionid === 'template') {
+            if (req.params.connectionid === 'admin') {
                 await Auth.as_user(config, req, { admin: true });
                 layer = await layerControl.from(null, req.params.layerid);
                 if (layer.connection !== null) {
-                    throw new Err(400, null, 'Layer is not a template layer');
+                    throw new Err(400, null, 'Layer is not an admin layer');
                 }
             } else {
                 const auth = await Auth.is_connection(config, req, {
@@ -486,7 +486,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Remove an incoming config from a layer',
         params: Type.Object({
             connectionid: Type.Union([
-                Type.Literal('template'),
+                Type.Literal('admin'),
                 Type.Integer({ minimum: 1 }),
             ]),
             layerid: Type.Integer({ minimum: 1 }),
@@ -496,11 +496,11 @@ export default async function router(schema: Schema, config: Config) {
         try {
             let connection = null;
             let layer;
-            if (req.params.connectionid === 'template') {
+            if (req.params.connectionid === 'admin') {
                 await Auth.as_user(config, req, { admin: true });
                 layer = await layerControl.from(null, req.params.layerid);
                 if (layer.connection !== null) {
-                    throw new Err(400, null, 'Layer is not a template layer');
+                    throw new Err(400, null, 'Layer is not an admin layer');
                 }
             } else {
                 const auth = await Auth.is_connection(config, req, {
@@ -545,7 +545,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Register a new outgoing layer config',
         params: Type.Object({
             connectionid: Type.Union([
-                Type.Literal('template'),
+                Type.Literal('admin'),
                 Type.Integer({ minimum: 1 }),
             ]),
             layerid: Type.Integer({ minimum: 1 }),
@@ -558,11 +558,11 @@ export default async function router(schema: Schema, config: Config) {
         try {
             let connection = null;
             let layer;
-            if (req.params.connectionid === 'template') {
+            if (req.params.connectionid === 'admin') {
                 await Auth.as_user(config, req, { admin: true });
                 layer = await layerControl.from(null, req.params.layerid);
                 if (layer.connection !== null) {
-                    throw new Err(400, null, 'Layer is not a template layer');
+                    throw new Err(400, null, 'Layer is not an admin layer');
                 }
             } else {
                 const auth = await Auth.is_connection(config, req, {
@@ -659,7 +659,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Remove an outgoing config from a layer',
         params: Type.Object({
             connectionid: Type.Union([
-                Type.Literal('template'),
+                Type.Literal('admin'),
                 Type.Integer({ minimum: 1 }),
             ]),
             layerid: Type.Integer({ minimum: 1 }),
@@ -669,11 +669,11 @@ export default async function router(schema: Schema, config: Config) {
         try {
             let connection = null;
             let layer;
-            if (req.params.connectionid === 'template') {
+            if (req.params.connectionid === 'admin') {
                 await Auth.as_user(config, req, { admin: true });
                 layer = await layerControl.from(null, req.params.layerid);
                 if (layer.connection !== null) {
-                    throw new Err(400, null, 'Layer is not a template layer');
+                    throw new Err(400, null, 'Layer is not an admin layer');
                 }
             } else {
                 const auth = await Auth.is_connection(config, req, {
@@ -724,7 +724,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         params: Type.Object({
             connectionid: Type.Union([
-                Type.Literal('template'),
+                Type.Literal('admin'),
                 Type.Integer({ minimum: 1 }),
             ]),
             layerid: Type.Integer({ minimum: 1 }),
@@ -762,11 +762,11 @@ export default async function router(schema: Schema, config: Config) {
 
             let connection = null;
             let layer;
-            if (req.params.connectionid === 'template') {
+            if (req.params.connectionid === 'admin') {
                 await Auth.as_user(config, req, { admin: true });
                 layer = await layerControl.from(null, req.params.layerid);
                 if (layer.connection !== null) {
-                    throw new Err(400, null, 'Layer is not a template layer');
+                    throw new Err(400, null, 'Layer is not an admin layer');
                 }
             } else {
                 const auth = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
@@ -848,7 +848,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         params: Type.Object({
             connectionid: Type.Union([
-                Type.Literal('template'),
+                Type.Literal('admin'),
                 Type.Integer({ minimum: 1 }),
             ]),
             layerid: Type.Integer({ minimum: 1 }),
@@ -862,7 +862,7 @@ export default async function router(schema: Schema, config: Config) {
             ];
 
             let layer;
-            if (req.params.connectionid === 'template') {
+            if (req.params.connectionid === 'admin') {
                 await Auth.is_auth(config, req, {
                     token: true, resources,
                 });
@@ -911,7 +911,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Redeploy a specific Layer with latest CloudFormation output',
         params: Type.Object({
             connectionid: Type.Union([
-                Type.Literal('template'),
+                Type.Literal('admin'),
                 Type.Integer({ minimum: 1 }),
             ]),
             layerid: Type.Integer({ minimum: 1 }),
@@ -924,7 +924,7 @@ export default async function router(schema: Schema, config: Config) {
             ];
 
             let layer;
-            if (req.params.connectionid === 'template') {
+            if (req.params.connectionid === 'admin') {
                 await Auth.is_auth(config, req, { resources });
 
                 layer = await layerControl.from(null, req.params.layerid);
@@ -958,7 +958,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Delete a layer',
         params: Type.Object({
             connectionid: Type.Union([
-                Type.Literal('template'),
+                Type.Literal('admin'),
                 Type.Integer({ minimum: 1 }),
             ]),
             layerid: Type.Integer({ minimum: 1 }),
@@ -971,7 +971,7 @@ export default async function router(schema: Schema, config: Config) {
             ];
 
             let layer;
-            if (req.params.connectionid === 'template') {
+            if (req.params.connectionid === 'admin') {
                 await Auth.is_auth(config, req, { resources });
                 layer = await layerControl.from(null, req.params.layerid);
             } else {

@@ -295,7 +295,7 @@ async function redeploy(showLoading = true) {
         const res = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/redeploy', {
             params: {
                 path: {
-                    ':connectionid': Number(route.params.connectionid),
+                    ':connectionid': route.params.connectionid === 'admin' ? 'admin' : Number(route.params.connectionid),
                     ':layerid': Number(route.params.layerid)
                 }
             }
@@ -324,7 +324,7 @@ async function fetchLogs(showLoading = true) {
         const res = await server.GET('/api/connection/{:connectionid}/layer/{:layerid}/task/logs', {
             params: {
                 path: {
-                    ':connectionid': Number(route.params.connectionid),
+                    ':connectionid': route.params.connectionid === 'admin' ? 'admin' : Number(route.params.connectionid),
                     ':layerid': Number(route.params.layerid)
                 }
             }
@@ -347,7 +347,7 @@ async function postStack() {
     const res = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/task', {
         params: {
             path: {
-                ':connectionid': Number(route.params.connectionid),
+                ':connectionid': route.params.connectionid === 'admin' ? 'admin' : Number(route.params.connectionid),
                 ':layerid': Number(route.params.layerid)
             }
         }
@@ -367,7 +367,7 @@ async function saveLayer() {
             params: {
                 query: { alarms: true },
                 path: {
-                    ':connectionid': Number(route.params.connectionid),
+                    ':connectionid': route.params.connectionid === 'admin' ? 'admin' : Number(route.params.connectionid),
                     ':layerid': Number(route.params.layerid)
                 }
             },
