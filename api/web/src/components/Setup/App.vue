@@ -151,6 +151,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
+import Session from '../../session.ts'
 import { TablerAlert, TablerInput, TablerLoading, TablerNone } from '@tak-ps/vue-tabler'
 
 type ProviderLogo = {
@@ -242,7 +243,7 @@ async function saveUrl(): Promise<void> {
         await validateServer(serverUrl.value)
 
         if (Capacitor.isNativePlatform()) {
-            await Preferences.set({ key: 'serverUrl', value: serverUrl.value })
+            await Session.serverUrl(serverUrl.value)
             window.location.href = '/login'
         } else if (window.electronAPI?.saveUrl) {
             window.electronAPI.saveUrl(serverUrl.value)
