@@ -54,6 +54,10 @@
                                     :inline='true'
                                 />
                                 <p
+                                    v-else-if='isOffline'
+                                    class='text-white fw-semibold p-0 mb-0'
+                                >—</p>
+                                <p
                                     v-else
                                     class='text-white fw-semibold p-0 mb-0'
                                     v-text='subscriptions.length + " Users"'
@@ -268,7 +272,11 @@ import {
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import OverlayManager from '../../../../base/overlay.ts';
 import { useMapStore } from '../../../../stores/map.ts';
+import { useDeviceStore } from '../../../../stores/device.ts';
+import Offline from '../../../util/Offline.vue';
 const mapStore = useMapStore();
+const deviceStore = useDeviceStore();
+const isOffline = computed(() => !deviceStore.network.isOnline);
 
 const emit = defineEmits(['refresh']);
 
@@ -402,6 +410,7 @@ const loading = ref({
 });
 
 async function fetchSubscriptions() {
+    if (isOffline.value) return;
     loading.value.users = true;
     subscriptions.value = await props.subscription.subscriptions();
     loading.value.users = false;

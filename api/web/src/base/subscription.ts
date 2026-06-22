@@ -546,6 +546,8 @@ export default class Subscription {
     }
 
     async subscriptions(): Promise<MissionSubscriptions> {
+        if (!navigator.onLine) return [];
+
         const { data } = await server.GET('/api/marti/missions/{:name}/subscriptions/roles', {
             params: {
                 path: { ':name': this.guid }

@@ -52,6 +52,9 @@
             />
         </div>
 
+        <Offline v-if='isOffline' />
+        <template v-else>
+
         <div
             v-if='invites.length'
             class='col-12 px-2 py-2'
@@ -144,6 +147,7 @@
                 </template>
             </Contact>
         </div>
+        </template>
     </MenuTemplate>
 </template>
 
@@ -158,18 +162,23 @@ import MenuTemplate from '../../util/MenuTemplate.vue';
 import StandardItem from '../../util/StandardItem.vue';
 import UserClientSelect from '../../util/UserClientSelect.vue';
 import Contact from '../../util/Contact.vue';
+import Offline from '../../../util/Offline.vue';
+import { useDeviceStore } from '../../../../stores/device.ts';
 
 const props = defineProps<{
     subscription: Subscription
 }>();
 
 const router = useRouter();
+const deviceStore = useDeviceStore();
 const loading = ref(false);
 const filter = ref('');
 const subscriptions = ref<MissionSubscriptions>([])
 const invites = ref<MissionInvite[]>([]);
 const inviteUsername = ref('');
 const showInvites = ref(false);
+
+const isOffline = computed(() => !deviceStore.network.isOnline);
 
 const canInvite = computed(() => {
     if (!props.subscription.role) return false;
@@ -213,6 +222,7 @@ async function removeInvite(invite: MissionInvite) {
 }
 
 async function fetchSubscriptions() {
+    if (isOffline.value) return;
     loading.value = true;
     subscriptions.value = await props.subscription.subscriptions();
     if (canInvite.value) {
