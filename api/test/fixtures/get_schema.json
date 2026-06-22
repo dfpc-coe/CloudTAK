@@ -404,6 +404,11 @@
         "query": false,
         "res": true
     },
+    "GET /connection/0": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid": {
         "body": false,
         "query": false,
@@ -1244,11 +1249,6 @@
         "query": false,
         "res": true
     },
-    "POST /retention": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "GET /server/injector": {
         "body": false,
         "query": false,
@@ -1271,6 +1271,11 @@
     },
     "DELETE /server/repeater/:uid": {
         "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /retention": {
+        "body": true,
         "query": false,
         "res": true
     },
@@ -1422,6 +1427,11 @@
     "GET /user/:username/session": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "GET /video/ice": {
+        "body": false,
+        "query": false,
         "res": true
     },
     "POST /video/auth": {
