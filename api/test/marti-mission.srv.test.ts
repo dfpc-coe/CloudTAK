@@ -250,7 +250,6 @@ test('GET: api/marti/mission - Filter Groups', async () => {
 });
 
 test('PATCH: api/marti/missions/:name - returns refreshed groups after update', async () => {
-    let getCount = 0;
     let postedGroups: string[] = [];
     let missionAuthorization: string | undefined;
     let allowGroupChange: string | null = null;
@@ -285,7 +284,7 @@ test('PATCH: api/marti/missions/:name - returns refreshed groups after update', 
                     contents: [],
                     passwordProtected: false,
                     role: { role: 'OWNER', permissions: [] },
-                    groups: ['original-group']
+                    groups: ['original-group'],
                 }],
             }));
             response.end();
