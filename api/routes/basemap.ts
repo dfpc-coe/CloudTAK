@@ -111,7 +111,7 @@ async function importBasemapURL(
 
     const tjres = await fetch(url);
     if (!tjres.ok) {
-        throw new Err(400, null, 'Unable to fetch TileJSON from source URL');
+        throw new Err(400, new Error(await tjres.text()), 'Unable to fetch TileJSON from source URL');
     }
 
     const tjbody = await tjres.json() as Record<string, any>;

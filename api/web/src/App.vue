@@ -1,8 +1,8 @@
 <template>
     <div
         class='page h-100'
-        :class='resolvedTheme === "dark" ? "cloudtak-gradient" : "cloudtak-gradient-light"'
-        :data-bs-theme='resolvedTheme'
+        :class='appStore.resolvedTheme === "dark" ? "cloudtak-gradient" : "cloudtak-gradient-light"'
+        :data-bs-theme='appStore.resolvedTheme'
         data-bs-theme-base='neutral'
         data-bs-theme-primary='blue'
     >
@@ -39,7 +39,7 @@
                 <div class='col-auto'>
                     <img
                         alt='Agency Logo'
-                        :src='loginLogo || "/CloudTAKLogo.svg"'
+                        :src='appStore.loginLogo || "/CloudTAKLogo.svg"'
                         class='cursor-pointer'
                         draggable='false'
                         height='50'
@@ -50,7 +50,7 @@
                 <div class='col mx-2'>
                     <div
                         class='page-pretitle'
-                        v-text='loginName || ""'
+                        v-text='appStore.loginName || ""'
                     />
                     <h2 class='page-title'>
                         CloudTAK
@@ -58,7 +58,7 @@
                 </div>
 
                 <div
-                    v-if='user'
+                    v-if='appStore.user'
                     class='ms-auto'
                 >
                     <div class='btn-list'>
@@ -199,21 +199,17 @@ import { from } from 'rxjs';
 import { getPageServiceWorkerBuildId, markUpdateRequestedByThisTab } from './base/service-worker.ts';
 import { db } from './database.ts';
 
-import { useMapStore } from './stores/map.ts';
+import { useAppStore, type ResolvedThemeMode } from './stores/app.ts';
 
 const router = useRouter();
 const route = useRoute();
 
-const mapStore = useMapStore();
+const appStore = useAppStore();
 
-const toastNotifications = useObservable(
-    from(liveQuery(async () => {
+const toastNotifications = useObservable(    from(liveQuery(async () => {
         return (await TAKNotification.list()).filter((n) => n.toast && !n.read);
     }))
 );
-const loginLogo = ref<string>();
-const loginName = ref<string>();
-
 const updateAvailable = ref(false);
 const pendingRegistration = ref<ServiceWorkerRegistration | null>(null);
 
@@ -237,16 +233,10 @@ const onSwUpdateAvailable = (e: Event) => {
     updateAvailable.value = true;
 };
 
-type DisplayStyleMode = 'System Default' | 'Light' | 'Dark';
-type ResolvedThemeMode = 'light' | 'dark';
-
 const loading = ref(true);
 const loadingStage = ref('');
-const resolvedTheme = ref<ResolvedThemeMode>('dark');
-const displayStyle = ref<DisplayStyleMode>('System Default');
 const channelChange = ref(false);
 const mounted = ref(false);
-const user = ref(false);
 const error = ref<Error | undefined>();
 
 let displayStyleSub: Subscription | undefined;
@@ -260,9 +250,9 @@ function resolveTheme(style: string | undefined): ResolvedThemeMode {
     return systemThemeQuery?.matches ? 'dark' : 'light';
 }
 
-function applyTheme(style: string | undefined = displayStyle.value): void {
+function applyTheme(style: string | undefined = appStore.displayStyle): void {
     const theme = resolveTheme(style);
-    resolvedTheme.value = theme;
+    appStore.resolvedTheme = theme;
 
     document.documentElement.setAttribute('data-bs-theme', theme);
     document.documentElement.setAttribute('data-bs-theme-base', 'neutral');
@@ -270,8 +260,8 @@ function applyTheme(style: string | undefined = displayStyle.value): void {
 }
 
 function onSystemThemeChange(): void {
-    if (displayStyle.value === 'System Default') {
-        applyTheme(displayStyle.value);
+    if (appStore.displayStyle === 'System Default') {
+        applyTheme(appStore.displayStyle);
     }
 }
 
@@ -362,8 +352,8 @@ async function initializeApp(): Promise<void> {
 
     displayStyleSub = liveQuery(() => db.profile.get('display_style')).subscribe((entry) => {
         const style = entry?.value;
-        displayStyle.value = style === 'Light' || style === 'Dark' ? style : 'System Default';
-        applyTheme(displayStyle.value);
+        appStore.displayStyle = style === 'Light' || style === 'Dark' ? style : 'System Default';
+        applyTheme(appStore.displayStyle);
     });
 
     systemThemeQuery?.addEventListener('change', onSystemThemeChange);
@@ -415,9 +405,9 @@ async function initializeApp(): Promise<void> {
         'login::username'
     ]);
 
-    loginLogo.value = config['login::logo'];
+    appStore.loginLogo = config['login::logo'];
 
-    loginName.value = config['login::name'];
+    appStore.loginName = config['login::name'];
 
     const channel = new BroadcastChannel('cloudtak');
     channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
@@ -483,8 +473,8 @@ onUnmounted(() => {
 });
 
 async function logout() {
-    user.value = false;
-    mapStore.tokenExpiry = null;
+    appStore.user = false;
+    appStore.tokenExpiry = null;
 
     // Explicit sign-out: clear the token AND wipe the local database so the
     // next user starts from a clean state.
@@ -513,17 +503,17 @@ async function refreshLogin() {
         if (!token) throw new Error('No token found');
         const payload = JSON.parse(atob(token.split('.')[1]));
         const expirationDate = payload.exp * 1000; // Convert to milliseconds
-        mapStore.tokenExpiry = expirationDate;
+        appStore.tokenExpiry = expirationDate;
         const now = Date.now();
 
         if (now > expirationDate) {
             throw new Error('Token expired');
         }
 
-        user.value = true;
+        appStore.user = true;
     } catch (err) {
         console.error(err);
-        mapStore.tokenExpiry = null;
+        appStore.tokenExpiry = null;
 
         // The token is missing/expired/invalid. Do NOT wipe the local database -
         // only clear the token and send the user back to the login screen so

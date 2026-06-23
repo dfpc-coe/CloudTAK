@@ -5,7 +5,7 @@
             class='card user-select-none'
         >
             <div class='card-header'>
-                <template v-if='!mapStore.isMobileDetected'>
+                <template v-if='!appStore.isMobileDetected'>
                     <CoordinateType
                         v-model='mapStore.draw.point.type'
                     />
@@ -19,7 +19,7 @@
 
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
-                        v-if='mapStore.isMobileDetected'
+                        v-if='appStore.isMobileDetected'
                         :title='opened ? "Close Settings" : "Open Settings"'
                         @click='opened = !opened'
                     >
@@ -59,7 +59,7 @@
                 </div>
             </div>
             <div
-                v-if='mapStore.isMobileDetected && opened'
+                v-if='appStore.isMobileDetected && opened'
                 class='card-body'
             >
                 <CoordinateType
@@ -146,7 +146,7 @@
 
                 <div class='ms-auto btn-list align-items-center'>
                     <TablerEnum
-                        v-if='!mapStore.isMobileDetected'
+                        v-if='!appStore.isMobileDetected'
                         v-model='mapStore.draw.snappingLayer'
                         description='Choose the type of line to draw.'
                         default='No Snapping'
@@ -155,7 +155,7 @@
                     />
 
                     <TablerIconButton
-                        v-if='mapStore.isMobileDetected'
+                        v-if='appStore.isMobileDetected'
                         :title='opened ? "Close Settings" : "Open Settings"'
                         @click='opened = !opened'
                     >
@@ -196,7 +196,7 @@
                 </div>
             </div>
             <div
-                v-if='mapStore.isMobileDetected && opened'
+                v-if='appStore.isMobileDetected && opened'
                 class='card-body'
             >
                 <TablerEnum
@@ -286,7 +286,7 @@
 
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
-                        v-if='mapStore.isMobileDetected'
+                        v-if='appStore.isMobileDetected'
                         :title='opened ? "Close Settings" : "Open Settings"'
                         @click='opened = !opened'
                     >
@@ -327,7 +327,7 @@
                 </div>
             </div>
             <div
-                v-if='!mapStore.isMobileDetected || opened'
+                v-if='!appStore.isMobileDetected || opened'
                 class='card-body'
             >
                 <TablerEnum
@@ -381,6 +381,7 @@ import GenericBottomPane from '../GenericBottomPane.vue';
 import CoordinateType from '../util/CoordinateType.vue';
 import { DrawToolMode } from '../../../stores/modules/draw.ts';
 import { useMapStore } from '../../../stores/map.ts';
+import { useAppStore } from '../../../stores/app.ts';
 import OverlayManager from '../../../base/overlay.ts';
 import {
     TablerEnum,
@@ -402,6 +403,7 @@ import {
 } from '@tabler/icons-vue';
 
 const mapStore = useMapStore();
+const appStore = useAppStore();
 
 const opened = ref(false);
 

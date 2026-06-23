@@ -308,11 +308,13 @@ export default class Subscription {
                 body: patch
             });
 
-            this.meta = data as unknown as Mission;
+            if (data) {
+                Object.assign(this.meta, data as unknown as Mission);
 
-            await db.subscription.update(this.guid, {
-                meta: JSON.parse(JSON.stringify(this.meta)),
-            });
+                await db.subscription.update(this.guid, {
+                    meta: JSON.parse(JSON.stringify(this.meta)),
+                });
+            }
         }
 
         this._sync.postMessage({
@@ -359,7 +361,7 @@ export default class Subscription {
             .get(this.guid)
 
         if (exists) {
-            this.meta = exists.meta;
+            Object.assign(this.meta, exists.meta);
             this.role = exists.role;
             this.missiontoken = exists.token;
             this.subscribed = exists.subscribed;
