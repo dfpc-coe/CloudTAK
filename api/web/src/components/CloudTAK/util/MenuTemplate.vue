@@ -6,7 +6,7 @@
         <div
             class='main-menu-modal-frame w-100 px-0 d-flex flex-column overflow-hidden'
         >
-            <div class='modal-header d-flex align-items-center py-2 flex-shrink-0'>
+            <div class='modal-header d-flex align-items-center py-2 px-2 flex-shrink-0'>
                 <TablerIconButton
                     v-if='backType === "back"'
                     title='Back'
@@ -35,7 +35,7 @@
                     v-text='name'
                 />
 
-                <div class='btn-list align-items-center flex-nowrap ms-auto'>
+                <div class='btn-list align-items-center flex-nowrap'>
                     <slot name='buttons' />
 
                     <TablerIconButton
@@ -51,7 +51,7 @@
             </div>
 
             <div
-                class='d-flex flex-column overflow-x-hidden flex-grow-1'
+                class='d-flex flex-column overflow-x-hidden flex-grow-1 px-2'
                 :class='scroll ? "overflow-y-auto" : "overflow-hidden"'
                 style='min-height: 0'
             >
