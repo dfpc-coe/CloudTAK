@@ -33,7 +33,6 @@ export async function verifyCode(code: string, seed: string): Promise<boolean> {
 export async function sendCode(
     type: ProfilePaging_Type,
     value: string,
-    _code: string,
 ): Promise<void> {
     switch (type) {
         case ProfilePaging_Type.SMS:
