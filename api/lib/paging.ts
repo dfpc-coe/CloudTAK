@@ -21,8 +21,8 @@ export async function generateCode(seed: string): Promise<string> {
  * Allows a ±1 window (one previous/next period) to account for clock skew.
  */
 export async function verifyCode(code: string, seed: string): Promise<boolean> {
-    const result = await verify({ token: code, secret: seed });
-    return result.valid;
+    const result = await verify({ token: code, secret: seed, window: 1 } as any);
+    return typeof result === 'boolean' ? result : Boolean((result as any)?.valid);
 }
 
 /**
