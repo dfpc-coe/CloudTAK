@@ -487,7 +487,6 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';
 import { useAppStore } from '../../stores/app.ts';
-import { useDeviceStore } from '../../stores/device.ts';
 import { DrawToolMode } from '../../stores/modules/draw.ts';
 import { useFloatStore } from '../../stores/float.ts';
 import { liveQuery } from 'dexie';
@@ -500,7 +499,6 @@ import MissionInviteModal from './Menu/Mission/MissionInviteModal.vue';
 
 const mapStore = useMapStore();
 const appStore = useAppStore();
-const deviceStore = useDeviceStore();
 const floatStore = useFloatStore();
 
 const hasTerrain = ref<boolean>(false);
@@ -796,7 +794,7 @@ async function exitManualMode() {
     await mapStore.worker.profile.update({ tak_loc: null });
 
     // Restart GPS watch to ensure fresh GPS acquisition
-    deviceStore.geolocation.startWatch(mapStore.locationCallback);
+    void mapStore.startLocationWatch();
 
     await mapStore.refresh();
 }
