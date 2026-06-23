@@ -1,4 +1,4 @@
-CREATE TABLE "profile_paging" (
+CREATE TABLE IF NOT EXISTS "profile_paging" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"username" text NOT NULL,
 	"seed" text NOT NULL,
@@ -10,5 +10,9 @@ CREATE TABLE "profile_paging" (
 	"value" text DEFAULT '' NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "profile_paging" ADD CONSTRAINT "profile_paging_username_profile_username_fk" FOREIGN KEY ("username") REFERENCES "public"."profile"("username") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "profile_sessions" DROP COLUMN "fcm";
+DO $$ BEGIN
+ ALTER TABLE "profile_paging" ADD CONSTRAINT "profile_paging_username_profile_username_fk" FOREIGN KEY ("username") REFERENCES "public"."profile"("username") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;--> statement-breakpoint
+ALTER TABLE "profile_sessions" DROP COLUMN IF EXISTS "fcm";
