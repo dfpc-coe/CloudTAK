@@ -152,19 +152,25 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (req.body.value !== undefined && req.body.value !== existing.value) {
-                // Re-prove ownership of the new address/number
-                const seed = await generateSecret();
-                const code = await generateCode(seed);
+                if (existing.type === ProfilePaging_Type.PUSH) {
+                    // FCM tokens are self-authenticating — updating the token
+                    // does not require re-verification.
+                    updates.value = req.body.value;
+                } else {
+                    // Re-prove ownership of the new address/number
+                    const seed = await generateSecret();
+                    const code = await generateCode(seed);
 
-                updates = {
-                    ...updates,
-                    value: req.body.value,
-                    seed,
-                    verified: false,
-                    enabled: false,
-                };
+                    updates = {
+                        ...updates,
+                        value: req.body.value,
+                        seed,
+                        verified: false,
+                        enabled: false,
+                    };
 
-                await sendCode(existing.type as ProfilePaging_Type, req.body.value, code);
+                    await sendCode(existing.type as ProfilePaging_Type, req.body.value, code);
+                }
             }
 
             const paging = await config.models.ProfilePaging.commit(req.params.pagingid, updates);
@@ -194,6 +200,10 @@ export default async function router(schema: Schema, config: Config) {
 
             if (paging.username !== user.email) {
                 throw new Err(403, null, 'You do not own this paging source');
+            }
+
+            if (paging.type === ProfilePaging_Type.PUSH) {
+                throw new Err(400, null, 'Push sources are automatically verified');
             }
 
             if (paging.verified) {
@@ -230,6 +240,10 @@ export default async function router(schema: Schema, config: Config) {
 
             if (paging.username !== user.email) {
                 throw new Err(403, null, 'You do not own this paging source');
+            }
+
+            if (paging.type === ProfilePaging_Type.PUSH) {
+                throw new Err(400, null, 'Push sources are automatically verified');
             }
 
             if (paging.verified) {
