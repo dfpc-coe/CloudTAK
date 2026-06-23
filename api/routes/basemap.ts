@@ -827,7 +827,9 @@ export default async function router(schema: Schema, config: Config) {
                 // path up to (but not including) the tile-coordinate template segment.
                 const parsedUrl = new URL(basemap.url);
                 const tilejsonUrl = new URL(config.PMTILES_URL);
-                tilejsonUrl.pathname = parsedUrl.pathname.replace(/\/tiles\/\{[^}]+\}.*$/, '');
+                // URL.pathname percent-encodes the `{z}/{x}/{y}` template braces to
+                // `%7B`/`%7D`, so decode before stripping the tile-coordinate segment.
+                tilejsonUrl.pathname = decodeURIComponent(parsedUrl.pathname).replace(/\/tiles\/\{[^}]+\}.*$/, '');
                 tilejsonUrl.searchParams.set('token', auth.token);
 
                 const tj = await fetch(tilejsonUrl);
