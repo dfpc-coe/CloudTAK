@@ -486,6 +486,7 @@ import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';
+import { useAppStore } from '../../stores/app.ts';
 import { useDeviceStore } from '../../stores/device.ts';
 import { DrawToolMode } from '../../stores/modules/draw.ts';
 import { useFloatStore } from '../../stores/float.ts';
@@ -498,6 +499,7 @@ import { cutOverlayFeature } from './util/featureCut.ts';
 import MissionInviteModal from './Menu/Mission/MissionInviteModal.vue';
 
 const mapStore = useMapStore();
+const appStore = useAppStore();
 const deviceStore = useDeviceStore();
 const floatStore = useFloatStore();
 
@@ -515,7 +517,7 @@ const locationClickHandler = ref<((e: MapMouseEvent) => void) | null>(null);
 const height = ref<number>(window.innerHeight);
 const width = ref<number>(window.innerWidth);
 
-mapStore.isMobileDetected = detectMobile();
+appStore.isMobileDetected = detectMobile();
 
 // Show a popup if no channels are selected on load
 const warnChannels = ref<boolean>(false)
@@ -571,7 +573,7 @@ const isMobileDetected = computed(() => {
 });
 
 watch(isMobileDetected, () => {
-    mapStore.isMobileDetected = isMobileDetected.value;
+    appStore.isMobileDetected = isMobileDetected.value;
 });
 
 const displayZoom = computed(() => {

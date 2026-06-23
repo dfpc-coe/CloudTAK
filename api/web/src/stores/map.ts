@@ -100,10 +100,8 @@ export const useMapStore = defineStore('cloudtak', {
         coordFormat: string;
         defaultPointType: string;
         manualLocationMode: boolean;
-        isMobileDetected: boolean;
         isBackgrounded: boolean;
 
-        tokenExpiry: number | null;
         lastUpdateCOTErrorSignature: string | null;
 
         toastOffset: {
@@ -164,9 +162,7 @@ export const useMapStore = defineStore('cloudtak', {
             toastOffset: { x: 70, y: 60 },
             manualLocationMode: false,
 
-            tokenExpiry: null,
             lastUpdateCOTErrorSignature: null,
-            isMobileDetected: false,
             isBackgrounded: false,
             locked: [],
             terrainEnabled: false,
@@ -264,9 +260,9 @@ export const useMapStore = defineStore('cloudtak', {
                 true
             );
 
-            this._rawWorker = rawWorker;
+            this._rawWorker = markRaw(rawWorker);
             this._workerReady = waitForAtlasWorkerReady(rawWorker);
-            this._worker = Comlink.wrap<Atlas>(rawWorker);
+            this._worker = markRaw(Comlink.wrap<Atlas>(rawWorker));
         },
         destroy: async function() {
             // Capture current worker instances to avoid races with $reset()/state() creating new ones.

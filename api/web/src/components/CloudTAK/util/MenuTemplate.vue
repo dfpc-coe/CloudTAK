@@ -165,10 +165,10 @@ import {
 
 import { useRouter } from 'vue-router'
 import { computed } from 'vue';
-import { useMapStore } from '../../../stores/map.ts';
+import { useAppStore } from '../../../stores/app.ts';
 
 const router = useRouter()
-const mapStore = useMapStore();
+const appStore = useAppStore();
 
 const props = defineProps({
     name: {
@@ -226,7 +226,7 @@ const backType = computed(() => {
     }
 });
 
-const isModal = computed(() => props.standalone && mapStore.isMobileDetected);
+const isModal = computed(() => props.standalone && appStore.isMobileDetected);
 </script>
 
 <style scoped>
