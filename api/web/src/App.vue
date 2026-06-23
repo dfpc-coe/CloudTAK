@@ -151,8 +151,8 @@
             @close='error = undefined'
         />
         <ChannelChangeModal
-            v-if='appStore.channelChange'
-            @close='appStore.channelChange = false'
+            v-if='mapStore.channelChange'
+            @close='mapStore.channelChange = false'
         />
         <NotificationToast
             v-for='n in toastNotifications'
@@ -192,10 +192,12 @@ import { from } from 'rxjs';
 import { getPageServiceWorkerBuildId, markUpdateRequestedByThisTab } from './base/service-worker.ts';
 
 import { useAppStore } from './stores/app.ts';
+import { useMapStore } from './stores/map.ts';
 
 const route = useRoute();
 
 const appStore = useAppStore();
+const mapStore = useMapStore();
 
 const toastNotifications = useObservable(
     from(liveQuery(async () => {

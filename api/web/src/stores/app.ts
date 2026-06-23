@@ -8,15 +8,12 @@ import Config from '../base/config.ts';
 import ServerManager from '../base/server.ts';
 import router from '../router.ts';
 import { isNativePlatform } from '../base/capacitor.ts';
-import { WorkerMessageType } from '../base/events.ts';
-import type { WorkerMessage } from '../base/events.ts';
 
 export type DisplayStyleMode = 'System Default' | 'Light' | 'Dark';
 export type ResolvedThemeMode = 'light' | 'dark';
 
 // Kept outside Pinia state so Vue does not attempt to proxy them.
 let displayStyleSub: Subscription | undefined;
-let appChannel: BroadcastChannel | undefined;
 const systemThemeQuery = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-color-scheme: dark)')
     : undefined;
@@ -45,7 +42,6 @@ export const useAppStore = defineStore('cloudtak-app', {
         resolvedTheme: ResolvedThemeMode;
         loading: boolean;
         loadingStage: string;
-        channelChange: boolean;
     } => ({
         tokenExpiry: null,
         user: false,
@@ -56,7 +52,6 @@ export const useAppStore = defineStore('cloudtak-app', {
         resolvedTheme: 'dark',
         loading: true,
         loadingStage: '',
-        channelChange: false,
     }),
     actions: {
         async setServerUrl(serverUrl: string): Promise<void> {
@@ -229,14 +224,6 @@ export const useAppStore = defineStore('cloudtak-app', {
             this.loginLogo = config['login::logo'];
             this.loginName = config['login::name'];
 
-            appChannel = new BroadcastChannel('cloudtak');
-            appChannel.onmessage = (event: MessageEvent<WorkerMessage>) => {
-                const msg = event.data;
-                if (msg && msg.type === WorkerMessageType.Channel_Change) {
-                    this.channelChange = true;
-                }
-            };
-
             return true;
         },
 
@@ -246,11 +233,6 @@ export const useAppStore = defineStore('cloudtak-app', {
             if (displayStyleSub) {
                 displayStyleSub.unsubscribe();
                 displayStyleSub = undefined;
-            }
-
-            if (appChannel) {
-                appChannel.close();
-                appChannel = undefined;
             }
         },
     },
