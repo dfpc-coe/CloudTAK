@@ -151,7 +151,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
-import Session from '../../session.ts'
+import { useAppStore } from '../../stores/app.ts'
 import { TablerAlert, TablerInput, TablerLoading, TablerNone } from '@tak-ps/vue-tabler'
 
 type ProviderLogo = {
@@ -168,6 +168,7 @@ type Provider = {
 
 const serverUrl = ref('')
 const providers = ref<Provider[]>([])
+const appStore = useAppStore()
 const searchTerm = ref('')
 const loading = ref(false)
 const error = ref<Error | null>(null)
@@ -243,7 +244,7 @@ async function saveUrl(): Promise<void> {
         await validateServer(serverUrl.value)
 
         if (Capacitor.isNativePlatform()) {
-            await Session.serverUrl(serverUrl.value)
+            await appStore.setServerUrl(serverUrl.value)
             window.location.href = '/login'
         } else if (window.electronAPI?.saveUrl) {
             window.electronAPI.saveUrl(serverUrl.value)

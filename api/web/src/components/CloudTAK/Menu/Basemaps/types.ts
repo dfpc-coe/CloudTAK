@@ -232,7 +232,7 @@ export function normalizeEditing(data: Basemap | BasemapImport | BasemapListItem
         snapping_enabled: ('snapping_enabled' in data ? data.snapping_enabled : undefined) ?? false,
         snapping_layer: ('snapping_layer' in data ? data.snapping_layer : undefined) ?? '',
         styles: ('styles' in data && Array.isArray(data.styles) ? data.styles : null) ?? [],
-        tilejson: String(('tilejson' in data ? data.tilejson : undefined) ?? ''),
+        tilejson: (() => { const v = String(('tilejson' in data ? data.tilejson : undefined) ?? ''); return (v.startsWith('http://') || v.startsWith('https://')) ? v : ''; })(),
         encoding: ('encoding' in data ? (data.encoding === 'mapbox' || data.encoding === 'terrarium' ? data.encoding : null) : null) ?? null,
     };
 }

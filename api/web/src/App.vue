@@ -120,7 +120,7 @@
                                 </div>
                                 <div
                                     class='d-flex dropdown-item cursor-pointer cloudtak-hover'
-                                    @click='logout'
+                                    @click='appStore.logout'
                                 >
                                     <IconLogout
                                         size='32'
@@ -137,13 +137,13 @@
         </header>
 
         <Loading
-            v-if='!mounted || (loading && !route.path.includes("configure") && !route.path.includes("login"))'
-            :stage='loadingStage'
+            v-if='!mounted || (appStore.loading && !route.path.includes("configure") && !route.path.includes("login"))'
+            :stage='appStore.loadingStage'
         />
         <router-view
             v-else
             @err='error = $event'
-            @login='refreshLogin'
+            @login='appStore.refreshLogin'
         />
         <TablerError
             v-if='error'
@@ -151,8 +151,8 @@
             @close='error = undefined'
         />
         <ChannelChangeModal
-            v-if='channelChange'
-            @close='channelChange = false'
+            v-if='appStore.channelChange'
+            @close='appStore.channelChange = false'
         />
         <NotificationToast
             v-for='n in toastNotifications'
@@ -165,10 +165,8 @@
 
 <script setup lang='ts'>
 import { ref, computed, onErrorCaptured, onMounted, onUnmounted } from 'vue'
-import { liveQuery, type Subscription } from 'dexie';
-import { useRouter, useRoute } from 'vue-router';
-import Config from './base/config.ts';
-import ServerManager from './base/server.ts';
+import { liveQuery } from 'dexie';
+import { useRoute } from 'vue-router';
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
 import {
@@ -179,9 +177,6 @@ import {
     IconSettings,
     IconRefresh,
 } from '@tabler/icons-vue';
-import { Preferences } from '@capacitor/preferences';
-import { StatusBar } from '@capacitor/status-bar';
-import Session from './session.ts';
 import Loading from './components/Loading.vue';
 import {
     TablerBadge,
@@ -191,22 +186,19 @@ import ChannelChangeModal from './components/CloudTAK/Menu/ChannelChangeModal.vu
 import NotificationToast from './components/CloudTAK/util/NotificationToast.vue';
 import TAKNotification_ from './base/notification.ts';
 const TAKNotification = TAKNotification_;
-import { WorkerMessageType } from './base/events.ts';
-import type { WorkerMessage } from './base/events.ts';
-import { isNativePlatform, supportsServiceWorker } from './base/capacitor.ts';
+import { supportsServiceWorker } from './base/capacitor.ts';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
 import { getPageServiceWorkerBuildId, markUpdateRequestedByThisTab } from './base/service-worker.ts';
-import { db } from './database.ts';
 
-import { useAppStore, type ResolvedThemeMode } from './stores/app.ts';
+import { useAppStore } from './stores/app.ts';
 
-const router = useRouter();
 const route = useRoute();
 
 const appStore = useAppStore();
 
-const toastNotifications = useObservable(    from(liveQuery(async () => {
+const toastNotifications = useObservable(
+    from(liveQuery(async () => {
         return (await TAKNotification.list()).filter((n) => n.toast && !n.read);
     }))
 );
@@ -233,37 +225,8 @@ const onSwUpdateAvailable = (e: Event) => {
     updateAvailable.value = true;
 };
 
-const loading = ref(true);
-const loadingStage = ref('');
-const channelChange = ref(false);
 const mounted = ref(false);
 const error = ref<Error | undefined>();
-
-let displayStyleSub: Subscription | undefined;
-const systemThemeQuery = typeof window !== 'undefined'
-    ? window.matchMedia('(prefers-color-scheme: dark)')
-    : undefined;
-
-function resolveTheme(style: string | undefined): ResolvedThemeMode {
-    if (style === 'Light') return 'light';
-    if (style === 'Dark') return 'dark';
-    return systemThemeQuery?.matches ? 'dark' : 'light';
-}
-
-function applyTheme(style: string | undefined = appStore.displayStyle): void {
-    const theme = resolveTheme(style);
-    appStore.resolvedTheme = theme;
-
-    document.documentElement.setAttribute('data-bs-theme', theme);
-    document.documentElement.setAttribute('data-bs-theme-base', 'neutral');
-    document.documentElement.setAttribute('data-bs-theme-primary', 'blue');
-}
-
-function onSystemThemeChange(): void {
-    if (appStore.displayStyle === 'System Default') {
-        applyTheme(appStore.displayStyle);
-    }
-}
 
 const navShown = computed<boolean>(() => {
     if (!route || !route.name) {
@@ -287,10 +250,10 @@ onErrorCaptured((err) => {
         // Popup Modal if reauthenticating vs initial login
 
         if (route.name !== 'login') {
-            routeLogin();
+            appStore.routeLogin();
         }
     } else if (String(e) === 'Error: Authentication Required') {
-        routeLogin();
+        appStore.routeLogin();
     } else {
         error.value = e;
     }
@@ -300,18 +263,6 @@ onMounted(async () => {
     // Always clear the loading splash, even if initialization throws (e.g. a
     // request times out on a native cold-start). Otherwise the app can get
     // permanently stuck on the loading component before the login page.
-    try {
-        await initializeApp();
-    } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err));
-    } finally {
-        loading.value = false;
-        mounted.value = true;
-    }
-});
-
-async function initializeApp(): Promise<void> {
-    loadingStage.value = 'Starting up…';
 
     // Register before any awaits so early promise rejections are captured
     window.addEventListener('unhandledrejection', (e) => {
@@ -322,207 +273,78 @@ async function initializeApp(): Promise<void> {
         window.addEventListener('sw:update-available', onSwUpdateAvailable);
     }
 
-    loadingStage.value = 'Connecting to server…';
-
-    if (!isNativePlatform()) {
-        await Session.serverUrl(window.location.origin);
-    } else {
-        const { value } = await Preferences.get({ key: 'serverUrl' });
-        const serverUrl = value?.trim();
-
-        if (!serverUrl) {
-            window.location.href = '/setup.html';
-            return;
-        } else {
-            await Session.serverUrl(serverUrl);
-        }
+    let completed = false;
+    try {
+        completed = await appStore.bootstrap();
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        appStore.loading = false;
+        mounted.value = true;
     }
 
-    loadingStage.value = 'Setting up styles…';
+    if (completed) {
+        checkServiceWorkerUpdates();
+    }
+});
 
-    if (isNativePlatform()) {
+function checkServiceWorkerUpdates(): void {
+    appStore.loadingStage = 'Checking for updates…';
+
+    if (!supportsServiceWorker()) return;
+
+    navigator.serviceWorker.getRegistrations().then(async (registrations) => {
+        const currentBuildId = getPageServiceWorkerBuildId();
+
+        for (const registration of registrations) {
+            registration.update().catch((err) => {
+                console.debug('Failed to update ServiceWorker (likely unregistered):', err);
+            });
+        }
+
         try {
-            await StatusBar.setOverlaysWebView({ overlay: false });
-        } catch (err) {
-            console.warn('Failed to configure native status bar overlay', err);
-        }
-    }
-
-    applyTheme();
-
-    displayStyleSub = liveQuery(() => db.profile.get('display_style')).subscribe((entry) => {
-        const style = entry?.value;
-        appStore.displayStyle = style === 'Light' || style === 'Dark' ? style : 'System Default';
-        applyTheme(appStore.displayStyle);
-    });
-
-    systemThemeQuery?.addEventListener('change', onSystemThemeChange);
-
-    loadingStage.value = 'Checking your account…';
-
-    let status;
-
-    const username = await db.profile.get('username');
-
-    if (username) {
-        status = 'configured';
-    } else {
-        try {
-            const server = await ServerManager.get();
-            status = server.status;
-        } catch (err) {
-            console.warn('Server Error (Likely the server is in a configured state)', err);
-            status = 'configured';
-        }
-    }
-
-    if (status === 'unconfigured') {
-        await Session.clear();
-        await router.push("/configure");
-        return;
-    }
-
-    const { value: token } = await Preferences.get({ key: 'token' });
-
-    if (token) {
-        loadingStage.value = 'Signing you in…';
-        await refreshLogin();
-    } else if (route.name !== 'login') {
-        routeLogin();
-    }
-
-    loadingStage.value = 'Loading app settings…';
-
-    const config = await Config.list([
-        'login::name',
-        'login::logo',
-        'login::brand::enabled',
-        'login::brand::logo',
-        'login::background::enabled',
-        'login::background::color',
-        'login::signup',
-        'login::forgot',
-        'login::username'
-    ]);
-
-    appStore.loginLogo = config['login::logo'];
-
-    appStore.loginName = config['login::name'];
-
-    const channel = new BroadcastChannel('cloudtak');
-    channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
-        const msg = event.data;
-        if (msg && msg.type === WorkerMessageType.Channel_Change) {
-            channelChange.value = true;
-        }
-    };
-
-    loadingStage.value = 'Checking for updates…';
-
-    if (supportsServiceWorker()) {
-        navigator.serviceWorker.getRegistrations().then(async (registrations) => {
-            const currentBuildId = getPageServiceWorkerBuildId();
-
-            for (const registration of registrations) {
-                registration.update().catch((err) => {
-                    console.debug('Failed to update ServiceWorker (likely unregistered):', err);
-                });
-            }
-
-            try {
-                for (const reg of registrations) {
-                    // Prefer a waiting worker (new version ready to activate)
-                    if (reg.waiting) {
-                        pendingRegistration.value = reg;
-                        updateAvailable.value = true;
-                        break;
-                    }
-
-                    // Fall back to detecting an active SW whose build differs from
-                    // the currently loaded page (e.g. another tab triggered activation).
-                    //
-                    // IMPORTANT: only compare build fingerprints, not the `?v=`
-                    // package.json version param. The `?v=` value is whatever
-                    // `package.json` happened to be when the *previous* page
-                    // called `register()` for this worker, not what is actually
-                    // deployed. After a SKIP_WAITING + auto-reload, the freshly
-                    // loaded page imports a *newer* `package.json` than the
-                    // value baked into `reg.active.scriptURL`, so a version
-                    // comparison spuriously re-shows the update banner with no
-                    // pending worker present. The build fingerprint is derived
-                    // from deployed asset filenames and is the source of truth.
-                    const worker = reg.active;
-                    if (worker?.scriptURL) {
-                        const u = new URL(worker.scriptURL);
-                        const swBuild = u.searchParams.get('build');
-                        if (currentBuildId && swBuild && swBuild !== currentBuildId) {
-                            updateAvailable.value = true;
-                        }
-                        break;
-                    }
+            for (const reg of registrations) {
+                // Prefer a waiting worker (new version ready to activate)
+                if (reg.waiting) {
+                    pendingRegistration.value = reg;
+                    updateAvailable.value = true;
+                    break;
                 }
-            } catch { /* ignore */ }
-        });
-    }
+
+                // Fall back to detecting an active SW whose build differs from
+                // the currently loaded page (e.g. another tab triggered activation).
+                //
+                // IMPORTANT: only compare build fingerprints, not the `?v=`
+                // package.json version param. The `?v=` value is whatever
+                // `package.json` happened to be when the *previous* page
+                // called `register()` for this worker, not what is actually
+                // deployed. After a SKIP_WAITING + auto-reload, the freshly
+                // loaded page imports a *newer* `package.json` than the
+                // value baked into `reg.active.scriptURL`, so a version
+                // comparison spuriously re-shows the update banner with no
+                // pending worker present. The build fingerprint is derived
+                // from deployed asset filenames and is the source of truth.
+                const worker = reg.active;
+                if (worker?.scriptURL) {
+                    const u = new URL(worker.scriptURL);
+                    const swBuild = u.searchParams.get('build');
+                    if (currentBuildId && swBuild && swBuild !== currentBuildId) {
+                        updateAvailable.value = true;
+                    }
+                    break;
+                }
+            }
+        } catch { /* ignore */ }
+    });
 }
 
 onUnmounted(() => {
     window.removeEventListener('sw:update-available', onSwUpdateAvailable);
-    systemThemeQuery?.removeEventListener('change', onSystemThemeChange);
-    displayStyleSub?.unsubscribe();
+    appStore.teardown();
 });
-
-async function logout() {
-    appStore.user = false;
-    appStore.tokenExpiry = null;
-
-    // Explicit sign-out: clear the token AND wipe the local database so the
-    // next user starts from a clean state.
-    await Session.destroy();
-
-    window.location.href = '/login';
-}
 
 function external(url: string) {
     window.location.href = url;
-}
-
-function routeLogin() {
-    if (router.hasRoute('login')) {
-        router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
-    } else {
-        window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
-    }
-}
-
-async function refreshLogin() {
-    loading.value = true;
-
-    try {
-        const { value: token } = await Preferences.get({ key: 'token' });
-        if (!token) throw new Error('No token found');
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const expirationDate = payload.exp * 1000; // Convert to milliseconds
-        appStore.tokenExpiry = expirationDate;
-        const now = Date.now();
-
-        if (now > expirationDate) {
-            throw new Error('Token expired');
-        }
-
-        appStore.user = true;
-    } catch (err) {
-        console.error(err);
-        appStore.tokenExpiry = null;
-
-        // The token is missing/expired/invalid. Do NOT wipe the local database -
-        // only clear the token and send the user back to the login screen so
-        // their cached data is preserved for a quick re-login.
-        await Session.clear();
-        routeLogin();
-    }
-
-    loading.value = false;
 }
 </script>
 
