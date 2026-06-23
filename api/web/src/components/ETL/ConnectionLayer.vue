@@ -574,7 +574,7 @@ async function deleteConfig(direction: string) {
     await fetch();
     await fetchStatus();
 
-    router.push(`/connection/${route.params.connectionid || 'admin'}/layer/${route.params.layerid}/deployment`);
+    router.push(`/connection/${route.params.connectionid ?? 0}/layer/${route.params.layerid}/deployment`);
 
     loading.value.layer = false;
 }
@@ -594,7 +594,7 @@ async function fetchStatus(load = false) {
 }
 
 async function downloadConfig() {
-    await downloadUrl(`/api/connection/${route.params.connectionid || 'admin'}/layer/${route.params.layerid}?download=true`, {
+    await downloadUrl(`/api/connection/${route.params.connectionid ?? 0}/layer/${route.params.layerid}?download=true`, {
         token: true
     });
 }
