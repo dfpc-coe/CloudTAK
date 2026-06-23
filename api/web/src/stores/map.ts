@@ -116,6 +116,7 @@ export const useMapStore = defineStore('cloudtak', {
         container?: HTMLElement;
         hasSnapping: boolean;
         hasNoChannels: boolean;
+        channelChange: boolean;
         isLoaded: boolean;
         isOpen: boolean;
         userOrientationMode: boolean;
@@ -163,6 +164,7 @@ export const useMapStore = defineStore('cloudtak', {
             locked: [],
             terrainEnabled: false,
             hasNoChannels: false,
+            channelChange: false,
             isOpen: false,
             isLoaded: false,
             userOrientationMode: false,
@@ -643,6 +645,8 @@ export const useMapStore = defineStore('cloudtak', {
                     this.hasNoChannels = true;
                 } else if (msg.type === WorkerMessageType.Channels_List) {
                     this.hasNoChannels = false;
+                } else if (msg.type === WorkerMessageType.Channel_Change) {
+                    this.channelChange = true;
                 } else if (msg.type === WorkerMessageType.Mission_Change_Feature) {
                     await this.loadMission(msg.body.guid);
                 }
