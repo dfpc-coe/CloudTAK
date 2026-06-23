@@ -16,6 +16,13 @@
 
 ### Pending Release
 
+### v13.20.0 - 2026-06-23
+
+- :tada: Allow Admin Connections to utilize connection APIs and have associated layers
+- :tada: Add UI and backend routes for supporting paging notification settings
+- :rocket: Update Capacitor Network
+- :rocket: Allow editing Mission Log keywords
+
 ### v13.19.1 - 2026-06-22
 
 - :bug: Fix `vector_layers` field not being proxied for PMTiles Layers
