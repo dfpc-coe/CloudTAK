@@ -486,7 +486,7 @@ import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';
-import { useDeviceStore } from '../../stores/device.ts';
+import { useAppStore } from '../../stores/app.ts';
 import { DrawToolMode } from '../../stores/modules/draw.ts';
 import { useFloatStore } from '../../stores/float.ts';
 import { liveQuery } from 'dexie';
@@ -498,7 +498,7 @@ import { cutOverlayFeature } from './util/featureCut.ts';
 import MissionInviteModal from './Menu/Mission/MissionInviteModal.vue';
 
 const mapStore = useMapStore();
-const deviceStore = useDeviceStore();
+const appStore = useAppStore();
 const floatStore = useFloatStore();
 
 const hasTerrain = ref<boolean>(false);
@@ -515,7 +515,7 @@ const locationClickHandler = ref<((e: MapMouseEvent) => void) | null>(null);
 const height = ref<number>(window.innerHeight);
 const width = ref<number>(window.innerWidth);
 
-mapStore.isMobileDetected = detectMobile();
+appStore.isMobileDetected = detectMobile();
 
 // Show a popup if no channels are selected on load
 const warnChannels = ref<boolean>(false)
@@ -571,7 +571,7 @@ const isMobileDetected = computed(() => {
 });
 
 watch(isMobileDetected, () => {
-    mapStore.isMobileDetected = isMobileDetected.value;
+    appStore.isMobileDetected = isMobileDetected.value;
 });
 
 const displayZoom = computed(() => {
@@ -794,7 +794,7 @@ async function exitManualMode() {
     await mapStore.worker.profile.update({ tak_loc: null });
 
     // Restart GPS watch to ensure fresh GPS acquisition
-    deviceStore.geolocation.startWatch(mapStore.locationCallback);
+    void mapStore.startLocationWatch();
 
     await mapStore.refresh();
 }

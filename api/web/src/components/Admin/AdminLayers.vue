@@ -99,8 +99,8 @@
                             class='cursor-pointer'
                             role='menuitem'
                             tabindex='0'
-                            @keyup.enter='navTo(`/connection/${layer.connection || "template"}/layer/${layer.id}`, $event)'
-                            @click='navTo(`/connection/${layer.connection || "template"}/layer/${layer.id}`, $event)'
+                            @keyup.enter='navTo(`/connection/${layer.connection || 0}/layer/${layer.id}`, $event)'
+                            @click='navTo(`/connection/${layer.connection || 0}/layer/${layer.id}`, $event)'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display && h.name === "name"'>

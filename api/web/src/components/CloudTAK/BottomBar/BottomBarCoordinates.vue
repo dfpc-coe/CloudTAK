@@ -55,7 +55,7 @@
                     </TablerPillGroup>
                 </li>
                 <li
-                    v-if='mapStore.isMobileDetected && coordSource === "gps" && formattedCoord'
+                    v-if='appStore.isMobileDetected && coordSource === "gps" && formattedCoord'
                     class='px-3 py-2'
                     @click='Clipboard.write({ string: formattedCoord })'
                 >
@@ -84,7 +84,7 @@
         </TablerDropdown>
 
         <CopyButton
-            v-if='coordSource === "gps" && !mapStore.isMobileDetected'
+            v-if='coordSource === "gps" && !appStore.isMobileDetected'
             v-tooltip='"Copy Coordinates"'
             :text='formattedCoord'
             class='position-absolute top-50 end-0 translate-middle-y me-2'
@@ -105,6 +105,7 @@ import {
 } from '@tabler/icons-vue';
 import { formatCoordPair, COORD_MODES, type CoordMode } from '../../../base/utils/coordinateFormat.ts';
 import { useMapStore } from '../../../stores/map.ts';
+import { useAppStore } from '../../../stores/app.ts';
 import { isNativePlatform } from '../../../base/capacitor.ts';
 import CopyButton from '../util/CopyButton.vue';
 
@@ -113,6 +114,7 @@ const props = defineProps<{
 }>();
 
 const mapStore = useMapStore();
+const appStore = useAppStore();
 
 const isNative = isNativePlatform();
 

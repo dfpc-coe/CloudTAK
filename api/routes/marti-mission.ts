@@ -294,7 +294,7 @@ export default async function router(schema: Schema, config: Config) {
                 opts,
             );
 
-            res.json(await api.Mission.get(mission.guid || req.params.name, {}, opts));
+            res.json(mission);
         } catch (err) {
             Err.respond(err, res);
         }

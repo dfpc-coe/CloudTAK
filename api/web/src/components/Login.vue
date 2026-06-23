@@ -369,7 +369,7 @@ import { isNativePlatform, supportsServiceWorker } from '../base/capacitor.ts';
 import { getCurrentEntryBuildId } from '../base/service-worker.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { server } from '../std.ts';
-import Session from '../session.ts';
+import { useAppStore } from '../stores/app.ts';
 import {
     TablerBadge,
     TablerLoading,
@@ -381,6 +381,8 @@ const emit = defineEmits([ 'login' ]);
 
 const route = useRoute();
 const router = useRouter();
+
+const appStore = useAppStore();
 
 const brandStore = reactive<{
     loaded: boolean;
@@ -557,7 +559,7 @@ onMounted(async () => {
     // explicit sign-out or when a different user logs in. This avoids a costly
     // resync when a token simply expires.
     try {
-        const existing = await Session.username();
+        const existing = await appStore.getUsername();
         if (existing) {
             storedUsername.value = existing;
             body.value.username = existing;
@@ -571,7 +573,7 @@ onMounted(async () => {
 // "Not Me" button when the user wants to log in as a different account.
 async function notMe(): Promise<void> {
     try {
-        await Session.destroy();
+        await appStore.destroySession();
     } catch (err) {
         console.error('Failed to clear existing session', err);
     }
@@ -586,10 +588,10 @@ async function notMe(): Promise<void> {
 // user does not inherit the previous user's data.
 async function applySession(login: { token: string; email: string }): Promise<void> {
     if (storedUsername.value && storedUsername.value !== login.email) {
-        await Session.destroy();
+        await appStore.destroySession();
     }
 
-    await Session.login({ token: login.token, username: login.email });
+    await appStore.persistSession({ token: login.token, username: login.email });
     storedUsername.value = login.email;
 }
 

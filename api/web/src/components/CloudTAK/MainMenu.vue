@@ -1,5 +1,5 @@
 <template>
-    <router-view v-if='mapStore.isMobileDetected' />
+    <router-view v-if='appStore.isMobileDetected' />
     <template v-else>
         <div
             ref='container'
@@ -47,9 +47,11 @@
 <script setup lang='ts'>
 import { ref, watch, useTemplateRef, onMounted } from 'vue';
 import { useMapStore } from '../../stores/map.ts';
+import { useAppStore } from '../../stores/app.ts';
 import MainMenuContents from './MainMenuContents.vue';
 
 const mapStore = useMapStore();
+const appStore = useAppStore();
 
 const resizing = ref(false);
 

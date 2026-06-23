@@ -11,45 +11,47 @@
                 v-for='keyword in filteredKeywords'
                 :key='keyword'
                 class='text-uppercase rounded-pill px-3 py-1'
-                :class='{ "cursor-pointer user-select-none": relevant !== undefined }'
+                :class='{ "cursor-pointer user-select-none": props.relevant !== undefined }'
                 :background-color='COLORS.primary.bg'
                 :border-color='COLORS.primary.border'
                 :text-color='COLORS.primary.text'
-                :hover-background-color='relevant !== undefined ? COLORS.danger.bg : undefined'
-                :hover-border-color='relevant !== undefined ? COLORS.danger.border : undefined'
-                :hover-text-color='relevant !== undefined ? COLORS.danger.text : undefined'
-                @mouseenter='relevant !== undefined ? hoveredKeyword = keyword : undefined'
+                :hover-background-color='props.relevant !== undefined ? COLORS.danger.bg : undefined'
+                :hover-border-color='props.relevant !== undefined ? COLORS.danger.border : undefined'
+                :hover-text-color='props.relevant !== undefined ? COLORS.danger.text : undefined'
+                @mouseenter='props.relevant !== undefined ? hoveredKeyword = keyword : undefined'
                 @mouseleave='hoveredKeyword = null'
-                @click='relevant !== undefined ? removeKeyword(keyword) : undefined'
+                @click='props.relevant !== undefined ? removeKeyword(keyword) : undefined'
             >
                 <span :class='{ "text-decoration-line-through": hoveredKeyword === keyword }'>{{ keyword }}</span>
             </TablerBadge>
         </div>
 
         <div
-            v-if='unselectedRelevant.length > 0 || relevant !== undefined'
+            v-if='unselectedRelevant.length > 0 || props.relevant !== undefined'
             class='d-flex flex-column gap-2'
         >
-            <span class='text-white-50 small fst-italic'>Suggested</span>
+            <template v-if='unselectedRelevant.length > 0'>
+                <span class='text-white-50 small fst-italic'>Suggested</span>
 
-            <div class='d-flex flex-wrap gap-2 align-items-center'>
-                <TablerBadge
-                    v-for='keyword in unselectedRelevant.slice(0, 5)'
-                    :key='"rel-" + keyword'
-                    class='text-uppercase rounded-pill px-3 py-1 cursor-pointer user-select-none'
-                    :background-color='COLORS.muted.bg'
-                    :border-color='COLORS.muted.border'
-                    :text-color='COLORS.muted.text'
-                    :hover-background-color='COLORS.primary.bg'
-                    :hover-border-color='COLORS.primary.border'
-                    :hover-text-color='COLORS.primary.text'
-                    @click='addKeyword(keyword)'
-                >
-                    {{ keyword }}
-                </TablerBadge>
-            </div>
+                <div class='d-flex flex-wrap gap-2 align-items-center'>
+                    <TablerBadge
+                        v-for='keyword in unselectedRelevant.slice(0, 5)'
+                        :key='"rel-" + keyword'
+                        class='text-uppercase rounded-pill px-3 py-1 cursor-pointer user-select-none'
+                        :background-color='COLORS.muted.bg'
+                        :border-color='COLORS.muted.border'
+                        :text-color='COLORS.muted.text'
+                        :hover-background-color='COLORS.primary.bg'
+                        :hover-border-color='COLORS.primary.border'
+                        :hover-text-color='COLORS.primary.text'
+                        @click='addKeyword(keyword)'
+                    >
+                        {{ keyword }}
+                    </TablerBadge>
+                </div>
+            </template>
 
-            <template v-if='relevant !== undefined'>
+            <template v-if='props.relevant !== undefined'>
                 <form
                     v-if='adding'
                     class='d-inline-flex'
@@ -131,7 +133,7 @@ const props = withDefaults(defineProps<{
     placeholder: 'No Keywords',
 });
 
-const { relevant, placeholder } = props;
+const { placeholder } = props;
 
 const filteredKeywords = computed(() => {
     return props.keywords.filter((keyword) => {
@@ -140,8 +142,8 @@ const filteredKeywords = computed(() => {
 });
 
 const unselectedRelevant = computed(() => {
-    if (relevant === undefined) return [];
-    return relevant.filter((keyword) => {
+    if (props.relevant === undefined) return [];
+    return props.relevant.filter((keyword) => {
         return FILTERED_PREFIXES.some((prefix) => keyword.startsWith(prefix)) === false
             && !filteredKeywords.value.includes(keyword);
     });
@@ -150,7 +152,7 @@ const unselectedRelevant = computed(() => {
 const hasContent = computed(() => {
     return filteredKeywords.value.length > 0
         || unselectedRelevant.value.length > 0
-        || relevant !== undefined;
+        || props.relevant !== undefined;
 });
 
 const adding = ref(false);

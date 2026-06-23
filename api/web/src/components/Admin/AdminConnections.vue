@@ -7,6 +7,16 @@
 
             <div class='ms-auto btn-list'>
                 <TablerIconButton
+                    title='View Admin Connection'
+                    @click='navTo("/connection/0")'
+                >
+                    <IconServerBolt
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <TablerIconButton
                     title='Create Connection'
                     @click='navTo("/connection/new")'
                 >
@@ -150,6 +160,7 @@ import {
 import {
     IconPlugConnected,
     IconPlus,
+    IconServerBolt,
 } from '@tabler/icons-vue'
 
 const error = ref<Error | boolean>(false);

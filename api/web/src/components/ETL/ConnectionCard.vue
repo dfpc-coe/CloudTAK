@@ -15,7 +15,7 @@
             <AgencyBadge :connection='connection' />
 
             <TablerIconButton
-                v-if='!connection.readonly'
+                v-if='!connection.readonly && connection.id !== 0'
                 title='Cycle Connection'
                 @click='cycle'
             >
@@ -31,6 +31,7 @@
             />
 
             <TablerIconButton
+                v-if='connection.id !== 0'
                 title='Edit'
                 @click='router.push(`/connection/${connection.id}/edit`)'
             >
@@ -292,17 +293,24 @@ async function cycle() {
 async function refresh() {
     loading.value = true;
     try {
-        const res = await server.GET('/api/connection/{:connectionid}', {
-            params: {
-                path: {
-                    ':connectionid': props.connection.id
+        let data: ETLConnection;
+        if (props.connection.id === 0) {
+            const res = await server.GET('/api/connection/0');
+            if (res.error) throw new Error(res.error.message);
+            data = res.data as ETLConnection;
+        } else {
+            const res = await server.GET('/api/connection/{:connectionid}', {
+                params: {
+                    path: {
+                        ':connectionid': props.connection.id
+                    }
                 }
-            }
-        });
+            });
+            if (res.error) throw new Error(res.error.message);
+            data = res.data;
+        }
 
-        if (res.error) throw new Error(res.error.message);
-
-        emit('update:connection', res.data);
+        emit('update:connection', data);
     } catch (err) {
         console.error(err);
     }
