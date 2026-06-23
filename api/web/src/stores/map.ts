@@ -292,7 +292,7 @@ export const useMapStore = defineStore('cloudtak', {
                 this.channel.close();
             } catch (err) {
                 // channel may already be closed
-                console.error(err)
+                console.error(err);
             }
 
             await deviceStore.wakeLock.releaseSentinel();
