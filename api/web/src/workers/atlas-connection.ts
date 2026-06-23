@@ -89,6 +89,7 @@ export default class AtlasConnection {
                     properties: { message: string }
                 };
 
+                console.warn('Warning: Validation Error: received Error from WebSocket:', JSON.stringify(body));
                 throw new Error(err.properties.message);
             } else if (body.type === 'import') {
                 const imp = (body as unknown as {

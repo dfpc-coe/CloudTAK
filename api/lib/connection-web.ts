@@ -70,11 +70,12 @@ export class ConnectionWebSocket {
                     } else {
                         const feat = msg.data as Static<typeof Feature.Feature>;
 
-                        const cot = await CoTParser.from_geojson(feat);
+                        const cot = await CoTParser.from_geojson(feat, { verbose: true });
 
                         client.tak.write([cot], { stripFlow: true });
                     }
                 } catch (err) {
+                    console.warn('Warning: Validation Error on WebSocket CoT message:', JSON.stringify(msg.data), err);
                     this.ws.send(JSON.stringify({
                         type: 'Error',
                         properties: {
