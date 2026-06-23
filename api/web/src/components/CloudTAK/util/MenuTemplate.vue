@@ -35,7 +35,7 @@
                     v-text='name'
                 />
 
-                <div class='btn-list align-items-center flex-nowrap'>
+                <div class='btn-list align-items-center flex-nowrap ms-auto'>
                     <slot name='buttons' />
 
                     <TablerIconButton
