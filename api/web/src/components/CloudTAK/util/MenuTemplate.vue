@@ -6,7 +6,7 @@
         <div
             class='main-menu-modal-frame w-100 px-0 d-flex flex-column overflow-hidden'
         >
-            <div class='modal-header d-flex align-items-center py-2 px-2 flex-shrink-0'>
+            <div class='modal-header d-flex align-items-center py-2 flex-shrink-0'>
                 <TablerIconButton
                     v-if='backType === "back"'
                     title='Back'

@@ -59,7 +59,26 @@
                                         {{ p.value }}
                                     </div>
                                 </div>
-                                <PagingStatusBadges :source='p' />
+                                <div class='d-flex align-items-center gap-1 flex-shrink-0'>
+                                    <span
+                                        v-if='p.verified'
+                                        class='badge bg-green-lt d-inline-flex align-items-center gap-1'
+                                    >
+                                        <IconCircleCheck :size='14' stroke='2' />
+                                        Verified
+                                    </span>
+                                    <span
+                                        v-else
+                                        class='badge bg-yellow-lt d-inline-flex align-items-center gap-1'
+                                    >
+                                        <IconAlertCircle :size='14' stroke='2' />
+                                        Pending
+                                    </span>
+                                    <span
+                                        v-if='p.enabled'
+                                        class='badge bg-blue-lt'
+                                    >Enabled</span>
+                                </div>
                             </div>
                         </StandardItem>
                         <PagingEmptyHint
@@ -117,7 +136,26 @@
                                         {{ p.value }}
                                     </div>
                                 </div>
-                                <PagingStatusBadges :source='p' />
+                                <div class='d-flex align-items-center gap-1 flex-shrink-0'>
+                                    <span
+                                        v-if='p.verified'
+                                        class='badge bg-green-lt d-inline-flex align-items-center gap-1'
+                                    >
+                                        <IconCircleCheck :size='14' stroke='2' />
+                                        Verified
+                                    </span>
+                                    <span
+                                        v-else
+                                        class='badge bg-yellow-lt d-inline-flex align-items-center gap-1'
+                                    >
+                                        <IconAlertCircle :size='14' stroke='2' />
+                                        Pending
+                                    </span>
+                                    <span
+                                        v-if='p.enabled'
+                                        class='badge bg-blue-lt'
+                                    >Enabled</span>
+                                </div>
                             </div>
                         </StandardItem>
                         <PagingEmptyHint
@@ -204,7 +242,6 @@
 import { ref, computed, onMounted } from 'vue'
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
-import PagingStatusBadges from './Settings/PagingStatusBadges.vue';
 import PagingEmptyHint from './Settings/PagingEmptyHint.vue';
 import { server } from '../../../std.ts';
 import type { ProfilePaging, ProfilePagingList, ProfilePaging_Create } from '../../../types.ts';
@@ -219,6 +256,8 @@ import {
     IconMessage,
     IconMail,
     IconDeviceMobile,
+    IconCircleCheck,
+    IconAlertCircle,
 } from '@tabler/icons-vue';
 
 const loading = ref<boolean>(true);
@@ -272,7 +311,7 @@ async function fetch(): Promise<void> {
     const { data, error } = await server.GET('/api/profile/paging', {
         params: { query: { limit: 100, page: 0, order: 'desc', sort: 'created' } }
     });
-    if (error) throw new Error(String(error));
+    if (error) throw new Error(error.message);
     paging.value = data;
     loading.value = false;
 }

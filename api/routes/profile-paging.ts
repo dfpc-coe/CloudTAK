@@ -148,6 +148,9 @@ export default async function router(schema: Schema, config: Config) {
             let updates: Record<string, unknown> = {};
 
             if (req.body.enabled !== undefined) {
+                if (req.body.enabled && !existing.verified && existing.type !== ProfilePaging_Type.PUSH) {
+                    throw new Err(400, null, 'Paging source must be verified before enabling');
+                }
                 updates.enabled = req.body.enabled;
             }
 
