@@ -215,11 +215,12 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             let isAdmin = false;
+            let layer;
             if (req.params.connectionid === 0) {
                 await Auth.as_user(config, req, { admin: true });
                 isAdmin = true;
             } else {
-                const { connection, layer, profile } = await Auth.is_connection(config, req, {
+                const { connection, layer: connLayer, profile } = await Auth.is_connection(config, req, {
                     resources: [
                         { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                         { access: AuthResourceAccess.LAYER, id: undefined },
@@ -228,10 +229,11 @@ export default async function router(schema: Schema, config: Config) {
 
                 if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-                if (layer && layer.connection !== connection.id) {
+                if (connLayer && connLayer.connection !== connection.id) {
                     throw new Err(400, null, 'Layer does not belong to this connection');
                 }
 
+                layer = connLayer;
                 isAdmin = profile ? profile.system_admin : false;
             }
 
@@ -253,7 +255,7 @@ export default async function router(schema: Schema, config: Config) {
                 path: randomUUID(),
                 secure: req.body.secure,
                 connection: req.params.connectionid,
-                layer: undefined,
+                layer: layer?.id,
                 proxy: req.body.proxy,
             });
 
