@@ -64,14 +64,20 @@
                                         v-if='p.verified'
                                         class='badge bg-green-lt d-inline-flex align-items-center gap-1'
                                     >
-                                        <IconCircleCheck :size='14' stroke='2' />
+                                        <IconCircleCheck
+                                            :size='14'
+                                            stroke='2'
+                                        />
                                         Verified
                                     </span>
                                     <span
                                         v-else
                                         class='badge bg-yellow-lt d-inline-flex align-items-center gap-1'
                                     >
-                                        <IconAlertCircle :size='14' stroke='2' />
+                                        <IconAlertCircle
+                                            :size='14'
+                                            stroke='2'
+                                        />
                                         Pending
                                     </span>
                                     <span
@@ -141,14 +147,20 @@
                                         v-if='p.verified'
                                         class='badge bg-green-lt d-inline-flex align-items-center gap-1'
                                     >
-                                        <IconCircleCheck :size='14' stroke='2' />
+                                        <IconCircleCheck
+                                            :size='14'
+                                            stroke='2'
+                                        />
                                         Verified
                                     </span>
                                     <span
                                         v-else
                                         class='badge bg-yellow-lt d-inline-flex align-items-center gap-1'
                                     >
-                                        <IconAlertCircle :size='14' stroke='2' />
+                                        <IconAlertCircle
+                                            :size='14'
+                                            stroke='2'
+                                        />
                                         Pending
                                     </span>
                                     <span
