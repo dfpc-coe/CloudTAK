@@ -20,13 +20,13 @@
                             class='text-secondary me-2'
                         />
                         <span class='subheader user-select-none mb-0'>SMS</span>
-                        <span
-                            v-if='smsDisabled'
-                            class='badge bg-yellow-lt text-yellow ms-2'
-                            title='SMS notifications are disabled by the server. Existing notifications can still be managed but may not be delivered.'
-                        >Disabled by server</span>
                         <div class='ms-auto'>
+                            <span
+                                v-if='smsDisabled'
+                                class='badge bg-yellow-lt text-yellow'
+                            >Disabled</span>
                             <TablerIconButton
+                                v-else
                                 title='Add SMS Notification'
                                 @click='openCreate("sms")'
                             >
@@ -78,13 +78,13 @@
                             class='text-secondary me-2'
                         />
                         <span class='subheader user-select-none mb-0'>Email</span>
-                        <span
-                            v-if='emailDisabled'
-                            class='badge bg-yellow-lt text-yellow ms-2'
-                            title='Email notifications are disabled by the server. Existing notifications can still be managed but may not be delivered.'
-                        >Disabled by server</span>
                         <div class='ms-auto'>
+                            <span
+                                v-if='emailDisabled'
+                                class='badge bg-yellow-lt text-yellow'
+                            >Disabled</span>
                             <TablerIconButton
+                                v-else
                                 title='Add Email Notification'
                                 @click='openCreate("email")'
                             >
@@ -136,11 +136,12 @@
                             class='text-secondary me-2'
                         />
                         <span class='subheader user-select-none mb-0'>Push Notifications</span>
-                        <span
-                            v-if='pushDisabled'
-                            class='badge bg-yellow-lt text-yellow ms-2'
-                            title='Push notifications are disabled by the server. Existing notifications can still be managed but may not be delivered.'
-                        >Disabled by server</span>
+                        <div class='ms-auto'>
+                            <span
+                                v-if='pushDisabled'
+                                class='badge bg-yellow-lt text-yellow'
+                            >Disabled</span>
+                        </div>
                     </div>
                     <div class='d-flex flex-column gap-2'>
                         <StandardItem
