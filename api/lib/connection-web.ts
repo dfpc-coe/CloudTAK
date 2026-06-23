@@ -75,6 +75,7 @@ export class ConnectionWebSocket {
                         client.tak.write([cot], { stripFlow: true });
                     }
                 } catch (err) {
+                    console.warn('Warning: Validation Error on WebSocket CoT message:', String(data), err);
                     this.ws.send(JSON.stringify({
                         type: 'Error',
                         properties: {

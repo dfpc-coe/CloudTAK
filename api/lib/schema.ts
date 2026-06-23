@@ -12,6 +12,7 @@ import {
     Layer_Priority,
     Import_Status,
     BasemapTerrain_Encoding,
+    ProfilePaging_Type,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
 } from './enums.js';
 import { bigint, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
@@ -542,9 +543,20 @@ export const ProfileInterest = pgTable('profile_interests', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
 
+export const ProfilePaging = pgTable('profile_paging', {
+    id: serial().primaryKey(),
+    username: text().notNull().references(() => Profile.username),
+    seed: text().notNull(),
+    verified: boolean().notNull().default(false),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    enabled: boolean().notNull().default(false),
+    type: text().$type<ProfilePaging_Type>().notNull(),
+    value: text().notNull().default(''),
+});
+
 export const ProfileSession = pgTable('profile_sessions', {
     id: serial().primaryKey(),
-    fcm: text(),
     username: text().notNull().references(() => Profile.username),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     ip: text().notNull(),

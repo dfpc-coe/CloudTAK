@@ -6,77 +6,105 @@
         />
         <template v-else>
             <div
-                class='card cloudtak-bg bg-opacity-50 border rounded text-white w-100 p-2 d-flex gap-3 align-items-start flex-row'
+                class='mission-log-card cloudtak-bg bg-opacity-50 border rounded-3 text-white w-100 overflow-hidden'
                 :class='{
-                    "border-white border-opacity-25 shadow-sm": !!log.read,
-                    "border-primary border-2 unread-pulse": !log.read
+                    "border-white border-opacity-10 shadow-sm": !editing && !!log.read,
+                    "border-primary border-2 unread-pulse": !editing && !log.read,
+                    "border-primary border-2 shadow": editing
                 }'
                 role='menuitem'
                 tabindex='0'
             >
-                <div class='d-flex flex-column w-100'>
-                    <div
-                        class='d-flex align-items-center flex-wrap w-100 gap-2'
-                        :class='{ "cursor-pointer": !log.read }'
-                        @click='markAsRead'
-                    >
-                        <div class='fw-semibold'>
-                            {{ log.creatorUid || 'Unknown Author' }}
-                        </div>
-                        <TablerDropdown
-                            v-if='canWrite'
-                            class='ms-auto'
-                        >
-                            <template #default>
-                                <span class='text-white-50 small text-nowrap cursor-pointer'>{{ formatDtg(log.dtg) }}</span>
-                            </template>
-                            <template #dropdown>
-                                <div
-                                    class='p-2'
-                                    style='min-width: 300px;'
-                                >
-                                    <TablerInput
-                                        label='Log Time'
-                                        type='datetime-local'
-                                        :model-value='dtgEdit ?? toDatetimeLocal(log.dtg)'
-                                        @click.stop
-                                        @update:model-value='dtgEdit = String($event)'
-                                    />
-                                    <div class='d-flex justify-content-end gap-2 mt-2'>
-                                        <button
-                                            class='btn btn-sm btn-secondary'
-                                            @click.stop='cancelEdit'
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            class='btn btn-sm btn-primary'
-                                            @click.stop='saveDtg'
-                                        >
-                                            Save
-                                        </button>
-                                    </div>
-                                </div>
-                            </template>
-                        </TablerDropdown>
+                <div class='d-flex align-items-center gap-2 px-2 pt-2'>
+                    <div class='d-flex flex-column lh-sm overflow-hidden'>
                         <span
-                            v-else
+                            class='fw-semibold text-truncate'
+                            v-text='log.creatorUid || "Unknown Author"'
+                        />
+                        <span
+                            v-if='!editing'
                             class='text-white-50 small text-nowrap'
+                            :class='{ "cursor-pointer": !log.read }'
+                            @click='markAsRead'
                         >{{ formatDtg(log.dtg) }}</span>
                     </div>
-                    <CopyField
-                        class='w-100'
-                        mode='text'
-                        :edit='canWrite'
-                        :deletable='canWrite'
-                        :hover='canWrite'
-                        :rows='Math.max(4, log.content.split("\n").length)'
-                        :model-value='log.content || ""'
-                        @submit='updateLog({ content: $event })'
-                        @delete='deleteLog()'
-                    />
 
-                    <Keywords :keywords='log.keywords' />
+                    <div class='ms-auto d-flex align-items-center gap-2'>
+                        <template v-if='!editing'>
+                            <span
+                                v-if='!log.read'
+                                class='unread-dot rounded-circle flex-shrink-0'
+                                title='Unread'
+                            />
+                            <div
+                                v-if='canWrite'
+                                class='btn-list'
+                            >
+                                <TablerIconButton
+                                    title='Edit Log'
+                                    @click='startEditing'
+                                >
+                                    <IconPencil
+                                        :size='20'
+                                        stroke='1.5'
+                                    />
+                                </TablerIconButton>
+                                <TablerDelete
+                                    displaytype='icon'
+                                    :size='20'
+                                    @delete='deleteLog()'
+                                />
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div class='px-2 pt-2 pb-2 d-flex flex-column gap-2'>
+                    <template v-if='editing'>
+                        <TablerInput
+                            type='datetime-local'
+                            label='Log Time'
+                            :model-value='editDtg'
+                            @update:model-value='editDtg = String($event)'
+                        />
+
+                        <TablerInput
+                            v-model='editContent'
+                            label=''
+                            :rows='Math.max(4, editContent.split("\n").length)'
+                            :autofocus='true'
+                        />
+
+                        <Keywords
+                            v-model:keywords='editKeywords'
+                            :relevant='relevant'
+                        />
+
+                        <div class='d-flex justify-content-end gap-2 mt-1'>
+                            <TablerButton
+                                class='btn-sm btn-secondary'
+                                @click='cancelEditing'
+                            >
+                                Cancel
+                            </TablerButton>
+                            <TablerButton
+                                class='btn-sm btn-primary'
+                                @click='saveEditing'
+                            >
+                                Save
+                            </TablerButton>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <CopyField
+                            class='w-100'
+                            mode='text'
+                            :rows='Math.max(2, (log.content || "").split("\n").length)'
+                            :model-value='log.content || ""'
+                        />
+
+                        <Keywords :keywords='log.keywords' />
+                    </template>
                 </div>
             </div>
         </template>
@@ -87,22 +115,32 @@
 import { ref, computed } from 'vue';
 import type { DBSubscriptionLog } from '../../../../database.ts';
 import Subscription from '../../../../base/subscription.ts';
-import CopyField from '../../util/CopyField.vue';
 import { db } from '../../../../database.ts';
+import CopyField from '../../util/CopyField.vue';
 import Keywords from '../../util/Keywords.vue';
 import {
     TablerLoading,
-    TablerDropdown,
+    TablerButton,
+    TablerDelete,
+    TablerIconButton,
     TablerInput
 } from '@tak-ps/vue-tabler';
+import { IconPencil } from '@tabler/icons-vue';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     log: DBSubscriptionLog;
     subscription: Subscription;
-}>();
+    relevant?: string[];
+}>(), {
+    relevant: () => []
+});
 
 const loading = ref(false);
-const dtgEdit = ref<string | null>(null);
+
+const editing = ref(false);
+const editContent = ref('');
+const editKeywords = ref<string[]>([]);
+const editDtg = ref('');
 
 const canWrite = computed(() => {
     return props.subscription.role.permissions.includes("MISSION_WRITE");
@@ -143,20 +181,27 @@ async function markAsRead() {
     }
 }
 
-function cancelEdit() {
-    dtgEdit.value = null;
-    document.body.click();
+function startEditing() {
+    editContent.value = props.log.content || '';
+    editKeywords.value = [...(props.log.keywords ?? [])];
+    editDtg.value = toDatetimeLocal(props.log.dtg);
+    editing.value = true;
 }
 
-async function saveDtg() {
-    if (dtgEdit.value) {
-        const iso = fromDatetimeLocal(dtgEdit.value);
-        if (iso !== props.log.dtg) {
-            await updateLog({ dtg: iso });
-        }
-    }
+function cancelEditing() {
+    editing.value = false;
+}
 
-    cancelEdit();
+async function saveEditing() {
+    const dtg = editDtg.value ? fromDatetimeLocal(editDtg.value) : (props.log.dtg ?? new Date().toISOString());
+
+    await updateLog({
+        content: editContent.value,
+        keywords: editKeywords.value,
+        dtg
+    });
+
+    editing.value = false;
 }
 
 async function updateLog(body: { content?: string; dtg?: string; keywords?: string[] }) {
@@ -186,6 +231,18 @@ async function deleteLog() {
 </script>
 
 <style scoped>
+.mission-log-card {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.unread-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--tblr-primary, rgb(32, 107, 196));
+    box-shadow: 0 0 0 0 rgba(32, 107, 196, 0.7);
+    animation: pulse-blue 2s infinite;
+}
+
 .unread-pulse {
     animation: pulse-blue 2s infinite;
 }

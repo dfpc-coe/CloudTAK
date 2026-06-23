@@ -20,7 +20,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionVideoLease',
         description: 'List all video leases',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
         }),
         query: Type.Object({
             limit: Default.Limit,
@@ -38,15 +38,19 @@ export default async function router(schema: Schema, config: Config) {
         }),
     }, async (req, res) => {
         try {
-            const { connection, layer } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: undefined },
-                ],
-            }, req.params.connectionid);
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
+            } else {
+                const { connection, layer } = await Auth.is_connection(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                        { access: AuthResourceAccess.LAYER, id: undefined },
+                    ],
+                }, req.params.connectionid);
 
-            if (layer && layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
+                if (layer && layer.connection !== connection.id) {
+                    throw new Err(400, null, 'Layer does not belong to this connection');
+                }
             }
 
             res.json(await config.models.VideoLease.list({
@@ -69,20 +73,28 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionVideoLease',
         description: 'Delete all video leases for a given connection',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
         }),
         res: StandardResponse,
     }, async (req, res) => {
         try {
-            const { profile, connection, layer } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: undefined },
-                ],
-            }, req.params.connectionid);
+            let isAdmin = false;
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
+                isAdmin = true;
+            } else {
+                const { profile, connection, layer } = await Auth.is_connection(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                        { access: AuthResourceAccess.LAYER, id: undefined },
+                    ],
+                }, req.params.connectionid);
 
-            if (layer && layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
+                if (layer && layer.connection !== connection.id) {
+                    throw new Err(400, null, 'Layer does not belong to this connection');
+                }
+
+                isAdmin = profile ? profile.system_admin : false;
             }
 
             for await (const lease of config.models.VideoLease.iter({
@@ -92,7 +104,7 @@ export default async function router(schema: Schema, config: Config) {
             })) {
                 await videoControl.delete(lease.id, {
                     connection: req.params.connectionid,
-                    admin: profile ? profile.system_admin : false,
+                    admin: isAdmin,
                 });
             }
 
@@ -110,7 +122,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionVideoLease',
         description: 'Get a single Video Lease',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
             lease: Type.Integer(),
         }),
         res: Type.Object({
@@ -119,22 +131,30 @@ export default async function router(schema: Schema, config: Config) {
         }),
     }, async (req, res) => {
         try {
-            const { profile, connection, layer } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: undefined },
-                ],
-            }, req.params.connectionid);
+            let isAdmin = false;
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
+                isAdmin = true;
+            } else {
+                const { profile, connection, layer } = await Auth.is_connection(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                        { access: AuthResourceAccess.LAYER, id: undefined },
+                    ],
+                }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+                if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            if (layer && layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
+                if (layer && layer.connection !== connection.id) {
+                    throw new Err(400, null, 'Layer does not belong to this connection');
+                }
+
+                isAdmin = profile ? profile.system_admin : false;
             }
 
             const lease = await videoControl.from(req.params.lease, {
                 connection: req.params.connectionid,
-                admin: profile ? profile.system_admin : false,
+                admin: isAdmin,
             });
 
             res.json({
@@ -151,7 +171,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionVideoLease',
         description: 'Create a new video Lease',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
         }),
         body: Type.Object({
             name: Type.String({
@@ -194,20 +214,30 @@ export default async function router(schema: Schema, config: Config) {
         }),
     }, async (req, res) => {
         try {
-            const { connection, layer, profile } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: undefined },
-                ],
-            }, req.params.connectionid);
+            let isAdmin = false;
+            let layer;
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
+                isAdmin = true;
+            } else {
+                const { connection, layer: connLayer, profile } = await Auth.is_connection(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                        { access: AuthResourceAccess.LAYER, id: undefined },
+                    ],
+                }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+                if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            if (layer && layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
+                if (connLayer && connLayer.connection !== connection.id) {
+                    throw new Err(400, null, 'Layer does not belong to this connection');
+                }
+
+                layer = connLayer;
+                isAdmin = profile ? profile.system_admin : false;
             }
 
-            if ((!profile || !profile.system_admin) && req.body.duration > 60 * 60 * 24) {
+            if (!isAdmin && req.body.duration > 60 * 60 * 24) {
                 throw new Err(400, null, 'Only Administrators can request a lease > 24 hours');
             }
 
@@ -225,7 +255,7 @@ export default async function router(schema: Schema, config: Config) {
                 path: randomUUID(),
                 secure: req.body.secure,
                 connection: req.params.connectionid,
-                layer: layer ? layer.id : undefined,
+                layer: layer?.id,
                 proxy: req.body.proxy,
             });
 
@@ -243,7 +273,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionVideoLease',
         description: 'Update a video Lease',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
             lease: Type.Integer(),
         }),
         body: Type.Object({
@@ -281,22 +311,30 @@ export default async function router(schema: Schema, config: Config) {
         }),
     }, async (req, res) => {
         try {
-            const { connection, layer, profile } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: undefined },
-                ],
-            }, req.params.connectionid);
+            let isAdmin = false;
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
+                isAdmin = true;
+            } else {
+                const { connection, layer, profile } = await Auth.is_connection(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                        { access: AuthResourceAccess.LAYER, id: undefined },
+                    ],
+                }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+                if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            if (layer && layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
+                if (layer && layer.connection !== connection.id) {
+                    throw new Err(400, null, 'Layer does not belong to this connection');
+                }
+
+                isAdmin = profile ? profile.system_admin : false;
             }
 
-            if ((!profile || !profile.system_admin) && req.body.duration && req.body.duration > 60 * 60 * 24) {
+            if (!isAdmin && req.body.duration && req.body.duration > 60 * 60 * 24) {
                 throw new Err(400, null, 'Only Administrators can request a lease > 24 hours');
-            } else if ((!profile || !profile.system_admin) && req.body.permanent) {
+            } else if (!isAdmin && req.body.permanent) {
                 throw new Err(400, null, 'Only Administrators can request permanent leases');
             }
 
@@ -328,7 +366,7 @@ export default async function router(schema: Schema, config: Config) {
                 proxy: req.body.proxy,
             }, {
                 connection: req.params.connectionid,
-                admin: profile ? profile.system_admin : false,
+                admin: isAdmin,
             });
 
             res.json({
@@ -345,28 +383,36 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionVideoLease',
         description: 'Delete a video Lease',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
             lease: Type.Integer(),
         }),
         res: StandardResponse,
     }, async (req, res) => {
         try {
-            const { connection, layer, profile } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: undefined },
-                ],
-            }, req.params.connectionid);
+            let isAdmin = false;
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
+                isAdmin = true;
+            } else {
+                const { connection, layer, profile } = await Auth.is_connection(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                        { access: AuthResourceAccess.LAYER, id: undefined },
+                    ],
+                }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+                if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            if (layer && layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
+                if (layer && layer.connection !== connection.id) {
+                    throw new Err(400, null, 'Layer does not belong to this connection');
+                }
+
+                isAdmin = profile ? profile.system_admin : false;
             }
 
             await videoControl.delete(req.params.lease, {
                 connection: req.params.connectionid,
-                admin: profile ? profile.system_admin : false,
+                admin: isAdmin,
             });
 
             res.json({

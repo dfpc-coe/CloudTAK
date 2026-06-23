@@ -108,6 +108,7 @@
                     :key='log.id'
                     :log='log'
                     :subscription='props.subscription'
+                    :relevant='availableKeywords'
                 />
             </div>
             <template v-if='props.subscription.role.permissions.includes("MISSION_WRITE")'>

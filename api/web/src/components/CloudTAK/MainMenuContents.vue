@@ -143,7 +143,7 @@
             <TablerInput
                 v-model='menuFilter'
                 placeholder='Search...'
-                :autofocus='!mapStore.isMobileDetected'
+                :autofocus='!appStore.isMobileDetected'
                 icon='search'
                 class='mb-0'
             />
@@ -265,7 +265,6 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, onUnmounted, computed, watch, onBeforeUnmount } from 'vue';
-import Session from '../../session.ts';
 import {
     IconUser,
     IconLogout,
@@ -290,6 +289,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import { openSecondaryView } from '../../base/capacitor.ts';
 import { useMapStore } from '../../stores/map.ts';
+import { useAppStore } from '../../stores/app.ts';
 import type { MenuItemConfig } from '../../stores/modules/menu.ts';
 import Config from '../../base/config.ts';
 import { useRouter } from 'vue-router';
@@ -301,6 +301,7 @@ import ProfileConfig from '../../base/profile.ts';
 const router = useRouter();
 
 const mapStore = useMapStore();
+const appStore = useAppStore();
 
 type AppSwitcherApplication = {
     name: string;
@@ -436,8 +437,7 @@ function handleSelect(item: MenuItemConfig) {
 }
 
 async function logout() {
-    await Session.destroy();
-    router.push("/login");
+    await appStore.logout();
 }
 
 function normalizeApplications(applications: unknown): AppSwitcherApplication[] {

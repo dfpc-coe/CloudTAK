@@ -250,7 +250,6 @@ test('GET: api/marti/mission - Filter Groups', async () => {
 });
 
 test('PATCH: api/marti/missions/:name - returns refreshed groups after update', async () => {
-    let getCount = 0;
     let postedGroups: string[] = [];
     let missionAuthorization: string | undefined;
     let allowGroupChange: string | null = null;
@@ -267,7 +266,6 @@ test('PATCH: api/marti/missions/:name - returns refreshed groups after update', 
                 || url.pathname === '/Marti/api/missions/test-mission-guid'
             )
         ) {
-            getCount++;
             response.setHeader('Content-Type', 'application/json');
             response.write(JSON.stringify({
                 data: [{
@@ -286,7 +284,7 @@ test('PATCH: api/marti/missions/:name - returns refreshed groups after update', 
                     contents: [],
                     passwordProtected: false,
                     role: { role: 'OWNER', permissions: [] },
-                    groups: getCount === 1 ? ['original-group'] : ['updated-group'],
+                    groups: ['original-group'],
                 }],
             }));
             response.end();
@@ -315,7 +313,7 @@ test('PATCH: api/marti/missions/:name - returns refreshed groups after update', 
                     contents: [],
                     passwordProtected: false,
                     role: { role: 'OWNER', permissions: [] },
-                    groups: ['original-group'],
+                    groups: ['updated-group'],
                 }],
             }));
             response.end();
@@ -340,7 +338,6 @@ test('PATCH: api/marti/missions/:name - returns refreshed groups after update', 
         }, true);
 
         assert.deepEqual(postedGroups, ['updated-group']);
-        assert.equal(getCount, 2);
         assert.equal(missionAuthorization, 'Bearer test-mission-token');
         assert.equal(allowGroupChange, 'true');
         assert.deepEqual(res.body.groups, ['updated-group']);

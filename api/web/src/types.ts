@@ -205,6 +205,10 @@ export type ProfileOverlay_Update = paths["/api/profile/overlay/{:overlay}"]["pa
 export type ProfileTokenList = paths["/api/profile/token"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ProfileToken = ProfileTokenList["items"][0]
 
+export type ProfilePagingList = paths["/api/profile/paging"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ProfilePaging = ProfilePagingList["items"][0]
+export type ProfilePaging_Create = paths["/api/profile/paging"]["post"]["requestBody"]["content"]["application/json"]
+
 export type SearchReverse = paths["/api/search/reverse/{:longitude}/{:latitude}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type SearchReverseSun = paths["/api/search/reverse/{:longitude}/{:latitude}/sun"]["get"]["responses"]["200"]["content"]["application/json"]
 export type SearchReverseMagnetic = paths["/api/search/reverse/{:longitude}/{:latitude}/magnetic"]["get"]["responses"]["200"]["content"]["application/json"]

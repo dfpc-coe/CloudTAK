@@ -41,6 +41,10 @@ const router = VueRouter.createRouter({
                     name: 'home-menu-settings-sessions',
                     component: () => import('./components/CloudTAK/Menu/MenuSettingsSessions.vue')
                 },{
+                    path: 'settings/paging',
+                    name: 'home-menu-settings-paging',
+                    component: () => import('./components/CloudTAK/Menu/MenuSettingsPaging.vue')
+                },{
                     path: 'settings/callsign',
                     name: 'home-menu-settings-callsign',
                     component: () => import('./components/CloudTAK/Menu/MenuSettingsCallsign.vue')

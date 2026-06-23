@@ -404,6 +404,11 @@
         "query": false,
         "res": true
     },
+    "GET /connection/0": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid": {
         "body": false,
         "query": false,
@@ -1189,6 +1194,41 @@
         "query": true,
         "res": true
     },
+    "GET /profile/paging": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /profile/paging": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /profile/paging/:pagingid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /profile/paging/:pagingid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "POST /profile/paging/:pagingid/verify": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "POST /profile/paging/:pagingid/resend": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /profile/paging/:pagingid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /profile/token": {
         "body": false,
         "query": true,
@@ -1244,11 +1284,6 @@
         "query": false,
         "res": true
     },
-    "POST /retention": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "GET /server/injector": {
         "body": false,
         "query": false,
@@ -1262,6 +1297,11 @@
     "DELETE /server/injector": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "POST /retention": {
+        "body": true,
+        "query": false,
         "res": true
     },
     "GET /server/repeater": {
@@ -1394,16 +1434,6 @@
         "query": false,
         "res": true
     },
-    "GET /type/cot": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /type/cot/:type": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /user": {
         "body": false,
         "query": true,
@@ -1422,6 +1452,16 @@
     "GET /user/:username/session": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "GET /type/cot": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /type/cot/:type": {
+        "body": false,
+        "query": false,
         "res": true
     },
     "POST /video/auth": {

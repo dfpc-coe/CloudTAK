@@ -15,7 +15,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionAssets',
         description: 'List Assets',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -23,13 +23,17 @@ export default async function router(schema: Schema, config: Config) {
         }),
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
-            }, req.params.connectionid);
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
+            } else {
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
+                }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+                if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            }
 
-            const list = await assetList(config, `connection/${String(connection.id)}/`);
+            const list = await assetList(config, `connection/${String(req.params.connectionid)}/`);
 
             res.json({
                 total: list.total,
@@ -45,7 +49,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionAssets',
         description: 'Create a new asset',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
         }),
         body: {
             'multipart/form-data': true,
@@ -53,14 +57,19 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse,
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                ],
-            }, req.params.connectionid);
-            const contentType = req.headers['content-type'];
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
+            } else {
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    ],
+                }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+                if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            }
+
+            const contentType = req.headers['content-type'];
 
             if (!contentType) throw new Err(400, null, 'Missing Content-Type Header');
 
@@ -79,7 +88,7 @@ export default async function router(schema: Schema, config: Config) {
                     const passThrough = new Stream.PassThrough();
                     file.pipe(passThrough);
 
-                    assets.push(S3.put(`connection/${connection.id}/${filename}`, passThrough));
+                    assets.push(S3.put(`connection/${req.params.connectionid}/${filename}`, passThrough));
                 } catch (err) {
                     Err.respond(err, res);
                 }
@@ -109,28 +118,32 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionAssets',
         description: 'Delete Asset',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
             asset: Type.String(),
             ext: Type.String(),
         }),
         res: StandardResponse,
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                ],
-            }, req.params.connectionid);
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
+            } else {
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    ],
+                }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+                if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            }
 
             const file = `${req.params.asset}.${req.params.ext}`;
 
-            const list = await assetList(config, `connection/${String(connection.id)}/`);
+            const list = await assetList(config, `connection/${String(req.params.connectionid)}/`);
             for (const asset of list.assets) {
                 if (asset.name !== file) continue;
 
-                await S3.del(`connection/${connection.id}/${file}`);
+                await S3.del(`connection/${req.params.connectionid}/${file}`);
             }
 
             res.json({
@@ -147,7 +160,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionAssets',
         description: 'Get single raw asset',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
             asset: Type.String(),
             ext: Type.String(),
         }),
@@ -157,20 +170,24 @@ export default async function router(schema: Schema, config: Config) {
         }),
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                token: true,
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                ],
-            }, req.params.connectionid);
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true, token: true });
+            } else {
+                const { connection } = await Auth.is_connection(config, req, {
+                    token: true,
+                    resources: [
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    ],
+                }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+                if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            }
 
             if (req.query.download) {
                 res.setHeader('Content-Disposition', `attachment; filename="${req.params.asset}.${req.params.ext}"`);
             }
 
-            const stream = await S3.get(`connection/${connection.id}/${req.params.asset}.${req.params.ext}`);
+            const stream = await S3.get(`connection/${req.params.connectionid}/${req.params.asset}.${req.params.ext}`);
 
             stream.pipe(res);
         } catch (err) {

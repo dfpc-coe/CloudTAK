@@ -67,7 +67,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'List Data',
         group: 'Data',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
         }),
         description: 'List data',
         query: Type.Object({
@@ -83,11 +83,15 @@ export default async function router(schema: Schema, config: Config) {
         }),
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
-            }, req.params.connectionid);
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
+            } else {
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
+                }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+                if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            }
 
             const list = await config.models.Data.list({
                 limit: req.query.limit,
@@ -111,7 +115,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Data',
         description: 'Register a new data source',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
         }),
         body: Type.Object({
             name: Default.NameField,
@@ -126,11 +130,18 @@ export default async function router(schema: Schema, config: Config) {
         res: DataResponse,
     }, async (req, res) => {
         try {
-            const { connection, auth } = await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
-            }, req.params.connectionid);
+            let username: string | null = null;
+            if (req.params.connectionid === 0) {
+                const user = await Auth.as_user(config, req, { admin: true });
+                username = user.email;
+            } else {
+                const { connection, auth } = await Auth.is_connection(config, req, {
+                    resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
+                }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+                if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+                username = auth instanceof AuthUser ? auth.email : null;
+            }
 
             if (req.body.mission_diff && req.body.mission_role !== MissionSubscriberRole.MISSION_READONLY_SUBSCRIBER) {
                 throw new Err(400, null, 'MissionDiff can only be used when role is: MISSION_READONLY_SUBSCRIBER');
@@ -139,7 +150,7 @@ export default async function router(schema: Schema, config: Config) {
             let data = await config.models.Data.generate({
                 ...req.body,
                 connection: req.params.connectionid,
-                username: auth instanceof AuthUser ? auth.email : null,
+                username,
             });
 
             try {
@@ -173,7 +184,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Data',
         description: 'Update a data source',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
             dataid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
@@ -184,14 +195,18 @@ export default async function router(schema: Schema, config: Config) {
         res: DataResponse,
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                ],
-            }, req.params.connectionid);
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
+            } else {
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.DATA, id: req.params.dataid },
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    ],
+                }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+                if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            }
 
             if (req.body.mission_diff && await config.models.Layer.augmented_count({
                 where: sql`layers_incoming.data = ${req.params.dataid}`,
@@ -202,7 +217,7 @@ export default async function router(schema: Schema, config: Config) {
             // TODO: Don't allow mission_diff to be turned on if there are non MISSION_READONLY subscribers
 
             let data = await config.models.Data.from(req.params.dataid);
-            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
+            if (data.connection !== req.params.connectionid) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
             data = await config.models.Data.commit(req.params.dataid, {
                 updated: sql`Now()`,
@@ -233,23 +248,27 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Data',
         description: 'Get a data source',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
             dataid: Type.Integer({ minimum: 1 }),
         }),
         res: DataResponse,
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                ],
-            }, req.params.connectionid);
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
+            } else {
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.DATA, id: req.params.dataid },
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    ],
+                }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+                if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            }
 
             const data = await config.models.Data.from(req.params.dataid);
-            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
+            if (data.connection !== req.params.connectionid) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
             try {
                 await DataMission.sync(config, data);
@@ -275,20 +294,24 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Data',
         description: 'Delete a data source',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
             dataid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
-            }, req.params.connectionid);
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
+            } else {
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
+                }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+                if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            }
 
             const data = await config.models.Data.from(req.params.dataid);
-            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
+            if (data.connection !== req.params.connectionid) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
             if (await config.models.Layer.augmented_count({
                 where: sql`layers_incoming.data = ${req.params.dataid}`,
