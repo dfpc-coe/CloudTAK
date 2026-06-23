@@ -20,8 +20,6 @@ import { useDeviceStore } from './device.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
-import type { DatabaseType } from '../database.ts';
-import { db } from '../database.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay-class.ts';
@@ -82,7 +80,6 @@ export const useMapStore = defineStore('cloudtak', {
         _boundOnVisibilityChange?: () => Promise<void>;
         _removeBackgroundStateListener?: () => void;
 
-        db: DatabaseType;
         channel: BroadcastChannel;
 
         toImport: Feature[]
@@ -153,8 +150,7 @@ export const useMapStore = defineStore('cloudtak', {
             locationAccuracy: undefined,
             gpsCoordinates: null,
             hasSnapping: false,
-            db,
-            channel: new BroadcastChannel("cloudtak"),
+            channel: markRaw(new BroadcastChannel("cloudtak")),
             zoom: 'conditional',
             distanceUnit: 'meter',
             coordFormat: 'dd',
@@ -212,41 +208,6 @@ export const useMapStore = defineStore('cloudtak', {
         worker: function(): Comlink.Remote<Atlas> {
             if (!this._worker) throw new Error('Atlas worker has not yet started');
             return this._worker as Comlink.Remote<Atlas>;
-        },
-        locationCallback: function(): (position: Position) => void {
-            return (position) => {
-                if (this.manualLocationMode) return;
-
-                this.locationAccuracy = position.coords.accuracy;
-                this.gpsCoordinates = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-
-                try {
-                    this.channel.postMessage({
-                        type: WorkerMessageType.Profile_Location_Coordinates,
-                        body: {
-                            accuracy: position.coords.accuracy,
-                            altitude: position.coords.altitude,
-                            altitudeAccuracy: position.coords.altitudeAccuracy,
-                            speed: position.coords.speed,
-                            heading: position.coords.heading,
-                            timestamp: position.timestamp,
-                            coordinates: [ position.coords.longitude, position.coords.latitude ]
-                        }
-                    });
-                } catch (err) {
-                    // channel may be closed during teardown
-                    console.error(err);
-                }
-
-                if (isNativePlatform() && this.isBackgrounded) {
-                    // Actions cannot be called from getters, so we use the store instance
-                    const mapStore = useMapStore();
-                    void mapStore.submitLocationHttp(position);
-                }
-            };
         }
     },
     actions: {
@@ -688,16 +649,49 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             let startedGPSWatchFromPermissionSubscription = false;
+
+            const locationCallback = (position: Position) => {
+                if (this.manualLocationMode) return;
+
+                this.locationAccuracy = position.coords.accuracy;
+                this.gpsCoordinates = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+
+                try {
+                    this.channel.postMessage({
+                        type: WorkerMessageType.Profile_Location_Coordinates,
+                        body: {
+                            accuracy: position.coords.accuracy,
+                            altitude: position.coords.altitude,
+                            altitudeAccuracy: position.coords.altitudeAccuracy,
+                            speed: position.coords.speed,
+                            heading: position.coords.heading,
+                            timestamp: position.timestamp,
+                            coordinates: [ position.coords.longitude, position.coords.latitude ]
+                        }
+                    });
+                } catch (err) {
+                    // channel may be closed during teardown
+                    console.error(err);
+                }
+
+                if (isNativePlatform() && this.isBackgrounded) {
+                    void this.submitLocationHttp(position);
+                }
+            };
+
             await deviceStore.initializePermissionSubscriptions(() => {
                 startedGPSWatchFromPermissionSubscription = true;
-                void deviceStore.geolocation.startWatch(this.locationCallback);
+                void deviceStore.geolocation.startWatch(locationCallback);
             });
 
             if (
                 deviceStore.permissions.location !== 'unsupported'
                 && !startedGPSWatchFromPermissionSubscription
             ) {
-                await deviceStore.geolocation.startWatch(this.locationCallback);
+                await deviceStore.geolocation.startWatch(locationCallback);
             }
 
             const sprites = IconManager.defaultSprite();

@@ -795,7 +795,7 @@ export default async function router(schema: Schema, config: Config) {
                 return;
             }
 
-            if (basemap.tilejson) {
+            if (basemap.tilejson && (basemap.tilejson.startsWith('http://') || basemap.tilejson.startsWith('https://'))) {
                 const url = new URL(basemap.tilejson);
 
                 if (url.hostname === new URL(config.PMTILES_URL).hostname) {

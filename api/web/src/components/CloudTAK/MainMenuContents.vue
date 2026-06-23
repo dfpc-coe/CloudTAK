@@ -265,7 +265,6 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, onUnmounted, computed, watch, onBeforeUnmount } from 'vue';
-import Session from '../../session.ts';
 import {
     IconUser,
     IconLogout,
@@ -438,8 +437,7 @@ function handleSelect(item: MenuItemConfig) {
 }
 
 async function logout() {
-    await Session.destroy();
-    router.push("/login");
+    await appStore.logout();
 }
 
 function normalizeApplications(applications: unknown): AppSwitcherApplication[] {
