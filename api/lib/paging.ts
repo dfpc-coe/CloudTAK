@@ -33,19 +33,20 @@ export async function verifyCode(code: string, seed: string): Promise<boolean> {
 export async function sendCode(
     type: ProfilePaging_Type,
     value: string,
+    code: string,
 ): Promise<void> {
     switch (type) {
         case ProfilePaging_Type.SMS:
             // TODO: integrate AWS SNS or Twilio
-            console.log(`[PagingSender] SMS verification code sent to ${value}`);
+            console.log(`[PagingSender] SMS verification code ${code} sent to ${value}`);
             break;
         case ProfilePaging_Type.EMAIL:
             // TODO: integrate AWS SES or nodemailer
-            console.log(`[PagingSender] Email verification code sent to ${value}`);
+            console.log(`[PagingSender] Email verification code ${code} sent to ${value}`);
             break;
         case ProfilePaging_Type.PUSH:
             // TODO: integrate Firebase Cloud Messaging using the stored FCM token (value)
-            console.log(`[PagingSender] Push verification code sent to ${value}`);
+            console.log(`[PagingSender] Push verification code ${code} sent to ${value}`);
             break;
         default:
             console.warn(`[PagingSender] Unknown paging type: ${type}`);

@@ -213,6 +213,40 @@ export const useMapStore = defineStore('cloudtak', {
         }
     },
     actions: {
+        startLocationWatch: async function() {
+            const deviceStore = useDeviceStore();
+            await deviceStore.geolocation.startWatch((position: Position) => {
+                if (this.manualLocationMode) return;
+
+                this.locationAccuracy = position.coords.accuracy;
+                this.gpsCoordinates = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+
+                try {
+                    this.channel.postMessage({
+                        type: WorkerMessageType.Profile_Location_Coordinates,
+                        body: {
+                            accuracy: position.coords.accuracy,
+                            altitude: position.coords.altitude,
+                            altitudeAccuracy: position.coords.altitudeAccuracy,
+                            speed: position.coords.speed,
+                            heading: position.coords.heading,
+                            timestamp: position.timestamp,
+                            coordinates: [ position.coords.longitude, position.coords.latitude ]
+                        }
+                    });
+                } catch (err) {
+                    // channel may be closed during teardown
+                    console.error(err);
+                }
+
+                if (isNativePlatform() && this.isBackgrounded) {
+                    void this.submitLocationHttp(position);
+                }
+            });
+        },
         startWorker: function() {
             if (this._rawWorker) return;
 
@@ -284,7 +318,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.$reset();
         },
         makeActiveMission: async function(mission?: Subscription): Promise<void> {
-            this.mission = mission;
+            this.mission = mission ? markRaw(mission) : undefined;
             await this.worker.db.makeActiveMission(mission ? mission.meta.guid : undefined);
 
             if (mission) {
@@ -654,48 +688,16 @@ export const useMapStore = defineStore('cloudtak', {
 
             let startedGPSWatchFromPermissionSubscription = false;
 
-            const locationCallback = (position: Position) => {
-                if (this.manualLocationMode) return;
-
-                this.locationAccuracy = position.coords.accuracy;
-                this.gpsCoordinates = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-
-                try {
-                    this.channel.postMessage({
-                        type: WorkerMessageType.Profile_Location_Coordinates,
-                        body: {
-                            accuracy: position.coords.accuracy,
-                            altitude: position.coords.altitude,
-                            altitudeAccuracy: position.coords.altitudeAccuracy,
-                            speed: position.coords.speed,
-                            heading: position.coords.heading,
-                            timestamp: position.timestamp,
-                            coordinates: [ position.coords.longitude, position.coords.latitude ]
-                        }
-                    });
-                } catch (err) {
-                    // channel may be closed during teardown
-                    console.error(err);
-                }
-
-                if (isNativePlatform() && this.isBackgrounded) {
-                    void this.submitLocationHttp(position);
-                }
-            };
-
             await deviceStore.initializePermissionSubscriptions(() => {
                 startedGPSWatchFromPermissionSubscription = true;
-                void deviceStore.geolocation.startWatch(locationCallback);
+                void this.startLocationWatch();
             });
 
             if (
                 deviceStore.permissions.location !== 'unsupported'
                 && !startedGPSWatchFromPermissionSubscription
             ) {
-                await deviceStore.geolocation.startWatch(locationCallback);
+                await this.startLocationWatch();
             }
 
             const sprites = IconManager.defaultSprite();
@@ -799,7 +801,7 @@ export const useMapStore = defineStore('cloudtak', {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore Don't remove me unless npm run doc passes
             this._map = markRaw(map);
-            this._draw = new DrawTool(this);
+            this._draw = markRaw(new DrawTool(this));
             this._icons = markRaw(new IconManager(map));
             this._menu = markRaw(new MenuManager(this));
             await (this._menu as MenuManager).init();
