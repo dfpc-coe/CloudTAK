@@ -227,18 +227,23 @@ export const useMapStore = defineStore('cloudtak', {
                     lng: position.coords.longitude
                 };
 
-                this.channel.postMessage({
-                    type: WorkerMessageType.Profile_Location_Coordinates,
-                    body: {
-                        accuracy: position.coords.accuracy,
-                        altitude: position.coords.altitude,
-                        altitudeAccuracy: position.coords.altitudeAccuracy,
-                        speed: position.coords.speed,
-                        heading: position.coords.heading,
-                        timestamp: position.timestamp,
-                        coordinates: [ position.coords.longitude, position.coords.latitude ]
-                    }
-                });
+                try {
+                    this.channel.postMessage({
+                        type: WorkerMessageType.Profile_Location_Coordinates,
+                        body: {
+                            accuracy: position.coords.accuracy,
+                            altitude: position.coords.altitude,
+                            altitudeAccuracy: position.coords.altitudeAccuracy,
+                            speed: position.coords.speed,
+                            heading: position.coords.heading,
+                            timestamp: position.timestamp,
+                            coordinates: [ position.coords.longitude, position.coords.latitude ]
+                        }
+                    });
+                } catch (err) {
+                    // channel may be closed during teardown
+                    console.error(err);
+                }
 
                 if (isNativePlatform() && this.isBackgrounded) {
                     // Actions cannot be called from getters, so we use the store instance
@@ -273,6 +278,9 @@ export const useMapStore = defineStore('cloudtak', {
                 window.clearInterval(this.timer);
             }
 
+            // Stop geolocation watch first so no callbacks fire during async teardown below
+            await deviceStore.geolocation.stopWatch();
+
             if (currentWorker && currentRawWorker) {
                 try {
                     await currentWorker.destroy();
@@ -287,9 +295,12 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
-            await deviceStore.geolocation.stopWatch();
-
-            this.channel.close();
+            try {
+                this.channel.close();
+            } catch (err) {
+                // channel may already be closed
+                console.error(err)
+            }
 
             await deviceStore.wakeLock.releaseSentinel();
 

@@ -70,7 +70,7 @@ export class ConnectionWebSocket {
                     } else {
                         const feat = msg.data as Static<typeof Feature.Feature>;
 
-                        const cot = await CoTParser.from_geojson(feat, { verbose: true });
+                        const cot = await CoTParser.from_geojson(feat);
 
                         client.tak.write([cot], { stripFlow: true });
                     }
