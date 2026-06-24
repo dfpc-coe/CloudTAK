@@ -64,11 +64,6 @@
                     Admin Certificate
                 </h3>
                 <div class='ms-auto d-flex align-items-center gap-2'>
-                    <TablerToggle
-                        v-if='edit && server.auth'
-                        v-model='server.connection'
-                        label='Connection Enabled'
-                    />
                     <span
                         v-if='server.auth'
                         class='text-muted'
@@ -98,6 +93,15 @@
                 </div>
             </div>
             <div class='card-body row'>
+                <div
+                    v-if='edit && server.auth'
+                    class='col-lg-12 pb-2'
+                >
+                    <TablerToggle
+                        v-model='server.connection'
+                        label='Connection Enabled'
+                    />
+                </div>
                 <template v-if='regen && edit'>
                     <div class='col-md-6'>
                         <TablerInput
