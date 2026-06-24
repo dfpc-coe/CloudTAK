@@ -501,6 +501,7 @@ export const Server = pgTable('server', {
     }>().notNull().default({}),
     api: text().notNull().default(''),
     webtak: text().notNull().default(''),
+    connection: boolean().notNull().default(true),
 });
 
 export const ConnectionToken = pgTable('connection_tokens', {

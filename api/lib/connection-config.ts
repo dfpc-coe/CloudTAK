@@ -225,7 +225,7 @@ export class AdminConnConfig implements ConnectionConfig {
         this.config = config;
         this.id = 0;
         this.name = 'admin';
-        this.enabled = true;
+        this.enabled = config.server.connection;
         this.auth = {
             cert: config.server.auth.cert!,
             key: config.server.auth.key!,
