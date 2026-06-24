@@ -46,7 +46,7 @@
         "@stylistic/eslint-plugin": "^5.10.0",
         "@types/cors": "^2.8.17",
         "@types/jsonwebtoken": "^9.0.2",
-        "@types/node": "^25.0.0",
+        "@types/node": "^26.0.0",
         "@types/pngjs": "^6.0.5",
         "eslint": "^10.0.0",
         "openapi-typescript": "^7.13.0",
