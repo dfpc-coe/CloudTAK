@@ -216,7 +216,7 @@ export default class VideoServiceControl {
 
         const res = await fetch(url, {
             headers: Object.fromEntries(headers.entries()),
-            safeUrlAllow: [video.url!]
+            safeUrlAllow: [video.url!],
         });
         if (!res.ok) throw new Err(500, null, await res.text());
         const body = await res.typed(VideoConfig);
@@ -227,7 +227,7 @@ export default class VideoServiceControl {
 
         const resPaths = await fetch(urlPaths, {
             headers: Object.fromEntries(headers.entries()),
-            safeUrlAllow: [video.url!]
+            safeUrlAllow: [video.url!],
         });
         if (!resPaths.ok) throw new Err(500, null, await resPaths.text());
 
