@@ -16,6 +16,11 @@
 
 ### Pending Release
 
+### v13.21.1 - 2026-06-24
+
+- :bug: Ensure DNS entries in the allow list are resolved to also allow their IPs
+- :bug: Ensure Data Sync list errors are cleared if the user refreshes
+
 ### v13.21.0 - 2026-06-24
 
 - :bug: Ensure Welcome Banner can be set and closed
