@@ -13,8 +13,8 @@
                 />
             </TablerIconButton>
             <TablerRefreshButton
-                :loading='loading && tab === "available"'
-                @click='fetchMissions'
+                :loading='tab === "available" ? loading : subscribedLoading'
+                @click='refresh'
             />
         </template>
         <template #default>
@@ -132,103 +132,161 @@
 
                 <EmptyInfo v-if='mapStore.hasNoChannels' />
 
-                <TablerAlert
-                    v-if='error'
-                    :err='error'
-                />
-                <TablerNone
-                    v-if='!loading && !error && !filteredList.length'
-                    :create='false'
-                    :label='tab === "subscribed" ? "No subscribed data syncs" : "No data syncs match your filter"'
-                />
-                <TablerLoading v-if='loading && tab === "available"' />
-                <div
-                    v-if='filteredList.length && !(loading && tab === "available")'
-                    class='d-flex flex-column gap-3'
-                >
-                    <PendingInvites
-                        v-if='tab === "available"'
-                        v-model:invites='invites'
-                        @open-mission='openMission($event, false)'
-                        @error='error = $event'
+                <template v-if='tab === "available"'>
+                    <TablerAlert
+                        v-if='error'
+                        :err='error'
                     />
-
-                    <StandardItem
-                        v-for='(mission, mission_it) in filteredList'
-                        :key='mission_it'
-                        class='d-flex flex-row gap-3 position-relative'
-                        @click='openMission(mission, false)'
-                    >
-                        <div class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ms-2 mt-2'>
-                            <IconLock
-                                v-if='mission.passwordProtected'
-                                :size='24'
-                                stroke='1'
+                    <template v-else>
+                        <TablerNone
+                            v-if='!loading && !filteredList.length'
+                            :create='false'
+                            label='No data syncs match your filter'
+                        />
+                        <TablerLoading v-if='loading' />
+                        <div
+                            v-if='filteredList.length && !loading'
+                            class='d-flex flex-column gap-3'
+                        >
+                            <PendingInvites
+                                v-model:invites='invites'
+                                @open-mission='openMission($event, false)'
+                                @error='error = $event'
                             />
-                            <IconLockOpen
-                                v-else
-                                :size='24'
-                                stroke='1'
-                            />
-                        </div>
 
-                        <div class='flex-grow-1 d-flex flex-column gap-2 py-2'>
-                            <div class='d-flex flex-wrap align-items-center gap-2'>
-                                <span
-                                    class='fw-semibold text-break'
-                                    v-text='mission.name'
-                                />
-                            </div>
-
-                            <Keywords :keywords='missionKeywords(mission)' />
-
-                            <div
-                                v-if='typeof missionPasswords[mission.guid] === "string"'
-                                class='d-flex flex-column mx-2 flex-lg-row align-items-start gap-2'
+                            <StandardItem
+                                v-for='(mission, mission_it) in filteredList'
+                                :key='mission_it'
+                                class='d-flex flex-row gap-3 position-relative'
+                                @click='openMission(mission, false)'
                             >
-                                <TablerInput
-                                    v-model='missionPasswords[mission.guid]'
-                                    type='password'
-                                    autocomplete='new-password'
-                                    placeholder='Password'
-                                    :error='errors[mission.guid]'
-                                    class='flex-grow-1 w-100'
-                                    @keyup.enter='openMission(mission, true)'
-                                />
+                                <div class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ms-2 mt-2'>
+                                    <IconLock
+                                        v-if='mission.passwordProtected'
+                                        :size='24'
+                                        stroke='1'
+                                    />
+                                    <IconLockOpen
+                                        v-else
+                                        :size='24'
+                                        stroke='1'
+                                    />
+                                </div>
 
-                                <button
-                                    class='btn btn-primary px-3'
-                                    type='button'
-                                    @click.stop='openMission(mission, true)'
-                                >
-                                    Unlock
-                                </button>
-                            </div>
-                            <div
-                                v-else
-                                class='text-secondary small d-flex flex-wrap align-items-center gap-2'
+                                <div class='flex-grow-1 d-flex flex-column gap-2 py-2'>
+                                    <div class='d-flex flex-wrap align-items-center gap-2'>
+                                        <span
+                                            class='fw-semibold text-break'
+                                            v-text='mission.name'
+                                        />
+                                    </div>
+
+                                    <Keywords :keywords='missionKeywords(mission)' />
+
+                                    <div
+                                        v-if='typeof missionPasswords[mission.guid] === "string"'
+                                        class='d-flex flex-column mx-2 flex-lg-row align-items-start gap-2'
+                                    >
+                                        <TablerInput
+                                            v-model='missionPasswords[mission.guid]'
+                                            type='password'
+                                            autocomplete='new-password'
+                                            placeholder='Password'
+                                            :error='errors[mission.guid]'
+                                            class='flex-grow-1 w-100'
+                                            @keyup.enter='openMission(mission, true)'
+                                        />
+
+                                        <button
+                                            class='btn btn-primary px-3'
+                                            type='button'
+                                            @click.stop='openMission(mission, true)'
+                                        >
+                                            Unlock
+                                        </button>
+                                    </div>
+                                    <div
+                                        v-else
+                                        class='text-secondary small d-flex flex-wrap align-items-center gap-2'
+                                    >
+                                        <span
+                                            v-text='mission.createTime.replace(/T.*/, "")'
+                                        />
+                                        <span class='text-white-50'>•</span>
+                                        <span
+                                            v-text='mission.contents.length + " Items"'
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class='d-flex align-items-center gap-2 pe-2'>
+                                    <IconAccessPoint
+                                        v-if='subscribed.has(mission.guid)'
+                                        v-tooltip='"Subscribed"'
+                                        class='text-success'
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </div>
+                            </StandardItem>
+                        </div>
+                    </template>
+                </template>
+
+                <template v-else>
+                    <TablerAlert
+                        v-if='subscribedError'
+                        :err='subscribedError'
+                    />
+                    <template v-else>
+                        <TablerNone
+                            v-if='!filteredList.length'
+                            :create='false'
+                            label='No subscribed data syncs'
+                        />
+                        <div
+                            v-if='filteredList.length'
+                            class='d-flex flex-column gap-3'
+                        >
+                            <StandardItem
+                                v-for='(mission, mission_it) in filteredList'
+                                :key='mission_it'
+                                class='d-flex flex-row gap-3 position-relative'
+                                @click='openMission(mission, false)'
                             >
-                                <span
-                                    v-text='mission.createTime.replace(/T.*/, "")'
-                                />
-                                <span class='text-white-50'>•</span>
-                                <span
-                                    v-text='mission.contents.length + " Items"'
-                                />
-                            </div>
-                        </div>
+                                <div class='flex-grow-1 d-flex flex-column gap-2 py-2 ps-2'>
+                                    <div class='d-flex flex-wrap align-items-center gap-2'>
+                                        <span
+                                            class='fw-semibold text-break'
+                                            v-text='mission.name'
+                                        />
+                                    </div>
 
-                        <div class='d-flex align-items-center gap-2 pe-2'>
-                            <IconAccessPoint
-                                v-if='subscribed.has(mission.guid)'
-                                v-tooltip='"Subscribed"'
-                                class='text-success'
-                                :size='32'
-                                stroke='1'
-                            />
+                                    <Keywords :keywords='missionKeywords(mission)' />
+
+                                    <div class='text-secondary small d-flex flex-wrap align-items-center gap-2'>
+                                        <span
+                                            v-text='mission.createTime.replace(/T.*/, "")'
+                                        />
+                                        <span class='text-white-50'>•</span>
+                                        <span
+                                            v-text='mission.contents.length + " Items"'
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class='d-flex align-items-center gap-2 pe-2'>
+                                    <IconAccessPoint
+                                        v-tooltip='"Subscribed"'
+                                        class='text-success'
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </div>
+                            </StandardItem>
                         </div>
-                    </StandardItem>
-                </div>
+                    </template>
+                </template>
             </div>
         </template>
     </MenuTemplate>
@@ -293,8 +351,10 @@ import { db } from '../../../database.ts';
 const mapStore = useMapStore();
 
 const error = ref<Error | undefined>();
+const subscribedError = ref<Error | undefined>();
 const create = ref(false)
 const loading = ref(true)
+const subscribedLoading = ref(false)
 const missionPasswords = ref<Record<string, string>>({});
 const errors = ref<Record<string, string | undefined>>({})
 const router = useRouter();
@@ -446,30 +506,26 @@ async function generateFilteredList() {
 }
 
 async function openMission(mission: Mission, usePassword: boolean) {
-    if (mission.passwordProtected && subscribed.value.has(mission.guid)) {
+    if (subscribed.value.has(mission.guid)) {
         const o = OverlayManager.loadedByMode('mission', mission.guid);
-
         let fragment = `/menu/missions/${mission.guid}`;
         if (o && o.token) fragment = `${fragment}?token=${encodeURIComponent(o.token)}`;
         router.push(fragment);
     } else if (mission.passwordProtected && usePassword) {
         try {
             const getMission = await fetchMission(mission, missionPasswords.value[mission.guid]);
-
             let fragment = `/menu/missions/${mission.guid}`;
             if (getMission && getMission.token) fragment = `${fragment}?token=${encodeURIComponent(getMission.token)}`;
             router.push(fragment);
         } catch (err) {
-            if (err instanceof Error && err.message.includes('Illegal attempt to access mission')) {
-                errors.value[mission.guid] = 'Invalid Password';
-            } else {
-                errors.value[mission.guid] = err instanceof Error ? err.message : String(err);
-            }
+            errors.value[mission.guid] = err instanceof Error && err.message.includes('Illegal attempt to access mission')
+                ? 'Invalid Password'
+                : err instanceof Error ? err.message : String(err);
         }
-    } else if (mission.passwordProtected && missionPasswords.value[mission.guid] === undefined) {
+    } else if (mission.passwordProtected) {
         missionPasswords.value[mission.guid] = '';
-    } else if (!mission.passwordProtected) {
-        router.push(`/menu/missions/${mission.guid}?password=${encodeURIComponent(missionPasswords.value[mission.guid])}`);
+    } else {
+        router.push(`/menu/missions/${mission.guid}`);
     }
 }
 
@@ -502,18 +558,35 @@ function missionKeywords(mission: Mission): string[] {
 }
 
 async function loadFromLocalDB() {
-    const subs = await db.subscription
-        .filter((sub) => sub.subscribed === true)
-        .toArray();
+    subscribedLoading.value = true;
+    subscribedError.value = undefined;
 
-    for (const sub of subs) {
-        subscribed.value.add(sub.guid);
+    try {
+        const subs = await db.subscription
+            .filter((sub) => sub.subscribed === true)
+            .toArray();
+
+        for (const sub of subs) {
+            subscribed.value.add(sub.guid);
+        }
+
+        if (subs.length === 0) tab.value = 'available';
+
+        list.value = subs.map((sub) => sub.meta);
+        await generateFilteredList();
+    } catch (err) {
+        subscribedError.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        subscribedLoading.value = false;
     }
+}
 
-    if (subs.length === 0) tab.value = 'available';
-
-    list.value = subs.map((sub) => sub.meta);
-    await generateFilteredList();
+async function refresh() {
+    if (tab.value === 'available') {
+        await fetchMissions();
+    } else {
+        await loadFromLocalDB();
+    }
 }
 
 async function fetchMissions() {
