@@ -1,0 +1,1 @@
+ALTER TABLE "server" ADD COLUMN IF NOT EXISTS "connection" boolean DEFAULT true NOT NULL;
