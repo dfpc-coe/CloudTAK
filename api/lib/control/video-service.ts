@@ -214,7 +214,10 @@ export default class VideoServiceControl {
         const url = new URL('/v3/config/global/get', video.url);
         url.port = '9997';
 
-        const res = await fetch(url, { headers: Object.fromEntries(headers.entries()), safeUrlAllow: [video.url!] });
+        const res = await fetch(url, {
+            headers: Object.fromEntries(headers.entries()),
+            safeUrlAllow: [video.url!]
+        });
         if (!res.ok) throw new Err(500, null, await res.text());
         const body = await res.typed(VideoConfig);
 
@@ -222,7 +225,10 @@ export default class VideoServiceControl {
         const urlPaths = new URL('/path', video.url);
         urlPaths.port = '9997';
 
-        const resPaths = await fetch(urlPaths, { headers: Object.fromEntries(headers.entries()), safeUrlAllow: [video.url!] });
+        const resPaths = await fetch(urlPaths, {
+            headers: Object.fromEntries(headers.entries()),
+            safeUrlAllow: [video.url!]
+        });
         if (!resPaths.ok) throw new Err(500, null, await resPaths.text());
 
         const paths = await resPaths.typed(PathsList);

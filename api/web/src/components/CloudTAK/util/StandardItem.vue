@@ -4,8 +4,8 @@
         :class='{ "standard-item--hover": interactive }'
         :tabindex='interactive ? 0 : undefined'
         :role='interactive ? "menuitem" : undefined'
-        @keydown.enter.prevent='interactive ? $el.click() : undefined'
-        @keydown.space.prevent='interactive ? $el.click() : undefined'
+        @keydown.enter='interactive ? ($event.preventDefault(), $el.click()) : undefined'
+        @keydown.space='interactive ? ($event.preventDefault(), $el.click()) : undefined'
     >
         <slot />
     </div>
