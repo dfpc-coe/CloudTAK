@@ -216,6 +216,7 @@ export const ServerResponse = Type.Object({
         Type.Literal('dead'),
         Type.Literal('unknown'),
     ], { default: 'unknown', description: 'The connected status of the Admin Connection (connection 0)' }),
+    connection: Type.Boolean({ default: true, description: 'Whether the Admin Connection (connection 0) is enabled in the connection pool' }),
     created: Type.String(),
     updated: Type.String(),
     version: Type.String(),

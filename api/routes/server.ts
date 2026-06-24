@@ -27,6 +27,7 @@ export default async function router(schema: Schema, config: Config) {
                     id: 1,
                     status: 'unconfigured',
                     connection_status: 'dead',
+                    connection: true,
                     name: 'Default Server',
                     version: pkg.version,
                     created: new Date().toISOString(),
@@ -64,6 +65,7 @@ export default async function router(schema: Schema, config: Config) {
                         id: config.server.id,
                         status: 'configured',
                         connection_status: config.conns.status(0),
+                        connection: config.server.connection,
                         version: pkg.version,
                         name: config.server.name,
                         created: config.server.created,
@@ -89,6 +91,9 @@ export default async function router(schema: Schema, config: Config) {
             api: Type.String(),
             webtak: Type.String(),
             name: Type.Optional(Type.String()),
+            connection: Type.Optional(Type.Boolean({
+                description: 'Enable or disable the Admin Connection (connection 0) in the connection pool',
+            })),
 
             // Used during initial server config to test connection & set system admin
             username: Type.Optional(Type.String()),

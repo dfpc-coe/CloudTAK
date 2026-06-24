@@ -198,7 +198,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         const conns: Promise<unknown>[] = [];
 
         // Create admin connection (connection 0) using server auth profile
-        if (this.config.server.auth.cert && this.config.server.auth.key) {
+        if (this.config.server.connection && this.config.server.auth.cert && this.config.server.auth.key) {
             conns.push(
                 this.add(new AdminConnConfig(this.config)).catch((err) => {
                     console.error(`not ok - admin - failed to connect: ${err instanceof Error ? err.message : String(err)}`);

@@ -296,7 +296,7 @@ export default async function router(schema: Schema, config: Config) {
                 username: null,
                 name: 'Admin Connection',
                 description: 'Server-level admin connection. Layers here are available to all connections as templates.',
-                enabled: true,
+                enabled: config.server.connection,
             });
         } catch (err) {
             Err.respond(err, res);
