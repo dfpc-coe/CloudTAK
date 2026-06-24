@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.21.0 - 2026-06-24
+
+- :bug: Ensure Welcome Banner can be set and closed
+
 ### v13.20.0 - 2026-06-23
 
 - :tada: Allow Admin Connections to utilize connection APIs and have associated layers
