@@ -125,6 +125,8 @@ const props = defineProps({
     }
 })
 
+const emit = defineEmits([ 'update' ]);
+
 type SettingItem = {
     key: string;
     label: string;
@@ -291,6 +293,10 @@ async function saveField(key: string) {
     saveTimeout = setTimeout(() => {
         savedKey.value = undefined;
     }, 2000);
+
+    if (props.mode === 'emit') {
+        emit('update', key);
+    }
 }
 
 // Watch for changes to auto-save non-input fields
