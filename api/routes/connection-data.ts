@@ -15,7 +15,7 @@ export default async function router(schema: Schema, config: Config) {
     await schema.get('/data', {
         private: true,
         name: 'List Data',
-        group: 'Data',
+        group: 'ConnectionData',
         description: `
             Used by the frontend UI to list data packages that the user can visualize
         `,
@@ -65,7 +65,7 @@ export default async function router(schema: Schema, config: Config) {
 
     await schema.get('/connection/:connectionid/data', {
         name: 'List Data',
-        group: 'Data',
+        group: 'ConnectionData',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 0 }),
         }),
@@ -112,7 +112,7 @@ export default async function router(schema: Schema, config: Config) {
 
     await schema.post('/connection/:connectionid/data', {
         name: 'Create Data',
-        group: 'Data',
+        group: 'ConnectionData',
         description: 'Register a new data source',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 0 }),
@@ -181,7 +181,7 @@ export default async function router(schema: Schema, config: Config) {
 
     await schema.patch('/connection/:connectionid/data/:dataid', {
         name: 'Update Layer',
-        group: 'Data',
+        group: 'ConnectionData',
         description: 'Update a data source',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 0 }),
@@ -245,7 +245,7 @@ export default async function router(schema: Schema, config: Config) {
 
     await schema.get('/connection/:connectionid/data/:dataid', {
         name: 'Get Data',
-        group: 'Data',
+        group: 'ConnectionData',
         description: 'Get a data source',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 0 }),
@@ -291,7 +291,7 @@ export default async function router(schema: Schema, config: Config) {
 
     await schema.delete('/connection/:connectionid/data/:dataid', {
         name: 'Delete Data',
-        group: 'Data',
+        group: 'ConnectionData',
         description: 'Delete a data source',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 0 }),
