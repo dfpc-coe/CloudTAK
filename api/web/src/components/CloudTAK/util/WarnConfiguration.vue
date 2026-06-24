@@ -14,13 +14,25 @@
             <SettingsCallsign
                 mode='emit'
                 :force-callsign='true'
-                @update='emit("close")'
+                @update='handleUpdate'
             />
+        </div>
+        <div class='modal-footer'>
+            <div class='ms-auto'>
+                <button
+                    class='btn btn-primary'
+                    :disabled='!callsignSaved'
+                    @click='emit("close")'
+                >
+                    Done
+                </button>
+            </div>
         </div>
     </TablerModal>
 </template>
 
 <script setup lang='ts'>
+import { ref } from 'vue';
 import {
     TablerModal,
 } from '@tak-ps/vue-tabler';
@@ -31,4 +43,12 @@ import {
 import SettingsCallsign from './SettingsCallsign.vue';
 
 const emit = defineEmits([ 'close' ]);
+
+const callsignSaved = ref(false);
+
+function handleUpdate(key: string) {
+    if (key === 'tak_callsign') {
+        callsignSaved.value = true;
+    }
+}
 </script>
