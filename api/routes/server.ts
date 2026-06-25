@@ -6,6 +6,7 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../lib/auth.js';
 import { sql } from 'drizzle-orm';
 import Config from '../lib/config.js';
+import { AdminConnConfig } from '../lib/connection-config.js';
 import { ServerResponse } from '../lib/types.js';
 import ProfileControl from '../lib/control/profile.js';
 import { TAKAPI, APIAuthCertificate, APIAuthPassword } from '@tak-ps/node-tak';
@@ -146,7 +147,24 @@ export default async function router(schema: Schema, config: Config) {
                 updated: sql`Now()`,
             });
 
-            await config.conns.refresh();
+            // If URL or auth cert changed, all connections need to reconnect
+            if (req.body.url || req.body.auth) {
+                await config.conns.refresh();
+            } else {
+                // Otherwise just toggle the admin connection (connection 0) like a regular connection enable/disable
+                if (config.server.connection && !config.conns.has(0)) {
+                    if (config.server.auth.cert && config.server.auth.key) {
+                        await config.conns.add(new AdminConnConfig(config));
+                    }
+                } else if (config.server.connection && config.conns.has(0)) {
+                    config.conns.delete(0);
+                    if (config.server.auth.cert && config.server.auth.key) {
+                        await config.conns.add(new AdminConnConfig(config));
+                    }
+                } else if (!config.server.connection && config.conns.has(0)) {
+                    config.conns.delete(0);
+                }
+            }
 
             let auth = false;
             if (config.server.auth.cert && config.server.auth.key) auth = true;
