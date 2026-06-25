@@ -6,6 +6,7 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../lib/auth.js';
 import { sql } from 'drizzle-orm';
 import Config from '../lib/config.js';
+import { AdminConnConfig } from '../lib/connection-config.js';
 import { ServerResponse } from '../lib/types.js';
 import ProfileControl from '../lib/control/profile.js';
 import { TAKAPI, APIAuthCertificate, APIAuthPassword } from '@tak-ps/node-tak';
@@ -27,6 +28,7 @@ export default async function router(schema: Schema, config: Config) {
                     id: 1,
                     status: 'unconfigured',
                     connection_status: 'dead',
+                    connection: true,
                     name: 'Default Server',
                     version: pkg.version,
                     created: new Date().toISOString(),
@@ -64,6 +66,7 @@ export default async function router(schema: Schema, config: Config) {
                         id: config.server.id,
                         status: 'configured',
                         connection_status: config.conns.status(0),
+                        connection: config.server.connection,
                         version: pkg.version,
                         name: config.server.name,
                         created: config.server.created,
@@ -89,6 +92,9 @@ export default async function router(schema: Schema, config: Config) {
             api: Type.String(),
             webtak: Type.String(),
             name: Type.Optional(Type.String()),
+            connection: Type.Optional(Type.Boolean({
+                description: 'Enable or disable the Admin Connection (connection 0) in the connection pool',
+            })),
 
             // Used during initial server config to test connection & set system admin
             username: Type.Optional(Type.String()),
@@ -141,7 +147,29 @@ export default async function router(schema: Schema, config: Config) {
                 updated: sql`Now()`,
             });
 
-            await config.conns.refresh();
+            // If the server URL or auth cert actually changed, all connections need to reconnect.
+            // Otherwise just toggle the admin connection (connection 0) like a regular connection enable/disable.
+            const urlChanged = req.body.url !== config.server.url;
+            const authChanged = req.body.auth !== undefined && (
+                req.body.auth.cert !== config.server.auth.cert || req.body.auth.key !== config.server.auth.key
+            );
+
+            if (urlChanged || authChanged) {
+                await config.conns.refresh();
+            } else {
+                if (config.server.connection && !config.conns.has(0)) {
+                    if (config.server.auth.cert && config.server.auth.key) {
+                        await config.conns.add(new AdminConnConfig(config));
+                    }
+                } else if (config.server.connection && config.conns.has(0)) {
+                    config.conns.delete(0);
+                    if (config.server.auth.cert && config.server.auth.key) {
+                        await config.conns.add(new AdminConnConfig(config));
+                    }
+                } else if (!config.server.connection && config.conns.has(0)) {
+                    config.conns.delete(0);
+                }
+            }
 
             let auth = false;
             if (config.server.auth.cert && config.server.auth.key) auth = true;

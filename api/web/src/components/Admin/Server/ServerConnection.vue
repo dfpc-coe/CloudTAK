@@ -68,21 +68,16 @@
                         v-if='server.auth'
                         class='text-muted'
                         style='font-size: 0.85rem;'
-                        v-text='server.connection_status === "live" ? "Connected" : server.connection_status === "dead" ? "Disconnected" : "Unknown"'
+                        v-text='!server.connection ? "Paused" : server.connection_status === "live" ? "Connected" : server.connection_status === "dead" ? "Disconnected" : "Unknown"'
                     />
-                    <span
+                    <Status
                         v-if='server.auth'
-                        class='status-indicator status-indicator-animated'
-                        :class='{
-                            "status-green": server.connection_status === "live",
-                            "status-red": server.connection_status === "dead",
-                            "status-dark": server.connection_status === "unknown",
+                        :connection='{
+                            readonly: false,
+                            enabled: server.connection,
+                            status: server.connection_status,
                         }'
-                    >
-                        <span class='status-indicator-circle' />
-                        <span class='status-indicator-circle' />
-                        <span class='status-indicator-circle' />
-                    </span>
+                    />
                     <div
                         v-if='regen && edit'
                         class='btn-list'
@@ -98,6 +93,15 @@
                 </div>
             </div>
             <div class='card-body row'>
+                <div
+                    v-if='edit && server.auth'
+                    class='col-lg-12 pb-2'
+                >
+                    <TablerToggle
+                        v-model='server.connection'
+                        label='Admin Connection Enabled'
+                    />
+                </div>
                 <template v-if='regen && edit'>
                     <div class='col-md-6'>
                         <TablerInput
@@ -212,9 +216,11 @@ import { ref, onMounted } from 'vue';
 import type { Server, Server_Update } from '../../../types.ts';
 import ServerManager from '../../../base/server.ts';
 import Upload from '../../util/UploadP12.vue';
+import Status from '../../ETL/Connection/StatusDot.vue';
 import {
     TablerIconButton,
     TablerLoading,
+    TablerToggle,
     TablerInput
 } from '@tak-ps/vue-tabler';
 import {
@@ -255,6 +261,7 @@ const server = ref<Server>({
     updated: new Date().toISOString(),
     status: 'unconfigured',
     connection_status: 'unknown',
+    connection: true,
     auth: false,
     name: '',
     url: '',
@@ -319,6 +326,7 @@ async function postServer() {
         url: server.value.url,
         api: server.value.api,
         webtak: server.value.webtak,
+        connection: server.value.connection,
     }
 
     if (auth.value.cert && auth.value.key) {

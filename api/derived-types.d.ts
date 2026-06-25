@@ -41303,6 +41303,11 @@ export interface paths {
                              * @default unknown
                              */
                             connection_status: "live" | "dead" | "unknown";
+                            /**
+                             * @description Whether the Admin Connection (connection 0) is enabled in the connection pool
+                             * @default true
+                             */
+                            connection: boolean;
                             created: string;
                             updated: string;
                             version: string;
@@ -41402,6 +41407,8 @@ export interface paths {
                         api: string;
                         webtak: string;
                         name?: string;
+                        /** @description Enable or disable the Admin Connection (connection 0) in the connection pool */
+                        connection?: boolean;
                         username?: string;
                         password?: string;
                         auth?: {
@@ -41426,6 +41433,11 @@ export interface paths {
                              * @default unknown
                              */
                             connection_status: "live" | "dead" | "unknown";
+                            /**
+                             * @description Whether the Admin Connection (connection 0) is enabled in the connection pool
+                             * @default true
+                             */
+                            connection: boolean;
                             created: string;
                             updated: string;
                             version: string;
