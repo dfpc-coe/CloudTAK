@@ -252,7 +252,9 @@ export default async function server(config: Config): Promise<ServerManager> {
 
                 if (!config.conns.has(0)) {
                     // Admin connection should already be created in init(), but check anyway
-                    if (config.server.auth.cert && config.server.auth.key) {
+                    if (!config.server.connection) {
+                        throw new Error('Admin connection is disabled');
+                    } else if (config.server.auth.cert && config.server.auth.key) {
                         client = await config.conns.add(new AdminConnConfig(config));
                         if (client.tak.client && !client.tak.client.authorized) {
                             awaitSecure = new Promise<void>(resolve => (client as ConnectionClient).tak.once('secureConnect', resolve));

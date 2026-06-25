@@ -2,16 +2,16 @@
     <div class='card-header'>
         <ConnectionStatus :connection='connection' />
 
-        <div class='mx-2 d-flex flex-column'>
+        <div class='mx-2 d-flex flex-column' style='min-width: 0; overflow: hidden;'>
             <div
-                class='card-title m-0'
+                class='card-title m-0 text-truncate'
                 :class='{ "cursor-pointer": clickable }'
                 @click='clickable ? router.push(`/connection/${connection.id}`) : null'
                 v-text='connection.name'
             />
         </div>
 
-        <div class='ms-auto d-flex align-items-center btn-list'>
+        <div class='ms-auto d-flex align-items-center flex-shrink-0 flex-nowrap btn-list'>
             <AgencyBadge :connection='connection' />
 
             <TablerIconButton
