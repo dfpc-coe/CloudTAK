@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.22.0 - 2026-06-25
+
+- :rocket: Allow an admin to puase the Admin Server Connection
+
 ### v13.21.1 - 2026-06-24
 
 - :bug: Ensure DNS entries in the allow list are resolved to also allow their IPs
