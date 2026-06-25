@@ -11,7 +11,7 @@
             />
         </div>
 
-        <div class='ms-auto d-flex align-items-center flex-shrink-0 btn-list'>
+        <div class='ms-auto d-flex align-items-center flex-shrink-0 flex-nowrap btn-list'>
             <AgencyBadge :connection='connection' />
 
             <TablerIconButton
