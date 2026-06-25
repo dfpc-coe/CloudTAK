@@ -1795,7 +1795,7 @@ test('Style: Template - ampersand in metadata is not HTML-encoded in callsign', 
     });
 
     if (!feat) assert.fail('Feature marked as null');
-    assert.equal(feat.properties.callsign, "Colorado Parks & Wildlife Marine Evidence Recovery Team");
+    assert.equal(feat.properties.callsign, 'Colorado Parks & Wildlife Marine Evidence Recovery Team');
 });
 
 test('Style: Template - apostrophe in metadata is not XML-encoded in callsign', async () => {
@@ -1810,14 +1810,14 @@ test('Style: Template - apostrophe in metadata is not XML-encoded in callsign', 
         type: 'Feature',
         properties: {
             metadata: {
-                AgencyName: "Larimer County Sheriff's Office",
+                AgencyName: 'Larimer County Sheriff\'s Office',
             },
         },
         geometry: { type: 'Point', coordinates: [0, 0] },
     });
 
     if (!feat) assert.fail('Feature marked as null');
-    assert.equal(feat.properties.callsign, "Larimer County Sheriff's Office");
+    assert.equal(feat.properties.callsign, 'Larimer County Sheriff\'s Office');
 });
 
 test('Style: Template - special chars in remarks are not HTML-encoded', async () => {
@@ -1833,12 +1833,12 @@ test('Style: Template - special chars in remarks are not HTML-encoded', async ()
         properties: {
             metadata: {
                 AgencyName: 'Colorado Parks & Wildlife',
-                AgencyType: "Sheriff's Office",
+                AgencyType: 'Sheriff\'s Office',
             },
         },
         geometry: { type: 'Point', coordinates: [0, 0] },
     });
 
     if (!feat) assert.fail('Feature marked as null');
-    assert.equal(feat.properties.remarks, "Agency: Colorado Parks & Wildlife\nType: Sheriff's Office");
+    assert.equal(feat.properties.remarks, 'Agency: Colorado Parks & Wildlife\nType: Sheriff\'s Office');
 });
