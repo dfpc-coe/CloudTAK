@@ -393,7 +393,7 @@ export default class Style {
         let t = this.templates.get(template);
 
         if (!t) {
-            t = handlebars.compile(template);
+            t = handlebars.compile(template, { noEscape: true });
             this.templates.set(template, t);
         }
 
