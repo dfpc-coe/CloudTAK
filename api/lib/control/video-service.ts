@@ -216,7 +216,7 @@ export default class VideoServiceControl {
 
         const res = await fetch(url, {
             headers: Object.fromEntries(headers.entries()),
-            safeUrlAllow: [video.url!],
+            safeUrlAllow: [new URL(video.url!).hostname],
         });
         if (!res.ok) throw new Err(500, null, await res.text());
         const body = await res.typed(VideoConfig);
@@ -227,7 +227,7 @@ export default class VideoServiceControl {
 
         const resPaths = await fetch(urlPaths, {
             headers: Object.fromEntries(headers.entries()),
-            safeUrlAllow: [video.url!],
+            safeUrlAllow: [new URL(video.url!).hostname],
         });
         if (!resPaths.ok) throw new Err(500, null, await resPaths.text());
 
@@ -545,7 +545,7 @@ export default class VideoServiceControl {
                     const res = await fetch(url, {
                         method: 'POST',
                         headers: Object.fromEntries(headers.entries()),
-                        safeUrlAllow: [video.url!],
+                        safeUrlAllow: [new URL(video.url!).hostname],
                         body: JSON.stringify({
                             name: lease.path,
                             source: lease.proxy,
@@ -569,7 +569,7 @@ export default class VideoServiceControl {
             const res = await fetch(url, {
                 method: 'POST',
                 headers: Object.fromEntries(headers.entries()),
-                safeUrlAllow: [video.url!],
+                safeUrlAllow: [new URL(video.url!).hostname],
                 body: JSON.stringify({
                     name: lease.path,
                     record: lease.recording,
@@ -740,7 +740,7 @@ export default class VideoServiceControl {
             const res = await fetch(url, {
                 method: 'PATCH',
                 headers: Object.fromEntries(headers.entries()),
-                safeUrlAllow: [video.url!],
+                safeUrlAllow: [new URL(video.url!).hostname],
                 body: JSON.stringify({
                     name: lease.path,
                     source: lease.proxy,
@@ -760,7 +760,7 @@ export default class VideoServiceControl {
                 const res = await fetch(url, {
                     method: 'POST',
                     headers: Object.fromEntries(headers.entries()),
-                    safeUrlAllow: [video.url!],
+                    safeUrlAllow: [new URL(video.url!).hostname],
                     body: JSON.stringify({
                         name: lease.path,
                         source: lease.proxy,
@@ -792,7 +792,7 @@ export default class VideoServiceControl {
         const res = await fetch(url, {
             method: 'GET',
             headers: Object.fromEntries(headers.entries()),
-            safeUrlAllow: [video.url!],
+            safeUrlAllow: [new URL(video.url!).hostname],
         });
 
         if (res.ok) {
@@ -814,7 +814,7 @@ export default class VideoServiceControl {
         const res = await fetch(url, {
             method: 'GET',
             headers: Object.fromEntries(headers.entries()),
-            safeUrlAllow: [video.url!],
+            safeUrlAllow: [new URL(video.url!).hostname],
         });
 
         if (res.ok) {
@@ -860,7 +860,7 @@ export default class VideoServiceControl {
         await fetch(url, {
             method: 'DELETE',
             headers: Object.fromEntries(headers.entries()),
-            safeUrlAllow: [video.url!],
+            safeUrlAllow: [new URL(video.url!).hostname],
         });
 
         try {
