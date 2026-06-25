@@ -99,7 +99,7 @@
                 >
                     <TablerToggle
                         v-model='server.connection'
-                        label='Connection Enabled'
+                        label='Admin Connection Enabled'
                     />
                 </div>
                 <template v-if='regen && edit'>
