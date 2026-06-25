@@ -142,9 +142,6 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Initial configuration must include valid TAK Username & Password to set System Administrator');
             }
 
-            const prevUrl = config.server.url;
-            const prevAuth = config.server.auth;
-
             config.server = await config.models.Server.commit(config.server.id, {
                 ...req.body,
                 updated: sql`Now()`,
@@ -152,9 +149,9 @@ export default async function router(schema: Schema, config: Config) {
 
             // If the server URL or auth cert actually changed, all connections need to reconnect.
             // Otherwise just toggle the admin connection (connection 0) like a regular connection enable/disable.
-            const urlChanged = req.body.url !== prevUrl;
+            const urlChanged = req.body.url !== config.server.url;
             const authChanged = req.body.auth !== undefined && (
-                req.body.auth.cert !== prevAuth.cert || req.body.auth.key !== prevAuth.key
+                req.body.auth.cert !== config.server.auth.cert || req.body.auth.key !== config.server.auth.key
             );
 
             if (urlChanged || authChanged) {
