@@ -76,3 +76,13 @@ test('PATCH: api/server - connection: true restarts the admin connection', async
         assert.ifError(err);
     }
 });
+
+// Remove the admin connection from the pool so the retry loop doesn't keep
+// the event loop alive after the mock TAK server is shut down during landing.
+test('Cleanup: remove admin connection from pool', async () => {
+    if (flight.config!.conns.has(0)) {
+        flight.config!.conns.delete(0);
+    }
+});
+
+flight.landing();
