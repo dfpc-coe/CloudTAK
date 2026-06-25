@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.22.2 - 2026-06-25
+
+- :bug: Styled features are geojson features and should not have XML escaped characters in their human readable properties. This lead to a bug where CloudTAK would detect a mission change as the escaped XML did not match the unescaped XML returned by TAK server, resulting in a constant barrage of change messages.
+
 ### v13.22.1 - 2026-06-25
 
 - :arrow_up: Update node-ssrf@1.5
