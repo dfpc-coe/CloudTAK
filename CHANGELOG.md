@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.22.1 - 2026-06-25
+
+- :arrow_up: Update node-ssrf@1.5
+
 ### v13.22.0 - 2026-06-25
 
 - :rocket: Allow an admin to puase the Admin Server Connection
