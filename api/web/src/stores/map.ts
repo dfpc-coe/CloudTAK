@@ -878,6 +878,12 @@ export const useMapStore = defineStore('cloudtak', {
             this.coordFormat = (await ProfileConfig.get('display_coordinate'))?.value || 'dd';
             this.defaultPointType = (await ProfileConfig.get('tak_type'))?.value || 'u-d-p';
 
+            // Colour the self-location puck with the user's TAK team colour to
+            // match the previously rendered self CoT marker.
+            const takGroup = (await ProfileConfig.get('tak_group'))?.value;
+            const geolocateControl = (this._map as mapgl.Map & { _geolocateControl?: GeolocateControl })._geolocateControl;
+            if (geolocateControl) geolocateControl.setTeam(typeof takGroup === 'string' ? takGroup : undefined);
+
             const icon_rotation = (await ProfileConfig.get('display_icon_rotation'))?.value;
 
             // Initialize icon rotation setting after overlays are loaded

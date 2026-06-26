@@ -33,6 +33,27 @@ const defaultOptions: ResolvedOptions = {
 
 const STYLE_ELEMENT_ID = 'cloudtak-geolocate-styles';
 
+const DEFAULT_PUCK_COLOR = '#1da1f2';
+
+// Mirrors the team -> marker-color mapping used for rendered CoT markers in
+// base/cot.ts so the self puck matches the previous self-location marker.
+const TEAM_COLORS: Record<string, string> = {
+    Yellow: '#f59f00',
+    Orange: '#f76707',
+    Magenta: '#ea4c89',
+    Red: '#d63939',
+    Maroon: '#bd081c',
+    Purple: '#ae3ec9',
+    'Dark Blue': '#0054a6',
+    Blue: '#4299e1',
+    Cyan: '#17a2b8',
+    Teal: '#0ca678',
+    Green: '#74b816',
+    'Dark Green': '#2fb344',
+    Brown: '#dc4e41',
+    White: '#ffffff'
+};
+
 /**
  * A MapLibre {@link IControl} that renders a live user-location puck (dot,
  * accuracy circle and compass heading cone).
@@ -61,6 +82,7 @@ export class GeolocateControl implements IControl {
     private container?: HTMLElement;
 
     private puckElement?: HTMLElement;
+    private dotElement?: HTMLElement;
     private headingElement?: HTMLElement;
     private circleElement?: HTMLElement;
 
@@ -70,6 +92,7 @@ export class GeolocateControl implements IControl {
     private lastLngLat: LngLat | null = null;
     private accuracy = 0;
     private heading: number | null = null;
+    private color = DEFAULT_PUCK_COLOR;
 
     constructor(options: GeolocateControlOptions = {}) {
         this.options = {
@@ -150,6 +173,22 @@ export class GeolocateControl implements IControl {
         this.updateHeadingRotation();
     }
 
+    /**
+     * Set the puck colour from a TAK team/group name (e.g. `"Cyan"`). Unknown or
+     * missing teams fall back to white, matching the rendered self CoT marker.
+     */
+    setTeam(team?: string): void {
+        this.setColor(team && TEAM_COLORS[team] ? TEAM_COLORS[team] : '#ffffff');
+    }
+
+    /**
+     * Set the puck colour directly as a `#rrggbb` hex string.
+     */
+    setColor(color: string): void {
+        this.color = color;
+        this.applyColor();
+    }
+
     private setupMarkers(): void {
         if (this.options.showAccuracyCircle) {
             const circle = document.createElement('div');
@@ -175,8 +214,11 @@ export class GeolocateControl implements IControl {
             puck.appendChild(dot);
 
             this.puckElement = puck;
+            this.dotElement = dot;
             this.dotMarker = new Marker({ element: puck });
         }
+
+        this.applyColor();
     }
 
     private render(): void {
@@ -222,6 +264,22 @@ export class GeolocateControl implements IControl {
         this.updateCircleRadius();
         this.updateHeadingRotation();
     };
+
+    private applyColor(): void {
+        if (this.dotElement) this.dotElement.style.backgroundColor = this.color;
+        if (this.headingElement) this.headingElement.style.borderBottomColor = GeolocateControl.rgba(this.color, 0.45);
+        if (this.circleElement) this.circleElement.style.backgroundColor = GeolocateControl.rgba(this.color, 0.2);
+    }
+
+    private static rgba(hex: string, alpha: number): string {
+        const match = /^#?([0-9a-f]{6})$/i.exec(hex);
+        if (!match) return hex;
+        const int = parseInt(match[1], 16);
+        const r = (int >> 16) & 255;
+        const g = (int >> 8) & 255;
+        const b = int & 255;
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
 
     private static injectStyles(): void {
         if (typeof document === 'undefined' || document.getElementById(STYLE_ELEMENT_ID)) return;
