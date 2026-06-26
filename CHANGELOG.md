@@ -16,6 +16,11 @@
 
 ### Pending Release
 
+### v13.24.0 - 2026-06-26
+
+- :tada: Permissions prompt for Firebase Notifications
+- :rocket: Hide style related properties - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1489
+
 ### v13.23.1 - 2026-06-26
 
 - :bug: Ensure non-CloudTAK assets don't result in a cache invalidation
