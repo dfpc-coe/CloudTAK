@@ -38,6 +38,13 @@ export default class KML implements Transform {
         localDir: string | null = null,
         visited: Set<string> = new Set(),
     ): Promise<ReturnType<typeof kml>['features']> {
+        // Strip a leading UTF-8 BOM (U+FEFF) - when present before the <?xml
+        // declaration xmldom reports the declaration as being at position 1
+        // and fails to parse the document.
+        if (kmlContent.charCodeAt(0) === 0xFEFF) {
+            kmlContent = kmlContent.slice(1);
+        }
+
         const dom = new DOMParser().parseFromString(kmlContent, 'text/xml');
         const allFeatures = kml(dom).features;
 
@@ -225,7 +232,34 @@ export default class KML implements Transform {
 
                     features.push(...linkedFeatures);
                 } catch (err) {
-                    console.warn(`NetworkLink ${normalized} not retrievable (${err})`);
+                    // `TypeError: fetch failed` hides the real reason (DNS, refused
+                    // connection, TLS, timeout) inside the error `cause` chain. Walk
+                    // the chain and surface every detail to aid debugging.
+                    const chain: string[] = [];
+                    let current: unknown = err;
+                    while (current instanceof Error) {
+                        const parts = [`${current.name}: ${current.message}`];
+                        const meta = current as { code?: string; errno?: number; syscall?: string; hostname?: string };
+                        if (meta.code) parts.push(`code=${meta.code}`);
+                        if (meta.errno !== undefined) parts.push(`errno=${meta.errno}`);
+                        if (meta.syscall) parts.push(`syscall=${meta.syscall}`);
+                        if (meta.hostname) parts.push(`hostname=${meta.hostname}`);
+                        chain.push(parts.join(' '));
+                        current = (current as { cause?: unknown }).cause;
+                    }
+
+                    const isTimeout = err instanceof Error && err.name === 'TimeoutError';
+
+                    console.warn(
+                        `NetworkLink ${normalized} not retrievable`
+                        + ` (depth=${depth}, timeout=${NETWORK_LINK_FETCH_TIMEOUT_MS}ms`
+                        + (isTimeout ? ', request exceeded timeout' : '')
+                        + `): ${chain.join(' <- caused by: ')}`,
+                    );
+
+                    if (err instanceof Error && err.stack) {
+                        console.warn(`NetworkLink ${normalized} stack:\n${err.stack}`);
+                    }
                 }
 
                 continue;
