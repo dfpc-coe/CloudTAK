@@ -3,7 +3,7 @@ import { liveQuery, type Subscription } from 'dexie';
 import { Preferences } from '@capacitor/preferences';
 import { StatusBar } from '@capacitor/status-bar';
 import KV from '../base/kv.ts';
-import { db } from '../database.ts';
+import { db, openDatabase, recreateDatabase } from '../database.ts';
 import Config from '../base/config.ts';
 import ServerManager from '../base/server.ts';
 import router from '../router.ts';
@@ -80,8 +80,7 @@ export const useAppStore = defineStore('cloudtak-app', {
         // when a different user logs in.
         async destroySession(): Promise<void> {
             await this.clearSession();
-            await db.delete();
-            await db.open();
+            await recreateDatabase();
         },
 
         applyTheme(style?: string): void {
@@ -140,6 +139,11 @@ export const useAppStore = defineStore('cloudtak-app', {
         // short-circuited with a redirect so callers can skip follow-up work.
         async bootstrap(): Promise<boolean> {
             this.loadingStage = 'Connecting to server…';
+
+            // Open the local database first, recovering from a corrupted
+            // IndexedDB store (a known iOS WKWebView failure mode) before any
+            // table is accessed during startup.
+            await openDatabase();
 
             if (!isNativePlatform()) {
                 await this.setServerUrl(window.location.origin);

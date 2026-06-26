@@ -38,9 +38,7 @@ export default class KML implements Transform {
         localDir: string | null = null,
         visited: Set<string> = new Set(),
     ): Promise<ReturnType<typeof kml>['features']> {
-        // Strip a leading UTF-8 BOM (U+FEFF) - when present before the <?xml
-        // declaration xmldom reports the declaration as being at position 1
-        // and fails to parse the document.
+        // Strip a leading (U+FEFF)
         if (kmlContent.charCodeAt(0) === 0xFEFF) {
             kmlContent = kmlContent.slice(1);
         }
@@ -232,9 +230,7 @@ export default class KML implements Transform {
 
                     features.push(...linkedFeatures);
                 } catch (err) {
-                    // `TypeError: fetch failed` hides the real reason (DNS, refused
-                    // connection, TLS, timeout) inside the error `cause` chain. Walk
-                    // the chain and surface every detail to aid debugging.
+                    // Return details about a "fetch failed"
                     const chain: string[] = [];
                     let current: unknown = err;
                     while (current instanceof Error) {

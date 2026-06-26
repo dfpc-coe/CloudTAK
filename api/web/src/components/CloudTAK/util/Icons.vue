@@ -85,6 +85,7 @@
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import IconCache from '../../../base/icon.ts';
+import { iconToBlob } from '../../../database.ts';
 import {
     TablerNone,
     TablerPager,
@@ -190,7 +191,7 @@ async function fetchList() {
         list.value = {
             total: filtered.length,
             items: page.map((icon) => {
-                const url = URL.createObjectURL(icon.data);
+                const url = URL.createObjectURL(iconToBlob(icon));
                 urls.value.push(url);
 
                 return {

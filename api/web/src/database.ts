@@ -19,7 +19,15 @@ export interface DBIcon {
     path: string;
     type2525b: string | null;
     updated: string;
-    data: Blob;
+    /**
+     * Raw image bytes. Stored as an ArrayBuffer (not a Blob) to avoid the
+     * WebKit/iOS IndexedDB bug that corrupts Blobs persisted in IndexedDB and
+     * surfaces as "UnknownError: an internal error was encountered in the
+     * Indexed Database server". Use `iconToBlob()` to reconstruct a Blob.
+     */
+    data: ArrayBuffer;
+    /** MIME type of `data`, used to reconstruct a Blob on read. */
+    mime: string;
 }
 
 export interface DBFeature {
@@ -225,8 +233,11 @@ export interface DBSprite {
     updated: number;
     /** MapLibre sprite layout JSON */
     json: Record<string, unknown>;
-    /** Spritesheet PNG */
-    image: Blob;
+    /**
+     * Spritesheet PNG bytes. Stored as an ArrayBuffer (not a Blob) to avoid the
+     * WebKit/iOS IndexedDB Blob-corruption bug.
+     */
+    image: ArrayBuffer;
 }
 
 export type DatabaseType = Dexie & {
@@ -298,3 +309,74 @@ db.version(2).stores({
     mission_template: 'id, name',
     mission_template_log: 'id, template, [template+id]',
 });
+
+// v3: migrate icon/sprite binary payloads from Blob to ArrayBuffer to avoid the
+// WebKit/iOS IndexedDB "UnknownError" bug. The icon, iconset and sprite caches
+// are cleared so they re-hydrate from the API in the new ArrayBuffer format, and
+// the icon hydrate marker is removed so hydration re-runs on next launch.
+db.version(3).stores({
+    icon: 'name, iconset',
+    iconset: 'uid, name',
+    sprite: 'id',
+}).upgrade(async (tx) => {
+    await tx.table('icon').clear();
+    await tx.table('iconset').clear();
+    await tx.table('sprite').clear();
+    await tx.table('cache').delete('iconsets:hydrated');
+});
+
+/**
+ * Reconstruct a Blob from a cached icon. Icon bytes are persisted as an
+ * ArrayBuffer (see {@link DBIcon}) to avoid the WebKit/iOS IndexedDB Blob bug,
+ * so any consumer needing a Blob or object URL must rebuild it here.
+ */
+export function iconToBlob(icon: Pick<DBIcon, 'data' | 'mime'>): Blob {
+    return new Blob([icon.data], { type: icon.mime });
+}
+
+/**
+ * Detect the WebKit/iOS IndexedDB corruption error. On iOS WKWebView the
+ * IndexedDB store can become corrupted, surfacing as "UnknownError: an internal
+ * error was encountered in the Indexed Database server" (and occasionally as an
+ * InvalidStateError when a connection is unexpectedly closed).
+ */
+export function isIndexedDBCorruptionError(err: unknown): boolean {
+    if (!err || typeof err !== 'object') return false;
+    const name = (err as { name?: string }).name ?? '';
+    const message = String((err as { message?: string }).message ?? '');
+    return (
+        name === 'UnknownError'
+        || name === 'InvalidStateError'
+        || /internal error was encountered in the Indexed Database server/i.test(message)
+    );
+}
+
+/**
+ * Close, delete and recreate the local database. This is the only reliable
+ * recovery from a corrupted IndexedDB on iOS WKWebView. It is safe here because
+ * every table is either a rebuildable cache or re-fetched after login.
+ */
+export async function recreateDatabase(): Promise<void> {
+    try {
+        db.close();
+    } catch {
+        /* ignore close failures on an already-broken connection */
+    }
+    await db.delete();
+    await db.open();
+}
+
+/**
+ * Open the local database, recovering automatically from a corrupted IndexedDB
+ * by deleting and recreating it. Call this before the first database access so
+ * a corrupt store does not wedge app startup.
+ */
+export async function openDatabase(): Promise<void> {
+    try {
+        if (!db.isOpen()) await db.open();
+    } catch (err) {
+        if (!isIndexedDBCorruptionError(err)) throw err;
+        console.error('Local database appears corrupted; recreating it', err);
+        await recreateDatabase();
+    }
+}

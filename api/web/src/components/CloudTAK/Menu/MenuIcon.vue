@@ -161,7 +161,7 @@ import { IconPencil } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import ProfileConfig from '../../../base/profile.ts';
 import type { Iconset } from '../../../types.ts';
-import type { DBIcon } from '../../../database.ts';
+import { iconToBlob, type DBIcon } from '../../../database.ts';
 
 interface IconDraft {
     id?: number;
@@ -371,7 +371,7 @@ function isLegacyNumericRoute(): boolean {
 
 function toIconDraft(iconRow: DBIcon): IconDraft {
     revokeIconObjectUrl();
-    iconObjectUrl.value = URL.createObjectURL(iconRow.data);
+    iconObjectUrl.value = URL.createObjectURL(iconToBlob(iconRow));
 
     return {
         name: iconRow.path,

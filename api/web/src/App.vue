@@ -190,6 +190,7 @@ import { supportsServiceWorker } from './base/capacitor.ts';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
 import { getPageServiceWorkerBuildId, markUpdateRequestedByThisTab } from './base/service-worker.ts';
+import { isIndexedDBCorruptionError, recreateDatabase } from './database.ts';
 
 import { useAppStore } from './stores/app.ts';
 import { useMapStore } from './stores/map.ts';
@@ -198,6 +199,9 @@ const route = useRoute();
 
 const appStore = useAppStore();
 const mapStore = useMapStore();
+
+// Guards a single IndexedDB recovery + reload per tab session to avoid loops.
+const IDB_RECOVERY_ATTEMPTED_KEY = 'idb-recovery-attempted';
 
 const toastNotifications = useObservable(
     from(liveQuery(async () => {
@@ -268,7 +272,26 @@ onMounted(async () => {
 
     // Register before any awaits so early promise rejections are captured
     window.addEventListener('unhandledrejection', (e) => {
-        error.value = e.reason instanceof Error ? e.reason : new Error(String(e.reason));
+        const reason = e.reason instanceof Error ? e.reason : new Error(String(e.reason));
+
+        // A corrupted IndexedDB store (a known iOS WKWebView failure mode)
+        // throws "UnknownError: an internal error was encountered in the Indexed
+        // Database server" from arbitrary async DB calls. Recover by dropping
+        // and recreating the (rebuildable) local database, then reload once.
+        // The session guard prevents a reload loop if recovery doesn't stick.
+        if (
+            isIndexedDBCorruptionError(e.reason)
+            && !sessionStorage.getItem(IDB_RECOVERY_ATTEMPTED_KEY)
+        ) {
+            sessionStorage.setItem(IDB_RECOVERY_ATTEMPTED_KEY, '1');
+            console.error('Detected corrupted IndexedDB at runtime; recreating local database and reloading', reason);
+            void recreateDatabase()
+                .catch((err) => console.error('Failed to recreate local database', err))
+                .finally(() => window.location.reload());
+            return;
+        }
+
+        error.value = reason;
     });
 
     if (supportsServiceWorker()) {
@@ -286,6 +309,9 @@ onMounted(async () => {
     }
 
     if (completed) {
+        // Startup succeeded, so any prior IndexedDB recovery has stuck; clear the
+        // guard so an independent corruption later can trigger recovery again.
+        sessionStorage.removeItem(IDB_RECOVERY_ATTEMPTED_KEY);
         checkServiceWorkerUpdates();
     }
 });
