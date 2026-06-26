@@ -31,7 +31,7 @@ RUN if [ ! -z "$WEB_PLUGINS" ]; then \
     fi
 
 RUN cd web \
-    && npm install \
+    && npm install --legacy-peer-deps \
     && npm run lint \
     && npm run check \
     && npm run build \

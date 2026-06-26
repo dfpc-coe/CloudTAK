@@ -59,10 +59,21 @@ export const useAppStore = defineStore('cloudtak-app', {
             await Preferences.set({ key: 'serverUrl', value: serverUrl });
         },
 
-        async persistSession(opts: { token: string; username: string }): Promise<void> {
+        async persistSession(opts: { token: string; username: string; session: string }): Promise<void> {
             await Preferences.set({ key: 'token', value: opts.token });
             await KV.generate('token', opts.token);
             await KV.generate('username', opts.username);
+
+            // The device/session ID is returned explicitly by the login API.
+            // Persist it in Preferences for the main thread and KV so the
+            // worker (which cannot read Preferences) can access it too.
+            await Preferences.set({ key: 'sessionId', value: opts.session });
+            await KV.generate('sessionId', opts.session);
+        },
+
+        async getSessionId(): Promise<string | undefined> {
+            const { value } = await Preferences.get({ key: 'sessionId' });
+            return value ?? undefined;
         },
 
         async getUsername(): Promise<string | undefined> {
@@ -73,7 +84,9 @@ export const useAppStore = defineStore('cloudtak-app', {
         // after token expiry does not need to resynchronize all data.
         async clearSession(): Promise<void> {
             await Preferences.remove({ key: 'token' });
+            await Preferences.remove({ key: 'sessionId' });
             await KV.delete('token');
+            await KV.delete('sessionId');
         },
 
         // Clears the token AND wipes the database. Used on explicit sign-out or

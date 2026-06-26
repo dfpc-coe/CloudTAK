@@ -12,6 +12,7 @@ import { Preferences } from '@capacitor/preferences';
 import { CapacitorHttp } from '@capacitor/core';
 import { defineStore } from 'pinia'
 import { markRaw } from 'vue';
+import router from '../router.ts';
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import IconManager from './modules/icons.ts';
 import MenuManager from './modules/menu.ts';
@@ -20,6 +21,7 @@ import { useDeviceStore } from './device.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
+import GeolocateControl from '../geolocate/main.ts';
 import { syncPushToken } from '../base/push.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
@@ -248,6 +250,26 @@ export const useMapStore = defineStore('cloudtak', {
                     void this.submitLocationHttp(position);
                 }
             });
+        },
+        syncGeolocateControl: function() {
+            if (!this._map) return;
+
+            const control = (this._map as mapgl.Map & { _geolocateControl?: GeolocateControl })._geolocateControl;
+            if (!control) return;
+
+            if (this.location === LocationState.Disabled || !this.gpsCoordinates) {
+                control.setLocation(null);
+            } else {
+                control.setLocation(this.gpsCoordinates, this.locationAccuracy);
+            }
+        },
+        openSelfFeature: async function() {
+            try {
+                const uid = await this.worker.profile.uid();
+                if (uid) await router.push(`/cot/${uid}`);
+            } catch (err) {
+                console.error('Failed to open self location feature', err);
+            }
         },
         startWorker: function() {
             if (this._rawWorker) return;
@@ -595,11 +617,16 @@ export const useMapStore = defineStore('cloudtak', {
             this.container = container;
 
             this._boundOnDeviceOrientation = (event: DeviceOrientationEvent): void => {
-                if (!this.userOrientationMode) return;
-
                 const heading = deviceStore.orientation.getHeading(event);
 
-                if (heading !== null && this.map) {
+                // Drive the self-location puck's heading cone regardless of
+                // whether the map itself is being rotated to match.
+                const control = this._map
+                    ? (this._map as mapgl.Map & { _geolocateControl?: GeolocateControl })._geolocateControl
+                    : undefined;
+                if (control) control.setHeading(heading);
+
+                if (this.userOrientationMode && heading !== null && this._map) {
                     this.map.setBearing(heading);
                 }
             };
@@ -656,6 +683,7 @@ export const useMapStore = defineStore('cloudtak', {
                     if (this.location !== LocationState.Live) {
                         this.locationAccuracy = undefined;
                     }
+                    this.syncGeolocateControl();
                 } else if (msg.type === WorkerMessageType.Profile_Location_Coordinates) {
                     this.locationAccuracy = msg.body.accuracy;
                     if (msg.body.coordinates) {
@@ -664,9 +692,10 @@ export const useMapStore = defineStore('cloudtak', {
                             lat: msg.body.coordinates[1]
                         };
                     }
-                    if (!this.manualLocationMode) {
+                    if (!this.manualLocationMode && this.location !== LocationState.Preset) {
                         this.location = LocationState.Live;
                     }
+                    this.syncGeolocateControl();
                 } else if (msg.type === WorkerMessageType.Profile_Callsign) {
                     this.callsign = msg.body.callsign;
                 } else if (msg.type === WorkerMessageType.Profile_Display_Zoom) {
@@ -796,6 +825,18 @@ export const useMapStore = defineStore('cloudtak', {
             map.addControl(scaleControl, 'bottom-right');
             (map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl })._scaleControl = scaleControl;
 
+            // Add the self-location puck control. Position/accuracy/heading are
+            // fed from the existing location pipeline (see syncGeolocateControl
+            // and the device orientation handler). Clicking it opens the self
+            // CoT in the CoTView sidebar.
+            const geolocateControl = new GeolocateControl({
+                onClick: () => {
+                    void this.openSelfFeature();
+                }
+            });
+            map.addControl(geolocateControl, 'top-right');
+            (map as mapgl.Map & { _geolocateControl?: GeolocateControl })._geolocateControl = geolocateControl;
+
             map.once('idle', async () => {
                 const displayProjection = await ProfileConfig.get('display_projection');
 
@@ -835,6 +876,7 @@ export const useMapStore = defineStore('cloudtak', {
                     lat: loc.coordinates[1]
                 };
             }
+            this.syncGeolocateControl();
 
             await this.worker.profile.load();
 

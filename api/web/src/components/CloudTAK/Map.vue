@@ -101,140 +101,139 @@
             </div>
             <div
                 v-if='mode === "Default"'
-                class='position-absolute beginning-0 text-white'
+                class='position-absolute'
                 style='
-                    top: 60px;
+                    top: 70px;
+                    left: 8px;
                 '
             >
-                <div
-                    class='border'
-                    style='
-                        z-index: 1;
-                        width: 40px;
-                        background-color: rgba(0, 0, 0, 0.2);
-                        border-radius: 0px 0px 6px 0px;
-                    '
-                >
-                    <div>
+                <div class='cloudtak-ctrl-group'>
+                    <div
+                        v-tooltip='"Search"'
+                        role='button'
+                        tabindex='0'
+                        title='Search Button'
+                        class='cloudtak-ctrl-btn'
+                        @click='searchBoxShown = !searchBoxShown'
+                    >
                         <IconSearch
-                            v-tooltip='"Search"'
-                            tabindex='0'
-                            title='Search Button'
-                            :size='32'
+                            :size='24'
                             stroke='2'
-                            :color='searchBoxShown ? "#1E90FF" : "#ffffff"'
-                            style='margin: 3px 2px'
-                            class='cursor-pointer cloudtak-hover'
-                            @click='searchBoxShown = !searchBoxShown'
+                            :color='searchBoxShown ? "#1E90FF" : undefined'
                         />
                     </div>
 
                     <div
-                        style='margin: 3px 3px'
-                        class='cursor-pointer cloudtak-hover'
+                        role='button'
+                        tabindex='0'
+                        class='cloudtak-ctrl-btn'
                         @click='toggleCompass'
                     >
                         <IconCompass
                             v-if='mapStore.userOrientationMode'
                             v-tooltip='"Orient North"'
-                            tabindex='0'
-                            :size='32'
+                            :size='24'
                             stroke='2'
                             color='#1E90FF'
                         />
                         <template v-else>
                             <IconCircleArrowUp
                                 v-tooltip='"Snap to North"'
-                                tabindex='0'
                                 :alt='`Map Rotated to ${humanBearing}`'
                                 :transform='`rotate(${360 - mapStore.bearing})`'
-                                :size='32'
+                                :size='24'
                                 stroke='2'
-                                :color='mapStore.bearing === 0 ? "#ffffff" : undefined'
                             />
                             <div
                                 v-if='mapStore.bearing !== 0'
-                                class='text-center'
+                                class='text-center cloudtak-ctrl-label'
                                 v-text='humanBearing'
                             />
                         </template>
                     </div>
+
                     <div
                         v-if='mapStore.pitch !== 0'
-                        style='margin: 3px 3px'
-                        class='cursor-pointer cloudtak-hover'
+                        role='button'
+                        tabindex='0'
+                        class='cloudtak-ctrl-btn'
                         @click='mapStore.map.setPitch(0)'
                     >
                         <IconAngle
                             v-tooltip='"Snap Flat"'
-                            tabindex='0'
                             :alt='`Map Pitch to ${humanPitch}`'
-                            :size='32'
+                            :size='24'
                             stroke='2'
                         />
                         <div
-                            v-if='mapStore.pitch !== 0'
-                            class='text-center'
+                            class='text-center cloudtak-ctrl-label'
                             v-text='humanPitch'
                         />
                     </div>
-                    <div
-                        v-if='displayZoom'
-                    >
-                        <IconPlus
+
+                    <template v-if='displayZoom'>
+                        <div
                             v-tooltip='"Zoom In"'
                             role='button'
                             tabindex='0'
                             title='Zoom In Button'
-                            :size='32'
-                            stroke='2'
-                            class='cursor-pointer cloudtak-hover'
-                            style='margin: 3px 3px'
+                            class='cloudtak-ctrl-btn'
                             @click='mapStore.map.setZoom(mapStore.map.getZoom() + 1);'
-                        />
-                        <IconMinus
+                        >
+                            <IconPlus
+                                :size='24'
+                                stroke='2'
+                            />
+                        </div>
+                        <div
                             v-tooltip='"Zoom Out"'
                             role='button'
                             tabindex='0'
                             title='Zoom Out Button'
-                            :size='32'
-                            stroke='2'
-                            class='cursor-pointer cloudtak-hover'
-                            style='margin: 3px 3px'
+                            class='cloudtak-ctrl-btn'
                             @click='mapStore.map.setZoom(mapStore.map.getZoom() - 1);'
-                        />
-                    </div>
+                        >
+                            <IconMinus
+                                :size='24'
+                                stroke='2'
+                            />
+                        </div>
+                    </template>
 
-                    <IconMountain
+                    <div
                         v-if='hasTerrain'
                         v-tooltip='mapStore.terrainEnabled ? "Disable 3D Terrain" : "Enable 3D Terrain"'
                         role='button'
                         tabindex='0'
                         title='3D Terrain'
-                        :size='32'
-                        stroke='2'
-                        class='cursor-pointer cloudtak-hover'
-                        :color='mapStore.terrainEnabled ? "#1E90FF" : "#FFFFFF"'
-                        style='margin: 3px 3px'
+                        class='cloudtak-ctrl-btn'
                         @click='mapStore.terrainEnabled ? mapStore.removeTerrain() : mapStore.addTerrain()'
-                    />
+                    >
+                        <IconMountain
+                            :size='24'
+                            stroke='2'
+                            :color='mapStore.terrainEnabled ? "#1E90FF" : undefined'
+                        />
+                    </div>
 
-                    <IconLockAccess
+                    <div
                         v-if='
                             (mapStore.radial.cot && mapStore.locked.length >= 2)
                                 || (!mapStore.radial.cot && mapStore.locked.length >= 1)
                         '
                         v-tooltip='"Map is locked to marker - Click to Unlock"'
                         title='Map is locked to marker - Click to Unlock'
-                        class='cursor-pointer cloudtak-hover'
                         role='button'
                         tabindex='0'
-                        color='red'
-                        :size='32'
-                        stroke='2'
-                        style='margin: 3px 3px'
+                        class='cloudtak-ctrl-btn'
                         @click='mapStore.locked.splice(0, mapStore.locked.length)'
-                    />
+                    >
+                        <IconLockAccess
+                            color='red'
+                            :size='24'
+                            stroke='2'
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -943,6 +942,69 @@ async function handleRadial(event: string): Promise<void> {
 
 .alert-pulse {
     animation: alert-pulse 1.2s ease-in-out infinite;
+}
+
+.cloudtak-ctrl-group {
+    display: flex;
+    flex-direction: column;
+    width: 40px;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+html[data-bs-theme='dark'] .cloudtak-ctrl-group {
+    background-color: rgba(40, 53, 71, 0.95);
+    color: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+html[data-bs-theme='light'] .cloudtak-ctrl-group {
+    background-color: rgba(255, 255, 255, 0.95);
+    color: var(--tblr-body-color);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.cloudtak-ctrl-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 7px 0;
+    cursor: pointer;
+    color: inherit;
+    transition: background-color 0.15s ease;
+}
+
+.cloudtak-ctrl-btn:focus-visible {
+    outline: none;
+}
+
+html[data-bs-theme='dark'] .cloudtak-ctrl-btn:not(:first-child) {
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+html[data-bs-theme='light'] .cloudtak-ctrl-btn:not(:first-child) {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+html[data-bs-theme='dark'] .cloudtak-ctrl-btn:hover,
+html[data-bs-theme='dark'] .cloudtak-ctrl-btn:focus-visible,
+html[data-bs-theme='dark'] .cloudtak-ctrl-btn:focus-within {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+html[data-bs-theme='light'] .cloudtak-ctrl-btn:hover,
+html[data-bs-theme='light'] .cloudtak-ctrl-btn:focus-visible,
+html[data-bs-theme='light'] .cloudtak-ctrl-btn:focus-within {
+    background-color: rgba(0, 0, 0, 0.06);
+}
+
+.cloudtak-ctrl-label {
+    font-size: 11px;
+    line-height: 1;
+    margin-top: 2px;
 }
 
 .maplibregl-ctrl-scale {
