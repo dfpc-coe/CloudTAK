@@ -185,7 +185,7 @@ import Subscription from '../../../base/subscription.ts';
 import RadialMenu from './RadialMenu.js';
 import './RadialMenu.css';
 import { useMapStore } from '../../../stores/map.ts';
-import mapgl from 'maplibre-gl';
+import * as mapgl from 'maplibre-gl';
 import { canCutOverlayFeature } from '../util/featureCut.ts';
 
 interface RadialMenuItem {

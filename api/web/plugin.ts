@@ -10,7 +10,7 @@ import type { BottomBarItemConfig } from './src/stores/modules/bottombar.ts';
 import { db, type DBFeature } from './src/database.ts';
 import { liveQuery } from 'dexie';
 import { from, type Observable } from 'rxjs';
-import mapgl from 'maplibre-gl';
+import * as mapgl from 'maplibre-gl';
 
 const FloatingGeneric = defineAsyncComponent(() => import('./src/components/CloudTAK/util/FloatingGeneric.vue'));
 

@@ -12,7 +12,7 @@ import {
 } from 'terra-draw-route-snap-mode'
 
 import { v4 as randomUUID } from 'uuid';
-import mapgl from 'maplibre-gl'
+import * as mapgl from 'maplibre-gl'
 import pointOnFeature from '@turf/point-on-feature';
 import { coordEach } from '@turf/meta';
 import { distance } from '@turf/distance';

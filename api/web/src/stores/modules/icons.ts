@@ -3,7 +3,7 @@
  */
 import { Preferences } from '@capacitor/preferences';
 import ms from 'milsymbol'
-import mapgl from 'maplibre-gl'
+import * as mapgl from 'maplibre-gl'
 import Icon, { type IconHydrateResult } from '../../base/icon.ts'
 import IconsetManager from '../../base/iconset.ts';
 import type { Map as MapLibreMap } from 'maplibre-gl';
@@ -12,6 +12,9 @@ import { db, type DBIconset, type DBSprite } from '../../database.ts';
 
 /** Image id for the on-demand fallback when an iconset icon isn't available locally. */
 const FALLBACK_IMAGE_ID = '__cloudtak_fallback_point__';
+
+/** Target render width (px) used when rasterizing SVG iconset icons; height preserves the source aspect ratio. */
+const SVG_RENDER_WIDTH = 32;
 
 /**
  * Custom MapLibre protocol used to serve built-in spritesheets out of Dexie
@@ -235,7 +238,7 @@ export default class IconManager {
                 const row = await Icon.get(id);
 
                 if (row) {
-                    const bitmap = await createImageBitmap(row.data);
+                    const bitmap = await this.decodeIconBlob(row.data);
                     if (!this.map.hasImage(id)) {
                         this.map.addImage(id, bitmap);
                     }
@@ -261,6 +264,103 @@ export default class IconManager {
 
         this.inflightImage.set(id, work);
         return work;
+    }
+
+    /**
+     * Decode an iconset blob into an `ImageBitmap`.
+     *
+     * Raster formats (PNG/JPEG/...) decode directly via `createImageBitmap`.
+     * SVG blobs need special handling: `createImageBitmap` cannot decode
+     * `image/svg+xml` blobs in some browsers (notably Firefox, which rejects
+     * with a `DOMException`), so those are rasterized through an
+     * `HTMLImageElement` + `<canvas>` instead.
+     */
+    private async decodeIconBlob(blob: Blob): Promise<ImageBitmap> {
+        if (blob.type === 'image/svg+xml') {
+            return await this.decodeSvgBlob(blob);
+        }
+
+        try {
+            return await createImageBitmap(blob);
+        } catch {
+            // Fall back to the canvas rasterization path for blobs that
+            // `createImageBitmap` can't decode directly (e.g. SVGs served
+            // without an accurate MIME type).
+            return await this.decodeSvgBlob(blob);
+        }
+    }
+
+    /**
+     * Rasterize an SVG blob into an `ImageBitmap` via an `HTMLImageElement`
+     * drawn onto a `<canvas>`. Many iconset SVGs only declare a `viewBox` and
+     * no intrinsic `width`/`height`; without an explicit size browsers fall
+     * back to a 300x150 default, so the size is derived from the viewBox and
+     * set explicitly before rasterizing.
+     */
+    private async decodeSvgBlob(blob: Blob): Promise<ImageBitmap> {
+        const text = await blob.text();
+
+        const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+        const svgEl = doc.documentElement;
+
+        if (!svgEl || svgEl.nodeName.toLowerCase() !== 'svg') {
+            throw new Error('Invalid SVG icon payload');
+        }
+
+        let width = parseFloat(svgEl.getAttribute('width') ?? '');
+        let height = parseFloat(svgEl.getAttribute('height') ?? '');
+
+        if (!(width > 0) || !(height > 0)) {
+            const viewBox = (svgEl.getAttribute('viewBox') ?? '')
+                .split(/[\s,]+/)
+                .map(Number);
+
+            if (viewBox.length === 4 && viewBox[2] > 0 && viewBox[3] > 0) {
+                width = viewBox[2];
+                height = viewBox[3];
+            }
+        }
+
+        if (!(width > 0) || !(height > 0)) {
+            width = SVG_RENDER_WIDTH;
+            height = SVG_RENDER_WIDTH;
+        }
+
+        // Rasterize at a fixed 32px width so icons render consistently, while
+        // preserving the source aspect ratio.
+        const scale = SVG_RENDER_WIDTH / width;
+        const renderWidth = Math.max(1, Math.round(width * scale));
+        const renderHeight = Math.max(1, Math.round(height * scale));
+
+        svgEl.setAttribute('width', String(renderWidth));
+        svgEl.setAttribute('height', String(renderHeight));
+
+        const normalized = new XMLSerializer().serializeToString(svgEl);
+        const url = URL.createObjectURL(new Blob([normalized], { type: 'image/svg+xml' }));
+
+        try {
+            const img = new Image();
+            img.decoding = 'async';
+
+            await new Promise<void>((resolve, reject) => {
+                img.onload = () => { resolve(); };
+                img.onerror = () => { reject(new Error('Failed to decode SVG icon')); };
+                img.src = url;
+            });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = renderWidth;
+            canvas.height = renderHeight;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) throw new Error('Canvas 2D context unavailable for SVG icon');
+
+            ctx.drawImage(img, 0, 0, renderWidth, renderHeight);
+
+            return await createImageBitmap(canvas);
+        } finally {
+            URL.revokeObjectURL(url);
+        }
     }
 
     private async reloadIconsetImages(uid: string): Promise<void> {
