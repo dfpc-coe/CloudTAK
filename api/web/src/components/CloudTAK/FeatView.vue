@@ -109,7 +109,7 @@
                                 </tr>
                             </thead>
                             <tbody class='cloudtak-accent'>
-                                <template v-if='displayProperties.length'>
+                                <template v-if='feature.properties && displayProperties.length'>
                                     <tr
                                         v-for='prop of displayProperties'
                                         :key='prop'

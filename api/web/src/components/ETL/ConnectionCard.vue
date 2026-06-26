@@ -2,7 +2,10 @@
     <div class='card-header'>
         <ConnectionStatus :connection='connection' />
 
-        <div class='mx-2 d-flex flex-column' style='min-width: 0; overflow: hidden;'>
+        <div
+            class='mx-2 d-flex flex-column'
+            style='min-width: 0; overflow: hidden;'
+        >
             <div
                 class='card-title m-0 text-truncate'
                 :class='{ "cursor-pointer": clickable }'
