@@ -16,6 +16,7 @@
     },
     "exclude": [],
     "include": [
+        "cli.ts",
         "src/"
     ]
 }
