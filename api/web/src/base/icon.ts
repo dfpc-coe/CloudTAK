@@ -187,7 +187,7 @@ async function syncBuiltinSprite(id: string, token: string): Promise<void> {
         if (!pngRes.ok) throw new Error(`sprite png ${pngRes.status}`);
 
         const json = await jsonRes.json() as Record<string, unknown>;
-        const image = await pngRes.arrayBuffer();
+        const image = await pngRes.blob();
 
         await db.sprite.put({
             id,
@@ -209,7 +209,7 @@ async function syncIconset(iconset: Iconset, token: string): Promise<void> {
     const rows: DBIcon[] = [];
     const prefix = `${iconset.uid}/`;
     for (const icon of list.items) {
-        const { data, mime } = dataUrlToBytes(icon.data);
+        const blob = dataUrlToBlob(icon.data);
         const sourcePath = icon.path && icon.path.startsWith(prefix)
             ? icon.path.slice(prefix.length)
             : icon.name;
@@ -221,8 +221,7 @@ async function syncIconset(iconset: Iconset, token: string): Promise<void> {
             path,
             type2525b: icon.type2525b ?? null,
             updated: icon.updated,
-            data,
-            mime
+            data: blob
         });
     }
 
@@ -237,7 +236,7 @@ function stripExt(name: string): string {
     return name.replace(/\.(png|svg|jpg|jpeg|gif)$/i, '');
 }
 
-function dataUrlToBytes(data: string): { data: ArrayBuffer; mime: string } {
+function dataUrlToBlob(data: string): Blob {
     let mime = 'image/png';
     let base64 = data;
 
@@ -255,5 +254,5 @@ function dataUrlToBytes(data: string): { data: ArrayBuffer; mime: string } {
         bytes[i] = binary.charCodeAt(i);
     }
 
-    return { data: bytes.buffer, mime };
+    return new Blob([bytes], { type: mime });
 }

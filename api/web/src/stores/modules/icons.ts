@@ -8,7 +8,7 @@ import Icon, { type IconHydrateResult } from '../../base/icon.ts'
 import IconsetManager from '../../base/iconset.ts';
 import type { Map as MapLibreMap } from 'maplibre-gl';
 import { stdurl } from '../../std.ts';
-import { db, iconToBlob, type DBIconset, type DBSprite } from '../../database.ts';
+import { db, type DBIconset, type DBSprite } from '../../database.ts';
 
 /** Image id for the on-demand fallback when an iconset icon isn't available locally. */
 const FALLBACK_IMAGE_ID = '__cloudtak_fallback_point__';
@@ -108,7 +108,7 @@ export default class IconManager {
                 return { data: row.json };
             }
 
-            return { data: row.image };
+            return { data: await row.image.arrayBuffer() };
         });
     }
 
@@ -235,7 +235,7 @@ export default class IconManager {
                 const row = await Icon.get(id);
 
                 if (row) {
-                    const bitmap = await createImageBitmap(iconToBlob(row));
+                    const bitmap = await createImageBitmap(row.data);
                     if (!this.map.hasImage(id)) {
                         this.map.addImage(id, bitmap);
                     }
@@ -488,7 +488,7 @@ async function fetchAndCacheSprite(id: string): Promise<DBSprite> {
     if (!pngRes.ok) throw new Error(`Failed to load sprite '${id}' png (${pngRes.status})`);
 
     const json = await jsonRes.json() as Record<string, unknown>;
-    const image = await pngRes.arrayBuffer();
+    const image = await pngRes.blob();
 
     const row: DBSprite = { id, updated: Date.now(), json, image };
     await db.sprite.put(row);

@@ -19,15 +19,7 @@ export interface DBIcon {
     path: string;
     type2525b: string | null;
     updated: string;
-    /**
-     * Raw image bytes. Stored as an ArrayBuffer (not a Blob) to avoid the
-     * WebKit/iOS IndexedDB bug that corrupts Blobs persisted in IndexedDB and
-     * surfaces as "UnknownError: an internal error was encountered in the
-     * Indexed Database server". Use `iconToBlob()` to reconstruct a Blob.
-     */
-    data: ArrayBuffer;
-    /** MIME type of `data`, used to reconstruct a Blob on read. */
-    mime: string;
+    data: Blob;
 }
 
 export interface DBFeature {
@@ -233,11 +225,8 @@ export interface DBSprite {
     updated: number;
     /** MapLibre sprite layout JSON */
     json: Record<string, unknown>;
-    /**
-     * Spritesheet PNG bytes. Stored as an ArrayBuffer (not a Blob) to avoid the
-     * WebKit/iOS IndexedDB Blob-corruption bug.
-     */
-    image: ArrayBuffer;
+    /** Spritesheet PNG */
+    image: Blob;
 }
 
 export type DatabaseType = Dexie & {
@@ -309,30 +298,6 @@ db.version(2).stores({
     mission_template: 'id, name',
     mission_template_log: 'id, template, [template+id]',
 });
-
-// v3: migrate icon/sprite binary payloads from Blob to ArrayBuffer to avoid the
-// WebKit/iOS IndexedDB "UnknownError" bug. The icon, iconset and sprite caches
-// are cleared so they re-hydrate from the API in the new ArrayBuffer format, and
-// the icon hydrate marker is removed so hydration re-runs on next launch.
-db.version(3).stores({
-    icon: 'name, iconset',
-    iconset: 'uid, name',
-    sprite: 'id',
-}).upgrade(async (tx) => {
-    await tx.table('icon').clear();
-    await tx.table('iconset').clear();
-    await tx.table('sprite').clear();
-    await tx.table('cache').delete('iconsets:hydrated');
-});
-
-/**
- * Reconstruct a Blob from a cached icon. Icon bytes are persisted as an
- * ArrayBuffer (see {@link DBIcon}) to avoid the WebKit/iOS IndexedDB Blob bug,
- * so any consumer needing a Blob or object URL must rebuild it here.
- */
-export function iconToBlob(icon: Pick<DBIcon, 'data' | 'mime'>): Blob {
-    return new Blob([icon.data], { type: icon.mime });
-}
 
 /**
  * Detect the WebKit/iOS IndexedDB corruption error. On iOS WKWebView the

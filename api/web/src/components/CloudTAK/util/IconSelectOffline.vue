@@ -179,7 +179,7 @@
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import Icon from '../../../base/icon.ts';
 import Iconset from '../../../base/iconset.ts';
-import { iconToBlob, type DBIcon, type DBIconset } from '../../../database.ts';
+import type { DBIcon, DBIconset } from '../../../database.ts';
 import {
     IconInfoSquare,
     IconTrash,
@@ -294,7 +294,7 @@ function revokeSelectedUrl(): void {
 function selectIcon(icon: DBIcon): void {
     revokeSelectedUrl();
     selected.value = icon;
-    selectedUrl.value = URL.createObjectURL(iconToBlob(icon));
+    selectedUrl.value = URL.createObjectURL(icon.data);
     err.value = null;
     emit('update:modelValue', icon.name);
 }
@@ -336,7 +336,7 @@ async function fetchSelected(): Promise<void> {
     err.value = null;
     revokeSelectedUrl();
     selected.value = icon;
-    selectedUrl.value = URL.createObjectURL(iconToBlob(icon));
+    selectedUrl.value = URL.createObjectURL(icon.data);
 }
 
 async function fetchIconsets(): Promise<void> {
@@ -365,7 +365,7 @@ async function fetchIcons(): Promise<void> {
 
     const urls = new Map<string, string>();
     for (const icon of all) {
-        urls.set(icon.name, URL.createObjectURL(iconToBlob(icon)));
+        urls.set(icon.name, URL.createObjectURL(icon.data));
     }
     iconUrls.value = urls;
 
