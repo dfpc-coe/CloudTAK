@@ -3,7 +3,6 @@ import { std } from '../std.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts'
 import type { Feature, GroupChannel, Server, Profile, Profile_Update, FeaturePropertyCreator } from '../types.ts';
 import ProfileConfig from '../base/profile.ts';
-import KV from '../base/kv.ts';
 import ServerManager from '../base/server.ts';
 import GroupManager from '../base/group.ts';
 
@@ -21,10 +20,6 @@ export default class AtlasProfile {
     timerSelf: ReturnType<typeof setInterval> | undefined;
 
     username: string | null;
-
-    // Device/session ID (the JWT `s` claim) used to disambiguate the SA
-    // message UID between concurrent sessions of the same user.
-    sessionId: string | null;
 
     location: ProfileLocationState;
 
@@ -46,8 +41,6 @@ export default class AtlasProfile {
         this.timerSelf = undefined;
 
         this.username = null;
-
-        this.sessionId = null;
 
         this.location = {
             source: LocationState.Disabled,
@@ -100,9 +93,6 @@ export default class AtlasProfile {
         if (usernameConfig) {
             this.username = usernameConfig.value;
         }
-
-        // The device/session ID is persisted to KV by the login flow.
-        this.sessionId = (await KV.value('sessionId')) ?? null;
 
         this.updateLocation();
 
@@ -168,7 +158,6 @@ export default class AtlasProfile {
         this.profile_updated = undefined;
 
         this.username = null;
-        this.sessionId = null;
         this.server = null;
         this.location = {
             source: LocationState.Disabled,
@@ -399,13 +388,11 @@ export default class AtlasProfile {
         }
     }
 
-    // Extracts the device/session ID from KV (persisted by the login flow).
     uid(): string {
         if (!this.username) throw new Error('Profile must be loaded before CoT is called');
 
         // Need to differentiate between servers eventually
-        const base = `ANDROID-CloudTAK-${this.username}`;
-        return this.sessionId ? `${base}-${this.sessionId}` : base;
+        return `ANDROID-CloudTAK-${this.username}`;
     }
 
     async CoT(coords?: number[], accuracy?: number, altitude?: number | null): Promise<void> {

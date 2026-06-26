@@ -645,9 +645,7 @@ onMounted(async () => {
         };
     });
 
-    mapStore.map.on('mouseleave', () => {
-        mouseCoord.value = null;
-    });
+    mapStore.map.on('mouseleave' as Parameters<typeof mapStore.map.on>[0], () => {\n        mouseCoord.value = null;\n    });
 
     // TODO these are no longer reactive, does it matter?
     warnChannels.value = await mapStore.worker.profile.hasNoChannels();

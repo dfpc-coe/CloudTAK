@@ -1,12 +1,7 @@
-import { Marker, LngLat, LngLatBounds } from 'maplibre-gl';
-import type { Map as MapLibreMap, IControl, ControlPosition, FitBoundsOptions } from 'maplibre-gl';
+import { Marker, LngLat } from 'maplibre-gl';
+import type { Map as MapLibreMap, IControl, ControlPosition } from 'maplibre-gl';
 
 export type GeolocateControlOptions = {
-    /**
-     * Camera options used when the map is recentred on the user's location.
-     * @defaultValue `{ maxZoom: 16 }`
-     */
-    fitBoundsOptions?: FitBoundsOptions;
     /**
      * Draw a translucent circle representing the reported GPS accuracy.
      * @defaultValue `true`
@@ -22,25 +17,15 @@ export type GeolocateControlOptions = {
      * @defaultValue `true`
      */
     showHeading?: boolean;
-    /**
-     * Invoked when the control button is clicked (after the camera recentres on
-     * the current location, if one is known).
-     */
-    onClick?: () => void;
 };
 
 type ResolvedOptions = {
-    fitBoundsOptions: FitBoundsOptions;
     showAccuracyCircle: boolean;
     showUserLocation: boolean;
     showHeading: boolean;
-    onClick?: () => void;
 };
 
 const defaultOptions: ResolvedOptions = {
-    fitBoundsOptions: {
-        maxZoom: 16
-    },
     showAccuracyCircle: true,
     showUserLocation: true,
     showHeading: true
@@ -56,14 +41,14 @@ const STYLE_ELEMENT_ID = 'cloudtak-geolocate-styles';
  * geolocation watch. Position, accuracy and heading are pushed in via
  * {@link GeolocateControl.setLocation} and {@link GeolocateControl.setHeading}
  * so the existing CloudTAK location pipeline (Capacitor Geolocation in the
- * device store) remains the single source of truth. Clicking the control
- * recentres the camera and invokes the supplied `onClick` handler.
+ * device store) remains the single source of truth. The control renders a
+ * non-interactive puck only; recentring the camera is handled elsewhere.
  *
  * @example
  * ```ts
  * import GeolocateControl from './geolocate/main.ts';
  *
- * const control = new GeolocateControl({ onClick: () => openSelfFeature() });
+ * const control = new GeolocateControl();
  * map.addControl(control, 'top-right');
  * control.setLocation({ lng, lat }, accuracy);
  * control.setHeading(headingDegrees);
@@ -74,7 +59,6 @@ export class GeolocateControl implements IControl {
 
     private map?: MapLibreMap;
     private container?: HTMLElement;
-    private button?: HTMLButtonElement;
 
     private puckElement?: HTMLElement;
     private headingElement?: HTMLElement;
@@ -90,8 +74,7 @@ export class GeolocateControl implements IControl {
     constructor(options: GeolocateControlOptions = {}) {
         this.options = {
             ...defaultOptions,
-            ...options,
-            fitBoundsOptions: { ...defaultOptions.fitBoundsOptions, ...options.fitBoundsOptions }
+            ...options
         };
     }
 
@@ -101,25 +84,9 @@ export class GeolocateControl implements IControl {
         GeolocateControl.injectStyles();
 
         const container = document.createElement('div');
-        container.className = 'maplibregl-ctrl maplibregl-ctrl-group';
-        container.addEventListener('contextmenu', (e: MouseEvent) => e.preventDefault());
+        container.className = 'maplibregl-ctrl';
+        container.style.display = 'none';
 
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'maplibregl-ctrl-geolocate';
-        button.title = 'Show my location';
-        button.setAttribute('aria-label', 'Show my location');
-
-        const icon = document.createElement('span');
-        icon.className = 'maplibregl-ctrl-icon';
-        icon.setAttribute('aria-hidden', 'true');
-        button.appendChild(icon);
-
-        button.addEventListener('click', () => this.onButtonClick());
-
-        container.appendChild(button);
-
-        this.button = button;
         this.container = container;
 
         this.setupMarkers();
@@ -150,7 +117,6 @@ export class GeolocateControl implements IControl {
 
         this.map = undefined;
         this.container = undefined;
-        this.button = undefined;
     }
 
     getDefaultPosition(): ControlPosition {
@@ -167,13 +133,11 @@ export class GeolocateControl implements IControl {
             this.accuracy = 0;
             this.dotMarker?.remove();
             this.accuracyMarker?.remove();
-            this.setButtonActive(false);
             return;
         }
 
         this.lastLngLat = new LngLat(position.lng, position.lat);
         this.accuracy = typeof accuracy === 'number' && !Number.isNaN(accuracy) ? accuracy : 0;
-        this.setButtonActive(true);
         this.render();
     }
 
@@ -184,11 +148,6 @@ export class GeolocateControl implements IControl {
     setHeading(heading: number | null): void {
         this.heading = heading;
         this.updateHeadingRotation();
-    }
-
-    private onButtonClick(): void {
-        if (this.lastLngLat) this.flyToLocation();
-        this.options.onClick?.();
     }
 
     private setupMarkers(): void {
@@ -230,20 +189,6 @@ export class GeolocateControl implements IControl {
         this.updateHeadingRotation();
     }
 
-    private flyToLocation(): void {
-        if (!this.map || !this.lastLngLat) return;
-
-        if (this.accuracy > 0) {
-            const bounds = LngLatBounds.fromLngLat(this.lastLngLat, this.accuracy);
-            this.map.fitBounds(bounds, {
-                bearing: this.map.getBearing(),
-                ...this.options.fitBoundsOptions
-            });
-        } else {
-            this.map.flyTo({ center: this.lastLngLat });
-        }
-    }
-
     private updateCircleRadius(): void {
         if (!this.map || !this.circleElement || !this.lastLngLat || !this.accuracy) return;
 
@@ -277,11 +222,6 @@ export class GeolocateControl implements IControl {
         this.updateCircleRadius();
         this.updateHeadingRotation();
     };
-
-    private setButtonActive(active: boolean): void {
-        if (!this.button) return;
-        this.button.classList.toggle('maplibregl-ctrl-geolocate-active', active);
-    }
 
     private static injectStyles(): void {
         if (typeof document === 'undefined' || document.getElementById(STYLE_ELEMENT_ID)) return;

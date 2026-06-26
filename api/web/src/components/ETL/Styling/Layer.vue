@@ -322,7 +322,7 @@ watch(l.value, () => {
 
     for (const paint of PAINT_PROPERTIES) {
         if (l.value.paint[paint] !== undefined) {
-            mapStore.map.setPaintProperty(l.value.id, paint, l.value.paint[paint]);
+            mapStore.map.setPaintProperty(l.value.id, paint, l.value.paint[paint] as string | number | boolean | null);
         }
     }
 });

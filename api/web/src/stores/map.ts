@@ -12,7 +12,6 @@ import { Preferences } from '@capacitor/preferences';
 import { CapacitorHttp } from '@capacitor/core';
 import { defineStore } from 'pinia'
 import { markRaw } from 'vue';
-import router from '../router.ts';
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import IconManager from './modules/icons.ts';
 import MenuManager from './modules/menu.ts';
@@ -31,7 +30,12 @@ import { FeatureVisibility } from './modules/feature-visibility.ts';
 import Subscription from '../base/subscription.ts';
 import { stdurl, server, getRuntimeToken, serverUrl } from '../std.js';
 import * as mapgl from 'maplibre-gl'
-import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
+// Bundle the MapLibre worker (and its `maplibre-gl-shared.mjs` dependency) into
+// a single self-contained module via Vite's worker pipeline. Using a bare `?url`
+// import only copies the worker file, leaving its relative
+// `import './maplibre-gl-shared.mjs'` unresolved — which 404s under Capacitor's
+// app origin and leaves the map stuck on an infinite load.
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
@@ -261,14 +265,6 @@ export const useMapStore = defineStore('cloudtak', {
                 control.setLocation(null);
             } else {
                 control.setLocation(this.gpsCoordinates, this.locationAccuracy);
-            }
-        },
-        openSelfFeature: async function() {
-            try {
-                const uid = await this.worker.profile.uid();
-                if (uid) await router.push(`/cot/${uid}`);
-            } catch (err) {
-                console.error('Failed to open self location feature', err);
             }
         },
         startWorker: function() {
@@ -827,13 +823,10 @@ export const useMapStore = defineStore('cloudtak', {
 
             // Add the self-location puck control. Position/accuracy/heading are
             // fed from the existing location pipeline (see syncGeolocateControl
-            // and the device orientation handler). Clicking it opens the self
-            // CoT in the CoTView sidebar.
-            const geolocateControl = new GeolocateControl({
-                onClick: () => {
-                    void this.openSelfFeature();
-                }
-            });
+            // and the device orientation handler). The puck is non-interactive;
+            // recentring on the user's location is handled by the BottomBar
+            // callsign control.
+            const geolocateControl = new GeolocateControl();
             map.addControl(geolocateControl, 'top-right');
             (map as mapgl.Map & { _geolocateControl?: GeolocateControl })._geolocateControl = geolocateControl;
 
