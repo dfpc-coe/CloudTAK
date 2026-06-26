@@ -80,6 +80,7 @@ export const useMapStore = defineStore('cloudtak', {
         _boundOnDeviceOrientation?: (event: DeviceOrientationEvent) => void;
         _boundOnVisibilityChange?: () => Promise<void>;
         _removeBackgroundStateListener?: () => void;
+        _removePushTokenListener?: () => void;
 
         channel: BroadcastChannel;
 
@@ -305,6 +306,10 @@ export const useMapStore = defineStore('cloudtak', {
             if (this._removeBackgroundStateListener) {
                 this._removeBackgroundStateListener();
                 this._removeBackgroundStateListener = undefined;
+            }
+            if (this._removePushTokenListener) {
+                this._removePushTokenListener();
+                this._removePushTokenListener = undefined;
             }
 
             if (this._map) {
@@ -697,8 +702,11 @@ export const useMapStore = defineStore('cloudtak', {
             // Keep this device's push notification registration in sync. The
             // device store already obtained the current token during
             // initialization (when permission is granted) and emits future
-            // rotations via `onMessagingToken`.
-            deviceStore.onMessagingToken((token) => {
+            // rotations via `onMessagingToken`. Store the unsubscribe handle so
+            // destroy() can remove it and avoid accumulating listeners across
+            // mount/unmount cycles.
+            if (this._removePushTokenListener) this._removePushTokenListener();
+            this._removePushTokenListener = deviceStore.onMessagingToken((token) => {
                 void syncPushToken(token);
             });
             void syncPushToken(deviceStore.getMessagingToken());

@@ -13,7 +13,9 @@ import { isNativePlatform } from './capacitor.ts';
 const PUSH_ID_KEY = 'cloudtak::push::paging_id';
 const PUSH_TOKEN_KEY = 'cloudtak::push::token';
 
-let syncing = false;
+// Serialize concurrent syncs so callers don't silently no-op each other. Each
+// call chains onto the previous one and awaits its own real sync attempt.
+let syncChain: Promise<void> = Promise.resolve();
 
 async function getStored(): Promise<{ id: number | null; token: string | null }> {
     const [{ value: idRaw }, { value: token }] = await Promise.all([
@@ -46,12 +48,22 @@ async function setStored(id: number | null, token: string | null): Promise<void>
  * Register (or refresh) this device's FCM token as a `push` paging source.
  * Safe to call repeatedly — it only writes to the server when the token
  * changes. No-op on non-native platforms or when no token is available.
+ *
+ * Concurrent calls are serialized through an in-flight promise chain so that
+ * each caller awaits a real sync attempt (rather than being dropped while
+ * another sync is in progress). The stored-token comparison inside the sync
+ * coalesces redundant server writes.
  */
 export async function syncPushToken(token: string | null): Promise<void> {
     if (!isNativePlatform() || !token) return;
-    if (syncing) return;
 
-    syncing = true;
+    const run = syncChain.then(() => performSync(token));
+    // Keep the chain alive even if this run rejects.
+    syncChain = run.catch(() => { /* errors handled within performSync */ });
+    return run;
+}
+
+async function performSync(token: string): Promise<void> {
     try {
         const { server } = await import('../std.ts');
         const stored = await getStored();
@@ -81,8 +93,6 @@ export async function syncPushToken(token: string | null): Promise<void> {
         await setStored(create.data.id, token);
     } catch (err) {
         console.warn('Failed to sync push notification token', err);
-    } finally {
-        syncing = false;
     }
 }
 

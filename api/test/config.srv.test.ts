@@ -184,4 +184,76 @@ test('GET api/config (user - group keys)', async () => {
     }
 });
 
+test('PUT api/config (admin - push firebase keys)', async () => {
+    try {
+        const body = {
+            'notification::push::firebase::project_id': 'cloudtak-project',
+            'notification::push::firebase::client_email': 'firebase-adminsdk@cloudtak-project.iam.gserviceaccount.com',
+            'notification::push::firebase::private_key': '-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----\n',
+        };
+
+        const res = await flight.fetch('/api/config', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body,
+        }, false);
+
+        assert.deepEqual(res.body, body);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET api/config (admin - push firebase keys)', async () => {
+    try {
+        const res = await flight.fetch('/api/config?keys=notification::push::firebase::project_id,notification::push::firebase::client_email,notification::push::firebase::private_key', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, false);
+
+        assert.equal(res.status, 200);
+        assert.deepEqual(res.body, {
+            'notification::push::firebase::project_id': 'cloudtak-project',
+            'notification::push::firebase::client_email': 'firebase-adminsdk@cloudtak-project.iam.gserviceaccount.com',
+            'notification::push::firebase::private_key': '-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----\n',
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET api/config (user - push firebase private_key restricted)', async () => {
+    try {
+        const res = await flight.fetch('/api/config?keys=notification::push::firebase::private_key', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.user,
+            },
+        }, false);
+
+        assert.equal(res.status, 401);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET api/config (user - push firebase service-account identifiers restricted)', async () => {
+    try {
+        const res = await flight.fetch('/api/config?keys=notification::push::firebase::project_id,notification::push::firebase::client_email', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.user,
+            },
+        }, false);
+
+        assert.equal(res.status, 401);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 flight.landing();

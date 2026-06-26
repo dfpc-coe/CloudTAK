@@ -39,8 +39,6 @@ export const UserConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'notification::sms::service',
     'notification::push::enabled',
     'notification::push::service',
-    'notification::push::firebase::project_id',
-    'notification::push::firebase::client_email',
     'map::center',
     'map::pitch',
     'map::bearing',
