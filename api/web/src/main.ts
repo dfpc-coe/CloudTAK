@@ -24,6 +24,20 @@ import App from './App.vue'
 // the only working copy of the app the user has.
 const SW_RECOVERY_ATTEMPTED_KEY = 'sw-cache-recovery-attempted';
 
+// Only app build output (Vite emits hashed assets under /assets/) can be left
+// dangling by a stale service worker. User-supplied content — e.g. <img> tags
+// embedded in a KML feature description — is not part of the build, so its
+// failure must never trigger a cache eviction + reload.
+function isRecoverableAppAsset(url: string): boolean {
+    try {
+        const parsed = new URL(url, window.location.href);
+        return parsed.origin === window.location.origin
+            && parsed.pathname.startsWith('/assets/');
+    } catch {
+        return false;
+    }
+}
+
 window.addEventListener('error', async (e) => {
     if (!e.target || e.target === window) return;
 
@@ -34,6 +48,7 @@ window.addEventListener('error', async (e) => {
     if (import.meta.env.DEV || !supportsServiceWorker()) return;
     if (sessionStorage.getItem(SW_RECOVERY_ATTEMPTED_KEY)) return;
     if (!url) return;
+    if (!isRecoverableAppAsset(url)) return;
 
     sessionStorage.setItem(SW_RECOVERY_ATTEMPTED_KEY, '1');
     console.warn('Attempting targeted SW cache recovery for:', url);
