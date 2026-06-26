@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.23.1 - 2026-06-26
+
+- :bug: Ensure non-CloudTAK assets don't result in a cache invalidation
+
 ### v13.23.0 - 2026-06-26
 
 - :bug: Remove UTF Control Characters when parsing KML input
