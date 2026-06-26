@@ -109,9 +109,9 @@
                                 </tr>
                             </thead>
                             <tbody class='cloudtak-accent'>
-                                <template v-if='feature.properties'>
+                                <template v-if='displayProperties.length'>
                                     <tr
-                                        v-for='prop of Object.keys(feature.properties)'
+                                        v-for='prop of displayProperties'
                                         :key='prop'
                                     >
                                         <td v-text='prop' />
@@ -173,6 +173,24 @@ const feature = computed(() => {
 })
 
 const mode = ref('default');
+
+const STYLE_PROPERTIES = new Set([
+    'marker-color',
+    'marker-opacity',
+    'marker-size',
+    'marker-symbol',
+    'stroke',
+    'stroke-opacity',
+    'stroke-width',
+    'stroke-style',
+    'fill',
+    'fill-opacity'
+]);
+
+const displayProperties = computed(() => {
+    if (!feature.value || !feature.value.properties) return [];
+    return Object.keys(feature.value.properties).filter((prop) => !STYLE_PROPERTIES.has(prop));
+});
 
 const overlay = computed(() => getFeatureOverlay(feature.value));
 

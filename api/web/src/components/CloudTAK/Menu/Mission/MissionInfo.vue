@@ -240,6 +240,7 @@
                 <img
                     :src='missionQRURL'
                     class='invite-qr-image img-fluid'
+                    :style='appStore.resolvedTheme === "dark" ? { filter: "invert(1)" } : undefined'
                 >
             </div>
         </div>
@@ -275,8 +276,10 @@ import MenuTemplate from '../../util/MenuTemplate.vue';
 import OverlayManager from '../../../../base/overlay.ts';
 import { useMapStore } from '../../../../stores/map.ts';
 import { useDeviceStore } from '../../../../stores/device.ts';
+import { useAppStore } from '../../../../stores/app.ts';
 const mapStore = useMapStore();
 const deviceStore = useDeviceStore();
+const appStore = useAppStore();
 const isOffline = computed(() => !deviceStore.network.isOnline);
 
 const emit = defineEmits(['refresh']);
@@ -487,10 +490,6 @@ async function subscribe(subscribe: boolean) {
 .invite-qr-image {
     max-width: min(100%, 420px);
     height: auto;
-}
-
-:global(html[data-bs-theme='dark']) .invite-qr-image {
-    filter: invert(1);
 }
 
 :global(html[data-bs-theme='dark']) .invite-qr-btn {

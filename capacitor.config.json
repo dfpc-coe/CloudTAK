@@ -6,6 +6,7 @@
         "path": "ios",
         "includePlugins": [
             "@capacitor-community/keep-awake",
+            "@capacitor-firebase/messaging",
             "@capacitor/app",
             "@capacitor/browser",
             "@capacitor/network",
