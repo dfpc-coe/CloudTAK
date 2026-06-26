@@ -191,8 +191,30 @@
                                 v-if='pushDisabled'
                                 class='badge bg-yellow-lt text-yellow'
                             >Disabled</span>
+                            <template v-else>
+                                <TablerIconButton
+                                    v-if='!pushLoading'
+                                    title='Register This Device'
+                                    @click='registerPush'
+                                >
+                                    <IconPlus
+                                        :size='20'
+                                        stroke='1.5'
+                                    />
+                                </TablerIconButton>
+                                <div
+                                    v-else
+                                    class='spinner-border spinner-border-sm text-secondary'
+                                    role='status'
+                                />
+                            </template>
                         </div>
                     </div>
+                    <TablerAlert
+                        v-if='pushErr'
+                        class='mb-2'
+                        :err='pushErr'
+                    />
                     <div class='d-flex flex-column gap-2'>
                         <StandardItem
                             v-for='p in pushItems'
@@ -234,7 +256,7 @@
                         </StandardItem>
                         <PagingEmptyHint
                             v-if='!pushItems.length'
-                            label='No devices registered. Register a device from the CloudTAK mobile app.'
+                            label='No devices registered. Tap the + button to register this device.'
                         />
                     </div>
                 </section>
@@ -256,12 +278,14 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import PagingEmptyHint from './Settings/PagingEmptyHint.vue';
 import { server } from '../../../std.ts';
+import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 import type { ProfilePaging, ProfilePagingList, ProfilePaging_Create } from '../../../types.ts';
 import PagingModal from './Settings/PagingModal.vue';
 import {
     TablerIconButton,
     TablerRefreshButton,
     TablerDelete,
+    TablerAlert,
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
@@ -274,6 +298,8 @@ import {
 
 const loading = ref<boolean>(true);
 const source = ref<ProfilePaging | { type: ProfilePaging_Create['type'] } | false>(false);
+const pushLoading = ref<boolean>(false);
+const pushErr = ref<Error | null>(null);
 const paging = ref<ProfilePagingList>({
     total: 0,
     items: []
@@ -343,6 +369,32 @@ async function deletePush(device: ProfilePaging): Promise<void> {
     });
     if (res.error) throw new Error(res.error.message);
     await fetch();
+}
+
+async function registerPush(): Promise<void> {
+    pushLoading.value = true;
+    pushErr.value = null;
+    try {
+        const { receive } = await FirebaseMessaging.requestPermissions();
+        if (receive !== 'granted') {
+            pushErr.value = new Error('Push notification permission was not granted.');
+            return;
+        }
+        const { token } = await FirebaseMessaging.getToken();
+        if (!token) {
+            pushErr.value = new Error('Failed to obtain a push notification token.');
+            return;
+        }
+        const res = await server.POST('/api/profile/paging', {
+            body: { type: 'push', value: token }
+        });
+        if (res.error) throw new Error(res.error.message);
+        await fetch();
+    } catch (err) {
+        pushErr.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        pushLoading.value = false;
+    }
 }
 </script>
 
