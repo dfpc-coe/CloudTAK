@@ -493,4 +493,72 @@ test('KML Transform — NetworkLink', async (t) => {
         const iconNames = result.icons ? [...result.icons].map(i => i.name) : [];
         assert.ok(iconNames.some(n => n.endsWith('.png')), `icon.png from linked KMZ must be in result icons (got: ${iconNames.join(', ')})`);
     });
+
+    await t.test('top-level KML with a leading UTF-8 BOM is parsed', async (st) => {
+        const mockAgent = new MockAgent();
+        const originalDispatcher = getGlobalDispatcher();
+        mockAgent.disableNetConnect();
+        setGlobalDispatcher(mockAgent);
+        st.after(() => {
+            setGlobalDispatcher(originalDispatcher);
+            mockAgent.close();
+        });
+
+        // A real-world BOM (U+FEFF) prefixed before the <?xml declaration would
+        // otherwise cause xmldom to fail with "processing instruction at position
+        // 1 is an xml declaration which is only at the start of the document".
+        const bomKml = `\uFEFF<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <Placemark>
+      <name>BOM Feature</name>
+      <Point><coordinates>-105.1,40.1,0</coordinates></Point>
+    </Placemark>
+  </Document>
+</kml>`;
+
+        const { transform } = await makeTransform(st, bomKml);
+        const result = await transform.convert();
+
+        const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
+        const names = lines.map(l => JSON.parse(l).properties?.name);
+        assert.strictEqual(lines.length, 1, 'BOM-prefixed KML must parse to 1 feature');
+        assert.ok(names.includes('BOM Feature'), 'feature from BOM-prefixed KML is present');
+    });
+
+    await t.test('NetworkLink remote KML with a leading UTF-8 BOM is parsed and merged', async (st) => {
+        const mockAgent = new MockAgent();
+        const originalDispatcher = getGlobalDispatcher();
+        mockAgent.disableNetConnect();
+        setGlobalDispatcher(mockAgent);
+        st.after(() => {
+            setGlobalDispatcher(originalDispatcher);
+            mockAgent.close();
+        });
+
+        // Remote endpoints (e.g. airnowtech.org) commonly serve KML with a BOM.
+        const linkedWithBom = `\uFEFF<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <Placemark>
+      <name>Remote BOM Feature</name>
+      <Point><coordinates>-105.2,40.2,0</coordinates></Point>
+    </Placemark>
+  </Document>
+</kml>`;
+
+        mockAgent
+            .get('http://example.com')
+            .intercept({ path: '/linked.kml', method: 'GET' })
+            .reply(200, linkedWithBom, { headers: { 'content-type': 'application/vnd.google-earth.kml+xml' } });
+
+        const { transform } = await makeTransform(st, ROOT_KML);
+        const result = await transform.convert();
+
+        const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
+        const names = lines.map(l => JSON.parse(l).properties?.name);
+        assert.strictEqual(lines.length, 2, 'should have 2 features (1 local + 1 BOM-prefixed remote)');
+        assert.ok(names.includes('Local Feature'), 'local feature present');
+        assert.ok(names.includes('Remote BOM Feature'), 'BOM-prefixed linked feature parsed and merged');
+    });
 });
