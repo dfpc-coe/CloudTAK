@@ -38,7 +38,7 @@ export default class KML implements Transform {
         localDir: string | null = null,
         visited: Set<string> = new Set(),
     ): Promise<ReturnType<typeof kml>['features']> {
-        // Strip a leading (U+FEFF)
+        // Strip a leading UTF-8 BOM (U+FEFF)
         if (kmlContent.charCodeAt(0) === 0xFEFF) {
             kmlContent = kmlContent.slice(1);
         }
@@ -123,7 +123,6 @@ export default class KML implements Transform {
                 }
 
                 let url: URL;
-                // Skip isSafeUrl check when StackName=test (test mode)
                 const urlObj = new URL(href);
                 const hostname = urlObj.hostname.toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, '');
                 if (process.env.StackName !== 'test' && hostname !== 'localhost' && !hostname.endsWith('.localhost') && hostname !== '127.0.0.1') {
@@ -157,6 +156,7 @@ export default class KML implements Transform {
                     if (!res.ok) throw new Error(`HTTP ${res.status} ${await res.text()}`);
 
                     const buf = Buffer.from(await res.arrayBuffer());
+
                     // Detect KMZ by ZIP magic bytes (PK\x03\x04) since content-type is unreliable
                     const isKmz = buf.length >= 4
                         && buf[0] === 0x50 && buf[1] === 0x4B
@@ -212,10 +212,10 @@ export default class KML implements Transform {
                                 continue;
                             }
 
-                            // Extract everything so icon assets bundled in the linked KMZ are
-                            // available on disk for the glob-based icon resolver.
+                            // Extract everything so icon assets bundled in the linked KMZ are available on disk for the glob-based icon resolver.
                             await zip.extract(null, extractDir);
                             const kmlContent = await fs.readFile(kmlFileResolved, 'utf8');
+
                             // Use the directory containing the extracted KML as localDir so
                             // relative paths (icon refs, nested NetworkLinks) resolve correctly.
                             const kmlDir = path.dirname(kmlFileResolved);
@@ -230,7 +230,7 @@ export default class KML implements Transform {
 
                     features.push(...linkedFeatures);
                 } catch (err) {
-                    // Return details about a "fetch failed"
+                    // More detailed fetch error logging
                     const chain: string[] = [];
                     let current: unknown = err;
                     while (current instanceof Error) {
