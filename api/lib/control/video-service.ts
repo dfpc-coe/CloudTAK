@@ -526,7 +526,9 @@ export default class VideoServiceControl {
             try {
                 // Skip isSafeUrl check when StackName=test (test mode)
                 if (process.env.StackName !== 'test') {
-                    const { safe, reason } = await isSafeUrl(lease.proxy);
+                    const { safe, reason } = await isSafeUrl(lease.proxy, {
+                        allow: [new URL(video.url!).hostname],
+                    });
                     if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
                 }
 
@@ -534,7 +536,9 @@ export default class VideoServiceControl {
 
                 // Check for HLS Errors
                 if (['http:', 'https:'].includes(proxy.protocol)) {
-                    const res = await fetch(proxy);
+                    const res = await fetch(proxy, {
+                        safeUrlAllow: [new URL(video.url!).hostname],
+                    });
 
                     if (res.status === 404) {
                         throw new Err(400, null, 'External Video Server reports Video Stream not found');
