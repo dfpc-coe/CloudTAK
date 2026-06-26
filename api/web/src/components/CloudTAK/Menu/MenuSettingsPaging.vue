@@ -191,8 +191,30 @@
                                 v-if='pushDisabled'
                                 class='badge bg-yellow-lt text-yellow'
                             >Disabled</span>
+                            <template v-else>
+                                <TablerIconButton
+                                    v-if='!pushLoading'
+                                    title='Register This Device'
+                                    @click='registerPush'
+                                >
+                                    <IconPlus
+                                        :size='20'
+                                        stroke='1.5'
+                                    />
+                                </TablerIconButton>
+                                <div
+                                    v-else
+                                    class='spinner-border spinner-border-sm text-secondary'
+                                    role='status'
+                                />
+                            </template>
                         </div>
                     </div>
+                    <TablerAlert
+                        v-if='pushErr'
+                        class='mb-2'
+                        :err='pushErr'
+                    />
                     <div class='d-flex flex-column gap-2'>
                         <StandardItem
                             v-for='p in pushItems'
@@ -234,7 +256,7 @@
                         </StandardItem>
                         <PagingEmptyHint
                             v-if='!pushItems.length'
-                            label='No devices registered. Register a device from the CloudTAK mobile app.'
+                            label='No devices registered. Tap the + button to register this device.'
                         />
                     </div>
                 </section>
@@ -256,12 +278,15 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import PagingEmptyHint from './Settings/PagingEmptyHint.vue';
 import { server } from '../../../std.ts';
+import { useDeviceStore } from '../../../stores/device.ts';
+import { syncPushToken, forgetPushToken } from '../../../base/push.ts';
 import type { ProfilePaging, ProfilePagingList, ProfilePaging_Create } from '../../../types.ts';
 import PagingModal from './Settings/PagingModal.vue';
 import {
     TablerIconButton,
     TablerRefreshButton,
     TablerDelete,
+    TablerAlert,
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
@@ -274,6 +299,9 @@ import {
 
 const loading = ref<boolean>(true);
 const source = ref<ProfilePaging | { type: ProfilePaging_Create['type'] } | false>(false);
+const pushLoading = ref<boolean>(false);
+const pushErr = ref<Error | null>(null);
+const deviceStore = useDeviceStore();
 const paging = ref<ProfilePagingList>({
     total: 0,
     items: []
@@ -342,7 +370,35 @@ async function deletePush(device: ProfilePaging): Promise<void> {
         params: { path: { ':pagingid': device.id } }
     });
     if (res.error) throw new Error(res.error.message);
+    // If this was the current device's registration, forget it locally so it
+    // is not automatically re-created on the next launch.
+    await forgetPushToken(device.value);
     await fetch();
+}
+
+async function registerPush(): Promise<void> {
+    pushLoading.value = true;
+    pushErr.value = null;
+    try {
+        await deviceStore.notification.request();
+        if (deviceStore.permissions.notification !== 'granted') {
+            pushErr.value = new Error('Push notification permission was not granted.');
+            return;
+        }
+        const token = deviceStore.getMessagingToken() ?? await deviceStore.refreshMessagingToken();
+        if (!token) {
+            pushErr.value = new Error('Failed to obtain a push notification token.');
+            return;
+        }
+
+        await syncPushToken(token);
+
+        await fetch();
+    } catch (err) {
+        pushErr.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        pushLoading.value = false;
+    }
 }
 </script>
 

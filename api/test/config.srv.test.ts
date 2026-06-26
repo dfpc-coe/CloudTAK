@@ -184,16 +184,12 @@ test('GET api/config (user - group keys)', async () => {
     }
 });
 
-test('PUT api/config (admin - firebase keys)', async () => {
+test('PUT api/config (admin - push firebase keys)', async () => {
     try {
         const body = {
-            'firebase::apikey': 'test-api-key',
-            'firebase::authdomain': 'cloudtak.firebaseapp.com',
-            'firebase::projectid': 'cloudtak-project',
-            'firebase::storagebucket': 'cloudtak-project.firebasestorage.app',
-            'firebase::messagingsenderid': '1234567890',
-            'firebase::appid': '1:1234567890:web:abcdef123456',
-            'firebase::measurementid': 'G-ABCDEF1234',
+            'notification::push::firebase::project_id': 'cloudtak-project',
+            'notification::push::firebase::client_email': 'firebase-adminsdk@cloudtak-project.iam.gserviceaccount.com',
+            'notification::push::firebase::private_key': '-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----\n',
         };
 
         const res = await flight.fetch('/api/config', {
@@ -210,9 +206,9 @@ test('PUT api/config (admin - firebase keys)', async () => {
     }
 });
 
-test('GET api/config (admin - firebase keys)', async () => {
+test('GET api/config (admin - push firebase keys)', async () => {
     try {
-        const res = await flight.fetch('/api/config?keys=firebase::apikey,firebase::authdomain,firebase::projectid,firebase::storagebucket,firebase::messagingsenderid,firebase::appid,firebase::measurementid', {
+        const res = await flight.fetch('/api/config?keys=notification::push::firebase::project_id,notification::push::firebase::client_email,notification::push::firebase::private_key', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -221,14 +217,40 @@ test('GET api/config (admin - firebase keys)', async () => {
 
         assert.equal(res.status, 200);
         assert.deepEqual(res.body, {
-            'firebase::apikey': 'test-api-key',
-            'firebase::authdomain': 'cloudtak.firebaseapp.com',
-            'firebase::projectid': 'cloudtak-project',
-            'firebase::storagebucket': 'cloudtak-project.firebasestorage.app',
-            'firebase::messagingsenderid': '1234567890',
-            'firebase::appid': '1:1234567890:web:abcdef123456',
-            'firebase::measurementid': 'G-ABCDEF1234',
+            'notification::push::firebase::project_id': 'cloudtak-project',
+            'notification::push::firebase::client_email': 'firebase-adminsdk@cloudtak-project.iam.gserviceaccount.com',
+            'notification::push::firebase::private_key': '-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----\n',
         });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET api/config (user - push firebase private_key restricted)', async () => {
+    try {
+        const res = await flight.fetch('/api/config?keys=notification::push::firebase::private_key', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.user,
+            },
+        }, false);
+
+        assert.equal(res.status, 401);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET api/config (user - push firebase service-account identifiers restricted)', async () => {
+    try {
+        const res = await flight.fetch('/api/config?keys=notification::push::firebase::project_id,notification::push::firebase::client_email', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.user,
+            },
+        }, false);
+
+        assert.equal(res.status, 401);
     } catch (err) {
         assert.ifError(err);
     }

@@ -20,6 +20,7 @@ import { useDeviceStore } from './device.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
+import { syncPushToken } from '../base/push.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay-class.ts';
@@ -79,6 +80,7 @@ export const useMapStore = defineStore('cloudtak', {
         _boundOnDeviceOrientation?: (event: DeviceOrientationEvent) => void;
         _boundOnVisibilityChange?: () => Promise<void>;
         _removeBackgroundStateListener?: () => void;
+        _removePushTokenListener?: () => void;
 
         channel: BroadcastChannel;
 
@@ -304,6 +306,10 @@ export const useMapStore = defineStore('cloudtak', {
             if (this._removeBackgroundStateListener) {
                 this._removeBackgroundStateListener();
                 this._removeBackgroundStateListener = undefined;
+            }
+            if (this._removePushTokenListener) {
+                this._removePushTokenListener();
+                this._removePushTokenListener = undefined;
             }
 
             if (this._map) {
@@ -692,6 +698,18 @@ export const useMapStore = defineStore('cloudtak', {
                 startedGPSWatchFromPermissionSubscription = true;
                 void this.startLocationWatch();
             });
+
+            // Keep this device's push notification registration in sync. The
+            // device store already obtained the current token during
+            // initialization (when permission is granted) and emits future
+            // rotations via `onMessagingToken`. Store the unsubscribe handle so
+            // destroy() can remove it and avoid accumulating listeners across
+            // mount/unmount cycles.
+            if (this._removePushTokenListener) this._removePushTokenListener();
+            this._removePushTokenListener = deviceStore.onMessagingToken((token) => {
+                void syncPushToken(token);
+            });
+            void syncPushToken(deviceStore.getMessagingToken());
 
             if (
                 deviceStore.permissions.location !== 'unsupported'

@@ -1,27 +1,41 @@
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
-import type { PermissionStatus as FirebaseMessagingPermissionStatus } from '@capacitor-firebase/messaging';
 import type { PluginListenerHandle } from '@capacitor/core';
 import { isNativePlatform } from '../../base/capacitor.ts';
-import { PermissionQuery } from './shared.ts';
-import type { BrowserPermissionState, DevicePermissionContext } from './types.ts';
+import { PermissionQuery, normalizePermissionState } from './shared.ts';
+import type { DevicePermissionContext } from './types.ts';
 
 export class BrowserNotificationPermission {
-    private static normalizeNotificationPermission(permission: NotificationPermission): BrowserPermissionState {
-        return permission === 'default' ? 'prompt' : permission;
-    }
-
-    private static normalizeNativeNotificationPermission(permission: FirebaseMessagingPermissionStatus['receive']): BrowserPermissionState {
-        return permission === 'prompt-with-rationale' ? 'prompt' : permission;
-    }
-
     private static supportsNotifications(): boolean {
         return 'Notification' in window;
     }
 
     private messagingToken: string | null = null;
     private tokenListener: PluginListenerHandle | null = null;
+    private readonly tokenSubscribers = new Set<(token: string | null) => void>();
 
     constructor(private readonly context: DevicePermissionContext) {}
+
+    private setMessagingToken(token: string | null): void {
+        this.messagingToken = token;
+        for (const listener of this.tokenSubscribers) {
+            try {
+                listener(token);
+            } catch (err) {
+                console.warn('Push notification token subscriber failed', err);
+            }
+        }
+    }
+
+    /**
+     * Subscribe to FCM token changes (initial registration and rotations).
+     * Returns a function that removes the subscription.
+     */
+    onToken(listener: (token: string | null) => void): () => void {
+        this.tokenSubscribers.add(listener);
+        return () => {
+            this.tokenSubscribers.delete(listener);
+        };
+    }
 
     async refreshStatus(): Promise<void> {
         if (isNativePlatform()) {
@@ -40,14 +54,14 @@ export class BrowserNotificationPermission {
             return;
         }
 
-        this.context.setPermissionStatus('notification', BrowserNotificationPermission.normalizeNotificationPermission(Notification.permission));
+        this.context.setPermissionStatus('notification', normalizePermissionState(Notification.permission));
     }
 
     async request(): Promise<void> {
         if (isNativePlatform()) {
             try {
                 const status = await FirebaseMessaging.requestPermissions();
-                this.context.setPermissionStatus('notification', BrowserNotificationPermission.normalizeNativeNotificationPermission(status.receive));
+                this.context.setPermissionStatus('notification', normalizePermissionState(status.receive));
 
                 if (status.receive === 'granted') {
                     await this.refreshMessagingToken();
@@ -66,7 +80,7 @@ export class BrowserNotificationPermission {
 
         try {
             const status = await Notification.requestPermission();
-            this.context.setPermissionStatus('notification', BrowserNotificationPermission.normalizeNotificationPermission(status));
+            this.context.setPermissionStatus('notification', normalizePermissionState(status));
         } finally {
             await this.refreshStatus();
         }
@@ -76,6 +90,10 @@ export class BrowserNotificationPermission {
         if (isNativePlatform()) {
             await this.refreshStatus();
             await this.initializeNativeMessaging();
+
+            if (this.context.permissions.notification === 'prompt') {
+                await this.request();
+            }
             return;
         }
 
@@ -102,29 +120,29 @@ export class BrowserNotificationPermission {
 
     async refreshMessagingToken(): Promise<string | null> {
         if (!isNativePlatform()) {
-            this.messagingToken = null;
+            this.setMessagingToken(null);
             return null;
         }
 
         try {
             const support = await FirebaseMessaging.isSupported();
             if (!support.isSupported) {
-                this.messagingToken = null;
+                this.setMessagingToken(null);
                 return null;
             }
 
             const status = await FirebaseMessaging.checkPermissions();
             if (status.receive !== 'granted') {
-                this.messagingToken = null;
+                this.setMessagingToken(null);
                 return null;
             }
 
             const result = await FirebaseMessaging.getToken();
-            this.messagingToken = result.token || null;
+            this.setMessagingToken(result.token || null);
             return this.messagingToken;
         } catch (err) {
             console.warn('Failed to refresh native notification token', err);
-            this.messagingToken = null;
+            this.setMessagingToken(null);
             return null;
         }
     }
@@ -137,7 +155,7 @@ export class BrowserNotificationPermission {
         } catch (err) {
             console.warn('Failed to delete native notification token', err);
         } finally {
-            this.messagingToken = null;
+            this.setMessagingToken(null);
         }
     }
 
@@ -150,7 +168,7 @@ export class BrowserNotificationPermission {
             }
 
             const status = await FirebaseMessaging.checkPermissions();
-            this.context.setPermissionStatus('notification', BrowserNotificationPermission.normalizeNativeNotificationPermission(status.receive));
+            this.context.setPermissionStatus('notification', normalizePermissionState(status.receive));
         } catch (err) {
             console.warn('Failed to query native notification permission status', err);
             this.context.setPermissionStatus('notification', 'unknown');
@@ -161,7 +179,7 @@ export class BrowserNotificationPermission {
         try {
             if (!this.tokenListener) {
                 this.tokenListener = await FirebaseMessaging.addListener('tokenReceived', (event) => {
-                    this.messagingToken = event.token;
+                    this.setMessagingToken(event.token);
                 });
             }
 
