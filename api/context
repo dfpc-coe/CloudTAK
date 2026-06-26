@@ -11,11 +11,55 @@ echo "Loading $Stack"
 
 cd ..
 
+Repo=$(jq -r .name .deploy)
+FullStack="${Repo}-${Stack}"
+
 if [[ $Stack == *"staging"* ]]; then
-    POSTGRES=$(deploy info ${Stack} --profile coestaging --region us-east-1 | jq .Outputs.DB)
+    AwsProfile="coestaging"
+    AwsRegion="us-east-1"
 else
-    POSTGRES=$(deploy info ${Stack} | jq .Outputs.DB)
+    AwsProfile=$(jq -r .profile .deploy)
+    AwsRegion=$(jq -r .region .deploy)
 fi
+
+if [[ $Stack == *"staging"* ]]; then
+    StackInfo=$(deploy info ${Stack} --profile coestaging --region us-east-1)
+else
+    StackInfo=$(deploy info ${Stack})
+fi
+
+# Postgres connection string (quoted JSON value, as the bastion pg_dump expects).
+POSTGRES=$(echo "$StackInfo" | jq .Outputs.DB)
+
+# Hosted URLs published as stack Outputs.
+ApiUrl=$(echo "$StackInfo" | jq -r '.Outputs.APIURL // empty')
+PmtilesUrl=$(echo "$StackInfo" | jq -r '.Outputs.PMTilesAPI // empty')
+
+echo "Pulling secrets for ${FullStack} from AWS Secrets Manager"
+
+SigningSecret=$(aws secretsmanager get-secret-value \
+    --secret-id "${FullStack}/api/secret" \
+    --query SecretString --output text \
+    --profile "${AwsProfile}" --region "${AwsRegion}")
+
+GeofenceSecret=$(aws secretsmanager get-secret-value \
+    --secret-id "${FullStack}/api/geofence" \
+    --query SecretString --output text \
+    --profile "${AwsProfile}" --region "${AwsRegion}" 2>/dev/null || echo "")
+
+EnvJson=$(jq -n --arg signing "$SigningSecret" '{ SigningSecret: $signing }')
+if [[ -n "$ApiUrl" ]]; then
+    EnvJson=$(echo "$EnvJson" | jq --arg url "$ApiUrl" '. + { "API_URL": $url }')
+fi
+if [[ -n "$PmtilesUrl" ]]; then
+    EnvJson=$(echo "$EnvJson" | jq --arg url "$PmtilesUrl" '. + { "PMTILES_URL": $url }')
+fi
+if [[ -n "$GeofenceSecret" ]]; then
+    EnvJson=$(echo "$EnvJson" | jq --arg geofence "$GeofenceSecret" '. + { "CLOUDTAK_Config_geofence_password": $geofence }')
+fi
+
+echo "$EnvJson" > "api/.env-${Stack}"
+echo "ok - wrote api/.env-${Stack}"
 
 cd $(pwd)/api
 
