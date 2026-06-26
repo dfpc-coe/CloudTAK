@@ -20,8 +20,31 @@ export class BrowserNotificationPermission {
 
     private messagingToken: string | null = null;
     private tokenListener: PluginListenerHandle | null = null;
+    private readonly tokenSubscribers = new Set<(token: string | null) => void>();
 
     constructor(private readonly context: DevicePermissionContext) {}
+
+    private setMessagingToken(token: string | null): void {
+        this.messagingToken = token;
+        for (const listener of this.tokenSubscribers) {
+            try {
+                listener(token);
+            } catch (err) {
+                console.warn('Push notification token subscriber failed', err);
+            }
+        }
+    }
+
+    /**
+     * Subscribe to FCM token changes (initial registration and rotations).
+     * Returns a function that removes the subscription.
+     */
+    onToken(listener: (token: string | null) => void): () => void {
+        this.tokenSubscribers.add(listener);
+        return () => {
+            this.tokenSubscribers.delete(listener);
+        };
+    }
 
     async refreshStatus(): Promise<void> {
         if (isNativePlatform()) {
@@ -102,29 +125,29 @@ export class BrowserNotificationPermission {
 
     async refreshMessagingToken(): Promise<string | null> {
         if (!isNativePlatform()) {
-            this.messagingToken = null;
+            this.setMessagingToken(null);
             return null;
         }
 
         try {
             const support = await FirebaseMessaging.isSupported();
             if (!support.isSupported) {
-                this.messagingToken = null;
+                this.setMessagingToken(null);
                 return null;
             }
 
             const status = await FirebaseMessaging.checkPermissions();
             if (status.receive !== 'granted') {
-                this.messagingToken = null;
+                this.setMessagingToken(null);
                 return null;
             }
 
             const result = await FirebaseMessaging.getToken();
-            this.messagingToken = result.token || null;
+            this.setMessagingToken(result.token || null);
             return this.messagingToken;
         } catch (err) {
             console.warn('Failed to refresh native notification token', err);
-            this.messagingToken = null;
+            this.setMessagingToken(null);
             return null;
         }
     }
@@ -137,7 +160,7 @@ export class BrowserNotificationPermission {
         } catch (err) {
             console.warn('Failed to delete native notification token', err);
         } finally {
-            this.messagingToken = null;
+            this.setMessagingToken(null);
         }
     }
 
@@ -161,7 +184,7 @@ export class BrowserNotificationPermission {
         try {
             if (!this.tokenListener) {
                 this.tokenListener = await FirebaseMessaging.addListener('tokenReceived', (event) => {
-                    this.messagingToken = event.token;
+                    this.setMessagingToken(event.token);
                 });
             }
 

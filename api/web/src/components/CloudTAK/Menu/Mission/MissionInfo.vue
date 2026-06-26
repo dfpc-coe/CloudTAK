@@ -489,6 +489,10 @@ async function subscribe(subscribe: boolean) {
     height: auto;
 }
 
+:global(html[data-bs-theme='dark']) .invite-qr-image {
+    filter: invert(1);
+}
+
 :global(html[data-bs-theme='dark']) .invite-qr-btn {
     --bs-btn-color: rgba(255, 255, 255, 0.92);
     --bs-btn-border-color: rgba(255, 255, 255, 0.35);

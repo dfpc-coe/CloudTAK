@@ -278,7 +278,8 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import PagingEmptyHint from './Settings/PagingEmptyHint.vue';
 import { server } from '../../../std.ts';
-import { FirebaseMessaging } from '@capacitor-firebase/messaging';
+import { useDeviceStore } from '../../../stores/device.ts';
+import { syncPushToken, forgetPushToken } from '../../../base/push.ts';
 import type { ProfilePaging, ProfilePagingList, ProfilePaging_Create } from '../../../types.ts';
 import PagingModal from './Settings/PagingModal.vue';
 import {
@@ -300,6 +301,7 @@ const loading = ref<boolean>(true);
 const source = ref<ProfilePaging | { type: ProfilePaging_Create['type'] } | false>(false);
 const pushLoading = ref<boolean>(false);
 const pushErr = ref<Error | null>(null);
+const deviceStore = useDeviceStore();
 const paging = ref<ProfilePagingList>({
     total: 0,
     items: []
@@ -368,6 +370,9 @@ async function deletePush(device: ProfilePaging): Promise<void> {
         params: { path: { ':pagingid': device.id } }
     });
     if (res.error) throw new Error(res.error.message);
+    // If this was the current device's registration, forget it locally so it
+    // is not automatically re-created on the next launch.
+    await forgetPushToken(device.value);
     await fetch();
 }
 
@@ -375,20 +380,17 @@ async function registerPush(): Promise<void> {
     pushLoading.value = true;
     pushErr.value = null;
     try {
-        const { receive } = await FirebaseMessaging.requestPermissions();
-        if (receive !== 'granted') {
+        await deviceStore.notification.request();
+        if (deviceStore.permissions.notification !== 'granted') {
             pushErr.value = new Error('Push notification permission was not granted.');
             return;
         }
-        const { token } = await FirebaseMessaging.getToken();
+        const token = deviceStore.getMessagingToken() ?? await deviceStore.refreshMessagingToken();
         if (!token) {
             pushErr.value = new Error('Failed to obtain a push notification token.');
             return;
         }
-        const res = await server.POST('/api/profile/paging', {
-            body: { type: 'push', value: token }
-        });
-        if (res.error) throw new Error(res.error.message);
+        await syncPushToken(token);
         await fetch();
     } catch (err) {
         pushErr.value = err instanceof Error ? err : new Error(String(err));
