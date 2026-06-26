@@ -1,19 +1,10 @@
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
-import type { PermissionStatus as FirebaseMessagingPermissionStatus } from '@capacitor-firebase/messaging';
 import type { PluginListenerHandle } from '@capacitor/core';
 import { isNativePlatform } from '../../base/capacitor.ts';
-import { PermissionQuery } from './shared.ts';
-import type { BrowserPermissionState, DevicePermissionContext } from './types.ts';
+import { PermissionQuery, normalizePermissionState } from './shared.ts';
+import type { DevicePermissionContext } from './types.ts';
 
 export class BrowserNotificationPermission {
-    private static normalizeNotificationPermission(permission: NotificationPermission): BrowserPermissionState {
-        return permission === 'default' ? 'prompt' : permission;
-    }
-
-    private static normalizeNativeNotificationPermission(permission: FirebaseMessagingPermissionStatus['receive']): BrowserPermissionState {
-        return permission === 'prompt-with-rationale' ? 'prompt' : permission;
-    }
-
     private static supportsNotifications(): boolean {
         return 'Notification' in window;
     }
@@ -63,14 +54,14 @@ export class BrowserNotificationPermission {
             return;
         }
 
-        this.context.setPermissionStatus('notification', BrowserNotificationPermission.normalizeNotificationPermission(Notification.permission));
+        this.context.setPermissionStatus('notification', normalizePermissionState(Notification.permission));
     }
 
     async request(): Promise<void> {
         if (isNativePlatform()) {
             try {
                 const status = await FirebaseMessaging.requestPermissions();
-                this.context.setPermissionStatus('notification', BrowserNotificationPermission.normalizeNativeNotificationPermission(status.receive));
+                this.context.setPermissionStatus('notification', normalizePermissionState(status.receive));
 
                 if (status.receive === 'granted') {
                     await this.refreshMessagingToken();
@@ -89,7 +80,7 @@ export class BrowserNotificationPermission {
 
         try {
             const status = await Notification.requestPermission();
-            this.context.setPermissionStatus('notification', BrowserNotificationPermission.normalizeNotificationPermission(status));
+            this.context.setPermissionStatus('notification', normalizePermissionState(status));
         } finally {
             await this.refreshStatus();
         }
@@ -177,7 +168,7 @@ export class BrowserNotificationPermission {
             }
 
             const status = await FirebaseMessaging.checkPermissions();
-            this.context.setPermissionStatus('notification', BrowserNotificationPermission.normalizeNativeNotificationPermission(status.receive));
+            this.context.setPermissionStatus('notification', normalizePermissionState(status.receive));
         } catch (err) {
             console.warn('Failed to query native notification permission status', err);
             this.context.setPermissionStatus('notification', 'unknown');
