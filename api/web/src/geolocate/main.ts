@@ -257,7 +257,7 @@ export class GeolocateControl implements IControl {
         // rotates about that point (see `transform-origin` in the CSS).
         const rotation = this.heading - this.map.getBearing();
         this.headingElement.style.display = '';
-        this.headingElement.style.transform = `translate(-50%, -100%) rotate(${rotation}deg)`;
+        this.headingElement.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
     }
 
     private onMapUpdate = (): void => {
@@ -267,7 +267,12 @@ export class GeolocateControl implements IControl {
 
     private applyColor(): void {
         if (this.dotElement) this.dotElement.style.backgroundColor = this.color;
-        if (this.headingElement) this.headingElement.style.borderBottomColor = GeolocateControl.rgba(this.color, 0.45);
+        if (this.headingElement) {
+            const c = GeolocateControl.rgba(this.color, 0.55);
+            const ct = GeolocateControl.rgba(this.color, 0.0);
+            this.headingElement.style.background =
+                `conic-gradient(from 0deg at 50% 50%, ${c} 0deg, ${c} 25deg, ${ct} 33deg, ${ct} 327deg, ${c} 335deg, ${c} 360deg)`;
+        }
         if (this.circleElement) this.circleElement.style.backgroundColor = GeolocateControl.rgba(this.color, 0.2);
     }
 
@@ -308,14 +313,24 @@ export class GeolocateControl implements IControl {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 0;
-    height: 0;
-    border-left: 14px solid transparent;
-    border-right: 14px solid transparent;
-    border-bottom: 28px solid rgb(29 161 242 / 0.45);
-    transform-origin: 50% 100%;
-    transform: translate(-50%, -100%) rotate(0deg);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    transform-origin: 50% 50%;
+    transform: translate(-50%, -50%) rotate(0deg);
     pointer-events: none;
+    -webkit-mask-image: radial-gradient(
+        circle at 50% 50%,
+        transparent 0%, transparent 16%,
+        black 22%, black 64%,
+        transparent 88%
+    );
+    mask-image: radial-gradient(
+        circle at 50% 50%,
+        transparent 0%, transparent 16%,
+        black 22%, black 64%,
+        transparent 88%
+    );
 }
 .cloudtak-geolocate-accuracy-circle {
     width: 1px;
