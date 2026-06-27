@@ -17,12 +17,17 @@ export type GeolocateControlOptions = {
      * @defaultValue `true`
      */
     showHeading?: boolean;
+    /**
+     * Invoked when the user clicks the puck.
+     */
+    onClick?: () => void;
 };
 
 type ResolvedOptions = {
     showAccuracyCircle: boolean;
     showUserLocation: boolean;
     showHeading: boolean;
+    onClick?: () => void;
 };
 
 const defaultOptions: ResolvedOptions = {
@@ -216,6 +221,15 @@ export class GeolocateControl implements IControl {
             this.puckElement = puck;
             this.dotElement = dot;
             this.dotMarker = new Marker({ element: puck });
+
+            // Clicking the puck opens the user's own CoT in the sidebar. Stop
+            // propagation so the map's click handler doesn't also fire and
+            // clear selection.
+            puck.style.cursor = 'pointer';
+            puck.addEventListener('click', (event: MouseEvent) => {
+                event.stopPropagation();
+                this.options.onClick?.();
+            });
         }
 
         this.applyColor();
@@ -337,6 +351,7 @@ export class GeolocateControl implements IControl {
     height: 1px;
     background-color: rgb(29 161 242 / 0.2);
     border-radius: 50%;
+    pointer-events: none;
 }`;
 
         document.head.appendChild(style);

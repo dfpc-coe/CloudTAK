@@ -21,6 +21,7 @@ import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
 import GeolocateControl from '../geolocate/main.ts';
+import router from '../router.ts';
 import { syncPushToken } from '../base/push.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
@@ -265,6 +266,14 @@ export const useMapStore = defineStore('cloudtak', {
                 control.setLocation(null);
             } else {
                 control.setLocation(this.gpsCoordinates, this.locationAccuracy);
+            }
+        },
+        openSelfFeature: async function() {
+            try {
+                const uid = await this.worker.profile.uid();
+                if (uid) await router.push(`/cot/${uid}`);
+            } catch (err) {
+                console.error('Failed to open self location feature', err);
             }
         },
         startWorker: function() {
@@ -826,7 +835,11 @@ export const useMapStore = defineStore('cloudtak', {
             // and the device orientation handler). The puck is non-interactive;
             // recentring on the user's location is handled by the BottomBar
             // callsign control.
-            const geolocateControl = new GeolocateControl();
+            const geolocateControl = new GeolocateControl({
+                onClick: () => {
+                    void this.openSelfFeature();
+                }
+            });
             map.addControl(geolocateControl, 'top-right');
             (map as mapgl.Map & { _geolocateControl?: GeolocateControl })._geolocateControl = geolocateControl;
 
