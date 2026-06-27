@@ -21,7 +21,6 @@ import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
 import GeolocateControl from '../geolocate/main.ts';
-import router from '../router.ts';
 import { syncPushToken } from '../base/push.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
@@ -270,10 +269,24 @@ export const useMapStore = defineStore('cloudtak', {
         },
         openSelfFeature: async function() {
             try {
+                if (!this._map || !this.gpsCoordinates) return;
+
                 const uid = await this.worker.profile.uid();
-                if (uid) await router.push(`/cot/${uid}`);
+                if (!uid) return;
+
+                const cot = await this.worker.db.get(uid);
+                if (!cot) return;
+
+                // Mirror a normal CoT marker click so the puck opens the same
+                // radial menu (mode 'cot') rather than the CoTView sidebar.
+                const lngLat = new mapgl.LngLat(this.gpsCoordinates.lng, this.gpsCoordinates.lat);
+                await this.radialClick(cot.as_feature(), {
+                    lngLat,
+                    point: this.map.project(lngLat),
+                    mode: 'cot'
+                });
             } catch (err) {
-                console.error('Failed to open self location feature', err);
+                console.error('Failed to open self location radial menu', err);
             }
         },
         startWorker: function() {

@@ -6,7 +6,7 @@ type DeviceOrientationEventWithPermission = typeof DeviceOrientationEvent & {
 };
 
 type DeviceOrientationEventWithCompass = DeviceOrientationEvent & {
-    webkitCompassHeading?: number;
+    webkitCompassHeading?: number | null;
 };
 
 type DeviceOrientationEventName = 'deviceorientationabsolute' | 'deviceorientation';
@@ -29,6 +29,16 @@ export class OrientationPermission {
     }
 
     getEventName(): DeviceOrientationEventName {
+        // On iOS, DeviceOrientationEvent.requestPermission() exists (Apple-only
+        // API). iOS 17.4+ also added window.ondeviceorientationabsolute, which
+        // makes the generic 'absolute' check below return true — but
+        // deviceorientationabsolute fires unreliably on iOS.  The correct iOS
+        // source is deviceorientation + webkitCompassHeading, so we pin to that
+        // event whenever we're in an iOS/Safari context.
+        if (this.hasPermissionRequest()) {
+            return 'deviceorientation';
+        }
+
         return 'ondeviceorientationabsolute' in (window as unknown as Record<string, unknown>)
             ? 'deviceorientationabsolute'
             : 'deviceorientation';
@@ -37,7 +47,11 @@ export class OrientationPermission {
     getHeading(event: DeviceOrientationEvent): number | null {
         const compassEvent = event as DeviceOrientationEventWithCompass;
 
-        if (compassEvent.webkitCompassHeading !== undefined) {
+        // webkitCompassHeading is an iOS-only property that gives degrees
+        // clockwise from true north directly.  It can be null when the device
+        // is lying flat or the compass is temporarily unavailable; in that case
+        // fall through to the alpha-based calculation below.
+        if (typeof compassEvent.webkitCompassHeading === 'number') {
             return compassEvent.webkitCompassHeading;
         }
 
