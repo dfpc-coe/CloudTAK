@@ -18,6 +18,7 @@
             "@capacitor/preferences",
             "@capacitor/status-bar",
             "@capgo/background-geolocation",
+            "@capgo/capacitor-compass",
             "@capacitor-firebase/messaging"
         ]
     },

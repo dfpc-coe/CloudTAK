@@ -295,7 +295,10 @@ async function genMenuItems() {
             if (!cot.value) throw new Error('Could not find marker');
 
             if (cot.value.origin.mode === OriginMode.CONNECTION) {
-                menuItems.value.push({ id: 'edit', icon: '#radial-pencil' })
+                // User pucks/skittles cannot be edited
+                if (!cot.value.is_skittle) {
+                    menuItems.value.push({ id: 'edit', icon: '#radial-pencil' })
+                }
                 menuItems.value.push({ id: 'delete', icon: '#radial-trash' })
 
                 if (cot.value.geometry.type === 'Point') {
@@ -306,7 +309,10 @@ async function genMenuItems() {
                 const sub = await Subscription.from(cot.value.origin.mode_id, token || '');
 
                 if (sub && sub.role && sub.role.permissions.includes("MISSION_WRITE")) {
-                    menuItems.value.push({ id: 'edit', icon: '#radial-pencil' })
+                    // User pucks/skittles cannot be edited
+                    if (!cot.value.is_skittle) {
+                        menuItems.value.push({ id: 'edit', icon: '#radial-pencil' })
+                    }
                     menuItems.value.push({ id: 'delete', icon: '#radial-trash' })
                 }
             }

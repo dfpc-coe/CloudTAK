@@ -83,7 +83,7 @@ export const useMapStore = defineStore('cloudtak', {
         _menu?: unknown;
         _bottomBar?: unknown;
 
-        _boundOnDeviceOrientation?: (event: DeviceOrientationEvent) => void;
+        _removeOrientationListener?: () => Promise<void>;
         _boundOnVisibilityChange?: () => Promise<void>;
         _removeBackgroundStateListener?: () => void;
         _removePushTokenListener?: () => void;
@@ -339,8 +339,9 @@ export const useMapStore = defineStore('cloudtak', {
 
             await deviceStore.wakeLock.releaseSentinel();
 
-            if (this._boundOnDeviceOrientation) {
-                deviceStore.orientation.removeListener(this._boundOnDeviceOrientation);
+            if (this._removeOrientationListener) {
+                await this._removeOrientationListener();
+                this._removeOrientationListener = undefined;
             }
             if (this._boundOnVisibilityChange) document.removeEventListener('visibilitychange', this._boundOnVisibilityChange);
             if (this._removeBackgroundStateListener) {
@@ -634,20 +635,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.container = container;
 
-            this._boundOnDeviceOrientation = (event: DeviceOrientationEvent): void => {
-                const heading = deviceStore.orientation.getHeading(event);
-
-                // Drive the self-location puck's heading cone regardless of
-                // whether the map itself is being rotated to match.
-                const control = this._map
-                    ? (this._map as mapgl.Map & { _geolocateControl?: GeolocateControl })._geolocateControl
-                    : undefined;
-                if (control) control.setHeading(heading);
-
-                if (this.userOrientationMode && heading !== null && this._map) {
-                    this.map.setBearing(heading);
-                }
-            };
             this._boundOnVisibilityChange = async (): Promise<void> => {
                 if (document.hidden) return;
                 if (!(await this.worker.initialized)) return;
@@ -661,7 +648,18 @@ export const useMapStore = defineStore('cloudtak', {
                 await this.updateCOT();
             };
 
-            deviceStore.orientation.addListener(this._boundOnDeviceOrientation);
+            this._removeOrientationListener = await deviceStore.orientation.addListener((heading) => {
+                // Drive the self-location puck's heading cone regardless of
+                // whether the map itself is being rotated to match.
+                const control = this._map
+                    ? (this._map as mapgl.Map & { _geolocateControl?: GeolocateControl })._geolocateControl
+                    : undefined;
+                if (control) control.setHeading(heading);
+
+                if (this.userOrientationMode && heading !== null && this._map) {
+                    this.map.setBearing(heading);
+                }
+            });
             document.addEventListener('visibilitychange', this._boundOnVisibilityChange);
 
             // Track foreground/background transitions using a native-reliable
