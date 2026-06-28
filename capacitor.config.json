@@ -13,7 +13,6 @@
             "@capacitor/camera",
             "@capacitor/clipboard",
             "@capacitor/geolocation",
-	    "@capgo/capacitor-compass",
             "@capacitor/haptics",
             "@capacitor/keyboard",
             "@capacitor/preferences",
