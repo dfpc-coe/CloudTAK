@@ -97,6 +97,7 @@
         "uuid": "^14.0.0",
         "vue": "^3.2.31",
         "vue-component-type-helpers": "^3.0.7",
+        "vue-eslint-parser": "^10.4.1",
         "vue-mention": "^2.0.0-alpha.3",
         "vue-router": "^5.0.0",
         "yaml": "^2.8.2"
