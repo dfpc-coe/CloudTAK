@@ -299,30 +299,10 @@ db.version(2).stores({
     mission_template_log: 'id, template, [template+id]',
 });
 
-/*
- * iOS/WebKit background-suspend resilience
- *
- * When iOS suspends a backgrounded WebView (or Capacitor app) it can force-close
- * the underlying IndexedDB connection and abort any in-flight transactions.
- * Dexie does not auto-reopen after such a close, so the next read/write rejects
- * with DatabaseClosedError / AbortError — surfaced to the user as
- * "Transaction Aborted" when the app is resumed.
- *
- * Strategy:
- *  1. A Dexie DBCore middleware wraps every table operation so each call
- *     transparently reopens the connection before proceeding when closed.
- *     When the database is already open (the normal case) the check is a
- *     synchronous `isOpen()` call — zero async overhead.
- *  2. `ensureDbOpen()` is exported for callers that want to batch-reopen once
- *     before a burst of writes (e.g. WebSocket reconnect on resume).
- *  3. `withDbRetry()` is exported for idempotent writes that should retry if a
- *     transaction is aborted mid-flight (distinct from a closed connection).
- */
-
 let reopenPromise: Promise<void> | null = null;
 
-function reopenDatabase(): Promise<void> {
-    if (db.isOpen()) return Promise.resolve();
+export async function ensureDatabase(): Promise<void> {
+    if (db.isOpen()) return;
 
     if (!reopenPromise) {
         reopenPromise = (async () => {
@@ -346,11 +326,6 @@ function reopenDatabase(): Promise<void> {
     return reopenPromise;
 }
 
-// Proactively reopen whenever WebKit force-closes the connection on background suspend.
-db.on('close', () => {
-    void reopenDatabase();
-});
-
 const TRANSIENT_DB_ERROR_NAMES = new Set([
     'AbortError',
     'DatabaseClosedError',
@@ -360,17 +335,14 @@ const TRANSIENT_DB_ERROR_NAMES = new Set([
     'UnknownError'
 ]);
 
-// Low-level middleware: every DBCore operation ensures the connection is open
-// and retries on transient errors (AbortError / DatabaseClosedError etc.).
-// Covers chained queries (where/equals/toArray etc.) as well as direct calls
-// since all Dexie operations ultimately pass through these six methods.
 db.use({
     stack: 'dbcore',
     create(downlevel) {
         async function wrap<T>(fn: () => Promise<T>): Promise<T> {
-            if (!db.isOpen()) await reopenDatabase();
+            if (!db.isOpen()) await ensureDatabase();
 
             let lastError: unknown;
+
             for (let attempt = 0; attempt < 3; attempt++) {
                 try {
                     return await fn();
@@ -378,11 +350,15 @@ db.use({
                     lastError = err;
                     const name = (err as { name?: string } | null)?.name ?? '';
                     if (!TRANSIENT_DB_ERROR_NAMES.has(name)) throw err;
+
                     console.warn(`Dexie operation aborted (${name}); reopening and retrying...`);
-                    await reopenDatabase();
+
+                    await ensureDatabase();
+
                     await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
                 }
             }
+
             throw lastError;
         }
 
@@ -403,13 +379,3 @@ db.use({
         };
     }
 });
-
-/**
- * Ensure the Dexie connection is open, reopening it if WebKit closed it while
- * the app was backgrounded. Call before bursts of writes on resume (e.g. when
- * the WebSocket reconnects and streams archived CoTs).
- */
-export async function ensureDbOpen(): Promise<void> {
-    if (!db.isOpen()) await reopenDatabase();
-}
-
