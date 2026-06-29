@@ -638,7 +638,11 @@ export const useMapStore = defineStore('cloudtak', {
 
                 // Proactively reopen the main-thread IndexedDB connection.
                 // WebKit may have force-closed it while the app was backgrounded.
-                await ensureDatabase();
+                try {
+                    await ensureDatabase();
+                } catch (err) {
+                    console.error('Failed to reopen IndexedDB on resume:', err);
+                }
 
                 const isOpen = await this.worker.conn.isOpen;
                 if (!isOpen) {
