@@ -166,6 +166,7 @@
 <script setup lang='ts'>
 import { ref, computed, onErrorCaptured, onMounted, onUnmounted } from 'vue'
 import { liveQuery } from 'dexie';
+import { isTransientDbError } from './database.ts';
 import { useRoute } from 'vue-router';
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
@@ -242,11 +243,15 @@ const navShown = computed<boolean>(() => {
 });
 
 onErrorCaptured((err) => {
-    if (!(err instanceof Error)) {
-        error.value = new Error(String(err));
-    }
+    const e = err instanceof Error ? err : new Error(String(err));
 
-    const e = err as Error;
+    // Suppress transient IndexedDB errors from iOS background suspension;
+    // the middleware retries them automatically so they should not surface
+    // to the user as an error banner.
+    if (isTransientDbError(e)) {
+        console.warn('Suppressed transient IDB error (resume):', e);
+        return false;
+    }
 
     if (e.message === '401') {
         // Popup Modal if reauthenticating vs initial login
@@ -268,7 +273,12 @@ onMounted(async () => {
 
     // Register before any awaits so early promise rejections are captured
     window.addEventListener('unhandledrejection', (e) => {
-        error.value = e.reason instanceof Error ? e.reason : new Error(String(e.reason));
+        const err = e.reason instanceof Error ? e.reason : new Error(String(e.reason));
+        if (isTransientDbError(err)) {
+            console.warn('Suppressed transient unhandled IDB rejection (resume):', err);
+            return;
+        }
+        error.value = err;
     });
 
     if (supportsServiceWorker()) {

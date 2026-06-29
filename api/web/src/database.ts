@@ -306,6 +306,7 @@ export async function ensureDatabase(): Promise<void> {
 
     if (!reopenPromise) {
         reopenPromise = (async () => {
+            let lastError: unknown;
             for (let attempt = 0; attempt < 5; attempt++) {
                 if (db.isOpen()) return;
 
@@ -314,10 +315,12 @@ export async function ensureDatabase(): Promise<void> {
                     return;
                 } catch (err) {
                     if (db.isOpen()) return;
+                    lastError = err;
                     console.warn(`Dexie reopen attempt ${attempt + 1} failed:`, err);
                     await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
                 }
             }
+            throw lastError;
         })().finally(() => {
             reopenPromise = null;
         });
@@ -334,6 +337,23 @@ const TRANSIENT_DB_ERROR_NAMES = new Set([
     'InvalidStateError',
     'UnknownError'
 ]);
+
+// Proactively reopen whenever WebKit force-closes the connection on background suspend.
+db.on('close', () => {
+    void ensureDatabase();
+});
+
+/**
+ * Returns true for the transient IndexedDB errors that occur when an iOS
+ * WebView is suspended in the background and later resumed. The middleware
+ * already retries these automatically; use this helper to suppress them
+ * in global error handlers so users are not shown stale error banners.
+ */
+export function isTransientDbError(err: unknown): boolean {
+    return TRANSIENT_DB_ERROR_NAMES.has(
+        (err as { name?: string } | null)?.name ?? ''
+    );
+}
 
 db.use({
     stack: 'dbcore',
