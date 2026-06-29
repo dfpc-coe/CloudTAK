@@ -16,6 +16,7 @@
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		B93F58F02FEF084E00852C9D /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B93F58EF2FEF084E00852C9D /* GoogleService-Info.plist */; };
+		B93F58F22FEF331000852C9D /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B93F58F12FEF331000852C9D /* GoogleService-Info.plist */; };
 		B95589D62FC8A430004B349A /* CloudTAK.icon in Resources */ = {isa = PBXBuildFile; fileRef = B95589D52FC8A430004B349A /* CloudTAK.icon */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +32,7 @@
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		B93F58EF2FEF084E00852C9D /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B93F58F12FEF331000852C9D /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B95589D42FC6401B004B349A /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		B95589D52FC8A430004B349A /* CloudTAK.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = CloudTAK.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -54,6 +56,7 @@
 				504EC3061FED79650016851F /* App */,
 				504EC3051FED79650016851F /* Products */,
 				B93F58EF2FEF084E00852C9D /* GoogleService-Info.plist */,
+				B93F58F12FEF331000852C9D /* GoogleService-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -150,6 +153,7 @@
 			files = (
 				504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */,
 				B93F58F02FEF084E00852C9D /* GoogleService-Info.plist in Resources */,
+				B93F58F22FEF331000852C9D /* GoogleService-Info.plist in Resources */,
 				50B271D11FEDC1A000F3C39B /* public in Resources */,
 				504EC30F1FED79650016851F /* Assets.xcassets in Resources */,
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,

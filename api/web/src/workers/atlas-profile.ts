@@ -247,6 +247,17 @@ export default class AtlasProfile {
                 type: WorkerMessageType.Profile_Location_Source,
                 body: { source: LocationState.Preset }
             });
+
+            // Emit the manual coordinates so the map (and the geolocation
+            // control puck) renders the user at the location they set.
+            this.atlas.postMessage({
+                type: WorkerMessageType.Profile_Location_Coordinates,
+                body: {
+                    accuracy: undefined,
+                    altitude: undefined,
+                    coordinates: this.location.coordinates
+                }
+            });
         } else if ((!this.profile_loc || !this.profile_loc.value) && this.location.source === LocationState.Preset) {
             // Reset to disabled when manual location is cleared
             this.location.source = LocationState.Disabled;

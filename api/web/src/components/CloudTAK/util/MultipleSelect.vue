@@ -27,7 +27,7 @@
 import { ref, onMounted, onUnmounted, watch, markRaw } from 'vue';
 import Feature from './FeatureRow.vue'
 import { useMapStore } from '../../../stores/map.ts';
-import mapgl from 'maplibre-gl';
+import * as mapgl from 'maplibre-gl';
 
 const emit = defineEmits([ 'selected' ]);
 

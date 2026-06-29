@@ -21501,6 +21501,7 @@ export interface paths {
                             token: string;
                             access: "admin" | "agency" | "user";
                             email: string;
+                            session: string;
                             certRenewalRequired?: boolean;
                         };
                     };
@@ -21795,6 +21796,7 @@ export interface paths {
                             token: string;
                             access: "admin" | "agency" | "user";
                             email: string;
+                            session: string;
                         };
                     };
                 };

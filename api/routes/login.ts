@@ -21,6 +21,7 @@ export default async function router(schema: Schema, config: Config) {
             token: Type.String(),
             access: Type.Enum(AuthUserAccess),
             email: Type.String(),
+            session: Type.String(),
         }),
     }, async (req, res) => {
         try {
@@ -89,6 +90,7 @@ export default async function router(schema: Schema, config: Config) {
             res.json({
                 access,
                 email: profile.username,
+                session: session.id,
                 token: jwt.sign({ access, email: profile.username, s: session.id }, config.SigningSecret, { expiresIn: '16h' }),
             });
         } catch (err) {

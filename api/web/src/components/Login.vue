@@ -586,12 +586,12 @@ async function notMe(): Promise<void> {
 // Persist a successful login. If the authenticated user differs from the one
 // whose data is already cached locally, wipe the database first so the new
 // user does not inherit the previous user's data.
-async function applySession(login: { token: string; email: string }): Promise<void> {
+async function applySession(login: { token: string; email: string; session: string }): Promise<void> {
     if (storedUsername.value && storedUsername.value !== login.email) {
         await appStore.destroySession();
     }
 
-    await appStore.persistSession({ token: login.token, username: login.email });
+    await appStore.persistSession({ token: login.token, username: login.email, session: login.session });
     storedUsername.value = login.email;
 }
 
@@ -608,7 +608,7 @@ async function createLogin() {
         if (res.error) throw new Error(res.error.message);
         const login = res.data;
 
-        await applySession({ token: login.token, email: login.email });
+        await applySession({ token: login.token, email: login.email, session: login.session });
 
         navigateAfterLogin();
     } catch (err) {
@@ -682,7 +682,7 @@ async function completePasskeyLogin(credential: AuthenticationResponseJSON) {
         if (res.error) throw new Error(res.error.message);
         const login = res.data;
 
-        await applySession({ token: login.token, email: login.email });
+        await applySession({ token: login.token, email: login.email, session: login.session });
 
         if (login.certRenewalRequired) {
             certRenewal.required = true;
@@ -742,7 +742,7 @@ async function renewCertificate() {
         if (res.error) throw new Error(res.error.message);
         const login = res.data;
 
-        await applySession({ token: login.token, email: login.email });
+        await applySession({ token: login.token, email: login.email, session: login.session });
         certRenewal.required = false;
         certRenewal.password = '';
 

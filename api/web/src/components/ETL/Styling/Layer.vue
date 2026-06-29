@@ -321,9 +321,9 @@ watch(l.value, () => {
     if (!props.updateMap) return;
 
     for (const paint of PAINT_PROPERTIES) {
-        if (l.value.paint[paint] !== undefined) {
-            mapStore.map.setPaintProperty(l.value.id, paint, l.value.paint[paint]);
+            if (l.value.paint[paint] != null) {
+                mapStore.map.setPaintProperty(l.value.id, paint, l.value.paint[paint] as string | number);
+            }
         }
-    }
 });
 </script>

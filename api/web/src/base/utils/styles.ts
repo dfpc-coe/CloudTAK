@@ -1,4 +1,4 @@
-import mapgl from 'maplibre-gl'
+import * as mapgl from 'maplibre-gl'
 import type {
     LayerSpecification,
     CircleLayerSpecification,

@@ -143,6 +143,10 @@ export default class AtlasDatabase {
         const display_stale = (await ProfileConfig.get('display_stale'))?.value || 'Immediate';
 
         for (const cot of this.cots.values()) {
+            // The user's own position is drawn by the GeolocateControl puck
+            // rather than as a CoT marker on the map.
+            if (cot.is_self) continue;
+
             const stale = new Date(cot.properties.stale).getTime();
 
             if (this.pendingHidden.has(String(cot.id))) {
@@ -195,7 +199,7 @@ export default class AtlasDatabase {
 
         for (const id of this.pendingUnhide.values()) {
             const cot = this.cots.get(id);
-            if (!cot) continue;
+            if (!cot || cot.is_self) continue;
 
             const render = cot.as_rendered();
             diff.add.push(render);
@@ -204,7 +208,7 @@ export default class AtlasDatabase {
         this.pendingUnhide.clear();
 
         for (const cot of this.pendingCreate.values()) {
-            if (staleDelete.has(cot.id) || this.pendingDelete.has(cot.id)) continue;
+            if (cot.is_self || staleDelete.has(cot.id) || this.pendingDelete.has(cot.id)) continue;
             const render = cot.as_rendered();
             diff.add.push(render);
         }
@@ -212,7 +216,7 @@ export default class AtlasDatabase {
         this.pendingCreate.clear();
 
         for (const cot of this.pendingUpdate.values()) {
-            if (staleDelete.has(cot.id) || this.pendingDelete.has(cot.id)) continue;
+            if (cot.is_self || staleDelete.has(cot.id) || this.pendingDelete.has(cot.id)) continue;
 
             const render = cot.as_rendered();
 

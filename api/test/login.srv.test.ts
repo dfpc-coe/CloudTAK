@@ -48,6 +48,8 @@ test('POST: api/login', async () => {
 
         assert.ok(res.body.token);
         delete res.body.token;
+        assert.ok(res.body.session);
+        delete res.body.session;
 
         assert.deepEqual(res.body, {
             access: 'admin',
