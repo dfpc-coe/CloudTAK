@@ -305,11 +305,18 @@ db.version(2).stores({
  * When iOS suspends a backgrounded WebView (or Capacitor app) it can force-close
  * the underlying IndexedDB connection and abort any in-flight transactions.
  * Dexie does not auto-reopen after such a close, so the next read/write rejects
- * with DatabaseClosedError / AbortError - surfaced to the user as
+ * with DatabaseClosedError / AbortError — surfaced to the user as
  * "Transaction Aborted" when the app is resumed.
  *
- * The helpers below transparently reopen the connection and retry the small set
- * of transient errors that occur in this scenario.
+ * Strategy:
+ *  1. A Dexie DBCore middleware wraps every table operation so each call
+ *     transparently reopens the connection before proceeding when closed.
+ *     When the database is already open (the normal case) the check is a
+ *     synchronous `isOpen()` call — zero async overhead.
+ *  2. `ensureDbOpen()` is exported for callers that want to batch-reopen once
+ *     before a burst of writes (e.g. WebSocket reconnect on resume).
+ *  3. `withDbRetry()` is exported for idempotent writes that should retry if a
+ *     transaction is aborted mid-flight (distinct from a closed connection).
  */
 
 let reopenPromise: Promise<void> | null = null;
@@ -339,11 +346,33 @@ function reopenDatabase(): Promise<void> {
     return reopenPromise;
 }
 
-// Fired when the underlying IndexedDB connection is closed unexpectedly
-// (notably on iOS when the app is backgrounded). Proactively reopen so the
-// connection self-heals before the next operation runs.
+// Proactively reopen whenever WebKit force-closes the connection on background suspend.
 db.on('close', () => {
     void reopenDatabase();
+});
+
+// Low-level middleware: every DBCore operation checks isOpen() before executing.
+// Handles chained queries (where/equals/toArray etc.) as well as direct calls
+// since all Dexie operations ultimately pass through these six methods.
+db.use({
+    stack: 'dbcore',
+    create(downlevel) {
+        return {
+            ...downlevel,
+            table(name) {
+                const t = downlevel.table(name);
+                return {
+                    ...t,
+                    mutate:     (req) => db.isOpen() ? t.mutate(req)     : reopenDatabase().then(() => t.mutate(req)),
+                    get:        (req) => db.isOpen() ? t.get(req)        : reopenDatabase().then(() => t.get(req)),
+                    getMany:    (req) => db.isOpen() ? t.getMany(req)    : reopenDatabase().then(() => t.getMany(req)),
+                    query:      (req) => db.isOpen() ? t.query(req)      : reopenDatabase().then(() => t.query(req)),
+                    openCursor: (req) => db.isOpen() ? t.openCursor(req) : reopenDatabase().then(() => t.openCursor(req)),
+                    count:      (req) => db.isOpen() ? t.count(req)      : reopenDatabase().then(() => t.count(req)),
+                };
+            }
+        };
+    }
 });
 
 /**
@@ -394,3 +423,4 @@ export async function withDbRetry<T>(
 
     throw lastError;
 }
+

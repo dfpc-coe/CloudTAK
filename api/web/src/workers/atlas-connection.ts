@@ -59,14 +59,10 @@ export default class AtlasConnection {
         this.ws = new WebSocket(url);
 
         this.ws.addEventListener('open', () => {
-            // The connection re-opening is the primary resume signal on iOS,
-            // where the WebView (and its IndexedDB connection) may have been
-            // suspended while backgrounded. Reopen the database before the
-            // server streams archived CoTs so the incoming writes don't hit a
-            // closed/aborted transaction ("Transaction Aborted").
-            void ensureDbOpen();
+            ensureDbOpen();
 
             this.atlas.postMessage({ type: WorkerMessageType.Connection_Open });
+
             this.isOpen = true;
         });
 
