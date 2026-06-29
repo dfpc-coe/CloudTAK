@@ -1,12 +1,12 @@
 {
     "name": "@tak-ps/CloudTAK",
     "type": "module",
-    "version": "13.25.1",
+    "version": "13.25.2",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "scripts": {
         "lint": "eslint bin/ cloudformation/",
         "build": "node bin/build.js",
-	"app": "npm install && cd api/web && npm install --legacy-peer-deps && npm run build && cd ../.. npx cap sync",
+        "app": "npm install && cd api/web && npm install --legacy-peer-deps && npm run build && cd ../.. npx cap sync",
         "test": "echo \"Error: no test specified\" && exit 1",
         "version": "node bin/version.js && git add api/package.json api/web/package.json",
         "postversion": "git push && git push --tags"
