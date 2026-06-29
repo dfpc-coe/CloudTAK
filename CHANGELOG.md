@@ -16,6 +16,11 @@
 
 ### Pending Release
 
+### v13.25.2 - 2026-06-29
+
+- :rocket: Hide the accuracy ring if the user is using Preset Location mode
+- :rocket: Ensure the user can't select the user menu
+
 ### v13.25.1 - 2026-06-28
 
 - :bug: Fix release actions
