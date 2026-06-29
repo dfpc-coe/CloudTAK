@@ -245,11 +245,7 @@ const navShown = computed<boolean>(() => {
 onErrorCaptured((err) => {
     const e = err instanceof Error ? err : new Error(String(err));
 
-    // Suppress transient IndexedDB errors from iOS background suspension;
-    // the middleware retries them automatically so they should not surface
-    // to the user as an error banner.
     if (isTransientDbError(e)) {
-        console.warn('Suppressed transient IDB error (resume):', e);
         return false;
     }
 
@@ -275,7 +271,6 @@ onMounted(async () => {
     window.addEventListener('unhandledrejection', (e) => {
         const err = e.reason instanceof Error ? e.reason : new Error(String(e.reason));
         if (isTransientDbError(err)) {
-            console.warn('Suppressed transient unhandled IDB rejection (resume):', err);
             return;
         }
         error.value = err;
