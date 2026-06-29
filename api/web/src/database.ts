@@ -351,24 +351,53 @@ db.on('close', () => {
     void reopenDatabase();
 });
 
-// Low-level middleware: every DBCore operation checks isOpen() before executing.
-// Handles chained queries (where/equals/toArray etc.) as well as direct calls
+const TRANSIENT_DB_ERROR_NAMES = new Set([
+    'AbortError',
+    'DatabaseClosedError',
+    'PrematureCommitError',
+    'TransactionInactiveError',
+    'InvalidStateError',
+    'UnknownError'
+]);
+
+// Low-level middleware: every DBCore operation ensures the connection is open
+// and retries on transient errors (AbortError / DatabaseClosedError etc.).
+// Covers chained queries (where/equals/toArray etc.) as well as direct calls
 // since all Dexie operations ultimately pass through these six methods.
 db.use({
     stack: 'dbcore',
     create(downlevel) {
+        async function wrap<T>(fn: () => Promise<T>): Promise<T> {
+            if (!db.isOpen()) await reopenDatabase();
+
+            let lastError: unknown;
+            for (let attempt = 0; attempt < 3; attempt++) {
+                try {
+                    return await fn();
+                } catch (err) {
+                    lastError = err;
+                    const name = (err as { name?: string } | null)?.name ?? '';
+                    if (!TRANSIENT_DB_ERROR_NAMES.has(name)) throw err;
+                    console.warn(`Dexie operation aborted (${name}); reopening and retrying...`);
+                    await reopenDatabase();
+                    await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
+                }
+            }
+            throw lastError;
+        }
+
         return {
             ...downlevel,
             table(name) {
                 const t = downlevel.table(name);
                 return {
                     ...t,
-                    mutate:     (req) => db.isOpen() ? t.mutate(req)     : reopenDatabase().then(() => t.mutate(req)),
-                    get:        (req) => db.isOpen() ? t.get(req)        : reopenDatabase().then(() => t.get(req)),
-                    getMany:    (req) => db.isOpen() ? t.getMany(req)    : reopenDatabase().then(() => t.getMany(req)),
-                    query:      (req) => db.isOpen() ? t.query(req)      : reopenDatabase().then(() => t.query(req)),
-                    openCursor: (req) => db.isOpen() ? t.openCursor(req) : reopenDatabase().then(() => t.openCursor(req)),
-                    count:      (req) => db.isOpen() ? t.count(req)      : reopenDatabase().then(() => t.count(req)),
+                    mutate:     (req) => wrap(() => t.mutate(req)),
+                    get:        (req) => wrap(() => t.get(req)),
+                    getMany:    (req) => wrap(() => t.getMany(req)),
+                    query:      (req) => wrap(() => t.query(req)),
+                    openCursor: (req) => wrap(() => t.openCursor(req)),
+                    count:      (req) => wrap(() => t.count(req)),
                 };
             }
         };
@@ -382,45 +411,5 @@ db.use({
  */
 export async function ensureDbOpen(): Promise<void> {
     if (!db.isOpen()) await reopenDatabase();
-}
-
-const TRANSIENT_DB_ERROR_NAMES = new Set([
-    'AbortError',
-    'DatabaseClosedError',
-    'PrematureCommitError',
-    'TransactionInactiveError',
-    'InvalidStateError',
-    'UnknownError'
-]);
-
-/**
- * Run a Dexie operation, transparently recovering from the transient
- * "Transaction Aborted" / closed-connection errors that occur when an iOS
- * WebView is suspended in the background and later resumed. The connection is
- * reopened between attempts. Only use this for idempotent operations (e.g.
- * keyed `put`/`delete`) since the operation may run more than once.
- */
-export async function withDbRetry<T>(
-    operation: () => Promise<T>,
-    attempts = 3
-): Promise<T> {
-    let lastError: unknown;
-
-    for (let attempt = 0; attempt < attempts; attempt++) {
-        try {
-            await ensureDbOpen();
-            return await operation();
-        } catch (err) {
-            lastError = err;
-            const name = (err as { name?: string } | null)?.name ?? '';
-            if (!TRANSIENT_DB_ERROR_NAMES.has(name)) throw err;
-
-            console.warn(`Dexie operation aborted (${name}); reopening and retrying...`);
-            await reopenDatabase();
-            await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
-        }
-    }
-
-    throw lastError;
 }
 

@@ -1,6 +1,6 @@
 import { v4 as randomUUID } from 'uuid';
 import { std } from '../std.ts';
-import { db, withDbRetry } from '../database.ts';
+import { db } from '../database.ts';
 import { liveQuery } from 'dexie';
 import { bbox } from '@turf/bbox'
 import { length } from '@turf/length'
@@ -246,12 +246,12 @@ export default class COT {
             }
 
             if (this.origin.mode === OriginMode.CONNECTION) {
-                await withDbRetry(() => db.feature.put({
+                await db.feature.put({
                     id: this.id,
                     path: this._path,
                     properties: this._properties,
                     geometry: this._geometry
-                }));
+                });
             }
 
             if (!this.is_self && (!opts || (opts && opts.skipSave !== false))) {

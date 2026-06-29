@@ -4,7 +4,7 @@
 */
 
 import { std } from '../std.ts';
-import { db, withDbRetry } from '../database.ts';
+import { db } from '../database.ts';
 import type { DBSubscriptionChanges } from '../database.ts';
 import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
@@ -747,13 +747,12 @@ export default class AtlasDatabase {
                 this.pendingCreate.set(exists.id, exists);
                 this.cots.set(exists.id, exists);
 
-                const created = exists;
-                await withDbRetry(() => db.feature.put({
-                    id: created.id,
-                    path: created.path,
-                    properties: created.properties,
-                    geometry: created.geometry
-                }));
+                await db.feature.put({
+                    id: exists.id,
+                    path: exists.path,
+                    properties: exists.properties,
+                    geometry: exists.geometry
+                });
 
                 if (opts.skipBroadcast !== true && exists.properties.archived) {
                     this.atlas.postMessage({
