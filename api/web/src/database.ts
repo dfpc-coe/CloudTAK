@@ -298,3 +298,99 @@ db.version(2).stores({
     mission_template: 'id, name',
     mission_template_log: 'id, template, [template+id]',
 });
+
+/*
+ * iOS/WebKit background-suspend resilience
+ *
+ * When iOS suspends a backgrounded WebView (or Capacitor app) it can force-close
+ * the underlying IndexedDB connection and abort any in-flight transactions.
+ * Dexie does not auto-reopen after such a close, so the next read/write rejects
+ * with DatabaseClosedError / AbortError - surfaced to the user as
+ * "Transaction Aborted" when the app is resumed.
+ *
+ * The helpers below transparently reopen the connection and retry the small set
+ * of transient errors that occur in this scenario.
+ */
+
+let reopenPromise: Promise<void> | null = null;
+
+function reopenDatabase(): Promise<void> {
+    if (db.isOpen()) return Promise.resolve();
+
+    if (!reopenPromise) {
+        reopenPromise = (async () => {
+            for (let attempt = 0; attempt < 5; attempt++) {
+                if (db.isOpen()) return;
+
+                try {
+                    await db.open();
+                    return;
+                } catch (err) {
+                    if (db.isOpen()) return;
+                    console.warn(`Dexie reopen attempt ${attempt + 1} failed:`, err);
+                    await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
+                }
+            }
+        })().finally(() => {
+            reopenPromise = null;
+        });
+    }
+
+    return reopenPromise;
+}
+
+// Fired when the underlying IndexedDB connection is closed unexpectedly
+// (notably on iOS when the app is backgrounded). Proactively reopen so the
+// connection self-heals before the next operation runs.
+db.on('close', () => {
+    void reopenDatabase();
+});
+
+/**
+ * Ensure the Dexie connection is open, reopening it if WebKit closed it while
+ * the app was backgrounded. Call before bursts of writes on resume (e.g. when
+ * the WebSocket reconnects and streams archived CoTs).
+ */
+export async function ensureDbOpen(): Promise<void> {
+    if (!db.isOpen()) await reopenDatabase();
+}
+
+const TRANSIENT_DB_ERROR_NAMES = new Set([
+    'AbortError',
+    'DatabaseClosedError',
+    'PrematureCommitError',
+    'TransactionInactiveError',
+    'InvalidStateError',
+    'UnknownError'
+]);
+
+/**
+ * Run a Dexie operation, transparently recovering from the transient
+ * "Transaction Aborted" / closed-connection errors that occur when an iOS
+ * WebView is suspended in the background and later resumed. The connection is
+ * reopened between attempts. Only use this for idempotent operations (e.g.
+ * keyed `put`/`delete`) since the operation may run more than once.
+ */
+export async function withDbRetry<T>(
+    operation: () => Promise<T>,
+    attempts = 3
+): Promise<T> {
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt < attempts; attempt++) {
+        try {
+            await ensureDbOpen();
+            return await operation();
+        } catch (err) {
+            lastError = err;
+            const name = (err as { name?: string } | null)?.name ?? '';
+            if (!TRANSIENT_DB_ERROR_NAMES.has(name)) throw err;
+
+            console.warn(`Dexie operation aborted (${name}); reopening and retrying...`);
+            await reopenDatabase();
+            await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
+        }
+    }
+
+    throw lastError;
+}
