@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.25.3 - 2026-06-29
+
+- :rocket: Improve internal DexieDB database transaction handling
+
 ### v13.25.2 - 2026-06-29
 
 - :rocket: Hide the accuracy ring if the user is using Preset Location mode
