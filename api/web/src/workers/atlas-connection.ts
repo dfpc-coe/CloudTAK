@@ -78,6 +78,7 @@ export default class AtlasConnection {
         });
 
         this.ws.addEventListener('message', async (msg) => {
+            try {
             const body = JSON.parse(msg.data) as {
                 type: string;
                 connection: number | string;
@@ -281,6 +282,9 @@ export default class AtlasConnection {
                 // Server has finished registering the WebSocket client - no client action needed
             } else {
                 console.log('UNKNOWN', body.data);
+            }
+            } catch (err) {
+                console.warn('Error handling WebSocket message:', err);
             }
         });
     }

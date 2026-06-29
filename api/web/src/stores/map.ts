@@ -30,17 +30,13 @@ import { FeatureVisibility } from './modules/feature-visibility.ts';
 import Subscription from '../base/subscription.ts';
 import { stdurl, server, getRuntimeToken, serverUrl } from '../std.js';
 import * as mapgl from 'maplibre-gl'
-// Bundle the MapLibre worker (and its `maplibre-gl-shared.mjs` dependency) into
-// a single self-contained module via Vite's worker pipeline. Using a bare `?url`
-// import only copies the worker file, leaving its relative
-// `import './maplibre-gl-shared.mjs'` unresolved — which 404s under Capacitor's
-// app origin and leaves the map stuck on an infinite load.
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
 import { isNativePlatform, addBackgroundStateListener } from '../base/capacitor.ts';
+import { ensureDatabase } from '../database.ts';
 
 import type { ProfileOverlay, Basemap, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
@@ -639,6 +635,14 @@ export const useMapStore = defineStore('cloudtak', {
             this._boundOnVisibilityChange = async (): Promise<void> => {
                 if (document.hidden) return;
                 if (!(await this.worker.initialized)) return;
+
+                // Proactively reopen the main-thread IndexedDB connection.
+                // WebKit may have force-closed it while the app was backgrounded.
+                try {
+                    await ensureDatabase();
+                } catch (err) {
+                    console.error('Failed to reopen IndexedDB on resume:', err);
+                }
 
                 const isOpen = await this.worker.conn.isOpen;
                 if (!isOpen) {
