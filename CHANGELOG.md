@@ -16,6 +16,13 @@
 
 ### Pending Release
 
+### v13.25.0 - 2026-06-28
+
+- :bug: Allow configured VideoURL in SafeURL exception list
+- :tada: Redesigned geolocate control with real-time compass readings
+- :rocket: Migrate Session IDs to UUIDs for use as deviceIDs
+- :rocket visual changes to map controls
+
 ### v13.24.0 - 2026-06-26
 
 - :tada: Permissions prompt for Firebase Notifications
