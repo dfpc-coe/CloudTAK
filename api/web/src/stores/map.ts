@@ -264,7 +264,8 @@ export const useMapStore = defineStore('cloudtak', {
             if (this.location === LocationState.Disabled || !this.gpsCoordinates) {
                 control.setLocation(null);
             } else {
-                control.setLocation(this.gpsCoordinates, this.locationAccuracy);
+                const accuracy = this.location === LocationState.Preset ? 0 : this.locationAccuracy;
+                control.setLocation(this.gpsCoordinates, accuracy);
             }
         },
         openSelfFeature: async function() {
