@@ -25,7 +25,7 @@ jobs:
         run: npm install -g npm@latest
 
       - name: npm install
-        run: cd api/web && npm install
+        run: cd api/web && npm install --legacy-peer-deps
 
       - name: Build Types
         run: cd api/web && npm run build:types

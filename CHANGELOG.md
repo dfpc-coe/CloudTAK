@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.25.1 - 2026-06-28
+
+- :bug: Fix release actions
+
 ### v13.25.0 - 2026-06-28
 
 - :bug: Allow configured VideoURL in SafeURL exception list
