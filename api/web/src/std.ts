@@ -29,7 +29,58 @@ export async function getServer() {
         },
     };
 
-    server.use(authMiddleware);
+    const errorReportMiddleware: Middleware = {
+        async onResponse({ request, response }) {
+            const status = response.status;
+
+            const shouldReport =
+                status >= 500 ||
+                (status >= 400 && ![401, 403].includes(status));
+
+            if (!shouldReport) return;
+
+            // Avoid infinite loop - never report failures on the error endpoint itself.
+            if (request.url.includes('/api/error')) return;
+
+            const token = await getRuntimeToken();
+            if (!token) {
+                console.warn('Error reporting skipped: no auth token available');
+                return;
+            };
+
+            let message;
+            try {
+                const clone = response.clone();
+                message = await clone.text()
+            } catch {
+                console.warn('Error reporting skipped: failed to read response body');
+            } finally {
+                message = [
+                    'URL': request.url,
+                    'Method': request.method,
+                    'Status Code': status,
+                    'Body:',
+                    message || '<empty>',
+                ].join('\n');
+            }
+
+            // Fire-and-forget — errors here must not propagate to the caller.
+            fetch(stdurl('/api/error'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    message
+                }),
+            }).catch(() => {
+                console.warn('Error reporting failed: unable to send error report');
+            });
+        },
+    };
+
+    server.use(authMiddleware, errorReportMiddleware);
 
     return server;
 }
