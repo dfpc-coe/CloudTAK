@@ -338,64 +338,43 @@ const TRANSIENT_DB_ERROR_NAMES = new Set([
     'UnknownError'
 ]);
 
-// Proactively reopen whenever WebKit force-closes the connection on background suspend.
+const TRANSIENT_DB_ERROR_MESSAGES = [
+    'transaction finished',
+    'transaction is not active',
+    'transaction was aborted',
+    'transaction aborted',
+    'objectstore',
+    'connection is closing',
+    'premature commit'
+];
+
 db.on('close', () => {
     void ensureDatabase();
 });
 
-/**
- * Returns true for the transient IndexedDB errors that occur when an iOS
- * WebView is suspended in the background and later resumed. The middleware
- * already retries these automatically; use this helper to suppress them
- * in global error handlers so users are not shown stale error banners.
- */
 export function isTransientDbError(err: unknown): boolean {
-    return TRANSIENT_DB_ERROR_NAMES.has(
-        (err as { name?: string } | null)?.name ?? ''
-    );
+    const e = err as { name?: string; message?: string } | null;
+    if (TRANSIENT_DB_ERROR_NAMES.has(e?.name ?? '')) return true;
+
+    const message = (e?.message ?? '').toLowerCase();
+    return TRANSIENT_DB_ERROR_MESSAGES.some((fragment) => message.includes(fragment));
 }
 
-db.use({
-    stack: 'dbcore',
-    create(downlevel) {
-        async function wrap<T>(fn: () => Promise<T>): Promise<T> {
-            if (!db.isOpen()) await ensureDatabase();
+export async function withDbRetry<T>(fn: () => Promise<T>, attempts = 4): Promise<T> {
+    let lastError: unknown;
 
-            let lastError: unknown;
+    for (let attempt = 0; attempt < attempts; attempt++) {
+        try {
+            await ensureDatabase();
+            return await fn();
+        } catch (err) {
+            lastError = err;
+            if (!isTransientDbError(err)) throw err;
 
-            for (let attempt = 0; attempt < 3; attempt++) {
-                try {
-                    return await fn();
-                } catch (err) {
-                    lastError = err;
-                    const name = (err as { name?: string } | null)?.name ?? '';
-                    if (!TRANSIENT_DB_ERROR_NAMES.has(name)) throw err;
-
-                    console.warn(`Dexie operation aborted (${name}); reopening and retrying...`);
-
-                    await ensureDatabase();
-
-                    await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
-                }
-            }
-
-            throw lastError;
+            await ensureDatabase();
+            await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
         }
-
-        return {
-            ...downlevel,
-            table(name) {
-                const t = downlevel.table(name);
-                return {
-                    ...t,
-                    mutate:     (req) => wrap(() => t.mutate(req)),
-                    get:        (req) => wrap(() => t.get(req)),
-                    getMany:    (req) => wrap(() => t.getMany(req)),
-                    query:      (req) => wrap(() => t.query(req)),
-                    openCursor: (req) => wrap(() => t.openCursor(req)),
-                    count:      (req) => wrap(() => t.count(req)),
-                };
-            }
-        };
     }
-});
+
+    throw lastError;
+}

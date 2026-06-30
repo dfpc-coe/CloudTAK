@@ -4,7 +4,7 @@
 */
 
 import { std } from '../std.ts';
-import { db } from '../database.ts';
+import { db, withDbRetry } from '../database.ts';
 import type { DBSubscriptionChanges } from '../database.ts';
 import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
@@ -233,7 +233,7 @@ export default class AtlasDatabase {
 
         for (const id of staleDelete) {
             this.cots.delete(id);
-            await db.feature.delete(id);
+            await withDbRetry(() => db.feature.delete(id));
         }
 
         for (const id of this.pendingDelete) {
@@ -243,7 +243,7 @@ export default class AtlasDatabase {
             diff.remove.push(cot.vectorId());
 
             this.cots.delete(id);
-            await db.feature.delete(id);
+            await withDbRetry(() => db.feature.delete(id));
         }
 
         this.pendingDelete.clear();
@@ -447,7 +447,7 @@ export default class AtlasDatabase {
                 this.pendingDelete.add(breadcrumbId);
             }
 
-            await db.feature.delete(breadcrumbId);
+            await withDbRetry(() => db.feature.delete(breadcrumbId));
         }
 
         if (cot.origin.mode === OriginMode.CONNECTION) {
@@ -747,12 +747,13 @@ export default class AtlasDatabase {
                 this.pendingCreate.set(exists.id, exists);
                 this.cots.set(exists.id, exists);
 
-                await db.feature.put({
-                    id: exists.id,
-                    path: exists.path,
-                    properties: exists.properties,
-                    geometry: exists.geometry
-                });
+                const created = exists;
+                await withDbRetry(() => db.feature.put({
+                    id: created.id,
+                    path: created.path,
+                    properties: created.properties,
+                    geometry: created.geometry
+                }));
 
                 if (opts.skipBroadcast !== true && exists.properties.archived) {
                     this.atlas.postMessage({

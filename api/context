@@ -47,7 +47,16 @@ GeofenceSecret=$(aws secretsmanager get-secret-value \
     --query SecretString --output text \
     --profile "${AwsProfile}" --region "${AwsRegion}" 2>/dev/null || echo "")
 
+AssetBucket=$(aws cloudformation describe-stack-resource \
+    --stack-name "${FullStack}" \
+    --logical-resource-id AssetBucket \
+    --query StackResourceDetail.PhysicalResourceId --output text \
+    --profile "${AwsProfile}" --region "${AwsRegion}")
+
 EnvJson=$(jq -n --arg signing "$SigningSecret" '{ SigningSecret: $signing }')
+if [[ -n "$AssetBucket" ]]; then
+    EnvJson=$(echo "$EnvJson" | jq --arg bucket "$AssetBucket" '. + { "ASSET_BUCKET": $bucket }')
+fi
 if [[ -n "$ApiUrl" ]]; then
     EnvJson=$(echo "$EnvJson" | jq --arg url "$ApiUrl" '. + { "API_URL": $url }')
 fi
