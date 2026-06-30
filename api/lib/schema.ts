@@ -303,6 +303,7 @@ export const Errors = pgTable('errors', {
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     username: text().notNull().references(() => Profile.username),
+    session_id: uuid().references(() => ProfileSession.id, { onDelete: 'set null' }),
     message: text().notNull(),
     trace: text(),
 });
@@ -557,7 +558,7 @@ export const ProfilePaging = pgTable('profile_paging', {
 });
 
 export const ProfileSession = pgTable('profile_sessions', {
-    id: serial().primaryKey(),
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
     username: text().notNull().references(() => Profile.username),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     ip: text().notNull(),

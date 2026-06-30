@@ -1,0 +1,2 @@
+ALTER TABLE "errors" ADD COLUMN "session_id" uuid;--> statement-breakpoint
+ALTER TABLE "errors" ADD CONSTRAINT "errors_session_id_profile_sessions_id_fk" FOREIGN KEY ("session_id") REFERENCES "public"."profile_sessions"("id") ON DELETE set null ON UPDATE no action;

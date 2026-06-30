@@ -78,6 +78,27 @@
                                                     class='mx-3'
                                                 >CloudTAK Settings</span>
                                             </span>
+                                            <span
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                :class='{
+                                                    "active": String(route.name).startsWith("admin-health"),
+                                                    "cursor-pointer": !String(route.name).startsWith("admin-health")
+                                                }'
+                                                @keyup.enter='router.push(`/admin/health`)'
+                                                @click='router.push(`/admin/health`)'
+                                            >
+                                                <IconHeartbeat
+                                                    v-tooltip='nest ? "Health" : false'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >Health</span>
+                                            </span>
                                         </div>
                                         <h4
                                             v-if='!nest'
@@ -403,6 +424,7 @@ import {
     IconMapPin,
     IconSettings,
     IconServer,
+    IconHeartbeat,
     IconDatabase,
     IconDatabaseExport,
     IconBrandDocker,

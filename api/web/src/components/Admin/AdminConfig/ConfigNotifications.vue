@@ -170,11 +170,11 @@ import {
 interface NotificationConfig {
     'notification::enabled': boolean;
     'notification::sms::enabled': boolean;
-    'notification::sms::service': string;
+    'notification::sms::service': 'aws';
     'notification::email::enabled': boolean;
-    'notification::email::service': string;
+    'notification::email::service': 'aws';
     'notification::push::enabled': boolean;
-    'notification::push::service': string;
+    'notification::push::service': 'firebase';
     'notification::push::firebase::project_id': string;
     'notification::push::firebase::client_email': string;
     'notification::push::firebase::private_key': string;

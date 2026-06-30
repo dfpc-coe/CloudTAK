@@ -39,7 +39,7 @@ import {
 
 const props = defineProps<{
     session: {
-        id: number;
+        id: string;
         username: string;
         created: string;
         ip: string;
