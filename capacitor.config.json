@@ -5,6 +5,7 @@
     "ios": {
         "path": "ios",
         "includePlugins": [
+            "@capgo/capacitor-updater",
             "@capacitor-community/keep-awake",
             "@capacitor-firebase/messaging",
             "@capacitor/app",
