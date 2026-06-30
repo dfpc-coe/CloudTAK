@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.25.4 - 2026-06-29
+
+- :rocket: Improve internal DexieDB database transaction handling
+
 ### v13.25.3 - 2026-06-29
 
 - :rocket: Improve internal DexieDB database transaction handling
