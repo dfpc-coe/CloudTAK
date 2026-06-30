@@ -44,6 +44,7 @@
         "@capacitor/status-bar": "^8.0.2",
         "@capgo/background-geolocation": "^8.0.39",
         "@capgo/capacitor-compass": "^8.1.17",
+        "@capgo/capacitor-updater": "^8.50.1",
         "@mapbox/tile-cover": "^3.0.2",
         "@simplewebauthn/browser": "^13.3.0",
         "@tabler/core": "^1.4.0",

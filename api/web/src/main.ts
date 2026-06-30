@@ -5,7 +5,7 @@ import type { PluginStatic, PluginInstance } from '../plugin.ts'
 import router from './router.ts'
 import { createPinia } from 'pinia'
 import { useMapStore } from './stores/map.ts';
-import { supportsServiceWorker } from './base/capacitor.ts';
+import { isNativePlatform, supportsServiceWorker } from './base/capacitor.ts';
 import { initServiceWorker } from './base/service-worker.ts';
 
 initServiceWorker(version);
@@ -14,6 +14,9 @@ import 'floating-vue/dist/style.css'
 import FloatingVue from 'floating-vue'
 
 import App from './App.vue'
+import { CapacitorUpdater } from '@capgo/capacitor-updater';
+
+if (isNativePlatform()) CapacitorUpdater.notifyAppReady();
 
 // Catch failed resource loads (scripts, stylesheets, images) before Vue initialises.
 // In production, the most common root cause is a stale SW serving a reference
