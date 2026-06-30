@@ -16,13 +16,16 @@
 
 ### Pending Release
 
-- :tada: Add Admin "Health" tab for administrators to view and manage user device error reports
-- :rocket: Associate error reports with the originating login session and support deleting errors by individual log, session, username, or all
-- :rocket: Convert login session identifiers to UUIDs
+### v13.26.1 - 2026-06-30
+
+- :bug: Ensure changing servers resets the current branding/app store
+- :bug: Ensure the Passkey button is hidden on mobile as it is not yet supported
 
 ### v13.26.0 - 2026-06-30
 
 - :tada: Internal Error reporting API and UI for administrators to view and manage user device error reports
+- :rocket: Associate error reports with the originating login session and support deleting errors by individual log, session, username, or all
+- :rocket: Convert login session identifiers to UUIDs
 
 ### v13.25.5 - 2026-06-30
 
