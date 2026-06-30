@@ -56,9 +56,9 @@ export async function getServer() {
                 console.warn('Error reporting skipped: failed to read response body');
             } finally {
                 message = [
-                    'URL': request.url,
-                    'Method': request.method,
-                    'Status Code': status,
+                    `URL ${request.url}`,
+                    `Method: ${request.method}`,
+                    `Status Code: ${status}`,
                     'Body:',
                     message || '<empty>',
                 ].join('\n');
