@@ -18,7 +18,13 @@ import FloatingVue from 'floating-vue'
 import App from './App.vue'
 import { CapacitorUpdater } from '@capgo/capacitor-updater';
 
-if (isNativePlatform()) CapacitorUpdater.notifyAppReady();
+if (isNativePlatform()) {
+    try {
+        CapacitorUpdater.notifyAppReady();
+    } catch (err) {
+        console.warn('CapacitorUpdater.notifyAppReady failed:', err);
+    }
+}
 
 // Catch failed resource loads (scripts, stylesheets, images) before Vue initialises.
 // In production, the most common root cause is a stale SW serving a reference
