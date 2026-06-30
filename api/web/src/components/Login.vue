@@ -484,6 +484,7 @@ const unregister = async (r: ServiceWorkerRegistration) => {
 }
 
 async function switchServers(): Promise<void> {
+    await appStore.destroySession();
     await Preferences.remove({ key: 'serverUrl' });
     window.location.href = '/setup.html';
 }
