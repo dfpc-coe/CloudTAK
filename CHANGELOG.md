@@ -20,6 +20,10 @@
 - :rocket: Associate error reports with the originating login session and support deleting errors by individual log, session, username, or all
 - :rocket: Convert login session identifiers to UUIDs
 
+### v13.26.0 - 2026-06-30
+
+- :tada: Internal Error reporting API and UI for administrators to view and manage user device error reports
+
 ### v13.25.5 - 2026-06-30
 
 - :rocket: Introduce CapGo Live Update support on mobile
