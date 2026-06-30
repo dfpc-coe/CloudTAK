@@ -19,11 +19,7 @@ import App from './App.vue'
 import { CapacitorUpdater } from '@capgo/capacitor-updater';
 
 if (isNativePlatform()) {
-    try {
-        CapacitorUpdater.notifyAppReady();
-    } catch (err) {
-        console.warn('CapacitorUpdater.notifyAppReady failed:', err);
-    }
+    CapacitorUpdater.notifyAppReady()
 }
 
 // Catch failed resource loads (scripts, stylesheets, images) before Vue initialises.
