@@ -18,7 +18,7 @@ capacitor.plugins.CapacitorUpdater.version = pkg_root.version;
 const updated = [
     new URL('../api/package.json', import.meta.url),
     new URL('../api/web/package.json', import.meta.url),
-    new URL('../capacitor.config.json', import.meta.url),
+    new URL('../capacitor.config.json', import.meta.url)
 ];
 
 await fs.writeFile(updated[0], JSON.stringify(pkg_api, null, 4));
