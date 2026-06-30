@@ -14,6 +14,9 @@ import 'floating-vue/dist/style.css'
 import FloatingVue from 'floating-vue'
 
 import App from './App.vue'
+import { CapacitorUpdater } from '@capgo/capacitor-updater';
+
+CapacitorUpdater.notifyAppReady();
 
 // Catch failed resource loads (scripts, stylesheets, images) before Vue initialises.
 // In production, the most common root cause is a stale SW serving a reference

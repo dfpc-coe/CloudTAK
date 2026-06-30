@@ -27,7 +27,16 @@
     },
     "plugins": {
         "FirebaseMessaging": {
-            "presentationOptions": ["alert", "badge", "sound"]
+            "presentationOptions": [
+                "alert",
+                "badge",
+                "sound"
+            ]
+        },
+        "CapacitorUpdater": {
+            "appId": "io.cloudtak.app",
+            "version": "0.0.0",
+            "autoUpdate": "atBackground"
         }
     }
 }
