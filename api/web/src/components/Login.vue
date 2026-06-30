@@ -175,7 +175,7 @@
                                         Sign in with {{ brandStore.oidc.name || 'SSO' }}
                                     </a>
                                 </template>
-                                <template v-if='brandStore.passkey.enabled && !loading'>
+                                <template v-if='brandStore.passkey.enabled && !loading && !isNativePlatform()'>
                                     <div
                                         v-if='!brandStore.oidc.enabled || !brandStore.oidc.enforced'
                                         class='my-3 d-flex align-items-center'
