@@ -7,6 +7,7 @@ import type { paths } from '@cloudtak/api-types'
 import type { APIError } from './types.js'
 import type { Router } from 'vue-router'
 import { isNativePlatform, openSecondaryView } from './base/capacitor.ts';
+import { reportError } from './lib/reporting/index.ts';
 import { db } from './database.ts';
 
 export const serverUrl = await getRuntimeServerUrl();
@@ -42,41 +43,14 @@ export async function getServer() {
             // Avoid infinite loop - never report failures on the error endpoint itself.
             if (request.url.includes('/api/error')) return;
 
-            const token = await getRuntimeToken();
-            if (!token) {
-                console.warn('Error reporting skipped: no auth token available');
-                return;
-            };
-
-            let message;
+            let body: string;
             try {
-                const clone = response.clone();
-                message = await clone.text()
+                body = (await response.clone().text()) || '<empty>';
             } catch {
-                console.warn('Error reporting skipped: failed to read response body');
-            } finally {
-                message = [
-                    `URL ${request.url}`,
-                    `Method: ${request.method}`,
-                    `Status Code: ${status}`,
-                    'Body:',
-                    message || '<empty>',
-                ].join('\n');
+                body = '<unreadable>';
             }
 
-            // Fire-and-forget — errors here must not propagate to the caller.
-            fetch(stdurl('/api/error'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    message
-                }),
-            }).catch(() => {
-                console.warn('Error reporting failed: unable to send error report');
-            });
+            reportError(`HTTP ${status}: ${request.method} ${request.url}`, body);
         },
     };
 
