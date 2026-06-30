@@ -298,6 +298,19 @@ export default async function router(schema: Schema, config: Config) {
                 BasemapProtocol.isValidStyle(req.body.type || 'raster', req.body.styles);
             }
 
+            if (req.body.mode === 'basemap') {
+                const existing = await config.models.ProfileOverlay.count({
+                    where: sql`
+                        username = ${user.email}
+                        AND mode = 'basemap'
+                    `,
+                });
+
+                if (existing > 0) {
+                    throw new Err(400, null, 'A basemap overlay already exists - only a single basemap is allowed');
+                }
+            }
+
             if (req.body.active && req.body.mode !== 'mission') {
                 throw new Err(400, null, 'Only mission overlays can be made active');
             } else if (req.body.active) {

@@ -217,6 +217,35 @@ test('GET: api/profile/overlay - basemap mode, basemap present -> kept in items'
     }
 });
 
+test('POST: api/profile/overlay - second basemap mode rejected -> only one basemap allowed', async () => {
+    try {
+        // A basemap overlay ("Kept Basemap Overlay") already exists from the previous test
+        const post = await flight.fetch('/api/profile/overlay', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Second Basemap Overlay',
+                mode: 'basemap',
+                mode_id: '1',
+                url: 'https://tiles.example.com/basemap/{z}/{x}/{y}',
+            },
+        }, false);
+
+        assert.equal(post.status, 400, `Expected 400 but got: ${JSON.stringify(post.body)}`);
+        assert.equal(post.body.message, 'A basemap overlay already exists - only a single basemap is allowed');
+
+        // Ensure the rejected basemap was not persisted
+        const res = await flight.fetch('/api/profile/overlay', {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.equal(res.body.items.filter((item: { mode: string }) => item.mode === 'basemap').length, 1);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: api/profile/overlay - basemap mode, basemap deleted -> moved to removed', async () => {
     try {
         // Delete the basemap created in the previous test; the overlay still references id=1
