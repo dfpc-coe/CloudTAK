@@ -152,7 +152,7 @@ export default async function router(schema: Schema, config: Config) {
         res: Type.Object({
             total: Type.Integer(),
             items: Type.Array(Type.Object({
-                id: Type.Integer(),
+                id: Type.String(),
                 username: Type.String(),
                 created: Type.String(),
                 ip: Type.String(),
@@ -175,7 +175,7 @@ export default async function router(schema: Schema, config: Config) {
                 where: eq(ProfileSession.username, req.params.username),
             });
 
-            const activeSessions = new Set<number>();
+            const activeSessions = new Set<string>();
             for (const client of config.wsClients.get(req.params.username) || []) {
                 if (client.session !== undefined) activeSessions.add(client.session);
             }

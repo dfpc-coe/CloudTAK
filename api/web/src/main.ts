@@ -7,8 +7,10 @@ import { createPinia } from 'pinia'
 import { useMapStore } from './stores/map.ts';
 import { isNativePlatform, supportsServiceWorker } from './base/capacitor.ts';
 import { initServiceWorker } from './base/service-worker.ts';
+import { initGlobalErrorReporting, vueErrorHandler } from './lib/reporting/index.ts';
 
 initServiceWorker(version);
+initGlobalErrorReporting();
 
 import 'floating-vue/dist/style.css'
 import FloatingVue from 'floating-vue'
@@ -79,6 +81,8 @@ window.addEventListener('error', async (e) => {
 
 const app = createApp(App);
 const pinia = createPinia()
+
+app.config.errorHandler = vueErrorHandler;
 
 app.use(router);
 app.use(pinia);

@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+- :tada: Add Admin "Health" tab for administrators to view and manage user device error reports
+- :rocket: Associate error reports with the originating login session and support deleting errors by individual log, session, username, or all
+- :rocket: Convert login session identifiers to UUIDs
+
 ### v13.25.5 - 2026-06-30
 
 - :rocket: Introduce CapGo Live Update support on mobile
