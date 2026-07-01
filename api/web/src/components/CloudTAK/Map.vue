@@ -100,6 +100,13 @@
                 <ActiveMission />
             </div>
             <div
+                v-if='mapStore.navigation.active'
+                class='position-absolute top-0 start-50 translate-middle-x'
+                style='z-index: 2;'
+            >
+                <Navigating />
+            </div>
+            <div
                 v-if='mode === "Default"'
                 class='position-absolute'
                 style='
@@ -437,6 +444,7 @@ import { ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef
 import BottomBar from './BottomBar/BottomBar.vue';
 import {useRoute, useRouter } from 'vue-router';
 import ActiveMission from './ActiveMission.vue';
+import Navigating from './Navigating.vue';
 import DrawOverlay from './util/DrawOverlay.vue';
 import WarnChannels from './util/WarnChannels.vue';
 import Notifications from './Notifications.vue';

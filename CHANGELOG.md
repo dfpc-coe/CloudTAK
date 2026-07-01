@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+- :tada: Add turn-by-route navigation: a new `lib/routing` MapLibre control snaps the user's location to a TAK Route (`b-m-r`) with Turf `nearestPointOnLine`, drawing a connector to the line and highlighting the remaining segment to the destination
+- :tada: Add a `Navigate` button to Route features in `CoTView` and a `Navigating` banner showing current speed, distance/ETA and the ability to reverse the navigation direction
+- :tada: Add a `Convert to Route` transform to `CoTView` that converts a LineString feature into a TAK Route (`b-m-r`)
+
 ### v13.27.0 - 2026-06-30
 
 - :rocket: Move Web Plugin installation logic into `api/bin/plugin.ts`, run within the self-contained Docker build

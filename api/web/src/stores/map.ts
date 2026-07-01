@@ -21,6 +21,8 @@ import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
 import GeolocateControl from '../lib/geolocate/main.ts';
+import RoutingControl from '../lib/routing/main.ts';
+import type { NavigationState, NavigationDirection } from '../lib/routing/main.ts';
 import { syncPushToken } from '../base/push.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
@@ -97,6 +99,14 @@ export const useMapStore = defineStore('cloudtak', {
         location: LocationState;
         locationAccuracy: number | undefined;
         gpsCoordinates: { lat: number; lng: number } | null;
+        gpsSpeed: number | null;
+        navigation: {
+            active: boolean;
+            cotId: string | null;
+            callsign: string | null;
+            direction: NavigationDirection;
+            state: NavigationState | null;
+        };
         distanceUnit: string;
         coordFormat: string;
         defaultPointType: string;
@@ -154,6 +164,14 @@ export const useMapStore = defineStore('cloudtak', {
             location: LocationState.Loading,
             locationAccuracy: undefined,
             gpsCoordinates: null,
+            gpsSpeed: null,
+            navigation: {
+                active: false,
+                cotId: null,
+                callsign: null,
+                direction: 'forward',
+                state: null
+            },
             hasSnapping: false,
             channel: markRaw(new BroadcastChannel("cloudtak")),
             zoom: 'conditional',
@@ -227,6 +245,10 @@ export const useMapStore = defineStore('cloudtak', {
                     lat: position.coords.latitude,
                     lng: position.coords.longitude
                 };
+                this.gpsSpeed = typeof position.coords.speed === 'number' && !Number.isNaN(position.coords.speed)
+                    ? position.coords.speed
+                    : null;
+                this.syncRoutingControl();
 
                 try {
                     this.channel.postMessage({
@@ -263,6 +285,64 @@ export const useMapStore = defineStore('cloudtak', {
                 const accuracy = this.location === LocationState.Preset ? 0 : this.locationAccuracy;
                 control.setLocation(this.gpsCoordinates, accuracy);
             }
+        },
+        routingControl: function(): RoutingControl | undefined {
+            if (!this._map) return undefined;
+            return (this._map as mapgl.Map & { _routingControl?: RoutingControl })._routingControl;
+        },
+        syncRoutingControl: function() {
+            if (!this.navigation.active) return;
+
+            const control = this.routingControl();
+            if (!control) return;
+
+            if (this.location === LocationState.Disabled || !this.gpsCoordinates) {
+                control.setLocation(null);
+            } else {
+                control.setLocation(this.gpsCoordinates);
+            }
+        },
+        startNavigation: async function(cotId: string) {
+            const control = this.routingControl();
+            if (!control) return;
+
+            const cot = await this.worker.db.get(cotId);
+            if (!cot) throw new Error('Unable to load Route for navigation');
+
+            const feature = cot.as_feature();
+            if (feature.geometry.type !== 'LineString') {
+                throw new Error('Navigation is only supported for Route (LineString) features');
+            }
+
+            control.setRoute({
+                type: 'Feature',
+                properties: {},
+                geometry: feature.geometry
+            });
+
+            this.navigation.active = true;
+            this.navigation.cotId = cotId;
+            this.navigation.callsign = feature.properties.callsign || 'Route';
+            this.navigation.direction = control.getDirection();
+
+            this.syncRoutingControl();
+        },
+        stopNavigation: function() {
+            const control = this.routingControl();
+            if (control) control.setRoute(null);
+
+            this.navigation.active = false;
+            this.navigation.cotId = null;
+            this.navigation.callsign = null;
+            this.navigation.direction = 'forward';
+            this.navigation.state = null;
+        },
+        reverseNavigation: function() {
+            const control = this.routingControl();
+            if (!control || !this.navigation.active) return;
+
+            control.reverse();
+            this.navigation.direction = control.getDirection();
         },
         openSelfFeature: async function() {
             try {
@@ -705,8 +785,12 @@ export const useMapStore = defineStore('cloudtak', {
                         this.locationAccuracy = undefined;
                     }
                     this.syncGeolocateControl();
+                    this.syncRoutingControl();
                 } else if (msg.type === WorkerMessageType.Profile_Location_Coordinates) {
                     this.locationAccuracy = msg.body.accuracy;
+                    this.gpsSpeed = typeof msg.body.speed === 'number' && !Number.isNaN(msg.body.speed)
+                        ? msg.body.speed
+                        : null;
                     if (msg.body.coordinates) {
                         this.gpsCoordinates = {
                             lng: msg.body.coordinates[0],
@@ -717,6 +801,7 @@ export const useMapStore = defineStore('cloudtak', {
                         this.location = LocationState.Live;
                     }
                     this.syncGeolocateControl();
+                    this.syncRoutingControl();
                 } else if (msg.type === WorkerMessageType.Profile_Callsign) {
                     this.callsign = msg.body.callsign;
                 } else if (msg.type === WorkerMessageType.Profile_Display_Zoom) {
@@ -858,6 +943,17 @@ export const useMapStore = defineStore('cloudtak', {
             });
             map.addControl(geolocateControl, 'top-right');
             (map as mapgl.Map & { _geolocateControl?: GeolocateControl })._geolocateControl = geolocateControl;
+
+            // Add the route-navigation control. Renders guidance (connector +
+            // remaining-segment highlight) along an active TAK Route. Position is
+            // fed from the same location pipeline via syncRoutingControl().
+            const routingControl = new RoutingControl({
+                onUpdate: (state) => {
+                    this.navigation.state = state;
+                }
+            });
+            map.addControl(routingControl);
+            (map as mapgl.Map & { _routingControl?: RoutingControl })._routingControl = routingControl;
 
             map.once('idle', async () => {
                 const displayProjection = await ProfileConfig.get('display_projection');
