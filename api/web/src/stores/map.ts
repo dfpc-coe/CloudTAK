@@ -309,10 +309,11 @@ export const useMapStore = defineStore('cloudtak', {
             const cot = await this.worker.db.get(cotId);
             if (!cot) throw new Error('Unable to load Route for navigation');
 
-            const feature = cot.as_feature();
-            if (feature.geometry.type !== 'LineString') {
-                throw new Error('Navigation is only supported for Route (LineString) features');
+            if (!cot.is_route) {
+                throw new Error('Navigation is only supported for Route (b-m-r LineString) features');
             }
+
+            const feature = cot.as_feature();
 
             control.setRoute({
                 type: 'Feature',

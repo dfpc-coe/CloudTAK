@@ -71,7 +71,7 @@
                     </TablerIconButton>
 
                     <TablerIconButton
-                        v-if='isRoute'
+                        v-if='cot.is_route'
                         :title='isNavigating ? "End Navigation" : "Navigate"'
                         @click='toggleNavigation'
                     >
@@ -226,10 +226,10 @@
                                     </div>
                                 </div>
                                 <div
-                                    v-if='canConvertToRoute'
+                                    v-if='cot.geometry.type === "LineString" && !cot.is_route'
                                     role='button'
                                     class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
-                                    @click.stop='convertToRoute'
+                                    @click.stop='cot.toRoute()'
                                 >
                                     <IconRoute
                                         stroke='1'
@@ -815,33 +815,11 @@ const remarksExpanded = ref(true);
 const bufferCotId = ref<string | null>(null);
 const actionIconSize = 28;
 
-const isRoute = computed(() => {
-    return cot.value
-        && cot.value.geometry.type === 'LineString'
-        && cot.value.properties.type === 'b-m-r';
-});
-
 const isNavigating = computed(() => {
     return mapStore.navigation.active
         && !!cot.value
         && mapStore.navigation.cotId === cot.value.id;
 });
-
-const canConvertToRoute = computed(() => {
-    return !!cot.value
-        && cot.value.geometry.type === 'LineString'
-        && cot.value.properties.type !== 'b-m-r';
-});
-
-async function convertToRoute() {
-    if (!cot.value) return;
-
-    cot.value.properties.type = 'b-m-r';
-    cot.value.properties.how = 'm-g';
-    cot.value.properties.archived = true;
-
-    await cot.value.update({});
-}
 
 async function toggleNavigation() {
     if (!cot.value) return;

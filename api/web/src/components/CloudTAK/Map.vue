@@ -953,8 +953,6 @@ async function handleRadial(event: string): Promise<void> {
     animation: alert-pulse 1.2s ease-in-out infinite;
 }
 
-/* ── Navigation banner ──────────────────────────────────────────────────── */
-
 .cloudtak-navigating {
     z-index: 2;
     width: min(640px, calc(100vw - 16px));
@@ -987,13 +985,10 @@ html[data-bs-theme='light'] .cloudtak-navigating {
         border-radius: 8px;
     }
 
-    /* Also shift the left-side controls down to avoid overlap. */
     .cloudtak-left-controls--nav {
         top: 126px !important;
     }
 }
-
-/* ── Map controls ────────────────────────────────────────────────────────── */
 
 .cloudtak-ctrl-group {
     display: flex;
