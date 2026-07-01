@@ -16,6 +16,11 @@
 
 ### Pending Release
 
+### v13.27.0 - 2026-06-30
+
+- :rocket: Move Web Plugin installation logic into `api/bin/plugin.ts`, run within the self-contained Docker build
+- :rocket: Sync `<plugin>/public/` static assets into the CloudTAK Vite `public/` directory without allowing core assets to be overwritten
+
 ### v13.26.2 - 2026-06-30
 
 - :bug: Video Property wasn't in use in the CoTView component
