@@ -13,7 +13,7 @@ RUN export VERSION_TIPPECANOE='2.79.0' && \
     PREFIX=/usr/local make install && \
     rm -rf /tmp/tippecanoe
 
-FROM ghcr.io/osgeo/gdal:alpine-normal-3.13.0 AS runtime
+FROM ghcr.io/osgeo/gdal:alpine-normal-3.13.1 AS runtime
 
 ENV APP_ROOT=/workspace
 WORKDIR $APP_ROOT/tasks/events
