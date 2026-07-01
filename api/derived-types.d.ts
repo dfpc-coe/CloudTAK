@@ -2134,6 +2134,7 @@ export interface paths {
                         "application/json": {
                             /** @description Enable Geofence Server Integration */
                             "geofence::enabled"?: boolean;
+                            "media::proxy::allow"?: string[];
                             /** @description Geofence Server URL */
                             "geofence::url"?: string;
                             /** @description Geofence Server Password */
@@ -2373,6 +2374,7 @@ export interface paths {
                     "application/json": {
                         /** @description Enable Geofence Server Integration */
                         "geofence::enabled"?: boolean;
+                        "media::proxy::allow"?: string[];
                         /** @description Geofence Server URL */
                         "geofence::url"?: string;
                         /** @description Geofence Server Password */
@@ -2547,6 +2549,7 @@ export interface paths {
                         "application/json": {
                             /** @description Enable Geofence Server Integration */
                             "geofence::enabled"?: boolean;
+                            "media::proxy::allow"?: string[];
                             /** @description Geofence Server URL */
                             "geofence::url"?: string;
                             /** @description Geofence Server Password */

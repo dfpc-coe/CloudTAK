@@ -31,6 +31,7 @@ export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'display::radiation_dose': Profile_Radiation_Dose.SIEVERTS,
     'proxy::enabled': false,
     'proxy::whitelist': [],
+    'media::proxy::allow': [],
     'login::name': 'CloudTAK',
     'login::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../web/public/CloudTAKLogo.svg', import.meta.url)).toString('base64')}`,
     'login::signup': '',

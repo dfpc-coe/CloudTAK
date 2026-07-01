@@ -541,6 +541,7 @@ export const FullConfig = Type.Object({
     'agol::client_id': Type.String({ description: 'AGOL OAuth2 Client ID' }),
     'agol::client_secret': Type.String({ description: 'AGOL OAuth2 Client Secret' }),
     'media::url': Type.String({ description: 'Base URL for Media Service' }),
+    'media::proxy::allow': Type.Array(Type.String({ description: 'Trusted video proxy source hostname or origin (scheme + host + optional port) that is added to the SSRF allow-list' })),
     'coturn::url': Type.String({ description: 'COTURN Server URL' }),
     'coturn::secret': Type.String({ description: 'COTURN Server Secret' }),
     'map::center': Type.String({ description: 'Map Center Coordinates (lng,lat)' }),

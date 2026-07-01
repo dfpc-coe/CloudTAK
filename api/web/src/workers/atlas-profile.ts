@@ -327,6 +327,26 @@ export default class AtlasProfile {
     async update(body: Profile_Update): Promise<void> {
         if (!this.username) throw new Error('Profile must be loaded before update');
 
+        // Eagerly push location messages before the HTTP call so the puck moves
+        // immediately rather than waiting for the network round-trip + CoT post.
+        if (body.tak_loc) {
+            const coords = (body.tak_loc as { coordinates: number[] }).coordinates;
+            this.location.source = LocationState.Preset;
+            this.location.coordinates = coords;
+            this.location.accuracy = undefined;
+            this.location.altitude = undefined;
+            if (this.profile_loc) this.profile_loc.value = body.tak_loc;
+
+            this.atlas.postMessage({
+                type: WorkerMessageType.Profile_Location_Source,
+                body: { source: LocationState.Preset }
+            });
+            this.atlas.postMessage({
+                type: WorkerMessageType.Profile_Location_Coordinates,
+                body: { accuracy: undefined, altitude: undefined, coordinates: coords }
+            });
+        }
+
         let freqChanged = false;
         if (body.tak_loc_freq && this.profile_loc_freq && this.profile_loc_freq.value !== body.tak_loc_freq) {
             freqChanged = true;
