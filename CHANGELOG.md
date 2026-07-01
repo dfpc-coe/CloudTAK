@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.28.2 - 2026-07-01
+
+- :bug: A bug in a critical `xml-js` library used for serializing and deserializing XML did not encode attribute values other than `"`
+
 ### v13.28.1 - 2026-07-01
 
 - :bug: Output Worker Assets to vite manifest to ensure they are cached by the ServiceWorker
