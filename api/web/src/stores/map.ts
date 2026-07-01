@@ -318,7 +318,7 @@ export const useMapStore = defineStore('cloudtak', {
             control.setRoute({
                 type: 'Feature',
                 properties: {},
-                geometry: feature.geometry
+                geometry: feature.geometry as import('geojson').LineString
             });
 
             this.navigation.active = true;
