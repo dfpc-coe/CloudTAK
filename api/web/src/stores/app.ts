@@ -57,14 +57,18 @@ export const useAppStore = defineStore('cloudtak-app', {
         async setServerUrl(serverUrl: string): Promise<void> {
             await Preferences.set({ key: 'serverUrl', value: serverUrl });
 
-            try {
-                await Promise.race([
-                    withDbRetry(() => KV.generate('serverUrl', serverUrl)),
-                    new Promise<void>((resolve) => setTimeout(resolve, 2000)),
-                ]);
-            } catch (err) {
+            const mirrorPromise = withDbRetry(() => KV.generate('serverUrl', serverUrl)).catch((err) => {
                 console.warn('Failed to mirror serverUrl into KV store', err);
-            }
+            });
+
+            let timeout: ReturnType<typeof setTimeout> | undefined;
+            const timeoutPromise = new Promise<void>((resolve) => {
+                timeout = setTimeout(resolve, 2000);
+            });
+
+            await Promise.race([mirrorPromise, timeoutPromise]);
+
+            if (timeout) clearTimeout(timeout);
         },
 
         async persistSession(opts: { token: string; username: string; session: string }): Promise<void> {
