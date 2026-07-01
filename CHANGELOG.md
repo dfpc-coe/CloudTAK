@@ -16,6 +16,14 @@
 
 ### Pending Release
 
+### v13.26.2 - 2026-06-30
+
+- :bug: Video Property wasn't in use in the CoTView component
+- :bug: Don't allow the user to accidently submit mutiple basemaps (as basemaps can't be deleted)
+- :bug: Automatically remove extra basemaps via a database migration
+- :bug: Ensure the notification panel doesn't overflow the browser
+- :bug: Ensure user's connections can't connect twice
+
 ### v13.26.1 - 2026-06-30
 
 - :bug: Ensure changing servers resets the current branding/app store
