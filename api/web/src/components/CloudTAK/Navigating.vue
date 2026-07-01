@@ -1,11 +1,6 @@
 <template>
     <div
-        class='cloudtak-navigating text-white user-select-none'
-        style='
-            z-index: 2;
-            background-color: rgba(0, 0, 0, 0.75);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
-        '
+        class='cloudtak-navigating user-select-none'
     >
         <div class='d-flex align-items-center px-3 py-2 gap-2'>
             <IconRoute
@@ -196,23 +191,4 @@ async function zoomToRoute() {
 }
 </script>
 
-<style scoped>
-.cloudtak-navigating {
-    width: min(640px, calc(100vw - 16px));
-    border-radius: 0px 0px 8px 8px;
-}
 
-/*
- * On small screens the banner spans nearly the full width and would overlap the
- * Active Mission bar (left), the notification/editing tools (right) and the main
- * menu — all of which occupy the top 60px. Drop the banner below them so those
- * controls remain usable. When detached from the top edge, all four corners are
- * rounded.
- */
-@media (max-width: 767.98px) {
-    .cloudtak-navigating {
-        margin-top: 66px;
-        border-radius: 8px;
-    }
-}
-</style>

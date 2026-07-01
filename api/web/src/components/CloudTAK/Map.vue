@@ -109,6 +109,7 @@
             <div
                 v-if='mode === "Default"'
                 class='position-absolute'
+                :class='{ "cloudtak-left-controls--nav": mapStore.navigation.active }'
                 style='
                     top: 70px;
                     left: 8px;
@@ -951,6 +952,48 @@ async function handleRadial(event: string): Promise<void> {
 .alert-pulse {
     animation: alert-pulse 1.2s ease-in-out infinite;
 }
+
+/* ── Navigation banner ──────────────────────────────────────────────────── */
+
+.cloudtak-navigating {
+    z-index: 2;
+    width: min(640px, calc(100vw - 16px));
+    border-radius: 0px 0px 8px 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+html[data-bs-theme='dark'] .cloudtak-navigating {
+    background-color: rgba(40, 53, 71, 0.95);
+    color: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+html[data-bs-theme='light'] .cloudtak-navigating {
+    background-color: rgba(255, 255, 255, 0.95);
+    color: var(--tblr-body-color);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+/*
+ * On small screens the banner spans nearly the full width and would overlap the
+ * Active Mission bar (left), the notification/editing tools (right) and the main
+ * menu — all of which occupy the top 60px. Drop the banner below them so those
+ * controls remain usable. When detached from the top edge, all four corners are
+ * rounded.
+ */
+@media (max-width: 767.98px) {
+    .cloudtak-navigating {
+        margin-top: 66px;
+        border-radius: 8px;
+    }
+
+    /* Also shift the left-side controls down to avoid overlap. */
+    .cloudtak-left-controls--nav {
+        top: 126px !important;
+    }
+}
+
+/* ── Map controls ────────────────────────────────────────────────────────── */
 
 .cloudtak-ctrl-group {
     display: flex;

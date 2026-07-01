@@ -1,7 +1,5 @@
 import Err from '@openaddresses/batch-error';
 import jwt from 'jsonwebtoken';
-import ipaddr from 'ipaddr.js';
-import { lookup } from 'node:dns/promises';
 import Config from '../config.js';
 import { eq } from 'drizzle-orm';
 import { AuthResourceAccess } from '../auth.js';
@@ -437,81 +435,6 @@ export default class VideoServiceControl {
         }
     }
 
-    /**
-     * Build the SSRF allow-list used when validating a user-supplied proxy source URL.
-     *
-     * The media server hostname is always trusted. In addition, operators can configure
-     * `media::proxy::allow` with trusted proxy sources expressed as bare hostnames,
-     * origins (scheme + host + optional port), or CIDR ranges. Hostname and origin
-     * entries are passed straight through to node-safeurl. CIDR entries are matched
-     * against the resolved addresses of the proxy hostname - when every resolved address
-     * falls within a trusted CIDR the proxy hostname is added to the allow-list so the
-     * SSRF check permits it.
-     *
-     * @param proxyHref  The user-supplied proxy URL being validated
-     * @param mediaHostname  The configured media server hostname (always trusted)
-     */
-    private async proxySafeUrlAllow(proxyHref: string, mediaHostname: string): Promise<string[]> {
-        const allow = [mediaHostname];
-
-        const configured = (await this.config.models.Setting.typed('media::proxy::allow', [])).value;
-
-        const cidrEntries: [ipaddr.IPv4 | ipaddr.IPv6, number][] = [];
-        for (const raw of configured) {
-            const entry = raw.trim();
-            if (!entry) continue;
-
-            if (entry.includes('/')) {
-                try {
-                    cidrEntries.push(ipaddr.parseCIDR(entry));
-                    continue;
-                } catch {
-                    // Not a valid CIDR - fall through and treat as a hostname/origin entry
-                }
-            }
-
-            // Hostname and origin entries are understood natively by node-safeurl's allow-list
-            allow.push(entry);
-        }
-
-        if (cidrEntries.length) {
-            let proxyHostname: string;
-            try {
-                proxyHostname = new URL(proxyHref).hostname.replace(/^\[|\]$/g, '');
-            } catch {
-                return allow;
-            }
-
-            const addresses: string[] = [];
-            try {
-                // Proxy host is already an IP literal
-                addresses.push(ipaddr.parse(proxyHostname).toString());
-            } catch {
-                try {
-                    const records = await lookup(proxyHostname, { all: true });
-                    for (const record of records) addresses.push(record.address);
-                } catch {
-                    // DNS lookup failed - leave addresses empty so the proxy is not trusted
-                }
-            }
-
-            const withinTrustedCidr = addresses.length > 0 && addresses.every((address) => {
-                let ip: ipaddr.IPv4 | ipaddr.IPv6;
-                try {
-                    ip = ipaddr.parse(address);
-                } catch {
-                    return false;
-                }
-
-                return cidrEntries.some(([net, bits]) => ip.kind() === net.kind() && ip.match([net, bits]));
-            });
-
-            if (withinTrustedCidr) allow.push(proxyHostname);
-        }
-
-        return allow;
-    }
-
     async generate(opts: {
         name: string;
         ephemeral: boolean;
@@ -601,7 +524,12 @@ export default class VideoServiceControl {
 
         if (lease.proxy) {
             try {
-                const proxyAllow = await this.proxySafeUrlAllow(lease.proxy, new URL(video.url!).hostname);
+                // Media server hostname is always trusted; operators may add additional
+                // trusted proxy source hostnames/origins via the media::proxy::allow config
+                const proxyAllow = [
+                    new URL(video.url!).hostname,
+                    ...(await this.config.models.Setting.typed('media::proxy::allow', [])).value,
+                ];
 
                 // Skip isSafeUrl check when StackName=test (test mode)
                 if (process.env.StackName !== 'test') {
