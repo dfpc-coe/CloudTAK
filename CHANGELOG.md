@@ -16,7 +16,7 @@
 
 ### Pending Release
 
-- :rocket: Migrate Web Plugin installation out of the `Dockerfile` and into `bin/plugin.ts`, which also syncs `<plugin>/public/` static assets into the CloudTAK Vite `public/` directory without allowing core assets to be overwritten
+- :rocket: Move Web Plugin installation logic into `api/bin/plugin.ts`, run within the self-contained Docker build, which also syncs `<plugin>/public/` static assets into the CloudTAK Vite `public/` directory without allowing core assets to be overwritten
 
 ### v13.26.1 - 2026-06-30
 
