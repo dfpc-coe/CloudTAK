@@ -301,6 +301,88 @@ describe('sw.js', () => {
             expect(addCalls).toContain('assets/shared-xyz.js');
             expect(addCalls).not.toContain('index.html');
         });
+
+        it('pre-caches worker chunks injected into the manifest', async () => {
+            // Worker bundles aren't in the base manifest; the build injects them
+            // as synthetic `worker:` entries so the walk precaches them. Without
+            // this, `new Worker(...)` 404s after a deploy.
+            const fetchMock = vi.fn(async (url: string | Request) => {
+                const u = typeof url === 'string' ? url : url.url;
+                if (u.includes('manifest.json')) {
+                    return new Response(JSON.stringify({
+                        'src/main.ts': { file: 'assets/main-abc.js', imports: [] },
+                        'worker:assets/atlas-abc.js': { file: 'assets/atlas-abc.js', src: 'worker:assets/atlas-abc.js' },
+                        'worker:assets/dist-abc.js': { file: 'assets/dist-abc.js', src: 'worker:assets/dist-abc.js' },
+                        'worker:assets/maplibre-gl-worker-abc.js': { file: 'assets/maplibre-gl-worker-abc.js', src: 'worker:assets/maplibre-gl-worker-abc.js' },
+                    }), { status: 200 });
+                }
+                return new Response('ok', { status: 200 });
+            });
+
+            const { emit, scope, cachesMock } = loadSW({ version: '6.0.0', build: 'wrk', fetchMock });
+
+            scope.self.skipWaiting = vi.fn();
+            await emit('install');
+
+            const cache = await cachesMock.open('cloudtak-cache-6.0.0-wrk');
+            const addCalls = (cache.add as Mock).mock.calls.map((c: any[]) => c[0]);
+
+            expect(addCalls).toContain('assets/main-abc.js');
+            expect(addCalls).toContain('assets/atlas-abc.js');
+            expect(addCalls).toContain('assets/dist-abc.js');
+            expect(addCalls).toContain('assets/maplibre-gl-worker-abc.js');
+        });
+
+        it('installs normally when the manifest has no worker entries', async () => {
+            // Older deploys and dev have no injected worker entries; install
+            // must still succeed off the base manifest.
+            const fetchMock = vi.fn(async (url: string | Request) => {
+                const u = typeof url === 'string' ? url : url.url;
+                if (u.includes('manifest.json')) {
+                    return new Response(JSON.stringify({
+                        'src/main.ts': { file: 'assets/main-abc.js', imports: [] },
+                    }), { status: 200 });
+                }
+                return new Response('ok', { status: 200 });
+            });
+
+            const { emit, scope, cachesMock } = loadSW({ version: '6.1.0', build: 'nowrk', fetchMock });
+
+            scope.self.skipWaiting = vi.fn();
+            await emit('install');
+
+            const cache = await cachesMock.open('cloudtak-cache-6.1.0-nowrk');
+            const addCalls = (cache.add as Mock).mock.calls.map((c: any[]) => c[0]);
+            expect(addCalls).toContain('assets/main-abc.js');
+        });
+
+        it('fails install atomically when a worker chunk cannot be fetched', async () => {
+            // A missing worker chunk must abort the upgrade so the browser keeps
+            // the previous (working) SW.
+            const fetchMock = vi.fn(async (url: string | Request) => {
+                const u = typeof url === 'string' ? url : url.url;
+                if (u.includes('manifest.json')) {
+                    return new Response(JSON.stringify({
+                        'src/main.ts': { file: 'assets/main-ok.js', imports: [] },
+                        'worker:assets/atlas-broken.js': { file: 'assets/atlas-broken.js', src: 'worker:assets/atlas-broken.js' },
+                    }), { status: 200 });
+                }
+                return new Response('ok', { status: 200 });
+            });
+
+            const { emit, scope, cachesMock } = loadSW({ version: '6.2.0', build: 'wrkfail', fetchMock });
+
+            const cache = await cachesMock.open('cloudtak-cache-6.2.0-wrkfail');
+            (cache.add as Mock).mockImplementation(async (u: string) => {
+                if (u === 'assets/atlas-broken.js') {
+                    throw new TypeError('Failed to fetch');
+                }
+            });
+
+            scope.self.skipWaiting = vi.fn();
+
+            await expect(emit('install')).rejects.toThrow(/Failed to fetch/);
+        });
     });
 
     describe('message (SKIP_WAITING)', () => {
