@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.28.1 - 2026-07-01
+
+- :bug: Output Worker Assets to vite manifest to ensure they are cached by the ServiceWorker
+
 ### v13.28.0 - 2026-07-01
 
 - :bug: Fix video lease `POST` failing with `403 Unsafe URL: hostname resolves to blocked IP` when proxying a video source on a private network. Added a `media::proxy::allow` admin config of trusted proxy source hostnames/origins that are concatenated into the SSRF allow-list, editable from the Media Server admin config
