@@ -572,6 +572,12 @@
                     :edit='is_editable'
                 />
 
+                <PropertyVideo
+                    v-if='cot.properties.video !== undefined'
+                    :key='cot.properties.id'
+                    :cot='cot'
+                />
+
                 <PropertyTimes
                     v-if='!cot.properties.archived'
                     :cot='cot'
@@ -698,6 +704,7 @@ import Breadcrumb from './util/Breadcrumb.vue';
 import PropertyElevation from './Property/PropertyElevation.vue';
 import PropertyAttachments from './Property/PropertyAttachments.vue';
 import PropertyLinks from './Property/PropertyLinks.vue';
+import PropertyVideo from './Property/PropertyVideo.vue';
 import PropertyTimes from './Property/PropertyTimes.vue';
 import PropertyMetadata from './Property/PropertyMetadata.vue';
 import PropertyStyle from './Property/PropertyStyle.vue';
