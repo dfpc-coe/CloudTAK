@@ -16,6 +16,8 @@
 
 ### Pending Release
 
+### v13.28.0 - 2026-07-01
+
 - :bug: Fix video lease `POST` failing with `403 Unsafe URL: hostname resolves to blocked IP` when proxying a video source on a private network. Added a `media::proxy::allow` admin config of trusted proxy source hostnames/origins that are concatenated into the SSRF allow-list, editable from the Media Server admin config
 - :tada: Add turn-by-route navigation: a new `lib/routing` MapLibre control snaps the user's location to a TAK Route (`b-m-r`) with Turf `nearestPointOnLine`, drawing a connector to the line and highlighting the remaining segment to the destination
 - :tada: Add a `Navigate` button to Route features in `CoTView` and a `Navigating` banner showing current speed, distance/ETA and the ability to reverse the navigation direction
