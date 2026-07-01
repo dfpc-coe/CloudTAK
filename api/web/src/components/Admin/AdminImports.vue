@@ -47,79 +47,111 @@
             />
             <div
                 v-else
-                class='table-responsive pb-5'
+                class='d-flex flex-column gap-2 px-1 pb-5'
             >
-                <table class='table card-table table-hover table-vcenter datatable'>
-                    <TableHeader
-                        v-model:sort='paging.sort'
-                        v-model:order='paging.order'
-                        v-model:header='header'
+                <template
+                    v-for='imp in list.items'
+                    :key='imp.id'
+                >
+                    <StandardItemImport
+                        :imp='imp'
+                        :show-username='true'
+                        :button-retry='true'
+                        :button-download='true'
+                        @click='toggle(imp.id)'
+                        @retry='retryImport(imp.id)'
+                        @download='downloadImport(imp.id)'
                     />
-                    <tbody>
-                        <tr
-                            v-for='imp in list.items'
-                            :key='imp.id'
-                            tabindex='0'
-                        >
-                            <template v-for='h in header'>
-                                <template v-if='h.display'>
-                                    <td>
-                                        <div class='d-flex align-items-center'>
-                                            <template v-if='h.name === "username"'>
-                                                <StatusDot
-                                                    :status='imp.status'
-                                                />
+                    <div
+                        v-if='expanded === imp.id'
+                        class='border rounded p-3 mx-1'
+                    >
+                        <div class='datagrid mb-3'>
+                            <div class='datagrid-item'>
+                                <div class='datagrid-title'>
+                                    Username
+                                </div>
+                                <div class='datagrid-content'>
+                                    {{ imp.username }}
+                                </div>
+                            </div>
+                            <div class='datagrid-item'>
+                                <div class='datagrid-title'>
+                                    Status
+                                </div>
+                                <div class='datagrid-content'>
+                                    {{ imp.status }}
+                                </div>
+                            </div>
+                            <div class='datagrid-item'>
+                                <div class='datagrid-title'>
+                                    Source
+                                </div>
+                                <div class='datagrid-content'>
+                                    {{ imp.source }}{{ imp.source_id ? `: ${imp.source_id}` : '' }}
+                                </div>
+                            </div>
+                            <div class='datagrid-item'>
+                                <div class='datagrid-title'>
+                                    Created
+                                </div>
+                                <div class='datagrid-content'>
+                                    {{ new Date(imp.created).toLocaleString() }}
+                                </div>
+                            </div>
+                            <div class='datagrid-item'>
+                                <div class='datagrid-title'>
+                                    Updated
+                                </div>
+                                <div class='datagrid-content'>
+                                    {{ new Date(imp.updated).toLocaleString() }}
+                                </div>
+                            </div>
+                            <div class='datagrid-item'>
+                                <div class='datagrid-title'>
+                                    ID
+                                </div>
+                                <div class='datagrid-content font-monospace small'>
+                                    {{ imp.id }}
+                                </div>
+                            </div>
+                        </div>
 
-                                                <div>
-                                                    <div v-text='imp[h.name]' />
-                                                    <div
-                                                        class='subheader'
-                                                        v-text='imp.updated'
-                                                    />
-                                                </div>
-                                            </template>
-                                            <template v-else-if='h.name == "name"'>
-                                                <div class='col-10'>
-                                                    <div v-text='imp[h.name]' />
-                                                    <div
-                                                        class='subheader'
-                                                        v-text='imp.id'
-                                                    />
-                                                </div>
-                                                <div class='col-2 d-flex'>
-                                                    <div class='ms-auto btn-list'>
-                                                        <TablerIconButton
-                                                            v-if='imp.status === "Fail"'
-                                                            title='Retry Import'
-                                                            @click.stop='retryImport(imp.id)'
-                                                        >
-                                                            <IconRestore
-                                                                :size='32'
-                                                                stroke='1'
-                                                            />
-                                                        </TablerIconButton>
-                                                        <TablerIconButton
-                                                            title='Download File'
-                                                            @click='downloadImport(imp.id)'
-                                                        >
-                                                            <IconDownload
-                                                                :size='32'
-                                                                stroke='1'
-                                                            />
-                                                        </TablerIconButton>
-                                                    </div>
-                                                </div>
-                                            </template>
-                                            <template v-else>
-                                                <span v-text='imp[h.name]' />
-                                            </template>
-                                        </div>
-                                    </td>
-                                </template>
-                            </template>
-                        </tr>
-                    </tbody>
-                </table>
+                        <template v-if='imp.error'>
+                            <div class='subheader mb-1'>
+                                Error
+                            </div>
+                            <pre
+                                class='border rounded p-2 mb-3'
+                                style='max-height: 30vh; overflow: auto;'
+                            >{{ imp.error }}</pre>
+                        </template>
+
+                        <div class='btn-list justify-content-end'>
+                            <TablerIconButton
+                                v-if='imp.status === "Fail"'
+                                title='Retry Import'
+                                @click='retryImport(imp.id)'
+                            >
+                                <IconRestore
+                                    :size='20'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                            <button
+                                class='btn btn-outline-secondary'
+                                @click='downloadImport(imp.id)'
+                            >
+                                <IconDownload
+                                    :size='16'
+                                    stroke='1'
+                                    class='me-1'
+                                />
+                                Download
+                            </button>
+                        </div>
+                    </div>
+                </template>
             </div>
             <div
                 class='position-absolute bottom-0 w-100'
@@ -139,10 +171,9 @@
 import { ref, watch, onMounted } from 'vue';
 import { stdurl, server, downloadUrl } from '../../std.ts';
 import type { paths } from '@cloudtak/api-types';
-import type { Import, ImportList } from '../../types.ts';
-import StatusDot from '../util/StatusDot.vue';
-import TableHeader from '../util/TableHeader.vue'
-import TableFooter from '../util/TableFooter.vue'
+import type { ImportList } from '../../types.ts';
+import TableFooter from '../util/TableFooter.vue';
+import StandardItemImport from '../CloudTAK/util/StandardItemImport.vue';
 import {
     TablerNone,
     TablerInput,
@@ -157,11 +188,9 @@ import {
     IconDownload
 } from '@tabler/icons-vue';
 
-type Header = { name: keyof Import, display: boolean };
-
 const error = ref<Error | undefined>();
 const loading = ref(true);
-const header = ref<Array<Header>>([]);
+const expanded = ref<string | undefined>(undefined);
 
 const paging = ref({
     filter: '',
@@ -191,44 +220,11 @@ watch(paging.value, async () => {
 });
 
 onMounted(async () => {
-    await listImportSchema();
     await fetchList();
 });
 
-async function listImportSchema() {
-    const list = await server.GET('/api/schema', {
-        params: {
-            query: {
-                method: 'GET',
-                url: '/import'
-            }
-        }
-    });
-
-    if (list.error) {
-        error.value = new Error(list.error.message);
-        return;
-    }
-
-    if (!list.data) return;
-
-    const defaults: Array<keyof Import> = ['username', 'name'];
-    header.value = defaults.map((h) => {
-        return { name: h, display: true };
-    });
-
-    // @ts-expect-error Worth trying to type at some point maybe but not now
-    header.value.push(...list.data.query.properties.sort.enum.map((h) => {
-        return {
-            name: h,
-            display: false
-        } as Header
-    }).filter((h: Header) => {
-        for (const hknown of header.value) {
-            if (hknown.name === h.name) return false;
-        }
-        return true;
-    }));
+function toggle(id: string): void {
+    expanded.value = expanded.value === id ? undefined : id;
 }
 
 async function retryImport(id: string) {

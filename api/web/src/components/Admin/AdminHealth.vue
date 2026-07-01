@@ -54,124 +54,89 @@
             />
             <div
                 v-else
-                class='table-responsive pb-5'
+                class='d-flex flex-column gap-2 px-1 pb-5'
             >
-                <table class='table card-table table-hover table-vcenter datatable'>
-                    <TableHeader
-                        v-model:sort='paging.sort'
-                        v-model:order='paging.order'
-                        v-model:header='header'
+                <template
+                    v-for='err in list.items'
+                    :key='err.id'
+                >
+                    <StandardItemError
+                        :err='err'
+                        @click='toggle(err.id)'
                     />
-                    <tbody role='menu'>
-                        <template
-                            v-for='err in list.items'
-                            :key='err.id'
-                        >
-                            <tr
-                                class='cursor-pointer'
-                                role='menuitem'
-                                tabindex='0'
-                                @keyup.enter='toggle(err.id)'
-                                @click='toggle(err.id)'
-                            >
-                                <template v-for='h in header'>
-                                    <td v-if='h.display'>
-                                        <span
-                                            v-if='h.name === "created" || h.name === "updated"'
-                                            v-text='new Date(err[h.name]).toLocaleString()'
-                                        />
-                                        <span
-                                            v-else-if='h.name === "session_id"'
-                                            class='text-truncate font-monospace'
-                                            v-text='err.session_id || "—"'
-                                        />
-                                        <span
-                                            v-else-if='h.name === "message" || h.name === "trace"'
-                                            class='text-truncate d-inline-block'
-                                            style='max-width: 40vw;'
-                                            v-text='err[h.name] || ""'
-                                        />
-                                        <span
-                                            v-else
-                                            v-text='err[h.name as keyof ErrorReport]'
-                                        />
-                                    </td>
-                                </template>
-                            </tr>
-                            <tr v-if='expanded === err.id'>
-                                <td :colspan='shownCount'>
-                                    <div class='datagrid mb-3'>
-                                        <div class='datagrid-item'>
-                                            <div class='datagrid-title'>
-                                                Username
-                                            </div>
-                                            <div class='datagrid-content'>
-                                                {{ err.username }}
-                                            </div>
-                                        </div>
-                                        <div class='datagrid-item'>
-                                            <div class='datagrid-title'>
-                                                Session
-                                            </div>
-                                            <div class='datagrid-content font-monospace'>
-                                                {{ err.session_id || "—" }}
-                                            </div>
-                                        </div>
-                                        <div class='datagrid-item'>
-                                            <div class='datagrid-title'>
-                                                Created
-                                            </div>
-                                            <div class='datagrid-content'>
-                                                {{ new Date(err.created).toLocaleString() }}
-                                            </div>
-                                        </div>
-                                    </div>
+                    <div
+                        v-if='expanded === err.id'
+                        class='border rounded p-3 mx-1'
+                    >
+                        <div class='datagrid mb-3'>
+                            <div class='datagrid-item'>
+                                <div class='datagrid-title'>
+                                    Username
+                                </div>
+                                <div class='datagrid-content'>
+                                    {{ err.username }}
+                                </div>
+                            </div>
+                            <div class='datagrid-item'>
+                                <div class='datagrid-title'>
+                                    Session
+                                </div>
+                                <div class='datagrid-content font-monospace'>
+                                    {{ err.session_id || "—" }}
+                                </div>
+                            </div>
+                            <div class='datagrid-item'>
+                                <div class='datagrid-title'>
+                                    Created
+                                </div>
+                                <div class='datagrid-content'>
+                                    {{ new Date(err.created).toLocaleString() }}
+                                </div>
+                            </div>
+                        </div>
 
-                                    <div class='subheader mb-1'>
-                                        Message
-                                    </div>
-                                    <pre class='border rounded p-2 mb-3'>{{ err.message }}</pre>
+                        <div class='subheader mb-1'>
+                            Message
+                        </div>
+                        <pre class='border rounded p-2 mb-3'>{{ err.message }}</pre>
 
-                                    <template v-if='err.trace'>
-                                        <div class='subheader mb-1'>
-                                            Trace
-                                        </div>
-                                        <pre
-                                            class='border rounded p-2 mb-3'
-                                            style='max-height: 40vh; overflow: auto;'
-                                        >{{ err.trace }}</pre>
-                                    </template>
-
-                                    <div class='btn-list justify-content-end'>
-                                        <button
-                                            v-if='err.session_id'
-                                            class='btn btn-outline-secondary'
-                                            @click='paging.session_id = err.session_id || ""'
-                                        >
-                                            Filter to Session
-                                        </button>
-                                        <TablerDelete
-                                            displaytype='button'
-                                            label='Delete Log'
-                                            @delete='deleteError(err.id)'
-                                        />
-                                        <TablerDelete
-                                            displaytype='button'
-                                            label='Delete All From User'
-                                            @delete='deleteErrors({ username: err.username })'
-                                        />
-                                        <TablerDelete
-                                            v-if='err.session_id'
-                                            displaytype='button'
-                                            label='Delete All From Session'
-                                            @delete='deleteErrors({ session_id: err.session_id || undefined })'
-                                        />
-                                    </div>
-                                </td>
-                            </tr>
+                        <template v-if='err.trace'>
+                            <div class='subheader mb-1'>
+                                Trace
+                            </div>
+                            <pre
+                                class='border rounded p-2 mb-3'
+                                style='max-height: 40vh; overflow: auto;'
+                            >{{ err.trace }}</pre>
                         </template>
-                    </tbody>
-                </table>
+
+                        <div class='btn-list justify-content-end'>
+                            <button
+                                v-if='err.session_id'
+                                class='btn btn-outline-secondary'
+                                @click='paging.session_id = err.session_id || ""'
+                            >
+                                Filter to Session
+                            </button>
+                            <TablerDelete
+                                displaytype='button'
+                                label='Delete Log'
+                                @delete='deleteError(err.id)'
+                            />
+                            <TablerDelete
+                                displaytype='button'
+                                label='Delete All From User'
+                                @delete='deleteErrors({ username: err.username })'
+                            />
+                            <TablerDelete
+                                v-if='err.session_id'
+                                displaytype='button'
+                                label='Delete All From Session'
+                                @delete='deleteErrors({ session_id: err.session_id || undefined })'
+                            />
+                        </div>
+                    </div>
+                </template>
             </div>
             <div
                 class='position-absolute bottom-0 w-100'
@@ -188,11 +153,11 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, computed, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { server } from '../../std.ts';
-import type { ErrorReport, ErrorReportList } from '../../types.ts';
-import TableHeader from '../util/TableHeader.vue';
+import type { ErrorReportList } from '../../types.ts';
 import TableFooter from '../util/TableFooter.vue';
+import StandardItemError from '../CloudTAK/util/StandardItemError.vue';
 import {
     IconX,
 } from '@tabler/icons-vue';
@@ -205,22 +170,11 @@ import {
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 
-type Header = { name: string, display: boolean };
 type ErrorSort = 'id' | 'created' | 'updated' | 'username' | 'session_id' | 'message' | 'trace';
 
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 const expanded = ref<number | undefined>(undefined);
-
-const header = ref<Array<Header>>([
-    { name: 'created', display: true },
-    { name: 'username', display: true },
-    { name: 'session_id', display: true },
-    { name: 'message', display: true },
-    { name: 'id', display: false },
-    { name: 'updated', display: false },
-    { name: 'trace', display: false },
-]);
 
 const list = ref<ErrorReportList>({ total: 0, items: [] });
 const paging = ref({
@@ -231,8 +185,6 @@ const paging = ref({
     limit: 100,
     page: 0
 });
-
-const shownCount = computed(() => header.value.filter((h) => h.display).length);
 
 watch(paging.value, async () => {
     await fetchList();

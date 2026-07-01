@@ -73,49 +73,10 @@
                     :key='imported.id'
                     class='col-12 py-1'
                 >
-                    <StandardItem
-                        class='d-flex align-items-center py-2 px-3'
+                    <StandardItemImport
+                        :imp='imported'
                         @click='router.push(`/menu/imports/${imported.id}`)'
-                    >
-                        <div class='col-auto'>
-                            <Status
-                                :dark='true'
-                                :status='imported.status'
-                            />
-                        </div>
-                        <div
-                            v-tooltip='`${imported.source} Import`'
-                            class='col-auto mx-2'
-                        >
-                            <IconAmbulance
-                                v-if='imported.source === "Mission"'
-                                :size='32'
-                                stroke='0.5'
-                            />
-                            <IconPackages
-                                v-else-if='imported.source === "Package"'
-                                :size='32'
-                                stroke='0.5'
-                            />
-                            <IconFile
-                                v-else
-                                :size='32'
-                                stroke='0.5'
-                            />
-                        </div>
-                        <div
-                            class='mx-2 col d-flex flex-column'
-                        >
-                            <div
-                                class='text-break'
-                                v-text='imported.name'
-                            />
-                            <div
-                                class='subheader'
-                                v-text='timeDiff(imported.created)'
-                            />
-                        </div>
-                    </StandardItem>
+                    />
                 </div>
             </template>
 
@@ -149,9 +110,6 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconUpload,
-    IconFile,
-    IconAmbulance,
-    IconPackages,
     IconLetterCase,
     IconClock,
     IconArrowUp,
@@ -160,8 +118,7 @@ import {
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import SearchSortFilter from '../util/SearchSortFilter.vue';
-import StandardItem from '../util/StandardItem.vue';
-import Status from '../../util/StatusDot.vue';
+import StandardItemImport from '../util/StandardItemImport.vue';
 import timeDiff from '../../../timediff.ts';
 import Upload from '../../util/Upload.vue';
 
