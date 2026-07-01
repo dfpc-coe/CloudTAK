@@ -16,6 +16,12 @@
 
 ### Pending Release
 
+### v13.29.0 - 2026-07-01
+
+- :rocket: Migrate Menu & Admin to use StandardItem Import
+- :tada: Allow admins to view import failure reasons & outputs
+- :rocket: Create StandardItem Error for more compact error viewing in the new Admin Health Tab
+
 ### v13.28.2 - 2026-07-01
 
 - :bug: A bug in a critical `xml-js` library used for serializing and deserializing XML did not encode attribute values other than `"`
