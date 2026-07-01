@@ -119,7 +119,6 @@ import {
 import MenuTemplate from '../util/MenuTemplate.vue';
 import SearchSortFilter from '../util/SearchSortFilter.vue';
 import StandardItemImport from '../util/StandardItemImport.vue';
-import timeDiff from '../../../timediff.ts';
 import Upload from '../../util/Upload.vue';
 
 const router = useRouter();

@@ -1,7 +1,8 @@
 <template>
     <StandardItem @click='$emit("click")'>
         <div class='d-flex align-items-start gap-3 px-3 py-2'>
-            <div class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 mt-1 flex-shrink-0'
+            <div
+                class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 mt-1 flex-shrink-0'
                 style='width: 36px; height: 36px;'
             >
                 <IconAlertTriangle
