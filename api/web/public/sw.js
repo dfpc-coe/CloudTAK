@@ -17,11 +17,11 @@ const ENTRY_HTML_TO_PATH = {
 };
 
 /**
- * Walk the Vite manifest and return every URL that must be precached.
- * Both `imports` and `dynamicImports` are followed transitively: lazy
- * chunks (icons, floating UI, per-route components) only appear under
- * `dynamicImports` and must not be missed or the post-update reload
- * will 404 on them.
+ * Walk the Vite manifest and return every URL to precache, following `imports`
+ * and `dynamicImports` transitively (lazy chunks only appear under
+ * `dynamicImports` and must not be missed). Worker bundles live under synthetic
+ * `worker:` entries injected at build time (see vite.config.ts); they carry a
+ * `file`, so this same walk precaches them too.
  */
 function collectAssetsFromManifest(manifest) {
     const assets = new Set(['/']);
