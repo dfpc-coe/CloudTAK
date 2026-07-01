@@ -80,6 +80,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     sinks: Sinks;
     importControl: ImportControl;
     closed: boolean;
+    pending: Map<number | string, Promise<ConnectionClient>>;
 
     /**
      * In Low Bandwith environments the WebSocket can persist
@@ -94,6 +95,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         super();
 
         this.closed = false;
+        this.pending = new Map();
         this.config = config;
         this.importControl = new ImportControl(config);
 
@@ -326,6 +328,26 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     async add(connConfig: ConnectionConfig): Promise<ConnectionClient> {
         if (!connConfig.auth || !connConfig.auth.cert || !connConfig.auth.key) throw new Err(400, null, 'Connection must have auth.cert & auth.key');
 
+        // Return existing tracked connection immediately
+        if (this.has(connConfig.id)) {
+            return this.get(connConfig.id) as ConnectionClient;
+        }
+
+        // Ensure 2 concurrent adds for the same connection don't occur
+        const existing = this.pending.get(connConfig.id);
+        if (existing) return existing;
+
+        const promise = this.#add(connConfig);
+        this.pending.set(connConfig.id, promise);
+
+        try {
+            return await promise;
+        } finally {
+            this.pending.delete(connConfig.id);
+        }
+    }
+
+    async #add(connConfig: ConnectionConfig): Promise<ConnectionClient> {
         let tak: TAK;
 
         if (this.config.StackName === 'test') {

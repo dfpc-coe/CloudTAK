@@ -71,6 +71,24 @@
                     </TablerIconButton>
 
                     <TablerIconButton
+                        v-if='cot.is_route'
+                        :title='isNavigating ? "End Navigation" : "Navigate"'
+                        @click='toggleNavigation'
+                    >
+                        <IconNavigationFilled
+                            v-if='isNavigating'
+                            :size='actionIconSize'
+                            stroke='1'
+                            style='color: #1E90FF;'
+                        />
+                        <IconNavigation
+                            v-else
+                            :size='actionIconSize'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+
+                    <TablerIconButton
                         v-if='cot.geometry.type === "Point"'
                         :title='isLocked ? "Unlock" : "Lock On"'
                         @click='toggleLock'
@@ -205,6 +223,19 @@
                                         :size='32'
                                     /><div class='mx-2'>
                                         Buffer
+                                    </div>
+                                </div>
+                                <div
+                                    v-if='cot.geometry.type === "LineString" && !cot.is_route'
+                                    role='button'
+                                    class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
+                                    @click.stop='cot.toRoute()'
+                                >
+                                    <IconRoute
+                                        stroke='1'
+                                        :size='32'
+                                    /><div class='mx-2'>
+                                        Convert to Route
                                     </div>
                                 </div>
                             </div>
@@ -572,6 +603,12 @@
                     :edit='is_editable'
                 />
 
+                <PropertyVideo
+                    v-if='cot.properties.video !== undefined'
+                    :key='cot.properties.id'
+                    :cot='cot'
+                />
+
                 <PropertyTimes
                     v-if='!cot.properties.archived'
                     :cot='cot'
@@ -698,6 +735,7 @@ import Breadcrumb from './util/Breadcrumb.vue';
 import PropertyElevation from './Property/PropertyElevation.vue';
 import PropertyAttachments from './Property/PropertyAttachments.vue';
 import PropertyLinks from './Property/PropertyLinks.vue';
+import PropertyVideo from './Property/PropertyVideo.vue';
 import PropertyTimes from './Property/PropertyTimes.vue';
 import PropertyMetadata from './Property/PropertyMetadata.vue';
 import PropertyStyle from './Property/PropertyStyle.vue';
@@ -729,6 +767,8 @@ import {
     IconAdjustments,
     IconLock,
     IconLockOpen,
+    IconNavigation,
+    IconNavigationFilled,
 } from '@tabler/icons-vue';
 import Subscriptions from './util/Subscriptions.vue';
 import { server } from '../../std.ts';
@@ -774,6 +814,22 @@ const breadcrumbLive = ref(false);
 const remarksExpanded = ref(true);
 const bufferCotId = ref<string | null>(null);
 const actionIconSize = 28;
+
+const isNavigating = computed(() => {
+    return mapStore.navigation.active
+        && !!cot.value
+        && mapStore.navigation.cotId === cot.value.id;
+});
+
+async function toggleNavigation() {
+    if (!cot.value) return;
+
+    if (isNavigating.value) {
+        mapStore.stopNavigation();
+    } else {
+        await mapStore.startNavigation(cot.value.id);
+    }
+}
 
 const currentTime = ref(new Date());
 const interval = ref<ReturnType<typeof setInterval> | undefined>();

@@ -291,6 +291,10 @@ export default class COT {
         return COT.selfUid === this.id;
     }
 
+    get is_route(): boolean {
+        return this._geometry.type === 'LineString' && this._properties.type === 'b-m-r';
+    }
+
     get is_archivable(): boolean {
         return !this.is_skittle;
     }
@@ -301,6 +305,23 @@ export default class COT {
      */
     get is_editable(): boolean {
         return this.properties.archived || this.is_self || false;
+    }
+
+    /**
+     * Convert this LineString feature into a TAK Route (`b-m-r`).
+     * Throws if the geometry is not a LineString or the feature is already a route.
+     */
+    async toRoute(): Promise<void> {
+        if (this._geometry.type !== 'LineString') {
+            throw new Error('toRoute() is only supported for LineString features');
+        }
+        if (this.is_route) return;
+
+        this._properties.type = 'b-m-r';
+        this._properties.how = 'm-g';
+        this._properties.archived = true;
+
+        await this.update({});
     }
 
     async subscription(): Promise<Subscription> {
