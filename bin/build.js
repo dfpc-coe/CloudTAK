@@ -1,5 +1,7 @@
 import fs from 'node:fs/promises';
 import CP from 'child_process';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Build and push docker containers to AWS ECR
@@ -106,11 +108,16 @@ function cloudtak_etl() {
 }
 
 function cloudtak_api(plugins = []) {
-    const buildArgs = plugins.length ? `--build-arg WEB_PLUGINS="${plugins.join(',')}"` : '';
+    if (plugins.length) {
+        execFileSync('node', [
+            fileURLToPath(new URL('./plugin.ts', import.meta.url)),
+            ...plugins
+        ], { stdio: 'inherit' });
+    }
 
     return new Promise((resolve, reject) => {
         const $ = CP.exec(`
-            docker compose build ${buildArgs} api \
+            docker compose build api \
             && docker tag cloudtak-api:latest "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{GITSHA}" \
             && docker push "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{GITSHA}"
         `, (err) => {

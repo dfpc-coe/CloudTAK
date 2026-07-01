@@ -16,6 +16,8 @@
 
 ### Pending Release
 
+- :rocket: Migrate Web Plugin installation out of the `Dockerfile` and into `bin/plugin.ts`, which also syncs `<plugin>/public/` static assets into the CloudTAK Vite `public/` directory without allowing core assets to be overwritten
+
 ### v13.26.1 - 2026-06-30
 
 - :bug: Ensure changing servers resets the current branding/app store
