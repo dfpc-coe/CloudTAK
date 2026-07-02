@@ -22,6 +22,11 @@
 - :tada: `GET /api` now advertises the WebSocket location via a new `ws` field which the WebUI uses to establish the WebSocket connection
 - :rocket: Mission Subscription token lookups now fall back to the database when the Connection isn't present in the local pool
 
+### v13.30.0 - 2026-07-02
+
+- :rocket: Simplify the Service Worker Handling
+- :bug: Ensure service worker is still loaded if the window#load event has already fired
+
 ### v13.29.0 - 2026-07-01
 
 - :rocket: Migrate Menu & Admin to use StandardItem Import
