@@ -1,5 +1,4 @@
 import { createApp, watch } from 'vue'
-import { version } from '../package.json'
 import { PluginAPI } from '../plugin.ts';
 import type { PluginStatic, PluginInstance } from '../plugin.ts'
 import router from './router.ts'
@@ -9,7 +8,7 @@ import { isNativePlatform, supportsServiceWorker } from './base/capacitor.ts';
 import { initServiceWorker } from './base/service-worker.ts';
 import { initGlobalErrorReporting, vueErrorHandler } from './lib/reporting/index.ts';
 
-initServiceWorker(version);
+initServiceWorker();
 initGlobalErrorReporting();
 
 import 'floating-vue/dist/style.css'

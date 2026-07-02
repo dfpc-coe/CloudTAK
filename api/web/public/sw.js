@@ -1,9 +1,7 @@
-const params = new URL(location).searchParams;
-const VERSION = params.get('v') || Math.random().toString(36).substring(2, 8);
-const BUILD  = params.get('build') || Math.random().toString(36).substring(2, 8);
+const BUILD = new URL(location).searchParams.get('build') || 'unknown';
 
-const CACHE_NAME = `cloudtak-cache-${VERSION}-${BUILD}`;
 const CACHE_PREFIX = 'cloudtak-cache-';
+const CACHE_NAME = `${CACHE_PREFIX}${BUILD}`;
 
 // Vite emits one manifest entry per HTML page. Each must be precached under
 // the navigable path nginx serves it from (the browser never requests the
@@ -53,45 +51,26 @@ function collectAssetsFromManifest(manifest) {
     return Array.from(assets);
 }
 
-async function fetchManifest() {
-    try {
+self.addEventListener('install', (event) => {
+    event.waitUntil((async () => {
         // `cache: 'no-store'` is critical: `updateViaCache: 'none'` on the SW
         // registration only prevents the *sw.js* script from being served by
         // the HTTP cache. Sub-resource fetches inside the SW (like this one)
-        // still honor intermediary caches by default. A stale manifest here
-        // causes the new SW to precache stale URLs (or 404 mid-install,
-        // aborting the upgrade).
+        // still honor intermediary caches by default.
         const res = await fetch('./.vite/manifest.json', { cache: 'no-store' });
-        if (!res.ok) return null;
-        return await res.json();
-    } catch (err) {
-        console.warn('[SW] Failed to obtain Vite manifest:', err);
-        return null;
-    }
-}
+        if (!res.ok) throw new Error(`[SW] Manifest fetch failed: ${res.status}`);
+        const manifest = await res.json();
 
-self.addEventListener('install', (event) => {
-    event.waitUntil((async () => {
-        const manifest = await fetchManifest();
-        const urls = manifest ? collectAssetsFromManifest(manifest) : ['/'];
-
+        // Atomic precache: if ANY URL fails, install rejects and the browser
+        // keeps the previous service worker (and its complete cache). The
+        // page re-registers on every load, so a failed install retries then.
         const cache = await caches.open(CACHE_NAME);
-
-        // Atomic precache: if ANY URL fails, install rejects and the
-        // browser keeps the old SW installed. Prefer cache.addAll() (the
-        // spec'd atomic variant); fall back to parallel cache.add() for
-        // test doubles that don't implement addAll. A single rejection
-        // aborts install in either branch.
-        if (typeof cache.addAll === 'function') {
-            await cache.addAll(urls);
-        } else {
-            await Promise.all(urls.map((url) => cache.add(url)));
-        }
-
-        console.log(`[SW] Precached ${urls.length} assets into ${CACHE_NAME}`);
+        await cache.addAll(collectAssetsFromManifest(manifest));
     })());
 });
 
+// Sent by the App.vue update banner: activate immediately instead of waiting
+// for every tab to close.
 self.addEventListener('message', (event) => {
     if (event.data === 'SKIP_WAITING') {
         self.skipWaiting();
@@ -100,22 +79,14 @@ self.addEventListener('message', (event) => {
 
 self.addEventListener('activate', (event) => {
     event.waitUntil((async () => {
-        // Only purge old CloudTAK caches once the new cache is proven
-        // usable (contains the root shell). If anything is wrong, leave
-        // previous generations in place so clients keep a working app.
-        const newCache = await caches.open(CACHE_NAME);
-        const rootShell = await newCache.match('/');
-
-        if (rootShell) {
-            const keys = await caches.keys();
-            await Promise.all(
-                keys
-                    .filter((key) => key !== CACHE_NAME && key.startsWith(CACHE_PREFIX))
-                    .map((key) => caches.delete(key))
-            );
-        } else {
-            console.warn(`[SW] ${CACHE_NAME} missing root shell; keeping old caches.`);
-        }
+        // Install is atomic, so reaching activate means CACHE_NAME is
+        // complete and previous generations are safe to drop.
+        const keys = await caches.keys();
+        await Promise.all(
+            keys
+                .filter((key) => key !== CACHE_NAME && key.startsWith(CACHE_PREFIX))
+                .map((key) => caches.delete(key))
+        );
 
         await self.clients.claim();
     })());
@@ -140,9 +111,7 @@ function isRuntimeCacheable(url) {
  * Navigation fallback when the network is unreachable. Prefers the cached
  * entry shell that matches the request path, then falls back to `/`.
  */
-async function navigationFallback(cache, requestUrl) {
-    const pathname = requestUrl.pathname;
-
+async function navigationFallback(cache, pathname) {
     for (const entryPath of Object.values(ENTRY_HTML_TO_PATH)) {
         if (entryPath !== '/' && pathname.startsWith(entryPath)) {
             const match = await cache.match(entryPath);
@@ -153,6 +122,9 @@ async function navigationFallback(cache, requestUrl) {
     return cache.match('/');
 }
 
+// Cache-first for everything, navigations included: the precached shell
+// serves instantly even offline. Freshness comes from the cache generation
+// swap — a new deploy installs a new SW whose activate replaces CACHE_NAME.
 self.addEventListener('fetch', (event) => {
     if (event.request.method !== 'GET') return;
 
@@ -171,16 +143,14 @@ self.addEventListener('fetch', (event) => {
         try {
             const networkResponse = await fetch(event.request);
 
-            if (networkResponse && networkResponse.status === 200 && isRuntimeCacheable(url)) {
+            if (networkResponse.status === 200 && isRuntimeCacheable(url)) {
                 event.waitUntil(cache.put(url.toString(), networkResponse.clone()));
             }
 
             return networkResponse;
         } catch (error) {
-            console.error(`[SW] Fetch failed for ${url.toString()}`, error);
-
             if (event.request.mode === 'navigate') {
-                const fallback = await navigationFallback(cache, url);
+                const fallback = await navigationFallback(cache, url.pathname);
                 if (fallback) return fallback;
             }
 
