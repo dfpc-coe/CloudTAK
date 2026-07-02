@@ -16,6 +16,11 @@
 
 ### Pending Release
 
+### v13.30.0 - 2026-07-02
+
+- :rocket: Simplify the Service Worker Handling
+- :bug: Ensure service worker is still loaded if the window#load event has already fired
+
 ### v13.29.0 - 2026-07-01
 
 - :rocket: Migrate Menu & Admin to use StandardItem Import
