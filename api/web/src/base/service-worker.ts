@@ -1,18 +1,6 @@
 import { supportsServiceWorker } from './capacitor.ts';
 
-interface ManifestEntry {
-    file?: string;
-}
-
-const SERVICE_WORKER_BUILD_KEY = 'cloudtak-sw-build';
-const UPDATE_REQUESTED_KEY = 'cloudtak-sw-update-requested';
-const SERVICE_WORKER_ENTRIES = [
-    'admin.html',
-    'connection.html',
-    'docs.html',
-    'index.html',
-    'video.html'
-] as const;
+const UPDATE_CHECK_INTERVAL = 5 * 60 * 1000;
 
 function basename(value: string | null | undefined): string | null {
     if (!value) return null;
@@ -33,286 +21,188 @@ export function getCurrentEntryBuildId(): string {
     return currentBuildId || import.meta.env.HASH;
 }
 
-function fingerprintBuild(parts: string[]): string {
+function fingerprint(text: string): string {
     let hash = 2166136261;
 
-    for (const part of parts.toSorted()) {
-        for (let index = 0; index < part.length; index++) {
-            hash ^= part.charCodeAt(index);
-            hash = Math.imul(hash, 16777619);
-        }
+    for (let index = 0; index < text.length; index++) {
+        hash ^= text.charCodeAt(index);
+        hash = Math.imul(hash, 16777619);
     }
 
     return (hash >>> 0).toString(36);
 }
 
-function getDeploymentBuildId(manifest: Record<string, ManifestEntry>): string | null {
-    const entryFiles = SERVICE_WORKER_ENTRIES
-        .map((entry) => basename(manifest[entry]?.file))
-        .filter((entry): entry is string => Boolean(entry));
+/**
+ * The deployed build is identified by fingerprinting the manifest bytes: any
+ * deploy rewrites the manifest, and the SW registration URL derives from it,
+ * so a new deploy always produces a new registration URL — which is what
+ * triggers the browser to install a fresh SW with a fresh precache.
+ */
+async function fetchDeployedBuildId(): Promise<string | null> {
+    const response = await fetch('/.vite/manifest.json', { cache: 'no-store' });
+    if (!response.ok) return null;
 
-    if (!entryFiles.length) {
-        return null;
-    }
-
-    return fingerprintBuild(entryFiles);
+    return fingerprint(await response.text());
 }
 
-function getWorkerBuildId(worker?: ServiceWorker | null): string | null {
-    if (!worker?.scriptURL) {
-        return null;
-    }
-
-    return new URL(worker.scriptURL).searchParams.get('build');
-}
-
-function getPageBuildId(registration?: ServiceWorkerRegistration | null): string | null {
-    return getWorkerBuildId(navigator.serviceWorker.controller)
-        ?? getWorkerBuildId(registration?.active)
-        ?? getPageServiceWorkerBuildId();
-}
-
-function getRegistrationBuildId(registration?: ServiceWorkerRegistration | null): string | null {
-    return getWorkerBuildId(registration?.waiting)
-        ?? getWorkerBuildId(registration?.installing)
-        ?? getPageBuildId(registration);
-}
-
-export function getPageServiceWorkerBuildId(): string | null {
-    if (typeof window === 'undefined') {
-        return null;
-    }
-
-    return window.sessionStorage.getItem(SERVICE_WORKER_BUILD_KEY);
-}
+// Set when THIS tab's update banner posts SKIP_WAITING, so the
+// controllerchange handler knows it is safe to auto-reload. Other tabs see
+// the same controllerchange without the flag and get a prompt instead of
+// silently reloading (which would lose unsaved state). A module variable
+// suffices: the flag is set and consumed within one page lifetime.
+let updateRequestedByThisTab = false;
 
 /**
- * Called by the update banner in App.vue immediately before it posts
- * `SKIP_WAITING` to the waiting worker. Sets a per-tab flag so that when
- * `controllerchange` fires we know *this* tab asked for the reload and
- * it is safe to auto-refresh. Other tabs on the same origin observe the
- * same `controllerchange` but will show their own update prompt instead
- * of silently reloading (which would lose unsaved state).
+ * Called by the App.vue update banner. With a waiting worker, activate it and
+ * let controllerchange reload this tab; without one (another tab already
+ * activated the new build) the new cache is live, so a plain reload serves
+ * the new shell.
  */
-export function markUpdateRequestedByThisTab(): void {
-    if (typeof window === 'undefined') return;
-    window.sessionStorage.setItem(UPDATE_REQUESTED_KEY, '1');
-}
+export function applyServiceWorkerUpdate(registration: ServiceWorkerRegistration | null): void {
+    const waiting = registration?.waiting;
 
-function consumeLocalUpdateRequest(): boolean {
-    if (typeof window === 'undefined') return false;
-    const value = window.sessionStorage.getItem(UPDATE_REQUESTED_KEY);
-    if (!value) return false;
-    window.sessionStorage.removeItem(UPDATE_REQUESTED_KEY);
-    return true;
-}
-
-function setPageServiceWorkerBuildId(buildId: string): void {
-    window.sessionStorage.setItem(SERVICE_WORKER_BUILD_KEY, buildId);
-}
-
-async function fetchDeployedBuildId(): Promise<string | null> {
-    const response = await fetch(`/.vite/manifest.json?ts=${Date.now()}`, {
-        cache: 'no-store'
-    });
-
-    if (!response.ok) {
-        return null;
+    if (waiting) {
+        updateRequestedByThisTab = true;
+        waiting.postMessage('SKIP_WAITING');
+    } else {
+        window.location.reload();
     }
-
-    const manifest = await response.json() as Record<string, ManifestEntry>;
-    return getDeploymentBuildId(manifest);
 }
 
-function notifyWaitingWorker(registration: ServiceWorkerRegistration, worker: ServiceWorker, lastNotifiedWorker: { url: string | null }) {
-    if (!worker.scriptURL || lastNotifiedWorker.url === worker.scriptURL) {
-        return;
-    }
-
-    lastNotifiedWorker.url = worker.scriptURL;
-
-    const url = new URL(worker.scriptURL);
+function announceUpdate(registration: ServiceWorkerRegistration | null): void {
     window.dispatchEvent(new CustomEvent('sw:update-available', {
-        detail: {
-            version: url.searchParams.get('v'),
-            build: url.searchParams.get('build'),
-            registration
-        }
+        detail: { registration }
     }));
 }
 
-function observeRegistration(registration: ServiceWorkerRegistration, lastNotifiedWorker: { url: string | null }) {
-    if (registration.waiting) {
-        notifyWaitingWorker(registration, registration.waiting, lastNotifiedWorker);
+function observeRegistration(registration: ServiceWorkerRegistration): void {
+    console.log('[SW] registration observed', {
+        scope: registration.scope,
+        installing: registration.installing?.state ?? null,
+        waiting: registration.waiting?.state ?? null,
+        active: registration.active?.state ?? null,
+    });
+
+    if (registration.waiting && navigator.serviceWorker.controller) {
+        console.log('[SW] waiting worker already present on load — announcing update');
+        announceUpdate(registration);
     }
 
     registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        if (!newWorker) return;
+        const worker = registration.installing;
+        console.log('[SW] updatefound — installing worker state:', worker?.state ?? 'none');
+        if (!worker) return;
 
-        newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                notifyWaitingWorker(registration, newWorker, lastNotifiedWorker);
+        worker.addEventListener('statechange', () => {
+            console.log('[SW] installing worker statechange →', worker.state);
+            if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[SW] new worker installed while page is controlled — announcing update');
+                announceUpdate(registration);
             }
         });
     });
 }
 
-export function initServiceWorker(version: string): void {
-    if (import.meta.env.DEV || !supportsServiceWorker()) {
+export function initServiceWorker(): void {
+    if (import.meta.env.DEV) {
+        console.info('[SW] registration skipped: dev mode (service worker is production-only)');
         return;
     }
 
-    window.addEventListener('load', () => {
-        const lastNotifiedWorker = { url: null as string | null };
-        let refreshing = false;
-        let requestedBuildId: string | null = null;
-        let currentBuildId = getPageServiceWorkerBuildId();
+    if (!supportsServiceWorker()) {
+        console.info('[SW] registration skipped: unsupported environment (native platform or no serviceWorker API)');
+        return;
+    }
 
-        const register = async (buildId: string, options?: { syncPageBuild?: boolean }) => {
-            if (requestedBuildId === buildId) {
+    const start = () => {
+        console.log('[SW] starting registration — controller:', navigator.serviceWorker.controller?.scriptURL ?? 'none');
+
+        let registeredBuildId: string | null = null;
+
+        const register = async (buildId: string) => {
+            if (buildId === registeredBuildId) {
+                console.debug(`[SW] build ${buildId} already registered — skipping`);
                 return;
             }
+            registeredBuildId = buildId;
 
-            requestedBuildId = buildId;
-
+            const scriptUrl = `/sw.js?build=${encodeURIComponent(buildId)}`;
             try {
+                console.log(`[SW] registering ${scriptUrl}`);
                 // `updateViaCache: 'none'` ensures the sw.js script itself
                 // is never served from HTTP cache. Without this, a stale
                 // intermediary could pin users to an old service worker
                 // indefinitely.
                 const registration = await navigator.serviceWorker.register(
-                    `/sw.js?v=${encodeURIComponent(version)}&build=${encodeURIComponent(buildId)}`,
+                    scriptUrl,
                     { updateViaCache: 'none' }
                 );
-                console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                observeRegistration(registration, lastNotifiedWorker);
 
-                if (options?.syncPageBuild) {
-                    currentBuildId = buildId;
-                    setPageServiceWorkerBuildId(buildId);
-                }
+                console.log('[SW] register() resolved');
+                observeRegistration(registration);
             } catch (err) {
-                requestedBuildId = null;
-                console.log('ServiceWorker registration failed: ', err);
+                registeredBuildId = null;
+                console.error('[SW] registration failed:', err);
             }
         };
 
-        const checkForDeployedBuild = async () => {
+        // Register against whatever is deployed right now, then poll so
+        // long-lived tabs pick up new deploys. If the manifest is
+        // unreachable (offline start), the existing registration keeps
+        // serving and the next successful poll registers the current build.
+        const checkDeployedBuild = async () => {
             try {
-                const deployedBuildId = await fetchDeployedBuildId();
-
-                if (!deployedBuildId || deployedBuildId === currentBuildId || deployedBuildId === requestedBuildId) {
-                    return;
+                const buildId = await fetchDeployedBuildId();
+                if (buildId) {
+                    await register(buildId);
+                } else {
+                    console.warn('[SW] could not resolve deployed build id (manifest unreachable or non-OK)');
                 }
-
-                await register(deployedBuildId);
             } catch (err) {
-                console.debug('Failed to check deployed frontend build:', err);
+                console.debug('[SW] failed to check deployed frontend build:', err);
             }
         };
 
-        const initialize = async () => {
-            try {
-                const existingRegistration = await navigator.serviceWorker.getRegistration();
-                const existingBuildId = getRegistrationBuildId(existingRegistration);
+        void checkDeployedBuild();
+        window.setInterval(checkDeployedBuild, UPDATE_CHECK_INTERVAL);
 
-                if (existingRegistration) {
-                    observeRegistration(existingRegistration, lastNotifiedWorker);
-                }
-
-                const pageBuildId = getPageBuildId(existingRegistration);
-
-                if (pageBuildId) {
-                    currentBuildId = pageBuildId;
-                    setPageServiceWorkerBuildId(pageBuildId);
-                }
-
-                if (existingBuildId) {
-                    requestedBuildId = existingBuildId;
-                }
-
-                const deployedBuildId = await fetchDeployedBuildId() ?? currentBuildId ?? import.meta.env.HASH;
-
-                if (!currentBuildId) {
-                    await register(deployedBuildId, { syncPageBuild: true });
-                } else if (deployedBuildId !== currentBuildId) {
-                    await register(deployedBuildId);
-                }
-            } catch (err) {
-                console.debug('Failed to initialize ServiceWorker registration:', err);
-            }
-        };
-
-        void initialize();
-
-        window.addEventListener('focus', () => {
-            void checkForDeployedBuild();
-        });
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                void checkForDeployedBuild();
-            }
-        });
-
-        window.setInterval(() => {
-            void checkForDeployedBuild();
-        }, 30000);
+        // `clients.claim()` on first install also fires controllerchange;
+        // only a change away from an existing controller means another tab
+        // activated a new build.
+        let wasControlled = Boolean(navigator.serviceWorker.controller);
 
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (refreshing) return;
+            console.log('[SW] controllerchange — new controller:', navigator.serviceWorker.controller?.scriptURL ?? 'none');
 
-            const localUpdateRequested = consumeLocalUpdateRequest();
-
-            const controller = navigator.serviceWorker.controller;
-            const url = controller?.scriptURL ? new URL(controller.scriptURL) : null;
-            const activatedBuildId = url?.searchParams.get('build') ?? null;
-
-            // Persist the activated build id BEFORE any reload so that the
-            // next page load sees a matching `currentBuildId` and does not
-            // re-trigger the update banner. Without this, App.vue's mount-
-            // time check compares the freshly-loaded page (new build) to a
-            // stale sessionStorage value and mistakenly surfaces the prompt
-            // again until the user manually refreshes a second time.
-            if (activatedBuildId) {
-                setPageServiceWorkerBuildId(activatedBuildId);
-            }
-
-            // Only auto-reload if this tab is the one that clicked "Update
-            // Now". Other tabs observe the same controllerchange; silently
-            // reloading them would drop in-progress form data and map
-            // selections, so we surface an update prompt instead and let
-            // the user choose when to reload.
-            if (localUpdateRequested) {
-                refreshing = true;
+            if (updateRequestedByThisTab) {
+                updateRequestedByThisTab = false;
+                console.log('[SW] controllerchange requested by this tab — reloading');
                 window.location.reload();
                 return;
             }
 
-            if (!url) return;
-
-            // `clients.claim()` on the first install also triggers
-            // controllerchange. Only surface an update prompt when the newly
-            // activated worker differs from the build this page was already
-            // running.
-            if (!currentBuildId || !activatedBuildId || activatedBuildId === currentBuildId) {
-                if (activatedBuildId) {
-                    currentBuildId = activatedBuildId;
-                }
+            if (!wasControlled) {
+                console.log('[SW] controllerchange from first-install claim — ignoring');
+                wasControlled = true;
                 return;
             }
 
-            currentBuildId = activatedBuildId;
-
-            window.dispatchEvent(new CustomEvent('sw:update-available', {
-                detail: {
-                    version: url.searchParams.get('v'),
-                    build: activatedBuildId,
-                    registration: null,
-                    activated: true,
-                }
-            }));
+            console.log('[SW] another tab activated a new build — announcing update');
+            announceUpdate(null);
         });
-    });
+    };
+
+    // Registration is deferred until the page has loaded so it does not
+    // compete with critical resources — but the app's module graph can
+    // finish evaluating *after* `load` has already fired, and a `load`
+    // listener attached past the event never runs. Check `readyState` so a
+    // late start still registers instead of waiting forever for an event
+    // that will not come again.
+    if (document.readyState === 'complete') {
+        console.log('[SW] init — document already loaded, registering immediately');
+        start();
+    } else {
+        console.log('[SW] init — awaiting window load event');
+        window.addEventListener('load', start, { once: true });
+    }
 }
