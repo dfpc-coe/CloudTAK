@@ -24,11 +24,15 @@ if (isNativePlatform()) {
 // Catch failed resource loads (scripts, stylesheets, images) before Vue initialises.
 // In production, the most common root cause is a stale SW serving a reference
 // to an asset that no longer exists on the origin. We take a targeted
-// recovery path: evict the failing URL from any cache, ask the SW to check
-// for a newer registration, and reload ONCE per tab session. We intentionally
-// do NOT `unregister()` or wipe every cache — doing so while offline deletes
+// recovery path: evict the failing URL and the cached shell, ask the SW to
+// check for a newer registration, and reload. Recovery only runs while
+// online (offline, the network cannot supply the asset either — a reload
+// replays the identical failure forever) and at most once per cooldown
+// window, so a reload that fixes nothing cannot loop. We intentionally do
+// NOT `unregister()` or wipe every cache — doing so while offline deletes
 // the only working copy of the app the user has.
 const SW_RECOVERY_ATTEMPTED_KEY = 'sw-cache-recovery-attempted';
+const SW_RECOVERY_COOLDOWN_MS = 60 * 1000;
 
 // Only app build output (Vite emits hashed assets under /assets/) can be left
 // dangling by a stale service worker. User-supplied content — e.g. <img> tags
@@ -52,21 +56,32 @@ window.addEventListener('error', async (e) => {
     console.error('Failed to load resource:', (e.target as HTMLElement).tagName, url);
 
     if (import.meta.env.DEV || !supportsServiceWorker()) return;
-    if (sessionStorage.getItem(SW_RECOVERY_ATTEMPTED_KEY)) return;
     if (!url) return;
     if (!isRecoverableAppAsset(url)) return;
 
-    sessionStorage.setItem(SW_RECOVERY_ATTEMPTED_KEY, '1');
+    // Offline the asset is unreachable no matter what we evict; reloading
+    // just serves the same incomplete cache and fails the same way.
+    // router.onError makes the same call for failed dynamic imports.
+    if (!navigator.onLine) return;
+
+    const lastAttempt = Number(sessionStorage.getItem(SW_RECOVERY_ATTEMPTED_KEY)) || 0;
+    if (Date.now() - lastAttempt < SW_RECOVERY_COOLDOWN_MS) return;
+    sessionStorage.setItem(SW_RECOVERY_ATTEMPTED_KEY, String(Date.now()));
+
     console.warn('Attempting targeted SW cache recovery for:', url);
 
     try {
-        // Evict just the failing URL from every cache bucket we own, so
-        // the next fetch goes to the network instead of replaying the
-        // same bad cached reference.
+        // Evict the failing URL and the cached shell from every cache
+        // bucket we own. Dropping the shell matters: navigations are
+        // cache-first, so without this the post-reload page is the same
+        // stale HTML referencing the same dead asset. With it, the reload
+        // fetches fresh HTML from the network, which references assets the
+        // server can actually supply.
         const cacheKeys = await caches.keys();
         await Promise.all(cacheKeys.map(async (key) => {
             const cache = await caches.open(key);
             await cache.delete(url);
+            await cache.delete('/');
         }));
 
         // Nudge the SW to re-check the registration; if a newer deploy
@@ -117,10 +132,3 @@ watch(() => mapStore.isLoaded, async (isLoaded) => {
 }, { immediate: true });
 
 app.mount('#app');
-
-// Successful mount means the critical path loaded. Clear the recovery
-// guard so an *independent* resource failure later in the session can
-// trigger recovery again instead of being silently swallowed.
-if (!import.meta.env.DEV) {
-    sessionStorage.removeItem(SW_RECOVERY_ATTEMPTED_KEY);
-}
