@@ -76,16 +76,27 @@ function announceUpdate(registration: ServiceWorkerRegistration | null): void {
 }
 
 function observeRegistration(registration: ServiceWorkerRegistration): void {
+    console.log('[SW] registration observed', {
+        scope: registration.scope,
+        installing: registration.installing?.state ?? null,
+        waiting: registration.waiting?.state ?? null,
+        active: registration.active?.state ?? null,
+    });
+
     if (registration.waiting && navigator.serviceWorker.controller) {
+        console.log('[SW] waiting worker already present on load — announcing update');
         announceUpdate(registration);
     }
 
     registration.addEventListener('updatefound', () => {
         const worker = registration.installing;
+        console.log('[SW] updatefound — installing worker state:', worker?.state ?? 'none');
         if (!worker) return;
 
         worker.addEventListener('statechange', () => {
+            console.log('[SW] installing worker statechange →', worker.state);
             if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[SW] new worker installed while page is controlled — announcing update');
                 announceUpdate(registration);
             }
         });
@@ -93,31 +104,47 @@ function observeRegistration(registration: ServiceWorkerRegistration): void {
 }
 
 export function initServiceWorker(): void {
-    if (import.meta.env.DEV || !supportsServiceWorker()) {
+    if (import.meta.env.DEV) {
+        console.info('[SW] registration skipped: dev mode (service worker is production-only)');
         return;
     }
 
+    if (!supportsServiceWorker()) {
+        console.info('[SW] registration skipped: unsupported environment (native platform or no serviceWorker API)');
+        return;
+    }
+
+    console.log('[SW] init — awaiting window load event');
+
     window.addEventListener('load', () => {
+        console.log('[SW] window loaded — controller:', navigator.serviceWorker.controller?.scriptURL ?? 'none');
+
         let registeredBuildId: string | null = null;
 
         const register = async (buildId: string) => {
-            if (buildId === registeredBuildId) return;
+            if (buildId === registeredBuildId) {
+                console.debug(`[SW] build ${buildId} already registered — skipping`);
+                return;
+            }
             registeredBuildId = buildId;
 
+            const scriptUrl = `/sw.js?build=${encodeURIComponent(buildId)}`;
             try {
+                console.log(`[SW] registering ${scriptUrl}`);
                 // `updateViaCache: 'none'` ensures the sw.js script itself
                 // is never served from HTTP cache. Without this, a stale
                 // intermediary could pin users to an old service worker
                 // indefinitely.
                 const registration = await navigator.serviceWorker.register(
-                    `/sw.js?build=${encodeURIComponent(buildId)}`,
+                    scriptUrl,
                     { updateViaCache: 'none' }
                 );
 
+                console.log('[SW] register() resolved');
                 observeRegistration(registration);
             } catch (err) {
                 registeredBuildId = null;
-                console.error('ServiceWorker registration failed:', err);
+                console.error('[SW] registration failed:', err);
             }
         };
 
@@ -128,9 +155,13 @@ export function initServiceWorker(): void {
         const checkDeployedBuild = async () => {
             try {
                 const buildId = await fetchDeployedBuildId();
-                if (buildId) await register(buildId);
+                if (buildId) {
+                    await register(buildId);
+                } else {
+                    console.warn('[SW] could not resolve deployed build id (manifest unreachable or non-OK)');
+                }
             } catch (err) {
-                console.debug('Failed to check deployed frontend build:', err);
+                console.debug('[SW] failed to check deployed frontend build:', err);
             }
         };
 
@@ -143,17 +174,22 @@ export function initServiceWorker(): void {
         let wasControlled = Boolean(navigator.serviceWorker.controller);
 
         navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log('[SW] controllerchange — new controller:', navigator.serviceWorker.controller?.scriptURL ?? 'none');
+
             if (updateRequestedByThisTab) {
                 updateRequestedByThisTab = false;
+                console.log('[SW] controllerchange requested by this tab — reloading');
                 window.location.reload();
                 return;
             }
 
             if (!wasControlled) {
+                console.log('[SW] controllerchange from first-install claim — ignoring');
                 wasControlled = true;
                 return;
             }
 
+            console.log('[SW] another tab activated a new build — announcing update');
             announceUpdate(null);
         });
     });

@@ -1,9 +1,23 @@
 const BUILD = new URL(location).searchParams.get('build');
 
+console.log(`[SW] script evaluating — build=${BUILD ?? 'MISSING'} scriptURL=${location}`);
+
+// Surface anything that throws or rejects inside the worker; without these
+// a failed install/activate is easy to miss in the Firefox console.
+self.addEventListener('error', (event) => {
+    console.error('[SW] uncaught error:', event.message, `${event.filename}:${event.lineno}:${event.colno}`);
+});
+self.addEventListener('unhandledrejection', (event) => {
+    console.error('[SW] unhandled promise rejection:', event.reason);
+});
+
 // Fail fast: without a build id the cache name is ambiguous — different
 // deployments would collide in one cache and activate could purge valid
 // caches. Throwing here rejects register(), so the previous SW keeps serving.
-if (!BUILD) throw new Error('[SW] Registered without the required `build` query parameter');
+if (!BUILD) {
+    console.error('[SW] Registered without the required `build` query parameter — aborting');
+    throw new Error('[SW] Registered without the required `build` query parameter');
+}
 
 const CACHE_PREFIX = 'cloudtak-cache-';
 const CACHE_NAME = `${CACHE_PREFIX}${BUILD}`;
@@ -57,43 +71,58 @@ function collectAssetsFromManifest(manifest) {
 }
 
 self.addEventListener('install', (event) => {
+    console.log(`[SW] install start → ${CACHE_NAME}`);
     event.waitUntil((async () => {
         // `cache: 'no-store'` is critical: `updateViaCache: 'none'` on the SW
         // registration only prevents the *sw.js* script from being served by
         // the HTTP cache. Sub-resource fetches inside the SW (like this one)
         // still honor intermediary caches by default.
         const res = await fetch('./.vite/manifest.json', { cache: 'no-store' });
-        if (!res.ok) throw new Error(`[SW] Manifest fetch failed: ${res.status}`);
+        if (!res.ok) {
+            console.error(`[SW] install: manifest fetch failed (${res.status}) — install will abort`);
+            throw new Error(`[SW] Manifest fetch failed: ${res.status}`);
+        }
         const manifest = await res.json();
 
         // Atomic precache: if ANY URL fails, install rejects and the browser
         // keeps the previous service worker (and its complete cache). The
         // page re-registers on every load, so a failed install retries then.
+        const assets = collectAssetsFromManifest(manifest);
+        console.log(`[SW] install: precaching ${assets.length} assets`);
         const cache = await caches.open(CACHE_NAME);
-        await cache.addAll(collectAssetsFromManifest(manifest));
+        try {
+            await cache.addAll(assets);
+        } catch (err) {
+            console.error('[SW] install: addAll failed — install will abort', err);
+            throw err;
+        }
+        console.log('[SW] install complete');
     })());
 });
 
 // Sent by the App.vue update banner: activate immediately instead of waiting
 // for every tab to close.
 self.addEventListener('message', (event) => {
+    console.log('[SW] message received:', event.data);
     if (event.data === 'SKIP_WAITING') {
         self.skipWaiting();
     }
 });
 
 self.addEventListener('activate', (event) => {
+    console.log(`[SW] activate start → ${CACHE_NAME}`);
     event.waitUntil((async () => {
         // Install is atomic, so reaching activate means CACHE_NAME is
         // complete and previous generations are safe to drop.
         const keys = await caches.keys();
-        await Promise.all(
-            keys
-                .filter((key) => key !== CACHE_NAME && key.startsWith(CACHE_PREFIX))
-                .map((key) => caches.delete(key))
-        );
+        const stale = keys.filter((key) => key !== CACHE_NAME && key.startsWith(CACHE_PREFIX));
+        if (stale.length) {
+            console.log('[SW] activate: deleting stale caches', stale);
+        }
+        await Promise.all(stale.map((key) => caches.delete(key)));
 
         await self.clients.claim();
+        console.log('[SW] activate complete — clients claimed');
     })());
 });
 
@@ -156,9 +185,13 @@ self.addEventListener('fetch', (event) => {
         } catch (error) {
             if (event.request.mode === 'navigate') {
                 const fallback = await navigationFallback(cache, url.pathname);
-                if (fallback) return fallback;
+                if (fallback) {
+                    console.warn(`[SW] network failed for navigation ${url.pathname} — serving cached shell`);
+                    return fallback;
+                }
             }
 
+            console.error(`[SW] fetch failed with no cached fallback: ${url.toString()}`, error);
             throw error;
         }
     })());
