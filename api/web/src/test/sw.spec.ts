@@ -11,7 +11,19 @@ function createCacheMock() {
         const store = stores.get(name)!;
         const cache = {
             add: vi.fn(async (url: string) => { store.set(url, new Response()); }),
-            addAll: vi.fn(async (urls: string[]) => { await Promise.all(urls.map((url) => cache.add(url))); }),
+            // Real Cache.addAll() is atomic: either every URL is cached or
+            // none are. Roll back on failure so tests cannot pass against a
+            // partially-populated cache.
+            addAll: vi.fn(async (urls: string[]) => {
+                const snapshot = new Map(store);
+                try {
+                    await Promise.all(urls.map((url) => cache.add(url)));
+                } catch (err) {
+                    store.clear();
+                    for (const [key, value] of snapshot) store.set(key, value);
+                    throw err;
+                }
+            }),
             match: vi.fn(async (url: string) => store.get(url) ?? undefined),
             put: vi.fn(async (url: string, res: Response) => { store.set(url, res); }),
         };
@@ -45,8 +57,8 @@ interface FakeEvent {
  * Build a minimal ServiceWorkerGlobalScope, evaluate the SW source inside it,
  * and return the captured event listeners.
  */
-function loadSW(opts: { build?: string; fetchMock?: Mock } = {}) {
-    const b = opts.build ?? 'abc123';
+function loadSW(opts: { build?: string | null; fetchMock?: Mock } = {}) {
+    const b = opts.build === undefined ? 'abc123' : opts.build;
 
     const listeners: Record<string, Listener[]> = {};
     const cachesMock = createCacheMock();
@@ -54,7 +66,7 @@ function loadSW(opts: { build?: string; fetchMock?: Mock } = {}) {
     const fetchMock = opts.fetchMock ?? vi.fn(async () => new Response('{}', { status: 200 }));
 
     const scope: Record<string, any> = {
-        location: new URL(`https://example.com/sw.js?build=${b}`),
+        location: new URL(b === null ? 'https://example.com/sw.js' : `https://example.com/sw.js?build=${b}`),
         self: undefined as any,  // will alias below
         URL,
         Response,
@@ -113,6 +125,13 @@ function manifestFetchMock(manifest: Record<string, any>): Mock {
 }
 
 describe('sw.js', () => {
+    it('refuses to load without a `build` query parameter', () => {
+        // Without a build id the cache name would be ambiguous — different
+        // deployments would collide in one cache and activate could purge
+        // valid caches. The throw rejects register(), keeping the old SW.
+        expect(() => loadSW({ build: null })).toThrow(/build/);
+    });
+
     describe('install', () => {
         it('pre-caches manifest assets and root atomically via addAll', async () => {
             const fetchMock = manifestFetchMock({
@@ -184,7 +203,8 @@ describe('sw.js', () => {
             // would purge the old cache and leave the user stuck. Install
             // must reject so the browser discards the new SW entirely.
             const fetchMock = manifestFetchMock({
-                'src/main.ts': { file: 'assets/main-broken.js', imports: [] },
+                'src/main.ts': { file: 'assets/main-ok.js', imports: [] },
+                'src/broken.ts': { file: 'assets/main-broken.js', imports: [] },
             });
 
             const { emit, cachesMock } = loadSW({ build: 'fail', fetchMock });
@@ -194,9 +214,14 @@ describe('sw.js', () => {
                 if (url === 'assets/main-broken.js') {
                     throw new TypeError('Failed to fetch');
                 }
+                cachesMock.stores.get('cloudtak-cache-fail')!.set(url, new Response());
             });
 
             await expect(emit('install')).rejects.toThrow(/Failed to fetch/);
+
+            // addAll is atomic: the URLs that fetched fine must not linger
+            // in the cache after the failed install.
+            expect(cachesMock.stores.get('cloudtak-cache-fail')!.size).toBe(0);
         });
 
         it('pre-caches dynamicImports transitively (e.g. icons-<hash>.js)', async () => {

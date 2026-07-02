@@ -1,4 +1,9 @@
-const BUILD = new URL(location).searchParams.get('build') || 'unknown';
+const BUILD = new URL(location).searchParams.get('build');
+
+// Fail fast: without a build id the cache name is ambiguous — different
+// deployments would collide in one cache and activate could purge valid
+// caches. Throwing here rejects register(), so the previous SW keeps serving.
+if (!BUILD) throw new Error('[SW] Registered without the required `build` query parameter');
 
 const CACHE_PREFIX = 'cloudtak-cache-';
 const CACHE_NAME = `${CACHE_PREFIX}${BUILD}`;
