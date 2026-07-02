@@ -9,11 +9,13 @@ function createCacheMock() {
     const makeCache = (name: string) => {
         if (!stores.has(name)) stores.set(name, new Map());
         const store = stores.get(name)!;
-        return {
+        const cache = {
             add: vi.fn(async (url: string) => { store.set(url, new Response()); }),
+            addAll: vi.fn(async (urls: string[]) => { await Promise.all(urls.map((url) => cache.add(url))); }),
             match: vi.fn(async (url: string) => store.get(url) ?? undefined),
             put: vi.fn(async (url: string, res: Response) => { store.set(url, res); }),
         };
+        return cache;
     };
 
     const openCache = (name: string) => {
@@ -43,8 +45,7 @@ interface FakeEvent {
  * Build a minimal ServiceWorkerGlobalScope, evaluate the SW source inside it,
  * and return the captured event listeners.
  */
-function loadSW(opts: { version?: string; build?: string; fetchMock?: Mock } = {}) {
-    const v = opts.version ?? '1.0.0';
+function loadSW(opts: { build?: string; fetchMock?: Mock } = {}) {
     const b = opts.build ?? 'abc123';
 
     const listeners: Record<string, Listener[]> = {};
@@ -53,11 +54,12 @@ function loadSW(opts: { version?: string; build?: string; fetchMock?: Mock } = {
     const fetchMock = opts.fetchMock ?? vi.fn(async () => new Response('{}', { status: 200 }));
 
     const scope: Record<string, any> = {
-        location: new URL(`https://example.com/sw.js?v=${v}&build=${b}`),
+        location: new URL(`https://example.com/sw.js?build=${b}`),
         self: undefined as any,  // will alias below
         URL,
         Response,
         Request,
+        Error,
         caches: cachesMock,
         clients: {
             claim: vi.fn(async () => {}),
@@ -91,152 +93,108 @@ function loadSW(opts: { version?: string; build?: string; fetchMock?: Mock } = {
         }
     };
 
-    return { listeners, emit, cachesMock, scope, clientsList };
+    /** URLs passed to cache.addAll during install */
+    const precachedUrls = async (cacheName: string) => {
+        const cache = await cachesMock.open(cacheName);
+        return (cache.addAll as Mock).mock.calls.flatMap((c: any[]) => c[0]);
+    };
+
+    return { listeners, emit, cachesMock, scope, clientsList, precachedUrls };
+}
+
+function manifestFetchMock(manifest: Record<string, any>): Mock {
+    return vi.fn(async (url: string | Request) => {
+        const u = typeof url === 'string' ? url : url.url;
+        if (u.includes('manifest.json')) {
+            return new Response(JSON.stringify(manifest), { status: 200 });
+        }
+        return new Response('ok', { status: 200 });
+    });
 }
 
 describe('sw.js', () => {
     describe('install', () => {
-        it('does NOT call skipWaiting during install', async () => {
-            const fetchMock = vi.fn(async (url: string | Request) => {
-                const u = typeof url === 'string' ? url : url.url;
-                if (u.includes('manifest.json')) {
-                    return new Response(JSON.stringify({
-                        'src/main.ts': { file: 'assets/main-abc.js', css: ['assets/main-abc.css'], imports: [] },
-                    }), { status: 200 });
-                }
-                return new Response('', { status: 200 });
+        it('pre-caches manifest assets and root atomically via addAll', async () => {
+            const fetchMock = manifestFetchMock({
+                'src/main.ts': {
+                    file: 'assets/main-xyz.js',
+                    css: ['assets/main-xyz.css'],
+                    imports: ['src/vendor.ts'],
+                },
+                'src/vendor.ts': {
+                    file: 'assets/vendor-xyz.js',
+                    imports: [],
+                },
             });
 
-            const { emit, scope } = loadSW({ fetchMock });
-
-            const skipWaiting = vi.fn();
-            scope.self.skipWaiting = skipWaiting;
+            const { emit, cachesMock, precachedUrls } = loadSW({ build: 'xyz', fetchMock });
 
             await emit('install');
 
-            expect(skipWaiting).not.toHaveBeenCalled();
-        });
-
-        it('pre-caches manifest assets and root', async () => {
-            const fetchMock = vi.fn(async (url: string | Request) => {
-                const u = typeof url === 'string' ? url : url.url;
-                if (u.includes('manifest.json')) {
-                    return new Response(JSON.stringify({
-                        'src/main.ts': {
-                            file: 'assets/main-xyz.js',
-                            css: ['assets/main-xyz.css'],
-                            imports: ['src/vendor.ts'],
-                        },
-                        'src/vendor.ts': {
-                            file: 'assets/vendor-xyz.js',
-                            imports: [],
-                        },
-                    }), { status: 200 });
-                }
-                return new Response('ok', { status: 200 });
-            });
-
-            const { emit, scope, cachesMock } = loadSW({ version: '2.0.0', build: 'xyz', fetchMock });
-
-            scope.self.skipWaiting = vi.fn();
-            await emit('install');
-
-            // The cache named for this version should have been opened
-            expect(cachesMock.open).toHaveBeenCalledWith('cloudtak-cache-2.0.0-xyz');
-            const cache = await cachesMock.open('cloudtak-cache-2.0.0-xyz');
-            const addCalls = (cache.add as Mock).mock.calls.map((c: any[]) => c[0]);
-            expect(addCalls).toContain('/');
-            expect(addCalls).toContain('assets/main-xyz.js');
-            expect(addCalls).toContain('assets/main-xyz.css');
-            expect(addCalls).toContain('assets/vendor-xyz.js');
+            expect(cachesMock.open).toHaveBeenCalledWith('cloudtak-cache-xyz');
+            const urls = await precachedUrls('cloudtak-cache-xyz');
+            expect(urls).toContain('/');
+            expect(urls).toContain('assets/main-xyz.js');
+            expect(urls).toContain('assets/main-xyz.css');
+            expect(urls).toContain('assets/vendor-xyz.js');
         });
 
         it('maps known entry HTMLs to their navigable paths and never caches raw .html', async () => {
             // nginx 302s `/foo.html` → `/foo`, so caching `admin.html` is
             // useless. The SW must precache the navigable path instead.
-            const fetchMock = vi.fn(async (url: string | Request) => {
-                const u = typeof url === 'string' ? url : url.url;
-                if (u.includes('manifest.json')) {
-                    return new Response(JSON.stringify({
-                        'index.html': { file: 'index.html', imports: [] },
-                        'admin.html': { file: 'admin.html', imports: [] },
-                        'connection.html': { file: 'connection.html', imports: [] },
-                        'docs.html': { file: 'docs.html', imports: [] },
-                        'video.html': { file: 'video.html', imports: [] },
-                        'unknown.html': { file: 'unknown.html', imports: [] },
-                        'src/main.ts': { file: 'assets/main-h.js', imports: [] },
-                    }), { status: 200 });
-                }
-                return new Response('ok', { status: 200 });
+            const fetchMock = manifestFetchMock({
+                'index.html': { file: 'index.html', imports: [] },
+                'admin.html': { file: 'admin.html', imports: [] },
+                'connection.html': { file: 'connection.html', imports: [] },
+                'docs.html': { file: 'docs.html', imports: [] },
+                'video.html': { file: 'video.html', imports: [] },
+                'unknown.html': { file: 'unknown.html', imports: [] },
+                'src/main.ts': { file: 'assets/main-h.js', imports: [] },
             });
 
-            const { emit, scope, cachesMock } = loadSW({ version: '3.0.0', build: 'h', fetchMock });
+            const { emit, precachedUrls } = loadSW({ build: 'h', fetchMock });
 
-            scope.self.skipWaiting = vi.fn();
             await emit('install');
 
-            const cache = await cachesMock.open('cloudtak-cache-3.0.0-h');
-            const addCalls = (cache.add as Mock).mock.calls.map((c: any[]) => c[0]);
+            const urls = await precachedUrls('cloudtak-cache-h');
+            expect(urls).toContain('/');
+            expect(urls).toContain('/admin');
+            expect(urls).toContain('/connection');
+            expect(urls).toContain('/docs');
+            expect(urls).toContain('/video');
+            expect(urls).toContain('assets/main-h.js');
 
-            expect(addCalls).toContain('/');
-            expect(addCalls).toContain('/admin');
-            expect(addCalls).toContain('/connection');
-            expect(addCalls).toContain('/docs');
-            expect(addCalls).toContain('/video');
-            expect(addCalls).toContain('assets/main-h.js');
-
-            expect(addCalls).not.toContain('index.html');
-            expect(addCalls).not.toContain('admin.html');
-            expect(addCalls).not.toContain('unknown.html');
+            expect(urls).not.toContain('index.html');
+            expect(urls).not.toContain('admin.html');
+            expect(urls).not.toContain('unknown.html');
         });
 
-        it('excludes HTML files from manifest cache', async () => {
-            const fetchMock = vi.fn(async (url: string | Request) => {
-                const u = typeof url === 'string' ? url : url.url;
-                if (u.includes('manifest.json')) {
-                    return new Response(JSON.stringify({
-                        'index.html': { file: 'index.html', imports: [] },
-                        'src/main.ts': { file: 'assets/main-h.js', imports: [] },
-                    }), { status: 200 });
-                }
-                return new Response('ok', { status: 200 });
-            });
+        it('fails install when the manifest cannot be fetched', async () => {
+            // A failed install leaves the previous SW (and its complete
+            // cache) active; the page re-registers on every load so the
+            // install retries then.
+            const fetchMock = vi.fn(async () => new Response('gone', { status: 404 }));
+            const { emit } = loadSW({ build: 'nomanifest', fetchMock });
 
-            const { emit, scope, cachesMock } = loadSW({ version: '3.1.0', build: 'h', fetchMock });
-
-            scope.self.skipWaiting = vi.fn();
-            await emit('install');
-
-            const cache = await cachesMock.open('cloudtak-cache-3.1.0-h');
-            const addCalls = (cache.add as Mock).mock.calls.map((c: any[]) => c[0]);
-            expect(addCalls).not.toContain('index.html');
-            expect(addCalls).toContain('assets/main-h.js');
+            await expect(emit('install')).rejects.toThrow(/Manifest fetch failed/);
         });
 
         it('fails install atomically when any asset cannot be fetched', async () => {
             // Regression: a partially-populated cache followed by activation
             // would purge the old cache and leave the user stuck. Install
             // must reject so the browser discards the new SW entirely.
-            const fetchMock = vi.fn(async (url: string | Request) => {
-                const u = typeof url === 'string' ? url : url.url;
-                if (u.includes('manifest.json')) {
-                    return new Response(JSON.stringify({
-                        'src/main.ts': { file: 'assets/main-broken.js', imports: [] },
-                    }), { status: 200 });
-                }
-                return new Response('ok', { status: 200 });
+            const fetchMock = manifestFetchMock({
+                'src/main.ts': { file: 'assets/main-broken.js', imports: [] },
             });
 
-            const { emit, scope, cachesMock } = loadSW({ version: '5.0.0', build: 'fail', fetchMock });
+            const { emit, cachesMock } = loadSW({ build: 'fail', fetchMock });
 
-            const cache = await cachesMock.open('cloudtak-cache-5.0.0-fail');
+            const cache = await cachesMock.open('cloudtak-cache-fail');
             (cache.add as Mock).mockImplementation(async (url: string) => {
                 if (url === 'assets/main-broken.js') {
                     throw new TypeError('Failed to fetch');
                 }
             });
-
-            scope.self.skipWaiting = vi.fn();
 
             await expect(emit('install')).rejects.toThrow(/Failed to fetch/);
         });
@@ -246,142 +204,86 @@ describe('sw.js', () => {
             // must be precached; otherwise after an SW update activates and
             // purges the old cache, the reloaded page 404s on the new
             // icon-<hash>.js and blank-screens the upgrade.
-            const fetchMock = vi.fn(async (url: string | Request) => {
-                const u = typeof url === 'string' ? url : url.url;
-                if (u.includes('manifest.json')) {
-                    return new Response(JSON.stringify({
-                        'index.html': {
-                            file: 'index.html',
-                            imports: ['src/main.ts'],
-                        },
-                        'src/main.ts': {
-                            file: 'assets/main-abc.js',
-                            imports: [],
-                            dynamicImports: ['_icons-lazy.js', '_float-lazy.js'],
-                        },
-                        '_icons-lazy.js': {
-                            file: 'assets/icons-xyz.js',
-                            css: ['assets/icons-xyz.css'],
-                            imports: ['_shared.js'],
-                            dynamicImports: [],
-                        },
-                        '_float-lazy.js': {
-                            file: 'assets/float-xyz.js',
-                            imports: [],
-                            dynamicImports: ['_nested-lazy.js'],
-                        },
-                        '_nested-lazy.js': {
-                            file: 'assets/nested-xyz.js',
-                            imports: [],
-                            dynamicImports: [],
-                        },
-                        '_shared.js': {
-                            file: 'assets/shared-xyz.js',
-                            imports: [],
-                            dynamicImports: [],
-                        },
-                    }), { status: 200 });
-                }
-                return new Response('ok', { status: 200 });
+            const fetchMock = manifestFetchMock({
+                'index.html': {
+                    file: 'index.html',
+                    imports: ['src/main.ts'],
+                },
+                'src/main.ts': {
+                    file: 'assets/main-abc.js',
+                    imports: [],
+                    dynamicImports: ['_icons-lazy.js', '_float-lazy.js'],
+                },
+                '_icons-lazy.js': {
+                    file: 'assets/icons-xyz.js',
+                    css: ['assets/icons-xyz.css'],
+                    imports: ['_shared.js'],
+                    dynamicImports: [],
+                },
+                '_float-lazy.js': {
+                    file: 'assets/float-xyz.js',
+                    imports: [],
+                    dynamicImports: ['_nested-lazy.js'],
+                },
+                '_nested-lazy.js': {
+                    file: 'assets/nested-xyz.js',
+                    imports: [],
+                    dynamicImports: [],
+                },
+                '_shared.js': {
+                    file: 'assets/shared-xyz.js',
+                    imports: [],
+                    dynamicImports: [],
+                },
             });
 
-            const { emit, scope, cachesMock } = loadSW({ version: '4.0.0', build: 'dyn', fetchMock });
+            const { emit, precachedUrls } = loadSW({ build: 'dyn', fetchMock });
 
-            scope.self.skipWaiting = vi.fn();
             await emit('install');
 
-            const cache = await cachesMock.open('cloudtak-cache-4.0.0-dyn');
-            const addCalls = (cache.add as Mock).mock.calls.map((c: any[]) => c[0]);
-
-            expect(addCalls).toContain('assets/main-abc.js');
-            expect(addCalls).toContain('assets/icons-xyz.js');
-            expect(addCalls).toContain('assets/icons-xyz.css');
-            expect(addCalls).toContain('assets/float-xyz.js');
-            expect(addCalls).toContain('assets/nested-xyz.js');
-            expect(addCalls).toContain('assets/shared-xyz.js');
-            expect(addCalls).not.toContain('index.html');
+            const urls = await precachedUrls('cloudtak-cache-dyn');
+            expect(urls).toContain('assets/main-abc.js');
+            expect(urls).toContain('assets/icons-xyz.js');
+            expect(urls).toContain('assets/icons-xyz.css');
+            expect(urls).toContain('assets/float-xyz.js');
+            expect(urls).toContain('assets/nested-xyz.js');
+            expect(urls).toContain('assets/shared-xyz.js');
+            expect(urls).not.toContain('index.html');
         });
 
         it('pre-caches worker chunks injected into the manifest', async () => {
             // Worker bundles aren't in the base manifest; the build injects them
             // as synthetic `worker:` entries so the walk precaches them. Without
             // this, `new Worker(...)` 404s after a deploy.
-            const fetchMock = vi.fn(async (url: string | Request) => {
-                const u = typeof url === 'string' ? url : url.url;
-                if (u.includes('manifest.json')) {
-                    return new Response(JSON.stringify({
-                        'src/main.ts': { file: 'assets/main-abc.js', imports: [] },
-                        'worker:assets/atlas-abc.js': { file: 'assets/atlas-abc.js', src: 'worker:assets/atlas-abc.js' },
-                        'worker:assets/dist-abc.js': { file: 'assets/dist-abc.js', src: 'worker:assets/dist-abc.js' },
-                        'worker:assets/maplibre-gl-worker-abc.js': { file: 'assets/maplibre-gl-worker-abc.js', src: 'worker:assets/maplibre-gl-worker-abc.js' },
-                    }), { status: 200 });
-                }
-                return new Response('ok', { status: 200 });
+            const fetchMock = manifestFetchMock({
+                'src/main.ts': { file: 'assets/main-abc.js', imports: [] },
+                'worker:assets/atlas-abc.js': { file: 'assets/atlas-abc.js', src: 'worker:assets/atlas-abc.js' },
+                'worker:assets/dist-abc.js': { file: 'assets/dist-abc.js', src: 'worker:assets/dist-abc.js' },
+                'worker:assets/maplibre-gl-worker-abc.js': { file: 'assets/maplibre-gl-worker-abc.js', src: 'worker:assets/maplibre-gl-worker-abc.js' },
             });
 
-            const { emit, scope, cachesMock } = loadSW({ version: '6.0.0', build: 'wrk', fetchMock });
+            const { emit, precachedUrls } = loadSW({ build: 'wrk', fetchMock });
 
-            scope.self.skipWaiting = vi.fn();
             await emit('install');
 
-            const cache = await cachesMock.open('cloudtak-cache-6.0.0-wrk');
-            const addCalls = (cache.add as Mock).mock.calls.map((c: any[]) => c[0]);
-
-            expect(addCalls).toContain('assets/main-abc.js');
-            expect(addCalls).toContain('assets/atlas-abc.js');
-            expect(addCalls).toContain('assets/dist-abc.js');
-            expect(addCalls).toContain('assets/maplibre-gl-worker-abc.js');
+            const urls = await precachedUrls('cloudtak-cache-wrk');
+            expect(urls).toContain('assets/main-abc.js');
+            expect(urls).toContain('assets/atlas-abc.js');
+            expect(urls).toContain('assets/dist-abc.js');
+            expect(urls).toContain('assets/maplibre-gl-worker-abc.js');
         });
 
         it('installs normally when the manifest has no worker entries', async () => {
-            // Older deploys and dev have no injected worker entries; install
-            // must still succeed off the base manifest.
-            const fetchMock = vi.fn(async (url: string | Request) => {
-                const u = typeof url === 'string' ? url : url.url;
-                if (u.includes('manifest.json')) {
-                    return new Response(JSON.stringify({
-                        'src/main.ts': { file: 'assets/main-abc.js', imports: [] },
-                    }), { status: 200 });
-                }
-                return new Response('ok', { status: 200 });
+            const fetchMock = manifestFetchMock({
+                'src/main.ts': { file: 'assets/main-abc.js', imports: [] },
             });
 
-            const { emit, scope, cachesMock } = loadSW({ version: '6.1.0', build: 'nowrk', fetchMock });
+            const { emit, precachedUrls } = loadSW({ build: 'nowrk', fetchMock });
 
-            scope.self.skipWaiting = vi.fn();
             await emit('install');
 
-            const cache = await cachesMock.open('cloudtak-cache-6.1.0-nowrk');
-            const addCalls = (cache.add as Mock).mock.calls.map((c: any[]) => c[0]);
-            expect(addCalls).toContain('assets/main-abc.js');
-        });
-
-        it('fails install atomically when a worker chunk cannot be fetched', async () => {
-            // A missing worker chunk must abort the upgrade so the browser keeps
-            // the previous (working) SW.
-            const fetchMock = vi.fn(async (url: string | Request) => {
-                const u = typeof url === 'string' ? url : url.url;
-                if (u.includes('manifest.json')) {
-                    return new Response(JSON.stringify({
-                        'src/main.ts': { file: 'assets/main-ok.js', imports: [] },
-                        'worker:assets/atlas-broken.js': { file: 'assets/atlas-broken.js', src: 'worker:assets/atlas-broken.js' },
-                    }), { status: 200 });
-                }
-                return new Response('ok', { status: 200 });
-            });
-
-            const { emit, scope, cachesMock } = loadSW({ version: '6.2.0', build: 'wrkfail', fetchMock });
-
-            const cache = await cachesMock.open('cloudtak-cache-6.2.0-wrkfail');
-            (cache.add as Mock).mockImplementation(async (u: string) => {
-                if (u === 'assets/atlas-broken.js') {
-                    throw new TypeError('Failed to fetch');
-                }
-            });
-
-            scope.self.skipWaiting = vi.fn();
-
-            await expect(emit('install')).rejects.toThrow(/Failed to fetch/);
+            const urls = await precachedUrls('cloudtak-cache-nowrk');
+            expect(urls).toContain('assets/main-abc.js');
         });
     });
 
@@ -409,53 +311,27 @@ describe('sw.js', () => {
     });
 
     describe('activate', () => {
-        it('deletes old CloudTAK caches when the new cache has a root shell', async () => {
-            const { emit, cachesMock } = loadSW({ version: '2.0.0', build: 'new' });
+        it('deletes old CloudTAK caches but leaves unrelated caches alone', async () => {
+            const { emit, cachesMock } = loadSW({ build: 'new' });
 
-            // Seed the new cache with '/' so the guard in activate passes.
-            const current = await cachesMock.open('cloudtak-cache-2.0.0-new');
-            (current.match as Mock).mockImplementation(async (url: string) =>
-                url === '/' ? new Response('root') : undefined
-            );
-
-            // Simulate old caches existing alongside the current one and an
-            // unrelated cache that must never be touched.
-            cachesMock.stores.set('cloudtak-cache-1.0.0-old', new Map());
-            cachesMock.stores.set('cloudtak-cache-2.0.0-new', new Map());
+            cachesMock.stores.set('cloudtak-cache-old', new Map());
+            cachesMock.stores.set('cloudtak-cache-13.0.0-legacy', new Map());
+            cachesMock.stores.set('cloudtak-cache-new', new Map());
             cachesMock.stores.set('other-cache', new Map());
 
             await emit('activate');
 
             const deletedNames = (cachesMock.delete as Mock).mock.calls.map((c: any[]) => c[0]);
-            expect(deletedNames).toContain('cloudtak-cache-1.0.0-old');
-            // Unrelated caches are intentionally left alone.
+            expect(deletedNames).toContain('cloudtak-cache-old');
+            // Caches from the previous `<version>-<build>` naming scheme are
+            // purged by the same prefix filter.
+            expect(deletedNames).toContain('cloudtak-cache-13.0.0-legacy');
             expect(deletedNames).not.toContain('other-cache');
-            // The current cache is never deleted.
-            expect(deletedNames).not.toContain('cloudtak-cache-2.0.0-new');
-        });
-
-        it('keeps old caches if the new cache is missing the root shell', async () => {
-            // Regression: a partial / broken install must NOT lead to the
-            // old generation being purged, otherwise the user can land on
-            // a blank app after reload.
-            const { emit, cachesMock } = loadSW({ version: '2.0.0', build: 'new' });
-
-            // New cache exists but has no '/' entry.
-            const current = await cachesMock.open('cloudtak-cache-2.0.0-new');
-            (current.match as Mock).mockResolvedValue(undefined);
-
-            cachesMock.stores.set('cloudtak-cache-1.0.0-old', new Map());
-            cachesMock.stores.set('cloudtak-cache-2.0.0-new', new Map());
-
-            await emit('activate');
-
-            expect(cachesMock.delete).not.toHaveBeenCalled();
+            expect(deletedNames).not.toContain('cloudtak-cache-new');
         });
 
         it('calls clients.claim()', async () => {
-            const { emit, scope, cachesMock } = loadSW();
-            const current = await cachesMock.open('cloudtak-cache-1.0.0-abc123');
-            (current.match as Mock).mockResolvedValue(new Response('root'));
+            const { emit, scope } = loadSW();
 
             await emit('activate');
             expect(scope.clients.claim).toHaveBeenCalled();
@@ -463,31 +339,6 @@ describe('sw.js', () => {
     });
 
     describe('fetch', () => {
-        it('returns cached response when available (cache-first)', async () => {
-            const { cachesMock, scope } = loadSW({ version: '1.0.0', build: 'b1' });
-
-            // Pre-populate cache with a response
-            const cachedBody = 'cached-content';
-            const cache = await cachesMock.open('cloudtak-cache-1.0.0-b1');
-            (cache.match as Mock).mockResolvedValueOnce(new Response(cachedBody));
-
-            const event: FakeEvent = {
-                request: new Request('https://example.com/assets/main-b1.js'),
-                respondWith: vi.fn(),
-            };
-
-            // Fire fetch listeners
-            for (const listener of scope.addEventListener.mock?.calls?.filter((c: any[]) => c[0] === 'fetch').map((c: any[]) => c[1]) ?? []) {
-                listener(event);
-            }
-
-            // Since we evaluated the SW via new Function, listeners are captured differently
-            // Use the emit helper's approach for fetch
-            if (event.respondWith?.mock.calls.length) {
-                await event.respondWith.mock.calls[0][0];
-            }
-        });
-
         it('skips non-GET requests', async () => {
             const { listeners } = loadSW();
             const event: FakeEvent = {
@@ -530,9 +381,28 @@ describe('sw.js', () => {
             expect(event.respondWith).not.toHaveBeenCalled();
         });
 
+        it('serves cached assets without hitting the network (cache-first)', async () => {
+            const fetchMock = vi.fn(async () => new Response('network-body', { status: 200 }));
+            const { listeners, cachesMock } = loadSW({ build: 'b1', fetchMock });
+
+            const cache = await cachesMock.open('cloudtak-cache-b1');
+            (cache.match as Mock).mockResolvedValueOnce(new Response('cached-body'));
+
+            const event: FakeEvent = {
+                request: new Request('https://example.com/assets/main-b1.js'),
+                respondWith: vi.fn(),
+            };
+
+            for (const fn of listeners['fetch'] ?? []) fn(event);
+            const response = await event.respondWith!.mock.calls[0][0];
+
+            await expect(response.text()).resolves.toBe('cached-body');
+            expect(fetchMock).not.toHaveBeenCalled();
+        });
+
         it('caches /assets/* responses on network success', async () => {
             const fetchMock = vi.fn(async () => new Response('asset-body', { status: 200 }));
-            const { listeners, cachesMock } = loadSW({ version: '1.0.0', build: 'rt', fetchMock });
+            const { listeners, cachesMock } = loadSW({ build: 'rt', fetchMock });
 
             const event: FakeEvent = {
                 request: new Request('https://example.com/assets/main-rt.js'),
@@ -543,7 +413,7 @@ describe('sw.js', () => {
             for (const fn of listeners['fetch'] ?? []) fn(event);
             await event.respondWith!.mock.calls[0][0];
 
-            const cache = await cachesMock.open('cloudtak-cache-1.0.0-rt');
+            const cache = await cachesMock.open('cloudtak-cache-rt');
             expect((cache.put as Mock)).toHaveBeenCalledWith(
                 'https://example.com/assets/main-rt.js',
                 expect.any(Response)
@@ -553,7 +423,7 @@ describe('sw.js', () => {
 
         it('caches /logos/* responses (PWA touch-icons) on network success', async () => {
             const fetchMock = vi.fn(async () => new Response('png-body', { status: 200 }));
-            const { listeners, cachesMock } = loadSW({ version: '1.0.0', build: 'logo', fetchMock });
+            const { listeners, cachesMock } = loadSW({ build: 'logo', fetchMock });
 
             const event: FakeEvent = {
                 request: new Request('https://example.com/logos/180.png'),
@@ -564,7 +434,7 @@ describe('sw.js', () => {
             for (const fn of listeners['fetch'] ?? []) fn(event);
             await event.respondWith!.mock.calls[0][0];
 
-            const cache = await cachesMock.open('cloudtak-cache-1.0.0-logo');
+            const cache = await cachesMock.open('cloudtak-cache-logo');
             expect((cache.put as Mock)).toHaveBeenCalledWith(
                 'https://example.com/logos/180.png',
                 expect.any(Response)
@@ -577,7 +447,7 @@ describe('sw.js', () => {
             // 200 for unknown paths. Caching those under arbitrary URLs used
             // to pin wrong HTML inside the SW generation.
             const fetchMock = vi.fn(async () => new Response('<html>root</html>', { status: 200 }));
-            const { listeners, cachesMock } = loadSW({ version: '1.0.0', build: 'rt2', fetchMock });
+            const { listeners, cachesMock } = loadSW({ build: 'rt2', fetchMock });
 
             const event: FakeEvent = {
                 request: new Request('https://example.com/some/deep/spa/path'),
@@ -587,15 +457,40 @@ describe('sw.js', () => {
             for (const fn of listeners['fetch'] ?? []) fn(event);
             await event.respondWith!.mock.calls[0][0];
 
-            const cache = await cachesMock.open('cloudtak-cache-1.0.0-rt2');
+            const cache = await cachesMock.open('cloudtak-cache-rt2');
             expect((cache.put as Mock)).not.toHaveBeenCalled();
+        });
+
+        it('serves cached navigations without hitting the network (offline-first)', async () => {
+            const fetchMock = vi.fn(async () => new Response('<html>network</html>', { status: 200 }));
+            const { listeners, cachesMock } = loadSW({ build: 'nav1', fetchMock });
+
+            const cache = await cachesMock.open('cloudtak-cache-nav1');
+            (cache.match as Mock).mockImplementation(async (url: string) =>
+                url === 'https://example.com/' ? new Response('<html>cached shell</html>') : undefined
+            );
+
+            const event: FakeEvent = {
+                request: {
+                    url: 'https://example.com/',
+                    method: 'GET',
+                    mode: 'navigate',
+                } as unknown as Request,
+                respondWith: vi.fn(),
+            };
+
+            for (const fn of listeners['fetch'] ?? []) fn(event);
+            const response = await event.respondWith!.mock.calls[0][0];
+
+            await expect(response.text()).resolves.toContain('cached shell');
+            expect(fetchMock).not.toHaveBeenCalled();
         });
 
         it('falls back to the matching entry shell on offline navigation', async () => {
             const fetchMock = vi.fn(async () => { throw new TypeError('offline'); });
-            const { listeners, cachesMock } = loadSW({ version: '1.0.0', build: 'nav', fetchMock });
+            const { listeners, cachesMock } = loadSW({ build: 'nav2', fetchMock });
 
-            const cache = await cachesMock.open('cloudtak-cache-1.0.0-nav');
+            const cache = await cachesMock.open('cloudtak-cache-nav2');
             (cache.match as Mock).mockImplementation(async (url: string) => {
                 if (url === '/admin') return new Response('<html>admin shell</html>');
                 if (url === '/') return new Response('<html>root shell</html>');
@@ -618,50 +513,71 @@ describe('sw.js', () => {
             const response = await event.respondWith!.mock.calls[0][0];
             await expect(response.text()).resolves.toContain('admin shell');
         });
+
+        it('falls back to the root shell on offline navigation to SPA paths', async () => {
+            const fetchMock = vi.fn(async () => { throw new TypeError('offline'); });
+            const { listeners, cachesMock } = loadSW({ build: 'nav3', fetchMock });
+
+            const cache = await cachesMock.open('cloudtak-cache-nav3');
+            (cache.match as Mock).mockImplementation(async (url: string) =>
+                url === '/' ? new Response('<html>root shell</html>') : undefined
+            );
+
+            const event: FakeEvent = {
+                request: {
+                    url: 'https://example.com/menu/settings',
+                    method: 'GET',
+                    mode: 'navigate',
+                } as unknown as Request,
+                respondWith: vi.fn(),
+            };
+
+            for (const fn of listeners['fetch'] ?? []) fn(event);
+            const response = await event.respondWith!.mock.calls[0][0];
+            await expect(response.text()).resolves.toContain('root shell');
+        });
     });
 
     describe('update lifecycle (no stale-cache gap)', () => {
-        it('old cache survives until new SW is explicitly activated', async () => {
+        it('old cache survives a new install and is purged only on activate', async () => {
             // Simulate v1 SW installed and active
-            const v1 = loadSW({ version: '1.0.0', build: 'old' });
-            v1.scope.self.skipWaiting = vi.fn();
+            const v1 = loadSW({
+                build: 'old',
+                fetchMock: manifestFetchMock({
+                    'src/main.ts': { file: 'assets/main-old.js', imports: [] },
+                }),
+            });
             await v1.emit('install');
             await v1.emit('activate');
 
-            // v1 cache should exist
-            expect(v1.cachesMock.stores.has('cloudtak-cache-1.0.0-old')).toBe(true);
+            expect(v1.cachesMock.stores.has('cloudtak-cache-old')).toBe(true);
 
             // Now simulate v2 SW installing (in a separate scope, as the browser would)
-            const v2FetchMock = vi.fn(async (url: string | Request) => {
-                const u = typeof url === 'string' ? url : url.url;
-                if (u.includes('manifest.json')) {
-                    return new Response(JSON.stringify({
-                        'src/main.ts': { file: 'assets/main-new.js', imports: [] },
-                    }), { status: 200 });
-                }
-                return new Response('ok', { status: 200 });
+            const v2 = loadSW({
+                build: 'new',
+                fetchMock: manifestFetchMock({
+                    'src/main.ts': { file: 'assets/main-new.js', imports: [] },
+                }),
             });
-            const v2 = loadSW({ version: '2.0.0', build: 'new', fetchMock: v2FetchMock });
             // Share the same cache storage to simulate the same origin
-            v2.cachesMock.stores.set('cloudtak-cache-1.0.0-old', new Map([['/', new Response('v1 root')]]));
+            v2.cachesMock.stores.set('cloudtak-cache-old', new Map([['/', new Response('v1 root')]]));
 
             v2.scope.self.skipWaiting = vi.fn();
-
             await v2.emit('install');
 
             // skipWaiting must NOT have been called during install
             expect(v2.scope.self.skipWaiting).not.toHaveBeenCalled();
 
-            // The old cache should still exist (not deleted until activate)
-            expect(v2.cachesMock.stores.has('cloudtak-cache-1.0.0-old')).toBe(true);
+            // The old cache still exists (not deleted until activate), so old
+            // tabs keep lazy-loading their own build's chunks.
+            expect(v2.cachesMock.stores.has('cloudtak-cache-old')).toBe(true);
 
             // Now user clicks "Update Now" → SKIP_WAITING message is sent
             await v2.emit('message', { data: 'SKIP_WAITING' });
             expect(v2.scope.self.skipWaiting).toHaveBeenCalledOnce();
 
-            // Activation deletes old caches (v2 install populated '/').
             await v2.emit('activate');
-            expect(v2.cachesMock.delete).toHaveBeenCalledWith('cloudtak-cache-1.0.0-old');
+            expect(v2.cachesMock.delete).toHaveBeenCalledWith('cloudtak-cache-old');
         });
     });
 });

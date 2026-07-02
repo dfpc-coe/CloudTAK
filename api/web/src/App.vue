@@ -190,7 +190,7 @@ const TAKNotification = TAKNotification_;
 import { supportsServiceWorker } from './base/capacitor.ts';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
-import { getPageServiceWorkerBuildId, markUpdateRequestedByThisTab } from './base/service-worker.ts';
+import { applyServiceWorkerUpdate } from './base/service-worker.ts';
 
 import { useAppStore } from './stores/app.ts';
 import { useMapStore } from './stores/map.ts';
@@ -209,22 +209,11 @@ const updateAvailable = ref(false);
 const pendingRegistration = ref<ServiceWorkerRegistration | null>(null);
 
 const applyUpdate = () => {
-    const waiting = pendingRegistration.value?.waiting;
-    if (waiting) {
-        // Tell service-worker.ts that THIS tab initiated the update, so its
-        // controllerchange handler auto-reloads us. Other tabs will see the
-        // same controllerchange, not find this flag, and surface their own
-        // prompt instead of silently reloading.
-        markUpdateRequestedByThisTab();
-        waiting.postMessage('SKIP_WAITING');
-    } else {
-        window.location.reload();
-    }
+    applyServiceWorkerUpdate(pendingRegistration.value);
 };
 
 const onSwUpdateAvailable = (e: Event) => {
-    const detail = (e as CustomEvent).detail;
-    pendingRegistration.value = detail.registration;
+    pendingRegistration.value = (e as CustomEvent).detail.registration;
     updateAvailable.value = true;
 };
 
@@ -280,70 +269,15 @@ onMounted(async () => {
         window.addEventListener('sw:update-available', onSwUpdateAvailable);
     }
 
-    let completed = false;
     try {
-        completed = await appStore.bootstrap();
+        await appStore.bootstrap();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {
         appStore.loading = false;
         mounted.value = true;
     }
-
-    if (completed) {
-        checkServiceWorkerUpdates();
-    }
 });
-
-function checkServiceWorkerUpdates(): void {
-    appStore.loadingStage = 'Checking for updates…';
-
-    if (!supportsServiceWorker()) return;
-
-    navigator.serviceWorker.getRegistrations().then(async (registrations) => {
-        const currentBuildId = getPageServiceWorkerBuildId();
-
-        for (const registration of registrations) {
-            registration.update().catch((err) => {
-                console.debug('Failed to update ServiceWorker (likely unregistered):', err);
-            });
-        }
-
-        try {
-            for (const reg of registrations) {
-                // Prefer a waiting worker (new version ready to activate)
-                if (reg.waiting) {
-                    pendingRegistration.value = reg;
-                    updateAvailable.value = true;
-                    break;
-                }
-
-                // Fall back to detecting an active SW whose build differs from
-                // the currently loaded page (e.g. another tab triggered activation).
-                //
-                // IMPORTANT: only compare build fingerprints, not the `?v=`
-                // package.json version param. The `?v=` value is whatever
-                // `package.json` happened to be when the *previous* page
-                // called `register()` for this worker, not what is actually
-                // deployed. After a SKIP_WAITING + auto-reload, the freshly
-                // loaded page imports a *newer* `package.json` than the
-                // value baked into `reg.active.scriptURL`, so a version
-                // comparison spuriously re-shows the update banner with no
-                // pending worker present. The build fingerprint is derived
-                // from deployed asset filenames and is the source of truth.
-                const worker = reg.active;
-                if (worker?.scriptURL) {
-                    const u = new URL(worker.scriptURL);
-                    const swBuild = u.searchParams.get('build');
-                    if (currentBuildId && swBuild && swBuild !== currentBuildId) {
-                        updateAvailable.value = true;
-                    }
-                    break;
-                }
-            }
-        } catch { /* ignore */ }
-    });
-}
 
 onUnmounted(() => {
     window.removeEventListener('sw:update-available', onSwUpdateAvailable);
