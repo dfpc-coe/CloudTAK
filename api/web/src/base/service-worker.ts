@@ -114,10 +114,8 @@ export function initServiceWorker(): void {
         return;
     }
 
-    console.log('[SW] init — awaiting window load event');
-
-    window.addEventListener('load', () => {
-        console.log('[SW] window loaded — controller:', navigator.serviceWorker.controller?.scriptURL ?? 'none');
+    const start = () => {
+        console.log('[SW] starting registration — controller:', navigator.serviceWorker.controller?.scriptURL ?? 'none');
 
         let registeredBuildId: string | null = null;
 
@@ -192,5 +190,19 @@ export function initServiceWorker(): void {
             console.log('[SW] another tab activated a new build — announcing update');
             announceUpdate(null);
         });
-    });
+    };
+
+    // Registration is deferred until the page has loaded so it does not
+    // compete with critical resources — but the app's module graph can
+    // finish evaluating *after* `load` has already fired, and a `load`
+    // listener attached past the event never runs. Check `readyState` so a
+    // late start still registers instead of waiting forever for an event
+    // that will not come again.
+    if (document.readyState === 'complete') {
+        console.log('[SW] init — document already loaded, registering immediately');
+        start();
+    } else {
+        console.log('[SW] init — awaiting window load event');
+        window.addEventListener('load', start, { once: true });
+    }
 }

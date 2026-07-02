@@ -57,10 +57,21 @@ describe('service-worker registration lifecycle', () => {
         return registration;
     };
 
+    const setReadyState = (state: DocumentReadyState) => {
+        Object.defineProperty(document, 'readyState', {
+            configurable: true,
+            get: () => state,
+        });
+    };
+
     beforeEach(() => {
         windowLoadListener = undefined;
         controllerChangeListener = undefined;
         vi.useFakeTimers();
+
+        // Default to a page still loading so init defers to the `load` event
+        // and tests can drive registration by firing the captured listener.
+        setReadyState('loading');
 
         vi.spyOn(window, 'addEventListener').mockImplementation(((type: string, listener: EventListenerOrEventListenerObject) => {
             if (type === 'load') {
@@ -76,8 +87,29 @@ describe('service-worker registration lifecycle', () => {
             configurable: true,
             value: originalServiceWorker,
         });
+        Object.defineProperty(document, 'readyState', {
+            configurable: true,
+            get: () => 'complete',
+        });
         vi.useRealTimers();
         vi.restoreAllMocks();
+    });
+
+    it('registers immediately when the document has already loaded', async () => {
+        // Regression: the app's module graph can finish evaluating after the
+        // `load` event has already fired. A `load` listener attached then
+        // never runs, so init must register straight away instead.
+        installServiceWorkerMock();
+        setReadyState('complete');
+        vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{"manifest":"a"}', { status: 200 }));
+
+        initServiceWorker();
+        await flushPromises();
+        await flushPromises();
+
+        // No dependence on a future load event that will never fire.
+        expect(windowLoadListener).toBeUndefined();
+        expect(register).toHaveBeenCalledOnce();
     });
 
     it('registers the SW with a manifest-derived build id and updateViaCache none', async () => {
