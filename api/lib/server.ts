@@ -4,13 +4,13 @@ import type { WebSocketServer } from 'ws';
 
 export default class ServerManager {
     server: Server;
-    wss: WebSocketServer;
+    wss?: WebSocketServer;
     config: Config;
 
     constructor(
         server: Server,
-        wss: WebSocketServer,
         config: Config,
+        wss?: WebSocketServer,
     ) {
         this.wss = wss;
         this.server = server;
@@ -24,7 +24,11 @@ export default class ServerManager {
                 this.server.close(resolve);
             }),
             new Promise((resolve) => {
-                this.wss.close(resolve);
+                if (this.wss) {
+                    this.wss.close(resolve);
+                } else {
+                    resolve(undefined);
+                }
             }),
             this.config.conns.close(),
             this.config.geofence.close(),

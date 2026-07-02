@@ -16,6 +16,12 @@
 
 ### Pending Release
 
+- :tada: Split the API into separate stateful (`api/state.ts`) & stateless (`api/stateless.ts`) servers to allow horizontal scaling
+- :tada: Stateful operations (TAK Connection Pool & WebSocket termination) are now served at `ws.map.<domain>` via a dedicated single-container ECS Service
+- :tada: Stateless API/UI containers can now be scaled horizontally via the new `StatelessCount` CloudFormation parameter
+- :tada: `GET /api` now advertises the WebSocket location via a new `ws` field which the WebUI uses to establish the WebSocket connection
+- :rocket: Mission Subscription token lookups now fall back to the database when the Connection isn't present in the local pool
+
 ### v13.29.0 - 2026-07-01
 
 - :rocket: Migrate Menu & Admin to use StandardItem Import

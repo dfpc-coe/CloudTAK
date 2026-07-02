@@ -5,6 +5,28 @@
 This document is designed as a recipe book for common operational issues that an ops
 group may run into and how to triage and fix them.
 
+## Server Architecture
+
+CloudTAK is deployed as two ECS Services sharing a single container image:
+
+| Service                       | Mode        | DNS                | Scaling |
+| ----------------------------- | ----------- | ------------------ | ------- |
+| `tak-cloudtak-<environment>`  | `stateless` | `map.<domain>`     | Horizontal via the `StatelessCount` CloudFormation parameter |
+| `tak-cloudtak-<environment>-state` | `state` | `ws.map.<domain>`  | Fixed at a single container |
+
+The `state` service manages the TAK Connection Pool (persistent TLS connections to the TAK Server)
+and terminates client WebSockets and as such must only ever run a single container. In addition to
+WebSocket traffic on `ws.map.<domain>`, API paths whose handlers interact with the Connection Pool
+(Connection admin, Layer CoT submission, Imports, User presence, etc.) are routed to the `state`
+service by ALB Listener Rules - see `cloudformation/lib/api.js` for the authoritative list.
+
+All other API & UI traffic is served by the `stateless` service which holds no persistent state
+and can be scaled horizontally.
+
+The mode is selected via the `CLOUDTAK_Server_Mode` environment variable (`state` is the default
+and also serves the full API, so a single-container deployment such as Docker Compose continues
+to behave as before).
+
 ## Restarting CloudTAK
 
 CloudTAK run on [AWS ECS](https://aws.amazon.com/ecs/) which provides compute, scaling, healthchecks, and runtime

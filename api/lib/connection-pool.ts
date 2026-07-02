@@ -134,13 +134,39 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         this.clear();
     }
 
+    /**
+     * Resolve a ConnectionConfig from the database for a connection that
+     * is not present in the local pool - this allows stateless containers,
+     * which never populate the pool, to look up Mission Subscription tokens
+     */
+    async databaseConfig(connection: number | string): Promise<ConnectionConfig | undefined> {
+        try {
+            if (!isNaN(Number(connection)) && Number.isInteger(Number(connection))) {
+                if (Number(connection) === 0) {
+                    if (!this.config.server.connection || !this.config.server.auth.cert || !this.config.server.auth.key) return undefined;
+                    return new AdminConnConfig(this.config);
+                }
+
+                const ConnectionModel = new Modeler(this.config.pg, Connection);
+                return new MachineConnConfig(this.config, await ConnectionModel.from(Number(connection)));
+            } else {
+                const profile = await this.config.models.Profile.from(String(connection));
+                if (!profile.auth || !profile.auth.cert || !profile.auth.key) return undefined;
+                return new ProfileConnConfig(this.config, String(connection), profile.auth);
+            }
+        } catch (err) {
+            console.error(`not ok - could not resolve connection config for ${connection}: ${err instanceof Error ? err.message : String(err)}`);
+            return undefined;
+        }
+    }
+
     async subscription(connection: number | string, name: string): Promise<{
         name: string;
         token?: string;
     }> {
-        const conn = this.get(connection);
-        if (!conn) return { name: name };
-        const sub = await conn.config.subscription(name);
+        const connConfig = this.get(connection)?.config || await this.databaseConfig(connection);
+        if (!connConfig) return { name: name };
+        const sub = await connConfig.subscription(name);
         if (!sub) return { name: name };
         return {
             name: sub.name,

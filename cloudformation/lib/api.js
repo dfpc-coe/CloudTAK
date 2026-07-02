@@ -1,5 +1,110 @@
 import cf from '@openaddresses/cloudfriend';
 
+/**
+ * The API is split into two ECS Services sharing a single container image:
+ * - stateless: All API/UI operations without persistent state - horizontally scalable
+ *      via the StatelessCount parameter - serves map.<domain>
+ * - state: TAK Connection Pool & WebSocket termination - limited to a single
+ *      container - serves ws.map.<domain> along with stateful API paths
+ *      routed to it at the ALB (see the ListenerRule resources below)
+ */
+const TaskDefinition = (mode) => ({
+    Type: 'AWS::ECS::TaskDefinition',
+    DependsOn: ['SigningSecret', 'GeofenceSecret'],
+    Properties: {
+        Family: mode === 'state' ? cf.join([cf.stackName, '-state']) : cf.stackName,
+        Cpu: cf.ref('ComputeCpu'),
+        Memory: cf.ref('ComputeMemory'),
+        NetworkMode: 'awsvpc',
+        RequiresCompatibilities: ['FARGATE'],
+        Tags: [{
+            Key: 'Name',
+            Value: cf.join('-', [cf.stackName, mode === 'state' ? 'state' : 'api'])
+        }],
+        ExecutionRoleArn: cf.getAtt('ExecRole', 'Arn'),
+        TaskRoleArn: cf.getAtt('TaskRole', 'Arn'),
+        ContainerDefinitions: [{
+            Name: 'api',
+            Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/tak-vpc-', cf.ref('Environment'), '-cloudtak-api:', cf.ref('GitSha')]),
+            PortMappings: [{
+                ContainerPort: 5000
+            }],
+            Environment: [
+                {
+                    Name: 'POSTGRES',
+                    Value: cf.join([
+                        'postgresql://',
+                        cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:username:AWSCURRENT}}'),
+                        ':',
+                        cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
+                        '@',
+                        cf.getAtt('DBCluster', 'Endpoint.Address'),
+                        ':5432/tak_ps_etl?sslmode=require'
+                    ])
+                },
+                { Name: 'AWS_REGION', Value: cf.region },
+                { Name: 'ECR_TASKS_REPOSITORY_NAME', Value: cf.join(['tak-vpc-', cf.ref('Environment'), '-cloudtak-tasks']) },
+                { Name: 'CLOUDTAK_Mode', Value: 'AWS' },
+                { Name: 'CLOUDTAK_Server_Mode', Value: mode },
+                { Name: 'StackName', Value: cf.stackName },
+                { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
+                { Name: 'API_URL', Value: cf.join(['https://map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]) },
+                { Name: 'WS_URL', Value: cf.join(['wss://ws.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]) },
+                { Name: 'VpcId', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])) },
+                { Name: 'SubnetPublicA', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-a'])) },
+                { Name: 'SubnetPublicB', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b'])) },
+                { Name: 'MediaSecurityGroup', Value: cf.ref('MediaSecurityGroup') },
+                { Name: 'CLOUDTAK_Config_geofence_password', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/geofence}}') }
+            ],
+            RestartPolicy: {
+                Enabled: true,
+                RestartAttemptPeriod: 300
+            },
+            LogConfiguration: {
+                LogDriver: 'awslogs',
+                Options: {
+                    'awslogs-group': cf.stackName,
+                    'awslogs-region': cf.region,
+                    'awslogs-stream-prefix': cf.stackName,
+                    'awslogs-create-group': true
+                }
+            },
+            Essential: true
+        }]
+    }
+});
+
+const Service = (mode) => ({
+    Type: 'AWS::ECS::Service',
+    Properties: {
+        ServiceName: mode === 'state' ? cf.join([cf.stackName, '-state']) : cf.stackName,
+        Cluster: cf.join(['tak-vpc-', cf.ref('Environment')]),
+        TaskDefinition: cf.ref(mode === 'state' ? 'StateTaskDefinition' : 'TaskDefinition'),
+        LaunchType: 'FARGATE',
+        PropagateTags: 'SERVICE',
+        EnableExecuteCommand: cf.ref('EnableExecute'),
+        HealthCheckGracePeriodSeconds: 300,
+        // The state service manages the TAK Connection Pool & WebSocket
+        // termination and as such can never scale beyond a single container
+        DesiredCount: mode === 'state' ? 1 : cf.ref('StatelessCount'),
+        NetworkConfiguration: {
+            AwsvpcConfiguration: {
+                AssignPublicIp: 'ENABLED',
+                SecurityGroups: [cf.ref('ServiceSecurityGroup')],
+                Subnets:  [
+                    cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-a'])),
+                    cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b']))
+                ]
+            }
+        },
+        LoadBalancers: [{
+            ContainerName: 'api',
+            ContainerPort: 5000,
+            TargetGroupArn: cf.ref(mode === 'state' ? 'StateTargetGroup' : 'TargetGroup')
+        }]
+    }
+});
+
 export default {
     Parameters: {
         ComputeCpu: {
@@ -11,6 +116,11 @@ export default {
             Description: 'The amount of memory (in MiB) used by the task',
             Type: 'Number',
             Default: 4096 * 2
+        },
+        StatelessCount: {
+            Description: 'The number of stateless API containers to run',
+            Type: 'Number',
+            Default: 1
         }
     },
     Resources: {
@@ -21,6 +131,20 @@ export default {
                 Type : 'A',
                 Name: cf.join(['map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
                 Comment: cf.join(' ', [cf.stackName, 'UI/API DNS Entry']),
+                AliasTarget: {
+                    DNSName: cf.getAtt('ELB', 'DNSName'),
+                    EvaluateTargetHealth: true,
+                    HostedZoneId: cf.getAtt('ELB', 'CanonicalHostedZoneID')
+                }
+            }
+        },
+        ELBDNSWS: {
+            Type: 'AWS::Route53::RecordSet',
+            Properties: {
+                HostedZoneId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-id'])),
+                Type : 'A',
+                Name: cf.join(['ws.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
+                Comment: cf.join(' ', [cf.stackName, 'WebSocket DNS Entry']),
                 AliasTarget: {
                     DNSName: cf.getAtt('ELB', 'DNSName'),
                     EvaluateTargetHealth: true,
@@ -107,6 +231,102 @@ export default {
                 Protocol: 'HTTPS'
             }
         },
+        WSHostListenerRule: {
+            Type: 'AWS::ElasticLoadBalancingV2::ListenerRule',
+            Properties: {
+                ListenerArn: cf.ref('HttpsListener'),
+                Priority: 10,
+                Conditions: [{
+                    Field: 'host-header',
+                    HostHeaderConfig: {
+                        Values: [cf.join(['ws.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))])]
+                    }
+                }],
+                Actions: [{
+                    Type: 'forward',
+                    TargetGroupArn: cf.ref('StateTargetGroup')
+                }]
+            }
+        },
+        // Paths whose handlers interact with the TAK Connection Pool or
+        // connected WebSocket clients and as such must be served by the
+        // single state container
+        StatePathsListenerRule: {
+            Type: 'AWS::ElasticLoadBalancingV2::ListenerRule',
+            Properties: {
+                ListenerArn: cf.ref('HttpsListener'),
+                Priority: 20,
+                Conditions: [{
+                    Field: 'path-pattern',
+                    PathPatternConfig: {
+                        Values: [
+                            '/api/layer/*/cot',
+                            '/api/connection',
+                            '/api/connection/*',
+                            '/api/server',
+                            '/api/config'
+                        ]
+                    }
+                }],
+                Actions: [{
+                    Type: 'forward',
+                    TargetGroupArn: cf.ref('StateTargetGroup')
+                }]
+            }
+        },
+        StatePathsSecondaryListenerRule: {
+            Type: 'AWS::ElasticLoadBalancingV2::ListenerRule',
+            Properties: {
+                ListenerArn: cf.ref('HttpsListener'),
+                Priority: 21,
+                Conditions: [{
+                    Field: 'path-pattern',
+                    PathPatternConfig: {
+                        Values: [
+                            '/api/import',
+                            '/api/import/*',
+                            '/api/user',
+                            '/api/user/*',
+                            '/api/geofence'
+                        ]
+                    }
+                }],
+                Actions: [{
+                    Type: 'forward',
+                    TargetGroupArn: cf.ref('StateTargetGroup')
+                }]
+            }
+        },
+        // Profile Feature/Location & Package writes are relayed to the user's
+        // Pooled TAK Connection and/or their other WebSocket sessions -
+        // reads are served by the stateless containers
+        StateProfileWritesListenerRule: {
+            Type: 'AWS::ElasticLoadBalancingV2::ListenerRule',
+            Properties: {
+                ListenerArn: cf.ref('HttpsListener'),
+                Priority: 22,
+                Conditions: [{
+                    Field: 'path-pattern',
+                    PathPatternConfig: {
+                        Values: [
+                            '/api/profile/feature',
+                            '/api/profile/feature/*',
+                            '/api/profile/location',
+                            '/api/marti/package'
+                        ]
+                    }
+                },{
+                    Field: 'http-request-method',
+                    HttpRequestMethodConfig: {
+                        Values: ['PUT']
+                    }
+                }],
+                Actions: [{
+                    Type: 'forward',
+                    TargetGroupArn: cf.ref('StateTargetGroup')
+                }]
+            }
+        },
         HttpListener: {
             Type: 'AWS::ElasticLoadBalancingV2::Listener',
             Properties: {
@@ -124,6 +344,22 @@ export default {
             }
         },
         TargetGroup: {
+            Type: 'AWS::ElasticLoadBalancingV2::TargetGroup',
+            DependsOn: 'ELB',
+            Properties: {
+                HealthCheckEnabled: true,
+                HealthCheckIntervalSeconds: 30,
+                HealthCheckPath: '/api',
+                Port: 5000,
+                Protocol: 'HTTP',
+                TargetType: 'ip',
+                VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])),
+                Matcher: {
+                    HttpCode: '200,202,302,304'
+                }
+            }
+        },
+        StateTargetGroup: {
             Type: 'AWS::ElasticLoadBalancingV2::TargetGroup',
             DependsOn: 'ELB',
             Properties: {
@@ -418,97 +654,10 @@ export default {
                 Path: '/service-role/'
             }
         },
-        TaskDefinition: {
-            Type: 'AWS::ECS::TaskDefinition',
-            DependsOn: ['SigningSecret', 'GeofenceSecret'],
-            Properties: {
-                Family: cf.stackName,
-                Cpu: cf.ref('ComputeCpu'),
-                Memory: cf.ref('ComputeMemory'),
-                NetworkMode: 'awsvpc',
-                RequiresCompatibilities: ['FARGATE'],
-                Tags: [{
-                    Key: 'Name',
-                    Value: cf.join('-', [cf.stackName, 'api'])
-                }],
-                ExecutionRoleArn: cf.getAtt('ExecRole', 'Arn'),
-                TaskRoleArn: cf.getAtt('TaskRole', 'Arn'),
-                ContainerDefinitions: [{
-                    Name: 'api',
-                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/tak-vpc-', cf.ref('Environment'), '-cloudtak-api:', cf.ref('GitSha')]),
-                    PortMappings: [{
-                        ContainerPort: 5000
-                    }],
-                    Environment: [
-                        {
-                            Name: 'POSTGRES',
-                            Value: cf.join([
-                                'postgresql://',
-                                cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:username:AWSCURRENT}}'),
-                                ':',
-                                cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
-                                '@',
-                                cf.getAtt('DBCluster', 'Endpoint.Address'),
-                                ':5432/tak_ps_etl?sslmode=require'
-                            ])
-                        },
-                        { Name: 'AWS_REGION', Value: cf.region },
-                        { Name: 'ECR_TASKS_REPOSITORY_NAME', Value: cf.join(['tak-vpc-', cf.ref('Environment'), '-cloudtak-tasks']) },
-                        { Name: 'CLOUDTAK_Mode', Value: 'AWS' },
-                        { Name: 'StackName', Value: cf.stackName },
-                        { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
-                        { Name: 'API_URL', Value: cf.join(['https://map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]) },
-                        { Name: 'VpcId', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])) },
-                        { Name: 'SubnetPublicA', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-a'])) },
-                        { Name: 'SubnetPublicB', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b'])) },
-                        { Name: 'MediaSecurityGroup', Value: cf.ref('MediaSecurityGroup') },
-                        { Name: 'CLOUDTAK_Config_geofence_password', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/geofence}}') }
-                    ],
-                    RestartPolicy: {
-                        Enabled: true,
-                        RestartAttemptPeriod: 300
-                    },
-                    LogConfiguration: {
-                        LogDriver: 'awslogs',
-                        Options: {
-                            'awslogs-group': cf.stackName,
-                            'awslogs-region': cf.region,
-                            'awslogs-stream-prefix': cf.stackName,
-                            'awslogs-create-group': true
-                        }
-                    },
-                    Essential: true
-                }]
-            }
-        },
-        Service: {
-            Type: 'AWS::ECS::Service',
-            Properties: {
-                ServiceName: cf.stackName,
-                Cluster: cf.join(['tak-vpc-', cf.ref('Environment')]),
-                TaskDefinition: cf.ref('TaskDefinition'),
-                LaunchType: 'FARGATE',
-                PropagateTags: 'SERVICE',
-                EnableExecuteCommand: cf.ref('EnableExecute'),
-                HealthCheckGracePeriodSeconds: 300,
-                DesiredCount: 1,
-                NetworkConfiguration: {
-                    AwsvpcConfiguration: {
-                        AssignPublicIp: 'ENABLED',
-                        SecurityGroups: [cf.ref('ServiceSecurityGroup')],
-                        Subnets:  [
-                            cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-a'])),
-                            cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b']))
-                        ]
-                    }
-                },
-                LoadBalancers: [{
-                    ContainerName: 'api',
-                    ContainerPort: 5000,
-                    TargetGroupArn: cf.ref('TargetGroup')
-                }]
-            }
-        },
+        TaskDefinition: TaskDefinition('stateless'),
+        StateTaskDefinition: TaskDefinition('state'),
+        Service: Service('stateless'),
+        StateService: Service('state'),
         ServiceSecurityGroup: {
             Type: 'AWS::EC2::SecurityGroup',
             Properties: {
@@ -580,6 +729,13 @@ export default {
                 Name: cf.join([cf.stackName, '-hosted'])
             },
             Value: cf.join(['https://map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))])
+        },
+        WSURL: {
+            Description: 'Hosted WebSocket Location',
+            Export: {
+                Name: cf.join([cf.stackName, '-hosted-ws'])
+            },
+            Value: cf.join(['wss://ws.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))])
         },
         ETLRole: {
             Description: 'ETL Lambda Role',

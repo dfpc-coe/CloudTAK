@@ -26,6 +26,12 @@ if (url.hostname === 'localhost') {
         'connect-src': [`'self'`]
     }
 
+    // WebSockets are terminated on a separate host - explicitly allow it
+    // as scheme-less host sources don't match ws/wss in all browsers
+    if (process.env.WS_URL) {
+        csp['connect-src'].push(process.env.WS_URL);
+    }
+
     cspstr = `add_header 'Content-Security-Policy' "`
     for (const [key, value] of Object.entries(csp)) {
         console.error(key, value);

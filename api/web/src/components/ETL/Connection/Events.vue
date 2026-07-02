@@ -67,15 +67,28 @@ onUnmounted(() => {
 });
 
 onMounted(async () => {
-    const url = stdurl('/api');
+    // WebSockets are not necessarily terminated on the same host as the API,
+    // the server metadata endpoint advertises the WebSocket location
+    let url: URL;
+    try {
+        const res = await fetch(stdurl('/api'));
+        const meta = await res.json() as { ws?: string };
+        if (!meta.ws) throw new Error('No WebSocket location advertised');
+        url = new URL('/api', meta.ws);
+    } catch (err) {
+        console.warn('Failed to fetch server metadata - falling back to API host for WebSocket', err);
+
+        url = stdurl('/api');
+        if (window.location.hostname === 'localhost') {
+            url.protocol = 'ws:';
+        } else {
+            url.protocol = 'wss:';
+        }
+    }
+
     url.searchParams.set('connection', String(route.params.connectionid));
     const { value: token } = await Preferences.get({ key: 'token' });
     if (token) url.searchParams.set('token', token);
-    if (window.location.hostname === 'localhost') {
-        url.protocol = 'ws:';
-    } else {
-        url.protocol = 'wss:';
-    }
 
     ws.value = new WebSocket(url);
     ws.value.addEventListener('error', (err) => { emit('err', err) });

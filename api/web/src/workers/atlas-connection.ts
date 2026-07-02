@@ -21,6 +21,8 @@ export default class AtlasConnection {
 
     version: string;
 
+    wsBase: string | undefined;
+
     constructor(atlas: Atlas) {
         this.atlas = atlas;
 
@@ -30,6 +32,8 @@ export default class AtlasConnection {
         this.reconnectAttempts = 0;
 
         this.version = version;
+
+        this.wsBase = undefined;
     }
 
     reconnect(connection: string) {
@@ -38,23 +42,48 @@ export default class AtlasConnection {
         if (this.ws) {
             this.ws.close();
         }
-        this.connect(connection);
+        void this.connect(connection);
     }
 
-    // COTs are submitted to pending and picked up by the partial update code every .5s
-    connect(connection: string) {
-        this.isDestroyed = false;
+    /**
+     * WebSockets are not necessarily terminated on the same host as the API,
+     * the server metadata endpoint advertises the WebSocket location
+     */
+    async wsURL(): Promise<URL> {
+        if (this.wsBase === undefined) {
+            try {
+                const res = await fetch(stdurl('/api'));
+                const meta = await res.json() as { ws?: string };
+                this.wsBase = meta.ws || '';
+            } catch (err) {
+                console.warn('Failed to fetch server metadata - falling back to API host for WebSocket', err);
+                this.wsBase = '';
+            }
+        }
+
+        if (this.wsBase) {
+            return new URL('/api', this.wsBase);
+        }
 
         const url = stdurl('/api');
-        url.searchParams.set('format', 'geojson');
-        url.searchParams.set('connection', connection);
-        url.searchParams.set('token', this.atlas.token);
 
         if (self.location.protocol === 'http:') {
             url.protocol = 'ws:';
         } else {
             url.protocol = 'wss:';
         }
+
+        return url;
+    }
+
+    // COTs are submitted to pending and picked up by the partial update code every .5s
+    async connect(connection: string) {
+        this.isDestroyed = false;
+
+        const url = await this.wsURL();
+        url.searchParams.set('format', 'geojson');
+        url.searchParams.set('connection', connection);
+        url.searchParams.set('token', this.atlas.token);
 
         this.ws = new WebSocket(url);
 
@@ -70,7 +99,7 @@ export default class AtlasConnection {
         this.ws.addEventListener('close', () => {
             // Otherwise the user is probably logged out
             if (!this.isDestroyed) {
-                this.connect(connection);
+                void this.connect(connection);
             }
 
             this.atlas.postMessage({ type: WorkerMessageType.Connection_Close });

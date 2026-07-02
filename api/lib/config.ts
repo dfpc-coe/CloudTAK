@@ -35,6 +35,7 @@ export default class Config {
     user?: UserManager;
     weather: WeatherManager;
     API_URL: string;
+    WS_URL: string;
     PMTILES_URL: string;
     wsClients: Map<string, ConnectionWebSocket[]>;
     Bucket?: string;
@@ -54,6 +55,7 @@ export default class Config {
         models: Models;
         StackName: string;
         API_URL: string;
+        WS_URL: string;
         PMTILES_URL: string;
         SigningSecret: string;
         wsClients: Map<string, ConnectionWebSocket[]>;
@@ -70,6 +72,7 @@ export default class Config {
         this.StackName = init.StackName;
         this.SigningSecret = init.SigningSecret;
         this.API_URL = init.API_URL;
+        this.WS_URL = init.WS_URL;
         this.PMTILES_URL = init.PMTILES_URL;
         this.wsClients = init.wsClients;
         this.pg = init.pg;
@@ -103,6 +106,7 @@ export default class Config {
         }
 
         let SigningSecret, API_URL, PMTILES_URL, Bucket;
+        let WS_URL = process.env.WS_URL;
         if (!process.env.StackName || process.env.StackName === 'test') {
             process.env.StackName = 'test';
 
@@ -127,6 +131,12 @@ export default class Config {
 
             Bucket = process.env.ASSET_BUCKET;
             SigningSecret = process.env.SigningSecret || await Config.fetchSecret(process.env.StackName, 'secret');
+        }
+
+        // Unless otherwise configured, WebSockets are terminated on the same
+        // host as the API - in AWS the state service is exposed at ws.<API Host>
+        if (!WS_URL) {
+            WS_URL = API_URL.replace(/^http/, 'ws');
         }
 
         const pg: Pool<typeof pgtypes> = await Pool.connect(args.postgres, pgtypes, {
@@ -157,7 +167,7 @@ export default class Config {
             nocache: (args.nocache || false),
             StackName: process.env.StackName,
             wsClients: new Map(),
-            server, SigningSecret, API_URL, Bucket, pg, models, PMTILES_URL,
+            server, SigningSecret, API_URL, WS_URL, Bucket, pg, models, PMTILES_URL,
         });
 
         if (!config.silent) {
