@@ -16,6 +16,11 @@
 
 ### Pending Release
 
+### v13.30.1 - 2026-07-02
+
+- :rocket: Enable additional debug information when node-cot receives an unparsable XML document
+- :rocket: Loading improvements to Admin Layer Management
+
 ### v13.30.0 - 2026-07-02
 
 - :rocket: Simplify the Service Worker Handling
