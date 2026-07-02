@@ -2,10 +2,11 @@ import { liveQuery, type Observable } from 'dexie';
 import { shallowReactive } from 'vue';
 import { db, type DBOverlay } from '../database.ts';
 import type { paths } from '@cloudtak/api-types';
-import type { ProfileOverlay, ProfileOverlayList } from '../types.ts';
+import type { ProfileOverlay } from '../types.ts';
 import { server } from '../std.ts';
 import BaseInterface from './interface.ts';
 import Overlay from './overlay-class.ts';
+import { syncOverlays, OVERLAY_LIST_CACHE_KEY } from './overlay-sync.ts';
 import type {
     BaseInterface_ListOptions,
     BaseInterface_FromOptions
@@ -38,7 +39,7 @@ export type Overlay_CreateLoadedOptions = NonNullable<Parameters<typeof Overlay.
 const loadedOverlays = shallowReactive<Overlay[]>([]) as Overlay[];
 
 export default class OverlayManager extends BaseInterface {
-    static readonly listCacheKey = 'overlay';
+    static readonly listCacheKey = OVERLAY_LIST_CACHE_KEY;
     static readonly loaded = loadedOverlays;
 
     static clearLoaded(): void {
@@ -278,34 +279,7 @@ export default class OverlayManager extends BaseInterface {
     }
 
     static async sync(): Promise<void> {
-        const res = await server.GET('/api/profile/overlay', {
-            params: {
-                query: {
-                    limit: 100,
-                    page: 0,
-                    order: 'asc',
-                    sort: 'pos'
-                }
-            }
-        });
-
-        if (res.error) throw new Error(res.error.message);
-        if (!res.data) throw new Error('Failed to sync overlays');
-
-        const list = res.data as ProfileOverlayList;
-
-        await db.transaction('rw', db.overlay, db.cache, async () => {
-            await db.overlay.clear();
-
-            if (list.items.length) {
-                await db.overlay.bulkPut(list.items);
-            }
-
-            await db.cache.put({
-                key: this.listCacheKey,
-                updated: Date.now()
-            });
-        });
+        await syncOverlays();
     }
 
     static async delete(id: string, opts: Overlay_DeleteOptions = {}): Promise<void> {

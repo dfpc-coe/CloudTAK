@@ -34,6 +34,10 @@ export default class AtlasDatabase {
 
     cots: Map<string, COT>;
 
+    // Archived feature ids as last seen from the server - used by
+    // loadArchive() to prune features deleted remotely
+    archiveIds: Set<string>;
+
     // Stores Active Mission if present
     mission?: string;
 
@@ -59,6 +63,7 @@ export default class AtlasDatabase {
         this.atlas = atlas;
 
         this.cots = new Map();
+        this.archiveIds = new Set();
 
         this.pendingCreate = new Map();
         this.pendingUpdate = new Map();
@@ -388,18 +393,39 @@ export default class AtlasDatabase {
 
     /**
      * Load Archived CoTs
+     *
+     * Reconciles the local store against the server's archive: features are
+     * added/updated idempotently and archived features that were previously
+     * loaded from the server but no longer exist there (deleted by another
+     * client, possibly while this client was disconnected) are removed
+     * locally. Only ids in `archiveIds` (seen from the server on a prior
+     * load) are prune candidates, so a freshly drawn feature whose PUT is
+     * still in flight is never removed.
      */
     async loadArchive(): Promise<void> {
         const archive = await std('/api/profile/feature', {
             token: this.atlas.token
         }) as APIList<Feature>;
 
+        const serverIds = new Set<string>(archive.items.map((f) => String(f.id)));
+
         for (const a of archive.items) {
-            this.add(a, {
+            await this.add(a, {
                 skipSave: true,
                 skipBroadcast: true
             });
         }
+
+        for (const id of this.archiveIds) {
+            if (serverIds.has(id)) continue;
+
+            const cot = this.cots.get(id);
+            if (!cot || !cot.properties.archived || cot.origin.mode !== OriginMode.CONNECTION) continue;
+
+            await this.remove(id, { skipNetwork: true });
+        }
+
+        this.archiveIds = serverIds;
 
         this.atlas.postMessage({
             type: WorkerMessageType.Feature_Archived_Added,
@@ -697,13 +723,22 @@ export default class AtlasDatabase {
             return exists;
         } else {
             if (exists) {
-                await exists.update({
+                const changed = await exists.update({
                     path: feat.path,
                     properties: feat.properties,
                     geometry: feat.geometry
                 }, { skipSave: opts.skipSave })
 
-                this.pendingUpdate.set(exists.id, exists);
+                // Only queue a map update when the CoT actually changed and it
+                // isn't still waiting to be added. A pending-create COT is
+                // mutated in place, so also pushing it to pendingUpdate would
+                // emit a duplicate add+update for the same feature id in one
+                // diff. This keeps idempotent re-adds (loadArchive / feature
+                // sync events, including a client receiving its own change)
+                // from disturbing a freshly drawn, not-yet-flushed feature.
+                if (changed && !this.pendingCreate.has(exists.id)) {
+                    this.pendingUpdate.set(exists.id, exists);
+                }
 
                 // Sync profile if this is the user's own COT
                 if (exists.is_self) {

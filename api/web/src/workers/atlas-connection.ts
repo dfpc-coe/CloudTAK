@@ -9,6 +9,7 @@ import Chatroom from '../base/chatroom.ts';
 import { db } from '../database.ts';
 import TAKNotification, { NotificationType } from '../base/notification.ts';
 import { WorkerMessageType } from '../base/events.ts';
+import type { SyncEvent } from './atlas-sync.ts';
 import type { Feature, Import, Chat } from '../types.ts';
 
 export default class AtlasConnection {
@@ -16,6 +17,7 @@ export default class AtlasConnection {
 
     isDestroyed: boolean;
     isOpen: boolean;
+    hasConnected: boolean;
     ws: WebSocket | undefined;
     reconnectAttempts: number;
 
@@ -26,6 +28,7 @@ export default class AtlasConnection {
 
         this.isDestroyed = false;
         this.isOpen = false;
+        this.hasConnected = false;
         this.ws = undefined;
         this.reconnectAttempts = 0;
 
@@ -61,6 +64,17 @@ export default class AtlasConnection {
         this.ws.addEventListener('open', () => {
             this.atlas.postMessage({ type: WorkerMessageType.Connection_Open });
             this.isOpen = true;
+
+            // Sync events broadcast while this client was disconnected are
+            // lost (there is no replay), so any reconnect must trigger a full
+            // resync or the client silently drifts until the next page load
+            if (this.hasConnected && this.atlas.sync.started) {
+                this.atlas.sync.fullSync().catch((err: unknown) => {
+                    console.error('Failed to resync after reconnect', err);
+                });
+            }
+
+            this.hasConnected = true;
         });
 
         this.ws.addEventListener('error', (err) => {
@@ -278,6 +292,10 @@ export default class AtlasConnection {
                         console.log('No Service Worker available');
                     }
                 }
+            } else if (body.type === 'sync') {
+                // Another of the user's connected clients mutated a data type
+                // via the API - trigger a targeted sync in AtlasSync
+                await this.atlas.sync.event(body.data as SyncEvent);
             } else if (body.type === 'connected') {
                 // Server has finished registering the WebSocket client - no client action needed
             } else {
