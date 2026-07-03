@@ -104,11 +104,13 @@ const supportedIcon = computed<string | null>(() => {
     }
 });
 
-watch(canvas, async () => {
+watch([canvas, supportedIcon, () => props.size], async () => {
     if (!canvas.value) return;
 
-    if (!supportedIcon.value) return;
-    const icon = mapStore.map.getImage(supportedIcon.value)
+    const iconName = supportedIcon.value;
+    if (!iconName) return;
+
+    const icon = mapStore.map.getImage(iconName)
     if (!icon) return;
 
     const context = canvas.value.getContext('2d');
@@ -118,13 +120,17 @@ watch(canvas, async () => {
 
     if (!context) return;
 
+    const bitmap = await createImageBitmap(new ImageData(
+        // @ts-expect-error icon.data.data issue
+        new Uint8ClampedArray(icon.data.data, icon.data.width, icon.data.height),
+        icon.data.width,
+        icon.data.height,
+    ));
+
+    if (!canvas.value || supportedIcon.value !== iconName) return;
+
     context.drawImage(
-        await createImageBitmap(new ImageData(
-            // @ts-expect-error icon.data.data issue
-            new Uint8ClampedArray(icon.data.data, icon.data.width, icon.data.height),
-            icon.data.width,
-            icon.data.height,
-        )),
+        bitmap,
         0, 0,
         icon.data.width,
         icon.data.height,
