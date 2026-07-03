@@ -1254,6 +1254,13 @@
       "when": 1782923379343,
       "tag": "0179_single_basemap_overlay",
       "breakpoints": true
+    },
+    {
+      "idx": 180,
+      "version": "7",
+      "when": 1783052725233,
+      "tag": "0180_palette_feature_template",
+      "breakpoints": true
     }
   ]
 }

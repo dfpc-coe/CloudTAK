@@ -165,19 +165,6 @@ export const MissionTemplateLogResponse = Type.Object({
     schema: Type.Unknown(),
 });
 
-const Palette = createSelectSchema(schemas.Palette, {
-    uuid: Type.String(),
-    created: Type.String(),
-    updated: Type.String(),
-});
-
-export const PaletteResponse = Type.Composite([
-    Palette,
-    Type.Object({
-        features: Type.Array(PaletteFeatureResponse),
-    }),
-]);
-
 export const PaletteFeatureStyle = Type.Object({
     'marker-color': Type.Optional(Type.String()),
     'marker-opacity': Type.Optional(Type.String()),

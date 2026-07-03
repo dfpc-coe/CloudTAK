@@ -39,21 +39,12 @@ export const CoreIncident = pgTable('core_incident', {
     metadata: jsonb().notNull().default({}),
 });
 
-export const Palette = pgTable('palette', {
-    uuid: uuid().primaryKey().default(sql`gen_random_uuid()`),
-    name: text().notNull(),
-    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-
-    template: uuid().notNull().references(() => MissionTemplate.id),
-});
-
 export const PaletteFeature = pgTable('palette_feature', {
     uuid: uuid().primaryKey().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull(),
-    palette: uuid().notNull().references(() => Palette.uuid),
+    template: uuid().notNull().references(() => MissionTemplate.id),
     type: text().$type<BasicGeometryType>().notNull(),
     style: jsonb().$type<Static<typeof PaletteFeatureStyle>>().notNull().default({}),
 });

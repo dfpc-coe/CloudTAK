@@ -109,23 +109,14 @@ export type PaletteFeature = {
     created: string;
     updated: string;
     name: string;
-    palette: string;
+    template: string;
     type: string;
     style: Record<string, unknown>;
 }
 
-export type Palette = {
-    uuid: string;
-    created: string;
-    updated: string;
-    name: string;
-    template: string;
-    features: Array<PaletteFeature>;
-}
-
-export type PaletteList = {
+export type PaletteFeatureList = {
     total: number;
-    items: Array<Palette>;
+    items: Array<PaletteFeature>;
 }
 
 export type Chat = {
