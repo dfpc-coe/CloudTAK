@@ -11,6 +11,7 @@ import { ProfileFeature } from '../lib/schema.js';
 import { StandardResponse, FeatureResponse, GeoJSONFeatureCollection, GeoJSONFeature } from '../lib/types.js';
 import { ExportFeatureFormat } from '../lib/enums.js';
 import { enabledGeofence } from '../lib/control/feature.js';
+import ConnectionEvents, { ConnectionEventDataType, ConnectionEventAction } from '../lib/connection-events.js';
 import { sql } from 'drizzle-orm';
 import * as Default from '../lib/limits.js';
 
@@ -189,6 +190,8 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
+            ConnectionEvents.user(config, user, ConnectionEventDataType.FEATURE, ConnectionEventAction.DELETE);
+
             res.json({
                 status: 200,
                 message: 'Features Deleted',
@@ -251,6 +254,8 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
+            ConnectionEvents.user(config, user, ConnectionEventDataType.FEATURE, ConnectionEventAction.UPDATE, feat.id, feat);
+
             res.json(feat);
         } catch (err) {
             Err.respond(err, res);
@@ -289,6 +294,8 @@ export default async function router(schema: Schema, config: Config) {
                     properties: sql`jsonb_set(${ProfileFeature.properties}, '{time}', to_jsonb(${new Date().toISOString()}::text))`,
                 });
             }
+
+            ConnectionEvents.user(config, user, ConnectionEventDataType.FEATURE, ConnectionEventAction.DELETE, req.params.id);
 
             res.json({
                 status: 200,

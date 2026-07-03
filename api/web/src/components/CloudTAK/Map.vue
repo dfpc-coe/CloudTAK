@@ -385,8 +385,14 @@
                 @selected='selectFeat($event)'
             />
 
+            <!--
+                Keyed on the radial target so repointing the radial at a new
+                feature (e.g. contextmenu while one is already open) remounts
+                the component and regenerates its menu items
+            -->
             <RadialMenu
                 v-else-if='mapStore.radial.mode'
+                :key='`${mapStore.radial.mode}:${mapStore.radial.cot?.properties?.id ?? ""}`'
                 @close='closeRadial'
                 @click='handleRadial($event)'
             />
@@ -710,11 +716,23 @@ onBeforeUnmount(() => {
 });
 
 function selectFeat(selectedFeat: MapGeoJSONFeature | COT) {
-    mapStore.select.feats = [];
-
     if (selectedFeat instanceof COT) {
-        router.push(`/cot/${selectedFeat.properties.id}`);
+        // Mirror a direct marker click - open the radial menu for the CoT
+        // (anchored where the user originally clicked) rather than the
+        // CoTView sidebar
+        const lngLat = mapStore.map.unproject([mapStore.select.x, mapStore.select.y]);
+
+        mapStore.select.feats = [];
+
+        void mapStore.radialClick(selectedFeat.as_feature(), {
+            lngLat,
+            point: mapStore.map.project(lngLat),
+            mode: 'cot'
+        }).catch((err) => {
+            console.error('Failed to open radial menu for selected CoT', err);
+        });
     } else {
+        mapStore.select.feats = [];
         mapStore.viewedFeature = selectedFeat;
         router.push(`/menu/feature`);
     }

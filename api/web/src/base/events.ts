@@ -31,6 +31,10 @@ export enum WorkerMessageType {
 
     Feature_Update = 'cloudtak:feature:update',
     Profile_Update = 'cloudtak:profile:update',
+
+    Sync_Start = 'cloudtak:sync:start',
+    Sync_Complete = 'cloudtak:sync:complete',
+    Sync_Update = 'cloudtak:sync:update',
 }
 
 export type WorkerMessage = {

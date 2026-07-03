@@ -10,6 +10,7 @@ import { BasemapTerrain_Encoding } from '../lib/enums.js';
 import { ProfileOverlay } from '../lib/schema.js';
 import path from 'node:path';
 import { StandardResponse, ProfileOverlayResponse } from '../lib/types.js';
+import ConnectionEvents, { ConnectionEventDataType, ConnectionEventAction } from '../lib/connection-events.js';
 import { sql } from 'drizzle-orm';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import * as Default from '../lib/limits.js';
@@ -253,18 +254,26 @@ export default async function router(schema: Schema, config: Config) {
 
             overlay = await config.models.ProfileOverlay.commit(req.params.overlay, req.body);
 
+            let serialized: Static<typeof AugmentedProfileOverlayResponse>;
             if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
                 if (!overlay.mode_id) throw new Err(500, null, 'Overlay missing mode_id');
                 const basemap = await config.models.Basemap.from(parseInt(overlay.mode_id));
 
-                res.json(serializeOverlay(
+                serialized = serializeOverlay(
                     overlay,
                     fromProtocol(basemap.protocol, basemap).actions(),
                     basemap.type === 'raster-dem' ? basemap.encoding : undefined,
-                ));
+                );
             } else {
-                res.json(serializeOverlay(overlay, fromProtocol().actions()));
+                serialized = serializeOverlay(overlay, fromProtocol().actions());
             }
+
+            // Include the serialized overlay so receiving clients can apply
+            // it directly instead of re-listing overlays (which is slow due
+            // to per-overlay existence checks)
+            ConnectionEvents.user(config, user, ConnectionEventDataType.OVERLAY, ConnectionEventAction.UPDATE, overlay.id, serialized);
+
+            res.json(serialized);
         } catch (err) {
             Err.respond(err, res);
         }
@@ -358,18 +367,26 @@ export default async function router(schema: Schema, config: Config) {
                 });
             }
 
+            let serialized: Static<typeof AugmentedProfileOverlayResponse>;
             if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
                 if (!overlay.mode_id) throw new Err(500, null, 'Overlay missing mode_id');
                 const basemap = await config.models.Basemap.from(parseInt(overlay.mode_id));
 
-                res.json(serializeOverlay(
+                serialized = serializeOverlay(
                     overlay,
                     fromProtocol(basemap.protocol, basemap).actions(),
                     basemap.type === 'raster-dem' ? basemap.encoding : undefined,
-                ));
+                );
             } else {
-                res.json(serializeOverlay(overlay, fromProtocol().actions()));
+                serialized = serializeOverlay(overlay, fromProtocol().actions());
             }
+
+            // Include the serialized overlay so receiving clients can apply
+            // it directly instead of re-listing overlays (which is slow due
+            // to per-overlay existence checks)
+            ConnectionEvents.user(config, user, ConnectionEventDataType.OVERLAY, ConnectionEventAction.CREATE, overlay.id, serialized);
+
+            res.json(serialized);
         } catch (err) {
             if (String(err).includes('duplicate key value violates unique constraint')) {
                 Err.respond(new Err(400, err instanceof Error ? err : new Error(String(err)), 'Overlay appears to exist - cannot add duplicate'), res);
@@ -415,6 +432,8 @@ export default async function router(schema: Schema, config: Config) {
                     console.error(err);
                 }
             }
+
+            ConnectionEvents.user(config, user, ConnectionEventDataType.OVERLAY, ConnectionEventAction.DELETE, overlay.id);
 
             res.json({
                 status: 200,

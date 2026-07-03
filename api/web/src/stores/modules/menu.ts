@@ -1,4 +1,4 @@
-import { ref, computed, toRaw } from 'vue';
+import { ref, computed, toRaw, markRaw } from 'vue';
 import type { Component, Ref, ComputedRef } from "vue";
 import {
     IconBug,
@@ -323,7 +323,10 @@ export default class MenuManager {
     }
 
     addMenuItem(item: MenuItemConfig) {
-        this.pluginMenuItems.value.push(item);
+        this.pluginMenuItems.value.push({
+            ...item,
+            icon: markRaw(item.icon)
+        });
     }
 
     removeMenuItem(key: string) {

@@ -254,7 +254,11 @@ export default class COT {
                 }));
             }
 
-            if (!this.is_self && (!opts || (opts && opts.skipSave !== false))) {
+            // skipSave: true is passed when applying server state locally
+            // (archive loads, sync events) - saving here would PUT the feature
+            // back to the API, which re-broadcasts a sync event to the user's
+            // other clients and creates a circular sync loop between them
+            if (!this.is_self && (!opts || opts.skipSave !== true)) {
                 await this.save();
             }
 

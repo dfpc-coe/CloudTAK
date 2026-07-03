@@ -825,6 +825,15 @@ export const useMapStore = defineStore('cloudtak', {
                     this.channelChange = true;
                 } else if (msg.type === WorkerMessageType.Mission_Change_Feature) {
                     await this.loadMission(msg.body.guid);
+                } else if (msg.type === WorkerMessageType.Sync_Update) {
+                    const event = msg.body as { type: string; action: string; id?: string | number };
+
+                    // Another connected client mutated overlays - the Atlas
+                    // worker has already refreshed the local database, so
+                    // reconcile the loaded map overlays against it
+                    if (['overlay', 'mission', 'basemap'].includes(event.type)) {
+                        await this.reconcileOverlays();
+                    }
                 }
             }
 
@@ -1416,6 +1425,89 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             this.isLoaded = true;
+
+            // Map is initialized & loaded - kick off a full data type
+            // synchronization with the TAK Server in the Atlas worker
+            this.worker.sync.start()
+                .catch((err: unknown) => {
+                    console.error('Failed to perform full sync after map load', err);
+                });
+
+            await this.updateAttribution();
+        },
+
+        /**
+         * Reconcile the loaded map overlays against the local overlay
+         * database after a sync triggered by another of the user's connected
+         * clients. Adds newly created overlays, removes deleted ones and
+         * applies visibility/opacity changes. Changes are applied to the map
+         * directly (not via Overlay.update/save) so the reconcile does not
+         * PATCH the API and echo the event back to the originating client.
+         */
+        reconcileOverlays: async function(): Promise<void> {
+            if (!this.isLoaded) return;
+
+            const desired = await OverlayManager.list({ localFirst: true });
+            const desiredIds = new Set(desired.map((item) => item.id));
+
+            // Remove overlays deleted by the other client - the API record is
+            // already gone so only tear down the local map layers
+            for (const overlay of [...OverlayManager.loaded]) {
+                if (overlay._internal) continue;
+                if (desiredIds.has(overlay.id)) continue;
+
+                const pos = OverlayManager.loaded.indexOf(overlay);
+                if (pos !== -1) OverlayManager.loaded.splice(pos, 1);
+
+                if (overlay._timer) {
+                    clearInterval(overlay._timer);
+                    overlay._timer = null;
+                }
+
+                overlay._destroyed = true;
+                overlay.remove();
+            }
+
+            for (const item of desired) {
+                const loaded = OverlayManager.loadedFrom(item.id);
+
+                if (loaded) {
+                    if (item.opacity !== loaded.opacity) {
+                        loaded.opacity = item.opacity;
+                        for (const l of loaded.styles) {
+                            if (loaded.type === 'raster') {
+                                this.map.setPaintProperty(l.id, 'raster-opacity', Number(loaded.opacity));
+                            }
+                        }
+                    }
+
+                    if (item.visible !== loaded.visible) {
+                        loaded.visible = item.visible;
+                        for (const l of loaded.styles) {
+                            this.map.setLayoutProperty(l.id, 'visibility', loaded.visible ? 'visible' : 'none');
+                        }
+                    }
+                } else {
+                    try {
+                        const overlay = await Overlay.create(item as ProfileOverlay, { skipSave: true });
+                        OverlayManager.appendLoaded(overlay);
+
+                        if (overlay.mode === 'mission' && overlay.mode_id) {
+                            overlay.loading = true;
+                            this.loadMission(overlay.mode_id, { reload: true })
+                                .catch((err) => {
+                                    console.error('Failed to load Mission after sync', err);
+                                    overlay._error = err instanceof Error ? err : new Error(String(err));
+                                })
+                                .finally(() => {
+                                    overlay.loading = false;
+                                });
+                        }
+                    } catch (err) {
+                        console.error(`Failed to load synced overlay ${item.id} (${item.name}):`, err);
+                    }
+                }
+            }
 
             await this.updateAttribution();
         },

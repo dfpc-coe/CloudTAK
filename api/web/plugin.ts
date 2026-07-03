@@ -11,6 +11,7 @@ import { db, type DBFeature } from './src/database.ts';
 import { liveQuery } from 'dexie';
 import { from, type Observable } from 'rxjs';
 import * as mapgl from 'maplibre-gl';
+import { std, stdurl } from './src/std.ts';
 
 const FloatingGeneric = defineAsyncComponent(() => import('./src/components/CloudTAK/util/FloatingGeneric.vue'));
 
@@ -197,6 +198,37 @@ export class PluginAPI {
                     }
                     return db.feature.toArray();
                 })) as Observable<DBFeature[]>;
+            }
+        }
+    }
+
+    /**
+     * Manage CoT Marti Queries
+     */
+    get cot() {
+        return {
+            /**
+             * Fetch the historic CoT points for a given UID from the TAK Server.
+             *
+             * Each point is returned as its own Feature retaining its temporal
+             * attributes so callers can build time-series visualizations.
+             *
+             * @param uid  The CoT UID to fetch history for
+             * @param opts Optional time window constraints
+             */
+            history: async (uid: string, opts: {
+                start?: string;
+                end?: string;
+                secago?: number;
+            } = {}): Promise<DBFeature[]> => {
+                const url = stdurl(`/api/marti/cot/${encodeURIComponent(uid)}/all`);
+                url.searchParams.set('track', 'false');
+                if (opts.start) url.searchParams.set('start', opts.start);
+                if (opts.end) url.searchParams.set('end', opts.end);
+                if (opts.secago !== undefined) url.searchParams.set('secago', String(opts.secago));
+
+                const body = await std(url) as { type: string; features: DBFeature[] };
+                return body.features || [];
             }
         }
     }

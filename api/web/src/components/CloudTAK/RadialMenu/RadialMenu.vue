@@ -218,7 +218,15 @@ watch(() => cot.value?.geometry, (newGeometry) => {
 });
 
 let timer: ReturnType<typeof setInterval> | undefined;
+
+// Set on unmount so the async mount flow below can bail out - a rapid
+// follow-up map click closes the radial (unmounting this component) while
+// genMenuItems() is still awaiting worker data, and without this guard the
+// dead instance would still attach an empty, orphaned menu popup to the map
+let cancelled = false;
+
 onUnmounted(() => {
+    cancelled = true;
     if (timer) clearInterval(timer);
     if (menu.value) {
         menu.value.close();
@@ -229,66 +237,85 @@ onUnmounted(() => {
 });
 
 onMounted(async () => {
-    await genMenuItems();
+    // Snapshot the radial state at mount - the store can be cleared or
+    // repointed by another click while the awaits below are in flight
+    const mode = mapStore.radial.mode;
+    const radialCot = mapStore.radial.cot;
+    const lngLat = mapStore.radial.lngLat;
 
-    nextTick(() => {
-        const container = document.createElement('div');
-        container.style.width = `${props.size}px`;
-        container.style.height = `${props.size}px`;
+    if (!lngLat) {
+        emit('close');
+        return;
+    }
 
-        if (iconsRef.value) {
-            container.appendChild(iconsRef.value.cloneNode(true));
-        }
+    try {
+        await genMenuItems(mode, radialCot);
+    } catch (err) {
+        console.error('Failed to generate radial menu items', err);
+        emit('close');
+        return;
+    }
 
-        menu.value = new RadialMenu({
-            parent: container,
-            size: props.size,
-            closeOnClick: true,
-            menuItems: menuItems.value,
-            onClick: (item: RadialMenuItem) => {
-                emit('click', `${mapStore.radial.mode}:${item.id}`);
-            },
-            onClose: () => {
-                emit('close');
-            }
-        });
-        menu.value.open();
+    if (cancelled) return;
 
-        if (mapStore.radial.lngLat) {
-             popup.value = new mapgl.Popup({
-                closeButton: false,
-                closeOnClick: true,
-                maxWidth: 'none',
-                anchor: 'center',
-                className: 'radial-menu-popup'
-            })
-            .setLngLat(mapStore.radial.lngLat)
-            .setDOMContent(container)
-            .addTo(mapStore.map);
+    await nextTick();
+    if (cancelled) return;
 
-            popup.value.on('close', () => {
-                emit('close');
-            });
-        } else {
+    const container = document.createElement('div');
+    container.style.width = `${props.size}px`;
+    container.style.height = `${props.size}px`;
+
+    if (iconsRef.value) {
+        container.appendChild(iconsRef.value.cloneNode(true));
+    }
+
+    menu.value = new RadialMenu({
+        parent: container,
+        size: props.size,
+        closeOnClick: true,
+        menuItems: menuItems.value,
+        onClick: (item: RadialMenuItem) => {
+            emit('click', `${mode}:${item.id}`);
+        },
+        onClose: () => {
             emit('close');
         }
+    });
+    menu.value.open();
 
-        timer = setInterval(async () => {
-            if (cot.value) {
-                const updated = await mapStore.worker.db.get(cot.value.properties.id || cot.value.id, {
-                    mission: true
-                });
-                if (updated) cot.value = updated;
-            }
-        }, 500);
+    popup.value = new mapgl.Popup({
+        closeButton: false,
+        closeOnClick: true,
+        maxWidth: 'none',
+        anchor: 'center',
+        className: 'radial-menu-popup'
     })
+    .setLngLat(lngLat)
+    .setDOMContent(container)
+    .addTo(mapStore.map);
+
+    popup.value.on('close', () => {
+        emit('close');
+    });
+
+    timer = setInterval(async () => {
+        if (cot.value) {
+            const updated = await mapStore.worker.db.get(cot.value.properties.id || cot.value.id, {
+                mission: true
+            });
+            if (updated) cot.value = updated;
+        }
+    }, 500);
 });
 
-async function genMenuItems() {
+async function genMenuItems(
+    mode: typeof mapStore.radial.mode,
+    radialCot: typeof mapStore.radial.cot
+) {
     menuItems.value.splice(0, menuItems.value.length);
-    if (mapStore.radial.mode === 'cot') {
-        if (mapStore.radial.cot && mapStore.radial.cot.properties) {
-            cot.value = await mapStore.worker.db.get(mapStore.radial.cot.properties.id, {
+    if (mode === 'cot') {
+        if (radialCot && radialCot.properties) {
+            cot.value = await mapStore.worker.db.get(radialCot.properties.id, {
                 mission: true
             });
 
@@ -334,12 +361,12 @@ async function genMenuItems() {
         }
 
         menuItems.value.push({ id: 'view', icon: '#radial-view' })
-    } else if (mapStore.radial.mode === 'feat') {
-        if (canCutOverlayFeature(mapStore.radial.cot)) {
+    } else if (mode === 'feat') {
+        if (canCutOverlayFeature(radialCot)) {
             menuItems.value.push({ id: 'cut', icon: '#radial-scissors' })
         }
         menuItems.value.push({ id: 'view', icon: '#radial-view' })
-    } else if (mapStore.radial.mode === 'context') {
+    } else if (mode === 'context') {
         menuItems.value.push({ id: 'new', icon: '#radial-pencil-plus' })
         menuItems.value.push({ id: 'info', icon: '#radial-question' })
     }

@@ -2,7 +2,7 @@ import { Static } from '@sinclair/typebox';
 import { randomUUID } from 'node:crypto';
 import { DirectChat, MissionChat, CoTParser } from '@tak-ps/node-cot';
 import type { Feature } from '@tak-ps/node-cot';
-import { WebSocket } from 'ws';
+import WebSocket from 'ws';
 import { ConnectionClient } from './connection-pool.js';
 
 export class ConnectionWebSocket {
