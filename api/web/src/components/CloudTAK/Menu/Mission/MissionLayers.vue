@@ -202,7 +202,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
@@ -421,10 +421,6 @@ function openEdit(node: PathNode<Feature>): void {
 async function deleteLayer(node: PathNode<Feature>): Promise<void> {
     await props.subscription.layer.delete(node.id);
 }
-
-onMounted(async () => {
-    await refresh();
-});
 
 async function refresh() {
     createLayer.value = false;
