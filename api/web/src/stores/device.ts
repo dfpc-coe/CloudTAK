@@ -4,6 +4,7 @@ import { CameraPermission } from './device/camera.ts';
 import { FileSystemPermission } from './device/file-system.ts';
 import { GeolocationPermission } from './device/geolocation.ts';
 import { BrowserNotificationPermission } from './device/notification.ts';
+import type { PushNotificationData } from './device/notification.ts';
 import { OrientationPermission } from './device/orientation.ts';
 import { StoragePermission } from './device/storage.ts';
 import { WakeLockPermission } from './device/wake-lock.ts';
@@ -14,6 +15,7 @@ export { CameraPermission } from './device/camera.ts';
 export { FileSystemPermission } from './device/file-system.ts';
 export { GeolocationPermission } from './device/geolocation.ts';
 export { BrowserNotificationPermission } from './device/notification.ts';
+export type { PushNotificationData } from './device/notification.ts';
 export { OrientationPermission } from './device/orientation.ts';
 export { StoragePermission } from './device/storage.ts';
 export { WakeLockPermission } from './device/wake-lock.ts';
@@ -100,6 +102,7 @@ export const useDeviceStore = defineStore('device', () => {
         getMessagingToken: () => notification.getMessagingToken(),
         refreshMessagingToken: () => notification.refreshMessagingToken(),
         onMessagingToken: (listener: (token: string | null) => void) => notification.onToken(listener),
+        onNotificationAction: (listener: (data: PushNotificationData) => void) => notification.onNotificationAction(listener),
         refreshOrientationPermissionStatus: () => orientation.refreshStatus(),
         refreshStoragePermissionStatus: () => storage.refreshStatus(),
         refreshCameraPermissionStatus: () => camera.refreshStatus(),
