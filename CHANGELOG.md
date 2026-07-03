@@ -16,6 +16,11 @@
 
 ### Pending Release
 
+### v13.31.0 - 2026-07-02
+
+- :tada: Introduce internal client synchronization
+- :rocket: Introduce Multi Select -> radial Clicks - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1498
+
 ### v13.30.1 - 2026-07-02
 
 - :rocket: Enable additional debug information when node-cot receives an unparsable XML document
