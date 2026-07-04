@@ -16,6 +16,11 @@
 
 ### Pending Release
 
+### v13.32.0 - 2026-07-02
+
+- :rocket: Improve Server Selection resilience on first boot which would sometimes hang
+- :rocket: Fix Chat Message UI to ensure input is locked to bottom of pane
+
 ### v13.31.0 - 2026-07-02
 
 - :tada: Introduce internal client synchronization
