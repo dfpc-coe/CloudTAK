@@ -4,7 +4,7 @@ import { Preferences } from '@capacitor/preferences';
 import { StatusBar } from '@capacitor/status-bar';
 import KV from '../base/kv.ts';
 import { db, withDbRetry } from '../database.ts';
-import { TimeoutError, withTimeout } from '../base/async.ts';
+import { withTimeout } from '../base/async.ts';
 import Config from '../base/config.ts';
 import ServerManager from '../base/server.ts';
 import router from '../router.ts';
@@ -13,11 +13,8 @@ import { isNativePlatform } from '../base/capacitor.ts';
 export type DisplayStyleMode = 'System Default' | 'Light' | 'Dark';
 export type ResolvedThemeMode = 'light' | 'dark';
 
-// Ceilings for each step during bootstrap — a single hung operation must
-// never leave the user stuck on the loading splash. Local covers Capacitor
-// bridge calls and IndexedDB transactions (normally milliseconds; both are
-// known to stall indefinitely in fresh native WebView sessions); network
-// covers server round-trips.
+// IndexedDB and network steps during bootstrap are bounded so a hung
+// operation can never strand the user on the loading splash.
 const BOOT_LOCAL_TIMEOUT_MS = 2000;
 const BOOT_NETWORK_TIMEOUT_MS = 10000;
 
@@ -64,7 +61,6 @@ export const useAppStore = defineStore('cloudtak-app', {
         resolvedTheme: ResolvedThemeMode;
         loading: boolean;
         loadingStage: string;
-        bootWarnings: string[];
     } => ({
         tokenExpiry: null,
         user: false,
@@ -75,25 +71,14 @@ export const useAppStore = defineStore('cloudtak-app', {
         resolvedTheme: 'dark',
         loading: true,
         loadingStage: '',
-        bootWarnings: [],
     }),
     actions: {
-        /**
-         * Record a boot anomaly: logged for debugging and surfaced on the
-         * loading splash so a stalled step is identifiable in the field.
-         */
-        bootWarn(message: string, err: unknown): void {
-            console.warn(message, err);
-            if (!this.bootWarnings.includes(message)) this.bootWarnings.push(message);
-        },
-
         async setServerUrl(serverUrl: string): Promise<void> {
             await Preferences.set({ key: 'serverUrl', value: serverUrl });
             await this.mirrorServerUrl(serverUrl);
         },
 
-        // Best-effort mirror so web workers can read the URL from KV; a slow
-        // or stalled IndexedDB must not block boot.
+        // Best-effort KV copy for web workers; must not block boot.
         async mirrorServerUrl(serverUrl: string): Promise<void> {
             try {
                 await withTimeout(
@@ -128,11 +113,8 @@ export const useAppStore = defineStore('cloudtak-app', {
             return await KV.value('username');
         },
 
-        /**
-         * Best-effort: session validity is enforced by token expiry on the
-         * server, so cleanup that stalls (wedged bridge or IndexedDB) is
-         * abandoned rather than allowed to hang logout or boot.
-         */
+        // Best-effort — the server enforces token expiry, so a stalled
+        // cleanup is abandoned rather than allowed to hang logout or boot.
         async clearSession(): Promise<void> {
             try {
                 await withTimeout(Promise.all([
@@ -161,13 +143,9 @@ export const useAppStore = defineStore('cloudtak-app', {
             document.documentElement.setAttribute('data-bs-theme-primary', 'blue');
         },
 
-        /**
-         * Resolves once the login route is active. Boot paths must await
-         * this: App.vue swaps the splash for the router view as soon as
-         * bootstrap settles, and if the navigation is still in flight the
-         * current route (usually the map) mounts first — starting the Atlas
-         * worker and its authenticated API calls without a session.
-         */
+        // Boot paths must await this: if bootstrap settles before the login
+        // navigation lands, the router view mounts the map — and the Atlas
+        // worker — without a session.
         async routeLogin(): Promise<void> {
             const redirect = encodeURIComponent(window.location.pathname);
             if (router.hasRoute('login')) {
@@ -181,11 +159,7 @@ export const useAppStore = defineStore('cloudtak-app', {
             this.loading = true;
 
             try {
-                const { value: token } = await withTimeout(
-                    Preferences.get({ key: 'token' }),
-                    BOOT_LOCAL_TIMEOUT_MS,
-                    'Stored session read'
-                );
+                const { value: token } = await Preferences.get({ key: 'token' });
                 if (!token) throw new Error('No token found');
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 const expirationDate = payload.exp * 1000;
@@ -220,14 +194,7 @@ export const useAppStore = defineStore('cloudtak-app', {
             if (!isNativePlatform()) {
                 await this.setServerUrl(window.location.origin);
             } else {
-                // A stall here means the native bridge itself is wedged and
-                // nothing else can work: let the throw surface as an error
-                // dialog rather than an eternal splash.
-                const { value } = await withTimeout(
-                    Preferences.get({ key: 'serverUrl' }),
-                    BOOT_LOCAL_TIMEOUT_MS,
-                    'Stored server URL read'
-                );
+                const { value } = await Preferences.get({ key: 'serverUrl' });
                 const serverUrl = value?.trim();
 
                 if (!serverUrl) {
@@ -235,8 +202,6 @@ export const useAppStore = defineStore('cloudtak-app', {
                     return false;
                 }
 
-                // Already persisted in Preferences — only the KV mirror for
-                // web workers is needed.
                 await this.mirrorServerUrl(serverUrl);
             }
 
@@ -260,10 +225,8 @@ export const useAppStore = defineStore('cloudtak-app', {
 
             systemThemeQuery?.addEventListener('change', handleSystemThemeChange);
 
-            // Login branding is cosmetic and must never block boot: paint with
-            // the cached (or default) values immediately and let the
-            // background refresh update the cache — and through it this
-            // subscription — whenever the server responds.
+            // Branding is cosmetic and must never block boot: paint cached or
+            // default values now, refresh in the background.
             brandingSub = liveQuery(() => db.config.bulkGet(['login::logo', 'login::name'])).subscribe(([logo, name]) => {
                 this.loginLogo = logo?.value as string | undefined;
                 this.loginName = name?.value as string | undefined;
@@ -283,14 +246,7 @@ export const useAppStore = defineStore('cloudtak-app', {
                     ? 'configured'
                     : (await withTimeout(ServerManager.get(), BOOT_NETWORK_TIMEOUT_MS, 'Server status check')).status;
             } catch (err) {
-                // An unauthenticated 401 from /api/server is the normal
-                // logged-out path — only a stall is worth surfacing.
-                if (err instanceof TimeoutError) {
-                    this.bootWarn(err.message, err);
-                } else {
-                    console.warn('Server Error (Likely the server is in a configured state)', err);
-                }
-
+                console.warn('Server Error (Likely the server is in a configured state)', err);
                 status = 'configured';
             }
 
@@ -300,16 +256,7 @@ export const useAppStore = defineStore('cloudtak-app', {
                 return false;
             }
 
-            let token: string | null = null;
-            try {
-                token = (await withTimeout(
-                    Preferences.get({ key: 'token' }),
-                    BOOT_LOCAL_TIMEOUT_MS,
-                    'Stored session read'
-                )).value;
-            } catch (err) {
-                this.bootWarn('Stored session read timed out — continuing to login', err);
-            }
+            const { value: token } = await Preferences.get({ key: 'token' });
 
             if (token) {
                 this.loadingStage = 'Signing you in…';

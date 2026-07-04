@@ -30,13 +30,6 @@
                                         v-text='props.stage'
                                     />
                                 </Transition>
-                                <div
-                                    v-for='warning in appStore.bootWarnings'
-                                    :key='warning'
-                                    class='text-center text-warning mt-1'
-                                    style='font-size: 0.8rem;'
-                                    v-text='warning'
-                                />
                                 <Transition name='reset-fade'>
                                     <div
                                         v-if='showReset'
@@ -68,7 +61,6 @@
 <script setup lang='ts'>
 import Config from '../base/config.ts';
 import { supportsServiceWorker } from '../base/capacitor.ts';
-import { useAppStore } from '../stores/app.ts';
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps<{
@@ -78,7 +70,6 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler'
 
-const appStore = useAppStore();
 const logo = ref('/CloudTAKLogo.svg');
 const showReset = ref(false);
 let resetTimer: ReturnType<typeof setTimeout> | undefined;
@@ -95,8 +86,7 @@ async function hardReset(): Promise<void> {
 }
 
 onMounted(async () => {
-    // Arm the escape hatch before any awaits: if the logo lookup below hangs,
-    // the Hard Reset button must still appear.
+    // Armed before any awaits so a hung logo lookup can't block it.
     resetTimer = setTimeout(() => {
         showReset.value = true;
     }, 20000);

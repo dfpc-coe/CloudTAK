@@ -9,8 +9,7 @@ import App from '../../components/Setup/App.vue'
 
 initGlobalErrorReporting();
 
-// Without this the Capgo updater assumes the bundle failed to boot and rolls
-// it back on the next launch, stranding users on stale setup code.
+// Capgo rolls back the bundle on next launch if this is never called.
 if (Capacitor.isNativePlatform()) {
     void CapacitorUpdater.notifyAppReady()
 }

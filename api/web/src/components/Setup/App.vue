@@ -208,9 +208,8 @@ const viewMode = ref<'providers' | 'manual'>('providers')
 
 const serverUrl = ref('')
 
-// The normalized URL of the in-flight connection attempt. Doubles as the
-// busy flag that disables every other entry point, so a second click can
-// never start a competing attempt or a duplicate navigation.
+// In-flight connection attempt; doubles as the busy flag so a second click
+// can't start a competing attempt.
 const connectingUrl = ref<string | null>(null)
 const connectError = ref<Error | null>(null)
 
@@ -256,11 +255,7 @@ async function loadProviders(): Promise<void> {
     }
 }
 
-/**
- * Validate a server and enter the app. Used by both the provider cards and
- * manual entry. Every failure surfaces in the active view; success keeps the
- * page in its busy state until the navigation away completes.
- */
+// On success the page stays busy until the navigation away completes.
 async function connect(rawUrl: string): Promise<void> {
     if (connecting.value) return
 
@@ -278,10 +273,8 @@ async function connect(rawUrl: string): Promise<void> {
         await validateServer(url)
 
         if (Capacitor.isNativePlatform()) {
-            // Only the native Preferences store is written here. The main
-            // app mirrors the URL into IndexedDB during bootstrap — touching
-            // IndexedDB on this page and then immediately navigating can
-            // wedge the database for the next page session in WKWebView.
+            // Preferences only — an IndexedDB write followed by an immediate
+            // navigation wedges the database for the next page in WKWebView.
             await Preferences.set({ key: 'serverUrl', value: url })
             window.location.href = '/login'
         } else if (window.electronAPI?.saveUrl) {
@@ -301,9 +294,8 @@ onMounted(async () => {
         return
     }
 
-    // A server chosen in a previous session skips straight to login. A
-    // Preferences read failure must not strand the user on a dead page —
-    // fall through to the picker instead.
+    // A previously chosen server skips straight to login; a read failure
+    // falls through to the picker rather than stranding the user.
     try {
         const { value } = await Preferences.get({ key: 'serverUrl' })
         if (value?.trim()) {

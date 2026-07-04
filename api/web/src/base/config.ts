@@ -7,9 +7,7 @@ import type { paths } from '@cloudtak/api-types';
 
 export type FullConfig = paths['/api/config']['get']['responses']['200']['content']['application/json'];
 
-// Config is read during boot and on first paint of the login screen, so its
-// I/O must always settle: IndexedDB transactions can stall indefinitely in a
-// fresh native WebView session and a fetch has no default deadline. A stalled
+// Config is read during boot, so its I/O must always settle: a stalled
 // cache read falls through to the network; a stalled cache write is dropped.
 const CACHE_TIMEOUT_MS = 2000;
 const FETCH_TIMEOUT_MS = 10000;
@@ -143,11 +141,8 @@ export default class Config<K extends keyof FullConfig = keyof FullConfig> {
         return data;
     }
 
-    /**
-     * Best-effort cache write: fresh values have already been produced for
-     * the caller, so a stalled or failed IndexedDB write must not hang or
-     * fail the request that produced them.
-     */
+    // Best-effort cache write — must not hang or fail the request that
+    // produced the values.
     private static async persist(ops: DBConfig[]): Promise<void> {
         if (!ops.length) return;
 

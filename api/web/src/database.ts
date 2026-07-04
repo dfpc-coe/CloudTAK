@@ -301,13 +301,11 @@ db.version(2).stores({
 
 let reopenPromise: Promise<void> | null = null;
 
-// WKWebView does not reliably survive an IndexedDB connection being torn
-// down by a page navigation: an open issued while the page is unloading
-// leaves the browser's database process holding an orphaned open request,
-// and the NEXT page's first IndexedDB operation then queues behind it
-// forever (the app hangs until a full restart). Close the connection
-// proactively when the page starts to unload and suppress the auto-reopen
-// below for the remainder of the page's life.
+// An IndexedDB open issued while a page is unloading leaves WKWebView's
+// database process holding an orphaned request that deadlocks the next
+// page's first IndexedDB operation until the app is fully restarted. Close
+// proactively on pagehide and suppress the auto-reopen; a pageshow (bfcache
+// restore) resumes.
 let shuttingDown = false;
 
 if (typeof window !== 'undefined') {
@@ -321,7 +319,6 @@ if (typeof window !== 'undefined') {
         }
     });
 
-    // A bfcache restore brings the page back after pagehide — resume.
     window.addEventListener('pageshow', () => {
         if (shuttingDown) {
             shuttingDown = false;

@@ -1,13 +1,10 @@
 /**
- * Server-connection helpers for the first-run Setup page.
- *
- * This page is the first interaction a user has with the app, frequently on a
- * flaky mobile connection, so every network call here is bounded by a timeout
- * and every failure is mapped to a message a non-technical user can act on.
+ * Server-connection helpers for the first-run Setup page. Every network call
+ * is bounded by a timeout and every failure maps to a user-actionable message.
  */
 
-export const REQUEST_TIMEOUT_MS = 10000
-export const MIN_SUPPORTED_MAJOR = 12
+const REQUEST_TIMEOUT_MS = 10000
+const MIN_SUPPORTED_MAJOR = 12
 
 /**
  * Normalize user/provider input into a server base URL, or return null if it
@@ -35,8 +32,8 @@ export async function fetchWithTimeout(url: string, timeoutMs: number = REQUEST_
     try {
         return await fetch(url, { signal: controller.signal, cache: 'no-store' })
     } catch (err) {
-        // The abort flag, not the error's type, identifies our own timeout:
-        // webviews are inconsistent about what fetch rejects with on abort.
+        // Webviews are inconsistent about what an aborted fetch rejects with,
+        // so the abort flag identifies our own timeout.
         if (controller.signal.aborted) {
             throw new Error('The server took too long to respond. Check your connection and try again.', { cause: err })
         }
