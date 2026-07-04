@@ -182,7 +182,6 @@
 import { computed, onMounted, ref } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
-import { useAppStore } from '../../stores/app.ts'
 import { fetchWithTimeout, normalizeServerUrl, validateServer } from './connect.ts'
 import { TablerAlert, TablerInput, TablerLoading, TablerNone } from '@tak-ps/vue-tabler'
 
@@ -200,8 +199,6 @@ type Provider = {
 
 const PROVIDER_REGISTRY_URL = 'https://api.cloudtak.io/'
 
-const appStore = useAppStore()
-
 const providers = ref<Provider[]>([])
 const providersLoading = ref(true)
 const providersError = ref<Error | null>(null)
@@ -211,9 +208,8 @@ const viewMode = ref<'providers' | 'manual'>('providers')
 
 const serverUrl = ref('')
 
-// The normalized URL of the in-flight connection attempt. Doubles as the
-// busy flag that disables every other entry point, so a second click can
-// never start a competing attempt or a duplicate navigation.
+// In-flight connection attempt; doubles as the busy flag so a second click
+// can't start a competing attempt.
 const connectingUrl = ref<string | null>(null)
 const connectError = ref<Error | null>(null)
 
@@ -259,11 +255,7 @@ async function loadProviders(): Promise<void> {
     }
 }
 
-/**
- * Validate a server and enter the app. Used by both the provider cards and
- * manual entry. Every failure surfaces in the active view; success keeps the
- * page in its busy state until the navigation away completes.
- */
+// On success the page stays busy until the navigation away completes.
 async function connect(rawUrl: string): Promise<void> {
     if (connecting.value) return
 
@@ -281,7 +273,9 @@ async function connect(rawUrl: string): Promise<void> {
         await validateServer(url)
 
         if (Capacitor.isNativePlatform()) {
-            await appStore.setServerUrl(url)
+            // Preferences only — an IndexedDB write followed by an immediate
+            // navigation wedges the database for the next page in WKWebView.
+            await Preferences.set({ key: 'serverUrl', value: url })
             window.location.href = '/login'
         } else if (window.electronAPI?.saveUrl) {
             window.electronAPI.saveUrl(url)
@@ -300,9 +294,8 @@ onMounted(async () => {
         return
     }
 
-    // A server chosen in a previous session skips straight to login. A
-    // Preferences read failure must not strand the user on a dead page —
-    // fall through to the picker instead.
+    // A previously chosen server skips straight to login; a read failure
+    // falls through to the picker rather than stranding the user.
     try {
         const { value } = await Preferences.get({ key: 'serverUrl' })
         if (value?.trim()) {
