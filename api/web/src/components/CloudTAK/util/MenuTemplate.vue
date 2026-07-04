@@ -65,7 +65,10 @@
                     :create='false'
                 />
                 <slot v-else />
-                <div class='menu-scroll-spacer flex-shrink-0' />
+                <div
+                    v-if='scroll'
+                    class='menu-scroll-spacer flex-shrink-0'
+                />
             </div>
 
             <slot name='footer' />
@@ -142,7 +145,10 @@
                 :create='false'
             />
             <slot v-else />
-            <div class='menu-scroll-spacer flex-shrink-0' />
+            <div
+                v-if='scroll'
+                class='menu-scroll-spacer flex-shrink-0'
+            />
         </div>
 
         <slot name='footer' />
