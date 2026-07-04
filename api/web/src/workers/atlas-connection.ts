@@ -6,7 +6,8 @@ import { stdurl } from '../std.ts';
 import type Atlas from './atlas.ts';
 import { version } from '../../package.json'
 import Chatroom from '../base/chatroom.ts';
-import { db } from '../database.ts';
+import { db, ChatStatusRank } from '../database.ts';
+import type { ChatStatus } from '../database.ts';
 import TAKNotification, { NotificationType } from '../base/notification.ts';
 import { WorkerMessageType } from '../base/events.ts';
 import type { SyncEvent } from './atlas-sync.ts';
@@ -250,6 +251,30 @@ export default class AtlasConnection {
                     `/menu/chats`,
                     true
                 );
+            } else if (body.type === 'chat:receipt') {
+                const receipt = body.data as {
+                    messageId: string;
+                    status: ChatStatus;
+                    chatroom?: string;
+                };
+
+                if (receipt.messageId && ChatStatusRank[receipt.status] !== undefined) {
+                    const progress = (chat: { status?: ChatStatus }) => {
+                        if (ChatStatusRank[receipt.status] > ChatStatusRank[chat.status ?? 'sending']) {
+                            chat.status = receipt.status;
+                        }
+                    };
+
+                    await db.chatroom_chats
+                        .where('id')
+                        .equals(receipt.messageId)
+                        .modify(progress);
+
+                    await db.subscription_chat
+                        .where('id')
+                        .equals(receipt.messageId)
+                        .modify(progress);
+                }
             } else if (body.type === 'status') {
                 const status = body.data as { version: string };
 

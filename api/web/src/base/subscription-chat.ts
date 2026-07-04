@@ -67,6 +67,7 @@ export default class SubscriptionChat {
             message: message,
             created: created,
             unread: false,
+            status: 'sending',
         });
 
         const location = (await worker.profile?.location)?.coordinates || [0, 0];

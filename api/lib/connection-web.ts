@@ -59,14 +59,32 @@ export class ConnectionWebSocket {
                         client.tak.write([chat], { stripFlow: true });
 
                         const feat = await CoTParser.to_geojson(chat);
+                        const messageId = feat.properties.chat ? (feat.properties.chat.messageId || randomUUID()) : randomUUID();
+
                         await client.config.config.models.ProfileChat.generate({
                             username: String(client.config.id),
                             chatroom: msg.data.chatroom,
                             sender_callsign: msg.data.from.callsign,
                             sender_uid: msg.data.from.uid,
-                            message_id: feat.properties.chat ? (feat.properties.chat.messageId || randomUUID()) : randomUUID(),
+                            message_id: messageId,
                             message: msg.data.message,
+                            status: 'sent',
                         });
+
+                        // Confirm to all of the user's clients that the message reached the server
+                        for (const wsClient of (client.config.config.wsClients.get(String(client.config.id)) || [])) {
+                            if (wsClient.format === 'geojson') {
+                                wsClient.ws.send(JSON.stringify({
+                                    type: 'chat:receipt',
+                                    connection: client.config.id,
+                                    data: {
+                                        messageId,
+                                        status: 'sent',
+                                        chatroom: msg.data.chatroom,
+                                    },
+                                }));
+                            }
+                        }
                     } else {
                         const feat = msg.data as Static<typeof Feature.Feature>;
 

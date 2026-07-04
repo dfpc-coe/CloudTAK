@@ -91,17 +91,25 @@ export default class SubscriptionFeature {
                         id: string;
                         senderCallsign: string;
                         messageId?: string;
+                        chatgrp?: { _attributes?: { uid0?: string } };
                     } | undefined;
                     if (!chat) continue;
+
+                    // Key on the messageId so a message sent locally (stored under its
+                    // messageId) is replaced by the server copy rather than duplicated
+                    const id = chat.messageId || feature.id;
+
                     await db.subscription_chat.put({
-                        id: feature.id,
+                        id,
                         mission: this.parent.guid,
                         chatroom: chat.chatroom,
                         sender: chat.senderCallsign || String(feature.properties.callsign || ''),
-                        sender_uid: chat.id,
+                        sender_uid: chat.chatgrp?._attributes?.uid0 || chat.id,
                         message: String(feature.properties.remarks || ''),
                         created: String(feature.properties.start || feature.properties.time || new Date().toISOString()),
-                        unread: unreadChats.has(feature.id),
+                        unread: unreadChats.has(id),
+                        // The message came back from the Mission so it has reached the server
+                        status: 'sent',
                     });
                 }
             });
@@ -227,18 +235,21 @@ export default class SubscriptionFeature {
                 id: string;
                 senderCallsign: string;
                 messageId?: string;
+                chatgrp?: { _attributes?: { uid0?: string } };
             } | undefined;
 
             if (chat) {
                 await db.subscription_chat.put({
-                    id: cot.id,
+                    id: chat.messageId || cot.id,
                     mission: this.parent.guid,
                     chatroom: chat.chatroom,
                     sender: chat.senderCallsign || String(cot.properties.callsign || ''),
-                    sender_uid: chat.id,
+                    sender_uid: chat.chatgrp?._attributes?.uid0 || chat.id,
                     message: String(cot.properties.remarks || ''),
                     created: String(cot.properties.start || cot.properties.time || new Date().toISOString()),
                     unread: !!opts.skipNetwork,
+                    // The message arrived via the Mission so it has reached the server
+                    status: 'sent',
                 });
             }
         } else {

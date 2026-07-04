@@ -48,6 +48,25 @@ export interface DBChatroom {
     last_read: string | null;
 }
 
+/**
+ * Delivery status of a chat message sent by the current user
+ * - sending: submitted locally but not yet confirmed by the CloudTAK Server
+ * - sent: received by the CloudTAK/TAK Server
+ * - pending/failed/delivered/read: reported by the recipient's client via
+ *   b-t-f-p/s/d/r Chat Receipt CoTs
+ */
+export type ChatStatus = 'sending' | 'sent' | 'pending' | 'failed' | 'delivered' | 'read';
+
+// A chat status can only move forward - a late "delivered" receipt must not downgrade "read"
+export const ChatStatusRank: Record<ChatStatus, number> = {
+    sending: 0,
+    sent: 1,
+    pending: 2,
+    failed: 3,
+    delivered: 4,
+    read: 5
+};
+
 export interface DBChatroomChat {
     id: string;
     chatroom: string;
@@ -56,6 +75,7 @@ export interface DBChatroomChat {
     message: string;
     created: string;
     unread?: boolean;
+    status?: ChatStatus;
 }
 
 export interface DBIconset {
@@ -161,6 +181,7 @@ export interface DBSubscriptionChat {
     message: string;
     created: string;
     unread: boolean;
+    status?: ChatStatus;
 }
 
 export interface DBSubscription {

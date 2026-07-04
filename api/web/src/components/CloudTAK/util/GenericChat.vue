@@ -78,10 +78,45 @@
                 >
                     <div v-text='chat.message' />
                     <div
-                        class='text-end'
+                        class='d-flex align-items-center justify-content-end'
                         style='font-size: 0.75rem; opacity: 0.75;'
-                        v-text='formatTime(chat.created)'
-                    />
+                    >
+                        <span v-text='formatTime(chat.created)' />
+                        <span
+                            v-if='chat.status'
+                            v-tooltip='statusLabel(chat.status)'
+                            class='ms-1 d-flex align-items-center'
+                            :aria-label='statusLabel(chat.status)'
+                        >
+                            <IconClock
+                                v-if='chat.status === "sending" || chat.status === "pending"'
+                                :size='14'
+                                stroke='2'
+                            />
+                            <IconAlertTriangle
+                                v-else-if='chat.status === "failed"'
+                                :size='14'
+                                stroke='2'
+                                class='text-red'
+                            />
+                            <IconCheck
+                                v-else-if='chat.status === "sent"'
+                                :size='14'
+                                stroke='2'
+                            />
+                            <IconChecks
+                                v-else-if='chat.status === "delivered"'
+                                :size='14'
+                                stroke='2'
+                            />
+                            <IconChecks
+                                v-else-if='chat.status === "read"'
+                                :size='14'
+                                stroke='2'
+                                class='text-azure'
+                            />
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -129,7 +164,12 @@ import { ref, watch, onMounted, nextTick } from 'vue';
 import {
     IconSend,
     IconArrowDown,
+    IconClock,
+    IconCheck,
+    IconChecks,
+    IconAlertTriangle,
 } from '@tabler/icons-vue';
+import type { ChatStatus } from '../../../database.ts';
 import {
     TablerAlert,
     TablerDelete,
@@ -146,6 +186,7 @@ export type ChatMessage = {
     sender?: string;
     message: string;
     created: string;
+    status?: ChatStatus;
 };
 
 const props = withDefaults(defineProps<{
@@ -223,6 +264,18 @@ function sendMessage() {
 function emitDelete() {
     emit('delete', Array.from(selected.value));
     selected.value = new Set();
+}
+
+function statusLabel(status: ChatStatus): string {
+    switch (status) {
+        case 'sending': return 'Sending';
+        case 'sent': return 'Sent to Server';
+        case 'pending': return 'Pending Delivery';
+        case 'failed': return 'Failed to Deliver';
+        case 'delivered': return 'Delivered';
+        case 'read': return 'Read';
+        default: return '';
+    }
 }
 
 function formatTime(iso: string | undefined): string {

@@ -12,9 +12,21 @@ import TAK, { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
 import type ConnectionConfig from './connection-config.js';
 import { MachineConnConfig, ProfileConnConfig, AdminConnConfig } from './connection-config.js';
+import { ProfileChatStatus } from './models/ProfileChat.js';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf-8')) as {
     version: string;
+};
+
+/**
+ * Chat Receipt CoTs reference an existing message via `chat.messageId` and
+ * carry no remarks - they update the delivery status of the original message
+ */
+const ChatReceiptTypes: Record<string, ProfileChatStatus> = {
+    'b-t-f-d': ProfileChatStatus.DELIVERED,
+    'b-t-f-r': ProfileChatStatus.READ,
+    'b-t-f-p': ProfileChatStatus.PENDING,
+    'b-t-f-s': ProfileChatStatus.FAILED,
 };
 
 export class ConnectionClient {
@@ -250,8 +262,22 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
                     const feat = await CoTParser.to_geojson(cot);
 
+                    const receiptStatus: ProfileChatStatus | undefined = feat.properties && feat.properties.chat
+                        ? ChatReceiptTypes[feat.properties.type]
+                        : undefined;
+
                     try {
-                        if (conn instanceof ProfileConnConfig && feat.properties && feat.properties.chat) {
+                        if (conn instanceof ProfileConnConfig && feat.properties && feat.properties.chat && receiptStatus) {
+                            // Chat Receipts don't contain the original message so they
+                            // must never be stored as a message themselves
+                            if (feat.properties.chat.messageId) {
+                                await this.config.models.ProfileChat.receipt(
+                                    String(conn.id),
+                                    feat.properties.chat.messageId,
+                                    receiptStatus,
+                                );
+                            }
+                        } else if (conn instanceof ProfileConnConfig && feat.properties && feat.properties.chat) {
                             const myUid = `ANDROID-CloudTAK-${conn.id}`;
                             const senderUid = feat.properties.chat.chatgrp?._attributes?.uid0;
                             const isOutgoing = senderUid === myUid;
@@ -291,7 +317,17 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                                 console.log(JSON.stringify(feat));
                             }
 
-                            if (feat.properties && feat.properties.chat && feat.properties.chat.parent !== 'DataSyncMissionsList') {
+                            if (feat.properties && feat.properties.chat && receiptStatus) {
+                                client.ws.send(JSON.stringify({
+                                    type: 'chat:receipt',
+                                    connection: conn.id,
+                                    data: {
+                                        messageId: feat.properties.chat.messageId,
+                                        status: receiptStatus,
+                                        chatroom: feat.properties.chat.chatroom,
+                                    },
+                                }));
+                            } else if (feat.properties && feat.properties.chat && feat.properties.chat.parent !== 'DataSyncMissionsList') {
                                 client.ws.send(JSON.stringify({
                                     type: 'chat',
                                     connection: conn.id,

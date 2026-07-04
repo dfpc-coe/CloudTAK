@@ -159,6 +159,9 @@ export const ProfileChat = pgTable('profile_chats', {
     sender_uid: text().notNull(),
     message_id: text().notNull(),
     message: text().notNull(),
+
+    // Delivery status of an outgoing message: sent, pending, failed, delivered, read
+    status: text(),
 });
 
 export const VideoLease = pgTable('video_lease', {

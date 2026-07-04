@@ -4,7 +4,7 @@ import type {
     ProfileChatList,
     APIProfileChat
 } from '../types.ts'
-import type { DBChatroomChat } from '../database.ts';
+import type { DBChatroomChat, ChatStatus } from '../database.ts';
 import type Atlas from '../workers/atlas.ts';
 import type { Remote } from 'comlink';
 import ContactManager from './contact.ts';
@@ -44,7 +44,10 @@ export default class ChatroomChats {
                     sender: c.sender_callsign,
                     sender_uid: c.sender_uid,
                     message: c.message,
-                    created: c.created
+                    // Postgres timestamps are not ISO 8601 formatted - normalize
+                    // so they sort consistently against locally created messages
+                    created: new Date(c.created).toISOString(),
+                    status: (c.status as ChatStatus | null) ?? undefined
                 });
             }
         });
@@ -71,8 +74,10 @@ export default class ChatroomChats {
             .equals(this.chatroom)
             .toArray();
 
+        // Oldest to most recent - compare as dates as stored timestamps
+        // may be a mix of ISO 8601 and Postgres formatted strings
         chats.sort((a, b) => {
-            return a.created.localeCompare(b.created);
+            return new Date(a.created).getTime() - new Date(b.created).getTime();
         });
 
         return chats;
@@ -101,7 +106,8 @@ export default class ChatroomChats {
             sender: sender.callsign,
             sender_uid: sender.uid,
             message: message,
-            created: created
+            created: created,
+            status: 'sending'
         });
 
         if (!recipient) {
