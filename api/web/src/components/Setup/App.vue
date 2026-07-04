@@ -182,7 +182,6 @@
 import { computed, onMounted, ref } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
-import { useAppStore } from '../../stores/app.ts'
 import { fetchWithTimeout, normalizeServerUrl, validateServer } from './connect.ts'
 import { TablerAlert, TablerInput, TablerLoading, TablerNone } from '@tak-ps/vue-tabler'
 
@@ -199,8 +198,6 @@ type Provider = {
 }
 
 const PROVIDER_REGISTRY_URL = 'https://api.cloudtak.io/'
-
-const appStore = useAppStore()
 
 const providers = ref<Provider[]>([])
 const providersLoading = ref(true)
@@ -281,7 +278,11 @@ async function connect(rawUrl: string): Promise<void> {
         await validateServer(url)
 
         if (Capacitor.isNativePlatform()) {
-            await appStore.setServerUrl(url)
+            // Only the native Preferences store is written here. The main
+            // app mirrors the URL into IndexedDB during bootstrap — touching
+            // IndexedDB on this page and then immediately navigating can
+            // wedge the database for the next page session in WKWebView.
+            await Preferences.set({ key: 'serverUrl', value: url })
             window.location.href = '/login'
         } else if (window.electronAPI?.saveUrl) {
             window.electronAPI.saveUrl(url)

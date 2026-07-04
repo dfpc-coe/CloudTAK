@@ -1,5 +1,4 @@
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
 import { Capacitor } from '@capacitor/core'
 import { CapacitorUpdater } from '@capgo/capacitor-updater'
 import { initGlobalErrorReporting, vueErrorHandler } from '../../lib/reporting/index.ts';
@@ -18,5 +17,4 @@ if (Capacitor.isNativePlatform()) {
 
 const app = createApp(App)
 app.config.errorHandler = vueErrorHandler;
-app.use(createPinia())
 app.mount('#app')

@@ -301,14 +301,43 @@ db.version(2).stores({
 
 let reopenPromise: Promise<void> | null = null;
 
+// WKWebView does not reliably survive an IndexedDB connection being torn
+// down by a page navigation: an open issued while the page is unloading
+// leaves the browser's database process holding an orphaned open request,
+// and the NEXT page's first IndexedDB operation then queues behind it
+// forever (the app hangs until a full restart). Close the connection
+// proactively when the page starts to unload and suppress the auto-reopen
+// below for the remainder of the page's life.
+let shuttingDown = false;
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('pagehide', () => {
+        shuttingDown = true;
+
+        try {
+            db.close();
+        } catch (err) {
+            console.warn('Failed to close database on navigation', err);
+        }
+    });
+
+    // A bfcache restore brings the page back after pagehide — resume.
+    window.addEventListener('pageshow', () => {
+        if (shuttingDown) {
+            shuttingDown = false;
+            void ensureDatabase();
+        }
+    });
+}
+
 export async function ensureDatabase(): Promise<void> {
-    if (db.isOpen()) return;
+    if (shuttingDown || db.isOpen()) return;
 
     if (!reopenPromise) {
         reopenPromise = (async () => {
             let lastError: unknown;
             for (let attempt = 0; attempt < 5; attempt++) {
-                if (db.isOpen()) return;
+                if (shuttingDown || db.isOpen()) return;
 
                 try {
                     await db.open();
@@ -349,7 +378,7 @@ const TRANSIENT_DB_ERROR_MESSAGES = [
 ];
 
 db.on('close', () => {
-    void ensureDatabase();
+    if (!shuttingDown) void ensureDatabase();
 });
 
 export function isTransientDbError(err: unknown): boolean {
