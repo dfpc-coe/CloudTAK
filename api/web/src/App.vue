@@ -242,10 +242,10 @@ onErrorCaptured((err) => {
         // Popup Modal if reauthenticating vs initial login
 
         if (route.name !== 'login') {
-            appStore.routeLogin();
+            void appStore.routeLogin();
         }
     } else if (String(e) === 'Error: Authentication Required') {
-        appStore.routeLogin();
+        void appStore.routeLogin();
     } else {
         error.value = e;
     }
