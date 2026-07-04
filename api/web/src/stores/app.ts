@@ -161,10 +161,17 @@ export const useAppStore = defineStore('cloudtak-app', {
             document.documentElement.setAttribute('data-bs-theme-primary', 'blue');
         },
 
-        routeLogin(): void {
+        /**
+         * Resolves once the login route is active. Boot paths must await
+         * this: App.vue swaps the splash for the router view as soon as
+         * bootstrap settles, and if the navigation is still in flight the
+         * current route (usually the map) mounts first — starting the Atlas
+         * worker and its authenticated API calls without a session.
+         */
+        async routeLogin(): Promise<void> {
             const redirect = encodeURIComponent(window.location.pathname);
             if (router.hasRoute('login')) {
-                void router.push(`/login?redirect=${redirect}`);
+                await router.push(`/login?redirect=${redirect}`);
             } else {
                 window.location.href = `/login?redirect=${redirect}`;
             }
@@ -194,7 +201,7 @@ export const useAppStore = defineStore('cloudtak-app', {
                 this.tokenExpiry = null;
 
                 await this.clearSession();
-                this.routeLogin();
+                await this.routeLogin();
             } finally {
                 this.loading = false;
             }
@@ -308,7 +315,7 @@ export const useAppStore = defineStore('cloudtak-app', {
                 this.loadingStage = 'Signing you in…';
                 await this.refreshLogin();
             } else if (router.currentRoute.value.name !== 'login') {
-                this.routeLogin();
+                await this.routeLogin();
             }
 
             return true;
