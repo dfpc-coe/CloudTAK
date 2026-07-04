@@ -3,6 +3,7 @@
         :name='subscription ? subscription.meta.name : "Data Sync"'
         :error='error'
         :loading='(!subscription && !error) || loading'
+        :scroll='false'
     >
         <template #buttons>
             <TablerDelete

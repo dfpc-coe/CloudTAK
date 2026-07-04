@@ -5,6 +5,7 @@
         :back='false'
         :border='false'
         :standalone='false'
+        :scroll='false'
     >
         <template #buttons>
             <TablerRefreshButton
