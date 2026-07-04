@@ -22,72 +22,97 @@
                                     v-if='viewMode === "providers"'
                                     class='mt-2'
                                 >
-                                    <div class='d-flex align-items-center justify-content-between mb-3'>
-                                        <h3 class='h4 mb-0'>
-                                            Known Providers
-                                        </h3>
-                                        <TablerLoading
-                                            v-if='loading'
-                                            desc='Loading providers'
-                                        />
-                                    </div>
+                                    <h3 class='h4 mb-3'>
+                                        Known Providers
+                                    </h3>
 
                                     <TablerAlert
-                                        v-if='error'
+                                        v-if='connectError'
                                         class='mb-3'
-                                        title='Unable to load providers'
-                                        :err='error'
+                                        title='Unable to Connect'
+                                        :err='connectError'
                                         :compact='true'
                                     />
 
-                                    <TablerInput
-                                        v-model='searchTerm'
-                                        icon='search'
-                                        label='Search by Name'
-                                        placeholder='Search CloudTAK providers'
-                                        class='mb-3'
+                                    <TablerLoading
+                                        v-if='providersLoading'
+                                        desc='Loading Providers'
                                     />
 
-                                    <TablerNone
-                                        v-if='!loading && !error && filteredProviders.length === 0'
-                                        label='No Providers'
-                                        :compact='true'
-                                        :create='false'
-                                    />
-
-                                    <div class='row g-3 mb-4'>
-                                        <div
-                                            v-for='provider in filteredProviders'
-                                            :key='provider.url'
-                                            class='col-12'
+                                    <template v-else-if='providersError'>
+                                        <TablerAlert
+                                            class='mb-3'
+                                            title='Unable to load providers'
+                                            :err='providersError'
+                                            :compact='true'
+                                        />
+                                        <button
+                                            class='btn btn-outline-secondary w-100 mb-3'
+                                            type='button'
+                                            @click='loadProviders'
                                         >
-                                            <button
-                                                type='button'
-                                                class='card provider-card h-100 w-100 text-start'
-                                                @click='pickProvider(provider.url)'
+                                            Retry
+                                        </button>
+                                    </template>
+
+                                    <template v-else>
+                                        <TablerInput
+                                            v-model='searchTerm'
+                                            icon='search'
+                                            label='Search by Name'
+                                            placeholder='Search CloudTAK providers'
+                                            class='mb-3'
+                                        />
+
+                                        <TablerNone
+                                            v-if='filteredProviders.length === 0'
+                                            label='No Providers'
+                                            :compact='true'
+                                            :create='false'
+                                        />
+
+                                        <div class='row g-3 mb-4'>
+                                            <div
+                                                v-for='provider in filteredProviders'
+                                                :key='provider.url'
+                                                class='col-12'
                                             >
-                                                <span class='card-body d-flex align-items-center gap-3'>
-                                                    <img
-                                                        v-if='providerLogo(provider)'
-                                                        :src='providerLogo(provider) || undefined'
-                                                        alt='Provider logo'
-                                                        class='provider-logo'
-                                                        draggable='false'
-                                                    >
-                                                    <span class='flex-grow-1 provider-details'>
-                                                        <span class='fw-bold d-block'>{{ provider.name }}</span>
-                                                        <span class='text-muted small d-block text-break'>{{ provider.url }}</span>
+                                                <button
+                                                    type='button'
+                                                    class='card provider-card h-100 w-100 text-start'
+                                                    :disabled='connecting'
+                                                    @click='connect(provider.url)'
+                                                >
+                                                    <span class='card-body d-flex align-items-center gap-3'>
+                                                        <img
+                                                            v-if='providerLogo(provider)'
+                                                            :src='providerLogo(provider) || undefined'
+                                                            alt='Provider logo'
+                                                            class='provider-logo'
+                                                            draggable='false'
+                                                        >
+                                                        <span class='flex-grow-1 provider-details'>
+                                                            <span class='fw-bold d-block'>{{ provider.name }}</span>
+                                                            <span class='text-muted small d-block text-break'>{{ provider.url }}</span>
+                                                        </span>
+                                                        <span
+                                                            v-if='isConnectingTo(provider.url)'
+                                                            class='spinner-border spinner-border-sm flex-shrink-0'
+                                                            role='status'
+                                                            aria-label='Connecting'
+                                                        />
                                                     </span>
-                                                </span>
-                                            </button>
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </template>
 
                                     <div class='form-footer'>
                                         <button
                                             class='btn btn-outline-secondary w-100'
                                             type='button'
-                                            @click='viewMode = "manual"'
+                                            :disabled='connecting'
+                                            @click='showView("manual")'
                                         >
                                             Manual Entry
                                         </button>
@@ -104,27 +129,33 @@
                                     <div class='mb-3'>
                                         <TablerInput
                                             v-model='serverUrl'
-                                            icon='server'
                                             label='Server URL'
                                             placeholder='https://cloudtak.example.com'
-                                            :error='validationError'
-                                            @keyup.enter='saveUrl'
+                                            :error='connectError ? connectError.message : undefined'
+                                            :disabled='connecting'
+                                            @keyup.enter='connect(serverUrl)'
                                         />
                                     </div>
                                     <div class='form-footer d-grid gap-2'>
                                         <button
                                             class='btn btn-primary w-100'
                                             type='button'
-                                            :disabled='validating'
-                                            @click='saveUrl'
+                                            :disabled='connecting'
+                                            @click='connect(serverUrl)'
                                         >
-                                            <span v-if='validating'>Validating...</span>
+                                            <span
+                                                v-if='connecting'
+                                                class='spinner-border spinner-border-sm me-2'
+                                                role='status'
+                                            />
+                                            <span v-if='connecting'>Connecting...</span>
                                             <span v-else>Connect</span>
                                         </button>
                                         <button
                                             class='btn btn-link'
                                             type='button'
-                                            @click='viewMode = "providers"'
+                                            :disabled='connecting'
+                                            @click='showView("providers")'
                                         >
                                             Back to Providers
                                         </button>
@@ -152,6 +183,7 @@ import { computed, onMounted, ref } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
 import { useAppStore } from '../../stores/app.ts'
+import { fetchWithTimeout, normalizeServerUrl, validateServer } from './connect.ts'
 import { TablerAlert, TablerInput, TablerLoading, TablerNone } from '@tak-ps/vue-tabler'
 
 type ProviderLogo = {
@@ -166,15 +198,26 @@ type Provider = {
     logo?: ProviderLogo
 }
 
-const serverUrl = ref('')
-const providers = ref<Provider[]>([])
+const PROVIDER_REGISTRY_URL = 'https://api.cloudtak.io/'
+
 const appStore = useAppStore()
+
+const providers = ref<Provider[]>([])
+const providersLoading = ref(true)
+const providersError = ref<Error | null>(null)
+
 const searchTerm = ref('')
-const loading = ref(false)
-const error = ref<Error | null>(null)
 const viewMode = ref<'providers' | 'manual'>('providers')
-const validating = ref(false)
-const validationError = ref<string | null>(null)
+
+const serverUrl = ref('')
+
+// The normalized URL of the in-flight connection attempt. Doubles as the
+// busy flag that disables every other entry point, so a second click can
+// never start a competing attempt or a duplicate navigation.
+const connectingUrl = ref<string | null>(null)
+const connectError = ref<Error | null>(null)
+
+const connecting = computed(() => connectingUrl.value !== null)
 
 const filteredProviders = computed(() => {
     const term = searchTerm.value.trim().toLowerCase()
@@ -183,6 +226,10 @@ const filteredProviders = computed(() => {
     return providers.value.filter((provider) => provider.name.toLowerCase().includes(term))
 })
 
+function isConnectingTo(url: string): boolean {
+    return connectingUrl.value !== null && connectingUrl.value === normalizeServerUrl(url)
+}
+
 function providerLogo(provider: Provider): string | null {
     if (!provider.logo?.base64) return null
 
@@ -190,71 +237,60 @@ function providerLogo(provider: Provider): string | null {
     return `data:${mime};base64,${provider.logo.base64}`
 }
 
+function showView(view: 'providers' | 'manual'): void {
+    connectError.value = null
+    viewMode.value = view
+}
+
 async function loadProviders(): Promise<void> {
-    loading.value = true
-    error.value = null
+    providersLoading.value = true
+    providersError.value = null
 
     try {
-        const response = await fetch('https://api.cloudtak.io/')
-        if (!response.ok) throw new Error(`Request failed: ${response.status}`)
+        const response = await fetchWithTimeout(PROVIDER_REGISTRY_URL)
+        if (!response.ok) throw new Error(`Provider list request failed with status ${response.status}`)
 
         const data = await response.json()
         providers.value = Array.isArray(data?.servers) ? data.servers : []
     } catch (err) {
-        error.value = err instanceof Error ? err : new Error('Failed to load providers')
+        providersError.value = err instanceof Error ? err : new Error('Failed to load providers')
     } finally {
-        loading.value = false
+        providersLoading.value = false
     }
 }
 
-function pickProvider(url: string): void {
-    serverUrl.value = url.startsWith('http') ? url : `https://${url}`
-    void saveUrl()
-}
+/**
+ * Validate a server and enter the app. Used by both the provider cards and
+ * manual entry. Every failure surfaces in the active view; success keeps the
+ * page in its busy state until the navigation away completes.
+ */
+async function connect(rawUrl: string): Promise<void> {
+    if (connecting.value) return
 
-async function validateServer(url: string): Promise<void> {
-    const base = url.replace(/\/$/, '')
-    const response = await fetch(`${base}/api`)
-    if (!response.ok) throw new Error(`Server responded with status ${response.status}`)
-
-    const data = await response.json()
-    const version = data?.version
-    if (!version) throw new Error('Server did not return a version')
-
-    const match = String(version).match(/^v?(\d+)/)
-    if (!match) throw new Error(`Unable to parse version: ${version}`)
-
-    const major = parseInt(match[1], 10)
-    if (major < 12) throw new Error(`Server version ${version} is not supported. Version v12 or higher is required.`)
-}
-
-async function saveUrl(): Promise<void> {
-    const trimmedUrl = serverUrl.value.trim()
-
-    if (!trimmedUrl) {
-        validationError.value = 'Please enter a valid URL'
+    const url = normalizeServerUrl(rawUrl)
+    if (!url) {
+        connectError.value = new Error('Please enter a valid server URL')
         return
     }
 
-    serverUrl.value = /^https?:\/\//i.test(trimmedUrl) ? trimmedUrl : `https://${trimmedUrl}`
-    validating.value = true
-    validationError.value = null
+    serverUrl.value = url
+    connectingUrl.value = url
+    connectError.value = null
 
     try {
-        await validateServer(serverUrl.value)
+        await validateServer(url)
 
         if (Capacitor.isNativePlatform()) {
-            await appStore.setServerUrl(serverUrl.value)
+            await appStore.setServerUrl(url)
             window.location.href = '/login'
         } else if (window.electronAPI?.saveUrl) {
-            window.electronAPI.saveUrl(serverUrl.value)
+            window.electronAPI.saveUrl(url)
         } else {
-            window.location.href = serverUrl.value
+            window.location.href = url
         }
     } catch (err) {
-        validationError.value = err instanceof Error ? err.message : 'Failed to validate server'
-    } finally {
-        validating.value = false
+        connectError.value = err instanceof Error ? err : new Error('Failed to connect to server')
+        connectingUrl.value = null
     }
 }
 
@@ -264,10 +300,17 @@ onMounted(async () => {
         return
     }
 
-    const { value } = await Preferences.get({ key: 'serverUrl' })
-    if (value) {
-        window.location.href = '/login'
-        return
+    // A server chosen in a previous session skips straight to login. A
+    // Preferences read failure must not strand the user on a dead page —
+    // fall through to the picker instead.
+    try {
+        const { value } = await Preferences.get({ key: 'serverUrl' })
+        if (value?.trim()) {
+            window.location.href = '/login'
+            return
+        }
+    } catch (err) {
+        console.warn('Failed to read stored server URL', err)
     }
 
     await loadProviders()
@@ -276,7 +319,8 @@ onMounted(async () => {
 
 <style scoped>
 .setup-page {
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     min-height: 100vh;
 }
 
@@ -297,11 +341,16 @@ onMounted(async () => {
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.provider-card:hover {
+.provider-card:hover:not(:disabled) {
     transform: translateY(-3px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
     border-color: rgba(32, 107, 196, 0.4);
     background-color: rgba(32, 107, 196, 0.05);
+}
+
+.provider-card:disabled {
+    cursor: wait;
+    opacity: 0.7;
 }
 
 .provider-logo {
