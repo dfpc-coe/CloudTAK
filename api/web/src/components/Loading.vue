@@ -1,5 +1,5 @@
 <template>
-    <div class='page page-center'>
+    <div class='page page-center user-select-none'>
         <div class='container container-normal py-4'>
             <div class='row align-items-center g-4'>
                 <div class='col-lg'>
@@ -86,15 +86,21 @@ async function hardReset(): Promise<void> {
 }
 
 onMounted(async () => {
-    const config = await Config.list(['login::logo']);
-
-    if (config['login::logo']) {
-        logo.value = config['login::logo'];
-    }
-
+    // Arm the escape hatch before any awaits: if the logo lookup below hangs,
+    // the Hard Reset button must still appear.
     resetTimer = setTimeout(() => {
         showReset.value = true;
     }, 20000);
+
+    try {
+        const config = await Config.list(['login::logo']);
+
+        if (config['login::logo']) {
+            logo.value = config['login::logo'];
+        }
+    } catch (err) {
+        console.warn('Failed to load login logo', err);
+    }
 });
 
 onUnmounted(() => {

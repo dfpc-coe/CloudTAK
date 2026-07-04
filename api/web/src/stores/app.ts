@@ -4,6 +4,7 @@ import { Preferences } from '@capacitor/preferences';
 import { StatusBar } from '@capacitor/status-bar';
 import KV from '../base/kv.ts';
 import { db, withDbRetry } from '../database.ts';
+import { withTimeout } from '../base/async.ts';
 import Config from '../base/config.ts';
 import ServerManager from '../base/server.ts';
 import router from '../router.ts';
@@ -12,8 +13,25 @@ import { isNativePlatform } from '../base/capacitor.ts';
 export type DisplayStyleMode = 'System Default' | 'Light' | 'Dark';
 export type ResolvedThemeMode = 'light' | 'dark';
 
+// Ceiling for each network/IndexedDB step during bootstrap. A single hung
+// request must never leave the user stuck on the loading splash.
+const BOOT_STEP_TIMEOUT_MS = 10000;
+
 // Kept outside Pinia state so Vue does not attempt to proxy them.
 let displayStyleSub: Subscription | undefined;
+let brandingSub: Subscription | undefined;
+
+const BRANDING_CONFIG_KEYS = [
+    'login::name',
+    'login::logo',
+    'login::brand::enabled',
+    'login::brand::logo',
+    'login::background::enabled',
+    'login::background::color',
+    'login::signup',
+    'login::forgot',
+    'login::username'
+] as const;
 const systemThemeQuery = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-color-scheme: dark)')
     : undefined;
@@ -57,18 +75,17 @@ export const useAppStore = defineStore('cloudtak-app', {
         async setServerUrl(serverUrl: string): Promise<void> {
             await Preferences.set({ key: 'serverUrl', value: serverUrl });
 
-            const mirrorPromise = withDbRetry(() => KV.generate('serverUrl', serverUrl)).catch((err) => {
+            // Best-effort mirror so web workers can read the URL from KV; a
+            // slow IndexedDB must not block boot.
+            try {
+                await withTimeout(
+                    withDbRetry(() => KV.generate('serverUrl', serverUrl)),
+                    2000,
+                    'serverUrl KV mirror'
+                );
+            } catch (err) {
                 console.warn('Failed to mirror serverUrl into KV store', err);
-            });
-
-            let timeout: ReturnType<typeof setTimeout> | undefined;
-            const timeoutPromise = new Promise<void>((resolve) => {
-                timeout = setTimeout(resolve, 2000);
-            });
-
-            await Promise.race([mirrorPromise, timeoutPromise]);
-
-            if (timeout) clearTimeout(timeout);
+            }
         },
 
         async persistSession(opts: { token: string; username: string; session: string }): Promise<void> {
@@ -194,21 +211,31 @@ export const useAppStore = defineStore('cloudtak-app', {
 
             systemThemeQuery?.addEventListener('change', handleSystemThemeChange);
 
+            // Login branding is cosmetic and must never block boot: paint with
+            // the cached (or default) values immediately and let the
+            // background refresh update the cache — and through it this
+            // subscription — whenever the server responds.
+            brandingSub = liveQuery(() => db.config.bulkGet(['login::logo', 'login::name'])).subscribe(([logo, name]) => {
+                this.loginLogo = logo?.value as string | undefined;
+                this.loginName = name?.value as string | undefined;
+            });
+
+            void Config.refresh([...BRANDING_CONFIG_KEYS]).catch((err) => {
+                console.warn('Failed to refresh login branding', err);
+            });
+
             this.loadingStage = 'Checking your account…';
 
             let status;
-            const username = await db.profile.get('username');
+            try {
+                const username = await withTimeout(db.profile.get('username'), BOOT_STEP_TIMEOUT_MS, 'Profile lookup');
 
-            if (username) {
+                status = username
+                    ? 'configured'
+                    : (await withTimeout(ServerManager.get(), BOOT_STEP_TIMEOUT_MS, 'Server status check')).status;
+            } catch (err) {
+                console.warn('Server Error (Likely the server is in a configured state)', err);
                 status = 'configured';
-            } else {
-                try {
-                    const server = await ServerManager.get();
-                    status = server.status;
-                } catch (err) {
-                    console.warn('Server Error (Likely the server is in a configured state)', err);
-                    status = 'configured';
-                }
             }
 
             if (status === 'unconfigured') {
@@ -226,23 +253,6 @@ export const useAppStore = defineStore('cloudtak-app', {
                 this.routeLogin();
             }
 
-            this.loadingStage = 'Loading app settings…';
-
-            const config = await Config.list([
-                'login::name',
-                'login::logo',
-                'login::brand::enabled',
-                'login::brand::logo',
-                'login::background::enabled',
-                'login::background::color',
-                'login::signup',
-                'login::forgot',
-                'login::username'
-            ]);
-
-            this.loginLogo = config['login::logo'];
-            this.loginName = config['login::name'];
-
             return true;
         },
 
@@ -252,6 +262,11 @@ export const useAppStore = defineStore('cloudtak-app', {
             if (displayStyleSub) {
                 displayStyleSub.unsubscribe();
                 displayStyleSub = undefined;
+            }
+
+            if (brandingSub) {
+                brandingSub.unsubscribe();
+                brandingSub = undefined;
             }
         },
     },
