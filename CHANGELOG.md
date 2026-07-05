@@ -16,6 +16,12 @@
 
 ### Pending Release
 
+### v13.33.1 - 2026-07-05
+
+- :rocket: update internal type defs
+- :arrow_up: Update Maplibre to 6.0-rel20
+- :arrow_up: Update CapGo Background Geolocation
+
 ### v13.33.0 - 2026-07-05
 
 - :tada: Add support for Chat Receipt CoTs (`b-t-f-d` Delivery, `b-t-f-r` Read, `b-t-f-p` Pending, `b-t-f-s` Delivery Failure) received via the Connection Pool - receipts now update the delivery status of the original message
