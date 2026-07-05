@@ -16,6 +16,8 @@
 
 ### Pending Release
 
+### v13.33.0 - 2026-07-05
+
 - :tada: Add support for Chat Receipt CoTs (`b-t-f-d` Delivery, `b-t-f-r` Read, `b-t-f-p` Pending, `b-t-f-s` Delivery Failure) received via the Connection Pool - receipts now update the delivery status of the original message
 - :bug: Chat Receipts no longer overwrite the original message with an empty string
 - :tada: Chat UI now shows message delivery status (Sending, Sent to Server, Delivered, Read, Pending, Failed) on sent messages in both Direct Chat & Data Sync Chat
