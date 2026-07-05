@@ -195,9 +195,9 @@ jobs:
         run: npm run coverage
 
       - name: Upload coverage to Codecov
+        if: ${{ secrets.CODECOV_TOKEN != '' }}
         uses: codecov/codecov-action@v5
-        env:
-          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./api/web/coverage/lcov.info
           flags: web
