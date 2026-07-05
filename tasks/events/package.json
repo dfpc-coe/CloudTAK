@@ -8,6 +8,7 @@
     },
     "scripts": {
         "test": "StackName='test' tsx --test test/*.test.ts",
+        "coverage": "StackName='test' c8 --reporter=lcov --reporter=text tsx --test test/*.test.ts",
         "check": "tsc --noEmit",
         "build": "tsc --noEmit",
         "lint": "eslint index.ts cli.ts src/ test/",
@@ -35,6 +36,7 @@
         "@types/jsonwebtoken": "^9.0.5",
         "@types/node": "^26.0.0",
         "@types/sinon": "^22.0.0",
+        "c8": "^11.0.0",
         "@types/vinyl": "^2.0.12",
         "eslint": "^10.0.0",
         "globals": "^17.0.0",

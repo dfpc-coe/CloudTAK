@@ -504,6 +504,7 @@ import { useAppStore } from '../../stores/app.ts';
 import { DrawToolMode } from '../../stores/modules/draw.ts';
 import { useFloatStore } from '../../stores/float.ts';
 import { liveQuery } from 'dexie';
+import { isTransientDbError } from '../../database.ts';
 import Upload from '../util/Upload.vue';
 import { stdurl } from '../../std.ts';
 import ProfileConfig from '../../base/profile.ts';
@@ -642,7 +643,14 @@ onMounted(async () => {
     window.addEventListener('error', (evt) => {
         console.error(evt);
         evt.preventDefault();
-        emit('err', new Error(evt.message));
+
+        // Prefer the original error so its name survives; transient
+        // IndexedDB failures (WebKit invalidating the connection during an
+        // iOS suspend) are recovered by withDbRetry and must not modal.
+        const err = evt.error instanceof Error ? evt.error : new Error(evt.message);
+        if (isTransientDbError(err)) return;
+
+        emit('err', err);
     });
 
     window.addEventListener('resize', () => {

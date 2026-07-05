@@ -9,7 +9,9 @@
     "scripts": {
         "typegen": "npm run typegen -C ../../api",
         "check": "tsc --noEmit",
-        "lint": "eslint src/",
+        "lint": "eslint src/ test/",
+        "test": "StackName='test' tsx --test test/*.test.ts",
+        "coverage": "StackName='test' c8 --reporter=lcov --reporter=text tsx --test test/*.test.ts",
         "build": "tsup --target es2022 --format esm src/",
         "dev": "tsx watch src/index.ts --noevents --nometrics --nosinks --unsafe",
         "prod": "NODE_OPTIONS='--max-old-space-size=6144' node dist/index.js",
@@ -24,6 +26,7 @@
         "@stylistic/eslint-plugin": "^5.10.0",
         "@types/jsonwebtoken": "^9.0.0",
         "@types/node": "^26.0.0",
+        "c8": "^11.0.0",
         "eslint": "^10.0.0",
         "tsup": "^8.0.0",
         "tsx": "^4.21.0",
