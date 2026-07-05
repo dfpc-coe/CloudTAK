@@ -16,6 +16,13 @@
 
 ### Pending Release
 
+- :tada: Add support for Chat Receipt CoTs (`b-t-f-d` Delivery, `b-t-f-r` Read, `b-t-f-p` Pending, `b-t-f-s` Delivery Failure) received via the Connection Pool - receipts now update the delivery status of the original message
+- :bug: Chat Receipts no longer overwrite the original message with an empty string
+- :tada: Chat UI now shows message delivery status (Sending, Sent to Server, Delivered, Read, Pending, Failed) on sent messages in both Direct Chat & Data Sync Chat
+- :bug: Chat messages are now reliably ordered oldest to most recent - mixed Postgres/ISO 8601 timestamp formats previously caused out-of-order messages
+- :bug: Data Sync Chat messages sent from CloudTAK are no longer duplicated when they are re-fetched from the Mission
+- :white_check_mark: Add Chat Receipt E2E tests
+
 ### v13.32.0 - 2026-07-02
 
 - :rocket: Improve Server Selection resilience on first boot which would sometimes hang

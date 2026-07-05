@@ -1,0 +1,1 @@
+ALTER TABLE "profile_chats" ADD COLUMN "status" text;

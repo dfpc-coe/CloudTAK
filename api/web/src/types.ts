@@ -150,6 +150,7 @@ export type APIProfileChat = {
     updated: string;
     message_id: string;
     message: string;
+    status?: string | null;
 }
 
 export type MissionTemplate = paths["/api/template/mission/{:mission}"]["get"]["responses"]["200"]["content"]["application/json"]

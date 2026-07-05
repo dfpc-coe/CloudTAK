@@ -110,7 +110,7 @@ watch([canvas, supportedIcon, () => props.size], async () => {
     const iconName = supportedIcon.value;
     if (!iconName) return;
 
-    const icon = mapStore.map.getImage(iconName)
+    const icon = mapStore.map.getImage(iconName);
     if (!icon) return;
 
     const context = canvas.value.getContext('2d');
