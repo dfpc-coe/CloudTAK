@@ -19,6 +19,8 @@ jobs:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -33,13 +35,26 @@ jobs:
       - name: Docker Events Check
         run: docker run cloudtak-events:latest npm run check
 
-      - name: Docker Events Test
-        run: docker run cloudtak-events:latest npm run test
+      - name: Docker Events Test & Coverage
+        run: docker run -v ./tasks/events/coverage/:/workspace/tasks/events/coverage cloudtak-events:latest npm run coverage
+
+      - name: Docker Folder Permissions
+        run: docker run -v ./tasks/events/coverage/:/workspace/tasks/events/coverage cloudtak-events:latest chmod -R 777 /workspace/tasks/events/coverage
+
+      - name: Upload coverage to Codecov
+        if: ${{ env.CODECOV_TOKEN != '' }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./tasks/events/coverage/lcov.info
+          flags: events
 
   retention:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -51,6 +66,19 @@ jobs:
       - name: Docker Retention Check
         run: docker run cloudtak-retention:latest npm run check
 
+      - name: Docker Retention Test & Coverage
+        run: docker run -v ./tasks/retention/coverage/:/workspace/tasks/retention/coverage cloudtak-retention:latest npm run coverage
+
+      - name: Docker Folder Permissions
+        run: docker run -v ./tasks/retention/coverage/:/workspace/tasks/retention/coverage cloudtak-retention:latest chmod -R 777 /workspace/tasks/retention/coverage
+
+      - name: Upload coverage to Codecov
+        if: ${{ env.CODECOV_TOKEN != '' }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./tasks/retention/coverage/lcov.info
+          flags: retention
       - name: Docker Retention Run Once
         run: docker run cloudtak-retention:latest npm run run-once
 
@@ -58,6 +86,8 @@ jobs:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -80,6 +110,18 @@ jobs:
         working-directory: ./tasks/pmtiles/
         run: npm run check
 
+      - name: Test & Coverage
+        working-directory: ./tasks/pmtiles/
+        run: npm run coverage
+
+      - name: Upload coverage to Codecov
+        if: ${{ env.CODECOV_TOKEN != '' }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./tasks/pmtiles/coverage/lcov.info
+          flags: pmtiles
+
       - name: Build
         working-directory: ./tasks/pmtiles/
         run: npm run build
@@ -88,6 +130,8 @@ jobs:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -109,11 +153,12 @@ jobs:
         run: docker run --network cloudtak_default -v ./coverage/:/home/etl/api/coverage -e "POSTGRES=postgres://docker:docker@postgis:5432/gis" cloudtak-api:latest chmod -R 777 /home/etl/api/coverage
 
       - name: Upload coverage to Codecov
+        if: ${{ env.CODECOV_TOKEN != '' }}
         uses: codecov/codecov-action@v5
-        env:
-          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
+          flags: api
 
       - name: Docker Cleanup
         run: docker compose kill
@@ -122,6 +167,8 @@ jobs:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -152,6 +199,14 @@ jobs:
         working-directory: ./api/web/
         run: npm run doc
 
-      - name: Test
+      - name: Test & Coverage
         working-directory: ./api/web/
-        run: npm run test
+        run: npm run coverage
+
+      - name: Upload coverage to Codecov
+        if: ${{ env.CODECOV_TOKEN != '' }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./api/web/coverage/lcov.info
+          flags: web

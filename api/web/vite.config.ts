@@ -129,6 +129,16 @@ export default defineConfig(({ mode }) => {
                 inline: ['@tak-ps/vue-tabler']
             },
             setupFiles: ['./src/test/setup.ts'],
+            coverage: {
+                provider: 'v8',
+                reporter: ['text', 'lcov'],
+                include: ['src/**'],
+                exclude: [
+                    'src/test/**',
+                    '**/*.spec.ts',
+                    '**/*.d.ts',
+                ],
+            },
         },
     };
 })
