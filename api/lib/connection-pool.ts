@@ -266,6 +266,10 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                         ? ChatReceiptTypes[feat.properties.type]
                         : undefined;
 
+                    // Server-assigned created for the stored chat - relayed in place of the sender
+                    // device's CoT time so live ordering matches what clients get on refresh
+                    let storedCreated: string | undefined;
+
                     try {
                         if (conn instanceof ProfileConnConfig && feat.properties && feat.properties.chat && receiptStatus) {
                             // Chat Receipts don't contain the original message so they
@@ -285,7 +289,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                                 ? feat.properties.chat.chatroom
                                 : feat.properties.chat.senderCallsign;
 
-                            await this.config.models.ProfileChat.generate({
+                            const stored = await this.config.models.ProfileChat.generate({
                                 username: String(conn.id),
                                 chatroom: chatroom,
                                 sender_callsign: feat.properties.chat.senderCallsign,
@@ -293,6 +297,9 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                                 message_id: feat.properties.chat.messageId || randomUUID(),
                                 message: feat.properties.remarks || '',
                             });
+
+                            // Normalize the pg timestamptz to ISO 8601 before it goes over the wire
+                            storedCreated = new Date(stored.created).toISOString();
                         } else if (conn instanceof ProfileConnConfig && feat.properties.fileshare) {
                             const file = new URL(feat.properties.fileshare.senderUrl);
 
@@ -335,10 +342,11 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                                         chatroom: feat.properties.chat.chatroom,
                                         messageId: feat.properties.chat.messageId,
                                         from: {
+                                            uid: feat.properties.chat.chatgrp?._attributes?.uid0,
                                             callsign: feat.properties.chat.senderCallsign,
                                         },
                                         message: feat.properties.remarks,
-                                        time: feat.properties.time || new Date().toISOString(),
+                                        time: storedCreated || feat.properties.time || new Date().toISOString(),
                                     },
                                 }));
                             } else if (feat.properties.type.startsWith('t-x')) {

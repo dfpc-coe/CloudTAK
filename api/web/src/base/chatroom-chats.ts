@@ -95,13 +95,7 @@ export default class ChatroomChats {
         recipient?: { uid: string, callsign: string }
     ): Promise<void> {
         const id = crypto.randomUUID();
-
-        // Clamp to just after the latest message so a just-sent message sorts to the bottom despite local clock skew; reused as the CoT time so the server echo doesn't reorder it.
-        const existing = await this.list();
-        const latest = existing.length
-            ? new Date(existing[existing.length - 1].created).getTime()
-            : 0;
-        const created = new Date(Math.max(Date.now(), latest + 1)).toISOString();
+        const created = new Date().toISOString();
 
         await db.chatroom.update(this.chatroom, {
             updated: created
@@ -118,7 +112,8 @@ export default class ChatroomChats {
         });
 
         if (!recipient) {
-            const single = existing.find((chat) => {
+            const chats = await this.list();
+            const single = chats.find((chat) => {
                 return chat.sender_uid !== sender.uid
             });
 

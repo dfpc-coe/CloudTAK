@@ -255,10 +255,17 @@ export default class AtlasConnection {
                     messageId: string;
                     status: ChatStatus;
                     chatroom?: string;
+                    created?: string;
                 };
 
                 if (receipt.messageId && ChatStatusRank[receipt.status] !== undefined) {
-                    const progress = (chat: { status?: ChatStatus }) => {
+                    const progress = (chat: { status?: ChatStatus, created?: string }) => {
+                        // Messages sort by created - adopt the server-assigned timestamp so
+                        // ordering doesn't depend on the local clock that stamped the optimistic copy
+                        if (receipt.created) {
+                            chat.created = receipt.created;
+                        }
+
                         if (ChatStatusRank[receipt.status] > ChatStatusRank[chat.status ?? ChatStatus.Sending]) {
                             chat.status = receipt.status;
                         }

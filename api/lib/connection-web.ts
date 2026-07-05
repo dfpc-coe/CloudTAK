@@ -62,7 +62,7 @@ export class ConnectionWebSocket {
                         const feat = await CoTParser.to_geojson(chat);
                         const messageId = feat.properties.chat ? (feat.properties.chat.messageId || randomUUID()) : randomUUID();
 
-                        await client.config.config.models.ProfileChat.generate({
+                        const stored = await client.config.config.models.ProfileChat.generate({
                             username: String(client.config.id),
                             chatroom: msg.data.chatroom,
                             sender_callsign: msg.data.from.callsign,
@@ -73,6 +73,8 @@ export class ConnectionWebSocket {
                         });
 
                         // Confirm to all of the user's clients that the message reached the server
+                        // Includes the server-assigned created (normalized to ISO 8601) so clients can
+                        // replace their optimistic local-clock timestamp with the authoritative one
                         for (const wsClient of (client.config.config.wsClients.get(String(client.config.id)) || [])) {
                             if (wsClient.format === 'geojson') {
                                 wsClient.ws.send(JSON.stringify({
@@ -82,6 +84,7 @@ export class ConnectionWebSocket {
                                         messageId,
                                         status: ProfileChatStatus.SENT,
                                         chatroom: msg.data.chatroom,
+                                        created: new Date(stored.created).toISOString(),
                                     },
                                 }));
                             }
