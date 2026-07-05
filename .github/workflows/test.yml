@@ -40,10 +40,10 @@ jobs:
         run: docker run -v ./tasks/events/coverage/:/workspace/tasks/events/coverage cloudtak-events:latest chmod -R 777 /workspace/tasks/events/coverage
 
       - name: Upload coverage to Codecov
+        if: ${{ secrets.CODECOV_TOKEN != '' }}
         uses: codecov/codecov-action@v5
-        env:
-          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./tasks/events/coverage/lcov.info
           flags: events
 
