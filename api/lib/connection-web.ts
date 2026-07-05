@@ -4,6 +4,7 @@ import { DirectChat, MissionChat, CoTParser } from '@tak-ps/node-cot';
 import type { Feature } from '@tak-ps/node-cot';
 import WebSocket from 'ws';
 import { ConnectionClient } from './connection-pool.js';
+import { ProfileChatStatus } from './enums.js';
 
 export class ConnectionWebSocket {
     ws: WebSocket;
@@ -68,7 +69,7 @@ export class ConnectionWebSocket {
                             sender_uid: msg.data.from.uid,
                             message_id: messageId,
                             message: msg.data.message,
-                            status: 'sent',
+                            status: ProfileChatStatus.SENT,
                         });
 
                         // Confirm to all of the user's clients that the message reached the server
@@ -79,7 +80,7 @@ export class ConnectionWebSocket {
                                     connection: client.config.id,
                                     data: {
                                         messageId,
-                                        status: 'sent',
+                                        status: ProfileChatStatus.SENT,
                                         chatroom: msg.data.chatroom,
                                     },
                                 }));

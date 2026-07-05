@@ -12,7 +12,7 @@ import TAK, { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
 import type ConnectionConfig from './connection-config.js';
 import { MachineConnConfig, ProfileConnConfig, AdminConnConfig } from './connection-config.js';
-import { ProfileChatStatus } from './models/ProfileChat.js';
+import { ProfileChatStatus } from './enums.js';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf-8')) as {
     version: string;

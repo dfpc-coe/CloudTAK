@@ -14,6 +14,7 @@ import {
     BasemapTerrain_Encoding,
     ProfilePaging_Type,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
+    ProfileChatStatus,
 } from './enums.js';
 import { bigint, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 
@@ -161,7 +162,7 @@ export const ProfileChat = pgTable('profile_chats', {
     message: text().notNull(),
 
     // Delivery status of an outgoing message: sent, pending, failed, delivered, read
-    status: text(),
+    status: text().$type<ProfileChatStatus>(),
 });
 
 export const VideoLease = pgTable('video_lease', {

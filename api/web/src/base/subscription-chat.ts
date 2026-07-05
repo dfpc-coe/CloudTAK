@@ -1,4 +1,4 @@
-import { db } from '../database.ts';
+import { db, ChatStatus } from '../database.ts';
 import type { DBSubscriptionChat } from '../database.ts';
 import { liveQuery, type Observable } from 'dexie';
 import type Atlas from '../workers/atlas.ts';
@@ -56,7 +56,13 @@ export default class SubscriptionChat {
         worker: Remote<Atlas>
     ): Promise<void> {
         const id = crypto.randomUUID();
-        const created = new Date().toISOString();
+
+        // Clamp to just after the latest message so a just-sent message sorts to the bottom despite local clock skew; reused as the CoT time so the server echo doesn't reorder it.
+        const existing = await this.list();
+        const latest = existing.length
+            ? new Date(existing[existing.length - 1].created).getTime()
+            : 0;
+        const created = new Date(Math.max(Date.now(), latest + 1)).toISOString();
 
         await db.subscription_chat.put({
             id: id,
@@ -67,7 +73,7 @@ export default class SubscriptionChat {
             message: message,
             created: created,
             unread: false,
-            status: 'sending',
+            status: ChatStatus.Sending,
         });
 
         const location = (await worker.profile?.location)?.coordinates || [0, 0];

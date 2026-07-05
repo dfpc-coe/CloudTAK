@@ -55,16 +55,23 @@ export interface DBChatroom {
  * - pending/failed/delivered/read: reported by the recipient's client via
  *   b-t-f-p/s/d/r Chat Receipt CoTs
  */
-export type ChatStatus = 'sending' | 'sent' | 'pending' | 'failed' | 'delivered' | 'read';
+export enum ChatStatus {
+    Sending = 'sending',
+    Sent = 'sent',
+    Pending = 'pending',
+    Failed = 'failed',
+    Delivered = 'delivered',
+    Read = 'read',
+}
 
 // A chat status can only move forward - a late "delivered" receipt must not downgrade "read"
 export const ChatStatusRank: Record<ChatStatus, number> = {
-    sending: 0,
-    sent: 1,
-    pending: 2,
-    failed: 3,
-    delivered: 4,
-    read: 5
+    [ChatStatus.Sending]: 0,
+    [ChatStatus.Sent]: 1,
+    [ChatStatus.Pending]: 2,
+    [ChatStatus.Failed]: 3,
+    [ChatStatus.Delivered]: 4,
+    [ChatStatus.Read]: 5
 };
 
 export interface DBChatroomChat {

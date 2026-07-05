@@ -1,4 +1,4 @@
-import { db } from '../database.ts';
+import { db, ChatStatus } from '../database.ts';
 import Filter from './filter.ts';
 import COT from './cot.ts';
 import Subscription from './subscription.ts';
@@ -109,7 +109,7 @@ export default class SubscriptionFeature {
                         created: String(feature.properties.start || feature.properties.time || new Date().toISOString()),
                         unread: unreadChats.has(id),
                         // The message came back from the Mission so it has reached the server
-                        status: 'sent',
+                        status: ChatStatus.Sent,
                     });
                 }
             });
@@ -249,7 +249,7 @@ export default class SubscriptionFeature {
                     created: String(cot.properties.start || cot.properties.time || new Date().toISOString()),
                     unread: !!opts.skipNetwork,
                     // The message arrived via the Mission so it has reached the server
-                    status: 'sent',
+                    status: ChatStatus.Sent,
                 });
             }
         } else {

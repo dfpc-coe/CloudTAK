@@ -1,6 +1,7 @@
 import Modeler from '@openaddresses/batch-generic';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { ProfileChat } from '../schema.js';
+import { ProfileChatStatus } from '../enums.js';
 import { sql, eq } from 'drizzle-orm';
 
 export type ChatList = {
@@ -10,14 +11,6 @@ export type ChatList = {
         created: string;
     }>;
 };
-
-export enum ProfileChatStatus {
-    SENT = 'sent',
-    PENDING = 'pending',
-    FAILED = 'failed',
-    DELIVERED = 'delivered',
-    READ = 'read',
-}
 
 // A status can only progress forward (ie a late "delivered" receipt won't downgrade "read")
 const StatusRank = sql.raw(`

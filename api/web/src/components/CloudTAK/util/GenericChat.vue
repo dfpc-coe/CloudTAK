@@ -89,28 +89,28 @@
                             :aria-label='statusLabel(chat.status)'
                         >
                             <IconClock
-                                v-if='chat.status === "sending" || chat.status === "pending"'
+                                v-if='chat.status === ChatStatus.Sending || chat.status === ChatStatus.Pending'
                                 :size='14'
                                 stroke='2'
                             />
                             <IconAlertTriangle
-                                v-else-if='chat.status === "failed"'
+                                v-else-if='chat.status === ChatStatus.Failed'
                                 :size='14'
                                 stroke='2'
                                 class='text-red'
                             />
                             <IconCheck
-                                v-else-if='chat.status === "sent"'
+                                v-else-if='chat.status === ChatStatus.Sent'
                                 :size='14'
                                 stroke='2'
                             />
                             <IconChecks
-                                v-else-if='chat.status === "delivered"'
+                                v-else-if='chat.status === ChatStatus.Delivered'
                                 :size='14'
                                 stroke='2'
                             />
                             <IconChecks
-                                v-else-if='chat.status === "read"'
+                                v-else-if='chat.status === ChatStatus.Read'
                                 :size='14'
                                 stroke='2'
                                 class='text-azure'
@@ -169,7 +169,7 @@ import {
     IconChecks,
     IconAlertTriangle,
 } from '@tabler/icons-vue';
-import type { ChatStatus } from '../../../database.ts';
+import { ChatStatus } from '../../../database.ts';
 import {
     TablerAlert,
     TablerDelete,
@@ -268,12 +268,12 @@ function emitDelete() {
 
 function statusLabel(status: ChatStatus): string {
     switch (status) {
-        case 'sending': return 'Sending';
-        case 'sent': return 'Sent to Server';
-        case 'pending': return 'Pending Delivery';
-        case 'failed': return 'Failed to Deliver';
-        case 'delivered': return 'Delivered';
-        case 'read': return 'Read';
+        case ChatStatus.Sending: return 'Sending';
+        case ChatStatus.Sent: return 'Sent to Server';
+        case ChatStatus.Pending: return 'Pending Delivery';
+        case ChatStatus.Failed: return 'Failed to Deliver';
+        case ChatStatus.Delivered: return 'Delivered';
+        case ChatStatus.Read: return 'Read';
         default: return '';
     }
 }
