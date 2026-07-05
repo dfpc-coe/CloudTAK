@@ -387,7 +387,7 @@ export default class Overlay {
             // and skip addSource so addLayers later no-ops cleanly.
             try {
                 if (!tileJSON) {
-                    tileJSON = await std(url.toString()) as TileJSON
+                    tileJSON = await std(url.toString()) as TileJSON;
 
                     try {
                         // Tile URLs carry the session token as a query param;
