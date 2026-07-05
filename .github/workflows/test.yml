@@ -69,13 +69,12 @@ jobs:
         run: docker run -v ./tasks/retention/coverage/:/workspace/tasks/retention/coverage cloudtak-retention:latest chmod -R 777 /workspace/tasks/retention/coverage
 
       - name: Upload coverage to Codecov
+        if: ${{ secrets.CODECOV_TOKEN != '' }}
         uses: codecov/codecov-action@v5
-        env:
-          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./tasks/retention/coverage/lcov.info
           flags: retention
-
       - name: Docker Retention Run Once
         run: docker run cloudtak-retention:latest npm run run-once
 
