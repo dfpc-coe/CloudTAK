@@ -4,7 +4,7 @@ import Err from '@openaddresses/batch-error';
 import type { Profile } from './schema.js';
 import { X509Certificate } from 'crypto';
 import { TAKAPI, APIAuthPassword, APIAuthCertificate } from '@tak-ps/node-tak';
-import ProfileControl from './control/profile.js';
+import UserControl from './control/user.js';
 
 export enum AuthProviderAccess {
     ADMIN = 'admin',
@@ -14,11 +14,11 @@ export enum AuthProviderAccess {
 
 export default class AuthProvider {
     config: Config;
-    profileControl: ProfileControl;
+    userControl: UserControl;
 
     constructor(config: Config) {
         this.config = config;
-        this.profileControl = new ProfileControl(config);
+        this.userControl = new UserControl(config);
     }
 
     async login(username: string, password: string): Promise<string> {
@@ -32,7 +32,7 @@ export default class AuthProvider {
             profile = await this.config.models.Profile.from(username);
         } catch (err) {
             if (err instanceof Error && err.message.includes('Item Not Found')) {
-                profile = await this.profileControl.generate({
+                profile = await this.userControl.generate({
                     username: username,
                     auth: await api.Credentials.generate(),
                 });
@@ -42,6 +42,10 @@ export default class AuthProvider {
         }
 
         await this.valid(profile, password);
+
+        // Users provisioned before default basemap creation moved server side
+        // may not yet have a basemap - ensure one exists before login succeeds
+        await this.userControl.ensureDefaultBasemap(profile.username);
 
         return contents.sub;
     }

@@ -125,6 +125,14 @@ export default async function router(schema: Schema, config: Config) {
             const updatedKeys = Object.keys(req.body) as (keyof Static<typeof FullConfig>)[];
             const refreshGeofence = updatedKeys.some(key => GeofenceConfigKeys.has(key));
 
+            if (req.body['map::basemap'] !== undefined && req.body['map::basemap'] !== null) {
+                try {
+                    await config.models.Basemap.from(req.body['map::basemap']);
+                } catch (err) {
+                    throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Default Basemap (${req.body['map::basemap']}) does not exist`);
+                }
+            }
+
             const final: Partial<Static<typeof FullConfig>> = {};
             (await Promise.allSettled(updatedKeys.map(async (key) => {
                 if (req.body[key] === null) {
