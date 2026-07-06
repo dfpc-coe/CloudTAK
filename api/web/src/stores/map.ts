@@ -1375,62 +1375,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             await FeatureVisibility.load();
 
-            const hasBasemap = profileOverlays.some((o: ProfileOverlay) => {
-                return o.mode === 'basemap'
-            });
-
-            // Courtesy add an initial basemap
-            if (!hasBasemap) {
-                let defaultBasemap: Basemap | null = null;
-
-                const basemapCfg = await Config.list(['map::basemap'], { defaults: { 'map::basemap': null } });
-                const basemapId = basemapCfg['map::basemap'] ? Number(basemapCfg['map::basemap']) : null;
-
-                if (basemapId) {
-                    try {
-                        const basemapRes = await server.GET('/api/basemap/{:basemapid}', {
-                            params: { path: { ':basemapid': basemapId } }
-                        });
-                        if (basemapRes.error) throw new Error(basemapRes.error.message);
-                        defaultBasemap = basemapRes.data as Basemap;
-                    } catch (err) {
-                        console.warn('Failed to load configured basemap:', err);
-                    }
-                }
-
-                if (!defaultBasemap) {
-                    const basemapsRes = await server.GET('/api/basemap', {
-                        params: { query: { type: 'raster', limit: 1, page: 0, order: 'asc', sort: 'name', filter: '', overlay: false, hidden: 'false' } }
-                    });
-                    if (basemapsRes.error) throw new Error(basemapsRes.error.message);
-
-                    if (basemapsRes.data.items.length > 0) {
-                        defaultBasemap = basemapsRes.data.items[0] as Basemap;
-                    }
-                }
-
-                if (defaultBasemap) {
-                    // Default basemap creation hits /api/profile/overlay
-                    // (POST + PATCH) and the upstream /tiles endpoint. Any
-                    // of those can transiently fail; treat as non-fatal so
-                    // the rest of map initialization still proceeds.
-                    try {
-                        const basemap = await Overlay.create({
-                            name: defaultBasemap.name,
-                            pos: -1,
-                            type: 'raster',
-                            url: String(stdurl(`/api/basemap/${defaultBasemap.id}/tiles`)),
-                            mode: 'basemap',
-                            mode_id: String(defaultBasemap.id)
-                        });
-
-                        OverlayManager.appendLoaded(basemap);
-                    } catch (err) {
-                        console.error('Failed to create default basemap overlay:', err);
-                    }
-                }
-            }
-
             // Parallelize Overlay Creation. Use allSettled so a single
             // overlay whose /tiles endpoint fails (404, network blip,
             // upstream outage) does not prevent every other overlay -- and

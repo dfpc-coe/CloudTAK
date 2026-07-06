@@ -8,13 +8,13 @@ import { sql } from 'drizzle-orm';
 import Config from '../lib/config.js';
 import { AdminConnConfig } from '../lib/connection-config.js';
 import { ServerResponse } from '../lib/types.js';
-import ProfileControl from '../lib/control/profile.js';
+import UserControl from '../lib/control/user.js';
 import { TAKAPI, APIAuthCertificate, APIAuthPassword } from '@tak-ps/node-tak';
 
 const pkg = JSON.parse(String(fs.readFileSync(new URL('../package.json', import.meta.url))));
 
 export default async function router(schema: Schema, config: Config) {
-    const profileControl = new ProfileControl(config);
+    const userControl = new UserControl(config);
 
     await schema.get('/server', {
         name: 'Get Server',
@@ -133,7 +133,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 const certs = await api.Credentials.generate();
 
-                await profileControl.generate({
+                await userControl.generate({
                     auth: certs,
                     username: req.body.username,
                     system_admin: true,
