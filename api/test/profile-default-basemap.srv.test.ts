@@ -111,6 +111,72 @@ test('Profile Default Basemap - New User Falls Back to First Raster Basemap', as
     assert.equal(res.body.items[0].url, '/api/basemap/2/tiles');
 });
 
+test('Profile Default Basemap - Create Vector Basemap with Styles', async () => {
+    const res = await flight.fetch('/api/basemap', {
+        method: 'POST',
+        auth: { bearer: flight.token.admin },
+        body: {
+            name: 'Vector Basemap',
+            url: 'https://test.com/vector/{z}/{x}/{y}',
+            protocol: 'zxy',
+            type: 'vector',
+            format: 'mvt',
+            scope: 'server',
+            styles: [{
+                id: 'water',
+                type: 'fill',
+                'source-layer': 'water',
+                paint: { 'fill-color': '#0000ff' }
+            }]
+        },
+    }, true);
+
+    assert.equal(res.body.id, 3);
+
+    await flight.fetch('/api/config', {
+        method: 'PUT',
+        auth: { bearer: flight.token.admin },
+        body: {
+            'map::basemap': 3,
+        },
+    }, true);
+});
+
+flight.user({ username: 'vector', admin: false });
+
+test('Profile Default Basemap - New User Overlay Carries Vector Styles', async () => {
+    const res = await flight.fetch('/api/profile/overlay', {
+        method: 'GET',
+        auth: { bearer: flight.token.vector },
+    }, true);
+
+    assert.equal(res.body.total, 1);
+    assert.equal(res.body.items[0].mode, 'basemap');
+    assert.equal(res.body.items[0].mode_id, '3');
+    assert.equal(res.body.items[0].type, 'vector');
+
+    // Styles must be namespaced to the overlay (id prefix + source) or the
+    // frontend won't be able to render them - see Overlay.create/replace
+    const overlayId = res.body.items[0].id;
+    assert.deepEqual(res.body.items[0].styles, [{
+        id: `${overlayId}-water`,
+        type: 'fill',
+        source: String(overlayId),
+        'source-layer': 'water',
+        paint: { 'fill-color': '#0000ff' }
+    }]);
+});
+
+test('Profile Default Basemap - Unset Vector Default Basemap Config', async () => {
+    await flight.fetch('/api/config', {
+        method: 'PUT',
+        auth: { bearer: flight.token.admin },
+        body: {
+            'map::basemap': null,
+        },
+    }, true);
+});
+
 test('Profile Default Basemap - Reject Config for User Scoped Basemap', async () => {
     const userScoped = await flight.fetch('/api/basemap', {
         method: 'POST',

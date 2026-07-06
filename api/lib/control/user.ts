@@ -77,7 +77,7 @@ export default class UserControl {
 
         if (existing > 0) return;
 
-        let basemap: InferSelectModel<typeof Basemap> | undefined = undefined;
+        let basemap: (InferSelectModel<typeof Basemap> & { styles?: Array<unknown> }) | undefined = undefined;
 
         const configured = await this.config.models.Setting.typed('map::basemap', null);
 
@@ -114,7 +114,7 @@ export default class UserControl {
         if (!basemap) return;
 
         try {
-            await this.config.models.ProfileOverlay.generate({
+            const overlay = await this.config.models.ProfileOverlay.generate({
                 name: basemap.name,
                 username,
                 pos: -1,
@@ -122,7 +122,26 @@ export default class UserControl {
                 mode: 'basemap',
                 mode_id: String(basemap.id),
                 url: `/api/basemap/${basemap.id}/tiles`,
+                frequency: basemap.frequency,
             });
+
+            // Vector basemaps are unrenderable without their style layers - the
+            // frontend fallback generates CoT styles bound to a source-layer that
+            // won't exist in an arbitrary tileset. Persisted ProfileOverlay styles
+            // are namespaced to the overlay (see Overlay.create in the frontend):
+            // layer ids are prefixed with the overlay id and the source is the
+            // overlay id, which is why this can't be set in the generate() above.
+            const styles = (basemap.styles ?? []) as Array<Record<string, unknown>>;
+
+            if (styles.length) {
+                await this.config.models.ProfileOverlay.commit(overlay.id, {
+                    styles: styles.map((layer) => ({
+                        ...layer,
+                        id: `${overlay.id}-${layer.id}`,
+                        source: String(overlay.id),
+                    })),
+                });
+            }
         } catch (err) {
             // A concurrent login may have already provisioned the overlay - (username, url) is unique
             if (!String(err).includes('duplicate key value violates unique constraint')) throw err;
