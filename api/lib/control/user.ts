@@ -135,7 +135,7 @@ export default class UserControl {
 
             if (styles.length) {
                 await this.config.models.ProfileOverlay.commit(overlay.id, {
-                    styles: styles.map((layer) => ({
+                    styles: styles.map(layer => ({
                         ...layer,
                         id: `${overlay.id}-${layer.id}`,
                         source: String(overlay.id),

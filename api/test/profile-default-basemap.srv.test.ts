@@ -123,11 +123,11 @@ test('Profile Default Basemap - Create Vector Basemap with Styles', async () => 
             format: 'mvt',
             scope: 'server',
             styles: [{
-                id: 'water',
-                type: 'fill',
+                'id': 'water',
+                'type': 'fill',
                 'source-layer': 'water',
-                paint: { 'fill-color': '#0000ff' }
-            }]
+                'paint': { 'fill-color': '#0000ff' },
+            }],
         },
     }, true);
 
@@ -159,11 +159,11 @@ test('Profile Default Basemap - New User Overlay Carries Vector Styles', async (
     // frontend won't be able to render them - see Overlay.create/replace
     const overlayId = res.body.items[0].id;
     assert.deepEqual(res.body.items[0].styles, [{
-        id: `${overlayId}-water`,
-        type: 'fill',
-        source: String(overlayId),
+        'id': `${overlayId}-water`,
+        'type': 'fill',
+        'source': String(overlayId),
         'source-layer': 'water',
-        paint: { 'fill-color': '#0000ff' }
+        'paint': { 'fill-color': '#0000ff' },
     }]);
 });
 
