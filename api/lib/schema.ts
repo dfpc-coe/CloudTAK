@@ -17,6 +17,7 @@ import {
     ProfileChatStatus,
 } from './enums.js';
 import { bigint, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
 export const SpatialRefSys = pgTable('spatial_ref_sys', {
@@ -242,6 +243,7 @@ export const Basemap = pgTable('basemaps', {
     id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    parent: integer().references((): AnyPgColumn => Basemap.id, { onDelete: 'cascade' }),
     name: text().notNull(),
     url: text().notNull(),
 

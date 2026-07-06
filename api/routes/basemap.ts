@@ -34,6 +34,15 @@ const AugmentedBasemapResponse = Type.Composite([
     }),
 ]);
 
+const AugmentedBasemapWithChildrenResponse = Type.Composite([
+    AugmentedBasemapResponse,
+    Type.Object({
+        children: Type.Array(AugmentedBasemapResponse, {
+            description: 'Child Basemaps/Overlays of this Basemap - only a single level of nesting is supported',
+        }),
+    }),
+]);
+
 const OptionalTileJSON = Type.Partial(TileJSON);
 
 const AugmentedTileJSON = Type.Composite([
@@ -55,6 +64,57 @@ const BasemapImportRequest = Type.Object({
     url: Type.String(),
     auth: Type.Optional(BasemapImportAuth),
 });
+
+function augmentBasemap(basemap: any): any {
+    return {
+        ...basemap,
+        bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+        center: basemap.center ? basemap.center.coordinates : undefined,
+        actions: fromProtocol(basemap.protocol, basemap).actions(),
+    };
+}
+
+async function listChildren(
+    config: Config,
+    parent: number,
+    user?: { email: string; access: AuthUserAccess },
+): Promise<Array<any>> {
+    const where = !user || user.access === AuthUserAccess.ADMIN
+        ? sql`parent = ${Param(parent)}::INT`
+        : sql`parent = ${Param(parent)}::INT AND (username IS NULL OR username = ${Param(user.email)}::TEXT)`;
+
+    const children = await config.models.Basemap.list({
+        limit: Default.Limit.maximum,
+        where,
+    });
+
+    return children.items.map(child => augmentBasemap(child));
+}
+
+async function validateParent(
+    config: Config,
+    parentid: number,
+    user: { email: string; access: AuthUserAccess },
+): Promise<void> {
+    let parent;
+    try {
+        parent = await config.models.Basemap.from(parentid);
+    } catch (err) {
+        if (err && typeof err === 'object' && 'status' in err && err.status === 404) {
+            throw new Err(400, null, 'Parent Basemap does not exist');
+        }
+
+        throw err;
+    }
+
+    if (parent.username && parent.username !== user.email && user.access === AuthUserAccess.USER) {
+        throw new Err(400, null, 'You don\'t have permission to access the parent resource');
+    }
+
+    if (parent.parent !== null) {
+        throw new Err(400, null, 'Basemaps can only be nested a single level deep');
+    }
+}
 
 function isEsriLayerURL(url: string): boolean {
     return !!(
@@ -321,6 +381,7 @@ export default async function router(schema: Schema, config: Config) {
                     sort: req.query.sort,
                     where: sql`
                         name ~* ${Param(req.query.filter)}
+                        AND parent IS NULL
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                         AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
                         AND (
@@ -344,6 +405,7 @@ export default async function router(schema: Schema, config: Config) {
                         sort: req.query.sort,
                         where: sql`
                             collection ~* ${Param(req.query.filter)}
+                            AND parent IS NULL
                             AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                             AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
                             AND (
@@ -367,6 +429,7 @@ export default async function router(schema: Schema, config: Config) {
                     sort: req.query.sort,
                     where: sql`
                         name ~* ${Param(req.query.filter)}
+                        AND parent IS NULL
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                         AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
                         AND (
@@ -390,6 +453,7 @@ export default async function router(schema: Schema, config: Config) {
                         sort: req.query.sort,
                         where: sql`
                             collection ~* ${Param(req.query.filter)}
+                            AND parent IS NULL
                             AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                             AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
                             AND (
@@ -431,6 +495,10 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Default.NameField,
+            parent: Type.Optional(Type.Integer({
+                minimum: 1,
+                description: 'Create this Basemap/Overlay as a child of the given parent Basemap/Overlay - only a single level of nesting is supported',
+            })),
             sharing_enabled: Type.Boolean({
                 default: true,
                 description: 'Allow CloudTAK users to share this layer with other users',
@@ -470,6 +538,10 @@ export default async function router(schema: Schema, config: Config) {
             const user = req.query.impersonate
                 ? await Auth.impersonate(config, req, req.query.impersonate)
                 : await Auth.as_user(config, req);
+
+            if (req.body.parent !== undefined) {
+                await validateParent(config, req.body.parent, user);
+            }
 
             let bounds: Geometry | undefined = undefined;
             if (req.body.bounds) {
@@ -557,6 +629,9 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Type.Optional(Default.NameField),
+            parent: Type.Optional(Type.Union([Type.Null(), Type.Integer({ minimum: 1 })], {
+                description: 'Make this Basemap/Overlay a child of the given parent Basemap/Overlay - only a single level of nesting is supported',
+            })),
             sharing_enabled: Type.Optional(Type.Boolean()),
             snapping_enabled: Type.Optional(Type.Boolean({
                 description: 'Allow CloudTAK line editing to snap to features in this basemap',
@@ -599,6 +674,23 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.center) center = { type: 'Point', coordinates: req.body.center };
 
             const existing = await config.models.Basemap.from(req.params.basemapid);
+
+            if (req.body.parent !== undefined && req.body.parent !== null && req.body.parent !== existing.parent) {
+                if (req.body.parent === req.params.basemapid) {
+                    throw new Err(400, null, 'A Basemap cannot be its own parent');
+                }
+
+                await validateParent(config, req.body.parent, user);
+
+                const children = await config.models.Basemap.list({
+                    limit: 1,
+                    where: sql`parent = ${Param(req.params.basemapid)}::INT`,
+                });
+
+                if (children.total > 0) {
+                    throw new Err(400, null, 'Basemaps can only be nested a single level deep');
+                }
+            }
 
             if (req.body.url) fromProtocol(req.body.protocol ?? existing.protocol).isValidURL(req.body.url);
 
@@ -682,7 +774,7 @@ export default async function router(schema: Schema, config: Config) {
             format: Type.Optional(Type.String()),
             token: Type.Optional(Type.String()),
         }),
-        res: Type.Union([AugmentedBasemapResponse, Type.String()]),
+        res: Type.Union([AugmentedBasemapWithChildrenResponse, Type.String()]),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { token: true });
@@ -715,10 +807,8 @@ export default async function router(schema: Schema, config: Config) {
                 res.send(xml);
             } else {
                 res.json({
-                    ...basemap,
-                    bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
-                    center: basemap.center ? basemap.center.coordinates : undefined,
-                    actions: fromProtocol(basemap.protocol, basemap).actions(),
+                    ...augmentBasemap(basemap),
+                    children: await listChildren(config, basemap.id, user),
                 });
             }
         } catch (err) {

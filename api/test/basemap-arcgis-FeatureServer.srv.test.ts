@@ -50,6 +50,7 @@ test('POST: api/basemap - ArcGIS Feature Server Source', async () => {
 
         assert.deepEqual(res.body, {
             id: 1,
+            parent: null,
             name: 'Emergency Facilities',
             actions: { feature: ['fetch', 'query'] },
             url: ARCGIS_FEATURE_URL,

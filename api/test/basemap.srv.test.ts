@@ -107,6 +107,7 @@ test('POST: api/basemap', async () => {
 
         assert.deepEqual(res.body, {
             id: 1,
+            parent: null,
             name: 'Test Basemap',
             hidden: false,
             actions: { feature: [] },
@@ -182,6 +183,7 @@ test('PATCH: api/basemap/1', async () => {
 
         assert.deepEqual(res.body, {
             id: 1,
+            parent: null,
             name: 'Test Basemap2',
             hidden: false,
             actions: { feature: [] },
