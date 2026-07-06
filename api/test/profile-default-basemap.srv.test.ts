@@ -137,7 +137,7 @@ test('Profile Default Basemap - Reject Config for User Scoped Basemap', async ()
 
 flight.server('admin@example.com', 'password123');
 
-test('Profile Default Basemap - Login Provisions Basemap for Existing User', async () => {
+test('Profile Default Basemap - Login for Existing User Skips Provisioning', async () => {
     const before = await flight.fetch('/api/profile/overlay', {
         method: 'GET',
         auth: { bearer: flight.token.admin },
@@ -160,10 +160,29 @@ test('Profile Default Basemap - Login Provisions Basemap for Existing User', asy
         auth: { bearer: flight.token.admin },
     }, true);
 
-    assert.equal(after.body.total, 1);
-    assert.equal(after.body.items[0].mode, 'basemap');
-    assert.equal(after.body.items[0].name, 'Alpha Basemap');
-    assert.equal(after.body.items[0].url, '/api/basemap/2/tiles');
+    assert.equal(after.body.total, 0);
+});
+
+test('Profile Default Basemap - First Login Provisions Basemap for New User', async () => {
+    const login = await flight.fetch('/api/login', {
+        method: 'POST',
+        body: {
+            username: 'newuser@example.com',
+            password: 'password123',
+        },
+    }, true);
+
+    assert.ok(login.body.token);
+
+    const res = await flight.fetch('/api/profile/overlay', {
+        method: 'GET',
+        auth: { bearer: login.body.token },
+    }, true);
+
+    assert.equal(res.body.total, 1);
+    assert.equal(res.body.items[0].mode, 'basemap');
+    assert.equal(res.body.items[0].name, 'Alpha Basemap');
+    assert.equal(res.body.items[0].url, '/api/basemap/2/tiles');
 });
 
 flight.landing();

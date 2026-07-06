@@ -43,10 +43,6 @@ export default class AuthProvider {
 
         await this.valid(profile, password);
 
-        // Users provisioned before default basemap creation moved server side
-        // may not yet have a basemap - ensure one exists before login succeeds
-        await this.userControl.ensureDefaultBasemap(profile.username);
-
         return contents.sub;
     }
 
