@@ -111,4 +111,59 @@ test('Profile Default Basemap - New User Falls Back to First Raster Basemap', as
     assert.equal(res.body.items[0].url, '/api/basemap/2/tiles');
 });
 
+test('Profile Default Basemap - Reject Config for User Scoped Basemap', async () => {
+    const userScoped = await flight.fetch('/api/basemap', {
+        method: 'POST',
+        auth: { bearer: flight.token.admin },
+        body: {
+            name: 'User Scoped Basemap',
+            url: 'https://test.com/user/{z}/{x}/{y}',
+            protocol: 'zxy',
+            scope: 'user',
+        },
+    }, true);
+
+    const res = await flight.fetch('/api/config', {
+        method: 'PUT',
+        auth: { bearer: flight.token.admin },
+        body: {
+            'map::basemap': userScoped.body.id,
+        },
+    }, false);
+
+    assert.equal(res.status, 400);
+    assert.equal(res.body.message, 'Default Basemap must be a visible, non-overlay Server Basemap');
+});
+
+flight.server('admin@example.com', 'password123');
+
+test('Profile Default Basemap - Login Provisions Basemap for Existing User', async () => {
+    const before = await flight.fetch('/api/profile/overlay', {
+        method: 'GET',
+        auth: { bearer: flight.token.admin },
+    }, true);
+
+    assert.equal(before.body.total, 0);
+
+    const login = await flight.fetch('/api/login', {
+        method: 'POST',
+        body: {
+            username: 'admin@example.com',
+            password: 'password123',
+        },
+    }, true);
+
+    assert.ok(login.body.token);
+
+    const after = await flight.fetch('/api/profile/overlay', {
+        method: 'GET',
+        auth: { bearer: flight.token.admin },
+    }, true);
+
+    assert.equal(after.body.total, 1);
+    assert.equal(after.body.items[0].mode, 'basemap');
+    assert.equal(after.body.items[0].name, 'Alpha Basemap');
+    assert.equal(after.body.items[0].url, '/api/basemap/2/tiles');
+});
+
 flight.landing();

@@ -83,7 +83,13 @@ export default class UserControl {
 
         if (configured.value !== null) {
             try {
-                basemap = await this.config.models.Basemap.from(Number(configured.value));
+                const candidate = await this.config.models.Basemap.from(Number(configured.value));
+
+                if (candidate.username || candidate.overlay || candidate.hidden) {
+                    console.error(`Configured Default Basemap (map::basemap: ${configured.value}) is not a visible, non-overlay Server Basemap - falling back`);
+                } else {
+                    basemap = candidate;
+                }
             } catch (err) {
                 console.error(`Configured Default Basemap (map::basemap: ${configured.value}) could not be found - falling back`, err);
             }
@@ -95,7 +101,7 @@ export default class UserControl {
                 order: GenericListOrder.ASC,
                 sort: 'name',
                 where: sql`
-                    (username IS NULL OR username = ${username})
+                    username IS NULL
                     AND overlay = False
                     AND hidden = False
                     AND type = 'raster'

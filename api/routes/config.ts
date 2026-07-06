@@ -126,10 +126,15 @@ export default async function router(schema: Schema, config: Config) {
             const refreshGeofence = updatedKeys.some(key => GeofenceConfigKeys.has(key));
 
             if (req.body['map::basemap'] !== undefined && req.body['map::basemap'] !== null) {
+                let basemap;
                 try {
-                    await config.models.Basemap.from(req.body['map::basemap']);
+                    basemap = await config.models.Basemap.from(req.body['map::basemap']);
                 } catch (err) {
                     throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Default Basemap (${req.body['map::basemap']}) does not exist`);
+                }
+
+                if (basemap.username || basemap.overlay || basemap.hidden) {
+                    throw new Err(400, null, 'Default Basemap must be a visible, non-overlay Server Basemap');
                 }
             }
 
