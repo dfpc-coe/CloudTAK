@@ -10,6 +10,7 @@ import cp from 'node:child_process';
 
 import Tippecanoe from './tippecanoe.ts';
 import { countFeatures } from './utils.ts';
+import { buildSearchDatabase } from './search.ts';
 import { isPMTiles } from './sniff.ts';
 
 // Formats
@@ -221,6 +222,37 @@ export default class DataTransform {
                 throw new Error(`Failed to update asset: ${await res.text()}`);
             } else {
                 this.asset = await res.json() as Asset;
+            }
+
+            console.log(`ok - building search database ${conversion.asset}`);
+            const searchPath = path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.duckdb');
+            await buildSearchDatabase(conversion.asset, searchPath, this.local.tmpdir);
+
+            const searchuploader = new Upload({
+                client: s3,
+                params: {
+                    Bucket: this.msg.bucket,
+                    Key: `profile/${this.msg.job.username}/${this.asset.id}.duckdb`,
+                    Body: fs.createReadStream(searchPath),
+                },
+            });
+            await searchuploader.done();
+
+            artifacts.push({ ext: '.duckdb' });
+            const searchRes = await fetch(new URL(`/api/profile/asset/${this.asset.id}`, this.msg.api), {
+                safeUrlAllow: [this.msg.api],
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                },
+                body: JSON.stringify({ artifacts }),
+            });
+
+            if (!searchRes.ok) {
+                throw new Error(`Failed to update asset: ${await searchRes.text()}`);
+            } else {
+                this.asset = await searchRes.json() as Asset;
             }
 
             const tp = new Tippecanoe();
