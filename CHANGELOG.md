@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.34.1 - 2026-07-06
+
+- :white_check_mark: Add complete CodeCov coverage upload
+
 ### v13.34.0 - 2026-07-05
 
 - :rocket: Move initial default basemap creation from the frontend map load to backend user provisioning - new users get a Basemap ProfileOverlay (from `map::basemap` config if set and existing, otherwise the first visible server raster basemap) before login succeeds
