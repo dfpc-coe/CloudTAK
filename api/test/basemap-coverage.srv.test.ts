@@ -518,18 +518,29 @@ test('DELETE: api/basemap/5 - Non-admin cannot delete server-scoped basemap', as
     assert.ok(res.body.message.includes('Only System Admin'));
 });
 
-test('PUT: api/config - Set basemap 1 as default', async () => {
+test('PUT: api/config - Cannot set user-scoped basemap 1 as default', async () => {
     const res = await flight.fetch('/api/config', {
         method: 'PUT',
         auth: { bearer: flight.token.admin },
         body: { 'map::basemap': 1 },
-    }, true);
+    }, false);
 
-    assert.equal(res.body['map::basemap'], 1);
+    assert.equal(res.body.status, 400);
+    assert.ok(res.body.message.includes('Default Basemap must be a visible, non-overlay Server Basemap'));
 });
 
-test('DELETE: api/basemap/1 - Cannot delete default basemap', async () => {
-    const res = await flight.fetch('/api/basemap/1', {
+test('PUT: api/config - Set server-scoped basemap 5 as default', async () => {
+    const res = await flight.fetch('/api/config', {
+        method: 'PUT',
+        auth: { bearer: flight.token.admin },
+        body: { 'map::basemap': 5 },
+    }, true);
+
+    assert.equal(res.body['map::basemap'], 5);
+});
+
+test('DELETE: api/basemap/5 - Cannot delete default basemap', async () => {
+    const res = await flight.fetch('/api/basemap/5', {
         method: 'DELETE',
         auth: { bearer: flight.token.admin },
     }, false);

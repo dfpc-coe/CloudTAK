@@ -30,6 +30,7 @@ test('Config: Default Basemap Flow - Create Basemap', async () => {
                 name: 'Default Basemap Test',
                 url: 'https://test.com/default/{z}/{x}/{y}',
                 protocol: 'zxy',
+                scope: 'server',
             },
         }, true);
 
