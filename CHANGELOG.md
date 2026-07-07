@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.34.2 - 2026-07-06
+
+- :white_check_mark: Update Batch Schema and Batch Generic for 1.6x API perf increase
+
 ### v13.34.1 - 2026-07-06
 
 - :white_check_mark: Add complete CodeCov coverage upload
