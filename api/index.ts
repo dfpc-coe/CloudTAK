@@ -364,7 +364,30 @@ export default async function server(config: Config): Promise<ServerManager> {
             return resolve(sm);
         });
 
-        srv.on('upgrade', (request, socket, head) => {
+        srv.on('upgrade', async (request, socket, head) => {
+            // A socket dropped during the async auth check would otherwise
+            // surface as an unhandled 'error' event and crash the process
+            socket.on('error', () => socket.destroy());
+
+            // Reject a dead session with an HTTP 401 during the handshake -
+            // an accepted socket fires the client's `open` handler and kicks
+            // off a full sync before the auth error ever reaches it
+            try {
+                const params = new URLSearchParams((request.url || '').replace(/.*\?/, ''));
+                const token = params.get('token');
+                if (!token) throw new Error('Token Parameter Required');
+
+                await tokenParser(config, token, config.SigningSecret);
+            } catch (err) {
+                if (err instanceof Error && !err.message.includes('jwt expired')) {
+                    console.error('Error: WebSocket Upgrade: ', err);
+                }
+
+                socket.write('HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n');
+                socket.destroy();
+                return;
+            }
+
             wss.handleUpgrade(request, socket, head, (ws: WebSocket) => {
                 wss.emit('connection', ws, request);
             });
