@@ -16,6 +16,8 @@
 
 ### Pending Release
 
+### v13.37.0 - 2026-07-07
+
 - :bug: Reject the WebSocket upgrade with an HTTP 401 during the handshake when the connection token is invalid or expired, instead of accepting then closing - the client previously fired its `open` handler (and a full data resync) against a dead session
 - :bug: Fix `AtlasConnection.reconnect()` racing its own `close` handler into opening two concurrent WebSockets
 - :bug: Apply linear backoff (5s increments, capped at 30s) to Atlas WebSocket reconnect attempts instead of reconnecting immediately in a tight loop
