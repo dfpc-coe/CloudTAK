@@ -1,6 +1,6 @@
 {
     "json": true,
-    "url": "http://localhost:5001/api/server",
+    "url": "/api/server",
     "method": "POST",
     "body": {
         "name": "Default Server",

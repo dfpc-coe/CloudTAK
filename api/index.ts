@@ -349,12 +349,14 @@ export default async function server(config: Config): Promise<ServerManager> {
     });
 
     return new Promise((resolve) => {
-        const srv = app.listen(5001, () => {
+        const srv = app.listen(parseInt(process.env.PORT || '5001'), () => {
             if (!config.silent) {
                 if (process.env.CLOUDTAK_Mode === 'docker-compose') {
                     console.log('ok - http://localhost:5000');
                 } else {
-                    console.log('ok - http://localhost:5001');
+                    const address = srv.address();
+                    const port = address && typeof address === 'object' ? address.port : process.env.PORT || '5001';
+                    console.log(`ok - http://localhost:${port}`);
                 }
             }
 
