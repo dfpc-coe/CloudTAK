@@ -16,9 +16,13 @@
 
 ### Pending Release
 
+### v13.36.1 - 2026-07-07
+
+- :bug: Fix TS enum compilation in Events Task
+
 ### v13.36.0 - 2026-07-07
 
-- :bug: Detect and throw an error if the user attempts to download a file and the TAK Server 404's
+- :bug: detect and throw an error if the user attempts to download a file and the tak server 404's
 - :bug: Detect invalid Zip files within a Data Package in the events task
 - :bug: Create new togeojson library using @tak-ps/xml-js for more lenient XML parsing
 
