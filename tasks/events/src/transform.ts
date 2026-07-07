@@ -51,7 +51,7 @@ export default class DataTransform {
         const s3 = s3client();
 
         if (!formats.has(this.local.ext)) {
-            throw new Error('Unsupported Input Format');
+            throw new Error(`Unsupported Input Format: '${this.local.name}' (${this.local.ext || 'no extension'})`);
         }
 
         const convert = new (formats.get(this.local.ext))(this.msg, this.local);
