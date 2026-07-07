@@ -5,6 +5,7 @@ import type { StyleContainer } from './style.js';
 import type { FilterContainer } from './filter.js';
 import type { PaletteFeatureStyle } from './palette.js';
 import { Polygon, Point } from 'geojson';
+import type { Feature } from '@tak-ps/node-cot';
 import { geometry, GeometryType, jsonb } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
 import { Layer_Config } from './models/Layer.js';
@@ -205,7 +206,7 @@ export const ProfileFeature = pgTable('profile_features', {
     deleted: boolean().notNull().default(false),
     username: text().notNull().references(() => Profile.username),
     enabled_geofence: boolean().notNull().default(false),
-    properties: jsonb().notNull().default({}),
+    properties: jsonb().$type<Static<typeof Feature.Properties>>().notNull().default(sql`'{}'::JSONB`),
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull(),
 }, (table) => {
     return {
@@ -394,7 +395,7 @@ export const ConnectionFeature = pgTable('connection_features', {
     layer: integer().references(() => Layer.id),
     enabled_geofence: boolean().notNull().default(false),
     connection: integer().notNull().references(() => Connection.id),
-    properties: jsonb().notNull().default({}),
+    properties: jsonb().$type<Static<typeof Feature.Properties>>().notNull().default(sql`'{}'::JSONB`),
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull(),
 }, (table) => {
     return {
