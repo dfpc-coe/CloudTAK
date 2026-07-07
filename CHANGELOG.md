@@ -16,6 +16,13 @@
 
 ### Pending Release
 
+- :bug: Reject the WebSocket upgrade with an HTTP 401 during the handshake when the connection token is invalid or expired, instead of accepting then closing - the client previously fired its `open` handler (and a full data resync) against a dead session
+- :bug: Fix `AtlasConnection.reconnect()` racing its own `close` handler into opening two concurrent WebSockets
+- :bug: Apply linear backoff (5s increments, capped at 30s) to Atlas WebSocket reconnect attempts instead of reconnecting immediately in a tight loop
+- :bug: Stop reconnecting the Atlas WebSocket once the server rejects the client's auth token, and propagate the failure to the main thread so the user's dead session is cleared and they are routed to `/login` (local database is preserved)
+- :tada: Warn the user ~30 minutes before their session token expires, with a banner to sign back in before it lapses
+- :white_check_mark: Add `websocket-auth.srv.test.ts` covering WebSocket upgrade rejection/acceptance based on token validity
+
 ### v13.36.2 - 2026-07-07
 
 - :white_check_mark: Use non-standard ports for API server when running tests so they can run when alongside a dev server
