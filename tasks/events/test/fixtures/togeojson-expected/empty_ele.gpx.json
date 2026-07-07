@@ -1,0 +1,33 @@
+{
+  "gpx": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "_gpxType": "trk",
+          "time": "2007-05-11T15:22:06Z",
+          "coordinateProperties": {
+            "times": [
+              "2007-05-11T15:22:06Z",
+              "2007-05-11T15:22:06Z"
+            ]
+          }
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -77.01059,
+              38.892101
+            ],
+            [
+              -77.01059,
+              38.892101
+            ]
+          ]
+        }
+      }
+    ]
+  }
+}
