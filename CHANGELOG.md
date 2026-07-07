@@ -16,6 +16,20 @@
 
 ### Pending Release
 
+### v13.34.2 - 2026-07-06
+
+- :white_check_mark: Update Batch Schema and Batch Generic for 1.6x API perf increase
+
+### v13.34.1 - 2026-07-06
+
+- :white_check_mark: Add complete CodeCov coverage upload
+
+### v13.34.0 - 2026-07-05
+
+- :rocket: Move initial default basemap creation from the frontend map load to backend user provisioning - new users get a Basemap ProfileOverlay (from `map::basemap` config if set and existing, otherwise the first visible server raster basemap) before login succeeds
+- :rocket: `PUT /api/config` now rejects a `map::basemap` value that references a non-existent Basemap or one that is not a visible, non-overlay Server Basemap
+- :white_check_mark: Add `profile-default-basemap.srv.test.ts` covering configured, fallback, and validation flows
+
 ### v13.33.1 - 2026-07-05
 
 - :rocket: update internal type defs

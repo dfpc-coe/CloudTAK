@@ -10,7 +10,7 @@ import drop from './drop.js';
 import { pathToRegexp } from 'path-to-regexp';
 import test from 'node:test';
 import assert from 'node:assert';
-import ProfileControl from '../lib/control/profile.js';
+import UserControl from '../lib/control/user.js';
 import { Ajv } from 'ajv';
 import type { FormatsPlugin } from 'ajv-formats';
 import * as ajvFormats from 'ajv-formats';
@@ -282,7 +282,7 @@ export default class Flight {
 
             if (!this.config) throw new Error('TakeOff not completed');
 
-            const profileControl = new ProfileControl(this.config);
+            const userControl = new UserControl(this.config);
 
             CP.execSync(`
                 openssl req \
@@ -306,7 +306,7 @@ export default class Flight {
                     2> /dev/null
             `);
 
-            await profileControl.generate({
+            await userControl.generate({
                 username: username + '@example.com',
                 system_admin: opts.admin,
                 auth: {
