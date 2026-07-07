@@ -1261,6 +1261,13 @@
       "when": 1783138014808,
       "tag": "0180_chat_status",
       "breakpoints": true
+    },
+    {
+      "idx": 181,
+      "version": "7",
+      "when": 1783288621788,
+      "tag": "0181_equal_frog_thor",
+      "breakpoints": true
     }
   ]
 }

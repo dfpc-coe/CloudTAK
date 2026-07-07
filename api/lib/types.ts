@@ -482,6 +482,9 @@ export const BasemapResponse = Type.Object({
     id: Type.Integer(),
     created: Type.String(),
     updated: Type.String(),
+    parent: Type.Union([Type.Null(), Type.Integer()], {
+        description: 'If set, this Basemap/Overlay is a child of the given parent Basemap/Overlay',
+    }),
     name: Type.String(),
     url: Type.String(),
     protocol: Type.Enum(Basemap_Protocol),

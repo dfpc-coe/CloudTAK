@@ -48,6 +48,7 @@ test('POST: api/basemap - ArcGIS Imagery Source', async () => {
 
         assert.deepEqual(res.body, {
             id: 1,
+            parent: null,
             name: 'USGS NAIP Imagery',
             actions: { feature: [] },
             url: ARCGIS_IMAGERY_URL,

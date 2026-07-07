@@ -1,0 +1,2 @@
+ALTER TABLE "basemaps" ADD COLUMN "parent" integer;--> statement-breakpoint
+ALTER TABLE "basemaps" ADD CONSTRAINT "basemaps_parent_basemaps_id_fk" FOREIGN KEY ("parent") REFERENCES "public"."basemaps"("id") ON DELETE cascade ON UPDATE no action;

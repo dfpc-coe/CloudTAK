@@ -18,6 +18,7 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
 
     async generate(input: any): Promise<any> {
         const base = await super.generate({
+            parent: input.parent,
             name: input.name,
             url: input.url,
             protocol: input.protocol,
@@ -91,6 +92,7 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
 
     async commit(id: number, input: any): Promise<any> {
         const base = await super.commit(id, {
+            parent: input.parent,
             name: input.name,
             url: input.url,
             protocol: input.protocol,
