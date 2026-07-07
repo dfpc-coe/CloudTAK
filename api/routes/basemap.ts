@@ -676,7 +676,7 @@ export default async function router(schema: Schema, config: Config) {
             const existing = await config.models.Basemap.from(req.params.basemapid);
 
             if (req.body.parent !== undefined && req.body.parent !== null && req.body.parent !== existing.parent) {
-                if (req.body.parent === req.params.basemapid) {
+                if (req.body.parent === Number(req.params.basemapid)) {
                     throw new Err(400, null, 'A Basemap cannot be its own parent');
                 }
 
