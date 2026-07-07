@@ -8,9 +8,9 @@ import jwt from 'jsonwebtoken';
 import { fetch } from '@tak-ps/node-safeurl';
 
 export default class WorkerPool extends EventEmitter {
-    interval: NodeJS.Timer;
+    interval: NodeJS.Timeout;
 
-    isClosing: boolean;
+    isClosing = false;
 
     api: string;
     secret: string;
@@ -57,7 +57,10 @@ export default class WorkerPool extends EventEmitter {
 
                     this.emit('job', job);
 
-                    const worker = new Worker(new URL('./src/comms.ts', import.meta.url));
+                    // import.meta.url is index.ts in dev/test and index.js once compiled to dist/;
+                    // match the sibling worker entrypoint's extension either way.
+                    const commsExt = import.meta.url.endsWith('.ts') ? 'ts' : 'js';
+                    const worker = new Worker(new URL(`./src/comms.${commsExt}`, import.meta.url));
                     worker.on('error', (err) => {
                         console.error(`Worker Thread Error (Import ${job.id}):`, err);
                     });
@@ -97,7 +100,7 @@ export default class WorkerPool extends EventEmitter {
         }, opts.interval);
     }
 
-    async success(importid: number): Promise<boolean> {
+    async success(importid: string): Promise<boolean> {
         const res = await fetch(new URL(`/api/import/${importid}`, this.api), {
             safeUrlAllow: [this.api],
             method: 'PATCH',
@@ -115,7 +118,7 @@ export default class WorkerPool extends EventEmitter {
         return true;
     }
 
-    async lock(importid: number): Promise<Import> {
+    async lock(importid: string): Promise<Import> {
         const res = await fetch(new URL(`/api/import/${importid}`, this.api), {
             safeUrlAllow: [this.api],
             method: 'PATCH',
@@ -134,7 +137,7 @@ export default class WorkerPool extends EventEmitter {
     }
 
     async error(
-        importid: number,
+        importid: string,
         error: string,
     ): Promise<boolean> {
         const res = await fetch(new URL(`/api/import/${importid}`, this.api), {
