@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.35.0 - 2026-07-06
+
+- :rocket: Introduce `parent` field on basemap
+
 ### v13.34.2 - 2026-07-06
 
 - :white_check_mark: Update Batch Schema and Batch Generic for 1.6x API perf increase
