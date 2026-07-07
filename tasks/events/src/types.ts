@@ -1,11 +1,27 @@
 import type { paths } from '@cloudtak/api-types';
 
+export type GroundOverlaySource = {
+    name?: string;
+    image: string;
+    // Geographic positions of the image corners in UL, UR, LR, LL order
+    corners: [[number, number], [number, number], [number, number], [number, number]];
+    // Unrotated envelope of the corners as [west, south, east, north]
+    bounds: [number, number, number, number];
+};
+
 export type ConvertResponse = {
     asset: string;
     icons?: Set<{
         name: string;
         data: string;
     }>;
+    groundOverlays?: Array<GroundOverlaySource>;
+};
+
+export type TransformResult = {
+    // True if a PMTiles artifact was generated & uploaded for the asset
+    pmtiles: boolean;
+    groundOverlays: Array<GroundOverlaySource>;
 };
 
 export interface Transform {

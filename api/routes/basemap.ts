@@ -852,9 +852,13 @@ export default async function router(schema: Schema, config: Config) {
 
             let tileURL: string;
 
+            // Hosted basemaps created from file imports embed their own file-scoped
+            // PMTiles token in the stored URL - those URLs are already self-authenticating
+            const embeddedToken = /[?&]token=([^&]+)/.exec(basemap.url);
+
             if (basemap.url.includes(new URL(config.PMTILES_URL || 'http://localhost:5001').hostname)) {
                 tileURL = basemap.url;
-                if (req.query.token) tileURL = tileURL + `?token=${req.query.token}`;
+                if (req.query.token && !embeddedToken) tileURL = tileURL + `?token=${req.query.token}`;
             } else {
                 tileURL = config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
                 if (req.query.token) tileURL = tileURL + `?token=${req.query.token}`;
@@ -920,7 +924,7 @@ export default async function router(schema: Schema, config: Config) {
                 // URL.pathname percent-encodes the `{z}/{x}/{y}` template braces to
                 // `%7B`/`%7D`, so decode before stripping the tile-coordinate segment.
                 tilejsonUrl.pathname = decodeURIComponent(parsedUrl.pathname).replace(/\/tiles\/\{[^}]+\}.*$/, '');
-                tilejsonUrl.searchParams.set('token', auth.token);
+                tilejsonUrl.searchParams.set('token', embeddedToken ? embeddedToken[1] : auth.token);
 
                 const tj = await fetch(tilejsonUrl);
                 if (!tj.ok) {

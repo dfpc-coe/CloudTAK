@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import readline from 'node:readline';
 import jwt from 'jsonwebtoken';
 import { randomUUID } from 'node:crypto';
-import type { Message, LocalMessage, Asset } from './types.ts';
+import type { Message, LocalMessage, Asset, TransformResult } from './types.ts';
 import s3client from './s3.ts';
 import { Upload } from '@aws-sdk/lib-storage';
 import path from 'node:path';
@@ -47,7 +47,7 @@ export default class DataTransform {
         this.asset = asset;
     }
 
-    async run() {
+    async run(): Promise<TransformResult> {
         const s3 = s3client();
 
         if (!formats.has(this.local.ext)) {
@@ -228,6 +228,16 @@ export default class DataTransform {
             // Check for zero features before tiling
             const featureCount = await countFeatures(conversion.asset);
             if (featureCount === 0) {
+                // A KML/KMZ that only contains GroundOverlays has no vector features -
+                // the overlays are still processed as raster children by the caller
+                if (conversion.groundOverlays && conversion.groundOverlays.length) {
+                    console.log(`ok - no vector features in ${conversion.asset} - skipping tileset`);
+                    return {
+                        pmtiles: false,
+                        groundOverlays: conversion.groundOverlays,
+                    };
+                }
+
                 throw new Error(`No features found in ${conversion.asset}. Cannot create tileset.`);
             }
             console.log(`Found ${featureCount} features to tile`);
@@ -295,5 +305,10 @@ export default class DataTransform {
         } else {
             this.asset = await res.json() as Asset;
         }
+
+        return {
+            pmtiles: true,
+            groundOverlays: conversion.groundOverlays || [],
+        };
     }
 }

@@ -4,11 +4,13 @@ import { rimraf } from 'rimraf';
 import { randomUUID } from 'node:crypto';
 import { Upload } from '@aws-sdk/lib-storage';
 import { EventEmitter } from 'node:events';
-import type { Message, LocalMessage, Asset, ProfileFeature, Basemap as BasemapResponse } from './types.ts';
+import type { Message, LocalMessage, Asset, ProfileFeature, Basemap as BasemapResponse, TransformResult, GroundOverlaySource } from './types.ts';
 import jwt from 'jsonwebtoken';
 import os from 'node:os';
 import fs from 'node:fs';
+import cp from 'node:child_process';
 import path from 'node:path';
+import Sharp from 'sharp';
 import s3client from './s3.ts';
 import { GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { pipeline } from 'node:stream/promises';
@@ -97,7 +99,8 @@ export default class Worker extends EventEmitter {
             const p = path.parse(content._attributes.zipEntry);
             return !p.dir && p.ext.toLowerCase() === '.kml';
         })) {
-            return await this.processFile(local);
+            await this.processFile(local);
+            return;
         }
 
         // We disable cleanup in the parser just in case we choose to
@@ -197,13 +200,14 @@ export default class Worker extends EventEmitter {
      */
     async processFile(
         local: LocalMessage,
-    ): Promise<void> {
+    ): Promise<Asset | undefined> {
         if (local.ext.toLowerCase() === '.xml') {
             try {
                 const xml = fs.readFileSync(local.raw, 'utf-8');
                 await Basemap.parse(xml);
 
-                return await this.processBasemap(xml);
+                await this.processBasemap(xml);
+                return;
             } catch (err) {
                 console.error('Basemap Error: ' + err);
             }
@@ -259,7 +263,198 @@ export default class Worker extends EventEmitter {
             asset,
         );
 
-        await transformer.run();
+        const result = await transformer.run();
+
+        if (result.groundOverlays.length) {
+            await this.processGroundOverlays(local, asset, result);
+        }
+
+        return asset;
+    }
+
+    /**
+     * Returns a file-scoped PMTiles access token that is embedded in the
+     * tile URL of Basemap records created from uploaded files. The token only
+     * grants access to the single PMTiles archive it was created for.
+     */
+    tileToken(file: string): string {
+        return jwt.sign({
+            access: 'profile',
+            email: '',
+            file: `${this.msg.job.username}/${file}`,
+        }, this.msg.secret);
+    }
+
+    /**
+     * Creates a user-scoped hosted Overlay (Basemap) record
+     */
+    async createBasemapOverlay(body: {
+        name: string;
+        url: string;
+        type: string;
+        format: string;
+        minzoom?: number;
+        maxzoom?: number;
+        bounds?: [number, number, number, number];
+        parent?: number;
+    }): Promise<BasemapResponse> {
+        const res = await fetch(new URL(`/api/basemap`, this.msg.api), {
+            safeUrlAllow: [this.msg.api],
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+            },
+            body: JSON.stringify({
+                ...body,
+                overlay: true,
+                protocol: 'hosted',
+                scope: 'user',
+            }),
+        });
+
+        if (!res.ok) throw new Error(await res.text());
+
+        const basemap = await res.json() as BasemapResponse;
+
+        await createImportResult(this.msg, {
+            name: basemap.name,
+            type: 'Basemap',
+            type_id: String(basemap.id),
+        });
+
+        return basemap;
+    }
+
+    /**
+     * Convert a GroundOverlay image into a georeferenced GeoTIFF by assigning
+     * the corner coordinates as Ground Control Points and warping to EPSG:4326.
+     * The GCP approach handles both axis-aligned LatLonBox overlays and
+     * rotated LatLonBox / gx:LatLonQuad overlays with the same code path.
+     */
+    async georeferenceGroundOverlay(
+        local: LocalMessage,
+        overlay: GroundOverlaySource,
+        index: number,
+    ): Promise<string> {
+        const normalized = path.resolve(local.tmpdir, `groundoverlay-${index}-normalized.png`);
+
+        // Normalize exotic image formats and guarantee an alpha band so
+        // rotated overlays warp with transparent corners
+        await Sharp(overlay.image)
+            .ensureAlpha()
+            .png()
+            .toFile(normalized);
+
+        const { width, height } = await Sharp(normalized).metadata();
+        if (!width || !height) throw new Error('Could not determine GroundOverlay image dimensions');
+
+        const [ul, ur, lr, ll] = overlay.corners;
+
+        const unreferenced = path.resolve(local.tmpdir, `groundoverlay-${index}-unreferenced.tif`);
+        const georeferenced = path.resolve(local.tmpdir, `groundoverlay-${index}.tif`);
+
+        cp.execFileSync('gdal', ['raster', 'convert', '--overwrite', normalized, unreferenced]);
+
+        cp.execFileSync('gdal', [
+            'raster', 'edit',
+            '--crs', 'EPSG:4326',
+            '--gcp', `0,0,${ul[0]},${ul[1]}`,
+            '--gcp', `${width},0,${ur[0]},${ur[1]}`,
+            '--gcp', `${width},${height},${lr[0]},${lr[1]}`,
+            '--gcp', `0,${height},${ll[0]},${ll[1]}`,
+            unreferenced,
+        ]);
+
+        cp.execFileSync('gdal', [
+            'raster', 'reproject',
+            '--resampling', 'bilinear',
+            '--output-crs', 'EPSG:4326',
+            '--overwrite',
+            unreferenced, georeferenced,
+        ]);
+
+        return georeferenced;
+    }
+
+    /**
+     * GroundOverlays parsed from an uploaded KML/KMZ are imported as raster
+     * Overlays (Basemap records) with a parent record referring back to the
+     * main KMZ so they are grouped together.
+     *
+     * When the KMZ produced a vector tileset that tileset becomes the parent
+     * Overlay - otherwise the first GroundOverlay acts as the parent for any
+     * remaining overlays.
+     *
+     * @param local  - Local File Information Object for the source KML/KMZ
+     * @param asset  - The Profile Asset created for the source KML/KMZ
+     * @param result - The result of the Data Transform run on the source file
+     */
+    async processGroundOverlays(
+        local: LocalMessage,
+        asset: Asset,
+        result: TransformResult,
+    ): Promise<void> {
+        const configRes = await fetch(new URL(`/api/config/tiles`, this.msg.api), {
+            safeUrlAllow: [this.msg.api],
+            method: 'GET',
+        });
+
+        if (!configRes.ok) throw new Error(await configRes.text());
+
+        const tiles = await configRes.json() as { url: string };
+        const tilesBase = tiles.url.replace(/\/+$/, '');
+
+        let parent: number | undefined = undefined;
+
+        if (result.pmtiles) {
+            const basemap = await this.createBasemapOverlay({
+                name: path.parse(this.msg.job.name).name.slice(0, 64),
+                url: `${tilesBase}/tiles/profile/${this.msg.job.username}/${asset.id}/tiles/{z}/{x}/{y}.mvt?token=${this.tileToken(asset.id)}`,
+                type: 'vector',
+                format: 'mvt',
+                minzoom: 0,
+                maxzoom: 14,
+            });
+
+            parent = basemap.id;
+        }
+
+        for (let i = 0; i < result.groundOverlays.length; i++) {
+            const overlay = result.groundOverlays[i];
+
+            try {
+                const name = (overlay.name || `${path.parse(this.msg.job.name).name} Overlay ${i + 1}`)
+                    .replace(/[/\\]/g, ' ')
+                    .trim()
+                    .slice(0, 64);
+
+                const georeferenced = await this.georeferenceGroundOverlay(local, overlay, i);
+
+                const childAsset = await this.processFile({
+                    id: randomUUID(),
+                    tmpdir: local.tmpdir,
+                    ext: '.tif',
+                    name: `${name}.tif`,
+                    raw: georeferenced,
+                });
+
+                if (!childAsset) throw new Error('GroundOverlay asset could not be created');
+
+                const basemap = await this.createBasemapOverlay({
+                    name,
+                    url: `${tilesBase}/tiles/profile/${this.msg.job.username}/${childAsset.id}/tiles/{z}/{x}/{y}.png?token=${this.tileToken(childAsset.id)}`,
+                    type: 'raster',
+                    format: 'png',
+                    bounds: overlay.bounds,
+                    parent,
+                });
+
+                if (parent === undefined) parent = basemap.id;
+            } catch (err) {
+                console.error(`Import: ${this.msg.job.id} - GroundOverlay "${overlay.name || i}" failed:`, err);
+            }
+        }
     }
 
     /**

@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import type { Message, LocalMessage, Transform, ConvertResponse } from '../types.ts';
+import type { Message, LocalMessage, Transform, ConvertResponse, GroundOverlaySource } from '../types.ts';
 import path from 'node:path';
 import Sharp from 'sharp';
 import { glob } from 'glob';
@@ -30,9 +30,89 @@ export default class KML implements Transform {
         this.local = local;
     }
 
+    /**
+     * Resolve a GroundOverlay feature emitted by togeojson into a local image +
+     * corner coordinates. Returns null if the image cannot be retrieved or the
+     * overlay geometry is unusable - in which case the caller falls back to
+     * treating the overlay as a regular vector footprint.
+     */
+    async resolveGroundOverlay(
+        feat: ReturnType<typeof kml>['features'][number],
+        groundOverlays: Array<GroundOverlaySource>,
+    ): Promise<GroundOverlaySource | null> {
+        const href = feat.properties ? feat.properties.icon as string | undefined : undefined;
+        if (!href) return null;
+
+        if (!feat.geometry || feat.geometry.type !== 'Polygon') return null;
+        const ring = feat.geometry.coordinates[0];
+        if (!ring || ring.length < 5) return null;
+
+        // LatLonBox rings are emitted as [TL, TR, BR, BL, TL] (and carry a bbox),
+        // gx:LatLonQuad rings are emitted as [LL, LR, UR, UL, LL] per the KML spec
+        const positions = (feat.bbox
+            ? [ring[0], ring[1], ring[2], ring[3]]
+            : [ring[3], ring[2], ring[1], ring[0]]
+        ).map(coord => [Number(coord[0]), Number(coord[1])]);
+
+        if (positions.some(coord => coord.some(v => !Number.isFinite(v)))) return null;
+
+        const corners = positions as GroundOverlaySource['corners'];
+
+        const lons = corners.map(c => c[0]);
+        const lats = corners.map(c => c[1]);
+        const bounds: GroundOverlaySource['bounds'] = [
+            Math.min(...lons), Math.min(...lats),
+            Math.max(...lons), Math.max(...lats),
+        ];
+
+        let image: string;
+
+        if (href.startsWith('http://') || href.startsWith('https://')) {
+            try {
+                const res = await fetch(href);
+                if (!res.ok) throw new Error(`HTTP ${res.status} ${await res.text()}`);
+
+                const ext = path.parse(new URL(href).pathname).ext || '.img';
+                image = path.resolve(this.local.tmpdir, `groundoverlay-${groundOverlays.length}${ext}`);
+                await fs.writeFile(image, Buffer.from(await res.arrayBuffer()));
+            } catch (err) {
+                console.warn(`GroundOverlay image ${href} not retrievable (${err})`);
+                return null;
+            }
+        } else {
+            if (href.includes('..') || path.isAbsolute(href)) {
+                console.warn(`GroundOverlay image ${href} rejected — invalid path`);
+                return null;
+            }
+
+            const search = await glob(path.resolve(this.local.tmpdir, '**/' + href));
+            if (!search.length) {
+                console.warn(`GroundOverlay image ${href} not found`);
+                return null;
+            }
+
+            const resolved = path.resolve(search[0]);
+            const tmpdirSafe = path.resolve(this.local.tmpdir);
+            if (!resolved.startsWith(tmpdirSafe + path.sep)) {
+                console.warn(`GroundOverlay image ${href} resolved outside tmpdir, skipping`);
+                return null;
+            }
+
+            image = resolved;
+        }
+
+        return {
+            name: feat.properties && feat.properties.name ? String(feat.properties.name) : undefined,
+            image,
+            corners,
+            bounds,
+        };
+    }
+
     async fetchFeatures(
         kmlContent: string,
         icons: Map<string, Buffer>,
+        groundOverlays: Array<GroundOverlaySource>,
         depth: number,
         baseUrl: string | null = null,
         localDir: string | null = null,
@@ -90,7 +170,7 @@ export default class KML implements Transform {
                         try {
                             const localContent = await fs.readFile(resolved, 'utf8');
                             const linkedFeatures = await this.fetchFeatures(
-                                localContent, icons, depth + 1, null, path.dirname(resolved), visited,
+                                localContent, icons, groundOverlays, depth + 1, null, path.dirname(resolved), visited,
                             );
                             features.push(...linkedFeatures);
                         } catch (err) {
@@ -219,13 +299,13 @@ export default class KML implements Transform {
                             // Use the directory containing the extracted KML as localDir so
                             // relative paths (icon refs, nested NetworkLinks) resolve correctly.
                             const kmlDir = path.dirname(kmlFileResolved);
-                            linkedFeatures = await this.fetchFeatures(kmlContent, icons, depth + 1, normalized, kmlDir, visited);
+                            linkedFeatures = await this.fetchFeatures(kmlContent, icons, groundOverlays, depth + 1, normalized, kmlDir, visited);
                         } finally {
                             await zip.close();
                             await fs.unlink(tmpKmzPath).catch(() => { /* ignore */ });
                         }
                     } else {
-                        linkedFeatures = await this.fetchFeatures(buf.toString('utf8'), icons, depth + 1, normalized, null, visited);
+                        linkedFeatures = await this.fetchFeatures(buf.toString('utf8'), icons, groundOverlays, depth + 1, normalized, null, visited);
                     }
 
                     features.push(...linkedFeatures);
@@ -259,6 +339,21 @@ export default class KML implements Transform {
                 }
 
                 continue;
+            }
+
+            if (feat.properties['@geometry-type'] === 'groundoverlay') {
+                const overlay = await this.resolveGroundOverlay(feat, groundOverlays);
+
+                if (overlay) {
+                    groundOverlays.push(overlay);
+
+                    // The image is imported as a raster overlay so the
+                    // placeholder footprint polygon is dropped from the vector output
+                    continue;
+                }
+
+                // Image could not be resolved - fall through so the footprint
+                // polygon is retained in the vector output as before
             }
 
             if (feat.properties.icon && !icons.has(feat.properties.icon as string)) {
@@ -308,6 +403,7 @@ export default class KML implements Transform {
 
     async convert(): Promise<ConvertResponse> {
         const icons = new Map<string, Buffer>();
+        const groundOverlays: Array<GroundOverlaySource> = [];
 
         let asset;
 
@@ -359,7 +455,7 @@ export default class KML implements Transform {
             asset = path.resolve(this.local.raw);
         }
 
-        const features = await this.fetchFeatures(String(await fs.readFile(asset)), icons, 0, null, path.dirname(asset));
+        const features = await this.fetchFeatures(String(await fs.readFile(asset)), icons, groundOverlays, 0, null, path.dirname(asset));
 
         console.error('ok - converted to GeoJSON');
 
@@ -390,15 +486,13 @@ export default class KML implements Transform {
             }
         }
 
-        if (iconMap.size) {
-            return {
-                asset: output,
-                icons: iconMap,
-            };
-        } else {
-            return {
-                asset: output,
-            };
-        }
+        const response: ConvertResponse = {
+            asset: output,
+        };
+
+        if (iconMap.size) response.icons = iconMap;
+        if (groundOverlays.length) response.groundOverlays = groundOverlays;
+
+        return response;
     }
 }
