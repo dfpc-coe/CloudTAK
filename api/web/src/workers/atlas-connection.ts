@@ -389,7 +389,7 @@ export default class AtlasConnection {
 
     private async isAuthRejected(): Promise<boolean> {
         try {
-            const res = await fetch(stdurl('/login'), {
+            const res = await fetch(stdurl('/api/login'), {
                 headers: { Authorization: `Bearer ${this.atlas.token}` }
             });
 
