@@ -1,5 +1,9 @@
 process.env.StackName = 'test';
 
+// Bind the API server to an OS-assigned ephemeral port so test runs never
+// conflict with a locally running dev server (or with each other)
+process.env.PORT = '0';
+
 import CP from 'node:child_process';
 import MockTAKServer from './tak-server.js';
 import jwt from 'jsonwebtoken';
@@ -51,7 +55,7 @@ export default class Flight {
     _tak?: MockTAKServer;
 
     constructor() {
-        this.base = 'http://localhost:5001';
+        this.base = '';
         this.token = {};
         this.routes = {};
     }
@@ -144,6 +148,7 @@ export default class Flight {
         t: boolean | { verify?: boolean; json?: boolean; binary?: boolean },
     ): Promise<any> {
         if (t === undefined) throw new Error('flight.fetch requires two arguments - pass (<url>, <req>, false) to disable schema testing');
+        if (!this.base) throw new Error('flight.fetch called before takeoff completed - the API port is not yet known');
 
         const defs = {
             verify: false,
@@ -256,16 +261,71 @@ export default class Flight {
 
             this.config.server = await this.config.models.Server.commit(this.config.server.id, {
                 name: 'Test Runner',
-                url: 'ssl://localhost:8089',
+                url: `ssl://localhost:${this.tak.ports.streaming}`,
                 auth: {
                     cert: String(fs.readFileSync(this.tak.keys.cert)),
                     key: String(fs.readFileSync(this.tak.keys.key)),
                 },
-                api: 'https://localhost:8443',
+                api: `https://localhost:${this.tak.ports.marti}`,
             });
 
             this.srv = await api(this.config);
+
+            const address = this.srv.server.address();
+            if (!address || typeof address !== 'object') throw new Error('Could not determine API server port');
+
+            this.base = `http://localhost:${address.port}`;
+
+            // Any URLs the API generates that point back at itself must use
+            // the ephemeral port the server actually bound to
+            this.config.API_URL = this.base;
+            this.config.PMTILES_URL = this.base;
         });
+    }
+
+    /**
+     * Generate a client keypair signed by the Mock TAK Server CA
+     *
+     * Key generation is expensive so certs are cached in /tmp and only
+     * regenerated when missing or older than the CA that must sign them
+     *
+     * @param {String} name Basename for the /tmp/cloudtak-test-<name>.* files
+     * @param {String} subject OpenSSL subject the cert should be issued for
+     * @returns {Object} paths to the key & cert
+     */
+    clientCert(name: string, subject: string): { key: string; cert: string } {
+        const key = `/tmp/cloudtak-test-${name}.key`;
+        const cert = `/tmp/cloudtak-test-${name}.cert`;
+
+        if (
+            !fs.existsSync(key)
+            || !fs.existsSync(cert)
+            || fs.statSync(cert).mtimeMs < fs.statSync(this.tak.keys.cert).mtimeMs
+        ) {
+            CP.execSync(`
+                openssl req \
+                    -newkey rsa:4096 \
+                    -keyout ${key} \
+                    -out /tmp/cloudtak-test-${name}.csr \
+                    -nodes \
+                    -subj "${subject}" \
+                    2> /dev/null
+            `);
+
+            CP.execSync(`
+               openssl x509 \
+                    -req \
+                    -in /tmp/cloudtak-test-${name}.csr \
+                    -CA ${this.tak.keys.cert} \
+                    -CAkey ${this.tak.keys.key} \
+                    -out ${cert} \
+                    -set_serial 01 \
+                    -days 365 \
+                    2> /dev/null
+            `);
+        }
+
+        return { key, cert };
     }
 
     /**
@@ -284,27 +344,7 @@ export default class Flight {
 
             const userControl = new UserControl(this.config);
 
-            CP.execSync(`
-                openssl req \
-                    -newkey rsa:4096 \
-                    -keyout /tmp/cloudtak-test-${username}.key \
-                    -out /tmp/cloudtak-test-${username}.csr \
-                    -nodes \
-                    -subj "/CN=${username}" \
-                    2> /dev/null
-            `);
-
-            CP.execSync(`
-               openssl x509 \
-                    -req \
-                    -in /tmp/cloudtak-test-${username}.csr \
-                    -CA ${this.tak.keys.cert} \
-                    -CAkey ${this.tak.keys.key} \
-                    -out /tmp/cloudtak-test-${username}.cert \
-                    -set_serial 01 \
-                    -days 365 \
-                    2> /dev/null
-            `);
+            this.clientCert(username, `/CN=${username}`);
 
             await userControl.generate({
                 username: username + '@example.com',
@@ -332,9 +372,9 @@ export default class Flight {
                 },
                 body: {
                     name: 'Test Server',
-                    url: 'ssl://localhost:8089',
-                    api: 'https://localhost:8443',
-                    webtak: 'http://localhost:8444',
+                    url: `ssl://localhost:${this.tak.ports.streaming}`,
+                    api: `https://localhost:${this.tak.ports.marti}`,
+                    webtak: `http://localhost:${this.tak.ports.webtak}`,
 
                     username,
                     password,
@@ -353,27 +393,9 @@ export default class Flight {
 
     connection() {
         test(`Creating Connection`, async () => {
-            CP.execSync(`
-                openssl req \
-                    -newkey rsa:4096 \
-                    -keyout /tmp/cloudtak-test-alice.key \
-                    -out /tmp/cloudtak-test-alice.csr \
-                    -nodes \
-                    -subj "/CN=Alice" \
-                    2> /dev/null
-            `);
+            this.clientCert('alice', '/CN=Alice');
 
-            CP.execSync(`
-               openssl x509 \
-                    -req \
-                    -in /tmp/cloudtak-test-alice.csr \
-                    -CA ${this.tak.keys.cert} \
-                    -CAkey ${this.tak.keys.key} \
-                    -out /tmp/cloudtak-test-alice.cert \
-                    -set_serial 01 \
-                    -days 365 \
-                    2> /dev/null
-            `);
+            const priorSockets = this.tak.streamingSockets.size;
 
             const conn = await this.fetch('/api/connection', {
                 method: 'POST',
@@ -409,9 +431,17 @@ export default class Flight {
                 enabled: true,
             });
 
-            await new Promise((resolve) => {
-                setTimeout(resolve, 1000);
-            });
+            // The TLS connection to the Mock TAK Server is initiated by the
+            // POST above - wait until its streaming socket is visible
+            // server-side before allowing tests to proceed
+            const deadline = Date.now() + 5000;
+            while (this.tak.streamingSockets.size <= priorSockets) {
+                if (Date.now() > deadline) assert.fail('Connection did not open a streaming socket within 5s of creation');
+
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 25);
+                });
+            }
         });
     }
 

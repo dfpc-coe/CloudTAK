@@ -130,7 +130,7 @@ test('GET: api/basemap/1/tiles - ArcGIS Imagery TileJSON', async () => {
             minzoom: 0,
             maxzoom: 16,
             actions: { feature: [] },
-            tiles: ['http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}'],
+            tiles: [`${flight.base}/api/basemap/1/tiles/{z}/{x}/{y}`],
         });
 
         assert.notDeepEqual(res.body.bounds, [-180, -90, 180, 90]);

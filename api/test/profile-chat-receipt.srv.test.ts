@@ -33,7 +33,7 @@ function receipt(type: 'b-t-f-d' | 'b-t-f-r' | 'b-t-f-p' | 'b-t-f-s') {
 }
 
 test('Streaming: Chat Receipts update Message Status', async () => {
-    const url = new URL(`ws://localhost:5001`);
+    const url = new URL(flight.base.replace(/^http/, 'ws'));
     url.searchParams.append('format', 'geojson');
     url.searchParams.append('connection', 'admin@example.com');
     url.searchParams.append('token', flight.token.admin);

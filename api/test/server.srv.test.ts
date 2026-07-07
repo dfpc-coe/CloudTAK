@@ -72,9 +72,9 @@ test('PATCH: api/server - Configured - Non-admin User', async () => {
             },
             body: {
                 name: 'Updated Server',
-                url: 'ssl://localhost:8089',
-                api: 'https://localhost:8443',
-                webtak: 'http://localhost:8444',
+                url: `ssl://localhost:${flight.tak.ports.streaming}`,
+                api: `https://localhost:${flight.tak.ports.marti}`,
+                webtak: `http://localhost:${flight.tak.ports.webtak}`,
                 auth: {
                     cert: String(fs.readFileSync(flight.tak.keys.cert)),
                     key: String(fs.readFileSync(flight.tak.keys.key)),
@@ -97,9 +97,9 @@ test('PATCH: api/server - Configured - Admin', async () => {
             },
             body: {
                 name: 'Updated Server',
-                url: 'ssl://localhost:8089',
-                api: 'https://localhost:8443',
-                webtak: 'http://localhost:8444',
+                url: `ssl://localhost:${flight.tak.ports.streaming}`,
+                api: `https://localhost:${flight.tak.ports.marti}`,
+                webtak: `http://localhost:${flight.tak.ports.webtak}`,
                 auth: {
                     cert: String(fs.readFileSync(flight.tak.keys.cert)),
                     key: String(fs.readFileSync(flight.tak.keys.key)),
@@ -223,9 +223,9 @@ test('PATCH: api/server - Unconfigured without username/password', async () => {
             },
             body: {
                 name: 'Test Server',
-                url: 'ssl://localhost:8089',
-                api: 'https://localhost:8443',
-                webtak: 'http://localhost:8444',
+                url: `ssl://localhost:${flight.tak.ports.streaming}`,
+                api: `https://localhost:${flight.tak.ports.marti}`,
+                webtak: `http://localhost:${flight.tak.ports.webtak}`,
                 auth: {
                     cert: String(fs.readFileSync(flight.tak.keys.cert)),
                     key: String(fs.readFileSync(flight.tak.keys.key)),
