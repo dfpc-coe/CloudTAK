@@ -16,6 +16,13 @@
 
 ### Pending Release
 
+### v13.36.2 - 2026-07-07
+
+- :white_check_mark: Use non-standard ports for API server when running tests so they can run when alongside a dev server
+- :white_check_mark: Use non-standard ports for Mock TAK Server when running tests so they can run when alongside a dev server
+- :white_check_mark: Cache PKI certs to avoid OpenSSL overhead when running tests
+- :white_check_mark: TRUNCATE instead of DROP postgres tables in test runner
+
 ### v13.36.1 - 2026-07-07
 
 - :bug: Fix TS enum compilation in Events Task
