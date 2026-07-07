@@ -105,7 +105,8 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             interest = await config.models.ProfileInterest.commit(req.params.interestid, {
-                ...req.body,
+                name: req.body.name,
+                bounds: req.body.bounds ? bboxPolygon(req.body.bounds as BBox).geometry : undefined,
             });
 
             res.json(interest);

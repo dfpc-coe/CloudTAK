@@ -120,7 +120,6 @@ test('Reset Server to Unconfigured', async () => {
     try {
         flight.config!.server = await flight.config!.models.Server.commit(1, {
             name: 'Default Server',
-            connection_status: 'dead',
             url: '',
             api: '',
             webtak: '',

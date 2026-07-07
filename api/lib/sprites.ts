@@ -87,7 +87,7 @@ export default class SpriteBuilder {
         const sprites = await this.from_icons(icons.items, spriteConfig);
 
         await config.models.Iconset.commit(iconset, {
-            updated: new Date(),
+            updated: sql`Now()`,
             spritesheet_data: sprites.image.toString('base64'),
             spritesheet_json: sprites.json,
         });

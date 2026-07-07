@@ -459,7 +459,7 @@ export default class CoTAKUser implements UserInterface {
     async login(username: string): Promise<{
         id: number;
         name: string;
-        phone: string | null;
+        phone: string;
         system_admin: boolean;
         agency_admin: Array<number>;
     }> {
