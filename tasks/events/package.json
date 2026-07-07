@@ -10,7 +10,8 @@
         "test": "StackName='test' tsx --test test/*.test.ts",
         "coverage": "StackName='test' c8 --reporter=lcov --reporter=text tsx --test test/*.test.ts",
         "check": "tsc --noEmit",
-        "build": "tsc --noEmit",
+        "build": "tsc",
+        "prod": "node dist/index.js",
         "lint": "eslint index.ts cli.ts src/ test/",
         "typegen": "npm run typegen -C ../../api"
     },

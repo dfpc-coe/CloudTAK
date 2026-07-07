@@ -2,7 +2,7 @@
     "compilerOptions": {
         "strict": true,
         "strictNullChecks": true,
-        "allowImportingTsExtensions": true,
+        "rewriteRelativeImportExtensions": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
         "module": "nodenext",
@@ -16,6 +16,7 @@
     },
     "exclude": [],
     "include": [
+        "index.ts",
         "cli.ts",
         "src/"
     ]

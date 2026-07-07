@@ -36,5 +36,6 @@ RUN npm install
 COPY tasks/events/ ./
 COPY api/derived-types.d.ts $APP_ROOT/api/derived-types.d.ts
 
+RUN npm run build
 
-CMD ["node", "index.ts"]
+CMD ["npm", "run", "prod"]
