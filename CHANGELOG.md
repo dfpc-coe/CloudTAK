@@ -16,6 +16,12 @@
 
 ### Pending Release
 
+### v13.36.0 - 2026-07-07
+
+- :bug: Detect and throw an error if the user attempts to download a file and the TAK Server 404's
+- :bug: Detect invalid Zip files within a Data Package in the events task
+- :bug: Create new togeojson library using @tak-ps/xml-js for more lenient XML parsing
+
 ### v13.35.0 - 2026-07-06
 
 - :rocket: Introduce `parent` field on basemap
