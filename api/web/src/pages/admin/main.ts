@@ -101,11 +101,7 @@ const router = VueRouter.createRouter({
                 name: 'admin-mission-template-log',
                 component: () => import('../../components/Admin/AdminMissionTemplateLog.vue')
             },{
-                path: 'template/:template/palette/:palette',
-                name: 'admin-mission-template-palette',
-                component: () => import('../../components/Admin/AdminPalette.vue')
-            },{
-                path: 'template/:template/palette/:palette/feature/:feature',
+                path: 'template/:template/palette/:feature',
                 name: 'admin-mission-template-palette-feature',
                 component: () => import('../../components/Admin/AdminPaletteFeature.vue')
             },{

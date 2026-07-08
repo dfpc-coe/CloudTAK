@@ -112,13 +112,11 @@ export class MachineConnConfig implements ConnectionConfig {
     }
 
     async geofence(id: string): Promise<Feature | null> {
-        const feature = await this.config.models.ConnectionFeature.from({
-            where: sql`
-                connection = ${this.id}::INT
-                AND enabled_geofence IS True
-                AND id = ${id}
-            `,
-        });
+        const feature = await this.config.models.ConnectionFeature.from(sql`
+            connection = ${this.id}::INT
+            AND enabled_geofence IS True
+            AND id = ${id}
+        `);
 
         return {
             ...feature,
@@ -199,13 +197,11 @@ export class ProfileConnConfig implements ConnectionConfig {
     }
 
     async geofence(id: string): Promise<Feature | null> {
-        const feature = await this.config.models.ProfileFeature.from({
-            where: sql`
-                username = ${this.id}
-                AND enabled_geofence IS True
-                AND id = ${id}
-            `,
-        });
+        const feature = await this.config.models.ProfileFeature.from(sql`
+            username = ${this.id}
+            AND enabled_geofence IS True
+            AND id = ${id}
+        `);
 
         return {
             ...feature,

@@ -5,8 +5,8 @@ import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Sprites from '../lib/sprites.js';
 import { Type } from '@sinclair/typebox';
-import { MissionTemplate, MissionTemplateLog, Palette } from '../lib/schema.js';
-import { MissionTemplateResponse, MissionTemplateLogResponse, PaletteResponse, PaletteFeatureResponse, StandardResponse } from '../lib/types.js';
+import { MissionTemplate, MissionTemplateLog, PaletteFeature } from '../lib/schema.js';
+import { MissionTemplateResponse, MissionTemplateLogResponse, PaletteFeatureResponse, StandardResponse } from '../lib/types.js';
 import { MissionTemplateSingleResponse } from '../lib/models/MissionTemplate.js';
 import { PaletteFeatureStyle } from '../lib/palette.js';
 import { BasicGeometryType } from '../lib/enums.js';
@@ -364,9 +364,9 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.get('/template/mission/:mission/palette', {
-        name: 'List Palettes',
+        name: 'List Palette Features',
         group: 'MissionTemplate',
-        description: 'List Mission Template Palettes',
+        description: 'List Mission Template Palette Features',
         params: Type.Object({
             mission: Type.String(),
         }),
@@ -376,19 +376,19 @@ export default async function router(schema: Schema, config: Config) {
             order: Default.Order,
             sort: Type.String({
                 default: 'created',
-                enum: Object.keys(Palette),
+                enum: Object.keys(PaletteFeature),
             }),
             filter: Default.Filter,
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(PaletteResponse),
+            items: Type.Array(PaletteFeatureResponse),
         }),
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req);
 
-            const list = await config.models.Palette.augmented_list({
+            const list = await config.models.PaletteFeature.list({
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
@@ -405,175 +405,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/template/mission/:mission/palette/:palette', {
-        name: 'Get Palette',
-        group: 'MissionTemplate',
-        description: 'Get Mission Template Palette',
-        params: Type.Object({
-            mission: Type.String(),
-            palette: Type.String(),
-        }),
-        res: PaletteResponse,
-    }, async (req, res) => {
-        try {
-            await Auth.as_user(config, req);
-
-            const palette = await config.models.Palette.augmented_from(req.params.palette);
-
-            if (palette.template !== req.params.mission) {
-                throw new Err(400, null, 'Palette does not belong to Mission Template specified');
-            }
-
-            res.json(palette);
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.post('/template/mission/:mission/palette', {
-        name: 'Create Palette',
-        group: 'MissionTemplate',
-        description: 'Create a new Mission Template Palette',
-        params: Type.Object({
-            mission: Type.String(),
-        }),
-        body: Type.Object({
-            name: Type.String(),
-        }),
-        res: PaletteResponse,
-    }, async (req, res) => {
-        try {
-            await Auth.as_user(config, req, {
-                admin: true,
-            });
-
-            const palette = await config.models.Palette.generate({
-                ...req.body,
-                template: req.params.mission,
-            });
-
-            res.json(await config.models.Palette.augmented_from(palette.uuid));
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.patch('/template/mission/:mission/palette/:palette', {
-        name: 'Update Palette',
-        group: 'MissionTemplate',
-        params: Type.Object({
-            mission: Type.String(),
-            palette: Type.String(),
-        }),
-        description: 'Update properties of a Mission Template Palette',
-        body: Type.Object({
-            name: Type.Optional(Type.String()),
-        }),
-        res: PaletteResponse,
-    }, async (req, res) => {
-        try {
-            await Auth.as_user(config, req, {
-                admin: true,
-            });
-
-            const palette = await config.models.Palette.augmented_from(req.params.palette);
-
-            if (palette.template !== req.params.mission) {
-                throw new Err(400, null, 'Palette does not belong to Mission Template specified');
-            }
-
-            await config.models.Palette.commit(req.params.palette, {
-                ...req.body,
-            });
-
-            res.json(await config.models.Palette.augmented_from(req.params.palette));
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.delete('/template/mission/:mission/palette/:palette', {
-        name: 'Delete Palette',
-        group: 'MissionTemplate',
-        description: 'Delete a Mission Template Palette',
-        params: Type.Object({
-            mission: Type.String(),
-            palette: Type.String(),
-        }),
-        res: StandardResponse,
-    }, async (req, res) => {
-        try {
-            await Auth.as_user(config, req, {
-                admin: true,
-            });
-
-            const palette = await config.models.Palette.augmented_from(req.params.palette);
-
-            if (palette.template !== req.params.mission) {
-                throw new Err(400, null, 'Palette does not belong to Mission Template specified');
-            }
-
-            await config.models.Palette.delete(req.params.palette);
-
-            res.json({ status: 200, message: 'Palette Deleted' });
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/template/mission/:mission/palette/:palette/feature', {
-        name: 'List Palette Features',
-        group: 'MissionTemplate',
-        description: 'List Mission Template Palette Features',
-        params: Type.Object({
-            mission: Type.String(),
-            palette: Type.String(),
-        }),
-        query: Type.Object({
-            limit: Default.Limit,
-            page: Default.Page,
-            order: Default.Order,
-            sort: Type.String({ default: 'created', enum: Object.keys(Palette) }),
-            filter: Default.Filter,
-        }),
-        res: Type.Object({
-            total: Type.Integer(),
-            items: Type.Array(PaletteFeatureResponse),
-        }),
-    }, async (req, res) => {
-        try {
-            await Auth.as_user(config, req);
-
-            const palette = await config.models.Palette.augmented_from(req.params.palette);
-
-            if (palette.template !== req.params.mission) {
-                throw new Err(400, null, 'Palette does not belong to Mission Template specified');
-            }
-
-            const list = await config.models.PaletteFeature.list({
-                limit: req.query.limit,
-                page: req.query.page,
-                order: req.query.order,
-                sort: req.query.sort,
-                where: sql`
-                    name ~* ${req.query.filter}
-                    AND palette = ${req.params.palette}::UUID
-                `,
-            });
-
-            res.json(list);
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/template/mission/:mission/palette/:palette/feature/:feature', {
+    await schema.get('/template/mission/:mission/palette/:feature', {
         name: 'Get Palette Feature',
         group: 'MissionTemplate',
         description: 'Get Mission Template Palette Feature',
         params: Type.Object({
             mission: Type.String(),
-            palette: Type.String(),
             feature: Type.String(),
         }),
         res: PaletteFeatureResponse,
@@ -581,16 +418,10 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req);
 
-            const palette = await config.models.Palette.augmented_from(req.params.palette);
-
-            if (palette.template !== req.params.mission) {
-                throw new Err(400, null, 'Palette does not belong to Mission Template specified');
-            }
-
             const feature = await config.models.PaletteFeature.from(req.params.feature);
 
-            if (feature.palette !== req.params.palette) {
-                throw new Err(400, null, 'Palette feature does not belong to Palette specified');
+            if (feature.template !== req.params.mission) {
+                throw new Err(400, null, 'Palette feature does not belong to Mission Template specified');
             }
 
             res.json(feature);
@@ -599,13 +430,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.post('/template/mission/:mission/palette/:palette/feature', {
+    await schema.post('/template/mission/:mission/palette', {
         name: 'Create Palette Feature',
         group: 'MissionTemplate',
         description: 'Create a new Mission Template Palette Feature',
         params: Type.Object({
             mission: Type.String(),
-            palette: Type.String(),
         }),
         body: Type.Object({
             type: Type.Enum(BasicGeometryType),
@@ -619,14 +449,8 @@ export default async function router(schema: Schema, config: Config) {
                 admin: true,
             });
 
-            const palette = await config.models.Palette.augmented_from(req.params.palette);
-
-            if (palette.template !== req.params.mission) {
-                throw new Err(400, null, 'Palette does not belong to Mission Template specified');
-            }
-
             const feature = await config.models.PaletteFeature.generate({
-                palette: req.params.palette,
+                template: req.params.mission,
                 ...req.body,
             });
 
@@ -636,12 +460,11 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.patch('/template/mission/:mission/palette/:palette/feature/:feature', {
+    await schema.patch('/template/mission/:mission/palette/:feature', {
         name: 'Update Palette Feature',
         group: 'MissionTemplate',
         params: Type.Object({
             mission: Type.String(),
-            palette: Type.String(),
             feature: Type.String(),
         }),
         description: 'Update properties of a Mission Template Palette Feature',
@@ -657,16 +480,10 @@ export default async function router(schema: Schema, config: Config) {
                 admin: true,
             });
 
-            const palette = await config.models.Palette.augmented_from(req.params.palette);
-
-            if (palette.template !== req.params.mission) {
-                throw new Err(400, null, 'Palette does not belong to Mission Template specified');
-            }
-
             let feature = await config.models.PaletteFeature.from(req.params.feature);
 
-            if (feature.palette !== req.params.palette) {
-                throw new Err(400, null, 'Palette feature does not belong to Palette specified');
+            if (feature.template !== req.params.mission) {
+                throw new Err(400, null, 'Palette feature does not belong to Mission Template specified');
             }
 
             feature = await config.models.PaletteFeature.commit(req.params.feature, {
@@ -679,13 +496,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.delete('/template/mission/:mission/palette/:palette/feature/:feature', {
+    await schema.delete('/template/mission/:mission/palette/:feature', {
         name: 'Delete Palette Feature',
         group: 'MissionTemplate',
         description: 'Delete a Mission Template Palette Feature',
         params: Type.Object({
             mission: Type.String(),
-            palette: Type.String(),
             feature: Type.String(),
         }),
         res: StandardResponse,
@@ -695,16 +511,10 @@ export default async function router(schema: Schema, config: Config) {
                 admin: true,
             });
 
-            const palette = await config.models.Palette.augmented_from(req.params.palette);
-
-            if (palette.template !== req.params.mission) {
-                throw new Err(400, null, 'Palette does not belong to Mission Template specified');
-            }
-
             const feature = await config.models.PaletteFeature.from(req.params.feature);
 
-            if (feature.palette !== req.params.palette) {
-                throw new Err(400, null, 'Palette feature does not belong to Palette specified');
+            if (feature.template !== req.params.mission) {
+                throw new Err(400, null, 'Palette feature does not belong to Mission Template specified');
             }
 
             await config.models.PaletteFeature.delete(req.params.feature);

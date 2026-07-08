@@ -1,0 +1,34 @@
+{
+  "kml": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": null,
+        "properties": {
+          "name": "unextruded"
+        }
+      }
+    ]
+  },
+  "kmlWithFolders": {
+    "type": "root",
+    "children": [
+      {
+        "type": "Feature",
+        "geometry": null,
+        "properties": {
+          "name": "unextruded"
+        }
+      }
+    ]
+  },
+  "kmlWithFoldersSkipNull": {
+    "type": "root",
+    "children": []
+  },
+  "kmlSkipNull": {
+    "type": "FeatureCollection",
+    "features": []
+  }
+}

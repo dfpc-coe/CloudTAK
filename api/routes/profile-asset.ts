@@ -233,7 +233,7 @@ export default async function router(schema: Schema, config: Config) {
                 for (const artifact of req.body.artifacts) {
                     artifacts.push({
                         ext: artifact.ext,
-                        size: (await S3.head(`profile/${user.email}/${file.id}${artifact.ext}`)).ContentLength,
+                        size: (await S3.head(`profile/${user.email}/${file.id}${artifact.ext}`)).ContentLength ?? 0,
                     });
                 }
 

@@ -1,0 +1,373 @@
+{
+  "gpx": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "_gpxType": "trk",
+          "type": "NC",
+          "ogr_SOURCE01": "This Fixture demonstrates issue 102, a crash that can occur if trkseg and trkpoint don't match exactly",
+          "ogr_SOURCE02": "WB map archive IBRD #33246, #33245; June 2004",
+          "ogr_DATE": "2014/04/01",
+          "ogr_VALIDITE": "2004.0",
+          "ogr_CODE_PAYS": "BEN",
+          "ogr_NOM_LIGNE": "Bimbereke - Kandi",
+          "ogr_PUISSANCE": "161",
+          "ogr_STATUT": "Ligne planifie",
+          "ogr_NOM_PROJET": "North Core Project, Benin - Niger",
+          "coordinateProperties": {}
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              2.665278,
+              10.228889
+            ],
+            [
+              2.933333,
+              11.133333
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "_gpxType": "trk",
+          "type": "NC",
+          "ogr_SOURCE01": "African Infrastructure Country Diagnostics",
+          "ogr_SOURCE02": "WAPP North Core Project, Benin - Niger",
+          "ogr_DATE": "2014/04/01",
+          "ogr_VALIDITE": "-99.0",
+          "ogr_CODE_PAYS": "BEN",
+          "ogr_NOM_LIGNE": "Bembereke - Zabori",
+          "ogr_PUISSANCE": "330",
+          "ogr_STATUT": "Ligne planifie",
+          "ogr_NOM_PROJET": "North Core Project, Benin - Niger",
+          "coordinateProperties": {}
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              2.933333,
+              11.133333
+            ],
+            [
+              3.435664,
+              11.862522
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "_gpxType": "trk",
+          "type": "NC",
+          "ogr_SOURCE01": "African Infrastructure Country Diagnostics",
+          "ogr_SOURCE02": "WAPP North Core Project, Niger - Burkina Faso",
+          "ogr_DATE": "2014/04/01",
+          "ogr_VALIDITE": "-99.0",
+          "ogr_CODE_PAYS": "BFA",
+          "ogr_NOM_LIGNE": "Birnin Kebbi - Ouagadougou",
+          "ogr_PUISSANCE": "330",
+          "ogr_STATUT": "Ligne planifie",
+          "ogr_NOM_PROJET": "North Core Project, Niger - Burkina Faso",
+          "coordinateProperties": {}
+        },
+        "geometry": {
+          "type": "MultiLineString",
+          "coordinates": [
+            [
+              [
+                0.99212,
+                13.164212
+              ],
+              [
+                -0.517094,
+                12.688132
+              ]
+            ],
+            [
+              [
+                -0.517094,
+                12.688132
+              ],
+              [
+                -0.667626,
+                12.640647
+              ]
+            ],
+            [
+              [
+                -0.667626,
+                12.640647
+              ],
+              [
+                -1.524722,
+                12.370277
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "_gpxType": "trk",
+          "type": "NC",
+          "ogr_SOURCE01": "African Infrastructure Country Diagnostics",
+          "ogr_SOURCE02": "WAPP North Core Project, Nigeria - Niger",
+          "ogr_DATE": "2014/04/01",
+          "ogr_VALIDITE": "-99.0",
+          "ogr_CODE_PAYS": "NGA",
+          "ogr_NOM_LIGNE": "Dosso - Birnin Kebbi",
+          "ogr_PUISSANCE": "330",
+          "ogr_STATUT": "Ligne planifie",
+          "ogr_NOM_PROJET": "North Core Project, Nigeria - Niger",
+          "coordinateProperties": {}
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              3.816438,
+              12.667497
+            ],
+            [
+              4.184197,
+              12.446262
+            ],
+            [
+              4.196806,
+              12.450347
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "_gpxType": "trk",
+          "type": "NC",
+          "ogr_SOURCE01": "African Infrastructure Country Diagnostics",
+          "ogr_SOURCE02": "WAPP North Core Project, Nigeria - Niger",
+          "ogr_DATE": "2014/04/01",
+          "ogr_VALIDITE": "-99.0",
+          "ogr_CODE_PAYS": "NGA",
+          "ogr_NOM_LIGNE": "Dosso - Birnin Kebbi",
+          "ogr_PUISSANCE": "330",
+          "ogr_STATUT": "Ligne planifie",
+          "ogr_NOM_PROJET": "North Core Project, Nigeria - Niger",
+          "coordinateProperties": {}
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              3.816435,
+              12.667498
+            ],
+            [
+              3.816438,
+              12.667497
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "_gpxType": "trk",
+          "type": "NC",
+          "ogr_SOURCE01": "African Infrastructure Country Diagnostics",
+          "ogr_SOURCE02": "WAPP North Core Project, Nigeria - Niger",
+          "ogr_DATE": "2014/04/01",
+          "ogr_VALIDITE": "-99.0",
+          "ogr_CODE_PAYS": "NER",
+          "ogr_NOM_LIGNE": "Dosso - Birnin Kebbi",
+          "ogr_PUISSANCE": "330",
+          "ogr_STATUT": "Ligne planifie",
+          "ogr_NOM_PROJET": "North Core Project, Nigeria - Niger",
+          "coordinateProperties": {}
+        },
+        "geometry": {
+          "type": "MultiLineString",
+          "coordinates": [
+            [
+              [
+                3.2,
+                13.05
+              ],
+              [
+                3.198604,
+                13.03917
+              ],
+              [
+                3.572865,
+                12.814024
+              ]
+            ],
+            [
+              [
+                3.572865,
+                12.814024
+              ],
+              [
+                3.816435,
+                12.667498
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "_gpxType": "trk",
+          "type": "NC",
+          "ogr_SOURCE01": "African Infrastructure Country Diagnostics",
+          "ogr_SOURCE02": "WAPP North Core Project, Nigeria - Niger",
+          "ogr_DATE": "2014/04/01",
+          "ogr_VALIDITE": "-99.0",
+          "ogr_CODE_PAYS": "NER",
+          "ogr_NOM_LIGNE": "Dosso - Niamey",
+          "ogr_PUISSANCE": "330",
+          "ogr_STATUT": "Ligne planifie",
+          "ogr_NOM_PROJET": "North Core Project, Nigeria - Niger",
+          "coordinateProperties": {}
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              2.12,
+              13.52
+            ],
+            [
+              2.124997,
+              13.50692
+            ],
+            [
+              3.191601,
+              13.042749
+            ],
+            [
+              3.2,
+              13.05
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "_gpxType": "trk",
+          "type": "NC",
+          "ogr_SOURCE01": "African Infrastructure Country Diagnostics",
+          "ogr_SOURCE02": "WAPP North Core Project, Niger - Burkina Faso",
+          "ogr_DATE": "2014/04/01",
+          "ogr_VALIDITE": "-99.0",
+          "ogr_CODE_PAYS": "NER",
+          "ogr_NOM_LIGNE": "Birnin Kebbi - Ouagadougou",
+          "ogr_PUISSANCE": "330",
+          "ogr_STATUT": "Ligne planifie",
+          "ogr_NOM_PROJET": "North Core Project, Niger - Burkina Faso",
+          "coordinateProperties": {}
+        },
+        "geometry": {
+          "type": "MultiLineString",
+          "coordinates": [
+            [
+              [
+                2.119999,
+                13.52
+              ],
+              [
+                0.99212,
+                13.164212
+              ]
+            ],
+            [
+              [
+                2.12,
+                13.52
+              ],
+              [
+                2.119999,
+                13.52
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "_gpxType": "trk",
+          "type": "NC",
+          "ogr_SOURCE01": "African Infrastructure Country Diagnostics",
+          "ogr_SOURCE02": "WAPP North Core Project, Nigeria - Niger",
+          "ogr_DATE": "2014/04/01",
+          "ogr_VALIDITE": "-99.0",
+          "ogr_CODE_PAYS": "NER",
+          "ogr_NOM_LIGNE": "Bembereke - Zabori",
+          "ogr_PUISSANCE": "330",
+          "ogr_STATUT": "Ligne planifie",
+          "ogr_NOM_PROJET": "North Core Project, Benin - Niger",
+          "coordinateProperties": {}
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              3.435664,
+              11.862522
+            ],
+            [
+              3.45,
+              11.883333
+            ],
+            [
+              3.572865,
+              12.814024
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "_gpxType": "trk",
+          "type": "NC",
+          "ogr_SOURCE01": "African Infrastructure Country Diagnostics",
+          "ogr_SOURCE02": "WAPP North Core Project, Nigeria - Niger",
+          "ogr_DATE": "2014/04/01",
+          "ogr_VALIDITE": "-99.0",
+          "ogr_CODE_PAYS": "NER",
+          "ogr_NOM_LIGNE": "Dosso - Birnin Kebbi",
+          "ogr_PUISSANCE": "330",
+          "ogr_STATUT": "Ligne planifie",
+          "ogr_NOM_PROJET": "North Core Project, Nigeria - Niger",
+          "coordinateProperties": {}
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              3.816435,
+              12.667498
+            ],
+            [
+              3.816438,
+              12.667497
+            ]
+          ]
+        }
+      }
+    ]
+  }
+}

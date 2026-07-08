@@ -19,10 +19,10 @@
             <div class='mx-2 py-2'>
                 <div class='rounded cloudtak-accent px-2 py-2'>
                     <div class='row g-2'>
-                        <template v-if='cot.geometry.type === "Point"'>
+                        <template v-if='geometry === "Point"'>
                             <div class='col-12'>
                                 <IconSelect
-                                    :model-value='cot.properties.icon ?? ""'
+                                    :model-value='(modelValue.icon as string | undefined) ?? ""'
                                     label='Point Icon'
                                     :size='32'
                                     stroke='1'
@@ -32,7 +32,7 @@
                             <div class='col-12'>
                                 <label class='subheader user-select-none'>Point Color</label>
                                 <TablerInput
-                                    :model-value='cot.properties["marker-color"]'
+                                    :model-value='modelValue["marker-color"]'
                                     label=''
                                     default='#FFFFFF'
                                     type='color'
@@ -43,7 +43,7 @@
                             <div class='col-12'>
                                 <label class='subheader user-select-none'>Point Opacity</label>
                                 <TablerRange
-                                    :model-value='cot.properties["marker-opacity"] ?? 1'
+                                    :model-value='modelValue["marker-opacity"] ?? 1'
                                     label=''
                                     :default='1'
                                     :min='0'
@@ -57,7 +57,7 @@
                             <div class='col-12'>
                                 <label class='subheader user-select-none'>Line Colour</label>
                                 <TablerInput
-                                    :model-value='cot.properties["stroke"]'
+                                    :model-value='modelValue["stroke"]'
                                     label=''
                                     type='color'
                                     @update:model-value='updateProperty("stroke", $event)'
@@ -67,7 +67,7 @@
                             <div class='col-12'>
                                 <label class='subheader user-select-none'>Line Style</label>
                                 <TablerEnum
-                                    :model-value='cot.properties["stroke-style"] ?? "solid"'
+                                    :model-value='modelValue["stroke-style"] ?? "solid"'
                                     label=''
                                     :options='["solid", "dashed", "dotted", "outlined"]'
                                     default='solid'
@@ -77,7 +77,7 @@
                             <div class='col-12'>
                                 <label class='subheader user-select-none'>Line Thickness</label>
                                 <TablerRange
-                                    :model-value='cot.properties["stroke-width"] ?? 1'
+                                    :model-value='modelValue["stroke-width"] ?? 1'
                                     label=''
                                     :default='1'
                                     :min='1'
@@ -89,7 +89,7 @@
                             <div class='col-12'>
                                 <label class='subheader user-select-none'>Line Opacity</label>
                                 <TablerRange
-                                    :model-value='cot.properties["stroke-opacity"] ?? 1'
+                                    :model-value='modelValue["stroke-opacity"] ?? 1'
                                     label=''
                                     :default='1'
                                     :min='0'
@@ -99,11 +99,11 @@
                                 />
                             </div>
                         </template>
-                        <template v-if='cot.geometry.type === "Polygon" || cot.geometry.type === "MultiPolygon"'>
+                        <template v-if='geometry === "Polygon" || geometry === "MultiPolygon"'>
                             <div class='col-12'>
                                 <label class='subheader user-select-none'>Fill Colour</label>
                                 <TablerInput
-                                    :model-value='cot.properties["fill"]'
+                                    :model-value='modelValue["fill"]'
                                     label=''
                                     type='color'
                                     @update:model-value='updateProperty("fill", $event)'
@@ -112,7 +112,7 @@
                             <div class='col-12 round'>
                                 <label class='subheader user-select-none'>Fill Opacity</label>
                                 <TablerRange
-                                    :model-value='cot.properties["fill-opacity"] ?? 1'
+                                    :model-value='modelValue["fill-opacity"] ?? 1'
                                     label=''
                                     :default='1'
                                     :min='0'
@@ -139,10 +139,16 @@ import {
     TablerEnum,
 } from '@tak-ps/vue-tabler';
 import IconSelect from '../util/IconSelectOffline.vue';
-import type COT from '../../../base/cot';
+
+type StyleProperties = Record<string, unknown>;
 
 const props = defineProps<{
-    cot: COT
+    geometry: string,
+    modelValue: StyleProperties
+}>();
+
+const emit = defineEmits<{
+    (e: 'update:modelValue', value: StyleProperties): void
 }>();
 
 const expanded = ref(false);
@@ -150,24 +156,20 @@ const expanded = ref(false);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function updateProperty(key: string, event: any) {
-    if (!props.cot) return;
-
-    const properties = { ...props.cot.properties };
+    const properties = { ...props.modelValue };
 
     if (typeof event === 'string' || typeof event === 'number') {
         if (properties[key] !== event) {
             properties[key] = event;
-            props.cot.update({ properties });
+            emit('update:modelValue', properties);
         }
     } else {
         properties[key] = event;
-        props.cot.update({ properties });
+        emit('update:modelValue', properties);
     }
 }
 
 function updatePropertyIcon(event: string | null) {
-    if (!props.cot) return;
-
     if (event) {
         event = event.replace(/\.png$/g, '');
         if (!event.includes(':') && event.includes('/')) {
@@ -175,7 +177,7 @@ function updatePropertyIcon(event: string | null) {
         }
     }
 
-    const properties = { ...props.cot.properties };
+    const properties = { ...props.modelValue };
 
     if (
         event
@@ -189,15 +191,15 @@ function updatePropertyIcon(event: string | null) {
     ) {
         properties.icon = event;
         properties["marker-color"] = '#FFFFFF';
-        props.cot.update({ properties });
+        emit('update:modelValue', properties);
     } else if (properties.icon && !event) {
-        if (properties.type !== 'u-d-p') {
+        if (properties.type && properties.type !== 'u-d-p') {
             properties.icon = properties.type;
         } else {
             properties.icon = undefined;
         }
 
-        props.cot.update({ properties });
+        emit('update:modelValue', properties);
     }
 }
 </script>

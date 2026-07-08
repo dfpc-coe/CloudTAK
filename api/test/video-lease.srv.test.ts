@@ -36,7 +36,7 @@ test('Mock Media Server Start', async () => {
     originalDispatcher = getGlobalDispatcher();
     agent = new MockAgent();
     agent.disableNetConnect();
-    agent.enableNetConnect('localhost:5001');
+    agent.enableNetConnect(new URL(flight.base).host);
     setGlobalDispatcher(agent);
 
     const mediaClient = agent.get('http://media-server:9997');

@@ -16,6 +16,46 @@
 
 ### Pending Release
 
+### v13.38.0 - 2026-07-08
+
+- :bug: Ensure Icons change is CoTView uid changes
+- :rocket: Consolidate Palettes into a single feature list on the Mission Template for future introduction as "suggested features" when in a data sync context with an assigned mission template
+- :rocket: Continue to extend FCM support
+
+### v13.37.0 - 2026-07-07
+
+- :bug: Reject the WebSocket upgrade with an HTTP 401 during the handshake when the connection token is invalid or expired, instead of accepting then closing - the client previously fired its `open` handler (and a full data resync) against a dead session
+- :bug: Fix `AtlasConnection.reconnect()` racing its own `close` handler into opening two concurrent WebSockets
+- :bug: Apply linear backoff (5s increments, capped at 30s) to Atlas WebSocket reconnect attempts instead of reconnecting immediately in a tight loop
+- :bug: Stop reconnecting the Atlas WebSocket once the server rejects the client's auth token, and propagate the failure to the main thread so the user's dead session is cleared and they are routed to `/login` (local database is preserved)
+- :tada: Warn the user ~30 minutes before their session token expires, with a banner to sign back in before it lapses
+- :white_check_mark: Add `websocket-auth.srv.test.ts` covering WebSocket upgrade rejection/acceptance based on token validity
+
+### v13.36.2 - 2026-07-07
+
+- :white_check_mark: Use non-standard ports for API server when running tests so they can run when alongside a dev server
+- :white_check_mark: Use non-standard ports for Mock TAK Server when running tests so they can run when alongside a dev server
+- :white_check_mark: Cache PKI certs to avoid OpenSSL overhead when running tests
+- :white_check_mark: TRUNCATE instead of DROP postgres tables in test runner
+
+### v13.36.1 - 2026-07-07
+
+- :bug: Fix TS enum compilation in Events Task
+
+### v13.36.0 - 2026-07-07
+
+- :bug: detect and throw an error if the user attempts to download a file and the tak server 404's
+- :bug: Detect invalid Zip files within a Data Package in the events task
+- :bug: Create new togeojson library using @tak-ps/xml-js for more lenient XML parsing
+
+### v13.35.0 - 2026-07-06
+
+- :rocket: Introduce `parent` field on basemap
+
+### v13.34.2 - 2026-07-06
+
+- :white_check_mark: Update Batch Schema and Batch Generic for 1.6x API perf increase
+
 ### v13.34.1 - 2026-07-06
 
 - :white_check_mark: Add complete CodeCov coverage upload

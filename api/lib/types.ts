@@ -165,19 +165,6 @@ export const MissionTemplateLogResponse = Type.Object({
     schema: Type.Unknown(),
 });
 
-const Palette = createSelectSchema(schemas.Palette, {
-    uuid: Type.String(),
-    created: Type.String(),
-    updated: Type.String(),
-});
-
-export const PaletteResponse = Type.Composite([
-    Palette,
-    Type.Object({
-        features: Type.Array(PaletteFeatureResponse),
-    }),
-]);
-
 export const PaletteFeatureStyle = Type.Object({
     'marker-color': Type.Optional(Type.String()),
     'marker-opacity': Type.Optional(Type.String()),
@@ -482,6 +469,9 @@ export const BasemapResponse = Type.Object({
     id: Type.Integer(),
     created: Type.String(),
     updated: Type.String(),
+    parent: Type.Union([Type.Null(), Type.Integer()], {
+        description: 'If set, this Basemap/Overlay is a child of the given parent Basemap/Overlay',
+    }),
     name: Type.String(),
     url: Type.String(),
     protocol: Type.Enum(Basemap_Protocol),

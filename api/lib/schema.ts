@@ -5,6 +5,7 @@ import type { StyleContainer } from './style.js';
 import type { FilterContainer } from './filter.js';
 import type { PaletteFeatureStyle } from './palette.js';
 import { Polygon, Point } from 'geojson';
+import type { Feature } from '@tak-ps/node-cot';
 import { geometry, GeometryType, jsonb } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
 import { Layer_Config } from './models/Layer.js';
@@ -17,6 +18,7 @@ import {
     ProfileChatStatus,
 } from './enums.js';
 import { bigint, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
 export const SpatialRefSys = pgTable('spatial_ref_sys', {
@@ -40,21 +42,12 @@ export const CoreIncident = pgTable('core_incident', {
     metadata: jsonb().notNull().default({}),
 });
 
-export const Palette = pgTable('palette', {
-    uuid: uuid().primaryKey().default(sql`gen_random_uuid()`),
-    name: text().notNull(),
-    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-
-    template: uuid().notNull().references(() => MissionTemplate.id),
-});
-
 export const PaletteFeature = pgTable('palette_feature', {
     uuid: uuid().primaryKey().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull(),
-    palette: uuid().notNull().references(() => Palette.uuid),
+    template: uuid().notNull().references(() => MissionTemplate.id),
     type: text().$type<BasicGeometryType>().notNull(),
     style: jsonb().$type<Static<typeof PaletteFeatureStyle>>().notNull().default({}),
 });
@@ -218,7 +211,7 @@ export const ProfileFeature = pgTable('profile_features', {
     deleted: boolean().notNull().default(false),
     username: text().notNull().references(() => Profile.username),
     enabled_geofence: boolean().notNull().default(false),
-    properties: jsonb().notNull().default({}),
+    properties: jsonb().$type<Static<typeof Feature.Properties>>().notNull().default(sql`'{}'::JSONB`),
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull(),
 }, (table) => {
     return {
@@ -242,6 +235,7 @@ export const Basemap = pgTable('basemaps', {
     id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    parent: integer().references((): AnyPgColumn => Basemap.id, { onDelete: 'cascade' }),
     name: text().notNull(),
     url: text().notNull(),
 
@@ -407,7 +401,7 @@ export const ConnectionFeature = pgTable('connection_features', {
     layer: integer().references(() => Layer.id),
     enabled_geofence: boolean().notNull().default(false),
     connection: integer().notNull().references(() => Connection.id),
-    properties: jsonb().notNull().default({}),
+    properties: jsonb().$type<Static<typeof Feature.Properties>>().notNull().default(sql`'{}'::JSONB`),
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull(),
 }, (table) => {
     return {

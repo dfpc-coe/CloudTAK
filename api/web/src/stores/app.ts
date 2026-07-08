@@ -181,6 +181,15 @@ export const useAppStore = defineStore('cloudtak-app', {
             }
         },
 
+        // The token expired or was rejected by the server. Unlike logout()
+        // this keeps the local database so cached data survives the re-login.
+        async sessionExpired(): Promise<void> {
+            this.user = false;
+            this.tokenExpiry = null;
+            await this.clearSession();
+            await this.routeLogin();
+        },
+
         async logout(): Promise<void> {
             this.user = false;
             this.tokenExpiry = null;

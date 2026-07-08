@@ -19,6 +19,13 @@ export default class MockTAKServer {
         key: string;
     };
 
+    /** Ephemeral ports assigned by the OS once start() has resolved */
+    ports: {
+        streaming: number;
+        marti: number;
+        webtak: number;
+    };
+
     streaming: ReturnType<typeof tls.createServer>;
     webtak: ReturnType<typeof http.createServer>;
     marti: ReturnType<typeof https.createServer>;
@@ -26,7 +33,7 @@ export default class MockTAKServer {
     /** All sockets across all three servers (streaming + HTTP) */
     sockets: Set<tls.TLSSocket | import('net').Socket>;
 
-    /** Only the TLS sockets connected to the TAK streaming port (8089) */
+    /** Only the TLS sockets connected to the TAK streaming port */
     streamingSockets: Set<tls.TLSSocket>;
 
     defaultMartiResponses: boolean;
@@ -60,6 +67,12 @@ export default class MockTAKServer {
             key: '/tmp/cloudtak-test-server.key',
         };
 
+        this.ports = {
+            streaming: 0,
+            marti: 0,
+            webtak: 0,
+        };
+
         this.mockMarti = [];
         this.mockWebtak = [];
         this.martiRequests = [];
@@ -76,7 +89,16 @@ export default class MockTAKServer {
             this.mockWebtakDefaultResponses();
         }
 
-        CP.execSync(`openssl req -x509 -newkey rsa:2048 -nodes -sha256 -subj '/CN=localhost' -keyout ${this.keys.key} -out ${this.keys.cert} 2> /dev/null`);
+        // Generating the CA is comparatively expensive so reuse an existing one,
+        // regenerating weekly to stay well clear of certificate expiry
+        const maxCAAgeMs = 7 * 24 * 60 * 60 * 1000;
+        if (
+            !fs.existsSync(this.keys.cert)
+            || !fs.existsSync(this.keys.key)
+            || (Date.now() - fs.statSync(this.keys.cert).mtimeMs) > maxCAAgeMs
+        ) {
+            CP.execSync(`openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 365 -subj '/CN=localhost' -keyout ${this.keys.key} -out ${this.keys.cert} 2> /dev/null`);
+        }
 
         this.streaming = tls.createServer({
             cert: fs.readFileSync(this.keys.cert),
@@ -170,48 +192,37 @@ export default class MockTAKServer {
     }
 
     async start(): Promise<void> {
-        await Promise.all([
-            this.listen(this.streaming, 8089, 'TCP streaming'),
-            this.listen(this.marti, 8443, 'MARTI API'),
-            this.listen(this.webtak, 8444, 'WEBTAK API'),
+        [
+            this.ports.streaming,
+            this.ports.marti,
+            this.ports.webtak,
+        ] = await Promise.all([
+            this.listen(this.streaming, 'TCP streaming'),
+            this.listen(this.marti, 'MARTI API'),
+            this.listen(this.webtak, 'WEBTAK API'),
         ]);
     }
 
-    async listen(server: any, port: number, name: string, retries = 5): Promise<void> {
-        for (let i = 0; i < retries; i++) {
-            try {
-                await new Promise<void>((resolve, reject) => {
-                    const onError = (e: any) => {
-                        server.removeListener('listening', onListening);
-                        reject(e);
-                    };
-                    const onListening = () => {
-                        server.removeListener('error', onError);
-                        resolve();
-                    };
+    /**
+     * Bind a server to an OS-assigned ephemeral port and return that port
+     */
+    async listen(server: any, name: string): Promise<number> {
+        await new Promise<void>((resolve, reject) => {
+            const onError = (e: any) => {
+                server.removeListener('listening', onListening);
+                reject(new Error(`Failed to bind ${name} server: ${e.message}`));
+            };
+            const onListening = () => {
+                server.removeListener('error', onError);
+                resolve();
+            };
 
-                    server.once('error', onError);
-                    server.once('listening', onListening);
-                    server.listen(port, '127.0.0.1');
-                });
-                return;
-            } catch (err: any) {
-                if (err.code === 'EADDRINUSE') {
-                    if (i < retries - 1) {
-                        console.log(`Port ${port} in use, retrying (${i + 1}/${retries})...`);
-                        await new Promise(r => setTimeout(r, 1000));
-                        try {
-                            server.close();
-                        } catch (e) {
-                            console.error('Error closing server:', e);
-                        }
-                        continue;
-                    }
-                }
-                throw err;
-            }
-        }
-        throw new Error(`Failed to bind port ${port} after ${retries} retries`);
+            server.once('error', onError);
+            server.once('listening', onListening);
+            server.listen(0, '127.0.0.1');
+        });
+
+        return server.address().port;
     }
 
     mockWebtakDefaultResponses(): void {

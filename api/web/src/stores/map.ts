@@ -17,6 +17,7 @@ import IconManager from './modules/icons.ts';
 import MenuManager from './modules/menu.ts';
 import BottomBarManager from './modules/bottombar.ts';
 import { useDeviceStore } from './device.ts';
+import { useAppStore } from './app.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
@@ -850,6 +851,9 @@ export const useMapStore = defineStore('cloudtak', {
                     this.isOpen = true;
                 } else if (msg.type === WorkerMessageType.Connection_Close) {
                     this.isOpen = false;
+                } else if (msg.type === WorkerMessageType.Connection_AuthFailure) {
+                    this.isOpen = false;
+                    await useAppStore().sessionExpired();
                 } else if (msg.type === WorkerMessageType.Channels_None) {
                     this.hasNoChannels = true;
                 } else if (msg.type === WorkerMessageType.Channels_List) {

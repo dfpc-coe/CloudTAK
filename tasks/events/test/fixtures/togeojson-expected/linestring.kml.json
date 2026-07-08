@@ -1,0 +1,190 @@
+{
+  "kml": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -122.364383,
+              37.824664,
+              0
+            ],
+            [
+              -122.364152,
+              37.824322,
+              0
+            ]
+          ]
+        },
+        "properties": {
+          "name": "unextruded"
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -122.364167,
+              37.824787,
+              50
+            ],
+            [
+              -122.363917,
+              37.824423,
+              50
+            ]
+          ]
+        },
+        "properties": {
+          "name": "extruded"
+        }
+      }
+    ]
+  },
+  "kmlWithFolders": {
+    "type": "root",
+    "children": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -122.364383,
+              37.824664,
+              0
+            ],
+            [
+              -122.364152,
+              37.824322,
+              0
+            ]
+          ]
+        },
+        "properties": {
+          "name": "unextruded"
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -122.364167,
+              37.824787,
+              50
+            ],
+            [
+              -122.363917,
+              37.824423,
+              50
+            ]
+          ]
+        },
+        "properties": {
+          "name": "extruded"
+        }
+      }
+    ]
+  },
+  "kmlWithFoldersSkipNull": {
+    "type": "root",
+    "children": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -122.364383,
+              37.824664,
+              0
+            ],
+            [
+              -122.364152,
+              37.824322,
+              0
+            ]
+          ]
+        },
+        "properties": {
+          "name": "unextruded"
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -122.364167,
+              37.824787,
+              50
+            ],
+            [
+              -122.363917,
+              37.824423,
+              50
+            ]
+          ]
+        },
+        "properties": {
+          "name": "extruded"
+        }
+      }
+    ]
+  },
+  "kmlSkipNull": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -122.364383,
+              37.824664,
+              0
+            ],
+            [
+              -122.364152,
+              37.824322,
+              0
+            ]
+          ]
+        },
+        "properties": {
+          "name": "unextruded"
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -122.364167,
+              37.824787,
+              50
+            ],
+            [
+              -122.363917,
+              37.824423,
+              50
+            ]
+          ]
+        },
+        "properties": {
+          "name": "extruded"
+        }
+      }
+    ]
+  }
+}

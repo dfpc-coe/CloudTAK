@@ -4,6 +4,14 @@ import { isNativePlatform } from '../../base/capacitor.ts';
 import { PermissionQuery, normalizePermissionState } from './shared.ts';
 import type { DevicePermissionContext } from './types.ts';
 
+export type PushNotificationData = {
+    /** In-app deep link path (e.g. `/cot/<uid>`) supplied by the server */
+    url?: string;
+
+    /** `routine` or `critical` - mirrors the server-side PagingPriority */
+    priority?: string;
+};
+
 export class BrowserNotificationPermission {
     private static supportsNotifications(): boolean {
         return 'Notification' in window;
@@ -11,7 +19,9 @@ export class BrowserNotificationPermission {
 
     private messagingToken: string | null = null;
     private tokenListener: PluginListenerHandle | null = null;
+    private actionListener: PluginListenerHandle | null = null;
     private readonly tokenSubscribers = new Set<(token: string | null) => void>();
+    private readonly actionSubscribers = new Set<(data: PushNotificationData) => void>();
 
     constructor(private readonly context: DevicePermissionContext) {}
 
@@ -35,6 +45,27 @@ export class BrowserNotificationPermission {
         return () => {
             this.tokenSubscribers.delete(listener);
         };
+    }
+
+    /**
+     * Subscribe to push notification taps; the listener receives the data payload.
+     * Returns a function that removes the subscription.
+     */
+    onNotificationAction(listener: (data: PushNotificationData) => void): () => void {
+        this.actionSubscribers.add(listener);
+        return () => {
+            this.actionSubscribers.delete(listener);
+        };
+    }
+
+    private emitNotificationAction(data: PushNotificationData): void {
+        for (const listener of this.actionSubscribers) {
+            try {
+                listener(data);
+            } catch (err) {
+                console.warn('Push notification action subscriber failed', err);
+            }
+        }
     }
 
     async refreshStatus(): Promise<void> {
@@ -180,6 +211,12 @@ export class BrowserNotificationPermission {
             if (!this.tokenListener) {
                 this.tokenListener = await FirebaseMessaging.addListener('tokenReceived', (event) => {
                     this.setMessagingToken(event.token);
+                });
+            }
+
+            if (!this.actionListener) {
+                this.actionListener = await FirebaseMessaging.addListener('notificationActionPerformed', (event) => {
+                    this.emitNotificationAction((event.notification?.data || {}) as PushNotificationData);
                 });
             }
 

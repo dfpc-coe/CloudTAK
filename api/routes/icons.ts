@@ -385,7 +385,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             await config.models.Iconset.commit(iconset.uid, {
-                updated: new Date(),
+                updated: sql`Now()`,
             });
 
             res.json(icon);
@@ -550,7 +550,7 @@ export default async function router(schema: Schema, config: Config) {
             icon = await config.models.Icon.commit(icon.id, req.body);
 
             await config.models.Iconset.commit(iconset.uid, {
-                updated: new Date(),
+                updated: sql`Now()`,
             });
 
             res.json(icon);
@@ -588,7 +588,7 @@ export default async function router(schema: Schema, config: Config) {
             `);
 
             await config.models.Iconset.commit(iconset.uid, {
-                updated: new Date(),
+                updated: sql`Now()`,
             });
 
             res.json({
