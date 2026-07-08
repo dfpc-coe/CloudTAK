@@ -8,8 +8,8 @@ import Signing from './lib/signing.js';
 import Events from './lib/events.js';
 import PMTiles from './lib/pmtiles.js';
 import Retention from './lib/retention.js';
-import Alarms from './lib/alarms.ts';
-import Dashboard from './lib/dashboard.ts';
+import Alarms from './lib/alarms.js';
+import Dashboard from './lib/dashboard.js';
 
 export default cf.merge(
     S3, DB, API, KMS, Signing, Alarms, Dashboard, PMTiles, Events, Retention, Media,
