@@ -1,1 +1,1 @@
-ALTER TABLE "profile_chats" ADD COLUMN "status" text;
+ALTER TABLE "profile_chats" ADD COLUMN IF NOT EXISTS "status" text;
