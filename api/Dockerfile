@@ -12,7 +12,7 @@ ARG API_URL
 ARG USE_LOCAL_ZIP=false
 ARG WEB_PLUGINS
 
-RUN apk add --no-cache git nodejs-current npm python3 make bash g++ openssl postgresql-client grep wget unzip
+RUN apk add --no-cache git nodejs-current npm python3 make bash g++ openssl postgresql-client grep wget unzip perf
 
 WORKDIR $HOME/api
 

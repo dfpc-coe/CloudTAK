@@ -8,11 +8,10 @@ import Signing from './lib/signing.js';
 import Events from './lib/events.js';
 import PMTiles from './lib/pmtiles.js';
 import Retention from './lib/retention.js';
-import Alarms from './lib/alarms.js';
-import {
+import Alarms, {
     ELB as ELBAlarms,
     RDS as RDSAlarms
-} from '@openaddresses/batch-alarms';
+} from './lib/alarms.ts';
 
 export default cf.merge(
     S3, DB, API, KMS, Signing, Alarms, PMTiles, Events, Retention, Media,
