@@ -644,7 +644,9 @@
 
                 <PropertyStyle
                     v-if='is_editable && !cot.is_self'
-                    :cot='cot'
+                    :geometry='cot.geometry.type'
+                    :model-value='cot.properties'
+                    @update:model-value='updateStyle($event)'
                 />
 
                 <PropertyCreator
@@ -705,6 +707,7 @@ import BufferInput from './Inputs/BufferInput.vue';
 import MenuTemplate from './util/MenuTemplate.vue';
 import type COT from '../../base/cot.ts';
 import type { COTType } from '../../types.ts';
+import type { Feature } from '../../types.ts';
 import { OriginMode } from '../../base/cot.ts'
 import Subscription from '../../base/subscription.ts'
 import {
@@ -790,6 +793,11 @@ const route = useRoute();
 const router = useRouter();
 
 const cot = ref<COT | undefined>(undefined);
+
+function updateStyle(properties: Record<string, unknown>): void {
+    if (!cot.value) return;
+    cot.value.update({ properties: properties as Feature['properties'] });
+}
 
 const subscription = ref<Subscription | undefined>();
 

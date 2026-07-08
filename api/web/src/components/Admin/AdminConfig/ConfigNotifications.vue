@@ -136,10 +136,13 @@
                                 <TablerInput
                                     v-model='config["notification::push::firebase::private_key"]'
                                     :disabled='!edit'
-                                    type='password'
+                                    :rows='6'
                                     autocomplete='new-password'
                                     label='Firebase Private Key'
                                 />
+                                <label class='text-secondary user-select-none'>
+                                    Paste the <code>private_key</code> from the Firebase service account JSON (the full PEM block, including the BEGIN/END lines).
+                                </label>
                             </div>
                         </template>
                     </template>

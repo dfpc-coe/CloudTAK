@@ -121,8 +121,7 @@ watch([canvas, supportedIcon, () => props.size], async () => {
     if (!context) return;
 
     const bitmap = await createImageBitmap(new ImageData(
-        // @ts-expect-error icon.data.data issue
-        new Uint8ClampedArray(icon.data.data, icon.data.width, icon.data.height),
+        new Uint8ClampedArray(icon.data.data),
         icon.data.width,
         icon.data.height,
     ));

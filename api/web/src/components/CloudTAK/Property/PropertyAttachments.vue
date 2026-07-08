@@ -38,6 +38,11 @@
                             :inline='true'
                             class='my-2'
                         />
+                        <TablerError
+                            v-else-if='error'
+                            :err='error'
+                            @close='refresh'
+                        />
                         <div
                             v-else-if='upload'
                             class='py-2 px-4'
@@ -144,6 +149,7 @@ import {
 
 import {
     TablerBadge,
+    TablerError,
     TablerIconButton,
     TablerLoading,
     TablerNone,
@@ -166,6 +172,7 @@ const floatStore = useFloatStore();
 const expanded = ref(false);
 const upload = ref(false);
 const loading = ref(true);
+const error = ref<Error | undefined>(undefined);
 const files = ref<Attachment[]>([]);
 const token = ref<string | null>(null);
 
@@ -203,8 +210,14 @@ async function deleteAttachment(file: Attachment): Promise<void> {
 
 async function refresh(): Promise<void> {
     loading.value = true;
+    error.value = undefined;
+
     if (props.modelValue.length) {
-        await fetchMetadata();
+        try {
+            await fetchMetadata();
+        } catch (err) {
+            error.value = err instanceof Error ? err : new Error(String(err));
+        }
     } else {
         files.value = [];
     }
@@ -235,7 +248,7 @@ async function uploadComplete(event: unknown): Promise<void> {
         }
     });
 
-    if (res.error) throw new Error(String(res.error));
+    if (res.error) throw new Error(res.error.message);
     if (res.data) files.value.push(...res.data.items);
 
     loading.value = false;
@@ -270,7 +283,7 @@ async function fetchMetadata(): Promise<void> {
         }
     });
 
-    if (res.error) throw new Error(String(res.error));
+    if (res.error) throw new Error(res.error.message);
     if (res.data) files.value = res.data.items;
 }
 </script>

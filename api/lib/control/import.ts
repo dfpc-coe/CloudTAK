@@ -8,6 +8,7 @@ import crypto from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { Import_Status } from '../enums.js';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
+import { sendPush, PagingPriority } from '../paging.js';
 
 export enum ImportSourceEnum {
     UPLOAD = 'Upload',
@@ -121,6 +122,15 @@ export default class ImportControl {
                     properties: response,
                 }));
             }
+
+            sendPush(this.config, imported.username, {
+                title: body.status === Import_Status.SUCCESS ? 'Import Complete' : 'Import Failed',
+                body: `${imported.name} has been updated to status: ${body.status}`,
+                url: `/menu/imports/${imported.id}`,
+                priority: PagingPriority.ROUTINE,
+            }).catch((err) => {
+                console.error(`Error: Failed to push import notification to ${imported.username}:`, err);
+            });
         }
 
         return response;

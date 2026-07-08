@@ -153,7 +153,7 @@
                             </TablerIconButton>
                             <TablerIconButton
                                 v-else
-                                title='Create Palette'
+                                title='Create Palette Feature'
                                 @click='createPalette'
                             >
                                 <IconPlus
@@ -223,7 +223,7 @@
                     <template v-else>
                         <TablerLoading
                             v-if='paletteLoading'
-                            desc='Loading Palettes'
+                            desc='Loading Palette Features'
                         />
                         <TablerAlert
                             v-else-if='paletteError'
@@ -231,7 +231,7 @@
                         />
                         <TablerNone
                             v-else-if='!palettes.items.length'
-                            label='No Palettes'
+                            label='No Palette Features'
                             :create='false'
                         />
                         <div
@@ -243,7 +243,7 @@
                                     <thead>
                                         <tr>
                                             <th>Name</th>
-                                            <th>Features</th>
+                                            <th>Type</th>
                                             <th>Created</th>
                                         </tr>
                                     </thead>
@@ -257,7 +257,7 @@
                                             @click='stdclick(router, $event, `/admin/template/${route.params.template}/palette/${p.uuid}`)'
                                         >
                                             <td v-text='p.name' />
-                                            <td v-text='p.features.length' />
+                                            <td v-text='p.type' />
                                             <td>
                                                 <TablerEpoch :date='p.created' />
                                             </td>
@@ -278,7 +278,7 @@ import { v4 as randomUUID } from 'uuid';
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { server, stdclick } from '../../../src/std.ts';
-import type { MissionTemplate, PaletteList } from '../../../src/types.ts';
+import type { MissionTemplate, PaletteFeatureList } from '../../../src/types.ts';
 import Keywords from '../CloudTAK/util/Keywords.vue';
 import {
     TablerInput,
@@ -307,7 +307,7 @@ const tab = ref<'logs' | 'palettes'>('logs');
 
 const paletteLoading = ref(false);
 const paletteError = ref<Error | undefined>();
-const palettes = ref<PaletteList>({ total: 0, items: [] });
+const palettes = ref<PaletteFeatureList>({ total: 0, items: [] });
 
 const template = ref<MissionTemplate>({
     id: randomUUID(),
@@ -432,7 +432,7 @@ async function fetchPalettes() {
         });
 
         if (res.error) throw new Error(res.error.message);
-        palettes.value = res.data as unknown as PaletteList;
+        palettes.value = res.data as unknown as PaletteFeatureList;
     } catch (err) {
         paletteError.value = err instanceof Error ? err : new Error(String(err));
     } finally {
@@ -441,16 +441,6 @@ async function fetchPalettes() {
 }
 
 async function createPalette() {
-    try {
-        const res = await server.POST(`/api/template/mission/{:mission}/palette`, {
-            params: { path: { ':mission': String(route.params.template) } },
-            body: { name: 'New Palette' }
-        });
-
-        if (res.error) throw new Error(res.error.message);
-        router.push(`/admin/template/${route.params.template}/palette/${res.data.uuid}`);
-    } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err));
-    }
+    router.push(`/admin/template/${route.params.template}/palette/new`);
 }
 </script>

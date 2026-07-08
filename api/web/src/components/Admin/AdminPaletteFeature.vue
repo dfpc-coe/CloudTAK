@@ -1,13 +1,10 @@
 <template>
     <div>
-        <div
-            v-if='palette'
-            class='card-header'
-        >
+        <div class='card-header'>
             <h1 class='card-title d-flex align-items-center'>
                 <TablerIconButton
-                    title='Back to Palette'
-                    @click='router.push(`/admin/template/${route.params.template}/palette/${route.params.palette}`)'
+                    title='Back to Template'
+                    @click='router.push(`/admin/template/${route.params.template}`)'
                 >
                     <IconCircleArrowLeft
                         :size='32'
@@ -17,9 +14,8 @@
 
                 <span
                     class='ms-2'
-                    v-text='palette.name + "&nbsp;-&nbsp;"'
+                    v-text='route.params.feature === "new" ? "New Palette Feature" : paletteFeature.name'
                 />
-                <span v-text='route.params.feature === "new" ? "New Feature": paletteFeature.name' />
             </h1>
 
             <div class='ms-auto btn-list'>
@@ -28,22 +24,12 @@
                     displaytype='icon'
                     @delete='deletePaletteFeature'
                 />
-                <TablerIconButton
-                    v-if='disabled'
-                    title='Edit Palette'
-                    @click='disabled = false'
-                >
-                    <IconPencil
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
             </div>
         </div>
         <div class='card-body'>
             <TablerLoading
-                v-if='loading || !palette'
-                desc='Loading Palette'
+                v-if='loading'
+                desc='Loading Palette Feature'
             />
             <TablerAlert
                 v-else-if='error'
@@ -55,14 +41,12 @@
                         <TablerInput
                             v-model='paletteFeature.name'
                             label='Name'
-                            :disabled='disabled'
                         />
                     </div>
                     <div class='col-12'>
                         <TablerEnum
                             v-model='paletteFeature.type'
-                            label='Type'
-                            :disabled='disabled'
+                            label='Geometry Type'
                             :options='[
                                 "Point",
                                 "LineString",
@@ -70,16 +54,11 @@
                             ]'
                         />
                     </div>
-                    <div class='col-12'>
-                        <CopyField
-                            :rows='20'
-                            :edit='true'
-                            :hover='true'
-                            :validate='validateJSON'
-                            :model-value='JSON.stringify(paletteFeature.style, null, 4)'
-                            @update:model-value='paletteFeature.style = JSON.parse($event)'
-                        />
-                    </div>
+                    <PropertyStyle
+                        :geometry='paletteFeature.type'
+                        :model-value='paletteFeature.style'
+                        @update:model-value='paletteFeature.style = $event'
+                    />
                 </div>
 
                 <div class='col-12 d-flex pt-4'>
@@ -101,10 +80,9 @@
 import { v4 as randomUUID } from 'uuid';
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import CopyField from '../CloudTAK/util/CopyField.vue';
 import { server } from '../../../src/std.ts';
-import type { Palette, PaletteFeature } from '../../types.ts';
-import { validateJSON } from '../../base/validators.ts';
+import type { PaletteFeature } from '../../types.ts';
+import PropertyStyle from '../CloudTAK/Property/PropertyStyle.vue';
 import {
     TablerInput,
     TablerEnum,
@@ -114,7 +92,6 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconPencil,
     IconCircleArrowLeft,
 } from '@tabler/icons-vue'
 
@@ -122,30 +99,24 @@ const route = useRoute();
 const router = useRouter();
 
 const error = ref<Error | undefined>();
-const disabled = ref(true);
 const loading = ref(true);
 
-const palette = ref<Palette | undefined>();
 const paletteFeature = ref<PaletteFeature>({
     uuid: randomUUID(),
     type: 'Point',
     name: '',
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
-    palette: String(route.params.palette),
+    template: String(route.params.template),
     style: {}
 });
 
 onMounted(async () => {
-    await fetchPalette();
-
     if (route.params.feature !== "new") {
         await fetchPaletteFeature();
-        loading.value = false;
-    } else {
-        disabled.value = false
-        loading.value = false;
     }
+
+    loading.value = false;
 });
 
 async function savePaletteFeature() {
@@ -153,36 +124,32 @@ async function savePaletteFeature() {
 
     try {
         if (route.params.feature === "new") {
-            const res = await server.POST(`/api/template/mission/{:mission}/palette/{:palette}/feature`, {
-                params: { path: { ':mission': String(route.params.template), ':palette': String(route.params.palette) } },
+            const res = await server.POST(`/api/template/mission/{:mission}/palette`, {
+                params: { path: { ':mission': String(route.params.template) } },
                 body: {
                     type: paletteFeature.value.type as "Point" | "LineString" | "Polygon",
                     name: paletteFeature.value.name,
-                    style: paletteFeature.value.style as { [key: string]: string }
+                    style: paletteFeature.value.style as unknown as Record<string, string>
                 }
             });
 
             if (res.error) throw new Error(res.error.message);
             paletteFeature.value = res.data as PaletteFeature;
-
-            disabled.value = true;
-
-            router.push(`/admin/template/${route.params.template}/palette/${route.params.palette}`);
         } else {
-            const res = await server.PATCH(`/api/template/mission/{:mission}/palette/{:palette}/feature/{:feature}`, {
-                params: { path: { ':mission': String(route.params.template), ':palette': String(route.params.palette), ':feature': String(route.params.feature) } },
+            const res = await server.PATCH(`/api/template/mission/{:mission}/palette/{:feature}`, {
+                params: { path: { ':mission': String(route.params.template), ':feature': String(route.params.feature) } },
                 body: {
                     type: paletteFeature.value.type as "Point" | "LineString" | "Polygon",
                     name: paletteFeature.value.name,
-                    style: paletteFeature.value.style as { [key: string]: string }
+                    style: paletteFeature.value.style as unknown as Record<string, string>
                 }
             });
 
             if (res.error) throw new Error(res.error.message);
             paletteFeature.value = res.data as PaletteFeature;
-
-            router.push(`/admin/template/${route.params.template}/palette/${route.params.palette}`);
         }
+
+        router.push(`/admin/template/${route.params.template}`);
     } catch (err) {
         loading.value = false;
         throw err;
@@ -193,35 +160,22 @@ async function deletePaletteFeature() {
     loading.value = true;
 
     try {
-        const res = await server.DELETE(`/api/template/mission/{:mission}/palette/{:palette}/feature/{:feature}`, {
-            params: { path: { ':mission': String(route.params.template), ':palette': String(route.params.palette), ':feature': String(route.params.feature) } }
+        const res = await server.DELETE(`/api/template/mission/{:mission}/palette/{:feature}`, {
+            params: { path: { ':mission': String(route.params.template), ':feature': String(route.params.feature) } }
         });
 
         if (res.error) throw new Error(res.error.message);
-        router.push(`/admin/template/${route.params.template}/palette/${route.params.palette}`);
+        router.push(`/admin/template/${route.params.template}`);
     } catch (err) {
         loading.value = false;
         throw err;
     }
 }
 
-async function fetchPalette() {
-    try {
-        const res = await server.GET(`/api/template/mission/{:mission}/palette/{:palette}`, {
-            params: { path: { ':mission': String(route.params.template), ':palette': String(route.params.palette) } }
-        });
-
-        if (res.error) throw new Error(res.error.message);
-        palette.value = res.data as Palette;
-    } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err));
-    }
-}
-
 async function fetchPaletteFeature() {
     try {
-        const res = await server.GET(`/api/template/mission/{:mission}/palette/{:palette}/feature/{:feature}`, {
-            params: { path: { ':mission': String(route.params.template), ':palette': String(route.params.palette), ':feature': String(route.params.feature) } }
+        const res = await server.GET(`/api/template/mission/{:mission}/palette/{:feature}`, {
+            params: { path: { ':mission': String(route.params.template), ':feature': String(route.params.feature) } }
         });
 
         if (res.error) throw new Error(res.error.message);

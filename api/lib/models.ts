@@ -5,7 +5,6 @@ import Layer from './models/Layer.js';
 import Basemap from './models/Basemap.js';
 import MissionTemplate from './models/MissionTemplate.js';
 import MissionTemplateLog from './models/MissionTemplateLog.js';
-import Palette from './models/Palette.js';
 import Setting from './models/Setting.js';
 import ProfileChat from './models/ProfileChat.js';
 import ProfileConfig from './models/ProfileConfig.js';
@@ -27,7 +26,6 @@ export default class Models {
 
     Setting: Setting;
 
-    Palette: Palette;
     PaletteFeature: Modeler<typeof pgtypes.PaletteFeature>;
 
     MissionTemplate: MissionTemplate;
@@ -68,7 +66,6 @@ export default class Models {
         this.Setting = new Setting(pg);
         this.Server = new Modeler(pg, pgtypes.Server);
 
-        this.Palette = new Palette(pg);
         this.PaletteFeature = new Modeler(pg, pgtypes.PaletteFeature);
 
         this.MissionTemplate = new MissionTemplate(pg);

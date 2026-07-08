@@ -192,7 +192,7 @@
 import { ref, computed, onErrorCaptured, onMounted, onUnmounted } from 'vue'
 import { liveQuery } from 'dexie';
 import { isTransientDbError } from './database.ts';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
 import {
@@ -220,11 +220,16 @@ import { applyServiceWorkerUpdate } from './base/service-worker.ts';
 
 import { useAppStore } from './stores/app.ts';
 import { useMapStore } from './stores/map.ts';
+import { useDeviceStore } from './stores/device.ts';
 
 const route = useRoute();
+const router = useRouter();
 
 const appStore = useAppStore();
 const mapStore = useMapStore();
+const deviceStore = useDeviceStore();
+
+let removeNotificationAction: (() => void) | undefined;
 
 const toastNotifications = useObservable(
     from(liveQuery(async () => {
@@ -337,6 +342,15 @@ onMounted(async () => {
         window.addEventListener('sw:update-available', onSwUpdateAvailable);
     }
 
+    // Deep link when the user taps a push notification (path from its payload)
+    removeNotificationAction = deviceStore.onNotificationAction((data) => {
+        if (data && typeof data.url === 'string' && data.url.startsWith('/')) {
+            router.push(data.url).catch((err: unknown) => {
+                console.error('Failed to open push notification link', err);
+            });
+        }
+    });
+
     try {
         await appStore.bootstrap();
     } catch (err) {
@@ -352,6 +366,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
     window.removeEventListener('sw:update-available', onSwUpdateAvailable);
+    if (removeNotificationAction) removeNotificationAction();
 
     if (sessionExpiryTimer !== undefined) {
         clearInterval(sessionExpiryTimer);
