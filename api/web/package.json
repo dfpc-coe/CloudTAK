@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/cloudtak",
     "type": "module",
-    "version": "13.31.0",
+    "version": "13.37.0",
     "types": "dist/types/plugin.d.ts",
     "files": [
         "dist/types"
@@ -22,7 +22,8 @@
         "doc": "typedoc --options typedoc.json",
         "build": "vite build",
         "lint": "eslint --config eslint.config.js ./src/ ./public/ ./plugins/",
-        "test": "vitest run"
+        "test": "vitest run",
+        "coverage": "vitest run --coverage"
     },
     "repository": {
         "type": "git",
@@ -83,7 +84,7 @@
         "hls.js": "^1.6.5",
         "imask": "^6.0.0",
         "jsonata": "^2.0.4",
-        "maplibre-gl": "v6.0.0-18",
+        "maplibre-gl": "v6.0.0-20",
         "milsymbol": "^3.0.2",
         "openapi-fetch": "^0.17.0",
         "phone": "^3.1.59",
@@ -112,6 +113,7 @@
         "@types/swagger-ui": "^5.21.1",
         "@vitejs/plugin-vue": "^6.0.0",
         "@vitest/ui": "^4.1.0",
+        "@vitest/coverage-v8": "^4.1.0",
         "@vue/test-utils": "^2.4.6",
         "@vueuse/rxjs": "^14.1.0",
         "eslint": "^10.0.0",

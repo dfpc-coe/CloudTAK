@@ -1,5 +1,5 @@
 {
-  "id": "6b85b726-e1d8-4707-8f3c-d89c76fa4c97",
+  "id": "7e0cf8e5-80a4-44a7-9b28-a9c9352bcac1",
   "prevId": "933248c5-3ffc-46d1-ba39-b1f452106963",
   "version": "7",
   "dialect": "postgresql",
@@ -1922,6 +1922,66 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.palette": {
+      "name": "palette",
+      "schema": "",
+      "columns": {
+        "uuid": {
+          "name": "uuid",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created": {
+          "name": "created",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "Now()"
+        },
+        "updated": {
+          "name": "updated",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "Now()"
+        },
+        "template": {
+          "name": "template",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "palette_template_mission_template_id_fk": {
+          "name": "palette_template_mission_template_id_fk",
+          "tableFrom": "palette",
+          "tableTo": "mission_template",
+          "columnsFrom": [
+            "template"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.palette_feature": {
       "name": "palette_feature",
       "schema": "",
@@ -1953,8 +2013,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "template": {
-          "name": "template",
+        "palette": {
+          "name": "palette",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -1975,15 +2035,15 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "palette_feature_template_mission_template_id_fk": {
-          "name": "palette_feature_template_mission_template_id_fk",
+        "palette_feature_palette_palette_uuid_fk": {
+          "name": "palette_feature_palette_palette_uuid_fk",
           "tableFrom": "palette_feature",
-          "tableTo": "mission_template",
+          "tableTo": "palette",
           "columnsFrom": [
-            "template"
+            "palette"
           ],
           "columnsTo": [
-            "id"
+            "uuid"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -2141,6 +2201,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},

@@ -10,4 +10,6 @@ ALTER TABLE "palette_feature" DROP CONSTRAINT "palette_feature_palette_palette_u
 ALTER TABLE "palette_feature" DROP COLUMN "palette";--> statement-breakpoint
 -- Remove the now-unused palette container table
 ALTER TABLE "palette" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
-DROP TABLE "palette" CASCADE;
+DROP TABLE "palette" CASCADE;--> statement-breakpoint
+ALTER TABLE "connection_features" ALTER COLUMN "properties" SET DEFAULT '{}'::JSONB;--> statement-breakpoint
+ALTER TABLE "profile_features" ALTER COLUMN "properties" SET DEFAULT '{}'::JSONB;

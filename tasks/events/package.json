@@ -8,8 +8,10 @@
     },
     "scripts": {
         "test": "StackName='test' tsx --test test/*.test.ts",
+        "coverage": "StackName='test' c8 --reporter=lcov --reporter=text tsx --test test/*.test.ts",
         "check": "tsc --noEmit",
-        "build": "tsc --noEmit",
+        "build": "tsc",
+        "prod": "node dist/index.js",
         "lint": "eslint index.ts cli.ts src/ test/",
         "typegen": "npm run typegen -C ../../api"
     },
@@ -19,8 +21,7 @@
         "@aws-sdk/node-http-handler": "^3.370.0",
         "@tak-ps/node-cot": "^14.0.0",
         "@tak-ps/node-safeurl": "^1.4.0",
-        "@tmcw/togeojson": "^7.1.0",
-        "@xmldom/xmldom": "^0.9.8",
+        "@tak-ps/xml-js": "^2.0.4",
         "glob": "^13.0.0",
         "jsonwebtoken": "^9.0.2",
         "node-stream-zip": "^1.15.0",
@@ -32,9 +33,11 @@
     "devDependencies": {
         "@eslint/js": "^10.0.1",
         "@stylistic/eslint-plugin": "^5.10.0",
+        "@types/geojson": "^7946.0.16",
         "@types/jsonwebtoken": "^9.0.5",
         "@types/node": "^26.0.0",
         "@types/sinon": "^22.0.0",
+        "c8": "^11.0.0",
         "@types/vinyl": "^2.0.12",
         "eslint": "^10.0.0",
         "globals": "^17.0.0",

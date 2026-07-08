@@ -159,7 +159,7 @@ export default async function router(schema: Schema, config: Config) {
                 if (mission) {
                     data = await config.models.Data.commit(data.id, {
                         updated: sql`Now()`,
-                        mission_groups: Array.isArray(mission.groups) ? mission.groups : [mission.groups],
+                        mission_groups: Array.isArray(mission.groups) ? mission.groups : (mission.groups ? [mission.groups] : []),
                     });
                 }
 

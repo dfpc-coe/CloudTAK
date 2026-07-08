@@ -185,6 +185,7 @@ export default class Auth {
             // is_auth will disallow resource tokens when no resource array is set
 
             if (auth_resource.access === AuthResourceAccess.LAYER) {
+                if (auth_resource.id === undefined) throw new Err(401, null, 'Layer Resource Token must contain a Layer ID');
                 const layer = await config.models.Layer.from(auth_resource.id);
                 if (layer.connection !== connectionid) throw new Err(401, null, 'Layer does not belong to this Connection');
                 return { auth, connection, layer };

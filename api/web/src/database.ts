@@ -48,6 +48,32 @@ export interface DBChatroom {
     last_read: string | null;
 }
 
+/**
+ * Delivery status of a chat message sent by the current user
+ * - sending: submitted locally but not yet confirmed by the CloudTAK Server
+ * - sent: received by the CloudTAK/TAK Server
+ * - pending/failed/delivered/read: reported by the recipient's client via
+ *   b-t-f-p/s/d/r Chat Receipt CoTs
+ */
+export enum ChatStatus {
+    Sending = 'sending',
+    Sent = 'sent',
+    Pending = 'pending',
+    Failed = 'failed',
+    Delivered = 'delivered',
+    Read = 'read',
+}
+
+// A chat status can only move forward - a late "delivered" receipt must not downgrade "read"
+export const ChatStatusRank: Record<ChatStatus, number> = {
+    [ChatStatus.Sending]: 0,
+    [ChatStatus.Sent]: 1,
+    [ChatStatus.Pending]: 2,
+    [ChatStatus.Failed]: 3,
+    [ChatStatus.Delivered]: 4,
+    [ChatStatus.Read]: 5
+};
+
 export interface DBChatroomChat {
     id: string;
     chatroom: string;
@@ -56,6 +82,7 @@ export interface DBChatroomChat {
     message: string;
     created: string;
     unread?: boolean;
+    status?: ChatStatus;
 }
 
 export interface DBIconset {
@@ -161,6 +188,7 @@ export interface DBSubscriptionChat {
     message: string;
     created: string;
     unread: boolean;
+    status?: ChatStatus;
 }
 
 export interface DBSubscription {
@@ -301,14 +329,40 @@ db.version(2).stores({
 
 let reopenPromise: Promise<void> | null = null;
 
+// An IndexedDB open issued while a page is unloading leaves WKWebView's
+// database process holding an orphaned request that deadlocks the next
+// page's first IndexedDB operation until the app is fully restarted. Close
+// proactively on pagehide and suppress the auto-reopen; a pageshow (bfcache
+// restore) resumes.
+let shuttingDown = false;
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('pagehide', () => {
+        shuttingDown = true;
+
+        try {
+            db.close();
+        } catch (err) {
+            console.warn('Failed to close database on navigation', err);
+        }
+    });
+
+    window.addEventListener('pageshow', () => {
+        if (shuttingDown) {
+            shuttingDown = false;
+            void ensureDatabase();
+        }
+    });
+}
+
 export async function ensureDatabase(): Promise<void> {
-    if (db.isOpen()) return;
+    if (shuttingDown || db.isOpen()) return;
 
     if (!reopenPromise) {
         reopenPromise = (async () => {
             let lastError: unknown;
             for (let attempt = 0; attempt < 5; attempt++) {
-                if (db.isOpen()) return;
+                if (shuttingDown || db.isOpen()) return;
 
                 try {
                     await db.open();
@@ -349,7 +403,7 @@ const TRANSIENT_DB_ERROR_MESSAGES = [
 ];
 
 db.on('close', () => {
-    void ensureDatabase();
+    if (!shuttingDown) void ensureDatabase();
 });
 
 export function isTransientDbError(err: unknown): boolean {

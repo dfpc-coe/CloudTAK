@@ -88,6 +88,15 @@ export enum ProfilePaging_Type {
     PUSH = 'push',
 }
 
+// Delivery status of an outgoing chat message (profile_chats.status); only moves forward. Client-only pre-server `sending` state is intentionally absent.
+export enum ProfileChatStatus {
+    SENT = 'sent',
+    PENDING = 'pending',
+    FAILED = 'failed',
+    DELIVERED = 'delivered',
+    READ = 'read',
+}
+
 export enum Profile_Zoom {
     ALWAYS = 'always',
     CONDITIONAL = 'conditional',

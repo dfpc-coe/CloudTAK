@@ -1,4 +1,4 @@
-import { db } from '../database.ts';
+import { db, ChatStatus } from '../database.ts';
 import type { DBSubscriptionChat } from '../database.ts';
 import { liveQuery, type Observable } from 'dexie';
 import type Atlas from '../workers/atlas.ts';
@@ -67,6 +67,7 @@ export default class SubscriptionChat {
             message: message,
             created: created,
             unread: false,
+            status: ChatStatus.Sending,
         });
 
         const location = (await worker.profile?.location)?.coordinates || [0, 0];

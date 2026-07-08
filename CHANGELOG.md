@@ -16,6 +16,70 @@
 
 ### Pending Release
 
+### v13.37.0 - 2026-07-07
+
+- :bug: Reject the WebSocket upgrade with an HTTP 401 during the handshake when the connection token is invalid or expired, instead of accepting then closing - the client previously fired its `open` handler (and a full data resync) against a dead session
+- :bug: Fix `AtlasConnection.reconnect()` racing its own `close` handler into opening two concurrent WebSockets
+- :bug: Apply linear backoff (5s increments, capped at 30s) to Atlas WebSocket reconnect attempts instead of reconnecting immediately in a tight loop
+- :bug: Stop reconnecting the Atlas WebSocket once the server rejects the client's auth token, and propagate the failure to the main thread so the user's dead session is cleared and they are routed to `/login` (local database is preserved)
+- :tada: Warn the user ~30 minutes before their session token expires, with a banner to sign back in before it lapses
+- :white_check_mark: Add `websocket-auth.srv.test.ts` covering WebSocket upgrade rejection/acceptance based on token validity
+
+### v13.36.2 - 2026-07-07
+
+- :white_check_mark: Use non-standard ports for API server when running tests so they can run when alongside a dev server
+- :white_check_mark: Use non-standard ports for Mock TAK Server when running tests so they can run when alongside a dev server
+- :white_check_mark: Cache PKI certs to avoid OpenSSL overhead when running tests
+- :white_check_mark: TRUNCATE instead of DROP postgres tables in test runner
+
+### v13.36.1 - 2026-07-07
+
+- :bug: Fix TS enum compilation in Events Task
+
+### v13.36.0 - 2026-07-07
+
+- :bug: detect and throw an error if the user attempts to download a file and the tak server 404's
+- :bug: Detect invalid Zip files within a Data Package in the events task
+- :bug: Create new togeojson library using @tak-ps/xml-js for more lenient XML parsing
+
+### v13.35.0 - 2026-07-06
+
+- :rocket: Introduce `parent` field on basemap
+
+### v13.34.2 - 2026-07-06
+
+- :white_check_mark: Update Batch Schema and Batch Generic for 1.6x API perf increase
+
+### v13.34.1 - 2026-07-06
+
+- :white_check_mark: Add complete CodeCov coverage upload
+
+### v13.34.0 - 2026-07-05
+
+- :rocket: Move initial default basemap creation from the frontend map load to backend user provisioning - new users get a Basemap ProfileOverlay (from `map::basemap` config if set and existing, otherwise the first visible server raster basemap) before login succeeds
+- :rocket: `PUT /api/config` now rejects a `map::basemap` value that references a non-existent Basemap or one that is not a visible, non-overlay Server Basemap
+- :white_check_mark: Add `profile-default-basemap.srv.test.ts` covering configured, fallback, and validation flows
+
+### v13.33.1 - 2026-07-05
+
+- :rocket: update internal type defs
+- :arrow_up: Update Maplibre to 6.0-rel20
+- :arrow_up: Update CapGo Background Geolocation
+
+### v13.33.0 - 2026-07-05
+
+- :tada: Add support for Chat Receipt CoTs (`b-t-f-d` Delivery, `b-t-f-r` Read, `b-t-f-p` Pending, `b-t-f-s` Delivery Failure) received via the Connection Pool - receipts now update the delivery status of the original message
+- :bug: Chat Receipts no longer overwrite the original message with an empty string
+- :tada: Chat UI now shows message delivery status (Sending, Sent to Server, Delivered, Read, Pending, Failed) on sent messages in both Direct Chat & Data Sync Chat
+- :bug: Chat messages are now reliably ordered oldest to most recent - mixed Postgres/ISO 8601 timestamp formats previously caused out-of-order messages
+- :bug: Data Sync Chat messages sent from CloudTAK are no longer duplicated when they are re-fetched from the Mission
+- :white_check_mark: Add Chat Receipt E2E tests
+
+### v13.32.0 - 2026-07-02
+
+- :rocket: Improve Server Selection resilience on first boot which would sometimes hang
+- :rocket: Fix Chat Message UI to ensure input is locked to bottom of pane
+
 ### v13.31.0 - 2026-07-02
 
 - :tada: Introduce internal client synchronization

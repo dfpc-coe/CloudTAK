@@ -31,6 +31,31 @@
                 @click='updateAvailable = false'
             />
         </div>
+        <!-- Session expiry warning banner -->
+        <div
+            v-if='sessionWarningShown'
+            class='d-flex align-items-center justify-content-center flex-wrap gap-2 px-3 py-2'
+            style='background: rgba(20,20,20,0.88); backdrop-filter: blur(6px);'
+        >
+            <IconClock
+                size='16'
+                class='text-warning flex-shrink-0'
+            />
+            <span class='text-white small'>
+                Your session expires in <span v-text='sessionRemainingLabel' /> &mdash; sign in again to stay connected
+            </span>
+            <button
+                class='btn btn-sm btn-warning py-0'
+                @click='appStore.sessionExpired'
+            >
+                Sign In Again
+            </button>
+            <button
+                class='btn-close btn-close-white'
+                style='font-size: 0.65rem;'
+                @click='sessionWarningDismissed = true'
+            />
+        </div>
         <header
             v-if='navShown'
             class='navbar navbar-expand-md d-print-none'
@@ -171,6 +196,7 @@ import { useRoute, useRouter } from 'vue-router';
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
 import {
+    IconClock,
     IconCode,
     IconLogout,
     IconUser,
@@ -225,6 +251,48 @@ const onSwUpdateAvailable = (e: Event) => {
 const mounted = ref(false);
 const error = ref<Error | undefined>();
 
+const SESSION_WARNING_MS = 30 * 60 * 1000;
+const SESSION_CHECK_INTERVAL_MS = 30 * 1000;
+
+const sessionRemainingMs = ref<number | null>(null);
+const sessionWarningDismissed = ref(false);
+
+let sessionExpiryTimer: ReturnType<typeof setInterval> | undefined;
+let sessionExpiredHandled = false;
+
+const sessionWarningShown = computed<boolean>(() => {
+    return !sessionWarningDismissed.value
+        && sessionRemainingMs.value !== null
+        && sessionRemainingMs.value > 0
+        && sessionRemainingMs.value <= SESSION_WARNING_MS
+        && route.name !== 'login';
+});
+
+const sessionRemainingLabel = computed<string>(() => {
+    if (sessionRemainingMs.value === null) return '';
+    const minutes = Math.ceil(sessionRemainingMs.value / 60000);
+    return minutes <= 1 ? 'less than a minute' : `${minutes} minutes`;
+});
+
+function checkSessionExpiry() {
+    if (!appStore.user || !appStore.tokenExpiry) {
+        sessionRemainingMs.value = null;
+        sessionExpiredHandled = false;
+        return;
+    }
+
+    const remaining = appStore.tokenExpiry - Date.now();
+    sessionRemainingMs.value = remaining;
+
+    if (remaining > SESSION_WARNING_MS) {
+        // A fresh token was issued - re-arm the dismissed warning
+        sessionWarningDismissed.value = false;
+    } else if (remaining <= 0 && !sessionExpiredHandled) {
+        sessionExpiredHandled = true;
+        void appStore.sessionExpired();
+    }
+}
+
 const navShown = computed<boolean>(() => {
     if (!route || !route.name) {
         return false;
@@ -247,10 +315,10 @@ onErrorCaptured((err) => {
         // Popup Modal if reauthenticating vs initial login
 
         if (route.name !== 'login') {
-            appStore.routeLogin();
+            void appStore.routeLogin();
         }
     } else if (String(e) === 'Error: Authentication Required') {
-        appStore.routeLogin();
+        void appStore.routeLogin();
     } else {
         error.value = e;
     }
@@ -291,11 +359,20 @@ onMounted(async () => {
         appStore.loading = false;
         mounted.value = true;
     }
+
+    checkSessionExpiry();
+    sessionExpiryTimer = setInterval(checkSessionExpiry, SESSION_CHECK_INTERVAL_MS);
 });
 
 onUnmounted(() => {
     window.removeEventListener('sw:update-available', onSwUpdateAvailable);
     if (removeNotificationAction) removeNotificationAction();
+
+    if (sessionExpiryTimer !== undefined) {
+        clearInterval(sessionExpiryTimer);
+        sessionExpiryTimer = undefined;
+    }
+
     appStore.teardown();
 });
 

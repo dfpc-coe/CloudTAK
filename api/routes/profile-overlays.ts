@@ -252,7 +252,10 @@ export default async function router(schema: Schema, config: Config) {
                 });
             }
 
-            overlay = await config.models.ProfileOverlay.commit(req.params.overlay, req.body);
+            overlay = await config.models.ProfileOverlay.commit(req.params.overlay, {
+                ...req.body,
+                opacity: req.body.opacity !== undefined ? String(req.body.opacity) : undefined,
+            });
 
             let serialized: Static<typeof AugmentedProfileOverlayResponse>;
             if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {

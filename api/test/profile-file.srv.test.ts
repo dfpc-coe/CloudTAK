@@ -28,7 +28,7 @@ test('GET: api/profile/asset', async () => {
         assert.deepEqual(res.body, {
             total: 0,
             tiles: {
-                url: 'http://localhost:5001/tiles/profile/admin@example.com/',
+                url: `${flight.base}/tiles/profile/admin@example.com/`,
             },
             items: [],
         });
@@ -227,7 +227,7 @@ test('GET: api/profile/asset includes channel shared files', async () => {
         }, true);
 
         assert.equal(res.body.total, 1);
-        assert.equal(res.body.tiles.url, 'http://localhost:5001/tiles/profile/admin@example.com/');
+        assert.equal(res.body.tiles.url, `${flight.base}/tiles/profile/admin@example.com/`);
 
         const shared = res.body.items.find((item: { id: string }) => item.id === '1db1f443-23e2-44b1-b879-fab2db95ce66');
         assert.ok(shared);

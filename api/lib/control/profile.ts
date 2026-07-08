@@ -1,8 +1,6 @@
 import { Static, Type } from '@sinclair/typebox';
-import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types';
 import Config from '../config.js';
-import { Profile } from '../schema.js';
 import {
     toEnum, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom, Profile_Style, Profile_Coordinate, Profile_Radiation_Dose,
 } from '../enums.js';
@@ -131,48 +129,6 @@ export default class ProfileControl {
             active: this.config.wsClients.has(profile.username),
             agency_admin: profile.agency_admin || [],
         };
-    }
-
-    async generate(
-        input: InferInsertModel<typeof Profile>,
-    ): Promise<InferSelectModel<typeof Profile>> {
-        const profile = await this.config.models.Profile.generate(input);
-
-        // Create a new ProfileConfig for each default setting.
-        // For display settings (present in FullConfig) check for admin-configured system defaults;
-        // for all other settings (tak::*, menu::*) use the ProfileConfigDefaults directly.
-        const displayDefaults = {
-            'display::stale': ProfileConfigDefaults['display::stale'],
-            'display::distance': ProfileConfigDefaults['display::distance'],
-            'display::elevation': ProfileConfigDefaults['display::elevation'],
-            'display::speed': ProfileConfigDefaults['display::speed'],
-            'display::projection': ProfileConfigDefaults['display::projection'],
-            'display::zoom': ProfileConfigDefaults['display::zoom'],
-            'display::style': ProfileConfigDefaults['display::style'],
-            'display::coordinate': ProfileConfigDefaults['display::coordinate'],
-            'display::text': ProfileConfigDefaults['display::text'],
-            'display::icon_rotation': ProfileConfigDefaults['display::icon_rotation'],
-            'display::radiation_dose': ProfileConfigDefaults['display::radiation_dose'],
-        };
-
-        const systemDisplayDefaults = await this.config.models.Setting.typedMany(displayDefaults);
-
-        const configs: Array<Promise<any>> = [];
-
-        for (const [key, value] of Object.entries(systemDisplayDefaults)) {
-            configs.push(this.config.models.ProfileConfig.commit(profile.username, { [key]: value }));
-        }
-
-        for (const key of Object.keys(ProfileConfigDefaults) as (keyof typeof ProfileConfigDefaults)[]) {
-            if (key in displayDefaults) continue;
-            configs.push(this.config.models.ProfileConfig.commit(profile.username, {
-                [key]: ProfileConfigDefaults[key],
-            }));
-        }
-
-        await Promise.all(configs);
-
-        return profile;
     }
 
     async defaultUnits(): Promise<Static<typeof DefaultUnits>> {

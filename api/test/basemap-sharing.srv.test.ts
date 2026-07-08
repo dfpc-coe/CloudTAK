@@ -34,6 +34,7 @@ test('POST: api/basemap - Sharing Turned On Initially', async () => {
 
         assert.deepEqual(res.body, {
             id: 1,
+            parent: null,
             name: 'Test Basemap',
             hidden: false,
             actions: { feature: [] },
@@ -102,7 +103,7 @@ test('GET: api/basemap/1/tiles - Ensure Token Works', async () => {
             tileSize: 256,
             minzoom: 0,
             maxzoom: 16,
-            tiles: ['http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}'],
+            tiles: [`${flight.base}/api/basemap/1/tiles/{z}/{x}/{y}`],
             actions: { feature: [] },
         });
     } catch (err) {
@@ -127,6 +128,7 @@ test('PATCH: api/basemap/1 - Turn off Sharing', async () => {
 
         assert.deepEqual(res.body, {
             id: 1,
+            parent: null,
             name: 'Test Basemap',
             hidden: false,
             actions: { feature: [] },
@@ -195,6 +197,7 @@ test('PATCH: api/basemap/1 - Turn on Sharing', async () => {
 
         assert.deepEqual(res.body, {
             id: 1,
+            parent: null,
             name: 'Test Basemap',
             hidden: false,
             actions: { feature: [] },

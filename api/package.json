@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/CloudTAK.api",
     "type": "module",
-    "version": "13.31.0",
+    "version": "13.37.0",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "main": "index.js",
     "scripts": {
@@ -47,7 +47,7 @@
         "@maplibre/geojson-vt": "^6.0.0",
         "@maplibre/maplibre-gl-style-spec": "^25.0.0",
         "@openaddresses/batch-error": "^2.13.1",
-        "@openaddresses/batch-generic": "^24.14.0",
+        "@openaddresses/batch-generic": "^25.0.0",
         "@openaddresses/batch-schema": "^10.21.0",
         "@openaddresses/cloudfriend": "^7.0.0",
         "@simplewebauthn/server": "^13.3.0",

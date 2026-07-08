@@ -29,7 +29,7 @@ test('GET: api/profile/chatroom', async () => {
 });
 
 test('Streaming: TAK Chat Message', async () => {
-    const url = new URL(`ws://localhost:5001`);
+    const url = new URL(flight.base.replace(/^http/, 'ws'));
     url.searchParams.append('format', 'geojson');
     url.searchParams.append('connection', 'admin@example.com');
     url.searchParams.append('token', flight.token.admin);

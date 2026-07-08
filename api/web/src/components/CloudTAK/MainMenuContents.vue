@@ -234,11 +234,18 @@
                                 stroke='1'
                                 class='mx-2'
                             />
-                            <span
-                                class='text-truncate'
-                                style='font-size: 18px;'
-                                v-text='username'
-                            />
+                            <div class='overflow-hidden'>
+                                <div
+                                    class='text-truncate'
+                                    style='font-size: 18px;'
+                                    v-text='username'
+                                />
+                                <div
+                                    class='text-muted'
+                                    style='font-size: 11px; line-height: 1.2;'
+                                    v-text='`v${version}`'
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -288,6 +295,7 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import { openSecondaryView } from '../../base/capacitor.ts';
+import { version } from '../../../package.json';
 import { useMapStore } from '../../stores/map.ts';
 import { useAppStore } from '../../stores/app.ts';
 import type { MenuItemConfig } from '../../stores/modules/menu.ts';
