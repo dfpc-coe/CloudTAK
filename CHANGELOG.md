@@ -16,6 +16,12 @@
 
 ### Pending Release
 
+### v13.38.0 - 2026-07-08
+
+- :bug: Ensure Icons change is CoTView uid changes
+- :rocket: Consolidate Palettes into a single feature list on the Mission Template for future introduction as "suggested features" when in a data sync context with an assigned mission template
+- :rocket: Continue to extend FCM support
+
 ### v13.37.0 - 2026-07-07
 
 - :bug: Reject the WebSocket upgrade with an HTTP 401 during the handshake when the connection token is invalid or expired, instead of accepting then closing - the client previously fired its `open` handler (and a full data resync) against a dead session
