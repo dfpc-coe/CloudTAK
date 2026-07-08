@@ -16,6 +16,8 @@
 
 ### Pending Release
 
+### v13.39.0 - 2026-07-08
+
 - :rocket: Replace the `@openaddresses/batch-alarms` dependency with in-repo `cloudformation/lib/alarms.ts` & `cloudformation/lib/dashboard.ts`
 - :tada: Show a red threshold line on the CPU & Memory dashboard widgets indicating the value the utilization alarms are set to
 
