@@ -11,7 +11,7 @@ import AtlasDatabase from './atlas-database.ts';
 import AtlasConnection from './atlas-connection.ts';
 import AtlasSync from './atlas-sync.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
-import { db } from '../database.ts';
+import { db, withDbRetry } from '../database.ts';
 import Icon from '../base/icon.ts';
 
 export default class Atlas {
@@ -70,7 +70,7 @@ export default class Atlas {
         this.token = authToken;
 
         try {
-            await db.config.put({ key: 'token', value: authToken });
+            await withDbRetry(() => db.config.put({ key: 'token', value: authToken }));
 
             this.username = await this.profile.init();
 
@@ -94,6 +94,18 @@ export default class Atlas {
             this.initialized = false;
             throw error;
         }
+    }
+
+    /**
+     * Called by the UI thread when the app returns to the foreground. Probes
+     * this worker's own IndexedDB connection — iOS can invalidate it during a
+     * suspend without firing a close event — so withDbRetry force-reopens a
+     * dead connection before queued work starts failing on it.
+     */
+    async resume(): Promise<void> {
+        if (!this.initialized) return;
+
+        await withDbRetry(() => db.kv.get('serverUrl'));
     }
 
     destroy() {
