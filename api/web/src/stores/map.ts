@@ -684,7 +684,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             const { value: token } = await Preferences.get({ key: 'token' });
 
-            const sub = (await Subscription.from(guid, token || '', { subscribed: true })) || null;
+            let sub = (await Subscription.from(guid, token || '', { subscribed: true })) || null;
 
             if (sub) {
                 // Get map data on the map ASAP, even if it is stale
