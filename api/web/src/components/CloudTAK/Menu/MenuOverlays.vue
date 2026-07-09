@@ -303,7 +303,6 @@ import {
 import StandardItem from '../util/StandardItem.vue';
 import Sortable from 'sortablejs';
 import type { SortableEvent } from 'sortablejs';
-import { useMapStore } from '../../../../src/stores/map.ts';
 import type Overlay from '../../../../src/base/overlay-class.ts';
 import type { DBOverlay } from '../../../../src/database.ts';
 import OverlayManager from '../../../../src/base/overlay.ts';
