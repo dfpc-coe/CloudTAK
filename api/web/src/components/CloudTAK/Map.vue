@@ -15,9 +15,9 @@
             style='width: 100%;'
         />
 
-        <MapLoading v-if='loading || !mapStore.isLoaded' />
+        <MapLoading v-if='loading || !mapStore.isMapLoaded' />
 
-        <template v-if='mapStore.isLoaded && !loading'>
+        <template v-if='mapStore.isMapLoaded && !loading'>
             <WarnConfiguration
                 v-if='warnConfiguration'
                 @close='warnConfiguration = false'
@@ -269,7 +269,7 @@
             </TablerModal>
 
             <div
-                v-if='mapStore.isLoaded && mode === "Default"'
+                v-if='mapStore.isMapLoaded && mode === "Default"'
                 class='d-flex position-absolute top-0 text-white'
                 style='
                     z-index: 5;
@@ -358,7 +358,7 @@
 
             <MainMenu
                 v-if='
-                    mapStore.isLoaded
+                    mapStore.isMapLoaded
                         && (
                             (noMenuShown && !isMobileDetected)
                             || (!noMenuShown)
@@ -368,7 +368,7 @@
             />
 
             <div
-                v-if='mapStore.isLoaded && isMobileDetected && mode === "Default"'
+                v-if='mapStore.isMapLoaded && isMobileDetected && mode === "Default"'
                 class='position-absolute'
                 style='
                     z-index: 4;

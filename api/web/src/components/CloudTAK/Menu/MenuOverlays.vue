@@ -51,7 +51,7 @@
                     {{ dragHintCopy }}
                 </p>
 
-                <TablerLoading v-if='loading || !isLoaded' />
+                <TablerLoading v-if='loading' />
 
                 <template v-else>
                     <div
@@ -313,7 +313,6 @@ type OverlayStatus = { label: string; variant: string; tooltip?: string };
 type OverlayUpdate = Parameters<Overlay['update']>[0];
 type OverlayCard = { overlay: Overlay; visible: boolean; status: OverlayStatus; badges: OverlayBadge[] };
 
-const mapStore = useMapStore();
 const router = useRouter();
 
 let sortable: Sortable | undefined;
@@ -324,7 +323,6 @@ const opened = ref<Set<number>>(new Set());
 const overlayFilter = ref('');
 const overlayRenderTick = ref(0);
 
-const isLoaded = mapStore.isLoaded;
 const dbOverlays = ref<DBOverlay[]>([]);
 
 let listSubscription: Subscription | undefined;

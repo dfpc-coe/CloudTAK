@@ -176,122 +176,12 @@
                 </div>
             </template>
         </div>
-
-        <div
-            v-if='Object.keys(paths).length'
-            class='ms-3'
-            @click.stop
-        >
-            <div class='d-flex align-items-center px-3 py-2 me-2 cloudtak-hover'>
-                <IconChevronRight
-                    v-if='!treeState.paths._shown'
-                    :size='20'
-                    stroke='1'
-                    class='cursor-pointer'
-                    @click='treeState.paths._loading = treeState.paths._shown = true'
-                />
-                <IconChevronDown
-                    v-else-if='treeState.paths._shown'
-                    :size='20'
-                    stroke='1'
-                    class='cursor-pointer'
-                    @click='treeState.paths._shown = false'
-                />
-                <IconFolder
-                    class='mx-2'
-                    :size='20'
-                    stroke='2'
-                /> Your Features
-
-                <div class='ms-auto btn-list cloudtak-hover-hidden'>
-                    <TablerDelete
-                        :size='20'
-                        class='cursor-pointer'
-                        displaytype='icon'
-                        @delete='deleteFeatures("/")'
-                    />
-                </div>
-            </div>
-
-            <template v-if='treeState.paths._shown'>
-                <div
-                    v-for='path in Object.keys(paths)'
-                    class='ms-3'
-                >
-                    <template v-if='path === "/"'>
-                        <TablerLoading
-                            v-if='treeState.paths.nodes[path]._loading'
-                            :compact='true'
-                        />
-                        <template v-else>
-                            <Feature
-                                v-for='cot of paths[path]'
-                                :key='cot.id'
-                                :feature='cot'
-                            />
-                        </template>
-                    </template>
-                    <template v-else>
-                        <div class='d-flex align-items-center py-2 ps-2 ms-2 cloudtak-hover'>
-                            <IconChevronRight
-                                v-if='!treeState.paths.nodes[path]._shown'
-                                :size='20'
-                                stroke='1'
-                                class='cursor-pointer'
-                                @click='treeState.paths.nodes[path]._loading = treeState.paths.nodes[path]._shown = true'
-                            />
-                            <IconChevronDown
-                                v-else-if='treeState.paths.nodes[path]._shown'
-                                :size='20'
-                                stroke='1'
-                                class='cursor-pointer'
-                                @click='treeState.paths.nodes[path]._shown = false'
-                            />
-
-                            <IconFolder
-                                :size='20'
-                                stroke='2'
-                                class='mx-2'
-                            />
-                            <span
-                                class='mx-2'
-                                v-text='path.replace(/(^\/|\/$)/g, "")'
-                            />
-                            <div
-                                v-if='element._internal'
-                                class='ms-auto'
-                            >
-                                <TablerDelete
-                                    :size='20'
-                                    displaytype='icon'
-                                    @click='deleteFeatures(path)'
-                                />
-                            </div>
-                        </div>
-                        <div class='ms-3'>
-                            <TablerLoading
-                                v-if='treeState.paths.nodes[path]._loading'
-                                :compact='true'
-                            />
-                            <template v-else>
-                                <Feature
-                                    v-for='cot of paths[path]'
-                                    :key='cot.id'
-                                    :feature='cot'
-                                />
-                            </template>
-                        </div>
-                    </template>
-                </div>
-            </template>
-        </div>
     </template>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import {
-    TablerDelete,
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 import Contact from '../../util/Contact.vue';
@@ -328,7 +218,6 @@ interface TreeBranchState extends TreeNodeState {
 interface TreeState {
     groups: TreeBranchState;
     markers: TreeBranchState;
-    paths: TreeBranchState;
 }
 
 const loading = ref<boolean>(true);
@@ -339,7 +228,6 @@ const deleteMarkerModal = ref<{ shown: boolean; marker: string | null }>({
 
 const markers = ref<Record<string, Set<COT>>>({});
 const groups = ref<Record<string, Set<COT>>>({});
-const paths = ref<Record<string, Set<COT>>>({});
 
 function makeContact(cot: COT): ContactData {
     const p = cot.properties ?? {};
@@ -366,11 +254,6 @@ const treeState = ref<TreeState>({
         _loading: false,
         nodes: {},
     },
-    paths: {
-        _shown: false,
-        _loading: false,
-        nodes: {},
-    },
 });
 
 onMounted(async () => {
@@ -387,9 +270,6 @@ watch(treeState.value, async () => {
 async function refresh(): Promise<void> {
     rebuilding.value = true;
 
-    const remotePaths = (await mapStore.worker.db.paths()).map((p) => p.path).sort((a) => {
-        return a === '/' ? 1 : -1;
-    });
     const remoteGroups = await mapStore.worker.db.groups();
     const remoteMarkers = await mapStore.worker.db.markers();
 
@@ -412,34 +292,6 @@ async function refresh(): Promise<void> {
         }
 
         treeState.value.markers.nodes[marker]._loading = false;
-    }
-
-    for (const path of Object.keys(treeState.value.paths.nodes)) {
-        if (!remotePaths.includes(path)) {
-            delete treeState.value.paths.nodes[path];
-            delete paths.value[path];
-        }
-    }
-
-    for (const path of remotePaths) {
-        paths.value[path] = new Set<COT>();
-
-        if (treeState.value.paths.nodes[path] === undefined) {
-            treeState.value.paths.nodes[path] = { _shown: false, _loading: false };
-        }
-    }
-
-    if (treeState.value.paths._shown && !treeState.value.paths.nodes['/']._shown) {
-        treeState.value.paths.nodes['/']._loading = true;
-        treeState.value.paths.nodes['/']._shown = true;
-    }
-
-    for (const path of remotePaths) {
-        if (treeState.value.paths.nodes[path]._shown) {
-            paths.value[path] = await mapStore.worker.db.pathFeatures(path);
-        }
-
-        treeState.value.paths.nodes[path]._loading = false;
     }
 
     for (const group of remoteGroups) {
@@ -482,36 +334,6 @@ async function deleteMarkers(marker?: string | null): Promise<void> {
             ($exists(properties.archived) = false or ($exists(properties.archived) and properties.archived = false))
         `);
         treeState.value.markers._loading = false;
-    }
-
-    await refresh();
-    loading.value = false;
-}
-
-async function deleteFeatures(path: string): Promise<void> {
-    loading.value = true;
-
-    if (path) {
-        treeState.value.paths.nodes[path]._loading = true;
-
-        await mapStore.worker.db.filterDelete(`
-            $exists(properties.archived)
-            and $exists(path)
-            and properties.archived = true
-            and path = '${path}'
-        `);
-
-        treeState.value.paths.nodes[path]._loading = false;
-    } else {
-        treeState.value.paths._loading = true;
-
-        await mapStore.worker.db.filterDelete(`
-            $exists(properties.archived)
-            and $exists(path)
-            and properties.archived = true
-        `);
-
-        treeState.value.paths._loading = false;
     }
 
     await refresh();

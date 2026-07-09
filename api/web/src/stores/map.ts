@@ -132,7 +132,10 @@ export const useMapStore = defineStore('cloudtak', {
         hasSnapping: boolean;
         hasNoChannels: boolean;
         channelChange: boolean;
-        isLoaded: boolean;
+        // Is the map ready to be shown to users
+        isMapLoaded: boolean;
+        // Is all data/overlays loaded
+        isMapLoadedFully: boolean;
         isOpen: boolean;
         userOrientationMode: boolean;
         pitch: number;
@@ -189,7 +192,8 @@ export const useMapStore = defineStore('cloudtak', {
             hasNoChannels: false,
             channelChange: false,
             isOpen: false,
-            isLoaded: false,
+            isMapLoaded: false,
+            isMapLoadedFully: false,
             userOrientationMode: false,
             pitch: 0,
             bearing: 0,
@@ -680,18 +684,37 @@ export const useMapStore = defineStore('cloudtak', {
 
             const { value: token } = await Preferences.get({ key: 'token' });
 
-            let sub: Subscription | null = null;
-            if (!opts?.reload) {
-                sub = (await Subscription.from(guid, token || '', { subscribed: true })) || null;
-            }
+            const sub = (await Subscription.from(guid, token || '', { subscribed: true })) || null;
 
-            if (!sub) {
-                sub = await Subscription.load(guid, {
-                    token: token || '',
-                    reload: opts?.reload || false,
-                    subscribed: true,
-                    missiontoken: overlay.token || undefined
-                });
+            if (sub) {
+                // Get map data on the map ASAP, even if it is stale
+                // @ts-expect-error Source.setData is not defined
+                oStore.setData(await sub.feature.collection(false));
+
+                if (overlay.active) {
+                    await this.makeActiveMission(sub);
+                }
+
+                if (opts.reload) {
+                    await sub.reload({ token: token || '' });
+                }
+            } else {
+                try {
+                    sub = await Subscription.load(guid, {
+                        token: token || '',
+                        reload: opts?.reload || false,
+                        subscribed: true,
+                        missiontoken: overlay.token || undefined
+                    });
+                } catch (err) {
+                    // Offline/low-bandwidth: keep the locally persisted
+                    // features rendered above. The next full sync or manual
+                    // reload refreshes from the server.
+                    if (!local) throw err;
+
+                    console.warn(`Mission:${guid} network refresh failed, using local data:`, err);
+                    sub = local;
+                }
             }
 
             // @ts-expect-error Source.setData is not defined
@@ -968,6 +991,10 @@ export const useMapStore = defineStore('cloudtak', {
             });
             map.addControl(routingControl);
             (map as mapgl.Map & { _routingControl?: RoutingControl })._routingControl = routingControl;
+
+            map.once('load', async () => {
+                this.isMapLoaded = true;
+            });
 
             map.once('idle', async () => {
                 const displayProjection = await ProfileConfig.get('display_projection');
@@ -1360,10 +1387,6 @@ export const useMapStore = defineStore('cloudtak', {
 
                 this.loadMission(overlay.mode_id!, {
                     reload: true
-                }).then(async (sub) => {
-                    if (sub && overlay.active) {
-                        await this.makeActiveMission(sub);
-                    }
                 }).catch((err) => {
                     console.error('Failed to load Mission', err);
                     overlay._error = err instanceof Error ? err : new Error(String(err));
@@ -1372,7 +1395,7 @@ export const useMapStore = defineStore('cloudtak', {
                 });
             }
 
-            this.isLoaded = true;
+            this.isMapLoaded = true;
 
             // Map is initialized & loaded - kick off a full data type
             // synchronization with the TAK Server in the Atlas worker
@@ -1393,7 +1416,7 @@ export const useMapStore = defineStore('cloudtak', {
          * PATCH the API and echo the event back to the originating client.
          */
         reconcileOverlays: async function(): Promise<void> {
-            if (!this.isLoaded) return;
+            if (!this.isMapLoaded) return;
 
             const desired = await OverlayManager.list({ localFirst: true });
             const desiredIds = new Set(desired.map((item) => item.id));
