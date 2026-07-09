@@ -10,11 +10,33 @@ import { bbox } from '@turf/bbox'
 import type { LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource } from 'maplibre-gl'
 import cotStyles from './utils/styles.ts'
 import { std, stdurl } from '../std.js';
+import KV from './kv.ts';
 import { db, type DBOverlay } from '../database.ts';
 import { useMapStore } from '../stores/map.js';
 import ProfileConfig from './profile.ts';
 import Subscription from './subscription.ts';
 import { FeatureVisibility } from '../stores/modules/feature-visibility.ts';
+
+/**
+ * Remove the auth token query parameter from TileJSON tile URLs so a cached
+ * document never embeds a session token. String surgery instead of `new URL()`
+ * because the URLs contain literal `{z}/{x}/{y}` template placeholders.
+ */
+function stripTilesToken(tiles: string[]): string[] {
+    return tiles.map((t) => t
+        .replace(/([?&])token=[^&]*&/, '$1')
+        .replace(/[?&]token=[^&]*$/, ''));
+}
+
+/**
+ * Append the current session token to cached TileJSON tile URLs, mirroring
+ * what the server does when the /tiles endpoint is called with ?token=.
+ */
+function applyTilesToken(tiles: string[], token: string | null): string[] {
+    if (!token) return tiles;
+
+    return tiles.map((t) => `${t}${t.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`);
+}
 
 /**
  * @class
@@ -242,6 +264,10 @@ export default class Overlay {
         }
 
         for (const l of this.styles) {
+            // A previous partially-failed initOverlays() attempt may have
+            // already registered this layer; addLayer throws on duplicate ids.
+            if (mapStore.map.getLayer(l.id)) continue;
+
             if (before) {
                 mapStore.map.addLayer(l, before);
             } else {
@@ -337,13 +363,45 @@ export default class Overlay {
             const url = stdurl(this.url);
             if (token) url.searchParams.set('token', token);
 
+            // The TileJSON is derived server-side (potentially from upstream
+            // ESRI/TileJSON metadata) so it can't be constructed locally, but
+            // it is stable per source URL — cache it in KV so warm boots and
+            // offline resumes skip the network entirely.
+            const cacheKey = `tilejson::${this.id}::${this.url}`;
+
+            let tileJSON: TileJSON | undefined;
+            try {
+                const cached = await KV.value(cacheKey);
+                if (cached) {
+                    tileJSON = JSON.parse(cached) as TileJSON;
+                    tileJSON.tiles = applyTilesToken(tileJSON.tiles, token);
+                }
+            } catch (err) {
+                console.warn(`Failed to read cached TileJSON for overlay ${this.id}:`, err);
+            }
+
             // A failed /tiles lookup (network blip, expired token, deleted
             // basemap upstream, etc.) must NOT abort map initialization or
             // every other overlay disappears with it. Capture the error on
             // the overlay so MenuOverlays.vue surfaces an "Issue" badge,
             // and skip addSource so addLayers later no-ops cleanly.
             try {
-                const tileJSON = await std(url.toString()) as TileJSON
+                if (!tileJSON) {
+                    tileJSON = await std(url.toString()) as TileJSON;
+
+                    try {
+                        // Tile URLs carry the session token as a query param;
+                        // strip it before caching (tokens rotate between
+                        // sessions) — applyTilesToken() restores the current
+                        // one on read.
+                        await KV.update(cacheKey, JSON.stringify({
+                            ...tileJSON,
+                            tiles: stripTilesToken(tileJSON.tiles)
+                        }));
+                    } catch (err) {
+                        console.warn(`Failed to cache TileJSON for overlay ${this.id}:`, err);
+                    }
+                }
 
                 if (!mapStore.map.getSource(String(this.id))) {
                     mapStore.map.addSource(String(this.id), {

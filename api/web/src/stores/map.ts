@@ -24,6 +24,7 @@ import COT from '../base/cot.ts';
 import GeolocateControl from '../lib/geolocate/main.ts';
 import RoutingControl from '../lib/routing/main.ts';
 import type { NavigationState, NavigationDirection } from '../lib/routing/main.ts';
+import KV from '../base/kv.ts';
 import { syncPushToken } from '../base/push.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
@@ -39,7 +40,7 @@ import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
 import { isNativePlatform, addBackgroundStateListener } from '../base/capacitor.ts';
-import { ensureDatabase } from '../database.ts';
+import { db, withDbRetry } from '../database.ts';
 
 import type { ProfileOverlay, Basemap, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
@@ -83,7 +84,6 @@ export const useMapStore = defineStore('cloudtak', {
         _bottomBar?: unknown;
 
         _removeOrientationListener?: () => Promise<void>;
-        _boundOnVisibilityChange?: () => Promise<void>;
         _removeBackgroundStateListener?: () => void;
         _removePushTokenListener?: () => void;
 
@@ -422,7 +422,6 @@ export const useMapStore = defineStore('cloudtak', {
                 await this._removeOrientationListener();
                 this._removeOrientationListener = undefined;
             }
-            if (this._boundOnVisibilityChange) document.removeEventListener('visibilitychange', this._boundOnVisibilityChange);
             if (this._removeBackgroundStateListener) {
                 this._removeBackgroundStateListener();
                 this._removeBackgroundStateListener = undefined;
@@ -680,18 +679,35 @@ export const useMapStore = defineStore('cloudtak', {
 
             const { value: token } = await Preferences.get({ key: 'token' });
 
-            let sub: Subscription | null = null;
-            if (!opts?.reload) {
-                sub = (await Subscription.from(guid, token || '', { subscribed: true })) || null;
+            // Resolve the locally persisted mission first and render its
+            // features immediately — the map should never sit empty waiting
+            // on the network refresh below.
+            const local = (await Subscription.from(guid, token || '', { subscribed: true })) || null;
+
+            if (local) {
+                // @ts-expect-error Source.setData is not defined
+                oStore.setData(await local.feature.collection(false));
             }
 
+            let sub: Subscription | null = local && !opts?.reload ? local : null;
+
             if (!sub) {
-                sub = await Subscription.load(guid, {
-                    token: token || '',
-                    reload: opts?.reload || false,
-                    subscribed: true,
-                    missiontoken: overlay.token || undefined
-                });
+                try {
+                    sub = await Subscription.load(guid, {
+                        token: token || '',
+                        reload: opts?.reload || false,
+                        subscribed: true,
+                        missiontoken: overlay.token || undefined
+                    });
+                } catch (err) {
+                    // Offline/low-bandwidth: keep the locally persisted
+                    // features rendered above. The next full sync or manual
+                    // reload refreshes from the server.
+                    if (!local) throw err;
+
+                    console.warn(`Mission:${guid} network refresh failed, using local data:`, err);
+                    sub = local;
+                }
             }
 
             // @ts-expect-error Source.setData is not defined
@@ -703,6 +719,37 @@ export const useMapStore = defineStore('cloudtak', {
 
             return sub;
         },
+
+        /**
+         * Recover shared state after the app returns to the foreground. iOS
+         * can invalidate IndexedDB connections (without firing a close event)
+         * and drop the WebSocket while the WebView is suspended, so probe the
+         * main-thread and worker database connections — withDbRetry force-
+         * reopens a dead one — then reconnect the WebSocket and re-render CoTs.
+         */
+        resumeFromBackground: async function(): Promise<void> {
+            if (!this._worker || !(await this.worker.initialized)) return;
+
+            try {
+                await withDbRetry(() => db.kv.get('serverUrl'));
+            } catch (err) {
+                console.error('Failed to reopen IndexedDB on resume:', err);
+            }
+
+            try {
+                await this.worker.resume();
+            } catch (err) {
+                console.error('Failed to recover worker database on resume:', err);
+            }
+
+            const isOpen = await this.worker.conn.isOpen;
+            if (!isOpen) {
+                console.log('Resumed with closed connection, reconnecting...');
+                await this.worker.conn.reconnect(await this.worker.username);
+            }
+
+            await this.updateCOT();
+        },
         init: async function(container: HTMLElement) {
             // Start the worker here rather than in state() so that std.ts
             // inside the worker resolves serverUrl from KV only after
@@ -713,27 +760,6 @@ export const useMapStore = defineStore('cloudtak', {
             const deviceStore = useDeviceStore();
 
             this.container = container;
-
-            this._boundOnVisibilityChange = async (): Promise<void> => {
-                if (document.hidden) return;
-                if (!(await this.worker.initialized)) return;
-
-                // Proactively reopen the main-thread IndexedDB connection.
-                // WebKit may have force-closed it while the app was backgrounded.
-                try {
-                    await ensureDatabase();
-                } catch (err) {
-                    console.error('Failed to reopen IndexedDB on resume:', err);
-                }
-
-                const isOpen = await this.worker.conn.isOpen;
-                if (!isOpen) {
-                    console.log('Tab became visible with closed connection, reconnecting...');
-                    await this.worker.conn.reconnect(await this.worker.username);
-                }
-
-                await this.updateCOT();
-            };
 
             this._removeOrientationListener = await deviceStore.orientation.addListener((heading) => {
                 // Drive the self-location puck's heading cone regardless of
@@ -747,14 +773,21 @@ export const useMapStore = defineStore('cloudtak', {
                     this.map.setBearing(heading);
                 }
             });
-            document.addEventListener('visibilitychange', this._boundOnVisibilityChange);
 
             // Track foreground/background transitions using a native-reliable
-            // signal so background location reporting (submitLocationHttp) is
-            // gated correctly on iOS, where document.hidden is unreliable.
+            // signal (Capacitor appStateChange; document.hidden is unreliable
+            // on iOS). Background location reporting (submitLocationHttp) is
+            // gated on it, and returning to the foreground must recover the
+            // IndexedDB connections and WebSocket iOS severed during suspend.
             this.isBackgrounded = false;
             this._removeBackgroundStateListener = await addBackgroundStateListener((isBackgrounded) => {
                 this.isBackgrounded = isBackgrounded;
+
+                if (!isBackgrounded) {
+                    this.resumeFromBackground().catch((err) => {
+                        console.error('Failed to recover after returning to foreground:', err);
+                    });
+                }
             });
 
             const { value: token } = await Preferences.get({ key: 'token' });
@@ -969,24 +1002,8 @@ export const useMapStore = defineStore('cloudtak', {
             map.addControl(routingControl);
             (map as mapgl.Map & { _routingControl?: RoutingControl })._routingControl = routingControl;
 
-            map.once('idle', async () => {
-                const displayProjection = await ProfileConfig.get('display_projection');
-
-                if (displayProjection && displayProjection.value === 'globe') {
-                    map.setProjection({ type: "globe" });
-                }
-
-                void this.icons.hydrate()
-                    .catch((error: unknown) => {
-                        console.error('Failed to hydrate iconsets after map idle', error);
-                    });
-
-                await this.initOverlays();
-
-                this.timer = setInterval(async () => {
-                    if (!this.map) return;
-                    await this.refresh();
-                }, 500);
+            map.once('idle', () => {
+                void this.onMapReady();
             });
 
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -1070,8 +1087,51 @@ export const useMapStore = defineStore('cloudtak', {
                 console.warn('Failed to submit background location via HTTP', err);
             }
         },
-        initOverlays: async function() {
-            if (!this.map) throw new Error('Cannot initLayers before map has loaded');
+        /**
+         * Runs once the initial style settles. isLoaded — which dismisses the
+         * map loading screen — is only set at the end of initOverlays(), so a
+         * single failure there (a timed-out request or a dead IndexedDB
+         * connection on a low-bandwidth native resume) must not strand the
+         * user on the loading screen: overlay loading is retried with capped
+         * backoff until it succeeds or the map is torn down.
+         */
+        onMapReady: async function(): Promise<void> {
+            try {
+                const displayProjection = await ProfileConfig.get('display_projection');
+
+                if (displayProjection && displayProjection.value === 'globe') {
+                    this.map.setProjection({ type: "globe" });
+                }
+            } catch (err) {
+                console.error('Failed to apply saved display projection', err);
+            }
+
+            void this.icons.hydrate()
+                .catch((error: unknown) => {
+                    console.error('Failed to hydrate iconsets after map idle', error);
+                });
+
+            this.registerMapListeners();
+
+            for (let attempt = 0; this._map && !this.isLoaded; attempt++) {
+                try {
+                    await this.initOverlays();
+                } catch (err) {
+                    const delay = Math.min(2000 * 2 ** attempt, 30000);
+                    console.error(`Failed to load overlays (attempt ${attempt + 1}), retrying in ${delay}ms:`, err);
+                    await new Promise((resolve) => setTimeout(resolve, delay));
+                }
+            }
+
+            if (!this._map) return;
+
+            this.timer = setInterval(async () => {
+                if (!this.map) return;
+                await this.refresh();
+            }, 500);
+        },
+        registerMapListeners: function() {
+            if (!this.map) throw new Error('Cannot registerMapListeners before map has loaded');
 
             const map: mapgl.Map = this.map as mapgl.Map;
 
@@ -1301,6 +1361,19 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             });
 
+        },
+        /**
+         * Load every overlay (basemaps, profile overlays, missions, the
+         * internal Map Features store) into the map and mark it isLoaded.
+         * Must be re-runnable: onMapReady() retries it after a failure, and
+         * source/layer registration is guarded against duplicates from a
+         * previous partial attempt.
+         */
+        initOverlays: async function() {
+            if (!this.map) throw new Error('Cannot initOverlays before map has loaded');
+
+            const map: mapgl.Map = this.map as mapgl.Map;
+
             OverlayManager.clearLoaded();
             const profileOverlays = await OverlayManager.list({ localFirst: true });
 
@@ -1517,12 +1590,25 @@ export const useMapStore = defineStore('cloudtak', {
         },
         updateAttribution: async function(): Promise<void> {
             const attributionPromises = OverlayManager.visibleBasemaps().map(async (overlay) => {
+                    // Attribution is static per basemap: serve it from the KV
+                    // cache so warm boots and offline resumes never wait on
+                    // the (un-timed) basemap endpoint. An empty string is
+                    // cached too, marking a basemap known to have none.
+                    const cacheKey = `attribution::${overlay.mode_id}`;
+
+                    const cached = await KV.value(cacheKey).catch(() => undefined);
+                    if (cached !== undefined) return cached || null;
+
                     try {
                         const basemapRes = await server.GET('/api/basemap/{:basemapid}', {
                             params: { path: { ':basemapid': Number(overlay.mode_id) } }
                         });
                         if (basemapRes.error) return null;
-                        return (basemapRes.data as Basemap).attribution;
+
+                        const attribution = (basemapRes.data as Basemap).attribution || '';
+                        await KV.update(cacheKey, attribution).catch(() => undefined);
+
+                        return attribution || null;
                     } catch (err) {
                         console.warn('Failed to load basemap attribution:', err);
                         return null;

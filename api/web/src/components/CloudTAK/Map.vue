@@ -504,6 +504,7 @@ import { useAppStore } from '../../stores/app.ts';
 import { DrawToolMode } from '../../stores/modules/draw.ts';
 import { useFloatStore } from '../../stores/float.ts';
 import { liveQuery } from 'dexie';
+import { isTransientDbError } from '../../database.ts';
 import Upload from '../util/Upload.vue';
 import { stdurl } from '../../std.ts';
 import ProfileConfig from '../../base/profile.ts';
@@ -637,18 +638,29 @@ const mapSideOffset = computed(() => {
     return Math.max(mapStore.toastOffset.x - 10, 0);
 });
 
+function onWindowError(evt: ErrorEvent) {
+    console.error(evt);
+    evt.preventDefault();
+
+    // Prefer the original error so its name survives; transient
+    // IndexedDB failures (WebKit invalidating the connection during an
+    // iOS suspend) are recovered by withDbRetry and must not modal.
+    const err = evt.error instanceof Error ? evt.error : new Error(evt.message);
+    if (isTransientDbError(err)) return;
+
+    emit('err', err);
+}
+
+function onWindowResize() {
+    height.value = window.innerHeight;
+    width.value = window.innerWidth;
+}
+
 onMounted(async () => {
     // ensure uncaught errors in the stack are captured into vue context
-    window.addEventListener('error', (evt) => {
-        console.error(evt);
-        evt.preventDefault();
-        emit('err', new Error(evt.message));
-    });
+    window.addEventListener('error', onWindowError);
 
-    window.addEventListener('resize', () => {
-        height.value = window.innerHeight;
-        width.value = window.innerWidth;
-    });
+    window.addEventListener('resize', onWindowResize);
 
     if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
     await mapStore.init(mapRef.value);
@@ -711,6 +723,8 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+    window.removeEventListener('error', onWindowError);
+    window.removeEventListener('resize', onWindowResize);
     inviteChannel?.close();
     void mapStore.destroy();
 });

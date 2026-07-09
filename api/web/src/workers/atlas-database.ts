@@ -100,12 +100,51 @@ export default class AtlasDatabase {
 
     async init(): Promise<void> {
         COT.selfUid = this.atlas.profile.uid();
+
+        // Boot from the locally persisted features only — no network. Server
+        // reconciliation happens after map load via AtlasSync's full sync,
+        // which calls loadArchive().
         try {
-            await this.loadArchive();
+            await this.loadLocalFeatures();
         } catch (err) {
-            console.error('Failed to load archived features:', err);
+            console.error('Failed to load locally persisted features:', err);
         }
+
         await this.breadcrumb.load();
+    }
+
+    /**
+     * Hydrate the in-memory CoT store from the locally persisted feature
+     * table (which only ever holds non-mission features) so that returning
+     * to the foreground doesn't visually drop features until they re-arrive
+     * over the WebSocket — and archived features render without network
+     * connectivity at all. add() skips already-stale non-archived CoTs per
+     * the display_stale setting, so old live features from a previous
+     * session are not resurrected. Additions, updates and pruning of
+     * remotely deleted archived features are reconciled later by
+     * loadArchive() via AtlasSync.
+     */
+    async loadLocalFeatures(): Promise<void> {
+        const local = await withDbRetry(() => db.feature.toArray());
+
+        for (const feat of local) {
+            if (this.cots.has(feat.id)) continue;
+
+            await this.add({
+                id: feat.id,
+                type: 'Feature',
+                path: feat.path,
+                properties: feat.properties,
+                geometry: feat.geometry
+            } as InputFeature, {
+                skipSave: true,
+                skipBroadcast: true
+            });
+        }
+
+        this.atlas.postMessage({
+            type: WorkerMessageType.Feature_Archived_Added,
+        });
     }
 
     /**

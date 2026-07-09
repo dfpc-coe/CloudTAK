@@ -329,6 +329,11 @@ db.version(2).stores({
 
 let reopenPromise: Promise<void> | null = null;
 
+// Increments on every successful (re)open so callers can tell whether the
+// connection they observed failing has already been replaced.
+let connectionGeneration = 0;
+let forceReopenPromise: Promise<void> | null = null;
+
 // An IndexedDB open issued while a page is unloading leaves WKWebView's
 // database process holding an orphaned request that deadlocks the next
 // page's first IndexedDB operation until the app is fully restarted. Close
@@ -366,6 +371,7 @@ export async function ensureDatabase(): Promise<void> {
 
                 try {
                     await db.open();
+                    connectionGeneration++;
                     return;
                 } catch (err) {
                     if (db.isOpen()) return;
@@ -381,6 +387,41 @@ export async function ensureDatabase(): Promise<void> {
     }
 
     return reopenPromise;
+}
+
+/**
+ * Close and reopen the IndexedDB connection.
+ *
+ * WebKit on iOS can invalidate the underlying connection while the app is
+ * suspended without firing a close event, leaving Dexie reporting an open —
+ * but dead — connection whose every request fails with UnknownError
+ * ("attempt to get records from the database without an in-progress
+ * transaction"). ensureDatabase() is a no-op in that state, so recovery
+ * requires an explicit close first.
+ *
+ * Pass the generation observed before the failing operation so a connection
+ * another caller already replaced is not needlessly closed again.
+ */
+export async function forceReopenDatabase(sinceGeneration = connectionGeneration): Promise<void> {
+    if (shuttingDown) return;
+
+    if (!forceReopenPromise) {
+        if (sinceGeneration !== connectionGeneration) return ensureDatabase();
+
+        forceReopenPromise = (async () => {
+            try {
+                db.close();
+            } catch (err) {
+                console.warn('Failed to close database before reopen', err);
+            }
+
+            await ensureDatabase();
+        })().finally(() => {
+            forceReopenPromise = null;
+        });
+    }
+
+    return forceReopenPromise;
 }
 
 const TRANSIENT_DB_ERROR_NAMES = new Set([
@@ -399,7 +440,11 @@ const TRANSIENT_DB_ERROR_MESSAGES = [
     'transaction aborted',
     'objectstore',
     'connection is closing',
-    'premature commit'
+    'premature commit',
+    // WebKit UnknownError after iOS suspends the app mid-transaction; matched
+    // on message because wrappers (window.onerror, String(reason)) lose the
+    // DOMException name.
+    'in-progress transaction'
 ];
 
 db.on('close', () => {
@@ -418,14 +463,26 @@ export async function withDbRetry<T>(fn: () => Promise<T>, attempts = 4): Promis
     let lastError: unknown;
 
     for (let attempt = 0; attempt < attempts; attempt++) {
+        let generation = connectionGeneration;
+
         try {
             await ensureDatabase();
+            generation = connectionGeneration;
             return await fn();
         } catch (err) {
             lastError = err;
             if (!isTransientDbError(err)) throw err;
 
-            await ensureDatabase();
+            // Dexie can still report the connection open after WebKit has
+            // invalidated it (iOS suspend fires no close event), in which
+            // case ensureDatabase() alone is a no-op and every retry would
+            // fail identically — force a real close+reopen.
+            try {
+                await forceReopenDatabase(generation);
+            } catch (reopenErr) {
+                console.warn('Failed to reopen database during retry', reopenErr);
+            }
+
             await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
         }
     }
