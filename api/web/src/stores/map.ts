@@ -695,8 +695,8 @@ export const useMapStore = defineStore('cloudtak', {
                     await this.makeActiveMission(sub);
                 }
 
-                if (opts.reload) {
-                    await sub.reload({ token: token || '' });
+                if (opts?.reload) {
+                    await sub.reload();
                 }
             } else {
                 try {
@@ -710,10 +710,9 @@ export const useMapStore = defineStore('cloudtak', {
                     // Offline/low-bandwidth: keep the locally persisted
                     // features rendered above. The next full sync or manual
                     // reload refreshes from the server.
-                    if (!local) throw err;
+                    if (!sub) throw err;
 
                     console.warn(`Mission:${guid} network refresh failed, using local data:`, err);
-                    sub = local;
                 }
             }
 
