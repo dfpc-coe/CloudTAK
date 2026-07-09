@@ -105,6 +105,7 @@ export default class MapServerBasemap extends FeatureServerBasemap {
                     ...opts.headers,
                     'Content-Type': 'image/png',
                     'Content-Length': Buffer.byteLength(tile),
+                    'Cache-Control': 'public, max-age=3600',
                 });
 
                 res.write(tile);

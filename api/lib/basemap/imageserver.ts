@@ -65,6 +65,7 @@ export default class ImageServerBasemap extends BasemapProtocol {
                 ...opts.headers,
                 'Content-Type': 'image/jpeg',
                 'Content-Length': Buffer.byteLength(tile),
+                'Cache-Control': 'public, max-age=3600',
             });
 
             res.write(tile);

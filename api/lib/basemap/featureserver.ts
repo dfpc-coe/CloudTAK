@@ -197,6 +197,7 @@ export default class FeatureServerBasemap extends BasemapProtocol {
                 ...opts.headers,
                 'Content-Type': 'application/vnd.mapbox-vector-tile',
                 'Content-Length': Buffer.byteLength(tile),
+                'Cache-Control': 'public, max-age=3600',
             });
 
             res.write(tile);
