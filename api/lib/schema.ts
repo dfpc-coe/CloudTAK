@@ -86,7 +86,6 @@ export const Profile = pgTable('profile', {
     auth: jsonb().$type<Static<typeof ConnectionAuth>>().notNull(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    phone: text().notNull().default(''),
     system_admin: boolean().notNull().default(false),
     agency_admin: jsonb().notNull().$type<Array<number>>().default([]),
 });

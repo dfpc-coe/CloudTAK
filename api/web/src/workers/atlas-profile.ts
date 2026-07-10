@@ -30,6 +30,7 @@ export default class AtlasProfile {
     profile_remarks? : ProfileConfig<'tak_remarks'>;
     profile_group? : ProfileConfig<'tak_group'>;
     profile_role? : ProfileConfig<'tak_role'>;
+    profile_phone? : ProfileConfig<'tak_phone'>;
     profile_loc?: ProfileConfig<'tak_loc'>;
     profile_loc_freq?: ProfileConfig<'tak_loc_freq'>;
     profile_created?: ProfileConfig<'created'>;
@@ -76,6 +77,9 @@ export default class AtlasProfile {
 
         this.profile_role = await ProfileConfig.get('tak_role');
         if (this.profile_role) this.profile_role.subscribe();
+
+        this.profile_phone = await ProfileConfig.get('tak_phone');
+        if (this.profile_phone) this.profile_phone.subscribe();
 
         this.profile_loc = await ProfileConfig.get('tak_loc');
         if (this.profile_loc) this.profile_loc.subscribe();
@@ -144,6 +148,9 @@ export default class AtlasProfile {
 
         this.profile_role?.destroy();
         this.profile_role = undefined;
+
+        this.profile_phone?.destroy();
+        this.profile_phone = undefined;
 
         this.profile_loc?.destroy();
         this.profile_loc = undefined;
@@ -437,6 +444,7 @@ export default class AtlasProfile {
         const remarks = this.profile_remarks ? this.profile_remarks.value : undefined;
         const group = this.profile_group ? this.profile_group.value : undefined;
         const role = this.profile_role ? this.profile_role.value : undefined;
+        const phone = this.profile_phone ? this.profile_phone.value : undefined;
 
         const feat: Feature = {
             id: uid,
@@ -453,7 +461,11 @@ export default class AtlasProfile {
                 start: new Date().toISOString(),
                 stale: new Date(new Date().getTime() + (1000 * 60)).toISOString(),
                 center: coordinates,
-                contact: { endpoint: '*:-1:stcp', callsign: callsign as string },
+                contact: {
+                    endpoint: '*:-1:stcp',
+                    callsign: callsign as string,
+                    ...(phone ? { phone: phone as string } : {})
+                },
                 group: {
                     name: group as string,
                     role: role as string

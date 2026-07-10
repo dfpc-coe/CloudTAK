@@ -223,7 +223,6 @@ export const ProfileListResponse = Type.Object({
     username: Type.String(),
     created: Type.String(),
     updated: Type.String(),
-    phone: Type.String(),
     last_login: Type.String(),
     active: Type.Boolean({
         description: 'Does the user have an active CloudTAK Session',
@@ -235,6 +234,7 @@ export const ProfileListResponse = Type.Object({
 export const Profile = Type.Object({
     tak_callsign: Type.String(),
     tak_remarks: Type.String(),
+    tak_phone: Type.String(),
     tak_group: Type.Enum(TAKGroup),
     tak_role: Type.Enum(TAKRole),
     tak_type: Type.String(),
@@ -278,7 +278,6 @@ export const ProfileResponse = Type.Composite([
         username: Type.String(),
         created: Type.String(),
         updated: Type.String(),
-        phone: Type.String(),
         last_login: Type.String(),
         active: Type.Boolean({
             description: 'Does the user have an active CloudTAK Session',

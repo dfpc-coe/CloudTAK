@@ -25,6 +25,8 @@ export const ProfileConfigDefaults = {
 
     'menu::order': [],
 
+    'tak::phone': '',
+
     'tak::callsign': 'CloudTAK User',
     'tak::remarks': 'CloudTAK User',
     'tak::group': TAKGroup.ORANGE,

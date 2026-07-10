@@ -27,7 +27,7 @@ test('GET: api/profile', async () => {
         assert.deepEqual(res.body, {
             active: false,
             username: 'admin@example.com',
-            phone: '',
+            tak_phone: '',
             tak_callsign: 'CloudTAK User',
             tak_remarks: 'CloudTAK User',
             tak_group: 'Orange',
@@ -80,7 +80,7 @@ test('PATCH: api/profile', async () => {
         assert.deepEqual(res.body, {
             active: false,
             username: 'admin@example.com',
-            phone: '',
+            tak_phone: '',
             tak_callsign: 'Test Callsign',
             tak_remarks: 'CloudTAK User',
             tak_group: 'Orange',
@@ -106,6 +106,25 @@ test('PATCH: api/profile', async () => {
             system_admin: true,
             agency_admin: [],
         });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/profile - Phone', async () => {
+    try {
+        const res = await flight.fetch('/api/profile', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                tak_phone: '5551234567',
+            },
+        }, true);
+
+        assert.equal(res.body.tak_phone, '5551234567');
+        assert.equal(res.body.tak_callsign, 'Test Callsign');
     } catch (err) {
         assert.ifError(err);
     }
@@ -160,7 +179,7 @@ test('GET: api/profile - New User / New Defaults', async () => {
         assert.deepEqual(res.body, {
             active: false,
             username: 'configtest@example.com',
-            phone: '',
+            tak_phone: '',
             tak_callsign: 'CloudTAK User',
             tak_remarks: 'CloudTAK User',
             tak_group: 'Orange',

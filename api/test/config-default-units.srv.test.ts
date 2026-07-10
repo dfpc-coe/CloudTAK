@@ -172,7 +172,7 @@ test('GET api/profile', async () => {
         assert.deepEqual(res.body, {
             active: false,
             username: 'defaults@example.com',
-            phone: '',
+            tak_phone: '',
             tak_callsign: 'CloudTAK User',
             tak_remarks: 'CloudTAK User',
             tak_group: 'Orange',

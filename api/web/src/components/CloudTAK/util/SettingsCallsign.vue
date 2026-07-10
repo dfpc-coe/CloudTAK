@@ -97,6 +97,7 @@ import {
     IconShield,
     IconClock,
     IconMapPin,
+    IconPhone,
     IconCircleCheck,
 } from '@tabler/icons-vue';
 import CoordinateType from './CoordinateType.vue';
@@ -169,6 +170,12 @@ const settings = computed<SettingItem[]>(() => {
             type: 'input',
         },
         {
+            key: 'tak_phone',
+            label: 'Phone Number',
+            icon: IconPhone,
+            type: 'input',
+        },
+        {
             key: 'tak_group',
             label: 'User Group',
             icon: IconUsers,
@@ -221,7 +228,8 @@ onMounted(async () => {
         tak_group: (await ProfileConfig.get('tak_group'))?.value,
         tak_role: (await ProfileConfig.get('tak_role'))?.value,
         tak_type: (await ProfileConfig.get('tak_type'))?.value,
-        tak_loc_freq: (await ProfileConfig.get('tak_loc_freq'))?.value
+        tak_loc_freq: (await ProfileConfig.get('tak_loc_freq'))?.value,
+        tak_phone: (await ProfileConfig.get('tak_phone'))?.value
     } as Profile;
 
     if (p.tak_group && groups.value[p.tak_group]) {
