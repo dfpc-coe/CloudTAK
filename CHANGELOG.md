@@ -16,6 +16,11 @@
 
 ### Pending Release
 
+### v13.41.1 - 2026-07-10
+
+- :bug: Fix map loading regression which would prevent plugin loading
+- :bug: Fix broken HTML in remarks/description content - Fixes: https://github.com/dfpc-coe/CloudTAK/issues/1565
+
 ### v13.41.0 - 2026-07-10
 
 - :rocket: Send Phone Number in CoT message if set - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1568

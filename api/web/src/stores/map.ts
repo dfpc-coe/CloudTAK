@@ -1005,6 +1005,8 @@ export const useMapStore = defineStore('cloudtak', {
 
                 await this.initOverlays();
 
+                this.isMapLoadedFully = true;
+
                 this.timer = setInterval(async () => {
                     if (!this.map) return;
                     await this.refresh();
