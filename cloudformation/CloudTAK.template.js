@@ -10,9 +10,10 @@ import PMTiles from './lib/pmtiles.js';
 import Retention from './lib/retention.js';
 import Alarms from './lib/alarms.js';
 import Dashboard from './lib/dashboard.js';
+import Stateful from './lib/stateful.js';
 
 export default cf.merge(
-    S3, DB, API, KMS, Signing, Alarms, Dashboard, PMTiles, Events, Retention, Media,
+    S3, DB, API, KMS, Signing, Alarms, Dashboard, PMTiles, Events, Retention, Media, Stateful,
     {
         Description: 'Template for @tak-ps/etl',
         Parameters: {
