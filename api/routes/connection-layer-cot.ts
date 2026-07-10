@@ -302,18 +302,18 @@ export default async function router(schema: Schema, config: Config) {
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            if (!connection.enabled) throw new Err(400, null, 'Connection is disabled');
 
             const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (!layer.connection) throw new Err(400, null, 'Layer is not attached to a Connection');
-
-            const layerConnection = await config.models.Connection.from(layer.connection);
+            if (layer.connection !== connection.id) throw new Err(400, null, 'Layer does not belong to this connection');
 
             const api = await TAKAPI.init(
                 new URL(String(config.server.api)),
                 new APIAuthCertificate(
-                    layerConnection.auth.cert,
-                    layerConnection.auth.key,
+                    connection.auth.cert,
+                    connection.auth.key,
                 ),
             );
 
@@ -349,18 +349,18 @@ export default async function router(schema: Schema, config: Config) {
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            if (!connection.enabled) throw new Err(400, null, 'Connection is disabled');
 
             const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (!layer.connection) throw new Err(400, null, 'Layer is not attached to a connection');
-
-            const layerConnection = await config.models.Connection.from(layer.connection);
+            if (layer.connection !== connection.id) throw new Err(400, null, 'Layer does not belong to this connection');
 
             const api = await TAKAPI.init(
                 new URL(String(config.server.api)),
                 new APIAuthCertificate(
-                    layerConnection.auth.cert,
-                    layerConnection.auth.key,
+                    connection.auth.cert,
+                    connection.auth.key,
                 ),
             );
 
