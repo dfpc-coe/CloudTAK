@@ -54,7 +54,7 @@ export default async function router(schema: Schema, config: Config) {
                         });
 
                         if (phone !== undefined) {
-                            await config.models.ProfileConfig.commit(email, { phone: String(phone ?? '') });
+                            await config.models.ProfileConfig.commit(email, { 'tak::phone': String(phone ?? '') });
                         }
                     } catch (err) {
                         console.error(err);

@@ -232,9 +232,9 @@ export const ProfileListResponse = Type.Object({
 });
 
 export const Profile = Type.Object({
-    phone: Type.String(),
     tak_callsign: Type.String(),
     tak_remarks: Type.String(),
+    tak_phone: Type.String(),
     tak_group: Type.Enum(TAKGroup),
     tak_role: Type.Enum(TAKRole),
     tak_type: Type.String(),

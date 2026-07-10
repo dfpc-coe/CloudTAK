@@ -30,7 +30,7 @@ export default class AtlasProfile {
     profile_remarks? : ProfileConfig<'tak_remarks'>;
     profile_group? : ProfileConfig<'tak_group'>;
     profile_role? : ProfileConfig<'tak_role'>;
-    profile_phone? : ProfileConfig<'phone'>;
+    profile_phone? : ProfileConfig<'tak_phone'>;
     profile_loc?: ProfileConfig<'tak_loc'>;
     profile_loc_freq?: ProfileConfig<'tak_loc_freq'>;
     profile_created?: ProfileConfig<'created'>;
@@ -78,7 +78,7 @@ export default class AtlasProfile {
         this.profile_role = await ProfileConfig.get('tak_role');
         if (this.profile_role) this.profile_role.subscribe();
 
-        this.profile_phone = await ProfileConfig.get('phone');
+        this.profile_phone = await ProfileConfig.get('tak_phone');
         if (this.profile_phone) this.profile_phone.subscribe();
 
         this.profile_loc = await ProfileConfig.get('tak_loc');

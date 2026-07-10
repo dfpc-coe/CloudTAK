@@ -170,7 +170,7 @@ const settings = computed<SettingItem[]>(() => {
             type: 'input',
         },
         {
-            key: 'phone',
+            key: 'tak_phone',
             label: 'Phone Number',
             icon: IconPhone,
             type: 'input',
@@ -229,7 +229,7 @@ onMounted(async () => {
         tak_role: (await ProfileConfig.get('tak_role'))?.value,
         tak_type: (await ProfileConfig.get('tak_type'))?.value,
         tak_loc_freq: (await ProfileConfig.get('tak_loc_freq'))?.value,
-        phone: (await ProfileConfig.get('phone'))?.value
+        tak_phone: (await ProfileConfig.get('tak_phone'))?.value
     } as Profile;
 
     if (p.tak_group && groups.value[p.tak_group]) {

@@ -39231,7 +39231,7 @@ export interface paths {
                             username: string;
                             created: string;
                             updated: string;
-                            phone: string;
+                            tak_phone: string;
                             last_login: string;
                             /** @description Does the user have an active CloudTAK Session */
                             active: boolean;
@@ -39386,7 +39386,7 @@ export interface paths {
                         geometry_point_type?: string;
                         geometry_point_color?: string;
                         geometry_point_icon?: string;
-                        phone?: string;
+                        tak_phone?: string;
                     };
                 };
             };
@@ -39401,7 +39401,7 @@ export interface paths {
                             username: string;
                             created: string;
                             updated: string;
-                            phone: string;
+                            tak_phone: string;
                             last_login: string;
                             /** @description Does the user have an active CloudTAK Session */
                             active: boolean;
@@ -43320,7 +43320,7 @@ export interface paths {
                             username: string;
                             created: string;
                             updated: string;
-                            phone: string;
+                            tak_phone: string;
                             last_login: string;
                             /** @description Does the user have an active CloudTAK Session */
                             active: boolean;
@@ -43464,7 +43464,7 @@ export interface paths {
                             username: string;
                             created: string;
                             updated: string;
-                            phone: string;
+                            tak_phone: string;
                             last_login: string;
                             /** @description Does the user have an active CloudTAK Session */
                             active: boolean;
