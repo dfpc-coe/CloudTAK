@@ -6,7 +6,6 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../lib/auth.js';
 import { sql } from 'drizzle-orm';
 import Config from '../lib/config.js';
-import { AdminConnConfig } from '../lib/connection-config.js';
 import { ServerResponse } from '../lib/types.js';
 import UserControl from '../lib/control/user.js';
 import { TAKAPI, APIAuthCertificate, APIAuthPassword } from '@tak-ps/node-tak';
@@ -46,10 +45,12 @@ export default async function router(schema: Schema, config: Config) {
                     auth = true;
                 }
 
+                const connectionStatus = (await config.hub.connectionStatus([0]))['0'];
+
                 if (user.access === AuthUserAccess.ADMIN) {
                     const response: Static<typeof ServerResponse> = {
                         status: 'configured',
-                        connection_status: config.conns.status(0),
+                        connection_status: connectionStatus,
                         version: pkg.version,
                         ...config.server,
                         auth,
@@ -65,7 +66,7 @@ export default async function router(schema: Schema, config: Config) {
                     res.json({
                         id: config.server.id,
                         status: 'configured',
-                        connection_status: config.conns.status(0),
+                        connection_status: connectionStatus,
                         connection: config.server.connection,
                         version: pkg.version,
                         name: config.server.name,
@@ -147,36 +148,14 @@ export default async function router(schema: Schema, config: Config) {
                 updated: sql`Now()`,
             });
 
-            // If the server URL or auth cert actually changed, all connections need to reconnect.
-            // Otherwise just toggle the admin connection (connection 0) like a regular connection enable/disable.
-            const urlChanged = req.body.url !== config.server.url;
-            const authChanged = req.body.auth !== undefined && (
-                req.body.auth.cert !== config.server.auth.cert || req.body.auth.key !== config.server.auth.key
-            );
-
-            if (urlChanged || authChanged) {
-                await config.conns.refresh();
-            } else {
-                if (config.server.connection && !config.conns.has(0)) {
-                    if (config.server.auth.cert && config.server.auth.key) {
-                        await config.conns.add(new AdminConnConfig(config));
-                    }
-                } else if (config.server.connection && config.conns.has(0)) {
-                    config.conns.delete(0);
-                    if (config.server.auth.cert && config.server.auth.key) {
-                        await config.conns.add(new AdminConnConfig(config));
-                    }
-                } else if (!config.server.connection && config.conns.has(0)) {
-                    config.conns.delete(0);
-                }
-            }
+            const connectionStatus = await config.hub.serverRefresh();
 
             let auth = false;
             if (config.server.auth.cert && config.server.auth.key) auth = true;
 
             const response: Static<typeof ServerResponse> = {
                 status: 'configured',
-                connection_status: config.conns.status(0),
+                connection_status: connectionStatus,
                 version: pkg.version,
                 ...config.server,
                 auth,

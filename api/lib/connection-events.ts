@@ -1,4 +1,3 @@
-import WebSocket from 'ws';
 import type Config from './config.js';
 import type { AuthUser } from './auth.js';
 
@@ -89,22 +88,9 @@ export default class ConnectionEvents {
             exclude?: string;
         } = {},
     ): void {
-        const clients = config.wsClients.get(username) || [];
-        if (!clients.length) return;
-
-        const payload = JSON.stringify(event);
-
-        for (const client of clients) {
-            // Don't echo the event back to the client that performed the operation
-            if (opts.exclude && client.session && client.session === opts.exclude) continue;
-            if (client.ws.readyState !== WebSocket.OPEN) continue;
-
-            try {
-                client.ws.send(payload);
-            } catch (err) {
-                console.error(`Error: Failed to send sync event to client of ${username}:`, err);
-            }
-        }
+        config.hub.wsNotify(username, event, opts.exclude).catch((err) => {
+            console.error(`Error: Failed to send sync event to clients of ${username}:`, err);
+        });
     }
 
     /**

@@ -246,11 +246,13 @@ export default async function router(schema: Schema, config: Config) {
             } as Static<typeof FeatureResponse>;
 
             if (req.query.broadcast) {
-                const sockets = config.wsClients.get(user.email) || [];
-                for (const socket of sockets) {
-                    if (!socket.client) continue;
-                    config.conns.cots(socket.client.config, [await CoTParser.from_geojson(feat)]);
-                }
+                await config.hub.submitCots({
+                    connection: user.email,
+                    cots: [await CoTParser.from_geojson(feat)],
+                    write: false,
+                    broadcast: true,
+                    ifPooled: true,
+                });
             }
 
             ConnectionEvents.user(config, user, ConnectionEventDataType.FEATURE, ConnectionEventAction.UPDATE, feat.id, feat);

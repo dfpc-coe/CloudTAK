@@ -151,10 +151,12 @@ export default class ProfileControl {
             (profile as any)[key.replace(/::/g, '_')] = full_config[key as keyof typeof full_config];
         }
 
+        const presence = await this.config.hub.wsPresence([profile.username]);
+
         // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
         return {
             ...profile,
-            active: this.config.wsClients.has(profile.username),
+            active: presence[profile.username].active,
             agency_admin: profile.agency_admin || [],
         };
     }

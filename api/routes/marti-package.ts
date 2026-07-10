@@ -439,11 +439,8 @@ export default async function router(schema: Schema, config: Config) {
                 }, fs.createReadStream(out));
             }
 
-            const client = config.conns.get(profile.username);
-
             if (
-                client
-                && req.body.destinations.length
+                req.body.destinations.length
                 && req.body.destinations.filter(d => !d.mission).length
             ) {
                 const url = new URL(config.server.api);
@@ -469,7 +466,11 @@ export default async function router(schema: Schema, config: Config) {
                         }),
                 };
 
-                client.tak.write([cot], { stripFlow: true });
+                await config.hub.submitCots({
+                    connection: profile.username,
+                    cots: [cot],
+                    ifPooled: true,
+                });
             }
 
             if (req.body.destinations.length && req.body.destinations.filter(d => d.mission).length) {

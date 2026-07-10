@@ -58,9 +58,11 @@ export default async function router(schema: Schema, config: Config) {
                 `,
             });
 
+            const presence = await config.hub.wsPresence(list.items.map(user => user.username));
+
             list.items = list.items.map((user) => {
                 return {
-                    active: config.wsClients.has(user.username),
+                    active: presence[user.username].active,
                     ...user,
                 };
             });
@@ -175,10 +177,8 @@ export default async function router(schema: Schema, config: Config) {
                 where: eq(ProfileSession.username, req.params.username),
             });
 
-            const activeSessions = new Set<string>();
-            for (const client of config.wsClients.get(req.params.username) || []) {
-                if (client.session !== undefined) activeSessions.add(client.session);
-            }
+            const presence = await config.hub.wsPresence([req.params.username]);
+            const activeSessions = new Set<string>(presence[req.params.username].sessions);
 
             res.json({
                 total: list.total,

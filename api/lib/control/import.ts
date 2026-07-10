@@ -116,12 +116,12 @@ export default class ImportControl {
         };
 
         if (body.status === Import_Status.FAIL || body.status === Import_Status.SUCCESS) {
-            for (const client of this.config.wsClients.get(imported.username) || []) {
-                client.ws.send(JSON.stringify({
-                    type: 'import',
-                    properties: response,
-                }));
-            }
+            this.config.hub.wsNotify(imported.username, {
+                type: 'import',
+                properties: response,
+            }).catch((err) => {
+                console.error(`Error: Failed to send import event to clients of ${imported.username}:`, err);
+            });
 
             sendPush(this.config, imported.username, {
                 title: body.status === Import_Status.SUCCESS ? 'Import Complete' : 'Import Failed',
