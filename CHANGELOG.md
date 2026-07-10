@@ -16,6 +16,12 @@
 
 ### Pending Release
 
+### v13.40.0 - 2026-07-10
+
+- :bug: Tie loading state to end on `load` event instead of `idle` as immediate features can prevent `idle` state
+- :rocket: Immediately show local Data Sync features (and then request a refresh) if they are available locally
+- :rocket: Remove "Your Features" tree from the overlay menu now that it is surfaced via MenuFeatures
+
 ### v13.39.0 - 2026-07-08
 
 - :rocket: Replace the `@openaddresses/batch-alarms` dependency with in-repo `cloudformation/lib/alarms.ts` & `cloudformation/lib/dashboard.ts`
