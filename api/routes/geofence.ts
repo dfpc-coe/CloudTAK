@@ -26,7 +26,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            res.json(await config.geofence.status());
+            res.json(await config.hub.geofenceStatus());
         } catch (err) {
             Err.respond(err, res);
         }

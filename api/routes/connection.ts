@@ -7,7 +7,7 @@ import { X509Certificate, createPrivateKey } from 'crypto';
 import { Type } from '@sinclair/typebox';
 import { StandardResponse, ConnectionResponse } from '../lib/types.js';
 import { Connection } from '../lib/schema.js';
-import { MachineConnConfig, ConnectionAuth } from '../lib/connection-config.js';
+import { ConnectionAuth } from '../lib/connection-config.js';
 import Schema from '@openaddresses/batch-schema';
 import * as Default from '../lib/limits.js';
 import { generateClientP12, generateTrustP12 } from '../lib/certificate.js';
@@ -60,25 +60,21 @@ export default async function router(schema: Schema, config: Config) {
                 where,
             });
 
+            const statuses = await config.hub.connectionStatus(list.items.map(conn => conn.id));
+
             const json = {
                 total: list.total,
-                status: { dead: 0, live: 0, unknown: 0 },
+                status: await config.hub.connectionSummary(),
                 items: list.items.map((conn) => {
                     const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
 
                     return {
-                        status: config.conns.status(conn.id),
+                        status: statuses[String(conn.id)],
                         certificate: { validFrom, validTo, subject },
                         ...conn,
                     };
                 }),
             };
-
-            for (const conn of config.conns.values()) {
-                if (!conn.tak) json.status.unknown++;
-                else if (conn.tak.open) json.status.live++;
-                else json.status.dead++;
-            }
 
             res.json(json);
         } catch (err) {
@@ -138,7 +134,7 @@ export default async function router(schema: Schema, config: Config) {
                 username: user.email,
             });
 
-            if (conn.enabled) await config.conns.add(new MachineConnConfig(config, conn));
+            const status = await config.hub.connectionSync(conn.id);
 
             const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
 
@@ -153,7 +149,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json({
-                status: config.conns.status(conn.id),
+                status,
                 certificate: { validFrom, validTo, subject },
                 ...conn,
             });
@@ -182,10 +178,7 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`enabled = true`,
             })) {
                 try {
-                    if (config.conns.has(conn.id)) {
-                        await config.conns.delete(conn.id);
-                    }
-                    await config.conns.add(new MachineConnConfig(config, conn));
+                    await config.hub.connectionSync(conn.id, { force: true });
                 } catch (err) {
                     console.error(err);
                 }
@@ -249,19 +242,12 @@ export default async function router(schema: Schema, config: Config) {
                 ...req.body,
             });
 
-            if (conn.enabled && !config.conns.has(conn.id)) {
-                await config.conns.add(new MachineConnConfig(config, conn));
-            } else if (conn.enabled && config.conns.has(conn.id)) {
-                await config.conns.delete(conn.id);
-                await config.conns.add(new MachineConnConfig(config, conn));
-            } else if (!conn.enabled && config.conns.has(conn.id)) {
-                await config.conns.delete(conn.id);
-            }
+            const status = await config.hub.connectionSync(conn.id, { force: true });
 
             const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
 
             res.json({
-                status: config.conns.status(conn.id),
+                status,
                 certificate: { validFrom, validTo, subject },
                 ...conn,
             });
@@ -287,7 +273,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 id: 0,
-                status: config.conns.status(0),
+                status: (await config.hub.connectionStatus([0]))['0'],
                 agency: null,
                 certificate: { validFrom, validTo, subject },
                 created: config.server.created,
@@ -320,7 +306,7 @@ export default async function router(schema: Schema, config: Config) {
             const { validFrom, validTo, subject } = new X509Certificate(connection.auth.cert);
 
             res.json({
-                status: config.conns.status(connection.id),
+                status: (await config.hub.connectionStatus([connection.id]))[String(connection.id)],
                 certificate: { validFrom, validTo, subject },
                 ...connection,
             });
@@ -414,17 +400,12 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!connection.enabled) throw new Err(400, null, 'Connection is not currently enabled');
 
-            if (config.conns.has(connection.id)) {
-                await config.conns.delete(connection.id);
-                await config.conns.add(new MachineConnConfig(config, connection));
-            } else {
-                await config.conns.add(new MachineConnConfig(config, connection));
-            }
+            const status = await config.hub.connectionSync(connection.id, { force: true });
 
             const { validFrom, validTo, subject } = new X509Certificate(connection.auth.cert);
 
             res.json({
-                status: config.conns.status(connection.id),
+                status,
                 certificate: { validFrom, validTo, subject },
                 ...connection,
             });
@@ -469,7 +450,7 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.models.Connection.delete(req.params.connectionid);
 
-            config.conns.delete(req.params.connectionid);
+            await config.hub.connectionSync(req.params.connectionid);
 
             const cotak = config.user?.get('cotak');
             if (cotak && cotak.configured) {

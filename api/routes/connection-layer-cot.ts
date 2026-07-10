@@ -67,19 +67,17 @@ export default async function router(schema: Schema, config: Config) {
 
             req.body.features = styled;
 
-            let pooledClient;
             let data;
+            let connectionId = layer.connection;
 
-            if (!layer.incoming.data) {
-                pooledClient = await config.conns.get(layer.connection);
-            } else if (layer.incoming.data) {
+            if (layer.incoming.data) {
                 data = await config.models.Data.from(layer.incoming.data);
-
-                pooledClient = await config.conns.get(data.connection);
-                if (!pooledClient) throw new Err(500, null, `Pooled Client for ${data.connection} not found in config`);
+                connectionId = data.connection;
             }
 
-            if (!pooledClient || !pooledClient.config || !pooledClient.config.enabled) {
+            const layerConnection = await config.models.Connection.from(connectionId);
+
+            if (!layerConnection.enabled) {
                 throw new Err(200, null, 'Recieved but Connection Paused');
             }
 
@@ -113,7 +111,7 @@ export default async function router(schema: Schema, config: Config) {
                         throw new Err(400, null, 'uids Array must be present when submitting to DataSync with MissionDiff');
                     }
 
-                    const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(pooledClient.config.auth.cert, pooledClient.config.auth.key));
+                    const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(layerConnection.auth.cert, layerConnection.auth.key));
                     // Once NodeJS supports Set.difference we can simplify this
                     const inputFeats = new Set(req.body.uids);
 
@@ -260,9 +258,11 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(200, null, 'No features found');
             }
 
-            pooledClient.tak.write(cots, { stripFlow: true });
-
-            config.conns.cots(pooledClient.config, cots);
+            await config.hub.submitCots({
+                connection: connectionId,
+                cots,
+                broadcast: true,
+            });
 
             res.status(errors.length ? 400 : 200).json({
                 status: errors.length ? 400 : 200,

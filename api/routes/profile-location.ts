@@ -5,7 +5,6 @@ import Auth from '../lib/auth.js';
 import { CoTParser } from '@tak-ps/node-cot';
 import { Type } from '@sinclair/typebox';
 import { StandardResponse } from '../lib/types.js';
-import { ProfileConnConfig } from '../lib/connection-config.js';
 import ProfileControl from '../lib/control/profile.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -37,28 +36,6 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
 
             const profile = await profileControl.from(user.email);
-            const rawProfile = await config.models.Profile.from(user.email);
-
-            // Ensure the user's TAK profile connection exists and is ready
-            let pooledClient = config.conns.get(user.email);
-            let awaitSecure: Promise<void> | undefined;
-
-            if (!pooledClient) {
-                if (!rawProfile.auth?.cert || !rawProfile.auth?.key) {
-                    throw new Err(400, null, 'Profile auth certificate not configured');
-                }
-
-                pooledClient = await config.conns.add(
-                    new ProfileConnConfig(config, user.email, rawProfile.auth),
-                );
-                if (pooledClient!.tak.client && !pooledClient!.tak.client.authorized) {
-                    awaitSecure = new Promise<void>(resolve =>
-                        pooledClient!.tak.once('secureConnect', resolve),
-                    );
-                }
-            }
-
-            if (awaitSecure) await awaitSecure;
 
             const now = req.body.time ? new Date(req.body.time) : new Date();
             const stale = new Date(now.getTime() + 60_000);
@@ -93,7 +70,12 @@ export default async function router(schema: Schema, config: Config) {
 
             const cot = await CoTParser.from_geojson(feature);
 
-            pooledClient.tak.write([cot], { stripFlow: true });
+            // Ensures the user's TAK profile connection exists and is ready
+            await config.hub.submitCots({
+                connection: user.email,
+                cots: [cot],
+                ensureProfile: true,
+            });
 
             res.json({
                 status: 200,

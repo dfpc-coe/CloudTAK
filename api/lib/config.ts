@@ -7,6 +7,8 @@ import EventsPool from './events-pool.js';
 import { Pool, GenerateUpsert } from '@openaddresses/batch-generic';
 import ConnectionPool from './connection-pool.js';
 import ConnectionGeofence from './connection-geofence.js';
+import type { HubClient } from './hub/index.js';
+import LocalHub from './hub/local.js';
 import { ConnectionWebSocket } from './connection-web.js';
 import type { Server } from './schema.js';
 import { type InferSelectModel } from 'drizzle-orm';
@@ -43,6 +45,7 @@ export default class Config {
     geofence: ConnectionGeofence;
     server: InferSelectModel<typeof Server>;
     events: EventsPool;
+    hub: HubClient;
     arnPrefix?: string;
 
     constructor(init: {
@@ -80,6 +83,8 @@ export default class Config {
         this.geofence = new ConnectionGeofence(this);
 
         this.events = new EventsPool(this.StackName);
+
+        this.hub = new LocalHub(this);
 
         this.weather = new WeatherManager();
     }

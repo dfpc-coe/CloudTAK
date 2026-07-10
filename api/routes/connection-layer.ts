@@ -311,12 +311,10 @@ export default async function router(schema: Schema, config: Config) {
 
             layer = await layerControl.from(connection, req.params.layerid);
 
-            if (config.events) {
-                if (incoming.cron && !Schedule.is_aws(incoming.cron) && layer.enabled) {
-                    config.events.add(layer.id, incoming.cron);
-                } else if (!incoming.cron || (incoming.cron && Schedule.is_aws(incoming.cron)) || !layer.enabled) {
-                    await config.events.delete(layer.id);
-                }
+            if (incoming.cron && !Schedule.is_aws(incoming.cron) && layer.enabled) {
+                await config.hub.eventSet(layer.id, incoming.cron);
+            } else if (!incoming.cron || (incoming.cron && Schedule.is_aws(incoming.cron)) || !layer.enabled) {
+                await config.hub.eventSet(layer.id, null);
             }
 
             try {
@@ -444,12 +442,10 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            if (config.events) {
-                if (incoming.cron && !Schedule.is_aws(incoming.cron) && layer.enabled) {
-                    config.events.add(layer.id, incoming.cron);
-                } else if (!incoming.cron || (incoming.cron && Schedule.is_aws(incoming.cron)) || !layer.enabled) {
-                    await config.events.delete(layer.id);
-                }
+            if (incoming.cron && !Schedule.is_aws(incoming.cron) && layer.enabled) {
+                await config.hub.eventSet(layer.id, incoming.cron);
+            } else if (!incoming.cron || (incoming.cron && Schedule.is_aws(incoming.cron)) || !layer.enabled) {
+                await config.hub.eventSet(layer.id, null);
             }
 
             if (req.body.data) {
@@ -787,11 +783,11 @@ export default async function router(schema: Schema, config: Config) {
 
             layer = await layerControl.from(connection, req.params.layerid);
 
-            if (layer.incoming && config.events) {
+            if (layer.incoming) {
                 if (layer.incoming.cron && !Schedule.is_aws(layer.incoming.cron) && layer.enabled) {
-                    config.events.add(layer.id, layer.incoming.cron);
+                    await config.hub.eventSet(layer.id, layer.incoming.cron);
                 } else if (!layer.incoming.cron || (layer.incoming.cron && Schedule.is_aws(layer.incoming.cron)) || !layer.enabled) {
-                    await config.events.delete(layer.id);
+                    await config.hub.eventSet(layer.id, null);
                 }
             }
 
@@ -965,7 +961,7 @@ export default async function router(schema: Schema, config: Config) {
                 await config.models.LayerOutgoing.delete(req.params.layerid);
             }
 
-            config.events.delete(layer.id);
+            await config.hub.eventSet(layer.id, null);
 
             await config.models.Layer.delete(req.params.layerid);
 

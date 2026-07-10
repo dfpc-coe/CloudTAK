@@ -162,7 +162,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             if (refreshGeofence) {
-                await config.geofence.refresh();
+                await config.hub.geofenceRefresh();
             }
 
             res.json(final);
