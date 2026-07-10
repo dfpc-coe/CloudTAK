@@ -53,8 +53,8 @@ export default async function router(schema: Schema, config: Config) {
                             last_login: new Date().toISOString(),
                         });
 
-                        if (phone) {
-                            await config.models.ProfileConfig.commit(email, { phone });
+                        if (phone !== undefined) {
+                            await config.models.ProfileConfig.commit(email, { phone: String(phone ?? '') });
                         }
                     } catch (err) {
                         console.error(err);
