@@ -1,7 +1,6 @@
 <template>
     <MenuTemplate
         name='New Route'
-        :loading='!mapStore.isLoaded'
     >
         <template #default>
             <TablerLoading

@@ -1,7 +1,6 @@
 <template>
     <MenuTemplate
         name='Routes'
-        :loading='!mapStore.isLoaded'
     >
         <template #buttons>
             <TablerIconButton

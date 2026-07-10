@@ -24,6 +24,7 @@ import type Atlas from './atlas.ts';
 import { std } from '../std.ts';
 import type { Feature, ProfileOverlay } from '../types.ts';
 import { WorkerMessageType } from '../base/events.ts';
+
 // base/overlay.ts (OverlayManager) cannot be imported here - it pulls in the
 // map store & maplibre-gl which touch `document` at import time and break the
 // worker. The worker-safe sync shared with OverlayManager lives in overlay-sync.

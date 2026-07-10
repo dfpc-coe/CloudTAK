@@ -119,7 +119,7 @@ for (const path in plugins) {
 }
 
 const mapStore = useMapStore(pinia);
-watch(() => mapStore.isLoaded, async (isLoaded) => {
+watch(() => mapStore.isMapLoadedFully, async (isLoaded) => {
     if (isLoaded) {
         for (const instance of pluginInstances) {
             await instance.enable();
