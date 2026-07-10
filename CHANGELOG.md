@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.41.0 - 2026-07-10
+
+- :rocket: Send Phone Number in CoT message if set - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1568
+
 ### v13.40.0 - 2026-07-10
 
 - :bug: Tie loading state to end on `load` event instead of `idle` as immediate features can prevent `idle` state
