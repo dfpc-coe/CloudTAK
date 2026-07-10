@@ -696,7 +696,7 @@ export const useMapStore = defineStore('cloudtak', {
                 }
 
                 if (opts?.reload) {
-                    await sub.reload();
+                    await sub.refresh();
                 }
             } else {
                 try {
