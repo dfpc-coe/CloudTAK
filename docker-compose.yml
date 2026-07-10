@@ -12,6 +12,7 @@ services:
             - "5000:5000"
         environment:
             - CLOUDTAK_Mode=${CLOUDTAK_Mode}
+            - CLOUDTAK_Server_Mode=${CLOUDTAK_Server_Mode:-both}
             - CLOUDTAK_Config_media_url=${CLOUDTAK_Config_media_url}
             - SigningSecret=${SigningSecret}
             - ASSET_BUCKET=${ASSET_BUCKET}

@@ -1,22 +1,12 @@
 import fs from 'node:fs';
-import path from 'node:path';
 import { parseArgs } from 'node:util';
-import cors from 'cors';
 import express from 'express';
-import { StandardResponse } from './lib/types.js';
 import Bulldozer from './lib/initialization.js';
-import history, { Context } from 'connect-history-api-fallback';
-import Schema from '@openaddresses/batch-schema';
-import { ProfileConnConfig, AdminConnConfig } from './lib/connection-config.js';
-import { ConnectionClient } from './lib/connection-pool.js';
-import { ConnectionWebSocket } from './lib/connection-web.js';
-import sleep from './lib/sleep.js';
-import type WebSocket from 'ws';
-import * as ws from 'ws';
-import type { IncomingMessage } from 'node:http';
+import type { WebSocketServer } from 'ws';
+import buildApi from './lib/server/api.js';
+import { attachWebsocket, startHubRpc } from './lib/server/hub.js';
 import Config from './lib/config.js';
 import ServerManager from './lib/server.js';
-import { tokenParser, AuthUser } from './lib/auth.js';
 import process from 'node:process';
 
 type CliArgs = {
@@ -78,275 +68,35 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 }
 
 export default async function server(config: Config): Promise<ServerManager> {
-    if (config.StackName !== 'test' || process.env.CLOUDTAK_Mode === 'docker-compose') {
-        // If the database is empty, populate it with generally sensible defaults
-        await Bulldozer.fireItUp(config);
+    if (config.mode !== 'api') {
+        if (config.StackName !== 'test' || process.env.CLOUDTAK_Mode === 'docker-compose') {
+            // If the database is empty, populate it with generally sensible defaults
+            await Bulldozer.fireItUp(config);
+        }
+
+        if (!config.nogeofence) await config.geofence.init();
+        await config.conns.init();
+
+        if (!config.noevents) await config.events.init(config.pg);
     }
 
-    if (!config.nogeofence) await config.geofence.init();
-    await config.conns.init();
-
-    if (!config.noevents) await config.events.init(config.pg);
-
-    const app = express();
-
-    const schema = new Schema(express.Router(), {
-        prefix: '/api',
-        logging: {
-            skip: function (req, res) {
-                return res.statusCode <= 399 && res.statusCode >= 200;
-            },
-        },
-        limit: 50,
-        error: {
-            400: StandardResponse,
-            401: StandardResponse,
-            403: StandardResponse,
-            404: StandardResponse,
-            500: StandardResponse,
-        },
-        openapi: {
-            info: {
-                title: 'CloudTAK API',
+    let app: express.Application;
+    if (config.mode === 'hub') {
+        // The hub serves WebSocket upgrades on /api plus a plain-HTTP
+        // metadata response for load balancer health checks - all REST
+        // traffic is handled by the stateless API service
+        app = express();
+        app.disable('x-powered-by');
+        app.get('/api', (req, res) => {
+            res.json({
                 version: pkg.version,
-            },
-            components: {
-                securitySchemes: {
-                    bearerAuth: {
-                        type: 'http',
-                        scheme: 'bearer',
-                        bearerFormat: 'JWT',
-                    },
-                },
-            },
-            security: [{
-                bearerAuth: [],
-            }],
-        },
-    });
-
-    app.disable('x-powered-by');
-    app.use(cors({
-        origin: (origin, callback) => {
-            // Reflect the request origin rather than using '*', which is
-            // incompatible with credentials:true and causes iOS WKWebView to
-            // refuse cross-origin 3xx redirects (e.g. the PMTiles tile
-            // endpoint).  Allow no-origin (native/curl) and the 'null' origin
-            // that Capacitor and cross-origin redirects produce.
-            if (!origin || origin === 'null') {
-                callback(null, true);
-            } else {
-                callback(null, origin);
-            }
-        },
-        exposedHeaders: [
-            'Content-Disposition',
-        ],
-        allowedHeaders: [
-            'Content-Type',
-            'Content-Length',
-            'User-Agent',
-            'Authorization',
-            'MissionAuthorization',
-            'x-requested-with',
-        ],
-        credentials: true,
-    }));
-
-    /**
-     * @api {get} /api Get Metadata
-     * @apiVersion 1.0.0
-     * @apiName Server
-     * @apiGroup Server
-     * @apiPermission public
-     *
-     * @apiDescription
-     *     Return basic metadata about server configuration
-     *
-     * @apiSchema {jsonschema=./schema/res.Server.json} apiSuccess
-     */
-    app.get('/api', (req, res) => {
-        res.json({
-            version: pkg.version,
+            });
         });
-    });
+    } else {
+        app = await buildApi(config);
+    }
 
-    app.use('/api', schema.router);
-
-    await schema.api();
-
-    await schema.load(
-        new URL('./routes/', import.meta.url),
-        config,
-        {
-            silent: !!config.silent,
-        },
-    );
-
-    app.use('/fonts', express.static('fonts/'));
-
-    app.use(history({
-        rewrites: [{
-            from: /.*\/js\/.*$/,
-            to(context: Context) {
-                if (!context.parsedUrl.pathname) context.parsedUrl.pathname = '';
-                return context.parsedUrl.pathname.replace(/.*\/js\//, '/js/');
-            },
-        }, {
-            from: /.*$/,
-            to(context: Context) {
-                if (!context.parsedUrl.pathname) context.parsedUrl.pathname = '';
-                if (!context.parsedUrl.path) context.parsedUrl.path = '';
-                const parse = path.parse(context.parsedUrl.path);
-                if (parse.ext) {
-                    return context.parsedUrl.pathname;
-                } else {
-                    return '/';
-                }
-            },
-        }],
-    }));
-
-    app.use(express.static('web/dist'));
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const WebSocketServer = ws.WebSocketServer ?? (ws as any).default.WebSocketServer;
-
-    const wss = new WebSocketServer({
-        noServer: true,
-    }).on('connection', async (ws: WebSocket, request: IncomingMessage) => {
-        try {
-            if (!request.url) throw new Error('Could not parse connection URL');
-            const params = new URLSearchParams(request.url.replace(/.*\?/, ''));
-            // TODO: Remove connections
-
-            if (!params.get('connection')) throw new Error('Connection Parameter Required');
-            if (!params.get('token')) throw new Error('Token Parameter Required');
-            const parsedParams = {
-                connection: String(params.get('connection')),
-                token: String(params.get('token')),
-                format: String(params.get('format') || 'raw'),
-            };
-
-            const auth = await tokenParser(config, parsedParams.token, config.SigningSecret);
-
-            if (!config.wsClients.has(parsedParams.connection)) config.wsClients.set(parsedParams.connection, []);
-
-            if (!config.conns) throw new Error('Server not configured with Connection Pool');
-
-            // Connect to MachineUser Connection if it is an integer
-            if (!isNaN(Number(parsedParams.connection)) && Number.isInteger(Number(parsedParams.connection))) {
-                let webClients = config.wsClients.get(parsedParams.connection);
-                if (!webClients) webClients = [];
-                webClients.push(new ConnectionWebSocket(ws, parsedParams.format));
-                config.wsClients.set(parsedParams.connection, webClients);
-                ws.send(JSON.stringify({ type: 'connected' }));
-            } else if (parsedParams.connection === 'admin') {
-                if (!(auth instanceof AuthUser) || !auth.is_admin()) {
-                    throw new Error('Unauthorized');
-                }
-
-                // Admin connection using server auth profile
-                let client: ConnectionClient | undefined;
-                let awaitSecure: Promise<void> | undefined;
-
-                if (!config.conns.has(0)) {
-                    // Admin connection should already be created in init(), but check anyway
-                    if (!config.server.connection) {
-                        throw new Error('Admin connection is disabled');
-                    } else if (config.server.auth.cert && config.server.auth.key) {
-                        client = await config.conns.add(new AdminConnConfig(config));
-                        if (client.tak.client && !client.tak.client.authorized) {
-                            awaitSecure = new Promise<void>(resolve => (client as ConnectionClient).tak.once('secureConnect', resolve));
-                        }
-                    } else {
-                        throw new Error('Admin connection not configured');
-                    }
-                } else {
-                    client = config.conns.get(0) as ConnectionClient;
-                }
-
-                const connClient = new ConnectionWebSocket(ws, parsedParams.format, client, auth instanceof AuthUser ? auth.session : undefined);
-
-                let webClients = config.wsClients.get('admin');
-                if (!webClients) webClients = [];
-                webClients.push(connClient);
-                config.wsClients.set('admin', webClients);
-
-                ws.on('close', () => {
-                    const conns = config.wsClients.get('admin');
-                    if (!conns || !conns.length) return;
-
-                    const i = webClients.indexOf(connClient);
-                    if (i < 0) return;
-                    webClients[i].destroy();
-                    webClients.splice(i, 1);
-
-                    if (webClients.length !== 0) return;
-
-                    config.wsClients.delete('admin');
-                });
-
-                if (awaitSecure) await awaitSecure;
-                ws.send(JSON.stringify({ type: 'connected' }));
-            } else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
-                let client: ConnectionClient | undefined;
-                let awaitSecure: Promise<void> | undefined;
-                if (!config.conns.has(parsedParams.connection)) {
-                    const profile = await config.models.Profile.from(parsedParams.connection);
-                    if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
-
-                    client = await config.conns.add(new ProfileConnConfig(config, parsedParams.connection, profile.auth));
-                    if (client.tak.client && !client.tak.client.authorized) {
-                        awaitSecure = new Promise<void>(resolve => (client as ConnectionClient).tak.once('secureConnect', resolve));
-                    }
-                } else {
-                    client = config.conns.get(parsedParams.connection) as ConnectionClient;
-                }
-
-                const connClient = new ConnectionWebSocket(ws, parsedParams.format, client, auth.session);
-
-                let webClients = config.wsClients.get(parsedParams.connection);
-                if (!webClients) webClients = [];
-                webClients.push(connClient);
-                config.wsClients.set(parsedParams.connection, webClients);
-
-                ws.on('close', () => {
-                    const conns = config.wsClients.get(parsedParams.connection);
-                    if (!conns || !conns.length) return;
-
-                    const i = webClients.indexOf(connClient);
-                    if (i < 0) return;
-                    webClients[i].destroy();
-                    webClients.splice(i, 1);
-
-                    if (webClients.length !== 0) return;
-
-                    config.wsClients.delete(parsedParams.connection);
-
-                    config.conns.delete(parsedParams.connection);
-                });
-
-                if (awaitSecure) await awaitSecure;
-                ws.send(JSON.stringify({ type: 'connected' }));
-            } else {
-                throw new Error('Unauthorized');
-            }
-        } catch (err) {
-            if (err instanceof Error && !err.message.includes('jwt expired')) {
-                console.error('Error: WebSocket: ', err);
-            }
-
-            ws.send(JSON.stringify({
-                type: 'Error',
-                properties: {
-                    message: err instanceof Error ? String(err.message) : String(err),
-                },
-            }));
-            await sleep(500);
-            ws.close();
-        }
-    });
+    const rpc = config.mode === 'hub' ? await startHubRpc(config) : undefined;
 
     return new Promise((resolve) => {
         const srv = app.listen(parseInt(process.env.PORT || '5001'), () => {
@@ -360,42 +110,26 @@ export default async function server(config: Config): Promise<ServerManager> {
                 }
             }
 
-            const sm = new ServerManager(srv, wss, config);
+            const sm = new ServerManager(srv, wss, config, { rpc });
             return resolve(sm);
         });
 
-        srv.on('upgrade', async (request, socket, head) => {
-            // A socket dropped during the async auth check would otherwise
-            // surface as an unhandled 'error' event and crash the process
-            socket.on('error', () => socket.destroy());
-
-            // Reject a dead session with an HTTP 401 during the handshake -
-            // an accepted socket fires the client's `open` handler and kicks
-            // off a full sync before the auth error ever reaches it
-            try {
-                const params = new URLSearchParams((request.url || '').replace(/.*\?/, ''));
-                const token = params.get('token');
-                if (!token) throw new Error('Token Parameter Required');
-
-                await tokenParser(config, token, config.SigningSecret);
-            } catch (err) {
-                if (err instanceof Error && !err.message.includes('jwt expired')) {
-                    console.error('Error: WebSocket Upgrade: ', err);
-                }
-
-                socket.write('HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n');
+        let wss: WebSocketServer | undefined;
+        if (config.mode !== 'api') {
+            wss = attachWebsocket(srv, config);
+        } else {
+            srv.on('upgrade', (request, socket) => {
+                socket.on('error', () => socket.destroy());
+                socket.write('HTTP/1.1 426 Upgrade Required\r\nConnection: close\r\n\r\n');
                 socket.destroy();
-                return;
-            }
-
-            wss.handleUpgrade(request, socket, head, (ws: WebSocket) => {
-                wss.emit('connection', ws, request);
             });
-        });
+        }
 
         srv.on('close', async () => {
-            await config.geofence.close();
-            await config.conns.close();
+            if (config.mode !== 'api') {
+                await config.geofence.close();
+                await config.conns.close();
+            }
         });
     });
 }

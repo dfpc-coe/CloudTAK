@@ -5,17 +5,22 @@ import CpuWatchdog from './cpu-watchdog.js';
 
 export default class ServerManager {
     server: Server;
-    wss: WebSocketServer;
+    wss?: WebSocketServer;
+    rpc?: Server;
     config: Config;
     watchdog: CpuWatchdog;
 
     constructor(
         server: Server,
-        wss: WebSocketServer,
+        wss: WebSocketServer | undefined,
         config: Config,
+        opts: {
+            rpc?: Server;
+        } = {},
     ) {
         this.wss = wss;
         this.server = server;
+        this.rpc = opts.rpc;
         this.config = config;
 
         this.watchdog = new CpuWatchdog(config);
@@ -30,17 +35,34 @@ export default class ServerManager {
     async close() {
         this.watchdog.stop();
 
-        await Promise.allSettled([
+        const closing: Promise<unknown>[] = [
             new Promise((resolve) => {
                 this.server.closeAllConnections();
                 this.server.close(resolve);
             }),
-            new Promise((resolve) => {
-                this.wss.close(resolve);
-            }),
-            this.config.conns.close(),
-            this.config.geofence.close(),
-        ]);
+        ];
+
+        if (this.wss) {
+            const wss = this.wss;
+            closing.push(new Promise((resolve) => {
+                wss.close(resolve);
+            }));
+        }
+
+        if (this.rpc) {
+            const rpc = this.rpc;
+            closing.push(new Promise((resolve) => {
+                rpc.closeAllConnections();
+                rpc.close(resolve);
+            }));
+        }
+
+        if (this.config.mode !== 'api') {
+            closing.push(this.config.conns.close());
+            closing.push(this.config.geofence.close());
+        }
+
+        await Promise.allSettled(closing);
 
         this.config.pg.end();
     }

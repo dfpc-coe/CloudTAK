@@ -9,6 +9,17 @@ import ConnectionPool from './connection-pool.js';
 import ConnectionGeofence from './connection-geofence.js';
 import type { HubClient } from './hub/index.js';
 import LocalHub from './hub/local.js';
+import RemoteHub from './hub/remote.js';
+
+/**
+ * Which servers this process hosts:
+ * - `both`: REST API + stateful resources in one process (docker-compose, tests, dev)
+ * - `api`:  stateless REST API only - stateful interactions proxy to a hub over RPC
+ * - `hub`:  stateful server only - web WebSockets, TAK connection pool, crons, geofence
+ */
+export type ServerMode = 'both' | 'api' | 'hub';
+
+const SERVER_MODES: ServerMode[] = ['both', 'api', 'hub'];
 import { ConnectionWebSocket } from './connection-web.js';
 import type { Server } from './schema.js';
 import { type InferSelectModel } from 'drizzle-orm';
@@ -23,6 +34,8 @@ interface ConfigArgs {
     nosinks: boolean;
     nogeofence?: boolean;
     nocache: boolean;
+    mode?: ServerMode;
+    hubUrl?: string;
 }
 
 export default class Config {
@@ -38,15 +51,22 @@ export default class Config {
     weather: WeatherManager;
     API_URL: string;
     PMTILES_URL: string;
-    wsClients: Map<string, ConnectionWebSocket[]>;
     Bucket?: string;
     pg: Pool<typeof pgtypes>;
-    conns: ConnectionPool;
-    geofence: ConnectionGeofence;
     server: InferSelectModel<typeof Server>;
-    events: EventsPool;
+    mode: ServerMode;
     hub: HubClient;
     arnPrefix?: string;
+
+    /**
+     * Stateful resources - only constructed when this process hosts the
+     * hub (mode `both` or `hub`); the public getters fail loudly so a
+     * stateless `api` process can never silently touch them
+     */
+    #wsClients?: Map<string, ConnectionWebSocket[]>;
+    #conns?: ConnectionPool;
+    #geofence?: ConnectionGeofence;
+    #events?: EventsPool;
 
     constructor(init: {
         silent: boolean;
@@ -63,6 +83,8 @@ export default class Config {
         pg: Pool<typeof pgtypes>;
         server: InferSelectModel<typeof Server>;
         Bucket?: string;
+        mode?: ServerMode;
+        hubUrl?: string;
     }) {
         this.silent = init.silent;
         this.noevents = init.noevents;
@@ -74,19 +96,44 @@ export default class Config {
         this.SigningSecret = init.SigningSecret;
         this.API_URL = init.API_URL;
         this.PMTILES_URL = init.PMTILES_URL;
-        this.wsClients = init.wsClients;
         this.pg = init.pg;
         this.Bucket = init.Bucket;
         this.server = init.server;
+        this.mode = init.mode || 'both';
 
-        this.conns = new ConnectionPool(this);
-        this.geofence = new ConnectionGeofence(this);
+        if (this.mode === 'api') {
+            if (!init.hubUrl) throw new Error('CLOUDTAK_Hub_URL must be set when CLOUDTAK_Server_Mode is api');
+            this.hub = new RemoteHub(this, init.hubUrl);
+        } else {
+            this.#wsClients = init.wsClients;
+            this.#conns = new ConnectionPool(this);
+            this.#geofence = new ConnectionGeofence(this);
+            this.#events = new EventsPool(this.StackName);
 
-        this.events = new EventsPool(this.StackName);
-
-        this.hub = new LocalHub(this);
+            this.hub = new LocalHub(this);
+        }
 
         this.weather = new WeatherManager();
+    }
+
+    get wsClients(): Map<string, ConnectionWebSocket[]> {
+        if (!this.#wsClients) throw new Error(`WebSocket Clients are not available in '${this.mode}' server mode`);
+        return this.#wsClients;
+    }
+
+    get conns(): ConnectionPool {
+        if (!this.#conns) throw new Error(`Connection Pool is not available in '${this.mode}' server mode`);
+        return this.#conns;
+    }
+
+    get geofence(): ConnectionGeofence {
+        if (!this.#geofence) throw new Error(`Geofence is not available in '${this.mode}' server mode`);
+        return this.#geofence;
+    }
+
+    get events(): EventsPool {
+        if (!this.#events) throw new Error(`Events Pool is not available in '${this.mode}' server mode`);
+        return this.#events;
     }
 
     serverCert(): {
@@ -105,6 +152,19 @@ export default class Config {
     static async env(args: ConfigArgs): Promise<Config> {
         if (!process.env.AWS_REGION) {
             process.env.AWS_REGION = 'us-east-1';
+        }
+
+        const mode = (args.mode || process.env.CLOUDTAK_Server_Mode || 'both') as ServerMode;
+        if (!SERVER_MODES.includes(mode)) {
+            throw new Error(`CLOUDTAK_Server_Mode must be one of: ${SERVER_MODES.join(', ')}`);
+        }
+
+        const hubUrl = args.hubUrl || process.env.CLOUDTAK_Hub_URL;
+
+        // Validate before any connection pools are created - a throw from
+        // the constructor below would leak them
+        if (mode === 'api' && !hubUrl) {
+            throw new Error('CLOUDTAK_Hub_URL must be set when CLOUDTAK_Server_Mode is api');
         }
 
         let SigningSecret, API_URL, PMTILES_URL, Bucket;
@@ -163,6 +223,7 @@ export default class Config {
             StackName: process.env.StackName,
             wsClients: new Map(),
             server, SigningSecret, API_URL, Bucket, pg, models, PMTILES_URL,
+            mode, hubUrl,
         });
 
         if (!config.silent) {
