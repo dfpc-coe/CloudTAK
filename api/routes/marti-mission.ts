@@ -8,6 +8,7 @@ import S3 from '../lib/aws/s3.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
+import ProfileControl from '../lib/control/profile.js';
 import { GenericMartiResponse, StandardResponse } from '../lib/types.js';
 import * as Default from '../lib/limits.js';
 import {
@@ -28,6 +29,8 @@ import {
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
+    const profileControl = new ProfileControl(config);
+
     await schema.get('/marti/missions/:name', {
         name: 'Get Mission',
         group: 'MartiMissions',
@@ -58,7 +61,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const mission = await api.Mission.get(
                 req.params.name,
@@ -91,7 +94,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.guid);
+                : await profileControl.subscription(user.email, req.params.guid);
 
             const features = await api.Mission.latestFeats(req.params.guid, opts);
 
@@ -120,7 +123,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.guid);
+                : await profileControl.subscription(user.email, req.params.guid);
 
             const missionContent = await api.Mission.detachContents(
                 req.params.guid,
@@ -151,7 +154,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const mission = await api.Mission.get(
                 req.params.name,
@@ -190,7 +193,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const changes = await api.Mission.changes(
                 req.params.name,
@@ -221,7 +224,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const mission = await api.Mission.delete(
                 req.params.name,
@@ -281,7 +284,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const { groups, ...rest } = req.body;
 
@@ -392,7 +395,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             if (req.query.download) {
                 res.setHeader('Content-Disposition', `attachment; filename="${req.params.name}.${req.query.format}"`);
@@ -410,7 +413,7 @@ export default async function router(schema: Schema, config: Config) {
             } else if (['geojson', 'kml'].includes(req.query.format)) {
                 const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                     ? { token: String(req.headers['missionauthorization']) }
-                    : await config.conns.subscription(user.email, req.params.name);
+                    : await profileControl.subscription(user.email, req.params.name);
 
                 const fc = {
                     type: 'FeatureCollection',
@@ -463,7 +466,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const role = await api.Mission.role(
                 req.params.name,
@@ -492,7 +495,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const subs = await api.Mission.subscriptions(
                 req.params.name,
@@ -521,7 +524,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const roles = await api.Mission.subscriptionRoles(
                 req.params.name,
@@ -558,7 +561,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const missions = await api.Mission.contacts(
                 req.params.name,
@@ -617,7 +620,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             await api.Mission.attachContents(
                 req.params.name,
@@ -673,7 +676,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const missionContent = await api.Mission.attachContents(
                 req.params.name,
@@ -708,7 +711,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const missionContent = await api.Mission.detachContents(
                 req.params.name,
@@ -742,7 +745,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.guid);
+                : await profileControl.subscription(user.email, req.params.guid);
 
             const invites = await api.MissionInvite.get(req.params.guid, opts);
 
@@ -773,7 +776,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.guid);
+                : await profileControl.subscription(user.email, req.params.guid);
 
             await api.MissionInvite.invite(
                 req.params.guid,
@@ -815,7 +818,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.guid);
+                : await profileControl.subscription(user.email, req.params.guid);
 
             await api.MissionInvite.uninvite(
                 req.params.guid,
@@ -855,7 +858,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.guid);
+                : await profileControl.subscription(user.email, req.params.guid);
 
             const uids = Array.isArray(req.query.uid) ? req.query.uid : [req.query.uid];
 

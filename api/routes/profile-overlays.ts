@@ -2,6 +2,7 @@ import { Static, Type } from '@sinclair/typebox';
 import { BasemapProtocol, TileJSONActions } from '../lib/interface-basemap.js';
 import { fromProtocol } from '../lib/factory-basemap.js';
 import Config from '../lib/config.js';
+import ProfileControl from '../lib/control/profile.js';
 import Schema from '@openaddresses/batch-schema';
 import S3 from '../lib/aws/s3.js';
 import Err from '@openaddresses/batch-error';
@@ -41,6 +42,8 @@ function serializeOverlay(
 }
 
 export default async function router(schema: Schema, config: Config) {
+    const profileControl = new ProfileControl(config);
+
     await schema.get('/profile/overlay', {
         name: 'Get Overlays',
         group: 'ProfileOverlays',
@@ -140,7 +143,7 @@ export default async function router(schema: Schema, config: Config) {
                         return { keep: false as const, item };
                     }
                 } else if (item.mode === 'mission' && item.mode_id && api) {
-                    const subscription = await config.conns.subscription(user.email, item.name);
+                    const subscription = await profileControl.subscription(user.email, item.name);
                     if (!(await api.Mission.access(item.mode_id, subscription))) {
                         return { keep: false as const, item };
                     }

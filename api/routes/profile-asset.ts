@@ -11,6 +11,7 @@ import jwt from 'jsonwebtoken';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { ProfileFile, ProfileFileChannel } from '../lib/schema.js';
 import Config from '../lib/config.js';
+import activeChannels from '../lib/tak-channels.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -55,9 +56,8 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
-            const api = config.conns.get(user.email)?.api
-                ?? await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
-            const channels = [...await config.conns.activeChannels(user.email, api)];
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            const channels = [...await activeChannels(api)];
             const where = channels.length
                 ? sql`
                     name ~* ${req.query.filter}
@@ -328,11 +328,10 @@ export default async function router(schema: Schema, config: Config) {
                 }
 
                 const profile = await config.models.Profile.from(user.email);
-                const api = config.conns.get(user.email)?.api
-                    ?? await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
-                const activeChannels = await config.conns.activeChannels(user.email, api);
+                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+                const active = await activeChannels(api);
 
-                if (!fileChannels.some(bp => activeChannels.has(bp))) {
+                if (!fileChannels.some(bp => active.has(bp))) {
                     throw new Err(403, null, 'You do not have permission to view this asset');
                 }
             }

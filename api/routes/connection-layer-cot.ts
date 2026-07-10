@@ -302,19 +302,18 @@ export default async function router(schema: Schema, config: Config) {
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            if (!connection.enabled) throw new Err(400, null, 'Connection is disabled');
 
             const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (!layer.connection) throw new Err(400, null, 'Layer is not attached to a Connection');
-
-            const pooledClient = await config.conns.get(layer.connection);
-            if (!pooledClient) throw new Err(500, null, `Pooled Client for ${layer.connection} not found in config`);
+            if (layer.connection !== connection.id) throw new Err(400, null, 'Layer does not belong to this connection');
 
             const api = await TAKAPI.init(
                 new URL(String(config.server.api)),
                 new APIAuthCertificate(
-                    pooledClient.config.auth.cert,
-                    pooledClient.config.auth.key,
+                    connection.auth.cert,
+                    connection.auth.key,
                 ),
             );
 
@@ -350,19 +349,18 @@ export default async function router(schema: Schema, config: Config) {
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            if (!connection.enabled) throw new Err(400, null, 'Connection is disabled');
 
             const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (!layer.connection) throw new Err(400, null, 'Layer is not attached to a connection');
-
-            const pooledClient = await config.conns.get(layer.connection);
-            if (!pooledClient) throw new Err(500, null, `Pooled Client for ${layer.connection} not found in config`);
+            if (layer.connection !== connection.id) throw new Err(400, null, 'Layer does not belong to this connection');
 
             const api = await TAKAPI.init(
                 new URL(String(config.server.api)),
                 new APIAuthCertificate(
-                    pooledClient.config.auth.cert,
-                    pooledClient.config.auth.key,
+                    connection.auth.cert,
+                    connection.auth.key,
                 ),
             );
 
