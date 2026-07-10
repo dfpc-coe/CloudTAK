@@ -111,6 +111,27 @@ test('PATCH: api/profile', async () => {
     }
 });
 
+test('PATCH: api/profile - Phone', async () => {
+    try {
+        // Use an all-numeric value to exercise the settings-store coercion (JSON.parse
+        // would otherwise turn a purely numeric phone into a number).
+        const res = await flight.fetch('/api/profile', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                phone: '5551234567',
+            },
+        }, true);
+
+        assert.equal(res.body.phone, '5551234567');
+        assert.equal(res.body.tak_callsign, 'Test Callsign');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('PUT: api/config - Change Defaults', async () => {
     try {
         const res = await flight.fetch('/api/config', {

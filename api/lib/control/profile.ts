@@ -25,6 +25,8 @@ export const ProfileConfigDefaults = {
 
     'menu::order': [],
 
+    'phone': '',
+
     'tak::callsign': 'CloudTAK User',
     'tak::remarks': 'CloudTAK User',
     'tak::group': TAKGroup.ORANGE,
@@ -122,6 +124,10 @@ export default class ProfileControl {
         for (const key of Object.keys(full_config)) {
             (profile as any)[key.replace(/::/g, '_')] = full_config[key as keyof typeof full_config];
         }
+
+        // `phone` is a free-text profile setting; the settings store JSON.parses values on
+        // read, so an all-numeric phone number comes back as a number - coerce it to a string.
+        (profile as any).phone = String((profile as any).phone ?? '');
 
         // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
         return {

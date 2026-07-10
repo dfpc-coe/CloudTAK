@@ -124,7 +124,7 @@ const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 
 type Header = { name: keyof User, display: boolean };
-type UserSort = 'id' | 'name' | 'username' | 'last_login' | 'auth' | 'created' | 'updated' | 'phone' | 'system_admin' | 'agency_admin' | 'enableRLS';
+type UserSort = 'id' | 'name' | 'username' | 'last_login' | 'auth' | 'created' | 'updated' | 'system_admin' | 'agency_admin' | 'enableRLS';
 const header = ref<Array<Header>>([])
 const list = ref<UserList>({ total: 0, items: [] });
 const paging = ref({
@@ -157,7 +157,7 @@ async function listLayerSchema() {
     if (res.error) throw new Error(res.error.message);
     const schema = res.data;
 
-    header.value = ['username', 'last_login', 'phone'].map((h) => {
+    header.value = ['username', 'last_login'].map((h) => {
         return { name: h, display: true } as Header;
     });
 

@@ -1275,6 +1275,13 @@
       "when": 1783524242396,
       "tag": "0182_bored_supreme_intelligence",
       "breakpoints": true
+    },
+    {
+      "idx": 183,
+      "version": "7",
+      "when": 1783701676212,
+      "tag": "0183_profile_phone_to_config",
+      "breakpoints": true
     }
   ]
 }

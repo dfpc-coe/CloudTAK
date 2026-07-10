@@ -45,10 +45,17 @@ export default async function router(schema: Schema, config: Config) {
                     try {
                         const response = await cotak.login(email);
 
+                        // `phone` is stored as a profile setting rather than a Profile column
+                        const { phone, ...profileData } = response;
+
                         await config.models.Profile.commit(email, {
-                            ...response,
+                            ...profileData,
                             last_login: new Date().toISOString(),
                         });
+
+                        if (phone) {
+                            await config.models.ProfileConfig.commit(email, { phone });
+                        }
                     } catch (err) {
                         console.error(err);
 

@@ -37,7 +37,6 @@ test('GET: api/user', async () => {
                 last_login: time,
                 created: time,
                 updated: time,
-                phone: '',
                 system_admin: true,
                 agency_admin: [],
             }],
