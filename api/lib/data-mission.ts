@@ -6,6 +6,7 @@ import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import type { MissionLayer } from '@tak-ps/node-tak/lib/api/mission-layer';
 import { MissionLayerType } from '@tak-ps/node-tak/lib/api/mission-layer';
 import Config from './config.js';
+import ConnectionControl from './control/connection.js';
 import type { Mission } from '@tak-ps/node-tak/lib/api/mission';
 
 export const MAX_LAYERS_IN_DATA_SYNC = 5;
@@ -66,10 +67,9 @@ export default class DataMission {
                 mission_token: mission.token || undefined,
             });
 
-            const conn = config.conns.get(data.connection);
-            if (conn) {
+            if (connection.enabled) {
                 await api.Mission.subscribe(data.name, {
-                    uid: conn.config.uid(),
+                    uid: ConnectionControl.uid(connection.auth.cert),
                 }, {
                     token: mission.token || undefined,
                 });

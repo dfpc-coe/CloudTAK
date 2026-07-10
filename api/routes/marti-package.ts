@@ -14,6 +14,8 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
+import ProfileControl from '../lib/control/profile.js';
+import activeChannels from '../lib/tak-channels.js';
 import { Basemap as BasemapParser } from '@tak-ps/node-cot';
 import { Content } from '@tak-ps/node-tak/lib/api/files';
 import { Package } from '@tak-ps/node-tak/lib/api/package';
@@ -24,9 +26,9 @@ import {
 import stream2buffer from '../lib/stream.js';
 import { PackageResponse } from './types.js';
 
-async function activeChannelNames(config: Config, email: string, api: TAKAPI): Promise<Set<string>> {
+async function activeChannelNames(api: TAKAPI): Promise<Set<string>> {
     const groups = await api.Group.list({ useCache: true });
-    const activeBitpos = await config.conns.activeChannels(email, api);
+    const activeBitpos = await activeChannels(api);
 
     return new Set(
         groups.data
@@ -121,6 +123,8 @@ function packageExpirationForUpdate(value: string | number | null | undefined): 
 }
 
 export default async function router(schema: Schema, config: Config) {
+    const profileControl = new ProfileControl(config);
+
     await schema.post('/marti/package', {
         name: 'Create File Package',
         group: 'MartiPackages',
@@ -488,7 +492,7 @@ export default async function router(schema: Schema, config: Config) {
 
                     const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                         ? { token: String(req.headers['missionauthorization']) }
-                        : await config.conns.subscription(user.email, guid);
+                        : await profileControl.subscription(user.email, guid);
 
                     await api.Mission.upload(
                         guid,
@@ -658,7 +662,7 @@ export default async function router(schema: Schema, config: Config) {
                 );
 
                 const [userChannels, packageChannels] = await Promise.all([
-                    activeChannelNames(config, user.email, userApi),
+                    activeChannelNames(userApi),
                     packageChannelNames(userApi, latest),
                 ]);
 

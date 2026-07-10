@@ -4,6 +4,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
+import ProfileControl from '../lib/control/profile.js';
 import * as Default from '../lib/limits.js';
 import { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
 import { MissionLayer, MissionLayerType } from '@tak-ps/node-tak/lib/api/mission-layer';
@@ -14,6 +15,8 @@ import {
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
+    const profileControl = new ProfileControl(config);
+
     await schema.get('/marti/missions/:name/layer', {
         name: 'List Layers',
         group: 'MartiMissionLayer',
@@ -31,7 +34,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const list = await api.MissionLayer.list(
                 req.params.name,
@@ -62,7 +65,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const layer = await api.MissionLayer.get(
                 req.params.name,
@@ -100,7 +103,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const create = await api.MissionLayer.create(
                 req.params.name,
@@ -139,7 +142,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.name) {
                 const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                     ? { token: String(req.headers['missionauthorization']) }
-                    : await config.conns.subscription(user.email, req.params.name);
+                    : await profileControl.subscription(user.email, req.params.name);
 
                 await api.MissionLayer.rename(
                     req.params.name,
@@ -179,7 +182,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             await api.MissionLayer.delete(
                 req.params.name,

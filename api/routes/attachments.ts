@@ -7,11 +7,13 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Config from '../lib/config.js';
+import ProfileControl from '../lib/control/profile.js';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
 
 export default async function router(schema: Schema, config: Config) {
     const attachmentControl = new AttachmentControl(config);
+    const profileControl = new ProfileControl(config);
 
     await schema.get('/attachment', {
         name: 'List Attachments',
@@ -121,7 +123,7 @@ export default async function router(schema: Schema, config: Config) {
                             creatorUid: profile.username,
                         }, stream);
 
-                        const opts: Static<typeof MissionOptions> = await config.conns.subscription(user.email, req.query.mission);
+                        const opts: Static<typeof MissionOptions> = await profileControl.subscription(user.email, req.query.mission);
 
                         await api.Mission.attachContents(
                             req.query.mission,

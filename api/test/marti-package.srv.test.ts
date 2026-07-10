@@ -459,11 +459,6 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
     let uploadHit = false;
 
     try {
-        flight.config?.conns.set('pkgowner@example.com', {
-            channels: new Set([1]),
-            destroy: () => {},
-        } as any);
-
         flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
@@ -523,7 +518,7 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
                         created: new Date().toISOString(),
                         type: 'SYSTEM',
                         bitpos: 1,
-                        active: false,
+                        active: true,
                     }, {
                         name: 'Red',
                         direction: 'IN',
@@ -682,11 +677,6 @@ test('PATCH api/marti/package/:uid - User without overlapping active channel can
     let attemptedUpdate = false;
 
     try {
-        flight.config?.conns.set('pkgviewer@example.com', {
-            channels: new Set([1]),
-            destroy: () => {},
-        } as any);
-
         flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
@@ -723,7 +713,7 @@ test('PATCH api/marti/package/:uid - User without overlapping active channel can
                         created: new Date().toISOString(),
                         type: 'SYSTEM',
                         bitpos: 1,
-                        active: false,
+                        active: true,
                     }, {
                         name: 'Red',
                         direction: 'IN',

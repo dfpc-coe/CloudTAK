@@ -6,12 +6,15 @@ import { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
 import { MissionLog } from '@tak-ps/node-tak/lib/api/mission-log';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
+import ProfileControl from '../lib/control/profile.js';
 import {
     TAKItem,
 } from '@tak-ps/node-tak/lib/api/types';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
+    const profileControl = new ProfileControl(config);
+
     await schema.get('/marti/missions/:name/log', {
         name: 'List Logs',
         group: 'MartiMissionLog',
@@ -44,7 +47,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const mission = await api.Mission.get(
                 req.params.name,
@@ -116,7 +119,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const log = await api.MissionLog.create(
                 req.params.name,
@@ -163,7 +166,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             const mission = await api.MissionLog.update(
                 req.params.name,
@@ -201,7 +204,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.name);
 
             await api.MissionLog.delete(
                 req.params.log,

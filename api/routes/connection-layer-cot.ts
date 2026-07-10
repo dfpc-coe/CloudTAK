@@ -307,14 +307,13 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!layer.connection) throw new Err(400, null, 'Layer is not attached to a Connection');
 
-            const pooledClient = await config.conns.get(layer.connection);
-            if (!pooledClient) throw new Err(500, null, `Pooled Client for ${layer.connection} not found in config`);
+            const layerConnection = await config.models.Connection.from(layer.connection);
 
             const api = await TAKAPI.init(
                 new URL(String(config.server.api)),
                 new APIAuthCertificate(
-                    pooledClient.config.auth.cert,
-                    pooledClient.config.auth.key,
+                    layerConnection.auth.cert,
+                    layerConnection.auth.key,
                 ),
             );
 
@@ -355,14 +354,13 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!layer.connection) throw new Err(400, null, 'Layer is not attached to a connection');
 
-            const pooledClient = await config.conns.get(layer.connection);
-            if (!pooledClient) throw new Err(500, null, `Pooled Client for ${layer.connection} not found in config`);
+            const layerConnection = await config.models.Connection.from(layer.connection);
 
             const api = await TAKAPI.init(
                 new URL(String(config.server.api)),
                 new APIAuthCertificate(
-                    pooledClient.config.auth.cert,
-                    pooledClient.config.auth.key,
+                    layerConnection.auth.cert,
+                    layerConnection.auth.key,
                 ),
             );
 

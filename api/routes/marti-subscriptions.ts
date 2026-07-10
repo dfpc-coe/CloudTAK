@@ -8,6 +8,7 @@ import {
     TAKList,
 } from '@tak-ps/node-tak/lib/api/types';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
+import activeChannels from '../lib/tak-channels.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/marti/subscription', {
@@ -23,7 +24,7 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
-            const channels = await config.conns.activeChannels(user.email, api);
+            const channels = await activeChannels(api);
 
             const subs = await api.Subscription.list(req.query);
 
@@ -61,7 +62,7 @@ export default async function router(schema: Schema, config: Config) {
                 page: -1,
                 limit: -1,
             });
-            const channels = await config.conns.activeChannels(user.email, api);
+            const channels = await activeChannels(api);
 
             let done = false;
             for (const sub of subs.data) {

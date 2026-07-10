@@ -1,8 +1,8 @@
 import { Static, Type } from '@sinclair/typebox';
 import type { Feature } from 'geojson';
 import type { Connection } from './schema.js';
-import { X509Certificate } from 'crypto';
 import { InferSelectModel, sql } from 'drizzle-orm';
+import ConnectionControl from './control/connection.js';
 import Config from './config.js';
 
 export const ConnectionAuth = Type.Object({
@@ -56,11 +56,7 @@ export class MachineConnConfig implements ConnectionConfig {
     }
 
     uid(): string {
-        const cert = new X509Certificate(this.auth.cert);
-
-        const subject = cert.subject.split('\n').reverse().join(',');
-
-        return subject;
+        return ConnectionControl.uid(this.auth.cert);
     }
 
     async subscription(name: string): Promise<null | MissionSub> {
@@ -229,9 +225,7 @@ export class AdminConnConfig implements ConnectionConfig {
     }
 
     uid(): string {
-        const cert = new X509Certificate(this.auth.cert);
-        const subject = (cert.subject || '').split('\n').reverse().join(',');
-        return subject;
+        return ConnectionControl.uid(this.auth.cert);
     }
 
     async subscription(): Promise<null | MissionSub> {

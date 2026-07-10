@@ -1,4 +1,5 @@
 import { Static, Type } from '@sinclair/typebox';
+import { sql } from 'drizzle-orm';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types';
 import Config from '../config.js';
 import {
@@ -110,6 +111,31 @@ export default class ProfileControl {
 
     constructor(config: Config) {
         this.config = config;
+    }
+
+    /**
+     * Resolve Mission subscription options (name + token) for a user
+     */
+    async subscription(username: string, name: string): Promise<{
+        name: string;
+        token?: string;
+    }> {
+        const missions = await this.config.models.ProfileOverlay.list({
+            where: sql`
+                name = ${name}
+                AND mode = 'mission'
+                AND username = ${username}
+            `,
+        });
+
+        if (missions.items.length === 0) {
+            return { name };
+        }
+
+        return {
+            name: missions.items[0].name,
+            token: missions.items[0].token || undefined,
+        };
     }
 
     async from(email: string): Promise<Static<typeof ProfileResponse>> {
