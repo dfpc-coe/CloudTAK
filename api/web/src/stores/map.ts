@@ -708,6 +708,7 @@ export const useMapStore = defineStore('cloudtak', {
                     });
                 } catch (err) {
                     console.warn(`Mission:${guid} network refresh failed, using local data:`, err);
+                    return null;
                 }
             }
 
