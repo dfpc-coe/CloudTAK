@@ -78,6 +78,36 @@ export class ConnectionClient {
         }
     }
 
+    async awaitSecure(timeoutMs = 15000): Promise<void> {
+        if (!this.tak.client || this.tak.client.authorized) return;
+
+        await new Promise<void>((resolve, reject) => {
+            const timer = setTimeout(() => {
+                cleanup();
+                reject(new Err(502, null, 'Timeout awaiting TAK Server connection'));
+            }, timeoutMs);
+
+            const onSecure = () => {
+                cleanup();
+                resolve();
+            };
+
+            const onError = (err: Error) => {
+                cleanup();
+                reject(new Err(502, err, 'Failed to connect to TAK Server'));
+            };
+
+            const cleanup = () => {
+                clearTimeout(timer);
+                this.tak.removeListener('secureConnect', onSecure);
+                this.tak.removeListener('error', onError);
+            };
+
+            this.tak.once('secureConnect', onSecure);
+            this.tak.once('error', onError);
+        });
+    }
+
     destroy(): void {
         this.tak.destroy();
     }

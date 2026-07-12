@@ -9,10 +9,6 @@ import type Config from '../config.js';
 
 const pkg = JSON.parse(String(fs.readFileSync(new URL('../../package.json', import.meta.url))));
 
-/**
- * Build the Express application for the stateless REST API: schema-loaded
- * routes, CORS, and static serving of the web SPA
- */
 export default async function buildApi(config: Config): Promise<express.Application> {
     const app = express();
 
@@ -54,11 +50,6 @@ export default async function buildApi(config: Config): Promise<express.Applicat
     app.disable('x-powered-by');
     app.use(cors({
         origin: (origin, callback) => {
-            // Reflect the request origin rather than using '*', which is
-            // incompatible with credentials:true and causes iOS WKWebView to
-            // refuse cross-origin 3xx redirects (e.g. the PMTiles tile
-            // endpoint).  Allow no-origin (native/curl) and the 'null' origin
-            // that Capacitor and cross-origin redirects produce.
             if (!origin || origin === 'null') {
                 callback(null, true);
             } else {
@@ -79,18 +70,6 @@ export default async function buildApi(config: Config): Promise<express.Applicat
         credentials: true,
     }));
 
-    /**
-     * @api {get} /api Get Metadata
-     * @apiVersion 1.0.0
-     * @apiName Server
-     * @apiGroup Server
-     * @apiPermission public
-     *
-     * @apiDescription
-     *     Return basic metadata about server configuration
-     *
-     * @apiSchema {jsonschema=./schema/res.Server.json} apiSuccess
-     */
     app.get('/api', (req, res) => {
         res.json({
             version: pkg.version,

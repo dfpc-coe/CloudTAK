@@ -311,11 +311,7 @@ export default async function router(schema: Schema, config: Config) {
 
             layer = await layerControl.from(connection, req.params.layerid);
 
-            if (incoming.cron && !Schedule.is_aws(incoming.cron) && layer.enabled) {
-                await config.hub.eventSet(layer.id, incoming.cron);
-            } else if (!incoming.cron || (incoming.cron && Schedule.is_aws(incoming.cron)) || !layer.enabled) {
-                await config.hub.eventSet(layer.id, null);
-            }
+            await config.hub.eventSet(layer.id, incoming.cron && !Schedule.is_aws(incoming.cron) && layer.enabled ? incoming.cron : null);
 
             try {
                 await deployLayer(layer);
@@ -442,11 +438,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            if (incoming.cron && !Schedule.is_aws(incoming.cron) && layer.enabled) {
-                await config.hub.eventSet(layer.id, incoming.cron);
-            } else if (!incoming.cron || (incoming.cron && Schedule.is_aws(incoming.cron)) || !layer.enabled) {
-                await config.hub.eventSet(layer.id, null);
-            }
+            await config.hub.eventSet(layer.id, incoming.cron && !Schedule.is_aws(incoming.cron) && layer.enabled ? incoming.cron : null);
 
             if (req.body.data) {
                 const data = await config.models.Data.from(req.body.data);
@@ -784,11 +776,7 @@ export default async function router(schema: Schema, config: Config) {
             layer = await layerControl.from(connection, req.params.layerid);
 
             if (layer.incoming) {
-                if (layer.incoming.cron && !Schedule.is_aws(layer.incoming.cron) && layer.enabled) {
-                    await config.hub.eventSet(layer.id, layer.incoming.cron);
-                } else if (!layer.incoming.cron || (layer.incoming.cron && Schedule.is_aws(layer.incoming.cron)) || !layer.enabled) {
-                    await config.hub.eventSet(layer.id, null);
-                }
+                await config.hub.eventSet(layer.id, layer.incoming.cron && !Schedule.is_aws(layer.incoming.cron) && layer.enabled ? layer.incoming.cron : null);
             }
 
             let status = 'unknown';

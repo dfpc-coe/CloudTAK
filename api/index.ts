@@ -70,7 +70,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 export default async function server(config: Config): Promise<ServerManager> {
     if (config.mode !== 'api') {
         if (config.StackName !== 'test' || process.env.CLOUDTAK_Mode === 'docker-compose') {
-            // If the database is empty, populate it with generally sensible defaults
             await Bulldozer.fireItUp(config);
         }
 
@@ -82,9 +81,6 @@ export default async function server(config: Config): Promise<ServerManager> {
 
     let app: express.Application;
     if (config.mode === 'hub') {
-        // The hub serves WebSocket upgrades on /api plus a plain-HTTP
-        // metadata response for load balancer health checks - all REST
-        // traffic is handled by the stateless API service
         app = express();
         app.disable('x-powered-by');
         app.get('/api', (req, res) => {
@@ -126,6 +122,10 @@ export default async function server(config: Config): Promise<ServerManager> {
         }
 
         srv.on('close', async () => {
+            if (rpc) {
+                rpc.close();
+            }
+
             if (config.mode !== 'api') {
                 await config.geofence.close();
                 await config.conns.close();

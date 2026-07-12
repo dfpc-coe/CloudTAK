@@ -2,10 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert';
 import { CoTParser, DirectChat, FileShare } from '@tak-ps/node-cot';
 
-// RemoteHub serializes CoTs to XML on the wire and the hub RPC router
-// parses them back - chat & fileshare payloads carry nested detail
-// structures that must survive the round trip losslessly
-
 test('Hub CoT round trip: DirectChat', async () => {
     const chat = new DirectChat({
         to: {
@@ -25,9 +21,6 @@ test('Hub CoT round trip: DirectChat', async () => {
     assert.equal(restored.type(), chat.type());
     assert.equal(restored.uid(), chat.uid());
 
-    // Compare via the consumer path (conns.cots -> to_geojson) - the raw
-    // in-memory detail differs benignly (flow tag stamp, single-element
-    // XML arrays parse back as objects) but the outputs must match
     const before = await CoTParser.to_geojson(chat);
     const after = await CoTParser.to_geojson(restored);
 
@@ -57,6 +50,39 @@ test('Hub CoT round trip: FileShare', async () => {
     assert.ok(restored.raw.event.detail?.fileshare);
     assert.equal(restored.raw.event.detail?.fileshare?._attributes?.sha256, 'abc123');
     assert.equal(restored.raw.event.detail?.fileshare?._attributes?.sizeInBytes, 1234);
+});
+
+test('Hub CoT round trip: path & metadata sidecar', async () => {
+    const cot = await CoTParser.from_geojson({
+        id: 'sidecar-feature',
+        type: 'Feature',
+        path: '/Missions/Alpha/',
+        properties: {
+            callsign: 'SIDECAR',
+            type: 'a-f-G',
+            how: 'm-g',
+            metadata: { source: 'etl-test', priority: 7 },
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [-105.1, 39.9],
+        },
+    });
+
+    const wire = {
+        xml: CoTParser.to_xml(cot),
+        path: cot.path,
+        metadata: cot.metadata,
+    };
+
+    const restored = CoTParser.from_xml(wire.xml);
+    restored.path = wire.path;
+    restored.metadata = wire.metadata;
+
+    const after = await CoTParser.to_geojson(restored);
+
+    assert.equal(after.path, '/Missions/Alpha/');
+    assert.deepEqual(after.properties.metadata, { source: 'etl-test', priority: 7 });
 });
 
 test('Hub CoT round trip: GeoJSON feature', async () => {

@@ -7,10 +7,6 @@ import type Config from '../config.js';
 
 const DEFAULT_TIMEOUT_MS = 10 * 1000;
 
-/**
- * Timeout for calls that can open a TAK Server TCP connection and wait for
- * the TLS handshake before returning
- */
 const CONNECT_TIMEOUT_MS = 30 * 1000;
 
 const TOKEN_TTL_MS = 15 * 60 * 1000;
@@ -25,15 +21,6 @@ type Envelope<T> = {
     message: string;
 };
 
-/**
- * HubClient implementation that forwards to the stateful server's RPC
- * endpoint over HTTP - used by stateless API instances.
- *
- * RPC responses use an envelope rather than the HTTP status so application
- * errors (including sub-400 statuses like the layer CoT "Connection Paused"
- * 200) survive the wire unambiguously; a non-200 transport response always
- * means the hub itself is unhealthy.
- */
 export default class RemoteHub implements HubClient {
     config: Config;
     url: string;
@@ -83,7 +70,12 @@ export default class RemoteHub implements HubClient {
             throw new Err(502, null, `CloudTAK Hub Error: HTTP ${res.status}`);
         }
 
-        const envelope = await res.json() as Envelope<T>;
+        let envelope: Envelope<T>;
+        try {
+            envelope = await res.json() as Envelope<T>;
+        } catch (err) {
+            throw new Err(502, err instanceof Error ? err : new Error(String(err)), 'CloudTAK Hub returned an invalid response');
+        }
 
         if (!envelope.ok) {
             throw new Err(envelope.status, null, envelope.message);
@@ -92,10 +84,11 @@ export default class RemoteHub implements HubClient {
         return envelope.result;
     }
 
-    async connectionSync(id: number, opts: { force?: boolean } = {}): Promise<ConnStatus> {
+    async connectionSync(id: number, opts: { force?: boolean; deleted?: boolean } = {}): Promise<ConnStatus> {
         return await this.#call('/connection/sync', {
             id,
             force: opts.force || false,
+            deleted: opts.deleted || false,
         }, {
             timeout: CONNECT_TIMEOUT_MS,
         });
@@ -120,7 +113,11 @@ export default class RemoteHub implements HubClient {
     async submitCots(req: SubmitCotsRequest): Promise<void> {
         await this.#call('/cots', {
             ...req,
-            cots: req.cots.map(cot => CoTParser.to_xml(cot)),
+            cots: req.cots.map(cot => ({
+                xml: CoTParser.to_xml(cot),
+                path: cot.path,
+                metadata: cot.metadata,
+            })),
         }, {
             timeout: req.ensureProfile ? CONNECT_TIMEOUT_MS : DEFAULT_TIMEOUT_MS,
         });

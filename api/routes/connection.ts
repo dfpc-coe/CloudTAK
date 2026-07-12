@@ -450,7 +450,7 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.models.Connection.delete(req.params.connectionid);
 
-            await config.hub.connectionSync(req.params.connectionid);
+            await config.hub.connectionSync(req.params.connectionid, { deleted: true });
 
             const cotak = config.user?.get('cotak');
             if (cotak && cotak.configured) {

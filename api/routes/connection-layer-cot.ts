@@ -68,16 +68,24 @@ export default async function router(schema: Schema, config: Config) {
             req.body.features = styled;
 
             let data;
+            let dataConnection;
             let connectionId = layer.connection;
 
             if (layer.incoming.data) {
                 data = await config.models.Data.from(layer.incoming.data);
                 connectionId = data.connection;
-            }
 
-            const layerConnection = await config.models.Connection.from(connectionId);
+                dataConnection = await config.models.Connection.from(connectionId);
 
-            if (!layerConnection.enabled) {
+                if (!dataConnection.enabled) {
+                    throw new Err(200, null, 'Received but Connection Paused');
+                }
+
+                const status = (await config.hub.connectionStatus([connectionId]))[String(connectionId)];
+                if (status === 'unknown') {
+                    throw new Err(500, null, `Pooled Client for ${connectionId} not found in config`);
+                }
+            } else if (!layer.parent || !layer.parent.enabled) {
                 throw new Err(200, null, 'Received but Connection Paused');
             }
 
@@ -96,7 +104,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            if (layer.incoming.data && data) {
+            if (layer.incoming.data && data && dataConnection) {
                 if (!data.mission_sync) {
                     throw new Err(202, null, 'Received but Data Mission Sync Disabled');
                 }
@@ -111,7 +119,7 @@ export default async function router(schema: Schema, config: Config) {
                         throw new Err(400, null, 'uids Array must be present when submitting to DataSync with MissionDiff');
                     }
 
-                    const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(layerConnection.auth.cert, layerConnection.auth.key));
+                    const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(dataConnection.auth.cert, dataConnection.auth.key));
                     // Once NodeJS supports Set.difference we can simplify this
                     const inputFeats = new Set(req.body.uids);
 
@@ -228,8 +236,7 @@ export default async function router(schema: Schema, config: Config) {
                     }
                 }
             } else {
-                // Don't push already stale data as they will instantly disappear on the device
-                cots = cots.filter(cot => cot.is_stale);
+                cots = cots.filter(cot => !cot.is_stale());
 
                 const insertValues = [];
                 for (const cot of cots) {

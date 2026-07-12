@@ -10,22 +10,16 @@ import ConnectionGeofence from './connection-geofence.js';
 import type { HubClient } from './hub/index.js';
 import LocalHub from './hub/local.js';
 import RemoteHub from './hub/remote.js';
-
-/**
- * Which servers this process hosts:
- * - `both`: REST API + stateful resources in one process (docker-compose, tests, dev)
- * - `api`:  stateless REST API only - stateful interactions proxy to a hub over RPC
- * - `hub`:  stateful server only - web WebSockets, TAK connection pool, crons, geofence
- */
-export type ServerMode = 'both' | 'api' | 'hub';
-
-const SERVER_MODES: ServerMode[] = ['both', 'api', 'hub'];
 import { ConnectionWebSocket } from './connection-web.js';
 import type { Server } from './schema.js';
 import { type InferSelectModel } from 'drizzle-orm';
 import Models from './models.js';
 import process from 'node:process';
 import * as pgtypes from './schema.js';
+
+export type ServerMode = 'both' | 'api' | 'hub';
+
+const SERVER_MODES: ServerMode[] = ['both', 'api', 'hub'];
 
 interface ConfigArgs {
     silent: boolean;
@@ -58,11 +52,6 @@ export default class Config {
     hub: HubClient;
     arnPrefix?: string;
 
-    /**
-     * Stateful resources - only constructed when this process hosts the
-     * hub (mode `both` or `hub`); the public getters fail loudly so a
-     * stateless `api` process can never silently touch them
-     */
     #wsClients?: Map<string, ConnectionWebSocket[]>;
     #conns?: ConnectionPool;
     #geofence?: ConnectionGeofence;
@@ -161,8 +150,6 @@ export default class Config {
 
         const hubUrl = args.hubUrl || process.env.CLOUDTAK_Hub_URL;
 
-        // Validate before any connection pools are created - a throw from
-        // the constructor below would leak them
         if (mode === 'api' && !hubUrl) {
             throw new Error('CLOUDTAK_Hub_URL must be set when CLOUDTAK_Server_Mode is api');
         }

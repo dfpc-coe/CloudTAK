@@ -3,21 +3,8 @@ import jwt from 'jsonwebtoken';
 import { CoTParser } from '@tak-ps/node-cot';
 import type Config from '../config.js';
 
-/**
- * Internal RPC surface exposed by the stateful (hub) server for the
- * stateless API instances - a thin HTTP wrapper over the hub-side
- * LocalHub so both call paths share one implementation.
- *
- * Responses are enveloped: `{ok: true, result}` on success or
- * `{ok: false, status, message}` carrying a thrown Err across the wire
- * (see RemoteHub). Authentication is a SigningSecret-signed JWT with an
- * `internal` claim - the port this router listens on is additionally
- * never registered with the public load balancer.
- */
 export default function hubRouter(config: Config): express.Router {
     const router = express.Router();
-
-    router.use(express.json({ limit: '50mb' }));
 
     router.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
         try {
@@ -40,15 +27,14 @@ export default function hubRouter(config: Config): express.Router {
         }
     });
 
+    router.use(express.json({ limit: '250mb' }));
+
     const handle = (fn: (body: Record<string, any>) => Promise<unknown>): express.RequestHandler => {
         return async (req: express.Request, res: express.Response) => {
             try {
                 const result = await fn(req.body);
                 res.json({ ok: true, result: result === undefined ? null : result });
             } catch (err) {
-                // Structural check rather than instanceof - model errors are
-                // thrown by a different copy of batch-error than the one
-                // imported here
                 if (err instanceof Error && 'status' in err && typeof err.status === 'number') {
                     res.json({ ok: false, status: err.status, message: err.message });
                 } else {
@@ -60,7 +46,7 @@ export default function hubRouter(config: Config): express.Router {
     };
 
     router.post('/connection/sync', handle((body) => {
-        return config.hub.connectionSync(body.id, { force: body.force });
+        return config.hub.connectionSync(body.id, { force: body.force, deleted: body.deleted });
     }));
 
     router.post('/connection/status', handle((body) => {
@@ -82,7 +68,12 @@ export default function hubRouter(config: Config): express.Router {
             broadcast: body.broadcast,
             ensureProfile: body.ensureProfile,
             ifPooled: body.ifPooled,
-            cots: (body.cots as string[]).map(xml => CoTParser.from_xml(xml)),
+            cots: (body.cots as Array<{ xml: string; path: string; metadata: Record<string, unknown> }>).map((c) => {
+                const cot = CoTParser.from_xml(c.xml);
+                cot.path = c.path;
+                cot.metadata = c.metadata;
+                return cot;
+            }),
         });
     }));
 

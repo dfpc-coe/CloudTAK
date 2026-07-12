@@ -70,7 +70,6 @@ export default async function router(schema: Schema, config: Config) {
 
             const cot = await CoTParser.from_geojson(feature);
 
-            // Ensures the user's TAK profile connection exists and is ready
             await config.hub.submitCots({
                 connection: user.email,
                 cots: [cot],

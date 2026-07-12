@@ -11,10 +11,6 @@ import hubRouter from '../hub/routes.js';
 import { tokenParser, AuthUser } from '../auth.js';
 import type Config from '../config.js';
 
-/**
- * Attach the web-client WebSocket server (upgrade auth + connection
- * handler) to an HTTP server - hosted by the stateful server
- */
 export function attachWebsocket(srv: Server, config: Config): ws.WebSocketServer {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const WebSocketServer = ws.WebSocketServer ?? (ws as any).default.WebSocketServer;
@@ -25,7 +21,6 @@ export function attachWebsocket(srv: Server, config: Config): ws.WebSocketServer
         try {
             if (!request.url) throw new Error('Could not parse connection URL');
             const params = new URLSearchParams(request.url.replace(/.*\?/, ''));
-            // TODO: Remove connections
 
             if (!params.get('connection')) throw new Error('Connection Parameter Required');
             if (!params.get('token')) throw new Error('Token Parameter Required');
@@ -41,7 +36,6 @@ export function attachWebsocket(srv: Server, config: Config): ws.WebSocketServer
 
             if (!config.conns) throw new Error('Server not configured with Connection Pool');
 
-            // Connect to MachineUser Connection if it is an integer
             if (!isNaN(Number(parsedParams.connection)) && Number.isInteger(Number(parsedParams.connection))) {
                 let webClients = config.wsClients.get(parsedParams.connection);
                 if (!webClients) webClients = [];
@@ -53,19 +47,13 @@ export function attachWebsocket(srv: Server, config: Config): ws.WebSocketServer
                     throw new Error('Unauthorized');
                 }
 
-                // Admin connection using server auth profile
-                let client: ConnectionClient | undefined;
-                let awaitSecure: Promise<void> | undefined;
+                let client: ConnectionClient;
 
                 if (!config.conns.has(0)) {
-                    // Admin connection should already be created in init(), but check anyway
                     if (!config.server.connection) {
                         throw new Error('Admin connection is disabled');
                     } else if (config.server.auth.cert && config.server.auth.key) {
                         client = await config.conns.add(new AdminConnConfig(config));
-                        if (client.tak.client && !client.tak.client.authorized) {
-                            awaitSecure = new Promise<void>(resolve => (client as ConnectionClient).tak.once('secureConnect', resolve));
-                        }
                     } else {
                         throw new Error('Admin connection not configured');
                     }
@@ -73,7 +61,7 @@ export function attachWebsocket(srv: Server, config: Config): ws.WebSocketServer
                     client = config.conns.get(0) as ConnectionClient;
                 }
 
-                const connClient = new ConnectionWebSocket(ws, parsedParams.format, client, auth instanceof AuthUser ? auth.session : undefined);
+                const connClient = new ConnectionWebSocket(ws, parsedParams.format, client, auth.session);
 
                 let webClients = config.wsClients.get('admin');
                 if (!webClients) webClients = [];
@@ -94,19 +82,15 @@ export function attachWebsocket(srv: Server, config: Config): ws.WebSocketServer
                     config.wsClients.delete('admin');
                 });
 
-                if (awaitSecure) await awaitSecure;
+                await client.awaitSecure();
                 ws.send(JSON.stringify({ type: 'connected' }));
             } else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
-                let client: ConnectionClient | undefined;
-                let awaitSecure: Promise<void> | undefined;
+                let client: ConnectionClient;
                 if (!config.conns.has(parsedParams.connection)) {
                     const profile = await config.models.Profile.from(parsedParams.connection);
                     if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
 
                     client = await config.conns.add(new ProfileConnConfig(config, parsedParams.connection, profile.auth));
-                    if (client.tak.client && !client.tak.client.authorized) {
-                        awaitSecure = new Promise<void>(resolve => (client as ConnectionClient).tak.once('secureConnect', resolve));
-                    }
                 } else {
                     client = config.conns.get(parsedParams.connection) as ConnectionClient;
                 }
@@ -134,7 +118,7 @@ export function attachWebsocket(srv: Server, config: Config): ws.WebSocketServer
                     config.conns.delete(parsedParams.connection);
                 });
 
-                if (awaitSecure) await awaitSecure;
+                await client.awaitSecure();
                 ws.send(JSON.stringify({ type: 'connected' }));
             } else {
                 throw new Error('Unauthorized');
@@ -156,13 +140,8 @@ export function attachWebsocket(srv: Server, config: Config): ws.WebSocketServer
     });
 
     srv.on('upgrade', async (request, socket, head) => {
-        // A socket dropped during the async auth check would otherwise
-        // surface as an unhandled 'error' event and crash the process
         socket.on('error', () => socket.destroy());
 
-        // Reject a dead session with an HTTP 401 during the handshake -
-        // an accepted socket fires the client's `open` handler and kicks
-        // off a full sync before the auth error ever reaches it
         try {
             const params = new URLSearchParams((request.url || '').replace(/.*\?/, ''));
             const token = params.get('token');
@@ -187,24 +166,18 @@ export function attachWebsocket(srv: Server, config: Config): ws.WebSocketServer
     return wss;
 }
 
-/**
- * Start the internal RPC server through which stateless API instances
- * interact with the hub's stateful resources. Listens on a dedicated port
- * that is only ever exposed to the API service - never the public ALB
- */
 export function startHubRpc(config: Config): Promise<Server> {
     const app = express();
 
     app.disable('x-powered-by');
 
-    // Load balancer health check - no auth (the ALB can't sign a JWT)
     app.get('/hub', (req, res) => {
         res.json({ status: 200, message: 'CloudTAK Hub' });
     });
 
     app.use('/hub', hubRouter(config));
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         const srv = app.listen(parseInt(process.env.HUB_RPC_PORT || '5002'), () => {
             if (!config.silent) {
                 const address = srv.address();
@@ -213,6 +186,10 @@ export function startHubRpc(config: Config): Promise<Server> {
             }
 
             resolve(srv);
+        });
+
+        srv.on('error', (err) => {
+            reject(new Error(`Hub RPC server failed to start: ${err.message}`, { cause: err }));
         });
     });
 }

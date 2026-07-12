@@ -7,11 +7,6 @@ import type { GeofenceStatus } from '../connection-geofence.js';
 import type { HubClient, ConnStatus, PoolSummary, PresenceMap, SubmitCotsRequest } from './index.js';
 import type Config from '../config.js';
 
-/**
- * HubClient implementation backed by direct in-process access to the
- * stateful resources on Config - used whenever the process hosting the
- * REST API also hosts the connection pool
- */
 export default class LocalHub implements HubClient {
     config: Config;
 
@@ -19,12 +14,16 @@ export default class LocalHub implements HubClient {
         this.config = config;
     }
 
-    async connectionSync(id: number, opts: { force?: boolean } = {}): Promise<ConnStatus> {
+    async connectionSync(id: number, opts: { force?: boolean; deleted?: boolean } = {}): Promise<ConnStatus> {
+        if (opts.deleted) {
+            this.config.conns.delete(id);
+            return this.config.conns.status(id);
+        }
+
         let connection: InferSelectModel<typeof Connection> | undefined;
         try {
             connection = await this.config.models.Connection.from(id);
         } catch (err) {
-            // A deleted row means the pooled connection should be torn down
             if (err instanceof Error && 'status' in err && err.status === 404) {
                 connection = undefined;
             } else {
@@ -61,35 +60,33 @@ export default class LocalHub implements HubClient {
         const summary: PoolSummary = { dead: 0, live: 0, unknown: 0 };
 
         for (const conn of this.config.conns.values()) {
-            if (!conn.tak) summary.unknown++;
-            else if (conn.tak.open) summary.live++;
-            else summary.dead++;
+            summary[this.config.conns.status(conn.config.id)]++;
         }
 
         return summary;
     }
 
     async serverRefresh(opts: { refreshAll?: boolean } = {}): Promise<ConnStatus> {
-        this.config.server = await this.config.models.Server.from(1);
+        this.config.server = await this.config.models.Server.from(this.config.server.id);
 
         if (opts.refreshAll) {
             await this.config.conns.refresh();
+
+            for (const [key, clients] of [...this.config.wsClients.entries()]) {
+                if (/^\d+$/.test(key)) continue;
+
+                for (const client of [...clients]) {
+                    client.ws.close(1000, 'Server Configuration Changed');
+                }
+            }
+
             return this.config.conns.status(0);
         }
 
-        const auth = this.config.server.auth.cert && this.config.server.auth.key;
+        this.config.conns.delete(0);
 
-        if (this.config.server.connection && !this.config.conns.has(0)) {
-            if (auth) {
-                await this.config.conns.add(new AdminConnConfig(this.config));
-            }
-        } else if (this.config.server.connection && this.config.conns.has(0)) {
-            this.config.conns.delete(0);
-            if (auth) {
-                await this.config.conns.add(new AdminConnConfig(this.config));
-            }
-        } else if (!this.config.server.connection && this.config.conns.has(0)) {
-            this.config.conns.delete(0);
+        if (this.config.server.connection && this.config.server.auth.cert && this.config.server.auth.key) {
+            await this.config.conns.add(new AdminConnConfig(this.config));
         }
 
         return this.config.conns.status(0);
@@ -107,10 +104,7 @@ export default class LocalHub implements HubClient {
 
             client = await this.config.conns.add(new ProfileConnConfig(this.config, req.connection, profile.auth));
 
-            if (client.tak.client && !client.tak.client.authorized) {
-                const pooled = client;
-                await new Promise<void>(resolve => pooled.tak.once('secureConnect', resolve));
-            }
+            await client.awaitSecure();
         }
 
         if (!client) {
@@ -123,7 +117,9 @@ export default class LocalHub implements HubClient {
         }
 
         if (req.broadcast) {
-            await this.config.conns.cots(client.config, req.cots);
+            this.config.conns.cots(client.config, req.cots).catch((err) => {
+                console.error(`Error: Failed to broadcast CoTs for ${req.connection}:`, err);
+            });
         }
     }
 
@@ -134,7 +130,6 @@ export default class LocalHub implements HubClient {
         const raw = JSON.stringify(payload);
 
         for (const client of clients) {
-            // Don't echo the event back to the client that performed the operation
             if (excludeSession && client.session && client.session === excludeSession) continue;
             if (client.ws.readyState !== WebSocket.OPEN) continue;
 
