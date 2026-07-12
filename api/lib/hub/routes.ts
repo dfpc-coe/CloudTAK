@@ -71,8 +71,8 @@ export default function hubRouter(config: Config): express.Router {
         return config.hub.connectionSummary();
     }));
 
-    router.post('/server/refresh', handle(() => {
-        return config.hub.serverRefresh();
+    router.post('/server/refresh', handle((body) => {
+        return config.hub.serverRefresh({ refreshAll: body.refreshAll });
     }));
 
     router.post('/cots', handle((body) => {
