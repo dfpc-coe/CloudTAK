@@ -110,7 +110,7 @@ export default class LocalHub implements HubClient {
 
         if (!client) {
             if (req.ifPooled) return;
-            throw new Err(200, null, 'Recieved but Connection Paused');
+            throw new Err(200, null, 'Received but Connection Paused');
         }
 
         if (req.write !== false) {
