@@ -937,8 +937,6 @@ export const useMapStore = defineStore('cloudtak', {
                     version: 8,
                     glyphs,
                     sprite: sprites,
-                    // Global state consumed by overlay styles via ["global-state", ...]
-                    // expressions - Ref: https://maplibre.org/maplibre-style-spec/root/#state
                     state: {
                         theme: { default: 'dark' },
                         '3d': { default: false }
