@@ -62,9 +62,10 @@ export interface HubClient {
 
     /**
      * Re-read the Server row and reconcile the admin connection (id 0)
-     * with its enabled/auth state
+     * with its enabled/auth state. `refreshAll` tears down and reconnects
+     * every pooled connection instead (used after server URL/auth changes)
      */
-    serverRefresh(): Promise<ConnStatus>;
+    serverRefresh(opts?: { refreshAll?: boolean }): Promise<ConnStatus>;
 
     submitCots(req: SubmitCotsRequest): Promise<void>;
 

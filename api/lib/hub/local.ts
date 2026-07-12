@@ -69,8 +69,13 @@ export default class LocalHub implements HubClient {
         return summary;
     }
 
-    async serverRefresh(): Promise<ConnStatus> {
+    async serverRefresh(opts: { refreshAll?: boolean } = {}): Promise<ConnStatus> {
         this.config.server = await this.config.models.Server.from(1);
+
+        if (opts.refreshAll) {
+            await this.config.conns.refresh();
+            return this.config.conns.status(0);
+        }
 
         const auth = this.config.server.auth.cert && this.config.server.auth.key;
 
@@ -110,7 +115,7 @@ export default class LocalHub implements HubClient {
 
         if (!client) {
             if (req.ifPooled) return;
-            throw new Err(200, null, 'Recieved but Connection Paused');
+            throw new Err(200, null, 'Received but Connection Paused');
         }
 
         if (req.write !== false) {

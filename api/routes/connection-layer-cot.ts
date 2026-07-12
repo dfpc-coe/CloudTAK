@@ -78,7 +78,7 @@ export default async function router(schema: Schema, config: Config) {
             const layerConnection = await config.models.Connection.from(connectionId);
 
             if (!layerConnection.enabled) {
-                throw new Err(200, null, 'Recieved but Connection Paused');
+                throw new Err(200, null, 'Received but Connection Paused');
             }
 
             const errors: Array<Static<typeof LayerError>> = [];
@@ -98,7 +98,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (layer.incoming.data && data) {
                 if (!data.mission_sync) {
-                    throw new Err(202, null, 'Recieved but Data Mission Sync Disabled');
+                    throw new Err(202, null, 'Received but Data Mission Sync Disabled');
                 }
 
                 // Mission Sync Features are always archived

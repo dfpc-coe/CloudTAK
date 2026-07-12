@@ -442,6 +442,9 @@ export default async function router(schema: Schema, config: Config) {
             if (
                 req.body.destinations.length
                 && req.body.destinations.filter(d => !d.mission).length
+                // Sending the FileShare CoT requires a pooled profile connection - skip
+                // the DNS lookup & CoT construction entirely when there isn't one
+                && (await config.hub.connectionStatus([profile.username]))[profile.username] !== 'unknown'
             ) {
                 const url = new URL(config.server.api);
                 const configs = await config.models.ProfileConfig.from(profile.username);
