@@ -508,6 +508,7 @@ export const useMapStore = defineStore('cloudtak', {
             });
 
             this.terrainEnabled = true;
+            this.map.setGlobalStateProperty('3d', true);
 
             if (this.map.getPitch() === 0) {
                 this.map.easeTo({ pitch: 45 });
@@ -519,6 +520,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.map.removeSource('-2');
 
             this.terrainEnabled = false;
+            this.map.setGlobalStateProperty('3d', false);
 
             this.map.easeTo({ pitch: 0 });
         },
@@ -935,6 +937,12 @@ export const useMapStore = defineStore('cloudtak', {
                     version: 8,
                     glyphs,
                     sprite: sprites,
+                    // Global state consumed by overlay styles via ["global-state", ...]
+                    // expressions - Ref: https://maplibre.org/maplibre-style-spec/root/#state
+                    state: {
+                        theme: { default: 'dark' },
+                        '3d': { default: false }
+                    },
                     sources: {
                         '-1': {
                             type: 'geojson',
@@ -954,6 +962,8 @@ export const useMapStore = defineStore('cloudtak', {
 
             mapgl.setWorkerUrl(maplibreWorkerUrl);
             const map = new mapgl.Map(init);
+
+            map.setGlobalStateProperty('theme', useAppStore().resolvedTheme);
 
             // Add scale control
             const scaleControl = new mapgl.ScaleControl({

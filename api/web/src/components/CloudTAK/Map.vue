@@ -588,6 +588,13 @@ watch(isMobileDetected, () => {
     appStore.isMobileDetected = isMobileDetected.value;
 });
 
+// Keep the map's "theme" global state in sync so overlay styles can react
+// to light/dark mode via ["global-state", "theme"] expressions
+watch(() => appStore.resolvedTheme, (theme) => {
+    if (!mapStore._map) return;
+    mapStore.map.setGlobalStateProperty('theme', theme);
+});
+
 const displayZoom = computed(() => {
     if (mapStore.zoom === 'conditional') {
         return !isMobileDetected.value;
