@@ -113,7 +113,7 @@ test('Hub RPC: submitCots to an unpooled connection maps the thrown Err across t
     } catch (err) {
         assert.ok(err instanceof Error && 'status' in err);
         assert.equal((err as { status: number }).status, 200);
-        assert.equal(err.message, 'Recieved but Connection Paused');
+        assert.equal(err.message, 'Received but Connection Paused');
     }
 });
 

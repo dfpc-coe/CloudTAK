@@ -109,8 +109,10 @@ export default class RemoteHub implements HubClient {
         return await this.#call('/connection/summary', {});
     }
 
-    async serverRefresh(): Promise<ConnStatus> {
-        return await this.#call('/server/refresh', {}, {
+    async serverRefresh(opts: { refreshAll?: boolean } = {}): Promise<ConnStatus> {
+        return await this.#call('/server/refresh', {
+            refreshAll: opts.refreshAll || false,
+        }, {
             timeout: CONNECT_TIMEOUT_MS,
         });
     }

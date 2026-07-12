@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.42.0 - 2026-07-10
+
+- :rocket: Reduce stateful internals in favour of using stateless or cloudTAK database backed calls
+
 ### v13.41.1 - 2026-07-10
 
 - :bug: Fix map loading regression which would prevent plugin loading
