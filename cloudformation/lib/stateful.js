@@ -1,18 +1,5 @@
 import cf from '@openaddresses/cloudfriend';
 
-/**
- * Stateful CloudTAK server: web-client WebSockets, TAK Server TCP connection
- * pool, layer cron scheduler & geofence client.
- *
- * Runs the same image as the API service with CLOUDTAK_Server_Mode=hub and
- * exactly one task - two concurrent hubs would open duplicate TAK Server
- * TCP connections and double-fire layer crons.
- *
- * Ingress:
- *  - Public ALB routes WebSocket upgrades on /api here (all other traffic
- *    falls through to the stateless API service)
- *  - An internal ALB fronts the hub RPC port for the stateless API tasks
- */
 export default {
     Resources: {
         StatefulLogs: {
@@ -27,7 +14,10 @@ export default {
             DependsOn: 'ELB',
             Properties: {
                 HealthCheckEnabled: true,
-                HealthCheckIntervalSeconds: 30,
+                HealthCheckIntervalSeconds: 15,
+                HealthCheckTimeoutSeconds: 5,
+                HealthyThresholdCount: 2,
+                UnhealthyThresholdCount: 3,
                 HealthCheckPath: '/api',
                 Port: 5000,
                 Protocol: 'HTTP',
@@ -35,7 +25,11 @@ export default {
                 VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])),
                 Matcher: {
                     HttpCode: '200,202,302,304'
-                }
+                },
+                TargetGroupAttributes: [{
+                    Key: 'deregistration_delay.timeout_seconds',
+                    Value: '15'
+                }]
             }
         },
         StatefulListenerRule: {
@@ -110,7 +104,10 @@ export default {
             DependsOn: 'HubELB',
             Properties: {
                 HealthCheckEnabled: true,
-                HealthCheckIntervalSeconds: 30,
+                HealthCheckIntervalSeconds: 15,
+                HealthCheckTimeoutSeconds: 5,
+                HealthyThresholdCount: 2,
+                UnhealthyThresholdCount: 3,
                 HealthCheckPath: '/hub',
                 Port: 5002,
                 Protocol: 'HTTP',
@@ -118,7 +115,11 @@ export default {
                 VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])),
                 Matcher: {
                     HttpCode: '200'
-                }
+                },
+                TargetGroupAttributes: [{
+                    Key: 'deregistration_delay.timeout_seconds',
+                    Value: '30'
+                }]
             }
         },
         StatefulTaskDefinition: {
@@ -204,7 +205,11 @@ export default {
                 DesiredCount: 1,
                 DeploymentConfiguration: {
                     MaximumPercent: 100,
-                    MinimumHealthyPercent: 0
+                    MinimumHealthyPercent: 0,
+                    DeploymentCircuitBreaker: {
+                        Enable: true,
+                        Rollback: true
+                    }
                 },
                 NetworkConfiguration: {
                     AwsvpcConfiguration: {
