@@ -1,17 +1,33 @@
 /**
- * Icon Color Manager for runtime icon recoloring
+ * Icon Manager - on-demand style image resolution
+ *
+ * Registered as the map's missing style image resolver
+ * (`Map.setMissingStyleImageResolver`): when a symbol layer references an
+ * image id MapLibre doesn't have, the resolver hydrates it before the tile
+ * renders. Images therefore only occupy MapLibre memory once a feature
+ * actually requests them.
+ *
+ * Supported id shapes:
+ *  - `2525D:<sidc>`          - milsymbol-generated military symbols
+ *  - `<base>-colored-<hex>`  - runtime-recolored variant of another image
+ *  - `<iconsetUid>:<path>`   - iconset icons served from Dexie with a network
+ *                              fallback for icons that haven't synced locally
+ *
+ * Bulk hydration of the Dexie icon cache is owned by the Atlas worker (see
+ * workers/atlas-sync.ts). Hydration exists to prime the offline cache, not
+ * to invalidate the map: only iconsets whose content actually changed
+ * (version bump, removal, explicit mutation) purge their MapLibre images;
+ * iconsets cached for the first time merely retry fallback placeholders,
+ * since successfully resolved icons are identical to the cached rows.
  */
 import { Preferences } from '@capacitor/preferences';
 import ms from 'milsymbol'
 import * as mapgl from 'maplibre-gl'
-import Icon, { type IconHydrateResult } from '../../base/icon.ts'
+import Icon from '../../base/icon.ts'
 import IconsetManager from '../../base/iconset.ts';
 import type { Map as MapLibreMap } from 'maplibre-gl';
 import { stdurl } from '../../std.ts';
-import { db, type DBIconset, type DBSprite } from '../../database.ts';
-
-/** Image id for the on-demand fallback when an iconset icon isn't available locally. */
-const FALLBACK_IMAGE_ID = '__cloudtak_fallback_point__';
+import { db, type DBSprite } from '../../database.ts';
 
 /** Target render width (px) used when rasterizing SVG iconset icons; height preserves the source aspect ratio. */
 const SVG_RENDER_WIDTH = 32;
@@ -26,16 +42,21 @@ const SPRITE_PROTOCOL = 'cloudtak-sprite';
 let spriteProtocolRegistered = false;
 
 export default class IconManager {
-    private cache = new Map<string, HTMLCanvasElement>();
     private map: MapLibreMap;
-    private loggedMissingImageIds = new Set<string>();
+    private inflight = new Map<string, Promise<void>>();
     private loggedErrors = new Set<string>();
-    private inflightImage = new Map<string, Promise<boolean>>();
     private fallbackBitmap: ImageBitmap | null = null;
-    private requestedIconsetImageIds = new Set<string>();
+    /**
+     * Image ids registered with the generic fallback bitmap (or recolored
+     * from one) because the real icon couldn't be loaded at resolve time.
+     * These are retried once the owning iconset lands in Dexie.
+     */
+    private fallbackIds = new Set<string>();
 
     constructor(map: MapLibreMap) {
         this.map = map;
+
+        map.setMissingStyleImageResolver((id) => this.resolve(id));
     }
 
     private logWarnOnce(key: string, message: string, context?: Record<string, unknown>): void {
@@ -55,15 +76,11 @@ export default class IconManager {
         });
     }
 
-    static async from(uid: string): Promise<DBIconset | undefined> {
-        return await db.iconset.get(uid);
-    }
-
     /**
-     * MapLibre style sprite descriptor. The custom iconset spritesheets are no
-     * longer loaded here; icons are served on demand from Dexie via
-     * `onStyleImageMissing`. Only the small built-in `default` sprite is loaded
-     * up-front because it provides the CoT-type fallbacks.
+     * MapLibre style sprite descriptor. Iconset icons are served on demand
+     * from Dexie via the missing style image resolver; only the small
+     * built-in `default` sprite is loaded up-front because it provides the
+     * CoT-type fallbacks.
      *
      * The default sprite itself is also served from the Dexie cache via the
      * `cloudtak-sprite://` protocol (see `registerSpriteProtocol`) so it
@@ -116,154 +133,137 @@ export default class IconManager {
     }
 
     /**
-     * Hydrate the local Dexie icon cache from the API.
+     * Missing style image resolver entry point. MapLibre awaits the returned
+     * promise before rendering the requesting tile, so the image must be
+     * registered by the time it settles.
      *
-     * This method also handles main-thread concerns like purging stale MapLibre
-     * images when the local Dexie cache changes.
+     * Must never reject: a rejected resolver promise fails the whole image
+     * batch for the tile, so failures are logged and the id is left
+     * unresolved (MapLibre then fires the legacy `styleimagemissing` event
+     * and renders the feature without an icon).
      */
-    async hydrate(opts: { force?: boolean } = {}): Promise<void> {
-        const result = await Icon.hydrate({ token: await getToken(), force: !!opts.force }) as IconHydrateResult;
-        await this.applyHydrateResult(result);
+    async resolve(id: string): Promise<void> {
+        const inflight = this.inflight.get(id);
+        if (inflight) return inflight;
+
+        const work = this.resolveImage(id)
+            .catch((error: unknown) => {
+                this.logErrorOnce(
+                    `resolve:${id}`,
+                    'Failed to resolve missing style image',
+                    error,
+                    { imageId: id }
+                );
+            })
+            .finally(() => {
+                this.inflight.delete(id);
+            });
+
+        this.inflight.set(id, work);
+        return work;
+    }
+
+    private async resolveImage(id: string): Promise<void> {
+        if (this.map.hasImage(id)) return;
+
+        if (id.startsWith('2525D:')) {
+            const sidc = id.replace('2525D:', '');
+            const symbol = new ms.Symbol(sidc, { size: 24 }).asCanvas();
+
+            this.addImage(id, await createImageBitmap(symbol));
+        } else if (id.includes('-colored-')) {
+            const separator = id.lastIndexOf('-colored-');
+            const baseId = id.slice(0, separator);
+            const color = '#' + id.slice(separator + '-colored-'.length);
+
+            // The base image may itself be an on-demand icon that hasn't
+            // been requested yet - resolve it before recoloring.
+            if (!this.map.hasImage(baseId)) await this.resolve(baseId);
+
+            this.addColoredImage(id, baseId, color);
+        } else if (id.includes(':')) {
+            await this.loadIconsetImage(id);
+        } else {
+            this.logWarnOnce(
+                `unhandled:${id}`,
+                'Unhandled missing style image',
+                { imageId: id }
+            );
+        }
     }
 
     /**
-     * Ensure a single iconset is present in Dexie. Used by overlays that
-     * reference a specific iconset so it is available even if the user-wide
-     * hydrate hasn't completed yet.
+     * Resolve an `<iconsetUid>:<path>` image id from Dexie, falling back to
+     * fetching the single icon from the API (for iconsets that haven't been
+     * hydrated locally) and finally to a generic point icon.
      */
-    async addIconset(uid: string, opts: { force?: boolean } = {}): Promise<void> {
-        const updated = await Icon.addIconset(uid, { token: await getToken(), force: !!opts.force });
-        if (updated) await this.reloadIconsetImages(uid);
+    private async loadIconsetImage(id: string): Promise<void> {
+        const row = await Icon.get(id);
+        const blob = row ? row.data : await Icon.fetchRemote(id);
+
+        if (blob) {
+            this.fallbackIds.delete(id);
+            this.addImage(id, await this.decodeIconBlob(blob));
+            return;
+        }
+
+        this.logWarnOnce(
+            `missing-iconset-icon:${id}`,
+            'Iconset icon not found locally or remotely, using fallback',
+            { imageId: id }
+        );
+
+        this.fallbackIds.add(id);
+        this.addImage(id, await this.getFallbackBitmap());
     }
 
-    async removeIconset(uid: string): Promise<void> {
-        const cached = await IconsetManager.from(uid);
-        await IconsetManager.delete(uid, { localOnly: true });
-
-        if (cached) {
-            this.purgeMapImagesForIconset(uid);
-            this.removeRequestedImagesForIconset(uid);
+    private addImage(id: string, image: ImageBitmap | ImageData): void {
+        if (!this.map.hasImage(id)) {
+            this.map.addImage(id, image);
         }
     }
 
-    async deleteIconset(uid: string): Promise<void> {
-        await IconsetManager.delete(uid);
-        this.purgeMapImagesForIconset(uid);
-        this.removeRequestedImagesForIconset(uid);
-    }
+    /**
+     * Remove all MapLibre images belonging to the given iconsets (including
+     * colored variants, whose ids share the `<uid>:` prefix). MapLibre
+     * re-requests removed images through the missing style image resolver
+     * the next time a feature needs them, so purging is all that's required
+     * to pick up refreshed Dexie content.
+     */
+    purgeIconsets(uids: string[]): void {
+        const prefixes = uids.map((uid) => `${uid}:`);
+        if (!prefixes.length) return;
 
-    private async applyHydrateResult(result: IconHydrateResult): Promise<void> {
-        if (result.skipped) return;
-
-        for (const uid of result.removed) {
-            this.purgeMapImagesForIconset(uid);
-            this.removeRequestedImagesForIconset(uid);
-        }
-
-        await Promise.all(result.changed.map((uid) => this.reloadIconsetImages(uid)));
-    }
-
-    private purgeMapImagesForIconset(uid: string): void {
-        const prefix = `${uid}:`;
         for (const id of this.map.listImages()) {
-            if (id.startsWith(prefix)) {
+            if (prefixes.some((prefix) => id.startsWith(prefix))) {
+                this.fallbackIds.delete(id);
                 this.map.removeImage(id);
             }
         }
     }
 
-    public async onStyleImageMissing(e: { id: string }): Promise<void> {
-        try {
-            if (e.id.startsWith('2525D:')) {
-                const sidc = e.id.replace('2525D:', '');
-                const size = 24;
-                const data = new ms.Symbol(sidc, { size }).asCanvas();
+    /**
+     * Retry fallback placeholder images belonging to the given iconsets.
+     * Used when an iconset is cached in Dexie for the first time: icons that
+     * already resolved successfully (via the network fallback) are identical
+     * to the newly cached rows and are left untouched - only ids stuck on
+     * the generic fallback bitmap are dropped so they re-resolve.
+     */
+    purgeFallbacks(uids: string[]): void {
+        const prefixes = uids.map((uid) => `${uid}:`);
+        if (!prefixes.length || !this.fallbackIds.size) return;
 
-                this.map.addImage(e.id, await createImageBitmap(data));
-            } else if (e.id.includes('-colored-')) {
-                // This is a colored icon, we need to load it from the icon manager
-                const parts = e.id.split('-colored-');
-                const originalIconId = parts[0];
-                const color = '#' + parts[1];
-
-                if (originalIconId.includes(':')) {
-                    this.requestedIconsetImageIds.add(originalIconId);
-                    this.requestedIconsetImageIds.add(e.id);
-                }
-
-                // Iconset icons are only loaded on demand via this same handler.
-                // When MapLibre asks for the colored variant first, the
-                // underlying base image hasn't been registered yet, so we need
-                // to hydrate it from Dexie before recoloring. Without this the
-                // recolor step finds no source image and silently bails out,
-                // leaving the marker with a callsign but no icon.
-                if (originalIconId.includes(':') && !this.map.hasImage(originalIconId)) {
-                    await this.loadIconsetImage(originalIconId);
-                }
-
-                this.getColoredIcon(originalIconId, color);
-            } else if (e.id.includes(':')) {
-                this.requestedIconsetImageIds.add(e.id);
-                await this.loadIconsetImage(e.id);
-            } else if (!this.loggedMissingImageIds.has(e.id)) {
-                this.loggedMissingImageIds.add(e.id);
-                console.info('Unhandled style image missing event', {
-                    imageId: e.id
-                });
+        for (const id of [...this.fallbackIds]) {
+            if (prefixes.some((prefix) => id.startsWith(prefix))) {
+                this.fallbackIds.delete(id);
+                if (this.map.hasImage(id)) this.map.removeImage(id);
             }
-        } catch (error) {
-            this.logErrorOnce(
-                `styleimagemissing:${e.id}`,
-                'Failed to handle style image missing event',
-                error,
-                { imageId: e.id }
-            );
-
-            throw error;
         }
     }
 
-    /**
-     * Resolve an `<iconsetUid>:<path>` image id from Dexie and register it with
-     * MapLibre. Falls back to a generic point icon when the icon isn't cached.
-     */
-    private async loadIconsetImage(id: string): Promise<boolean> {
-        if (this.map.hasImage(id)) return true;
-
-        const inflight = this.inflightImage.get(id);
-        if (inflight) return inflight;
-
-        const work = (async () => {
-            try {
-                const row = await Icon.get(id);
-
-                if (row) {
-                    const bitmap = await this.decodeIconBlob(row.data);
-                    if (!this.map.hasImage(id)) {
-                        this.map.addImage(id, bitmap);
-                    }
-                    return true;
-                }
-
-                const fallback = await this.getFallbackBitmap();
-                if (!this.map.hasImage(id)) {
-                    this.map.addImage(id, fallback);
-                }
-
-                this.logWarnOnce(
-                    `missing-iconset-icon:${id}`,
-                    'Iconset icon not found in local cache, using fallback',
-                    { imageId: id }
-                );
-
-                return false;
-            } finally {
-                this.inflightImage.delete(id);
-            }
-        })();
-
-        this.inflightImage.set(id, work);
-        return work;
+    async deleteIconset(uid: string): Promise<void> {
+        await IconsetManager.delete(uid);
+        this.purgeIconsets([uid]);
     }
 
     /**
@@ -363,44 +363,6 @@ export default class IconManager {
         }
     }
 
-    private async reloadIconsetImages(uid: string): Promise<void> {
-        const prefix = `${uid}:`;
-        const ids = new Set([
-            ...Array.from(this.requestedIconsetImageIds).filter((id) => id.startsWith(prefix)),
-            ...this.map.listImages().filter((id) => id.startsWith(prefix))
-        ]);
-
-        this.purgeMapImagesForIconset(uid);
-
-        await Promise.all(Array.from(ids).map((id) => this.reloadRequestedIconsetImage(id)));
-    }
-
-    private async reloadRequestedIconsetImage(id: string): Promise<void> {
-        if (id.includes('-colored-')) {
-            const parts = id.split('-colored-');
-            const originalIconId = parts[0];
-            const color = '#' + parts[1];
-
-            this.cache.delete(id);
-            const loaded = await this.loadIconsetImage(originalIconId);
-            if (!loaded) return;
-
-            this.getColoredIcon(originalIconId, color);
-            this.requestedIconsetImageIds.delete(id);
-            return;
-        }
-
-        const loaded = await this.loadIconsetImage(id);
-        if (loaded) this.requestedIconsetImageIds.delete(id);
-    }
-
-    private removeRequestedImagesForIconset(uid: string): void {
-        const prefix = `${uid}:`;
-        for (const id of Array.from(this.requestedIconsetImageIds)) {
-            if (id.startsWith(prefix)) this.requestedIconsetImageIds.delete(id);
-        }
-    }
-
     private async getFallbackBitmap(): Promise<ImageBitmap> {
         if (this.fallbackBitmap) return this.fallbackBitmap;
 
@@ -422,108 +384,37 @@ export default class IconManager {
 
         this.fallbackBitmap = await createImageBitmap(canvas);
 
-        // Also register under a stable id so it can be reused via `iconImage`
-        // expressions without going through the missing-image handler.
-        if (!this.map.hasImage(FALLBACK_IMAGE_ID)) {
-            this.map.addImage(FALLBACK_IMAGE_ID, this.fallbackBitmap);
-        }
-
         return this.fallbackBitmap;
     }
 
     /**
-     * Get or create a colored version of an icon
+     * Register a recolored copy of an already-registered base image.
      */
-    public getColoredIcon(iconId: string, color: string): string {
-        const coloredIconId = `${iconId}-colored-${color.slice(1)}`;
-
-        if (!this.cache.has(coloredIconId)) {
-            this.createColoredIcon(iconId, color, coloredIconId);
-        }
-
-        return coloredIconId;
-    }
-
-    /**
-     * Create a colored version of an icon and add it to the map
-     */
-    private createColoredIcon(iconId: string, color: string, coloredIconId: string): void {
-        // Get the original icon from the map
-        const originalImage = this.map.getImage(iconId);
-        if (!originalImage) {
+    private addColoredImage(id: string, baseId: string, color: string): void {
+        const base = this.map.getImage(baseId);
+        if (!base) {
             this.logWarnOnce(
-                `missing-icon:${iconId}`,
-                'Icon not found in map when attempting recolor',
-                {
-                    iconId,
-                    color,
-                    coloredIconId
-                }
+                `missing-icon:${baseId}`,
+                'Base icon not found in map when attempting recolor',
+                { baseId, color, coloredIconId: id }
             );
             return;
         }
 
-        try {
-            // Create canvas for recoloring
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-                this.logWarnOnce(
-                    `missing-canvas-context:${coloredIconId}`,
-                    'Canvas context unavailable while recoloring icon',
-                    {
-                        iconId,
-                        color,
-                        coloredIconId
-                    }
-                );
+        const imageData = new ImageData(
+            new Uint8ClampedArray(base.data.data),
+            base.data.width,
+            base.data.height
+        );
 
-                return;
-            }
+        this.recolorWhitePixels(imageData, color);
 
-            canvas.width = originalImage.data.width;
-            canvas.height = originalImage.data.height;
+        // A recolor of a fallback placeholder is itself a placeholder and
+        // should be retried once the real base icon becomes available.
+        if (this.fallbackIds.has(baseId)) this.fallbackIds.add(id);
+        else this.fallbackIds.delete(id);
 
-            // Create ImageData from the original image
-            const imageData = new ImageData(
-                new Uint8ClampedArray(originalImage.data.data),
-                originalImage.data.width,
-                originalImage.data.height
-            );
-
-            // Recolor white pixels
-            this.recolorWhitePixels(imageData, color);
-
-            // Draw to canvas
-            ctx.putImageData(imageData, 0, 0);
-
-            // Cache and add to map
-            this.cache.set(coloredIconId, canvas);
-
-            // Convert canvas to ImageData for map
-            const canvasImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-            if (!this.map.hasImage(coloredIconId)) {
-                this.map.addImage(coloredIconId, {
-                    width: canvas.width,
-                    height: canvas.height,
-                    data: canvasImageData.data
-                });
-            }
-        } catch (error) {
-            this.logErrorOnce(
-                `colored-icon:${coloredIconId}`,
-                'Failed to create colored icon',
-                error,
-                {
-                    iconId,
-                    color,
-                    coloredIconId
-                }
-            );
-
-            throw error;
-        }
+        this.addImage(id, imageData);
     }
 
     /**

@@ -858,6 +858,18 @@ export const useMapStore = defineStore('cloudtak', {
                     if (['overlay', 'mission', 'basemap'].includes(event.type)) {
                         await this.reconcileOverlays();
                     }
+                } else if (msg.type === WorkerMessageType.Iconset_Change) {
+                    // The Atlas worker synced iconsets into Dexie. Iconsets
+                    // whose content actually changed (`purge`) drop their
+                    // MapLibre images so they re-resolve on demand;
+                    // first-time cached iconsets (`added`) only retry
+                    // fallback placeholders since their icons match what the
+                    // network fallback already served.
+                    const body = msg.body as { purge: string[], added: string[] };
+                    if (this._icons) {
+                        this.icons.purgeIconsets(body.purge);
+                        this.icons.purgeFallbacks(body.added);
+                    }
                 }
             }
 
@@ -1005,11 +1017,6 @@ export const useMapStore = defineStore('cloudtak', {
                     map.setProjection({ type: "globe" });
                 }
 
-                void this.icons.hydrate()
-                    .catch((error: unknown) => {
-                        console.error('Failed to hydrate iconsets after map idle', error);
-                    });
-
                 await this.initOverlays();
 
                 this.isMapLoadedFully = true;
@@ -1112,15 +1119,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             map.on('pitch', () => {
                 this.pitch = map.getPitch()
-            })
-
-            map.on('styleimagemissing', (e) => {
-                void this.icons.onStyleImageMissing(e).catch((error: unknown) => {
-                    console.error('styleimagemissing handler failed', {
-                        imageId: e.id,
-                        error
-                    });
-                });
             })
 
             map.on('moveend', async () => {
