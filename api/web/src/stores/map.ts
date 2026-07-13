@@ -1552,7 +1552,7 @@ export const useMapStore = defineStore('cloudtak', {
             // layer. Basemaps are checked bottom-up; the base-most one wins.
             // Overlays never control the base color, and when no visible
             // basemap provides a background the themed default is restored.
-            let color: PropertyValueSpecification<string> = DEFAULT_BACKGROUND_COLOR;
+            let color: PropertyValueSpecification<string> = 'hsl(47, 26%, 88%)';
 
             for (const overlay of OverlayManager.visibleBasemaps()) {
                 const bg = overlay.styles.find(
