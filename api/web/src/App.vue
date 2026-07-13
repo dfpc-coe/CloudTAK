@@ -454,6 +454,39 @@ html[data-bs-theme='light'] .cloudtak-accent .text-white-50:not(.badge):not(.btn
     background-color: $cloudtak-child !important;
 }
 
+/*
+ * Shared surface for panels floating above the map (navigation banner,
+ * map controls, draggable floating panes). Sets --tblr-border-color so
+ * Bootstrap border utilities inside the panel pick up the same subtle
+ * separator color.
+ */
+.cloudtak-panel {
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+html[data-bs-theme='dark'] .cloudtak-panel {
+    --tblr-border-color: rgba(255, 255, 255, 0.14);
+    background-color: rgba(40, 53, 71, 0.95);
+    color: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+html[data-bs-theme='light'] .cloudtak-panel {
+    --tblr-border-color: rgba(0, 0, 0, 0.12);
+    background-color: rgba(255, 255, 255, 0.95);
+    color: var(--tblr-body-color);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+html[data-bs-theme='light'] .cloudtak-panel .text-white:not(.badge):not(.btn):not([class*='bg-']) {
+    color: var(--tblr-body-color) !important;
+}
+
+html[data-bs-theme='light'] .cloudtak-panel .text-white-50:not(.badge):not(.btn):not([class*='bg-']) {
+    color: var(--tblr-secondary-color) !important;
+}
+
 .cloudtak-hover {
     border: 1px solid transparent;
     transition: background-color 0.15s ease, border-color 0.15s ease;

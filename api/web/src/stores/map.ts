@@ -42,7 +42,7 @@ import { isNativePlatform, addBackgroundStateListener } from '../base/capacitor.
 import { ensureDatabase } from '../database.ts';
 
 import type { ProfileOverlay, Basemap, Feature } from '../types.ts';
-import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
+import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource, LayerSpecification, PropertyValueSpecification } from 'maplibre-gl';
 import type { Position } from '@capacitor/geolocation';
 
 function waitForAtlasWorkerReady(worker: Worker): Promise<void> {
@@ -508,6 +508,7 @@ export const useMapStore = defineStore('cloudtak', {
             });
 
             this.terrainEnabled = true;
+            this.map.setGlobalStateProperty('3d', true);
 
             if (this.map.getPitch() === 0) {
                 this.map.easeTo({ pitch: 45 });
@@ -519,6 +520,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.map.removeSource('-2');
 
             this.terrainEnabled = false;
+            this.map.setGlobalStateProperty('3d', false);
 
             this.map.easeTo({ pitch: 0 });
         },
@@ -935,6 +937,10 @@ export const useMapStore = defineStore('cloudtak', {
                     version: 8,
                     glyphs,
                     sprite: sprites,
+                    state: {
+                        theme: { default: useAppStore().resolvedTheme },
+                        '3d': { default: false }
+                    },
                     sources: {
                         '-1': {
                             type: 'geojson',
@@ -989,6 +995,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             map.once('load', async () => {
                 this.isMapLoaded = true;
+                map.setGlobalStateProperty('theme', useAppStore().resolvedTheme);
             });
 
             map.once('idle', async () => {
@@ -1452,6 +1459,7 @@ export const useMapStore = defineStore('cloudtak', {
                     if (item.visible !== loaded.visible) {
                         loaded.visible = item.visible;
                         for (const l of loaded.styles) {
+                            if (l.type === 'background') continue;
                             this.map.setLayoutProperty(l.id, 'visibility', loaded.visible ? 'visible' : 'none');
                         }
                     }
@@ -1477,6 +1485,7 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
+            this.updateBackground();
             await this.updateAttribution();
         },
         updateIconRotation: function(enabled: boolean): void {
@@ -1534,6 +1543,30 @@ export const useMapStore = defineStore('cloudtak', {
                 this.map.addControl(scaleControl, 'bottom-right');
                 mapWithControl._scaleControl = scaleControl;
             }
+        },
+        updateBackground: function(): void {
+            if (!this._map) return;
+
+            // A visible basemap style may carry its own background layer -
+            // its paint color takes over the shared CloudTAK background
+            // layer. Basemaps are checked bottom-up; the base-most one wins.
+            // Overlays never control the base color, and when no visible
+            // basemap provides a background the themed default is restored.
+            let color: PropertyValueSpecification<string> = 'hsl(47, 26%, 88%)';
+
+            for (const overlay of OverlayManager.visibleBasemaps()) {
+                const bg = overlay.styles.find(
+                    (l): l is Extract<LayerSpecification, { type: 'background' }> => l.type === 'background'
+                );
+
+                const bgColor = bg?.paint?.['background-color'];
+                if (bgColor !== undefined) {
+                    color = bgColor;
+                    break;
+                }
+            }
+
+            this.map.setPaintProperty('background', 'background-color', color);
         },
         updateAttribution: async function(): Promise<void> {
             const attributionPromises = OverlayManager.visibleBasemaps().map(async (overlay) => {
