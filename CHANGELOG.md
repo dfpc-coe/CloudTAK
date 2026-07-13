@@ -16,6 +16,15 @@
 
 ### Pending Release
 
+### v13.44.0 - 2026-07-13
+
+- :rocket: Migrate away from async style missinge event and to icon missing callback with async support
+
+### v13.43.0 - 2026-07-13
+
+- :tada: Introduce MapLibre global state so that styles can react to Application State
+- :rocket: Make shared panel class for more visually appealing FloatingPanes
+
 ### v13.42.0 - 2026-07-10
 
 - :rocket: Reduce stateful internals in favour of using stateless or cloudTAK database backed calls

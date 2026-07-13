@@ -12,7 +12,6 @@ import AtlasConnection from './atlas-connection.ts';
 import AtlasSync from './atlas-sync.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 import { db } from '../database.ts';
-import Icon from '../base/icon.ts';
 
 export default class Atlas {
     channel: BroadcastChannel;
@@ -73,11 +72,6 @@ export default class Atlas {
             await db.config.put({ key: 'token', value: authToken });
 
             this.username = await this.profile.init();
-
-            void Icon.hydrate({ token: authToken })
-                .catch((err: unknown) => {
-                    console.error('Failed to hydrate iconsets after startup', err);
-                });
 
             await this.conn.connect(this.username)
 

@@ -62,7 +62,10 @@ export default class OverlayManager extends BaseInterface {
 
     private static loadedBeforeId(): string | undefined {
         if (this.loaded.length > 1 && this.loaded[1].styles.length > 0) {
-            return String(this.loaded[1].styles[0].id);
+            // Background layers are never added to the map so they cannot
+            // anchor an insert - use the first renderable layer
+            const anchor = this.loaded[1].styles.find((l) => l.type !== 'background');
+            if (anchor) return String(anchor.id);
         }
 
         return undefined;
