@@ -306,7 +306,7 @@ async function refreshList(): Promise<void> {
     syncError.value = undefined;
 
     try {
-        await mapStore.icons.hydrate({ force: true });
+        await mapStore.worker.sync.syncIcons();
     } catch (err) {
         syncError.value = err instanceof Error ? err : new Error(String(err));
     }

@@ -424,12 +424,6 @@ export default class Overlay {
             this.styles = [];
         }
 
-        if (this.iconset) {
-            mapStore.icons.addIconset(this.iconset).catch((err: unknown) => {
-                console.error('Error adding iconset', this.iconset, err);
-            });
-        }
-
         if (this.type === 'vector' && this. mode !== 'basemap' && opts.clickable === undefined) {
             opts.clickable = this.styles.map((l) => {
                 return { id: l.id, type: 'feat' };
@@ -463,12 +457,6 @@ export default class Overlay {
             if (mapStore.map.getLayer(String(l.id))) {
                 mapStore.map.removeLayer(String(l.id));
             }
-        }
-
-        if (this.iconset) {
-            mapStore.icons.removeIconset(this.iconset).catch((err: unknown) => {
-                console.error('Error removing iconset', this.iconset, err);
-            });
         }
 
         if (mapStore.map.getStyle().sources[String(this.id)]) {
