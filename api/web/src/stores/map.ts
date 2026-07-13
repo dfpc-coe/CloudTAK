@@ -938,7 +938,7 @@ export const useMapStore = defineStore('cloudtak', {
                     glyphs,
                     sprite: sprites,
                     state: {
-                        theme: { default: 'dark' },
+                        theme: { default: useAppStore().resolvedTheme },
                         '3d': { default: false }
                     },
                     sources: {
@@ -960,8 +960,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             mapgl.setWorkerUrl(maplibreWorkerUrl);
             const map = new mapgl.Map(init);
-
-            map.setGlobalStateProperty('theme', useAppStore().resolvedTheme);
 
             // Add scale control
             const scaleControl = new mapgl.ScaleControl({
@@ -997,6 +995,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             map.once('load', async () => {
                 this.isMapLoaded = true;
+                map.setGlobalStateProperty('theme', useAppStore().resolvedTheme);
             });
 
             map.once('idle', async () => {

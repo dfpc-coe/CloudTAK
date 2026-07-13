@@ -589,7 +589,7 @@ watch(isMobileDetected, () => {
 });
 
 watch(() => appStore.resolvedTheme, (theme) => {
-    if (!mapStore._map) return;
+    if (!mapStore._map || !mapStore.isMapLoaded) return;
     mapStore.map.setGlobalStateProperty('theme', theme);
 });
 
