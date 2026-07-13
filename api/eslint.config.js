@@ -3,17 +3,8 @@ import stylistic from '@stylistic/eslint-plugin';
 import tseslint from 'typescript-eslint';
 
 // The api server is partitioned into three top-level layers by whether code
-// touches in-memory server state. The rule below enforces the boundary at
-// build time so the layers can't silently re-tangle:
-//
-//   common/    - shared base (types, models, config, infra). Imported by both
-//                sides, so it must NOT import stateful/ or stateless/.
-//   stateful/  - in-memory runtime (connection pool, geofence, ws, LocalHub).
-//   stateless/ - pure request handling (routes/ lives here), RemoteHub.
-//
-// stateless and stateful never import each other; they communicate through the
-// HubClient interface (in common/). Type-only imports are allowed everywhere so
-// shared type contracts (e.g. GeofenceStatus) don't force a runtime dependency.
+// touches in-memory server state. The rule below enforces the boundary
+
 const boundary = (groups, message) => ({
     '@typescript-eslint/no-restricted-imports': ['error', {
         patterns: [{ group: groups, message, allowTypeImports: true }],
