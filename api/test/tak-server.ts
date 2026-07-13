@@ -5,7 +5,7 @@ import https from 'node:https';
 import http from 'node:http';
 import type CoT from '@tak-ps/node-cot';
 import { CoTParser } from '@tak-ps/node-cot';
-import stream2buffer from '../lib/stream.js';
+import stream2buffer from '../stateless/stream.js';
 import crypto from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import fs from 'node:fs';

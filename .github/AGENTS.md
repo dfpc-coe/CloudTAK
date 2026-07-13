@@ -4,6 +4,10 @@ This project uses Vue 3 with a Bootstrap Theme called Tabler. The agent must fol
 and always avoid the use of `any` type. The project is structured to promote modularity and maintainability, with
 a clear separation of concerns between components, features, and utilities.
 
+## Rules
+
+* Never commit or push code using the `git` command directly. The author will handle git operations unless explicitly requested to do so.
+
 ## Directories
 
 *   `api/` - Backend API Server

@@ -10,7 +10,7 @@ import Flight from './flight.js';
 import { DataPackage } from '@tak-ps/node-cot';
 import FileCommands from '@tak-ps/node-tak/lib/api/files';
 import Sinon from 'sinon';
-import stream2buffer from '../lib/stream.js';
+import stream2buffer from '../stateless/stream.js';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 const flight = new Flight();

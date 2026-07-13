@@ -9,16 +9,17 @@ import MockTAKServer from './tak-server.js';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import api from '../index.js';
-import Config from '../lib/config.js';
+import Config from '../common/config.js';
+import wireLocal from '../stateful/wire.js';
 import drop from './drop.js';
 import { pathToRegexp } from 'path-to-regexp';
 import test from 'node:test';
 import assert from 'node:assert';
-import UserControl from '../lib/control/user.js';
+import UserControl from '../stateless/control/user.js';
 import { Ajv } from 'ajv';
 import type { FormatsPlugin } from 'ajv-formats';
 import * as ajvFormats from 'ajv-formats';
-import * as pgtypes from '../lib/schema.js';
+import * as pgtypes from '../common/schema.js';
 import { Pool } from '@openaddresses/batch-generic';
 const ajv = (ajvFormats.default as unknown as FormatsPlugin)(new Ajv({ allErrors: true }));
 
@@ -255,6 +256,7 @@ export default class Flight {
                 noevents: true,
                 nosinks: true,
                 nocache: true,
+                wire: wireLocal,
             });
 
             Object.assign(this.config, custom);

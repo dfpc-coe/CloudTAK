@@ -2,9 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert';
 import ws from 'ws';
 import Flight from './flight.js';
-import Config from '../lib/config.js';
+import Config from '../common/config.js';
+import wireLocal from '../stateful/wire.js';
+import wireRemote from '../stateless/wire.js';
 import server from '../index.js';
-import type ServerManager from '../lib/server.js';
+import type ServerManager from '../common/server.js';
 
 process.env.HUB_RPC_PORT = '0';
 
@@ -28,6 +30,7 @@ test('Split: boot a hub-mode server', async () => {
         nosinks: true,
         nocache: true,
         mode: 'hub',
+        wire: wireLocal,
     });
 
     hubSrv = await server(config);
@@ -48,6 +51,7 @@ test('Split: boot an api-mode server pointed at the hub', async () => {
         nocache: true,
         mode: 'api',
         hubUrl: `http://localhost:${rpcAddress.port}`,
+        wire: config => wireRemote(config, config.hubUrl!),
     });
 
     apiSrv = await server(config);

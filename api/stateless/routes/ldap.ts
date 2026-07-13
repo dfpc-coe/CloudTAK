@@ -1,0 +1,152 @@
+import { Type } from '@sinclair/typebox';
+import crypto from 'node:crypto';
+import Config from '../../common/config.js';
+import Schema from '@openaddresses/batch-schema';
+import Err from '@openaddresses/batch-error';
+import Auth from '../../common/auth.js';
+import { ConnectionAuth } from '../../common/connection-config.js';
+import { Channel, ChannelAccess } from '../../common/interface-user.js';
+import { TAKAPI, APIAuthPassword } from '@tak-ps/node-tak';
+
+export default async function router(schema: Schema, config: Config) {
+    await schema.get('/ldap/channel', {
+        name: 'List Channel',
+        group: 'LDAP',
+        description: 'List Channels by proxy',
+        query: Type.Object({
+            agency: Type.Optional(Type.Integer()),
+            filter: Type.String({ default: '' }),
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(Channel),
+        }),
+    }, async (req, res) => {
+        try {
+            const profile = await Auth.as_profile(config, req);
+
+            const cotak = config.user?.get('cotak');
+
+            if (!cotak || !cotak.configured) {
+                throw new Err(400, null, 'External LDAP API not configured - Contact your administrator');
+            }
+
+            if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
+
+            const list = await cotak.channels(profile.id, req.query);
+
+            res.json(list);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/ldap/user', {
+        name: 'Create Machine User',
+        group: 'LDAP',
+        description: 'Create a machine user',
+        body: Type.Object({
+            name: Type.String(),
+            description: Type.String(),
+            locking: Type.Optional(Type.Boolean({ default: true })),
+            agency_id: Type.Optional(Type.Integer()),
+            channels: Type.Array(Type.Object({
+                id: Type.Integer(),
+                access: ChannelAccess,
+            }), {
+                minItems: 1,
+            }),
+        }),
+        res: Type.Object({
+            integrationId: Type.Optional(Type.Integer()),
+            auth: ConnectionAuth,
+        }),
+    }, async (req, res) => {
+        try {
+            const profile = await Auth.as_profile(config, req);
+
+            const cotak = config.user?.get('cotak');
+
+            if (!cotak || !cotak.configured) {
+                throw new Err(400, null, 'External LDAP API not configured - Contact your administrator');
+            }
+
+            if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
+
+            const password = Array.from({ length: 16 }, () => {
+                return String.fromCharCode(crypto.randomInt(94) + 33);
+            }).join('');
+
+            const user = await cotak.createMachineUser(profile.id, {
+                name: req.body.name,
+                description: req.body.description,
+                management_url: config.API_URL,
+                active: false,
+                locking: req.body.locking ?? true,
+                agency_id: req.body.agency_id,
+                password,
+                channels: req.body.channels,
+            });
+
+            const api = await TAKAPI.init(
+                new URL(config.server.webtak),
+                new APIAuthPassword(user.email, password),
+            );
+
+            const certs = await api.Credentials.generate();
+
+            res.json({
+                integrationId: user.integrations.find(Boolean)?.id ?? undefined,
+                auth: certs,
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.put('/ldap/user/:email', {
+        name: 'Reset Machine User',
+        group: 'LDAP',
+        description: 'Reset the password on an existing user and regen a certificate',
+        params: Type.Object({
+            email: Type.String(),
+        }),
+        res: Type.Object({
+            integrationId: Type.Optional(Type.Integer()),
+            auth: ConnectionAuth,
+        }),
+    }, async (req, res) => {
+        try {
+            const profile = await Auth.as_profile(config, req);
+
+            const cotak = config.user?.get('cotak');
+
+            if (!cotak || !cotak.configured) {
+                throw new Err(400, null, 'External LDAP API not configured - Contact your administrator');
+            }
+
+            if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
+
+            const password = Array.from({ length: 16 }, () => String.fromCharCode(crypto.randomInt(33, 127)))
+                .join('');
+
+            const user = await cotak.fetchMachineUser(profile.id, req.params.email);
+
+            await cotak.updateMachineUser(profile.id, { id: user.id, password });
+
+            const api = await TAKAPI.init(
+                new URL(config.server.webtak),
+                new APIAuthPassword(user.email, password),
+            );
+
+            const certs = await api.Credentials.generate();
+
+            res.json({
+                integrationId: user.integrations.find(Boolean)?.id ?? undefined,
+                auth: certs,
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+}

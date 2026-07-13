@@ -1,12 +1,14 @@
 import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 import express from 'express';
-import Bulldozer from './lib/initialization.js';
+import Bulldozer from './stateful/initialization.js';
 import type { WebSocketServer } from 'ws';
-import buildApi from './lib/server/api.js';
-import { attachWebsocket, startHubRpc } from './lib/server/hub.js';
-import Config from './lib/config.js';
-import ServerManager from './lib/server.js';
+import buildApi from './stateless/server/api.js';
+import { attachWebsocket, startHubRpc } from './stateful/server/hub.js';
+import Config from './common/config.js';
+import ServerManager from './common/server.js';
+import wireLocal from './stateful/wire.js';
+import wireRemote from './stateless/wire.js';
 import process from 'node:process';
 
 type CliArgs = {
@@ -62,6 +64,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         nosinks: args.nosinks || false,
         nogeofence: args.nogeofence || false,
         nocache: args.nocache || false,
+        wire: config => config.mode === 'api'
+            ? wireRemote(config, config.hubUrl!)
+            : wireLocal(config),
     });
 
     await server(config);
@@ -106,7 +111,10 @@ export default async function server(config: Config): Promise<ServerManager> {
                 }
             }
 
-            const sm = new ServerManager(srv, wss, config, { rpc });
+            const sm = new ServerManager(srv, wss, config, {
+                rpc,
+            });
+
             return resolve(sm);
         });
 

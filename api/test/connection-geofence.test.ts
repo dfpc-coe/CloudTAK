@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import ConnectionPool from '../lib/connection-pool.js';
-import ConnectionGeofence from '../lib/connection-geofence.js';
-import type ConnectionConfig from '../lib/connection-config.js';
-import type Config from '../lib/config.js';
+import ConnectionPool from '../stateful/connection-pool.js';
+import ConnectionGeofence from '../stateful/connection-geofence.js';
+import type ConnectionConfig from '../common/connection-config.js';
+import type Config from '../common/config.js';
 import type { Feature } from 'geojson';
 import type { Tile38 } from '@iwpnd/tile38-ts';
 

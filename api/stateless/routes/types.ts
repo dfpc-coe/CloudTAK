@@ -1,0 +1,126 @@
+import Err from '@openaddresses/batch-error';
+import Auth from '../../common/auth.js';
+import Config from '../../common/config.js';
+import Schema from '@openaddresses/batch-schema';
+import { Type } from '@sinclair/typebox';
+import { CoTTypes } from '@tak-ps/node-cot';
+import { MilSymType } from '@tak-ps/node-cot';
+import { Package } from '@tak-ps/node-tak/lib/api/package';
+import * as Default from '../limits.js';
+
+export const PackageResponse = Type.Object({
+    uid: Type.String({
+        description: 'UID of the package',
+    }),
+    name: Type.String({
+        description: 'Name of the latest package version',
+    }),
+    hash: Type.String({
+        description: 'Hash of the latest package version',
+    }),
+    size: Type.Integer({
+        description: 'Size of the latest package version in bytes',
+    }),
+    username: Type.Optional(Type.String({
+        description: 'Submission User of the latest package version',
+    })),
+    created: Type.String({
+        format: 'date-time',
+        description: 'Submission DateTime of the latest package version',
+    }),
+    keywords: Type.Array(Type.String({
+        description: 'Keywords of the latest package version',
+    })),
+    expiration: Type.Union([Type.Null(), Type.Integer(), Type.String()], {
+        description: 'Expiration value of the latest package version',
+    }),
+    channels: Type.Array(Type.String({
+        description: 'Channels assigned to the latest package version',
+    })),
+    items: Type.Array(Package),
+});
+
+export default async function router(schema: Schema, config: Config) {
+    const types = await CoTTypes.default.load();
+
+    await schema.get('/type/cot', {
+        name: 'List Types',
+        group: 'COTTypes',
+        description: 'Get Type',
+        query: Type.Object({
+            filter: Type.String({
+                default: '',
+            }),
+            domain: Type.Optional(Type.Enum(MilSymType.Domain)),
+            identity: Type.Enum(MilSymType.StandardIdentity),
+            limit: Default.Limit,
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(CoTTypes.TypeFormat_COT),
+        }),
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req);
+
+            const items = Array.from(types.types(req.query.identity, {
+                domain: req.query.domain,
+            })).filter((type) => {
+                return type.full && type.full.toLowerCase().includes(req.query.filter.toLowerCase());
+            });
+
+            res.json({
+                total: items.length,
+                items: items.slice(0, req.query.limit),
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/type/cot/:type', {
+        name: 'Get Type',
+        group: 'COTTypes',
+        description: 'Get Type',
+        params: Type.Object({
+            type: Type.String(),
+        }),
+        res: CoTTypes.TypeFormat_COT,
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req);
+
+            const split = req.params.type.split('-');
+
+            if (split[0] === 'a' && split[1]) {
+                const info = types.cots.get(req.params.type.replace(/a-.-/, `a-.-`));
+
+                if (!info) {
+                    res.json({
+                        cot: req.params.type,
+                        full: req.params.type,
+                        desc: 'Unknown CoT Type',
+                    });
+                } else {
+                    info.cot = req.params.type.replace('-.-', `-${split[1]}-`);
+
+                    res.json(info);
+                }
+            } else {
+                const info = types.cots.get(req.params.type);
+
+                if (!info) {
+                    res.json({
+                        cot: req.params.type,
+                        full: req.params.type,
+                        desc: 'Unknown CoT Type',
+                    });
+                } else {
+                    res.json(info);
+                }
+            }
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+}

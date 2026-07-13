@@ -6,7 +6,7 @@ import {
     S3Client,
 } from '@aws-sdk/client-s3';
 import { Readable } from 'node:stream';
-import S3 from '../lib/aws/s3.js';
+import S3 from '../common/aws/s3.js';
 import { DataPackage } from '@tak-ps/node-cot';
 
 const flight = new Flight();
