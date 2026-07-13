@@ -115,7 +115,7 @@
                     left: 8px;
                 '
             >
-                <div class='cloudtak-ctrl-group'>
+                <div class='cloudtak-ctrl-group cloudtak-panel'>
                     <div
                         v-tooltip='"Search"'
                         role='button'
@@ -980,19 +980,6 @@ async function handleRadial(event: string): Promise<void> {
     z-index: 2;
     width: min(640px, calc(100vw - 16px));
     border-radius: 0px 0px 8px 8px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
-}
-
-html[data-bs-theme='dark'] .cloudtak-navigating {
-    background-color: rgba(40, 53, 71, 0.95);
-    color: rgba(255, 255, 255, 0.92);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-}
-
-html[data-bs-theme='light'] .cloudtak-navigating {
-    background-color: rgba(255, 255, 255, 0.95);
-    color: var(--tblr-body-color);
-    border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 /*
@@ -1018,20 +1005,6 @@ html[data-bs-theme='light'] .cloudtak-navigating {
     flex-direction: column;
     width: 40px;
     overflow: hidden;
-    border-radius: 8px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
-}
-
-html[data-bs-theme='dark'] .cloudtak-ctrl-group {
-    background-color: rgba(40, 53, 71, 0.95);
-    color: rgba(255, 255, 255, 0.92);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-}
-
-html[data-bs-theme='light'] .cloudtak-ctrl-group {
-    background-color: rgba(255, 255, 255, 0.95);
-    color: var(--tblr-body-color);
-    border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .cloudtak-ctrl-btn {
@@ -1050,12 +1023,8 @@ html[data-bs-theme='light'] .cloudtak-ctrl-group {
     outline: none;
 }
 
-html[data-bs-theme='dark'] .cloudtak-ctrl-btn:not(:first-child) {
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-html[data-bs-theme='light'] .cloudtak-ctrl-btn:not(:first-child) {
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
+.cloudtak-ctrl-btn:not(:first-child) {
+    border-top: 1px solid var(--tblr-border-color);
 }
 
 html[data-bs-theme='dark'] .cloudtak-ctrl-btn:hover,
