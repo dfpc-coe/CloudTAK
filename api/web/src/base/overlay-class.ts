@@ -424,10 +424,6 @@ export default class Overlay {
             this.styles = [];
         }
 
-        // Iconset icons referenced by this overlay are resolved on demand by
-        // the missing style image resolver (Dexie first, then a per-icon
-        // network fallback) so no eager iconset hydration is required here.
-
         if (this.type === 'vector' && this. mode !== 'basemap' && opts.clickable === undefined) {
             opts.clickable = this.styles.map((l) => {
                 return { id: l.id, type: 'feat' };
