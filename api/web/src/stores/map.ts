@@ -45,14 +45,6 @@ import type { ProfileOverlay, Basemap, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource, LayerSpecification, PropertyValueSpecification } from 'maplibre-gl';
 import type { Position } from '@capacitor/geolocation';
 
-// Theme-aware background shown unless a visible basemap style provides its
-// own background layer - see updateBackground()
-const DEFAULT_BACKGROUND_COLOR: PropertyValueSpecification<string> = [
-    'match', ['global-state', 'theme'],
-    'dark', 'hsl(47, 22%, 11%)',
-    'hsl(47, 26%, 88%)'
-];
-
 function waitForAtlasWorkerReady(worker: Worker): Promise<void> {
     return new Promise((resolve, reject) => {
         const controller = new AbortController();
@@ -959,7 +951,7 @@ export const useMapStore = defineStore('cloudtak', {
                     layers: [{
                         id: 'background',
                         type: 'background',
-                        paint: { 'background-color': DEFAULT_BACKGROUND_COLOR }
+                        paint: { 'background-color': 'hsl(47, 26%, 88%)' }
                     }]
                 }
             };
