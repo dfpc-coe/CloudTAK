@@ -1,11 +1,11 @@
 <template>
     <div
         ref='container'
-        class='position-absolute cloudtak-bg rounded border resizable-content text-white'
+        class='position-absolute cloudtak-panel resizable-content'
     >
         <div
             style='height: 50px;'
-            class='d-flex align-items-center px-2 py-2 border-bottom border-secondary'
+            class='d-flex align-items-center px-2 py-2 border-bottom'
         >
             <div
                 ref='drag-handle'

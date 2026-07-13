@@ -1,6 +1,6 @@
 <template>
     <div
-        class='cloudtak-navigating user-select-none'
+        class='cloudtak-navigating cloudtak-panel user-select-none'
     >
         <div class='d-flex align-items-center px-3 py-2 gap-2'>
             <IconRoute
