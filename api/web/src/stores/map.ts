@@ -42,8 +42,16 @@ import { isNativePlatform, addBackgroundStateListener } from '../base/capacitor.
 import { ensureDatabase } from '../database.ts';
 
 import type { ProfileOverlay, Basemap, Feature } from '../types.ts';
-import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
+import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource, LayerSpecification, PropertyValueSpecification } from 'maplibre-gl';
 import type { Position } from '@capacitor/geolocation';
+
+// Theme-aware background shown unless a visible basemap style provides its
+// own background layer - see updateBackground()
+const DEFAULT_BACKGROUND_COLOR: PropertyValueSpecification<string> = [
+    'match', ['global-state', 'theme'],
+    'dark', 'hsl(47, 22%, 11%)',
+    'hsl(47, 26%, 88%)'
+];
 
 function waitForAtlasWorkerReady(worker: Worker): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -951,7 +959,7 @@ export const useMapStore = defineStore('cloudtak', {
                     layers: [{
                         id: 'background',
                         type: 'background',
-                        paint: { 'background-color': 'hsl(47, 26%, 88%)' }
+                        paint: { 'background-color': DEFAULT_BACKGROUND_COLOR }
                     }]
                 }
             };
@@ -1459,6 +1467,7 @@ export const useMapStore = defineStore('cloudtak', {
                     if (item.visible !== loaded.visible) {
                         loaded.visible = item.visible;
                         for (const l of loaded.styles) {
+                            if (l.type === 'background') continue;
                             this.map.setLayoutProperty(l.id, 'visibility', loaded.visible ? 'visible' : 'none');
                         }
                     }
@@ -1484,6 +1493,7 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
+            this.updateBackground();
             await this.updateAttribution();
         },
         updateIconRotation: function(enabled: boolean): void {
@@ -1541,6 +1551,30 @@ export const useMapStore = defineStore('cloudtak', {
                 this.map.addControl(scaleControl, 'bottom-right');
                 mapWithControl._scaleControl = scaleControl;
             }
+        },
+        updateBackground: function(): void {
+            if (!this._map) return;
+
+            // A visible basemap style may carry its own background layer -
+            // its paint color takes over the shared CloudTAK background
+            // layer. Basemaps are checked bottom-up; the base-most one wins.
+            // Overlays never control the base color, and when no visible
+            // basemap provides a background the themed default is restored.
+            let color: PropertyValueSpecification<string> = DEFAULT_BACKGROUND_COLOR;
+
+            for (const overlay of OverlayManager.visibleBasemaps()) {
+                const bg = overlay.styles.find(
+                    (l): l is Extract<LayerSpecification, { type: 'background' }> => l.type === 'background'
+                );
+
+                const bgColor = bg?.paint?.['background-color'];
+                if (bgColor !== undefined) {
+                    color = bgColor;
+                    break;
+                }
+            }
+
+            this.map.setPaintProperty('background', 'background-color', color);
         },
         updateAttribution: async function(): Promise<void> {
             const attributionPromises = OverlayManager.visibleBasemaps().map(async (overlay) => {
