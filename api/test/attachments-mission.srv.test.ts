@@ -4,9 +4,9 @@ import assert from 'node:assert';
 import Flight from './flight.js';
 import Sinon from 'sinon';
 import { Readable } from 'node:stream';
-import S3 from '../lib/aws/s3.js';
+import S3 from '../common/aws/s3.js';
 import { DataPackage } from '@tak-ps/node-cot';
-import stream2buffer from '../lib/stream.js';
+import stream2buffer from '../stateless/lib/stream.js';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 const flight = new Flight();

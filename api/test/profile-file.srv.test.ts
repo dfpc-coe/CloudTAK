@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert';
 import Flight from './flight.js';
 import Sinon from 'sinon';
-import { ProfileFileChannel } from '../lib/schema.js';
+import { ProfileFileChannel } from '../common/schema.js';
 import {
     S3Client,
     HeadObjectCommand,

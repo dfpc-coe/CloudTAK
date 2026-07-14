@@ -1,0 +1,182 @@
+import path from 'path';
+import { Busboy } from '@fastify/busboy';
+import { Static, Type } from '@sinclair/typebox';
+import AttachmentControl from '../lib/control/attachment.js';
+import Schema from '@openaddresses/batch-schema';
+import Err from '@openaddresses/batch-error';
+import Auth from '../../common/auth.js';
+import S3 from '../../common/aws/s3.js';
+import type ConfigStateless from '../config.js';
+import ProfileControl from '../lib/control/profile.js';
+import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
+import { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
+
+export default async function router(schema: Schema, config: ConfigStateless) {
+    const attachmentControl = new AttachmentControl(config);
+    const profileControl = new ProfileControl(config);
+
+    await schema.get('/attachment', {
+        name: 'List Attachments',
+        group: 'Attachments',
+        description: 'Attachments',
+        query: Type.Object({
+            hash: Type.Union([Type.String(), Type.Array(Type.String())]),
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(Type.Object({
+                hash: Type.String(),
+                ext: Type.String(),
+                name: Type.String(),
+                size: Type.Integer(),
+                created: Type.String(),
+            })),
+        }),
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req);
+
+            const items = [];
+            for (const hash of Array.isArray(req.query.hash) ? req.query.hash : [req.query.hash]) {
+                const attachment = await S3.list(`attachment/${hash}/`);
+                if (attachment.length < 1 || !attachment[0].Key) continue;
+
+                const parsed = path.parse(attachment[0].Key);
+                items.push({
+                    hash: hash,
+                    ext: parsed.ext,
+                    name: parsed.base,
+                    size: attachment[0].Size || 0,
+                    created: (attachment[0].LastModified || new Date()).toISOString(),
+                });
+            }
+
+            res.json({
+                total: items.length,
+                items,
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.put('/attachment', {
+        name: 'Upload Attachment',
+        group: 'Attachments',
+        description: 'Upload an attachment that is assigned to a given CoT',
+        query: Type.Object({
+            mission: Type.Optional(Type.String({
+                description: 'GUID of a mission to also upload the attachment to',
+            })),
+        }),
+        res: Type.Object({
+            hash: Type.String(),
+        }),
+    }, async (req, res) => {
+        try {
+            const contentType = req.headers['content-type'];
+
+            if (
+                !contentType
+                || !contentType.startsWith('multipart/form-data')
+            ) {
+                throw new Err(400, null, 'Unsupported Content-Type');
+            }
+
+            const user = await Auth.as_user(config, req);
+
+            const bb = new Busboy({
+                headers: {
+                    'content-type': contentType,
+                },
+                limits: { files: 1 },
+            });
+
+            const uploads: Promise<{
+                hash: string;
+            }>[] = [];
+
+            bb.on('file', async (fieldname, file, filename) => {
+                uploads.push(attachmentControl.upload(filename, file));
+            }).on('finish', async () => {
+                try {
+                    const files = await Promise.all(uploads);
+                    const result = files[0];
+
+                    if (!result) throw new Err(400, null, 'No file uploaded');
+
+                    if (req.query.mission) {
+                        const profile = await config.models.Profile.from(user.email);
+                        const auth = profile.auth;
+                        const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+                        const attachment = await S3.list(`attachment/${result.hash}/`);
+                        if (attachment.length < 1 || !attachment[0].Key) throw new Err(400, null, 'Could not find uploaded attachment');
+
+                        const parsed = path.parse(attachment[0].Key);
+                        const stream = await S3.get(attachment[0].Key);
+
+                        const content = await api.Files.upload({
+                            name: parsed.base,
+                            contentLength: attachment[0].Size || 0,
+                            keywords: [],
+                            creatorUid: profile.username,
+                        }, stream);
+
+                        const opts: Static<typeof MissionOptions> = await profileControl.subscription(user.email, req.query.mission);
+
+                        await api.Mission.attachContents(
+                            req.query.mission,
+                            { hashes: [content.Hash] },
+                            opts,
+                        );
+                    }
+
+                    res.json({
+                        ...result,
+                    });
+                } catch (err) {
+                    Err.respond(err, res);
+                }
+            });
+
+            req.pipe(bb);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/attachment/:hash', {
+        name: 'Get Attachment',
+        group: 'Attachments',
+        description: 'Attachments',
+        params: Type.Object({
+            hash: Type.String(),
+        }),
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+            download: Type.Optional(Type.Boolean({
+                description: 'Set Content-Disposition to download the file',
+            })),
+        }),
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req, { token: true });
+
+            const attachment = await S3.list(`attachment/${req.params.hash}/`);
+            if (attachment.length < 1) throw new Err(404, null, 'Attachment not found');
+
+            if (!attachment[0].Key) throw new Err(400, null, 'Count not find attachment');
+            const stream = await S3.get(attachment[0].Key);
+
+            if (req.query.download) {
+                const filename = path.basename(attachment[0].Key);
+                res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+            }
+
+            stream.pipe(res);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+}

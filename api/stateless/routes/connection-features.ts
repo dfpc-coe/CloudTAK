@@ -1,0 +1,289 @@
+import { Type, Static } from '@sinclair/typebox';
+import tokml from 'tokml';
+import type ConfigStateless from '../config.js';
+import Schema from '@openaddresses/batch-schema';
+import { GenerateUpsert } from '@openaddresses/batch-generic';
+import { coordEach } from '@turf/meta';
+import Err from '@openaddresses/batch-error';
+import Auth, { AuthResourceAccess } from '../../common/auth.js';
+import { ConnectionFeature } from '../../common/schema.js';
+import { StandardResponse, FeatureResponse, GeoJSONFeatureCollection, GeoJSONFeature } from '../../common/types.js';
+import { ExportFeatureFormat } from '../../common/enums.js';
+import { enabledGeofence } from '../lib/control/feature.js';
+import { sql } from 'drizzle-orm';
+import * as Default from '../lib/limits.js';
+
+export default async function router(schema: Schema, config: ConfigStateless) {
+    await schema.get('/connection/:connectionid/feature', {
+        name: 'Get Features',
+        group: 'ConnectionFeature',
+        description: `
+            Return a list of Connecton Features
+        `,
+        params: Type.Object({
+            connectionid: Type.Integer(),
+        }),
+        query: Type.Object({
+            format: Type.Enum(ExportFeatureFormat, {
+                default: ExportFeatureFormat.GEOJSON,
+            }),
+            download: Type.Boolean({
+                default: false,
+                description: 'Set Content-Disposition to download the file',
+            }),
+            limit: Type.Integer({ default: 1000 }),
+            filter: Type.String({
+                default: '',
+                description: 'Filter features by callsign',
+            }),
+            layer: Type.Optional(Type.Integer({
+                description: 'Filter features by layer ID',
+            })),
+            sort: Type.String({
+                default: 'id',
+                enum: Object.keys(ConnectionFeature),
+            }),
+            page: Default.Page,
+            order: Default.Order,
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(FeatureResponse),
+        }),
+
+    }, async (req, res) => {
+        try {
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER },
+                ],
+            }, req.params.connectionid);
+
+            const list = await config.models.ConnectionFeature.list({
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
+                where: sql`
+                    connection = ${req.params.connectionid}
+                    ${req.query.layer !== undefined ? sql`AND layer = ${req.query.layer}` : sql``}
+                    ${req.query.filter ? sql`AND properties->>'callsign' ILIKE ${'%' + req.query.filter + '%'}` : sql``}
+                `,
+            });
+
+            if (!req.query.download) {
+                res.json({
+                    total: list.total,
+                    items: list.items.map((feat) => {
+                        return {
+                            id: feat.id,
+                            path: feat.path,
+                            type: 'Feature',
+                            properties: feat.properties,
+                            geometry: feat.geometry,
+                        } as Static<typeof FeatureResponse>;
+                    }),
+                });
+            } else {
+                const filename = `connection-${connection.id}-export-${new Date().toISOString()}`;
+
+                res.setHeader('Content-Disposition', `attachment; filename="${filename}.${req.query.format}"`);
+
+                const feats: Static<typeof GeoJSONFeatureCollection> = {
+                    type: 'FeatureCollection',
+                    features: list.items.map((feat) => {
+                        return {
+                            id: feat.id,
+                            path: feat.path,
+                            type: 'Feature',
+                            properties: feat.properties,
+                            geometry: feat.geometry,
+                        } as Static<typeof GeoJSONFeature>;
+                    }),
+                };
+
+                if (req.query.format === ExportFeatureFormat.GEOJSON) {
+                    res.set('Content-Type', 'application/geo+json');
+                    const output = Buffer.from(JSON.stringify(feats, null, 4));
+
+                    res.set('Content-Length', String(Buffer.byteLength(output)));
+                    res.write(output);
+                    res.end();
+                } else if (req.query.format === ExportFeatureFormat.KML) {
+                    res.set('Content-Type', 'application/vnd.google-earth.kml+xml');
+
+                    const output = Buffer.from(tokml(feats, {
+                        documentName: filename,
+                        documentDescription: 'Exported from CloudTAK',
+                        simplestyle: true,
+                        name: 'callsign',
+                        description: 'remarks',
+                    }));
+
+                    res.set('Content-Length', String(Buffer.byteLength(output)));
+                    res.write(output);
+                    res.end();
+                } else {
+                    throw new Err(400, null, `Unknown Export Format: ${req.query.format}`);
+                }
+            }
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/connection/:connectionid/feature', {
+        name: 'Delete Feature',
+        group: 'ConnectionFeature',
+        description: 'Delete multiple features',
+        params: Type.Object({
+            connectionid: Type.Integer(),
+        }),
+        query: Type.Object({
+            path: Type.Optional(Type.String()),
+        }),
+        res: StandardResponse,
+    }, async (req, res) => {
+        try {
+            await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER },
+                ],
+            }, req.params.connectionid);
+
+            if (req.query.path) {
+                await config.models.ConnectionFeature.delete(sql`
+                    starts_with(path, ${req.query.path})
+                    AND connection = ${req.params.connectionid}
+                `);
+            } else {
+                await config.models.ConnectionFeature.delete(sql`
+                    connection = ${req.params.connectionid}
+                `);
+            }
+
+            res.json({
+                status: 200,
+                message: 'Features Deleted',
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.put('/connection/:connectionid/feature', {
+        name: 'Upsert Feature',
+        group: 'ConnectionFeature',
+        description: 'Create or Update a feature',
+        params: Type.Object({
+            connectionid: Type.Integer(),
+        }),
+        body: FeatureResponse,
+        res: FeatureResponse,
+    }, async (req, res) => {
+        try {
+            await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER },
+                ],
+            }, req.params.connectionid);
+
+            coordEach(req.body.geometry, (coords) => {
+                if (coords.length === 2) coords.push(0);
+                return coords;
+            });
+
+            if (!req.body.id) throw new Err(400, null, 'Feature ID is required');
+
+            const feature = await config.models.ConnectionFeature.generate({
+                id: String(req.body.id),
+                connection: req.params.connectionid,
+                path: req.body.path,
+                geometry: req.body.geometry,
+                enabled_geofence: enabledGeofence(req.body.properties),
+                properties: req.body.properties,
+            }, {
+                upsert: GenerateUpsert.UPDATE,
+                upsertTarget: [ConnectionFeature.connection, ConnectionFeature.id],
+            });
+
+            res.json({
+                type: 'Feature',
+                ...feature,
+            } as Static<typeof FeatureResponse>);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/connection/:connectionid/feature/:id', {
+        name: 'Delete Feature',
+        group: 'ConnectionFeature',
+        description: `
+            Delete a feature
+        `,
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            id: Type.String(),
+        }),
+        res: StandardResponse,
+    }, async (req, res) => {
+        try {
+            await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER },
+                ],
+            }, req.params.connectionid);
+
+            await config.models.ConnectionFeature.delete(sql`
+                id = ${req.params.id}
+                AND connection = ${req.params.connectionid}
+            `);
+
+            res.json({
+                status: 200,
+                message: 'Feature Deleted',
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/connection/:connectionid/feature/:id', {
+        name: 'Get Feature',
+        group: 'ConnectionFeature',
+        description: `
+            Get a feature
+        `,
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            id: Type.String(),
+        }),
+        res: FeatureResponse,
+    }, async (req, res) => {
+        try {
+            await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER },
+                ],
+            }, req.params.connectionid);
+
+            const feat = await config.models.ConnectionFeature.from(sql`
+                id = ${req.params.id}
+                AND connection = ${req.params.connectionid}
+            `);
+
+            res.json({
+                type: 'Feature',
+                ...feat,
+            } as Static<typeof FeatureResponse>);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+}

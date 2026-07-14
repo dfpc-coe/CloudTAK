@@ -40,6 +40,30 @@ export default {
                         width: 24,
                         height: 6,
                         properties: {
+                            title: 'Hub HTTP status (internal ELB)',
+                            view: 'timeSeries',
+                            stacked: false,
+                            metrics: [
+                                ['AWS/ApplicationELB', 'HTTPCode_Target_2XX_Count', 'LoadBalancer', '${HubLoadBalancerFullName}', { label: '2xx', stat: 'Sum', period: 60, yAxis: 'left' }],
+                                ['.', 'HTTPCode_Target_4XX_Count', '.', '.', { label: 'target 4xx', stat: 'Sum', period: 60, yAxis: 'left' }],
+                                ['.', 'HTTPCode_ELB_4XX_Count', '.', '.', { label: 'elb 4xx', stat: 'Sum', period: 60, yAxis: 'left' }],
+                                ['.', 'HTTPCode_Target_5XX_Count', '.', '.', { label: 'target 5xx', stat: 'Sum', period: 60, yAxis: 'left' }],
+                                ['.', 'HTTPCode_ELB_5XX_Count', '.', '.', { label: 'elb 5xx', stat: 'Sum', period: 60, yAxis: 'left' }]
+                            ],
+                            region: '${AWS::Region}',
+                            period: 300,
+                            yAxis: {
+                                left: { min: 0 },
+                                right: { min: 0 }
+                            }
+                        }
+                    }, {
+                        type: 'metric',
+                        x: 0,
+                        y: 12,
+                        width: 24,
+                        height: 6,
+                        properties: {
                             title: 'Latency',
                             view: 'timeSeries',
                             stacked: false,
@@ -64,7 +88,7 @@ export default {
                     }, {
                         type: 'metric',
                         x: 0,
-                        y: 12,
+                        y: 18,
                         width: 12,
                         height: 6,
                         properties: {
@@ -72,9 +96,12 @@ export default {
                             view: 'timeSeries',
                             stacked: false,
                             metrics: [
-                                ['Mapbox/ecs-cluster', 'DesiredCapacity', 'ServiceName', '${ServiceName}', 'ClusterName', '${Cluster}', { label: 'desired', stat: 'Minimum', period: 60 }],
-                                ['.', 'RunningCapacity', '.', '.', '.', '.', { label: 'running', stat: 'Minimum', period: 60 }],
-                                ['AWS/ApplicationELB', 'HealthyHostCount', 'TargetGroup', '${TargetGroupFullName}', 'LoadBalancer', '${LoadBalancerFullName}', { period: 60, stat: 'Minimum', label: 'healthy' }]
+                                ['Mapbox/ecs-cluster', 'DesiredCapacity', 'ServiceName', '${ServiceName}', 'ClusterName', '${Cluster}', { label: 'stateless desired', color: '#1f77b4', stat: 'Minimum', period: 60 }],
+                                ['.', 'RunningCapacity', '.', '.', '.', '.', { label: 'stateless running', color: '#aec7e8', stat: 'Minimum', period: 60 }],
+                                ['AWS/ApplicationELB', 'HealthyHostCount', 'TargetGroup', '${TargetGroupFullName}', 'LoadBalancer', '${LoadBalancerFullName}', { period: 60, stat: 'Minimum', label: 'stateless healthy', color: '#17becf' }],
+                                ['Mapbox/ecs-cluster', 'DesiredCapacity', 'ServiceName', '${StatefulServiceName}', 'ClusterName', '${Cluster}', { label: 'stateful desired', color: '#ff7f0e', stat: 'Minimum', period: 60 }],
+                                ['.', 'RunningCapacity', '.', '.', '.', '.', { label: 'stateful running', color: '#ffbb78', stat: 'Minimum', period: 60 }],
+                                ['AWS/ApplicationELB', 'HealthyHostCount', 'TargetGroup', '${HubTargetGroupFullName}', 'LoadBalancer', '${HubLoadBalancerFullName}', { period: 60, stat: 'Minimum', label: 'stateful healthy', color: '#e7ba52' }]
                             ],
                             region: '${AWS::Region}',
                             period: 300,
@@ -83,15 +110,16 @@ export default {
                     }, {
                         type: 'metric',
                         x: 12,
-                        y: 12,
+                        y: 18,
                         width: 6,
                         height: 6,
                         properties: {
-                            title: 'CPU utilization',
+                            title: 'Stateless CPU / Memory',
                             view: 'timeSeries',
                             stacked: false,
                             metrics: [
-                                ['AWS/ECS', 'CPUUtilization', 'ServiceName', '${ServiceName}', 'ClusterName', '${Cluster}', { label: 'cpu', period: 60 }]
+                                ['AWS/ECS', 'CPUUtilization', 'ServiceName', '${ServiceName}', 'ClusterName', '${Cluster}', { label: 'cpu', color: '#1f77b4', period: 60 }],
+                                ['.', 'MemoryUtilization', '.', '.', '.', '.', { label: 'memory', color: '#2ca02c', period: 60 }]
                             ],
                             region: '${AWS::Region}',
                             period: 300,
@@ -105,15 +133,16 @@ export default {
                     }, {
                         type: 'metric',
                         x: 18,
-                        y: 12,
+                        y: 18,
                         width: 6,
                         height: 6,
                         properties: {
-                            title: 'Memory utilization',
+                            title: 'Stateful CPU / Memory',
                             view: 'timeSeries',
                             stacked: false,
                             metrics: [
-                                ['AWS/ECS', 'MemoryUtilization', 'ServiceName', '${ServiceName}', 'ClusterName', '${Cluster}', { label: 'memory', period: 60 }]
+                                ['AWS/ECS', 'CPUUtilization', 'ServiceName', '${StatefulServiceName}', 'ClusterName', '${Cluster}', { label: 'cpu', color: '#1f77b4', period: 60 }],
+                                ['.', 'MemoryUtilization', '.', '.', '.', '.', { label: 'memory', color: '#2ca02c', period: 60 }]
                             ],
                             region: '${AWS::Region}',
                             period: 300,
@@ -127,7 +156,7 @@ export default {
                     }, {
                         type: 'log',
                         x: 0,
-                        y: 18,
+                        y: 24,
                         width: 24,
                         height: 6,
                         properties: {
@@ -146,7 +175,7 @@ export default {
                     }, {
                         type: 'log',
                         x: 0,
-                        y: 24,
+                        y: 30,
                         width: 24,
                         height: 6,
                         properties: {
@@ -166,8 +195,11 @@ export default {
                 }), {
                     LoadBalancerFullName: cf.getAtt('ELB', 'LoadBalancerFullName'),
                     TargetGroupFullName: cf.getAtt('TargetGroup', 'TargetGroupFullName'),
+                    HubLoadBalancerFullName: cf.getAtt('HubELB', 'LoadBalancerFullName'),
+                    HubTargetGroupFullName: cf.getAtt('HubRpcTargetGroup', 'TargetGroupFullName'),
                     Apache: cf.stackName,
                     ServiceName: cf.getAtt('Service', 'Name'),
+                    StatefulServiceName: cf.getAtt('StatefulService', 'Name'),
                     Cluster: cf.join(['tak-vpc-', cf.ref('Environment')])
                 })
             }

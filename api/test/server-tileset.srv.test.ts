@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import Flight from './flight.js';
-import S3 from '../lib/aws/s3.js';
+import S3 from '../common/aws/s3.js';
 import Sinon from 'sinon';
 import Stream from 'node:stream';
 

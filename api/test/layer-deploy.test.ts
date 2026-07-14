@@ -20,7 +20,7 @@ import {
     GetFunctionCommand,
     LambdaClient,
 } from '@aws-sdk/client-lambda';
-import LayerDeploy from '../lib/aws/layer-deploy.js';
+import LayerDeploy from '../stateless/lib/aws/layer-deploy.js';
 
 process.env.ECR_TASKS_REPOSITORY_NAME = 'example-ecr';
 process.env.AWS_REGION = 'us-gov-east-1';

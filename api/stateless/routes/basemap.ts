@@ -1,0 +1,1135 @@
+import path from 'node:path';
+import jwt from 'jsonwebtoken';
+import Err from '@openaddresses/batch-error';
+import { bbox } from '@turf/bbox';
+import { BasemapProtocol, TileJSONActions } from '../lib/interface-basemap.js';
+import { fromProtocol } from '../lib/factory-basemap.js';
+import Auth, { AuthUserAccess, AuthUser, AuthResource, ResourceCreationScope, AuthResourceAccess } from '../../common/auth.js';
+import { Busboy } from '@fastify/busboy';
+import type ConfigStateless from '../config.js';
+import { Response } from 'express';
+import stream2buffer from '../lib/stream.js';
+import bboxPolygon from '@turf/bbox-polygon';
+import { Param } from '@openaddresses/batch-generic';
+import { sql } from 'drizzle-orm';
+import Schema from '@openaddresses/batch-schema';
+import { validateTemplate, renderTemplate } from '../../common/style.js';
+import { Geometry, BBox } from 'geojson';
+import { Static, Type } from '@sinclair/typebox';
+import { StandardResponse, BasemapResponse, TileJSON, MultiGeoJSONFeature, MultiGeoJSONFeatureCollection } from '../../common/types.js';
+import { BasemapCollection } from '../../common/models/Basemap.js';
+import { Basemap as BasemapParser, Feature } from '@tak-ps/node-cot';
+import { Basemap } from '../../common/schema.js';
+import { toEnum, Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, Basemap_FeatureAction, AllBoolean, AllBooleanCast, BasemapTerrain_Encoding } from '../../common/enums.js';
+import { EsriBase, EsriProxyLayer } from '../lib/esri.js';
+import { isSafeUrl } from '@tak-ps/node-safeurl';
+import * as Default from '../lib/limits.js';
+
+const AugmentedBasemapResponse = Type.Composite([
+    Type.Omit(BasemapResponse, ['bounds', 'center']),
+    Type.Object({
+        bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
+        center: Type.Optional(Type.Array(Type.Number())),
+        actions: TileJSONActions,
+    }),
+]);
+
+const AugmentedBasemapWithChildrenResponse = Type.Composite([
+    AugmentedBasemapResponse,
+    Type.Object({
+        children: Type.Array(AugmentedBasemapResponse, {
+            description: 'Child Basemaps/Overlays of this Basemap - only a single level of nesting is supported',
+        }),
+    }),
+]);
+
+const OptionalTileJSON = Type.Partial(TileJSON);
+
+const AugmentedTileJSON = Type.Composite([
+    TileJSON,
+    Type.Object({
+        actions: TileJSONActions,
+    }),
+]);
+
+const BasemapImportAuth = Type.Object({
+    username: Type.Optional(Type.String()),
+    password: Type.Optional(Type.String()),
+    referer: Type.Optional(Type.String()),
+    expiration: Type.Optional(Type.Integer()),
+});
+
+const BasemapImportRequest = Type.Object({
+    type: Type.String(),
+    url: Type.String(),
+    auth: Type.Optional(BasemapImportAuth),
+});
+
+function augmentBasemap(basemap: any): any {
+    return {
+        ...basemap,
+        bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+        center: basemap.center ? basemap.center.coordinates : undefined,
+        actions: fromProtocol(basemap.protocol, basemap).actions(),
+    };
+}
+
+async function listChildren(
+    config: ConfigStateless,
+    parent: number,
+    user?: { email: string; access: AuthUserAccess },
+): Promise<Array<any>> {
+    const where = !user || user.access === AuthUserAccess.ADMIN
+        ? sql`parent = ${Param(parent)}::INT`
+        : sql`parent = ${Param(parent)}::INT AND (username IS NULL OR username = ${Param(user.email)}::TEXT)`;
+
+    const children = await config.models.Basemap.list({
+        limit: Default.Limit.maximum,
+        where,
+    });
+
+    return children.items.map(child => augmentBasemap(child));
+}
+
+async function validateParent(
+    config: ConfigStateless,
+    parentid: number,
+    user: { email: string; access: AuthUserAccess },
+): Promise<void> {
+    let parent;
+    try {
+        parent = await config.models.Basemap.from(parentid);
+    } catch (err) {
+        if (err && typeof err === 'object' && 'status' in err && err.status === 404) {
+            throw new Err(400, null, 'Parent Basemap does not exist');
+        }
+
+        throw err;
+    }
+
+    if (parent.username && parent.username !== user.email && user.access === AuthUserAccess.USER) {
+        throw new Err(400, null, 'You don\'t have permission to access the parent resource');
+    }
+
+    if (parent.parent !== null) {
+        throw new Err(400, null, 'Basemaps can only be nested a single level deep');
+    }
+}
+
+function isEsriLayerURL(url: string): boolean {
+    return !!(
+        String(url).match(/\/FeatureServer\/\d+$/)
+        || String(url).match(/\/MapServer\/\d+$/)
+        || String(url).match(/\/ImageServer$/)
+    );
+}
+
+function normalizeBasemapFormat(value: string): string {
+    return value === 'jpg' ? 'jpeg' : value;
+}
+
+async function importBasemapURL(
+    config: ConfigStateless,
+    rawURL: string,
+    auth?: Static<typeof BasemapImportAuth>,
+): Promise<Static<typeof OptionalTileJSON>> {
+    const imported: Static<typeof OptionalTileJSON> = {
+        type: Basemap_Type.RASTER,
+    };
+
+    // Strip quotes from URL if present (can happen when URL is passed as JSON string)
+    const cleanURL = String(rawURL).replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+
+    let url: URL;
+    try {
+        url = new URL(cleanURL);
+    } catch (err) {
+        throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid URL');
+    }
+
+    // Skip isSafeUrl check when StackName=test (test mode)
+    // In production, these URLs would be blocked for SSRF protection
+    if (process.env.StackName !== 'test') {
+        const { safe, reason } = await isSafeUrl(cleanURL);
+        if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
+    }
+
+    if (isEsriLayerURL(String(url))) {
+        const esriAuth = auth?.username && auth?.password
+            ? {
+                    username: auth.username,
+                    password: auth.password,
+                    referer: auth.referer || config.API_URL,
+                    expiration: auth.expiration,
+                }
+            : undefined;
+
+        const base = await EsriBase.from(url, esriAuth);
+        const layer = new EsriProxyLayer(base);
+        return await layer.tilejson();
+    }
+
+    const tjres = await fetch(url);
+    if (!tjres.ok) {
+        throw new Err(400, new Error(await tjres.text()), 'Unable to fetch TileJSON from source URL');
+    }
+
+    const tjbody = await tjres.json() as Record<string, any>;
+
+    if (tjbody.name) imported.name = tjbody.name;
+    if (tjbody.attribution) imported.attribution = tjbody.attribution;
+    if (tjbody.maxzoom !== undefined) imported.maxzoom = tjbody.maxzoom;
+    if (tjbody.minzoom !== undefined) imported.minzoom = tjbody.minzoom;
+    else if (tjbody.tileSize !== undefined) imported.tileSize = tjbody.tileSize;
+    if (Array.isArray(tjbody.vector_layers)) imported.vector_layers = tjbody.vector_layers;
+    if (Array.isArray(tjbody.tiles) && tjbody.tiles.length) {
+        imported.tiles = [tjbody.tiles[0]
+            .replace('{z}', '{$z}')
+            .replace('{x}', '{$x}')
+            .replace('{y}', '{$y}')];
+    }
+
+    if (imported.tiles && imported.tiles.length) {
+        const tileURL = new URL(imported.tiles[0]);
+        imported.format = toEnum.fromString(
+            Type.Enum(Basemap_Format),
+            normalizeBasemapFormat(path.parse(tileURL.pathname).ext.replace('.', '')),
+        );
+    }
+
+    if (tjbody.encoding) {
+        const encoding = toEnum.fromString(Type.Enum(BasemapTerrain_Encoding), String(tjbody.encoding));
+        if (encoding) {
+            imported.encoding = encoding;
+            imported.type = Basemap_Type.TERRAIN;
+        }
+    }
+
+    return imported;
+}
+
+export default async function router(schema: Schema, config: ConfigStateless) {
+    await schema.put('/basemap', {
+        name: 'Import Basemaps',
+        group: 'BaseMap',
+        description: `
+            If the Content-Type is text/plain, then assume the body contains a TileJSON URL
+            If the Content-Type is application/json, then assume the body contains a URL import request
+            Alternatively, if the Content-Type is a MultiPart upload, assume the input is a TAK XML document
+
+            Both return as many BaseMap fields as possible to use in the creation of a new BaseMap
+        `,
+        body: {
+            'text/plain': Type.String(),
+            'application/json': BasemapImportRequest,
+            'multipart/form-data': true,
+        },
+        res: OptionalTileJSON,
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req);
+            const contentType = req.headers['content-type'];
+
+            if (contentType && contentType.startsWith('multipart/form-data')) {
+                const imported: {
+                    name?: string;
+                    type: Basemap_Type;
+                    tiles?: string[];
+                    attribution?: string;
+                    bounds?: [number, number, number, number];
+                    center?: number[];
+                    minzoom?: number;
+                    maxzoom?: number;
+                    format?: Basemap_Format;
+                    serverParts?: string;
+                } = {
+                    type: Basemap_Type.RASTER,
+                };
+
+                const bb = new Busboy({
+                    headers: {
+                        'content-type': contentType,
+                    },
+                    limits: {
+                        files: 1,
+                    },
+                });
+
+                let buffer: Buffer;
+                bb.on('file', async (fieldname, file) => {
+                    try {
+                        buffer = await stream2buffer(file);
+                    } catch (err) {
+                        Err.respond(err, res);
+                    }
+                }).on('finish', async () => {
+                    try {
+                        const b = await BasemapParser.parse(String(buffer));
+
+                        if (!b.raw.customMapSource) {
+                            res.json(imported);
+                        } else {
+                            const map = b.raw.customMapSource;
+
+                            imported.name = map.name._text;
+                            imported.minzoom = map.minZoom._text;
+                            imported.maxzoom = map.maxZoom._text;
+                            if (map.url) imported.tiles = [map.url._text];
+
+                            if (map.serverParts?._text) {
+                                imported.serverParts = map.serverParts._text;
+                            }
+
+                            if (map.tileType) {
+                                imported.format = toEnum.fromString(
+                                    Type.Enum(Basemap_Format),
+                                    normalizeBasemapFormat(map.tileType._text.replace(/^image\//, '')),
+                                );
+                            }
+
+                            res.json(imported);
+                        }
+                    } catch (err) {
+                        Err.respond(err, res);
+                    }
+                });
+
+                req.pipe(bb);
+            } else if (contentType && contentType.startsWith('text/plain')) {
+                const imported = await importBasemapURL(config, String(req.body));
+                res.json(imported);
+            } else if (contentType && contentType.startsWith('application/json')) {
+                if (!req.body || typeof req.body !== 'object' || !('url' in req.body) || typeof (req.body as Record<string, unknown>).url !== 'string') {
+                    throw new Err(400, null, 'Invalid import request');
+                }
+
+                const imported = await importBasemapURL(config, (req.body as Static<typeof BasemapImportRequest>).url, (req.body as Static<typeof BasemapImportRequest>).auth);
+                res.json(imported);
+            } else {
+                throw new Err(400, null, 'Unsupported Content-Type');
+            }
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/basemap', {
+        name: 'List Basemaps',
+        group: 'BaseMap',
+        description: 'List BaseMaps',
+        query: Type.Object({
+            scope: Type.Optional(Type.Enum(ResourceCreationScope)),
+            impersonate: Type.Optional(Type.Union([
+                Type.Boolean({ description: 'List all of the given resource, regardless of ACL' }),
+                Type.String({ description: 'Filter the given resource by a given username' }),
+            ])),
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order,
+            type: Type.Optional(Type.Union([
+                Type.Enum(Basemap_Type),
+                Type.Array(Type.Enum(Basemap_Type)),
+            ])),
+            sort: Type.String({
+                default: 'created',
+                enum: Object.keys(Basemap),
+            }),
+            filter: Default.Filter,
+            collection: Type.Optional(Type.String({
+                description: 'Only show Basemaps belonging to a given collection',
+            })),
+            overlay: Type.Boolean({ default: false }),
+            hidden: Type.Enum(AllBoolean, { default: AllBoolean.FALSE }),
+            snapping: Type.Optional(Type.Boolean()),
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            collections: Type.Array(BasemapCollection),
+            items: Type.Array(AugmentedBasemapResponse),
+        }),
+    }, async (req, res) => {
+        try {
+            let list;
+            let collections: Array<Static<typeof BasemapCollection>> = [];
+
+            let scope = sql`True`;
+            if (req.query.scope === ResourceCreationScope.SERVER) {
+                scope = sql`username IS NULL`;
+            } else if (req.query.scope === ResourceCreationScope.USER) {
+                scope = sql`username IS NOT NULL`;
+            }
+
+            const hidden = AllBooleanCast(req.query.hidden);
+
+            const types: Array<Basemap_Type> = Array.isArray(req.query.type)
+                ? req.query.type
+                : (req.query.type
+                        ? [req.query.type]
+                        : [
+                                Basemap_Type.RASTER, Basemap_Type.VECTOR, Basemap_Type.TERRAIN,
+                            ]);
+
+            if (req.query.impersonate) {
+                await Auth.as_user(config, req, { admin: true });
+
+                const impersonate: string | null = req.query.impersonate === true ? null : req.query.impersonate;
+
+                list = await config.models.Basemap.list({
+                    limit: req.query.limit,
+                    page: req.query.page,
+                    order: req.query.order,
+                    sort: req.query.sort,
+                    where: sql`
+                        name ~* ${Param(req.query.filter)}
+                        AND parent IS NULL
+                        AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                        AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
+                        AND (
+                            ${Param(req.query.snapping)}::BOOLEAN IS NULL OR
+                            (${Param(req.query.snapping)}::BOOLEAN = true AND "basemaps"."id" IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true)) OR
+                            (${Param(req.query.snapping)}::BOOLEAN = false AND "basemaps"."id" NOT IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true))
+                        )
+                        AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
+                        AND (
+                                (${Param(req.query.collection)}::TEXT IS NULL AND collection IS NULL)
+                                OR ${Param(req.query.collection)}::TEXT = collection
+                            )
+                        AND ${scope}
+                        AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
+                    `,
+                });
+
+                if (!req.query.collection) {
+                    collections = await config.models.Basemap.collections({
+                        order: req.query.order,
+                        sort: req.query.sort,
+                        where: sql`
+                            collection ~* ${Param(req.query.filter)}
+                            AND parent IS NULL
+                            AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                            AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
+                            AND (
+                                ${Param(req.query.snapping)}::BOOLEAN IS NULL OR
+                                (${Param(req.query.snapping)}::BOOLEAN = true AND "basemaps"."id" IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true)) OR
+                                (${Param(req.query.snapping)}::BOOLEAN = false AND "basemaps"."id" NOT IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true))
+                            )
+                            AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
+                            AND ${scope}
+                            AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
+                        `,
+                    });
+                }
+            } else {
+                const user = await Auth.as_user(config, req);
+
+                list = await config.models.Basemap.list({
+                    limit: req.query.limit,
+                    page: req.query.page,
+                    order: req.query.order,
+                    sort: req.query.sort,
+                    where: sql`
+                        name ~* ${Param(req.query.filter)}
+                        AND parent IS NULL
+                        AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                        AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
+                        AND (
+                            ${Param(req.query.snapping)}::BOOLEAN IS NULL OR
+                            (${Param(req.query.snapping)}::BOOLEAN = true AND "basemaps"."id" IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true)) OR
+                            (${Param(req.query.snapping)}::BOOLEAN = false AND "basemaps"."id" NOT IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true))
+                        )
+                        AND (username IS NULL OR username = ${user.email})
+                        AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
+                        AND (
+                                (${Param(req.query.collection)}::TEXT IS NULL AND collection IS NULL)
+                                OR ${Param(req.query.collection)}::TEXT = collection
+                            )
+                        AND ${scope}
+                    `,
+                });
+
+                if (!req.query.collection) {
+                    collections = await config.models.Basemap.collections({
+                        order: req.query.order,
+                        sort: req.query.sort,
+                        where: sql`
+                            collection ~* ${Param(req.query.filter)}
+                            AND parent IS NULL
+                            AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                            AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
+                            AND (
+                                ${Param(req.query.snapping)}::BOOLEAN IS NULL OR
+                                (${Param(req.query.snapping)}::BOOLEAN = true AND "basemaps"."id" IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true)) OR
+                                (${Param(req.query.snapping)}::BOOLEAN = false AND "basemaps"."id" NOT IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true))
+                            )
+                            AND (username IS NULL OR username = ${user.email})
+                            AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
+                            AND ${scope}
+                        `,
+                    });
+                }
+            }
+
+            res.json({
+                total: list.total,
+                collections,
+                items: list.items.map((basemap) => {
+                    return {
+                        ...basemap,
+                        bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+                        center: basemap.center ? basemap.center.coordinates : undefined,
+                        actions: fromProtocol(basemap.protocol, basemap).actions(),
+                    };
+                }),
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/basemap', {
+        name: 'Create Basemap',
+        group: 'BaseMap',
+        description: 'Register a new basemap',
+        query: Type.Object({
+            impersonate: Type.Optional(Type.String({ description: 'Filter the given resource by a given username' })),
+        }),
+        body: Type.Object({
+            name: Default.NameField,
+            parent: Type.Optional(Type.Integer({
+                minimum: 1,
+                description: 'Create this Basemap/Overlay as a child of the given parent Basemap/Overlay - only a single level of nesting is supported',
+            })),
+            sharing_enabled: Type.Boolean({
+                default: true,
+                description: 'Allow CloudTAK users to share this layer with other users',
+            }),
+            snapping_enabled: Type.Boolean({
+                default: false,
+                description: 'Allow CloudTAK line editing to snap to features in this basemap',
+            }),
+            snapping_layer: Type.Optional(Type.String({
+                description: 'The Vector Tile layer to snap to',
+            })),
+            collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
+            url: Type.String(),
+            overlay: Type.Boolean({ default: false }),
+            hidden: Type.Boolean({ default: false }),
+            tilesize: Type.Integer({ default: 256, minimum: 256, maximum: 512 }),
+            attribution: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),
+            frequency: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
+            minzoom: Type.Optional(Type.Integer()),
+            maxzoom: Type.Optional(Type.Integer()),
+            format: Type.Optional(Type.Enum(Basemap_Format)),
+            protocol: Type.Enum(Basemap_Protocol),
+            style: Type.Optional(Type.Enum(Basemap_Scheme)),
+            type: Type.Optional(Type.Enum(Basemap_Type)),
+            bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
+            center: Type.Optional(Type.Array(Type.Number())),
+            styles: Type.Optional(Type.Array(Type.Unknown())),
+            title: Type.Optional(Type.String()),
+            iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            tilejson: Type.Optional(Type.String()),
+        }),
+        res: AugmentedBasemapResponse,
+    }, async (req, res) => {
+        try {
+            const user = req.query.impersonate
+                ? await Auth.impersonate(config, req, req.query.impersonate)
+                : await Auth.as_user(config, req);
+
+            if (req.body.parent !== undefined) {
+                await validateParent(config, req.body.parent, user);
+            }
+
+            let bounds: Geometry | undefined = undefined;
+            if (req.body.bounds) {
+                bounds = bboxPolygon(req.body.bounds as BBox).geometry;
+                delete req.body.bounds;
+            }
+
+            let center: Geometry | undefined = undefined;
+            if (req.body.center) {
+                center = { type: 'Point', coordinates: req.body.center };
+                delete req.body.center;
+            }
+
+            fromProtocol(req.body.protocol).isValidURL(req.body.url);
+
+            if (req.body.title) validateTemplate(req.body.title);
+
+            if (req.body.protocol === Basemap_Protocol.MapServer && !req.body.type) {
+                // Skip isSafeUrl check when StackName=test (test mode)
+                if (process.env.StackName !== 'test') {
+                    const { safe: metaSafe, reason: metaReason } = await isSafeUrl(req.body.url);
+                    if (!metaSafe) throw new Err(400, null, `Blocked URL: ${metaReason}`);
+                }
+                const metaURL = new URL(req.body.url);
+                metaURL.searchParams.set('f', 'json');
+                const metaRes = await fetch(metaURL);
+                const meta = await metaRes.json() as { geometryType?: string };
+                req.body.type = meta.geometryType ? Basemap_Type.VECTOR : Basemap_Type.RASTER;
+            }
+
+            const collection = req.body.collection === '' ? null : req.body.collection;
+
+            let username: string | null = null;
+            if (user.access !== AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
+                throw new Err(400, null, 'Only Server Admins can create Server scoped basemaps');
+            } else if (user.access === AuthUserAccess.USER || req.body.scope === ResourceCreationScope.USER) {
+                username = user.email;
+            }
+
+            if (req.body.type !== Basemap_Type.VECTOR && req.body.snapping_enabled) {
+                throw new Err(400, null, 'Snapping can only be enabled on Vector basemaps');
+            } else if (req.body.snapping_enabled && !req.body.snapping_layer) {
+                throw new Err(400, null, 'A snapping_layer must be provided when enabling snapping');
+            } else if (req.body.snapping_enabled) {
+                const url = new URL(config.PMTILES_URL);
+                if (!req.body.url.includes(url.hostname)) {
+                    throw new Err(400, null, 'Snapping can only be enabled on S3 hosted Basemaps');
+                }
+            }
+
+            let basemap = await config.models.Basemap.generate({
+                ...req.body,
+                collection,
+                bounds,
+                center,
+                username,
+            });
+
+            if (req.body.sharing_enabled) {
+                basemap = await config.models.Basemap.commit(basemap.id, {
+                    sharing_token: `etl.${jwt.sign({ id: basemap.id, access: 'basemap', internal: true, t: +new Date() }, config.SigningSecret)}`,
+                });
+            }
+
+            res.json({
+                ...basemap,
+                bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+                center: basemap.center ? basemap.center.coordinates : undefined,
+                actions: fromProtocol(basemap.protocol, basemap).actions(),
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/basemap/:basemapid', {
+        name: 'Update Basemap',
+        group: 'BaseMap',
+        description: 'Update a basemap',
+        params: Type.Object({
+            basemapid: Type.Integer({ minimum: 1 }),
+        }),
+        query: Type.Object({
+            impersonate: Type.Optional(Type.String({ description: 'Filter the given resource by a given username' })),
+        }),
+        body: Type.Object({
+            name: Type.Optional(Default.NameField),
+            parent: Type.Optional(Type.Union([Type.Null(), Type.Integer({ minimum: 1 })], {
+                description: 'Make this Basemap/Overlay a child of the given parent Basemap/Overlay - only a single level of nesting is supported',
+            })),
+            sharing_enabled: Type.Optional(Type.Boolean()),
+            snapping_enabled: Type.Optional(Type.Boolean({
+                description: 'Allow CloudTAK line editing to snap to features in this basemap',
+            })),
+            snapping_layer: Type.Optional(Type.String({
+                description: 'The Vector Tile layer to snap to',
+            })),
+            collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            overlay: Type.Optional(Type.Boolean()),
+            hidden: Type.Optional(Type.Boolean()),
+            scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
+            url: Type.Optional(Type.String()),
+            tilesize: Type.Optional(Type.Integer({ default: 256, minimum: 256, maximum: 512 })),
+            attribution: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            frequency: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
+            minzoom: Type.Optional(Type.Integer()),
+            maxzoom: Type.Optional(Type.Integer()),
+            encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),
+            format: Type.Optional(Type.Enum(Basemap_Format)),
+            protocol: Type.Optional(Type.Enum(Basemap_Protocol)),
+            style: Type.Optional(Type.Enum(Basemap_Scheme)),
+            type: Type.Optional(Type.Enum(Basemap_Type)),
+            bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
+            center: Type.Optional(Type.Array(Type.Number())),
+            styles: Type.Optional(Type.Array(Type.Unknown())),
+            title: Type.Optional(Type.String()),
+            iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            tilejson: Type.Optional(Type.String()),
+        }),
+        res: AugmentedBasemapResponse,
+    }, async (req, res) => {
+        try {
+            const user = req.query.impersonate
+                ? await Auth.impersonate(config, req, req.query.impersonate)
+                : await Auth.as_user(config, req);
+
+            let bounds: Geometry | undefined = undefined;
+            let center: Geometry | undefined = undefined;
+            if (req.body.bounds) bounds = bboxPolygon(req.body.bounds as BBox).geometry;
+            if (req.body.center) center = { type: 'Point', coordinates: req.body.center };
+
+            const existing = await config.models.Basemap.from(req.params.basemapid);
+
+            if (req.body.parent !== undefined && req.body.parent !== null && req.body.parent !== existing.parent) {
+                if (req.body.parent === Number(req.params.basemapid)) {
+                    throw new Err(400, null, 'A Basemap cannot be its own parent');
+                }
+
+                await validateParent(config, req.body.parent, user);
+
+                const children = await config.models.Basemap.list({
+                    limit: 1,
+                    where: sql`parent = ${Param(req.params.basemapid)}::INT`,
+                });
+
+                if (children.total > 0) {
+                    throw new Err(400, null, 'Basemaps can only be nested a single level deep');
+                }
+            }
+
+            if (req.body.url) fromProtocol(req.body.protocol ?? existing.protocol).isValidURL(req.body.url);
+
+            if (req.body.title) validateTemplate(req.body.title);
+
+            const collection = req.body.collection === '' ? null : req.body.collection;
+
+            if (existing.username && existing.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            } else if (!existing.username && (user.access !== AuthUserAccess.ADMIN && !user.impersonate)) {
+                throw new Err(400, null, 'Only System Admin can edit Server Resources');
+            }
+
+            let username: string | null = existing.username;
+            if (
+                req.body.scope !== undefined
+                && req.body.scope === ResourceCreationScope.SERVER
+                && (!user.impersonate && user.access !== AuthUserAccess.ADMIN)
+            ) {
+                throw new Err(400, null, 'Only Server Admins can edit scoped basemaps');
+            } else if (req.body.scope !== undefined && user.access === AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
+                username = null;
+            } else if ((req.body.scope && user.access === AuthUserAccess.USER) || req.body.scope === ResourceCreationScope.USER) {
+                username = user.email;
+            }
+
+            const type = req.body.type || existing.type;
+            const url = req.body.url || existing.url;
+
+            if (type !== Basemap_Type.VECTOR && req.body.snapping_enabled) {
+                throw new Err(400, null, 'Snapping can only be enabled on Vector basemaps');
+            } else if (req.body.snapping_enabled && !req.body.snapping_layer) {
+                throw new Err(400, null, 'A snapping_layer must be provided when enabling snapping');
+            } else if (req.body.snapping_enabled) {
+                const u = new URL(Object.keys(config.PMTILES_URL || '').length ? config.PMTILES_URL : 'http://localhost:5001');
+                if (!url.includes(u.hostname)) {
+                    throw new Err(400, null, 'Snapping can only be enabled on S3 hosted Basemaps');
+                }
+            }
+
+            let basemap = await config.models.Basemap.commit(req.params.basemapid, {
+                username,
+                updated: sql`Now()`,
+                ...req.body,
+                collection,
+                bounds, center,
+            });
+
+            if (req.body.sharing_enabled !== undefined) {
+                if (req.body.sharing_enabled) {
+                    basemap = await config.models.Basemap.commit(basemap.id, {
+                        sharing_token: basemap.sharing_token || `etl.${jwt.sign({ id: basemap.id, access: 'basemap', internal: true, t: +new Date() }, config.SigningSecret)}`,
+                    });
+                } else {
+                    basemap = await config.models.Basemap.commit(basemap.id, {
+                        sharing_token: null,
+                    });
+                }
+            }
+
+            res.json({
+                ...basemap,
+                bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+                center: basemap.center ? basemap.center.coordinates : undefined,
+                actions: fromProtocol(basemap.protocol, basemap).actions(),
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/basemap/:basemapid', {
+        name: 'Get Basemap',
+        group: 'BaseMap',
+        description: 'Get a basemap',
+        params: Type.Object({
+            basemapid: Type.Integer({ minimum: 1 }),
+        }),
+        query: Type.Object({
+            download: Type.Optional(Type.Boolean()),
+            format: Type.Optional(Type.String()),
+            token: Type.Optional(Type.String()),
+        }),
+        res: Type.Union([AugmentedBasemapWithChildrenResponse, Type.String()]),
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { token: true });
+
+            const basemap = await config.models.Basemap.from(req.params.basemapid);
+
+            if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            }
+
+            if (req.query.download) {
+                res.setHeader('Content-Disposition', `attachment; filename="${basemap.name}.${req.query.format}"`);
+            }
+
+            if (req.query.format === 'xml') {
+                res.setHeader('Content-Type', 'text/xml');
+
+                const xml: string = (new BasemapParser({
+                    customMapSource: {
+                        name: { _text: basemap.name },
+                        minZoom: { _text: basemap.minzoom },
+                        maxZoom: { _text: basemap.maxzoom },
+                        tileType: { _text: basemap.format },
+                        tileUpdate: { _text: 'None' },
+                        url: { _text: fromProtocol(basemap.protocol, basemap).proxyShare(config) },
+                        backgroundColor: { _text: '#000000' },
+                    },
+                })).to_xml();
+
+                res.send(xml);
+            } else {
+                res.json({
+                    ...augmentBasemap(basemap),
+                    children: await listChildren(config, basemap.id, user),
+                });
+            }
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/basemap/:basemapid/tiles', {
+        name: 'Get Basemap TileJSON',
+        group: 'BaseMap',
+        description: 'Get a basemap tilejson',
+        params: Type.Object({
+            basemapid: Type.Integer({ minimum: 1 }),
+        }),
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+        }),
+        res: AugmentedTileJSON,
+    }, async (req, res) => {
+        try {
+            const auth = await Auth.is_auth(config, req, {
+                token: true,
+                resources: [
+                    { access: AuthResourceAccess.BASEMAP, id: req.params.basemapid },
+                ],
+            });
+
+            const basemap = await config.models.Basemap.from(req.params.basemapid);
+
+            if (auth instanceof AuthUser) {
+                if (basemap.username && basemap.username !== auth.email && auth.access === AuthUserAccess.USER) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                }
+            } else if (auth instanceof AuthResource) {
+                if (basemap.sharing_enabled === false) {
+                    throw new Err(400, null, `Sharing for ${basemap.name} is disabled`);
+                } else if (basemap.sharing_token !== auth.token) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                }
+            }
+
+            let tileURL: string;
+
+            if (basemap.url.includes(new URL(config.PMTILES_URL || 'http://localhost:5001').hostname)) {
+                tileURL = basemap.url;
+                if (req.query.token) tileURL = tileURL + `?token=${req.query.token}`;
+            } else {
+                tileURL = config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
+                if (req.query.token) tileURL = tileURL + `?token=${req.query.token}`;
+            }
+
+            const esriMetadataURL = basemap.tilejson || basemap.url;
+
+            if (isEsriLayerURL(esriMetadataURL)) {
+                const base = new EsriBase(new URL(esriMetadataURL));
+                const layer = new EsriProxyLayer(base);
+                const metadata = await layer.tilejson();
+                const json = BasemapProtocol.json({
+                    ...basemap,
+                    ...metadata,
+                    type: basemap.type,
+                    minzoom: basemap.minzoom ?? metadata.minzoom,
+                    maxzoom: basemap.maxzoom ?? metadata.maxzoom,
+                    bounds: basemap.bounds ? bbox(basemap.bounds) : metadata.bounds,
+                    center: basemap.center ? basemap.center.coordinates : metadata.center,
+                    url: tileURL,
+                });
+
+                res.json({
+                    ...json,
+                    actions: fromProtocol(basemap.protocol, basemap).actions(),
+                });
+
+                return;
+            }
+
+            if (basemap.tilejson && (basemap.tilejson.startsWith('http://') || basemap.tilejson.startsWith('https://'))) {
+                const url = new URL(basemap.tilejson);
+
+                if (url.hostname === new URL(config.PMTILES_URL).hostname) {
+                    url.searchParams.set('token', auth.token);
+                } else {
+                    // Skip isSafeUrl check when StackName=test (test mode)
+                    if (process.env.StackName !== 'test') {
+                        const { safe, reason } = await isSafeUrl(basemap.tilejson);
+                        if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
+                    }
+                }
+
+                const tj = await fetch(url);
+
+                if (!tj.ok) {
+                    throw new Err(400, null, 'Unable to fetch TileJSON from source URL');
+                }
+
+                const json = await tj.json();
+
+                res.json({
+                    ...json,
+                    type: basemap.type,
+                    actions: fromProtocol(basemap.protocol, basemap).actions(),
+                });
+            } else if (basemap.url.includes(new URL(config.PMTILES_URL || 'http://localhost:5001').hostname)) {
+                // Hosted PMTiles basemap without a stored tilejson URL.
+                // Reconstruct the TileJSON endpoint using the known PMTiles host and the
+                // path up to (but not including) the tile-coordinate template segment.
+                const parsedUrl = new URL(basemap.url);
+                const tilejsonUrl = new URL(config.PMTILES_URL);
+                // URL.pathname percent-encodes the `{z}/{x}/{y}` template braces to
+                // `%7B`/`%7D`, so decode before stripping the tile-coordinate segment.
+                tilejsonUrl.pathname = decodeURIComponent(parsedUrl.pathname).replace(/\/tiles\/\{[^}]+\}.*$/, '');
+                tilejsonUrl.searchParams.set('token', auth.token);
+
+                const tj = await fetch(tilejsonUrl);
+                if (!tj.ok) {
+                    throw new Err(400, null, 'Unable to fetch TileJSON from hosted basemap');
+                }
+                const tjJson = await tj.json();
+
+                res.json({
+                    ...tjJson,
+                    type: basemap.type,
+                    tiles: [tileURL],
+                    actions: fromProtocol(basemap.protocol, basemap).actions(),
+                });
+            } else {
+                const json = BasemapProtocol.json({
+                    ...basemap,
+                    bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+                    center: basemap.center ? basemap.center.coordinates : undefined,
+                    url: tileURL,
+                });
+
+                res.json({
+                    ...json,
+                    actions: fromProtocol(basemap.protocol, basemap).actions(),
+                });
+            }
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/basemap/:basemapid/tiles/:z/:x/:y', {
+        name: 'Get Basemap Tile',
+        group: 'BaseMap',
+        description: 'Get a basemap tile',
+        params: Type.Object({
+            basemapid: Type.Integer({ minimum: 1 }),
+            z: Type.Integer({ minimum: 0 }),
+            x: Type.Integer({ minimum: 0 }),
+            y: Type.Integer({ minimum: 0 }),
+        }),
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+        }),
+    }, async (req, res) => {
+        try {
+            const auth = await Auth.is_auth(config, req, {
+                token: true,
+                resources: [
+                    { access: AuthResourceAccess.BASEMAP, id: req.params.basemapid },
+                ],
+            });
+
+            const basemap = await config.models.Basemap.from(req.params.basemapid);
+
+            if (auth instanceof AuthUser) {
+                if (basemap.username && basemap.username !== auth.email && auth.access === AuthUserAccess.USER) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                }
+            } else if (auth instanceof AuthResource) {
+                if (basemap.sharing_enabled === false) {
+                    throw new Err(400, null, `Sharing for ${basemap.name} is disabled`);
+                } else if (basemap.sharing_token !== auth.token) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                }
+            }
+
+            return await fromProtocol(basemap.protocol, basemap).tile(
+                req.params.z,
+                req.params.x,
+                req.params.y,
+                res,
+                {
+                    headers: {
+                        'user-agent': req.headers['user-agent'],
+                        'accept': req.headers['accept'],
+                        'accept-language': req.headers['accept-language'],
+                    },
+                },
+            );
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/basemap/:basemapid/feature', {
+        name: 'Lasso Basemap Features',
+        group: 'BaseMap',
+        description: 'Lasso Basemap Features',
+        params: Type.Object({
+            basemapid: Type.Integer({ minimum: 1 }),
+        }),
+        body: Type.Object({
+            polygon: Feature.Polygon,
+        }),
+        res: MultiGeoJSONFeatureCollection,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { token: true });
+
+            const basemap = await config.models.Basemap.from(req.params.basemapid);
+
+            if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            }
+
+            const protocol = fromProtocol(basemap.protocol, basemap);
+
+            if (!protocol.actions().feature.includes(Basemap_FeatureAction.QUERY)) {
+                throw new Err(400, null, 'Feature querying is not supported by this basemap protocol');
+            }
+
+            const fc = await protocol.featureQuery!(
+                req.body.polygon,
+            );
+
+            if (basemap.title) {
+                for (const feat of fc.features) {
+                    if (feat.properties) {
+                        const resolved = renderTemplate(basemap.title, feat.properties);
+                        if (resolved) feat.properties.title = resolved;
+                    }
+                }
+            }
+
+            res.json(fc);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/basemap/:basemapid/feature/:featureid', {
+        name: 'Get Basemap Feature',
+        group: 'BaseMap',
+        description: 'Get a basemap feature',
+        params: Type.Object({
+            basemapid: Type.Integer({ minimum: 1 }),
+            featureid: Type.String(),
+        }),
+        res: MultiGeoJSONFeature,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { token: true });
+
+            const basemap = await config.models.Basemap.from(req.params.basemapid);
+
+            if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            }
+
+            const protocol = fromProtocol(basemap.protocol, basemap);
+
+            if (!protocol.actions().feature.includes(Basemap_FeatureAction.FETCH)) {
+                throw new Err(400, null, 'Feature fetching is not supported by this basemap protocol');
+            }
+
+            const feat = await protocol.featureFetch!(req.params.featureid);
+
+            if (basemap.title && feat.properties) {
+                const resolved = renderTemplate(basemap.title, feat.properties);
+                if (resolved) feat.properties.title = resolved;
+            }
+
+            res.json(feat);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/basemap/:basemapid', {
+        name: 'Delete Basemap',
+        group: 'BaseMap',
+        description: 'Delete a basemap',
+        params: Type.Object({
+            basemapid: Type.Integer({ minimum: 1 }),
+        }),
+        res: StandardResponse,
+    }, async (req, res: Response) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const basemap = await config.models.Basemap.from(req.params.basemapid);
+
+            if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            } else if (!basemap.username && user.access !== AuthUserAccess.ADMIN) {
+                throw new Err(400, null, 'Only System Admin can edit Server Resource');
+            }
+
+            const defaultBasemap = await config.models.Setting.typed('map::basemap', -1);
+
+            if (Number(defaultBasemap.value) === basemap.id) {
+                throw new Err(400, null, 'Cannot delete default basemap');
+            }
+
+            const defaultTerrain = await config.models.Setting.typed('map::terrain', -1);
+
+            if (Number(defaultTerrain.value) === basemap.id) {
+                throw new Err(400, null, 'Cannot delete default terrain basemap');
+            }
+
+            await config.models.Basemap.delete(req.params.basemapid);
+
+            res.json({
+                status: 200,
+                message: 'Basemap Deleted',
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+}

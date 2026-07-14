@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import Schedule from '../lib/schedule.js';
+import Schedule from '../common/schedule.js';
 
 // Tests if the intent is Rate - not if the rate is valid
 test('Schedule.is_rate()', async () => {

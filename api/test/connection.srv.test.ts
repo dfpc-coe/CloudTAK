@@ -4,7 +4,7 @@ import Flight from './flight.js';
 import fs from 'fs';
 import CP from 'node:child_process';
 import Sinon from 'sinon';
-import S3 from '../lib/aws/s3.js';
+import S3 from '../common/aws/s3.js';
 
 const flight = new Flight();
 
