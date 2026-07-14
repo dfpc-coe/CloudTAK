@@ -9,7 +9,7 @@ import { StandardResponse } from '../../common/types.js';
 import { ProfileConnConfig, AdminConnConfig } from '../../common/connection-config.js';
 import { ConnectionClient } from '../connection-pool.js';
 import { ConnectionWebSocket } from '../connection-web.js';
-import sleep from '../../common/sleep.js';
+import { setTimeout } from 'node:timers/promises';
 import { tokenParser, AuthUser } from '../../common/auth.js';
 import type ConfigStateful from '../config.js';
 
@@ -136,7 +136,7 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
                     message: err instanceof Error ? String(err.message) : String(err),
                 },
             }));
-            await sleep(500);
+            await setTimeout(500);
             ws.close();
         }
     });

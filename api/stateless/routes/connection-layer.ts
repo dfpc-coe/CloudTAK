@@ -1,5 +1,5 @@
 import { Static, Type } from '@sinclair/typebox';
-import sleep from '../../common/sleep.js';
+import { setTimeout } from 'node:timers/promises';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthResourceAccess, AuthUser } from '../../common/auth.js';
@@ -58,7 +58,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     try {
                         await deployLayer(layer);
 
-                        await sleep(50); // Otherwise AWS will throw Throttling exceptions
+                        await setTimeout(50); // Otherwise AWS will throw Throttling exceptions
                     } catch (err) {
                         console.error(err);
                     }

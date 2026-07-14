@@ -125,7 +125,7 @@ export default class RemoteHub implements HubClient {
     }
 
     async submitCots(req: SubmitCotsRequest): Promise<void> {
-        await this.#call('/cots', {
+        const res = await this.#call<{ submitted: boolean; message: string }>('/cots', {
             ...req,
             cots: req.cots.map(cot => ({
                 xml: CoTParser.to_xml(cot),
@@ -135,6 +135,10 @@ export default class RemoteHub implements HubClient {
         }, {
             timeout: req.ensureProfile ? CONNECT_TIMEOUT_MS : DEFAULT_TIMEOUT_MS,
         });
+
+        // Re-throw the hub's soft-failure acknowledgment exactly as LocalHub
+        // raises it in-process, so both hub client implementations agree
+        if (!res.submitted) throw new Err(200, null, res.message);
     }
 
     async wsNotify(key: string, payload: unknown, excludeSession?: string): Promise<void> {

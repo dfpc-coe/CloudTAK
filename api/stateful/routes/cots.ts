@@ -2,7 +2,6 @@ import { Type } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { CoTParser } from '@tak-ps/node-cot';
-import { StandardResponse } from '../../common/types.js';
 import type ConfigStateful from '../config.js';
 
 export default async function router(schema: Schema, config: ConfigStateful) {
@@ -22,7 +21,14 @@ export default async function router(schema: Schema, config: ConfigStateful) {
             ensureProfile: Type.Optional(Type.Boolean()),
             ifPooled: Type.Optional(Type.Boolean()),
         }),
-        res: StandardResponse,
+        // The paused-connection outcome is a first-class response rather than
+        // an Err: LocalHub signals it as Err(200) and response validation
+        // (removeAdditional) would strip batch-error's `messages` marker from
+        // a 200 body, making it indistinguishable from success on the wire
+        res: Type.Object({
+            submitted: Type.Boolean(),
+            message: Type.String(),
+        }),
     }, async (req, res) => {
         try {
             await config.hub.submitCots({
@@ -39,9 +45,13 @@ export default async function router(schema: Schema, config: ConfigStateful) {
                 }),
             });
 
-            res.json({ status: 200, message: 'CoTs Submitted' });
+            res.json({ submitted: true, message: 'CoTs Submitted' });
         } catch (err) {
-            Err.respond(err, res);
+            if (err instanceof Error && 'status' in err && err.status === 200) {
+                res.json({ submitted: false, message: 'safe' in err ? String(err.safe) : err.message });
+            } else {
+                Err.respond(err, res);
+            }
         }
     });
 }

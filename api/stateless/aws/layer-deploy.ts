@@ -2,7 +2,7 @@ import { Static } from '@sinclair/typebox';
 import CloudFormation, { StackFrame } from './cloudformation.js';
 import Config from '../../common/config.js';
 import Lambda from './lambda.js';
-import sleep from '../../common/sleep.js';
+import { setTimeout } from 'node:timers/promises';
 
 export default class LayerDeploy {
     static async apply(
@@ -36,7 +36,7 @@ export default class LayerDeploy {
                 throw new Error(`Failed to replace layer stack: ${status.status}`);
             }
 
-            await sleep(3000);
+            await setTimeout(3000);
         }
 
         throw new Error(`Timed out waiting for ${CloudFormation.stdname(config, layerid)} to delete`);
