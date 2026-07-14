@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.45.1 - 2026-07-14
+
+- :rocket: Add loading states to the Map Loading screen
+
 ### v13.45.0 - 2026-07-13
 
 - :tada: Split server into `stateful` (hub) and `stateless` (api) modes to support independent ECS service deployment
