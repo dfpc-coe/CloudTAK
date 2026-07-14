@@ -9,9 +9,9 @@ import Auth, { AuthResourceAccess } from '../../common/auth.js';
 import { ConnectionFeature } from '../../common/schema.js';
 import { StandardResponse, FeatureResponse, GeoJSONFeatureCollection, GeoJSONFeature } from '../../common/types.js';
 import { ExportFeatureFormat } from '../../common/enums.js';
-import { enabledGeofence } from '../control/feature.js';
+import { enabledGeofence } from '../lib/control/feature.js';
 import { sql } from 'drizzle-orm';
-import * as Default from '../limits.js';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/connection/:connectionid/feature', {

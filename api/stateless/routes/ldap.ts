@@ -5,7 +5,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import { ConnectionAuth } from '../../common/connection-config.js';
-import { Channel, ChannelAccess } from '../interface-user.js';
+import { Channel, ChannelAccess } from '../lib/interface-user.js';
 import { TAKAPI, APIAuthPassword } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: ConfigStateless) {

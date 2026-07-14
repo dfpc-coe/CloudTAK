@@ -1,7 +1,7 @@
 import { Type, Static } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
-import ProfileControl, { DefaultUnits } from '../control/profile.js';
+import ProfileControl, { DefaultUnits } from '../lib/control/profile.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';

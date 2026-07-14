@@ -1,10 +1,10 @@
 import Config from '../common/config.js';
 import type { ConfigArgs, ConfigInit } from '../common/config.js';
-import ConnectionPool from './connection-pool.js';
-import ConnectionGeofence from './connection-geofence.js';
-import EventsPool from './events-pool.js';
-import LocalHub from './hub/local.js';
-import type { ConnectionWebSocket } from './connection-web.js';
+import ConnectionPool from './lib/connection-pool.js';
+import ConnectionGeofence from './lib/connection-geofence.js';
+import EventsPool from './lib/events-pool.js';
+import LocalHub from './lib/hub/local.js';
+import type { ConnectionWebSocket } from './lib/connection-web.js';
 
 /**
  * Configuration for the stateful half of the server ('both' and 'hub' modes):

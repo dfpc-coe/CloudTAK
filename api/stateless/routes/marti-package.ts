@@ -8,14 +8,14 @@ import { Type, Static } from '@sinclair/typebox';
 import { sql } from 'drizzle-orm';
 import S3 from '../../common/aws/s3.js';
 import { CoTParser, FileShare, DataPackage } from '@tak-ps/node-cot';
-import { fromProtocol } from '../factory-basemap.js';
+import { fromProtocol } from '../lib/factory-basemap.js';
 import { StandardResponse } from '../../common/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
-import ProfileControl from '../control/profile.js';
-import activeChannels from '../tak-channels.js';
+import ProfileControl from '../lib/control/profile.js';
+import activeChannels from '../lib/tak-channels.js';
 import { Basemap as BasemapParser } from '@tak-ps/node-cot';
 import { Content } from '@tak-ps/node-tak/lib/api/files';
 import { Package } from '@tak-ps/node-tak/lib/api/package';
@@ -23,7 +23,7 @@ import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import {
     MissionOptions,
 } from '@tak-ps/node-tak/lib/api/mission';
-import stream2buffer from '../stream.js';
+import stream2buffer from '../lib/stream.js';
 import { PackageResponse } from './types.js';
 
 async function activeChannelNames(api: TAKAPI): Promise<Set<string>> {

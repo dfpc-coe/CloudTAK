@@ -2,13 +2,13 @@ import path from 'node:path';
 import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
 import { bbox } from '@turf/bbox';
-import { BasemapProtocol, TileJSONActions } from '../interface-basemap.js';
-import { fromProtocol } from '../factory-basemap.js';
+import { BasemapProtocol, TileJSONActions } from '../lib/interface-basemap.js';
+import { fromProtocol } from '../lib/factory-basemap.js';
 import Auth, { AuthUserAccess, AuthUser, AuthResource, ResourceCreationScope, AuthResourceAccess } from '../../common/auth.js';
 import { Busboy } from '@fastify/busboy';
 import type ConfigStateless from '../config.js';
 import { Response } from 'express';
-import stream2buffer from '../stream.js';
+import stream2buffer from '../lib/stream.js';
 import bboxPolygon from '@turf/bbox-polygon';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
@@ -21,9 +21,9 @@ import { BasemapCollection } from '../../common/models/Basemap.js';
 import { Basemap as BasemapParser, Feature } from '@tak-ps/node-cot';
 import { Basemap } from '../../common/schema.js';
 import { toEnum, Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, Basemap_FeatureAction, AllBoolean, AllBooleanCast, BasemapTerrain_Encoding } from '../../common/enums.js';
-import { EsriBase, EsriProxyLayer } from '../esri.js';
+import { EsriBase, EsriProxyLayer } from '../lib/esri.js';
 import { isSafeUrl } from '@tak-ps/node-safeurl';
-import * as Default from '../limits.js';
+import * as Default from '../lib/limits.js';
 
 const AugmentedBasemapResponse = Type.Composite([
     Type.Omit(BasemapResponse, ['bounds', 'center']),

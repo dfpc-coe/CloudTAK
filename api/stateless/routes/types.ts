@@ -6,7 +6,7 @@ import { Type } from '@sinclair/typebox';
 import { CoTTypes } from '@tak-ps/node-cot';
 import { MilSymType } from '@tak-ps/node-cot';
 import { Package } from '@tak-ps/node-tak/lib/api/package';
-import * as Default from '../limits.js';
+import * as Default from '../lib/limits.js';
 
 export const PackageResponse = Type.Object({
     uid: Type.String({

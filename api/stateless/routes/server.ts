@@ -7,7 +7,7 @@ import Auth, { AuthUserAccess } from '../../common/auth.js';
 import { sql } from 'drizzle-orm';
 import type ConfigStateless from '../config.js';
 import { ServerResponse } from '../../common/types.js';
-import UserControl from '../control/user.js';
+import UserControl from '../lib/control/user.js';
 import { TAKAPI, APIAuthCertificate, APIAuthPassword } from '@tak-ps/node-tak';
 
 const pkg = JSON.parse(String(fs.readFileSync(new URL('../../package.json', import.meta.url))));

@@ -15,7 +15,7 @@ import drop from './drop.js';
 import { pathToRegexp } from 'path-to-regexp';
 import test from 'node:test';
 import assert from 'node:assert';
-import UserControl from '../stateless/control/user.js';
+import UserControl from '../stateless/lib/control/user.js';
 import { Ajv } from 'ajv';
 import type { FormatsPlugin } from 'ajv-formats';
 import * as ajvFormats from 'ajv-formats';

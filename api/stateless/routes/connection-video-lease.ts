@@ -9,8 +9,8 @@ import { VideoLease } from '../../common/schema.js';
 import { randomUUID } from 'node:crypto';
 import { StandardResponse, VideoLeaseResponse } from '../../common/types.js';
 import { VideoLease_SourceType } from '../../common/enums.js';
-import ECSVideoControl, { Protocols } from '../control/video-service.js';
-import * as Default from '../limits.js';
+import ECSVideoControl, { Protocols } from '../lib/control/video-service.js';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     const videoControl = new ECSVideoControl(config);

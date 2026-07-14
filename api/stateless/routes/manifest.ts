@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox';
 import type ConfigStateless from '../config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import { buildLogos } from '../logos.js';
+import { buildLogos } from '../lib/logos.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     let logos: Map<number, Buffer> = await buildLogos(config);

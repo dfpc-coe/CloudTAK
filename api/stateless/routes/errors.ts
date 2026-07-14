@@ -4,7 +4,7 @@ import { Param } from '@openaddresses/batch-generic';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
-import * as Default from '../limits.js';
+import * as Default from '../lib/limits.js';
 import { ErrorResponse, StandardResponse } from '../../common/types.js';
 import type ConfigStateless from '../config.js';
 import { Errors } from '../../common/schema.js';

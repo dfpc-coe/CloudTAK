@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import Err from '@openaddresses/batch-error';
-import { toError, toErr } from '../stateful/error.js';
+import { toError, toErr } from '../stateful/lib/error.js';
 
 test('toError returns existing Error instances', () => {
     const err = new Error('Existing');

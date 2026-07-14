@@ -4,7 +4,7 @@ import Auth, { AuthUserAccess } from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox';
-import Provider from '../provider.js';
+import Provider from '../lib/provider.js';
 import { UAParser } from 'ua-parser-js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {

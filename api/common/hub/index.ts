@@ -1,6 +1,6 @@
 import { Type } from '@sinclair/typebox';
 import type CoT from '@tak-ps/node-cot';
-import type { GeofenceStatus } from '../../stateful/connection-geofence.js';
+import type { GeofenceStatus } from '../../stateful/lib/connection-geofence.js';
 
 export type ConnStatus = 'live' | 'dead' | 'unknown';
 

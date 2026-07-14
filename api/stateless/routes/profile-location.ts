@@ -5,7 +5,7 @@ import Auth from '../../common/auth.js';
 import { CoTParser } from '@tak-ps/node-cot';
 import { Type } from '@sinclair/typebox';
 import { StandardResponse } from '../../common/types.js';
-import ProfileControl from '../control/profile.js';
+import ProfileControl from '../lib/control/profile.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     const profileControl = new ProfileControl(config);

@@ -11,8 +11,8 @@ import { StandardResponse, VideoLeaseResponse } from '../../common/types.js';
 import { VideoLease_SourceType, AllBoolean, AllBooleanCast } from '../../common/enums.js';
 import { VideoLease } from '../../common/schema.js';
 import { eq } from 'drizzle-orm';
-import ECSVideoControl, { Action, Protocols, PathListItem, ProtocolPopulation } from '../control/video-service.js';
-import * as Default from '../limits.js';
+import ECSVideoControl, { Action, Protocols, PathListItem, ProtocolPopulation } from '../lib/control/video-service.js';
+import * as Default from '../lib/limits.js';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: ConfigStateless) {

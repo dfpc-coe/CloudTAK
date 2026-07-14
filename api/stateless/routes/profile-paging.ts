@@ -8,7 +8,7 @@ import { ProfilePagingResponse, StandardResponse } from '../../common/types.js';
 import { ProfilePaging_Type } from '../../common/enums.js';
 import { generateSecret, generateCode, verifyCode, sendCode } from '../../common/paging.js';
 import { sql } from 'drizzle-orm';
-import * as Default from '../limits.js';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/profile/paging', {

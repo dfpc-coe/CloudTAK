@@ -9,8 +9,8 @@ import { StandardResponse, ConnectionResponse } from '../../common/types.js';
 import { Connection } from '../../common/schema.js';
 import { ConnectionAuth } from '../../common/connection-config.js';
 import Schema from '@openaddresses/batch-schema';
-import * as Default from '../limits.js';
-import { generateClientP12, generateTrustP12 } from '../certificate.js';
+import * as Default from '../lib/limits.js';
+import { generateClientP12, generateTrustP12 } from '../lib/certificate.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/connection', {

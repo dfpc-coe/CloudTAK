@@ -6,14 +6,14 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import Err from '@openaddresses/batch-error';
 import type ConfigStateless from '../config.js';
-import Sprites from '../sprites.js';
+import Sprites from '../lib/sprites.js';
 import { ZipArchive } from '@archiver/archiver';
 import xmljs from 'xml-js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { StandardResponse, IconResponse, IconsetResponse } from '../../common/types.js';
 import { Icon, Iconset } from '../../common/schema.js';
-import * as Default from '../limits.js';
+import * as Default from '../lib/limits.js';
 
 export type SpriteRecord = {
     json: object;

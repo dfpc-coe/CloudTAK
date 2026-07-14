@@ -13,7 +13,7 @@ import Auth, { AuthResourceAccess, AuthUser } from '../../common/auth.js';
 import { ImportResponse, ImportResult, StandardResponse } from '../../common/types.js';
 import { Import_Status } from '../../common/enums.js';
 import { Import } from '../../common/schema.js';
-import * as Default from '../limits.js';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     const importControl = new ImportControl(config);

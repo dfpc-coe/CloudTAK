@@ -1,8 +1,8 @@
 import Config from '../common/config.js';
 import type { ConfigArgs, ConfigInit } from '../common/config.js';
-import RemoteHub from './hub/remote.js';
-import { UserManager } from './interface-user.js';
-import { WeatherManager } from './interface-weather.js';
+import RemoteHub from './lib/hub/remote.js';
+import { UserManager } from './lib/interface-user.js';
+import { WeatherManager } from './lib/interface-weather.js';
 import type { HubClient } from '../common/hub/index.js';
 
 /**

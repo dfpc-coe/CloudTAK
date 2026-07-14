@@ -6,7 +6,7 @@ import { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
 import { MissionLog } from '@tak-ps/node-tak/lib/api/mission-log';
 import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
-import ProfileControl from '../control/profile.js';
+import ProfileControl from '../lib/control/profile.js';
 import {
     TAKItem,
 } from '@tak-ps/node-tak/lib/api/types';

@@ -3,14 +3,14 @@ import type ConfigStateless from '../config.js';
 import Auth from '../../common/auth.js';
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
-import Sprites from '../sprites.js';
+import Sprites from '../lib/sprites.js';
 import { Type } from '@sinclair/typebox';
 import { MissionTemplate, MissionTemplateLog, PaletteFeature } from '../../common/schema.js';
 import { MissionTemplateResponse, MissionTemplateLogResponse, PaletteFeatureResponse, StandardResponse } from '../../common/types.js';
 import { MissionTemplateSingleResponse } from '../../common/models/MissionTemplate.js';
-import { PaletteFeatureStyle } from '../palette.js';
+import { PaletteFeatureStyle } from '../lib/palette.js';
 import { BasicGeometryType } from '../../common/enums.js';
-import * as Default from '../limits.js';
+import * as Default from '../lib/limits.js';
 import { Ajv } from 'ajv';
 
 const ajv = new Ajv();

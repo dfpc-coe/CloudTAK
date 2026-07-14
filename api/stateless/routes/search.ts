@@ -4,9 +4,9 @@ import geomagnetism from 'geomagnetism';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
-import { FetchHourly } from '../interface-weather.js';
-import { SearchManager } from '../interface-search.js';
-import { SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from '../search/types.js';
+import { FetchHourly } from '../lib/interface-weather.js';
+import { SearchManager } from '../lib/interface-search.js';
+import { SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from '../lib/search/types.js';
 import { Feature } from '@tak-ps/node-cot';
 import type ConfigStateless from '../config.js';
 

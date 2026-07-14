@@ -3,7 +3,7 @@ import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
-import Retention from '../retention.js';
+import Retention from '../lib/retention.js';
 
 const RetentionTaskResult = Type.Object({
     name: Type.String(),

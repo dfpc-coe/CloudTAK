@@ -3,15 +3,15 @@ import { setTimeout } from 'node:timers/promises';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthResourceAccess, AuthUser } from '../../common/auth.js';
-import Lambda from '../aws/lambda.js';
-import CloudFormation from '../aws/cloudformation.js';
-import LayerDeploy from '../aws/layer-deploy.js';
+import Lambda from '../lib/aws/lambda.js';
+import CloudFormation from '../lib/aws/cloudformation.js';
+import LayerDeploy from '../lib/aws/layer-deploy.js';
 import Style, { StyleContainer } from '../../common/style.js';
 import Filter, { FilterContainer } from '../../common/filter.js';
-import Alarm from '../aws/alarm.js';
+import Alarm from '../lib/aws/alarm.js';
 import type ConfigStateless from '../config.js';
 import Schedule from '../../common/schedule.js';
-import LayerControl from '../control/layer.js';
+import LayerControl from '../lib/control/layer.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
 import type { InferInsertModel } from 'drizzle-orm';
@@ -23,12 +23,12 @@ import {
     LayerUpdateManagementListResponse,
 } from '../../common/types.js';
 import { LayerIncoming, LayerOutgoing } from '../../common/schema.js';
-import DataMission from '../data-mission.js';
-import { MAX_LAYERS_IN_DATA_SYNC } from '../data-mission.js';
+import DataMission from '../lib/data-mission.js';
+import { MAX_LAYERS_IN_DATA_SYNC } from '../lib/data-mission.js';
 import { Layer_Config } from '../../common/models/Layer.js';
 import { Layer_Priority } from '../../common/enums.js';
 import { Layer } from '../../common/schema.js';
-import * as Default from '../limits.js';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     const alarm = new Alarm(config.StackName);

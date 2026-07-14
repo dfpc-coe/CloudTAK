@@ -1,13 +1,13 @@
 import path from 'path';
 import { Busboy } from '@fastify/busboy';
 import { Static, Type } from '@sinclair/typebox';
-import AttachmentControl from '../control/attachment.js';
+import AttachmentControl from '../lib/control/attachment.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import S3 from '../../common/aws/s3.js';
 import type ConfigStateless from '../config.js';
-import ProfileControl from '../control/profile.js';
+import ProfileControl from '../lib/control/profile.js';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
 

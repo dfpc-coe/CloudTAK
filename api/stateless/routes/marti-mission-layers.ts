@@ -4,8 +4,8 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
-import ProfileControl from '../control/profile.js';
-import * as Default from '../limits.js';
+import ProfileControl from '../lib/control/profile.js';
+import * as Default from '../lib/limits.js';
 import { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
 import { MissionLayer, MissionLayerType } from '@tak-ps/node-tak/lib/api/mission-layer';
 import {

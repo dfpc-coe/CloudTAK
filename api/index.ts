@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 import express from 'express';
-import Bulldozer from './stateful/initialization.js';
+import Bulldozer from './stateful/lib/initialization.js';
 import type { WebSocketServer } from 'ws';
-import buildApi from './stateless/server/api.js';
-import { attachWebsocket, startHubRpc } from './stateful/server/hub.js';
+import buildApi from './stateless/lib/server/api.js';
+import { attachWebsocket, startHubRpc } from './stateful/lib/server/hub.js';
 import type { ServerMode } from './common/config.js';
 import ConfigStateful from './stateful/config.js';
 import ConfigStateless from './stateless/config.js';

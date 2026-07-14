@@ -11,8 +11,8 @@ import jwt from 'jsonwebtoken';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { ProfileFile, ProfileFileChannel } from '../../common/schema.js';
 import type ConfigStateless from '../config.js';
-import activeChannels from '../tak-channels.js';
-import * as Default from '../limits.js';
+import activeChannels from '../lib/tak-channels.js';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     async function ensureIconsetPermission(iconset: string | null | undefined, email: string) {

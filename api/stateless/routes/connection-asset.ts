@@ -5,7 +5,7 @@ import { Busboy } from '@fastify/busboy';
 import Auth, { AuthResourceAccess } from '../../common/auth.js';
 import S3 from '../../common/aws/s3.js';
 import Stream from 'node:stream';
-import assetList, { AssetOutput } from '../asset.js';
+import assetList, { AssetOutput } from '../lib/asset.js';
 import type ConfigStateless from '../config.js';
 import { StandardResponse } from '../../common/types.js';
 

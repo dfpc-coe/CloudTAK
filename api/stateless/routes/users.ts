@@ -7,8 +7,8 @@ import { ProfileResponse, ProfileListResponse } from '../../common/types.js';
 import type ConfigStateless from '../config.js';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types';
 import { Profile, ProfileSession } from '../../common/schema.js';
-import * as Default from '../limits.js';
-import ProfileControl from '../control/profile.js';
+import * as Default from '../lib/limits.js';
+import ProfileControl from '../lib/control/profile.js';
 
 const UserPatchBody = Type.Object({
     tak_callsign: Type.Optional(Type.String()),

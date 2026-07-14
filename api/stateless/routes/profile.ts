@@ -5,7 +5,7 @@ import Auth from '../../common/auth.js';
 import { ProfileResponse, ProfilePatchBody } from '../../common/types.js';
 import type ConfigStateless from '../config.js';
 import { sql } from 'drizzle-orm';
-import ProfileControl from '../control/profile.js';
+import ProfileControl from '../lib/control/profile.js';
 
 type ProfilePatchBodyType = Static<typeof ProfilePatchBody>;
 type ProfilePatchValue = ProfilePatchBodyType[keyof ProfilePatchBodyType];

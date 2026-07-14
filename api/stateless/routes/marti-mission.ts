@@ -8,9 +8,9 @@ import S3 from '../../common/aws/s3.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
-import ProfileControl from '../control/profile.js';
+import ProfileControl from '../lib/control/profile.js';
 import { GenericMartiResponse, StandardResponse } from '../../common/types.js';
-import * as Default from '../limits.js';
+import * as Default from '../lib/limits.js';
 import {
     MissionOptions,
     MissionRole,

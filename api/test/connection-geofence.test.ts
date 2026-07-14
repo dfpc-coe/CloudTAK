@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import ConnectionPool from '../stateful/connection-pool.js';
-import ConnectionGeofence from '../stateful/connection-geofence.js';
+import ConnectionPool from '../stateful/lib/connection-pool.js';
+import ConnectionGeofence from '../stateful/lib/connection-geofence.js';
 import type ConnectionConfig from '../common/connection-config.js';
 import type ConfigStateful from '../stateful/config.js';
 import type { Feature } from 'geojson';

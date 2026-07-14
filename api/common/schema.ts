@@ -3,7 +3,7 @@ import { primaryKey } from 'drizzle-orm/pg-core';
 import { Static } from '@sinclair/typebox';
 import type { StyleContainer } from './style.js';
 import type { FilterContainer } from './filter.js';
-import type { PaletteFeatureStyle } from '../stateless/palette.js';
+import type { PaletteFeatureStyle } from '../stateless/lib/palette.js';
 import { Polygon, Point } from 'geojson';
 import type { Feature } from '@tak-ps/node-cot';
 import { geometry, GeometryType, jsonb } from '@openaddresses/batch-generic';

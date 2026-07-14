@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert';
 import type { Server } from 'node:http';
 import Flight from './flight.js';
-import { startHubRpc } from '../stateful/server/hub.js';
-import RemoteHub from '../stateless/hub/remote.js';
+import { startHubRpc } from '../stateful/lib/server/hub.js';
+import RemoteHub from '../stateless/lib/hub/remote.js';
 
 process.env.HUB_RPC_PORT = '0';
 

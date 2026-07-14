@@ -6,10 +6,10 @@ import { Data, Connection } from '../../common/schema.js';
 import type ConfigStateless from '../config.js';
 import S3 from '../../common/aws/s3.js';
 import { sql, inArray, and } from 'drizzle-orm';
-import DataMission from '../data-mission.js';
+import DataMission from '../lib/data-mission.js';
 import { StandardResponse, DataResponse, DataListResponse } from '../../common/types.js';
 import { MissionSubscriberRole } from '@tak-ps/node-tak/lib/api/mission';
-import * as Default from '../limits.js';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/data', {

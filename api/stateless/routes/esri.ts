@@ -4,7 +4,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import { isSafeUrl } from '@tak-ps/node-safeurl';
-import { EsriType, EsriBase, EsriProxyPortal, EsriProxyServer, EsriProxyLayer } from '../esri.js';
+import { EsriType, EsriBase, EsriProxyPortal, EsriProxyServer, EsriProxyLayer } from '../lib/esri.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.post('/esri', {

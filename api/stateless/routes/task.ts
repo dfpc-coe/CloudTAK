@@ -3,12 +3,12 @@ import { sql, inArray } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
-import ECR from '../aws/ecr.js';
+import ECR from '../lib/aws/ecr.js';
 import type ConfigStateless from '../config.js';
 import { Task } from '../../common/schema.js';
 import { Layer as LayerSchema } from '../../common/schema.js';
 import { StandardResponse, TaskResponse } from '../../common/types.js';
-import * as Default from '../limits.js';
+import * as Default from '../lib/limits.js';
 import { isSafeUrl } from '@tak-ps/node-safeurl';
 
 export enum TaskSchemaEnum {

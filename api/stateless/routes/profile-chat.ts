@@ -6,7 +6,7 @@ import Err from '@openaddresses/batch-error';
 import { StandardResponse } from '../../common/types.js';
 import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
-import * as Default from '../limits.js';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/profile/chatroom', {

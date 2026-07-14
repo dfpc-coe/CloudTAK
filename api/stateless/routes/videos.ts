@@ -3,7 +3,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
-import ECSVideoControl, { Configuration, PathListItem } from '../control/video-service.js';
+import ECSVideoControl, { Configuration, PathListItem } from '../lib/control/video-service.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     const videoControl = new ECSVideoControl(config);

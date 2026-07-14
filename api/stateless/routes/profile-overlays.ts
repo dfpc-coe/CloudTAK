@@ -1,8 +1,8 @@
 import { Static, Type } from '@sinclair/typebox';
-import { BasemapProtocol, TileJSONActions } from '../interface-basemap.js';
-import { fromProtocol } from '../factory-basemap.js';
+import { BasemapProtocol, TileJSONActions } from '../lib/interface-basemap.js';
+import { fromProtocol } from '../lib/factory-basemap.js';
 import type ConfigStateless from '../config.js';
-import ProfileControl from '../control/profile.js';
+import ProfileControl from '../lib/control/profile.js';
 import Schema from '@openaddresses/batch-schema';
 import S3 from '../../common/aws/s3.js';
 import Err from '@openaddresses/batch-error';
@@ -11,10 +11,10 @@ import { BasemapTerrain_Encoding } from '../../common/enums.js';
 import { ProfileOverlay } from '../../common/schema.js';
 import path from 'node:path';
 import { StandardResponse, ProfileOverlayResponse } from '../../common/types.js';
-import ConnectionEvents, { ConnectionEventDataType, ConnectionEventAction } from '../connection-events.js';
+import ConnectionEvents, { ConnectionEventDataType, ConnectionEventAction } from '../lib/connection-events.js';
 import { sql } from 'drizzle-orm';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
-import * as Default from '../limits.js';
+import * as Default from '../lib/limits.js';
 
 const AugmentedProfileOverlayResponse = Type.Composite([
     ProfileOverlayResponse,

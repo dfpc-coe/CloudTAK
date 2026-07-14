@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import AGOL from '../stateless/search/agol.js';
-import ArcGISTokenManager from '../stateless/search/arcgis-token-manager.js';
+import AGOL from '../stateless/lib/search/agol.js';
+import ArcGISTokenManager from '../stateless/lib/search/arcgis-token-manager.js';
 import Config from '../common/config.js';
 
 test('AGOL - constructor with tokenManager', async () => {

@@ -7,7 +7,7 @@ import { sql } from 'drizzle-orm';
 import { ConnectionToken } from '../../common/schema.js';
 import Schema from '@openaddresses/batch-schema';
 import { StandardResponse, CreateConnectionTokenResponse, ConnectionTokenResponse } from '../../common/types.js';
-import * as Default from '../limits.js';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/connection/:connectionid/token', {

@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import { sql } from 'drizzle-orm';
 import { ProfileToken } from '../../common/schema.js';
 import { StandardResponse, CreateProfileTokenResponse, ProfileTokenResponse } from '../../common/types.js';
-import * as Default from '../limits.js';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/profile/token', {

@@ -8,7 +8,7 @@ import {
     TAKList,
 } from '@tak-ps/node-tak/lib/api/types';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
-import activeChannels from '../tak-channels.js';
+import activeChannels from '../lib/tak-channels.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/marti/subscription', {
