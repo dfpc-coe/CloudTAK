@@ -154,7 +154,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ...conn,
             });
         } catch (err) {
-            Err.respond(err, res);
+            if (String(err).includes('duplicate key value violates unique constraint')) {
+                Err.respond(new Err(400, err instanceof Error ? err : new Error(String(err)), 'A connection with this name already exists'), res);
+            } else {
+                Err.respond(err, res);
+            }
         }
     });
 
@@ -252,7 +256,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ...conn,
             });
         } catch (err) {
-            Err.respond(err, res);
+            if (String(err).includes('duplicate key value violates unique constraint')) {
+                Err.respond(new Err(400, err instanceof Error ? err : new Error(String(err)), 'A connection with this name already exists'), res);
+            } else {
+                Err.respond(err, res);
+            }
         }
     });
 

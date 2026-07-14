@@ -18,6 +18,7 @@ export interface ConfigArgs {
     noevents: boolean;
     nosinks: boolean;
     nogeofence?: boolean;
+    noconnections?: boolean;
     nocache: boolean;
     mode?: ServerMode;
     hubUrl?: string;
@@ -28,6 +29,7 @@ export interface ConfigInit {
     noevents: boolean;
     nosinks: boolean;
     nogeofence: boolean;
+    noconnections: boolean;
     nocache: boolean;
     models: Models;
     StackName: string;
@@ -61,6 +63,7 @@ export default class Config {
     noevents: boolean;
     nosinks: boolean;
     nogeofence: boolean;
+    noconnections: boolean;
     nocache: boolean;
     models: Models;
     StackName: string;
@@ -78,6 +81,7 @@ export default class Config {
         this.noevents = init.noevents;
         this.nosinks = init.nosinks;
         this.nogeofence = init.nogeofence;
+        this.noconnections = init.noconnections;
         this.nocache = init.nocache;
         this.models = init.models;
         this.StackName = init.StackName;
@@ -208,6 +212,7 @@ export default class Config {
             noevents: (args.noevents || false),
             nosinks: (args.nosinks || false),
             nogeofence: (args.nogeofence || false),
+            noconnections: (args.noconnections || false),
             nocache: (args.nocache || false),
             StackName: process.env.StackName,
             server, SigningSecret, API_URL, Bucket, pg, models, PMTILES_URL,
