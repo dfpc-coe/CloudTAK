@@ -58,7 +58,7 @@
 
                 <div
                     v-if='chat.sender_uid !== myUID'
-                    class='bg-blue px-2 py-2 rounded'
+                    class='bg-blue text-white px-2 py-2 rounded'
                     style='max-width: 80%;'
                 >
                     <div class='fw-bold small mb-1'>
