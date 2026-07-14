@@ -1,0 +1,2 @@
+ALTER TABLE "core_event" ADD COLUMN "connection" integer;--> statement-breakpoint
+ALTER TABLE "core_event" ADD CONSTRAINT "core_event_connection_connections_id_fk" FOREIGN KEY ("connection") REFERENCES "public"."connections"("id") ON DELETE set null ON UPDATE no action;
