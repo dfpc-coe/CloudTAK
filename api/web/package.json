@@ -50,7 +50,7 @@
         "@simplewebauthn/browser": "^13.3.0",
         "@tabler/core": "^1.4.0",
         "@tabler/icons-vue": "^3.0.0",
-        "@tak-ps/node-cot": "^14.20.0",
+        "@tak-ps/node-cot": "^14.45.0",
         "@tak-ps/node-p12": "^1.0.3",
         "@tak-ps/vue-tabler": "^4.29.3",
         "@turf/area": "^7.2.0",
