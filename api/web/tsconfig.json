@@ -26,7 +26,10 @@
     "moduleResolution": "bundler",
     "paths": {
       "@tak-ps/cloudtak": ["./plugin.ts"],
-      "@cloudtak/api-types": ["../derived-types.d.ts"]
+      "@cloudtak/api-types": ["../derived-types.d.ts"],
+      // pinia@4.0.0 ships an `exports` map without a `types` condition, which
+      // hides its bundled `dist/pinia.d.ts` from TypeScript. Remove once fixed upstream.
+      "pinia": ["./node_modules/pinia/dist/pinia.d.ts"]
     },
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
