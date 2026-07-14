@@ -15,7 +15,10 @@
             style='width: 100%;'
         />
 
-        <MapLoading v-if='loading || !mapStore.isMapLoaded' />
+        <MapLoading
+            v-if='loading || !mapStore.isMapLoaded'
+            :stage='mapStore.loadingStage'
+        />
 
         <template v-if='mapStore.isMapLoaded && !loading'>
             <WarnConfiguration

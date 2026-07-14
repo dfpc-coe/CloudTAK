@@ -136,6 +136,8 @@ export const useMapStore = defineStore('cloudtak', {
         isMapLoaded: boolean;
         // Is all data/overlays loaded
         isMapLoadedFully: boolean;
+        // Human-readable description of the current map loading step
+        loadingStage: string;
         isOpen: boolean;
         userOrientationMode: boolean;
         pitch: number;
@@ -194,6 +196,7 @@ export const useMapStore = defineStore('cloudtak', {
             isOpen: false,
             isMapLoaded: false,
             isMapLoadedFully: false,
+            loadingStage: '',
             userOrientationMode: false,
             pitch: 0,
             bearing: 0,
@@ -728,6 +731,7 @@ export const useMapStore = defineStore('cloudtak', {
             // inside the worker resolves serverUrl from KV only after
             // initializeApp() has written it — eliminating the race that
             // caused the worker to fall back to capacitor://localhost.
+            this.loadingStage = 'Starting worker…';
             this.startWorker();
 
             const deviceStore = useDeviceStore();
@@ -779,6 +783,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             const { value: token } = await Preferences.get({ key: 'token' });
 
+            this.loadingStage = 'Initializing worker…';
             await this._workerReady!;
             await this.worker.init(token || '');
 
@@ -875,6 +880,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             let startedGPSWatchFromPermissionSubscription = false;
 
+            this.loadingStage = 'Requesting permissions…';
             await deviceStore.initializePermissionSubscriptions(() => {
                 startedGPSWatchFromPermissionSubscription = true;
                 void this.startLocationWatch();
@@ -901,6 +907,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             const sprites = IconManager.defaultSprite();
 
+            this.loadingStage = 'Loading map configuration…';
             let initCenter = '-100,40';
             let initZoom = 4;
             let initPitch = 0;
@@ -970,6 +977,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (!init.style || typeof init.style === 'string') throw new Error('init.style must be an object');
 
+            this.loadingStage = 'Creating map…';
             mapgl.setWorkerUrl(maplibreWorkerUrl);
             const map = new mapgl.Map(init);
 
@@ -1017,9 +1025,11 @@ export const useMapStore = defineStore('cloudtak', {
                     map.setProjection({ type: "globe" });
                 }
 
+                this.loadingStage = 'Loading overlays…';
                 await this.initOverlays();
 
                 this.isMapLoadedFully = true;
+                this.loadingStage = '';
 
                 this.timer = setInterval(async () => {
                     if (!this.map) return;
@@ -1033,10 +1043,12 @@ export const useMapStore = defineStore('cloudtak', {
             this._draw = markRaw(new DrawTool(this));
             this._icons = markRaw(new IconManager(map));
             this._menu = markRaw(new MenuManager(this));
+            this.loadingStage = 'Building menus…';
             await (this._menu as MenuManager).init();
             this._bottomBar = this._bottomBar || markRaw(new BottomBarManager());
 
             // If we missed the initial location update make sure it gets synced
+            this.loadingStage = 'Loading your profile…';
             const loc = await this.worker.profile.location;
             this.location = loc.source;
             this.locationAccuracy = loc.accuracy;
@@ -1075,6 +1087,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.isOpen = await this.worker.conn.isOpen;
 
+            this.loadingStage = '';
         },
 
         submitLocationHttp: async function(position: Position): Promise<void> {
