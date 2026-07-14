@@ -259,8 +259,8 @@ export default class Flight {
                 nocache: true,
             };
 
-            // Each config owns its own database pool; construct sequentially
-            // so only one pool runs migrations at a time
+            // Each config owns its own database pool; only the stateful
+            // config runs migrations, so construct it first
             this.stateful = await ConfigStateful.env(envArgs);
             this.config = await ConfigStateless.env(envArgs, { hub: this.stateful.hub });
 

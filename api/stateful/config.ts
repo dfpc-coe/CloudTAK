@@ -28,6 +28,6 @@ export default class ConfigStateful extends Config {
     }
 
     static async env(args: ConfigArgs): Promise<ConfigStateful> {
-        return new ConfigStateful(await Config.envInit(args));
+        return new ConfigStateful(await Config.envInit(args, { migrate: true }));
     }
 }

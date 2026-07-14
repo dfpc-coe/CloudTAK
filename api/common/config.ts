@@ -107,7 +107,14 @@ export default class Config {
         return new Config(await Config.envInit(args));
     }
 
-    static async envInit(args: ConfigArgs): Promise<ConfigInit> {
+    static async envInit(args: ConfigArgs, opts: {
+        /**
+         * Database migrations only run from the stateful config - it is
+         * deployed as a single instance, while stateless replicas autoscale
+         * and must never race each other on schema changes
+         */
+        migrate?: boolean;
+    } = {}): Promise<ConfigInit> {
         if (!process.env.AWS_REGION) {
             process.env.AWS_REGION = 'us-east-1';
         }
@@ -152,7 +159,7 @@ export default class Config {
 
         const pg: Pool<typeof pgtypes> = await Pool.connect(args.postgres, pgtypes, {
             ssl: process.env.StackName === 'test' ? undefined : { rejectUnauthorized: false },
-            migrationsFolder: (new URL('../migrations', import.meta.url)).pathname,
+            migrationsFolder: opts.migrate ? (new URL('../migrations', import.meta.url)).pathname : undefined,
         });
 
         const models = new Models(pg);

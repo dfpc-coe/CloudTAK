@@ -73,8 +73,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
     const mode = (process.env.CLOUDTAK_Server_Mode || 'both') as ServerMode;
 
-    // Each config bootstraps its own database pool; construct sequentially so
-    // only one pool runs migrations at a time
+    // Each config bootstraps its own database pool. Migrations only run from
+    // the stateful config (single instance); construct it first so the schema
+    // is current before the stateless side connects
     const stateful = mode !== 'api' ? await ConfigStateful.env(envArgs) : undefined;
     const stateless = mode !== 'hub'
         ? await ConfigStateless.env(envArgs, stateful ? { hub: stateful.hub } : {})
