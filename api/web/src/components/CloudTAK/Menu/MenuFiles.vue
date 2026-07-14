@@ -369,14 +369,12 @@ function buildPathTree() {
     const flatPaths = Array.from(pathCounts.entries()).map(([path, count]) => ({ path, count }));
     paths.value = PathManager.buildTree<ProfileFile>(flatPaths);
 
-    // Populate items into opened nodes
     const populateItems = (nodes: PathNode<ProfileFile>[]) => {
         for (const node of nodes) {
             const items = pathItems.get(node.fullPath);
             if (items) {
                 node.items = new Set(items);
             }
-            // For intermediate nodes that have no direct items but have the path match
             if (node.children.length) {
                 populateItems(node.children);
             }
@@ -450,7 +448,6 @@ async function renameFolder() {
         return;
     }
 
-    // Update all files in this folder and descendants
     const allNodePaths = PathManager.flatPaths([node]);
 
     for (const oldP of allNodePaths) {

@@ -120,7 +120,6 @@ export default class AtlasDatabase {
             coordEach(cot.geometry, (coord) => {
                 const min = coord.slice(0, 2) as [number, number];
 
-                // Don't Send Invalid Coords
                 if (min[0] < -180 || min[0] > 180 || min[1] < -90 || min[1] > 90) {
                     return;
                 }
@@ -635,6 +634,7 @@ export default class AtlasDatabase {
      * @param opts.skipSave - Don't save the COT to the Profile Feature Database
      * @param opts.skipBroadcast - Don't broadcast the COT on the internal message bus to the UI
      * @param opts.authored - If the COT is authored, append creator information if the CoT is new & potentially add it to a mission
+     * @param opts.render - Defaults to true. When false, suppress the Mission_Change_Feature notification that reloads & re-renders the mission overlay. Callers adding many features to a mission at once (eg. a lasso import) should pass false and trigger a single loadMission() when finished.
      */
     async add(
         feature: InputFeature,
@@ -642,6 +642,7 @@ export default class AtlasDatabase {
             skipSave?: boolean;
             skipBroadcast?: boolean;
             authored?: boolean,
+            render?: boolean,
         }
     ): Promise<COT | void> {
         if (!opts) opts = {};
@@ -650,7 +651,6 @@ export default class AtlasDatabase {
 
         const feat = feature as Feature;
 
-        // Check if CoT exists
         let exists = await this.get(feat.properties.id, {
             mission: true
         });
@@ -659,7 +659,6 @@ export default class AtlasDatabase {
             feat.properties.creator = await this.atlas.profile.creator();
         }
 
-        // New CoT destined for a Mission
         if (
             !exists && (
                 (this.mission && opts.authored) // Authored CoT and we have an active Mission
@@ -711,12 +710,14 @@ export default class AtlasDatabase {
                 skipNetwork: !opts.authored
             });
 
-            this.atlas.postMessage({
-                type: WorkerMessageType.Mission_Change_Feature,
-                body: {
-                    guid: mission_guid
-                }
-            });
+            if (opts.render !== false) {
+                this.atlas.postMessage({
+                    type: WorkerMessageType.Mission_Change_Feature,
+                    body: {
+                        guid: mission_guid
+                    }
+                });
+            }
 
             await this.breadcrumb.update(exists);
 
@@ -729,18 +730,12 @@ export default class AtlasDatabase {
                     geometry: feat.geometry
                 }, { skipSave: opts.skipSave })
 
-                // Only queue a map update when the CoT actually changed and it
-                // isn't still waiting to be added. A pending-create COT is
-                // mutated in place, so also pushing it to pendingUpdate would
-                // emit a duplicate add+update for the same feature id in one
-                // diff. This keeps idempotent re-adds (loadArchive / feature
-                // sync events, including a client receiving its own change)
-                // from disturbing a freshly drawn, not-yet-flushed feature.
+                // Skip pendingUpdate for a not-yet-flushed pending-create COT
+                // (mutated in place) to avoid a duplicate add+update in one diff.
                 if (changed && !this.pendingCreate.has(exists.id)) {
                     this.pendingUpdate.set(exists.id, exists);
                 }
 
-                // Sync profile if this is the user's own COT
                 if (exists.is_self) {
                     const remarks = this.atlas.profile.profile_remarks?.value;
                     const callsign = this.atlas.profile.profile_callsign?.value;

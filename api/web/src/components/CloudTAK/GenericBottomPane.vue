@@ -7,12 +7,7 @@
 <script setup lang="ts"></script>
 
 <style scoped>
-/*
- * GenericBottomPane
- *
- * A wrapper that positions content at the bottom-centre of the map, always
- * floating above the persistent bottom status bar.
- */
+/* Positions content at the bottom-centre of the map, above the persistent bottom status bar. */
 .generic-bottom-pane {
     position: absolute;
     z-index: 5;

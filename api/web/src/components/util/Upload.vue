@@ -94,7 +94,6 @@ import {
     TablerProgress
 } from '@tak-ps/vue-tabler';
 
-// Define component properties with types and default values
 interface Props {
     url: URL;
     autoupload?: boolean;
@@ -118,7 +117,6 @@ const props = withDefaults(defineProps<Props>(), {
     sizeWarning: false
 });
 
-// Define the events emitted by this component
 const emit = defineEmits<{
     (e: 'cancel'): void;
     (e: 'error', response: Error): void;
@@ -127,7 +125,6 @@ const emit = defineEmits<{
 }>();
 
 
-// Reactive state variables
 const file = ref<{
     name: string;
     file: File;
@@ -137,7 +134,6 @@ const fileInput = ref<HTMLInputElement | null>(null);
 
 /**
  * Resets the component state and file input.
- * This function is exposed to be callable from a parent component.
  */
 function refresh() {
     file.value = undefined;
@@ -145,7 +141,7 @@ function refresh() {
 
     const input = fileInput.value;
     if (input) {
-        // A common trick to clear the file input's value
+        // Toggling the type is the reliable way to clear a file input's value
         input.type = 'text';
         input.type = 'file';
     }
@@ -153,7 +149,6 @@ function refresh() {
 
 /**
  * Handles the file upload process when a file is selected.
- * @param event - The file input change event
  */
 function stage(event: Event) {
     const target = event.target as HTMLInputElement;
@@ -192,7 +187,6 @@ async function upload(opts: {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
 
-        // Track upload progress
         xhr.upload.onprogress = (event) => {
             if (event.lengthComputable) {
                 const percentComplete = Math.round((event.loaded / event.total) * 100);
@@ -231,7 +225,6 @@ async function upload(opts: {
             reject(new Error('Upload cancelled'));
         };
 
-        // Set headers
         const headers = {
             'X-Requested-With': 'XMLHttpRequest',
             ...props.headers,
@@ -240,14 +233,13 @@ async function upload(opts: {
 
         xhr.open(props.method, url.toString());
 
-        // Set headers (excluding Content-Type for FormData, browser sets it automatically)
+        // Skip Content-Type for FormData so the browser sets the multipart boundary
         Object.entries(headers).forEach(([key, value]) => {
             if (props.format !== 'formdata' || key.toLowerCase() !== 'content-type') {
                 xhr.setRequestHeader(key, value);
             }
         });
 
-        // Prepare and send data
         try {
             if (props.format === 'formdata') {
                 const formData = new FormData();
@@ -267,7 +259,6 @@ async function upload(opts: {
     });
 }
 
-// Expose the refresh function so parent components can call it
 defineExpose({
     refresh,
     upload

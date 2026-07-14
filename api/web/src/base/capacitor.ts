@@ -11,15 +11,10 @@ export function supportsServiceWorker(): boolean {
 }
 
 /**
- * Subscribe to foreground/background transitions in a way that is reliable on
- * native platforms. On native we use Capacitor's `App.appStateChange`, which
- * fires accurately when the app is suspended/resumed by the OS — unlike the web
- * `document.hidden`/`visibilitychange` API, which is unreliable inside an iOS
- * WebView. On web we fall back to the Page Visibility API.
- *
- * The handler is invoked with `true` when the app is backgrounded and `false`
- * when it returns to the foreground. Returns a function that removes the
- * listener.
+ * Subscribe to foreground/background transitions. On native we use Capacitor's
+ * `App.appStateChange` because the web `visibilitychange` API is unreliable
+ * inside an iOS WebView. The handler receives `true` when backgrounded and
+ * `false` when foregrounded; returns a function that removes the listener.
  */
 export async function addBackgroundStateListener(
     handler: (isBackgrounded: boolean) => void

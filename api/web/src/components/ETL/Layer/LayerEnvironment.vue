@@ -119,7 +119,6 @@
             </template>
 
             <div class='px-2 pb-3'>
-                <!-- AutoSuggested Filters -->
                 <template v-if='(config.timezone as Record<string, unknown>)'>
                     <TablerTimeZone
                         v-model='(config.timezone as Record<string, string>).timezone'

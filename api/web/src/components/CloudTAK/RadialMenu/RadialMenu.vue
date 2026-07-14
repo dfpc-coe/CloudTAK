@@ -219,10 +219,8 @@ watch(() => cot.value?.geometry, (newGeometry) => {
 
 let timer: ReturnType<typeof setInterval> | undefined;
 
-// Set on unmount so the async mount flow below can bail out - a rapid
-// follow-up map click closes the radial (unmounting this component) while
-// genMenuItems() is still awaiting worker data, and without this guard the
-// dead instance would still attach an empty, orphaned menu popup to the map
+// Guards the async mount flow: a rapid follow-up click can unmount this component while
+// genMenuItems() is still awaiting worker data, otherwise leaving an orphaned popup on the map.
 let cancelled = false;
 
 onUnmounted(() => {

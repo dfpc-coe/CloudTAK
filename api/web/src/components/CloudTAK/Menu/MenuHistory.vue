@@ -118,7 +118,6 @@ const subscription = liveQuery(async () => {
     return all.filter((e) => e.id.endsWith('.track'));
 }).subscribe(async (rows) => {
     entries.value = rows;
-    // Sync live-enabled state from the worker whenever the Dexie table changes
     const enabledUids = await mapStore.worker.db.breadcrumb.listEnabled();
     liveEnabled.value = new Set(enabledUids);
 });
@@ -144,7 +143,6 @@ async function toggleLive(uid: string, enabled: boolean): Promise<void> {
 }
 
 async function clearTrail(entry: DBBreadcrumb): Promise<void> {
-    // Disable live recording if active
     if (liveEnabled.value.has(entry.uid)) {
         await mapStore.worker.db.breadcrumb.set(entry.uid, false);
     }

@@ -302,7 +302,6 @@ const bindNativeInput = () => {
   }
 };
 
-// --- Helper: Resolve path in JSON Schema ---
 const getTargetSchema = (pathString: string): SchemaNode | null => {
   const parts = pathString.split('.').filter(p => p);
   let current = props.schema;
@@ -317,7 +316,6 @@ const getTargetSchema = (pathString: string): SchemaNode | null => {
   return current;
 };
 
-// --- Logic ---
 const handleInput = (target: HTMLTextAreaElement | HTMLInputElement | null) => {
   if (!target) return;
 

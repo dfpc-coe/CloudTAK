@@ -194,8 +194,7 @@ async function refresh() {
 }
 
 async function setAllStatus(active=true) {
-    // Updating the API takes a perceptable amount of time so
-    // we update the UI state to provide immediate feedback
+    // Update UI state optimistically for immediate feedback while the API call is in flight
     const updates = channels.value.map((ch) => {
         const char = JSON.parse(JSON.stringify(ch));
         char.active = active;

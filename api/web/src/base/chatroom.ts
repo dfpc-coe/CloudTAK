@@ -10,8 +10,6 @@ import type {
 
 /**
  * High Level Wrapper around the Profile Chatroom API
- *
- * @property {string} name - The name of the chatroom
  */
 export default class Chatroom {
     name: string;
@@ -50,11 +48,7 @@ export default class Chatroom {
     }
 
     /**
-     * Loads an existing Chatroom from the local DB and refresh it,
-     *
-     * @param name - The unique identifier for the chatroom
-     * @param opts - Options for loading the chatroom
-     * @param opts.reload - Whether to reload the chatroom from the local DB
+     * Loads an existing Chatroom from the local DB and refresh it.
      */
     static async load(
         name: string,

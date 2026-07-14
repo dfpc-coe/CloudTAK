@@ -57,7 +57,6 @@ export default class SubscriptionLayer {
         const list = data as unknown as MissionLayerList;
 
         list.data.sort((a, b) => {
-            // Consistent sort by name
             return a.name.localeCompare(b.name);
         });
 

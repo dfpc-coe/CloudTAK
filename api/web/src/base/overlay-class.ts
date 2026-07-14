@@ -16,9 +16,6 @@ import ProfileConfig from './profile.ts';
 import Subscription from './subscription.ts';
 import { FeatureVisibility } from '../stores/modules/feature-visibility.ts';
 
-/**
- * @class
- */
 export default class Overlay {
     _destroyed: boolean;
     _internal: boolean;
@@ -267,7 +264,6 @@ export default class Overlay {
 
         await FeatureVisibility.applyToOverlay(this);
 
-        // Update background + attribution if this is a basemap
         if (this.mode === 'basemap') {
             mapStore.updateBackground();
             await mapStore.updateAttribution();
@@ -542,7 +538,6 @@ export default class Overlay {
         await this.save();
 
 
-        // Update attribution if this is a basemap
         if (this.mode === 'basemap') {
             const mapStore = useMapStore();
             await mapStore.updateAttribution();
@@ -587,8 +582,7 @@ export default class Overlay {
             await db.overlay.delete(this.id);
         }
 
-        // Update background + attribution if this was a basemap - if the
-        // remaining basemaps provide no background color the CloudTAK
+        // If the remaining basemaps provide no background color the CloudTAK
         // default is restored
         if (wasBasemap) {
             mapStore.updateBackground();
@@ -625,7 +619,6 @@ export default class Overlay {
             changed = true;
         }
 
-        // Update background + attribution if this is a basemap
         if (this.mode === 'basemap') {
             mapStore.updateBackground();
             await mapStore.updateAttribution();

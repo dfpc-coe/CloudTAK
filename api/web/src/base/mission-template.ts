@@ -150,7 +150,6 @@ export default class MissionTemplate {
         for (const templ of local) {
             if (!serverIds.has(templ.id)) {
                 await db.mission_template.delete(templ.id);
-                // Also delete logs
                 await db.mission_template_log.where('template').equals(templ.id).delete();
             }
         }

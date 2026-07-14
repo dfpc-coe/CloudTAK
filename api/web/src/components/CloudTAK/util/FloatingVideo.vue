@@ -109,7 +109,6 @@
                         muted
                     />
                     
-                    <!-- Buffering Overlay -->
                     <div
                         v-if='isBuffering'
                         class='buffering-overlay'
@@ -129,10 +128,7 @@
 
 <script setup lang='ts'>
 /**
- * FloatingVideo Component
- *
- * A draggable, resizable video player component for HLS live streaming.
- * Features resilient error handling, automatic retry logic, and MediaMTX muxer restart recovery.
+ * FloatingVideo - draggable, resizable HLS live-stream player with retry and muxer-restart recovery.
  */
 
 import { ref, computed, onMounted, onUnmounted, nextTick, useTemplateRef } from 'vue'
@@ -155,10 +151,8 @@ import {
     TablerButton,
 } from '@tak-ps/vue-tabler';
 
-// Store for managing floating panes
 const floatStore = useFloatStore();
 
-// Component props
 const props = defineProps({
     title: {
         type: String,
@@ -166,47 +160,37 @@ const props = defineProps({
     },
     uid: {
         type: String,
-        required: true // Unique identifier for this video pane
+        required: true
     }
 });
 
-// Template refs for DOM elements
 const videoTag = useTemplateRef<HTMLVideoElement>('videoTag');
 
-// Component events
 const emit = defineEmits(['close']);
 
-// UI state management
 const loading = ref(true);
 const error = ref<Error | undefined>();
 
-// HLS retry logic state
 const retryCount = ref(0);
-const maxRetries = ref(3); // Maximum retry attempts before giving up
+const maxRetries = ref(3);
 
-// HLS player instance
 const player = ref<Hls | undefined>()
 
-// Video streaming data
 const video = ref(floatStore.panes.get(props.uid) as Pane<PaneVideoConfig>);
-const videoLease = ref<VideoLeaseResponse | undefined>(); // CloudTAK video lease
-const videoProtocols = ref<VideoLeaseMetadata["protocols"] | undefined>(); // Available streaming protocols
+const videoLease = ref<VideoLeaseResponse | undefined>();
+const videoProtocols = ref<VideoLeaseMetadata["protocols"] | undefined>();
 
-// Active stream metadata
 const active = ref();
 
-// Buffer monitoring state
 const isBuffering = ref(false);
 const bufferCheckInterval = ref<number | undefined>();
 const bufferRecoveryTimeout = ref<number | undefined>();
 
-// Buffer monitoring configuration
-const BUFFER_LOW_THRESHOLD = 2; // Pause when buffer falls below 2 seconds
-const BUFFER_RECOVERY_THRESHOLD = 5; // Resume when buffer recovers to 5+ seconds
-const BUFFER_CHECK_INTERVAL_MS = 500; // Check buffer every 500ms
-const BUFFER_RECOVERY_TIMEOUT_MS = 10000; // Escalate if buffering lasts too long
+const BUFFER_LOW_THRESHOLD = 2;
+const BUFFER_RECOVERY_THRESHOLD = 5;
+const BUFFER_CHECK_INTERVAL_MS = 500;
+const BUFFER_RECOVERY_TIMEOUT_MS = 10000;
 
-// Computed title - uses stream metadata name if available, falls back to prop
 const title = computed(() => {
     if (active.value && active.value.metadata) {
         return active.value.metadata.name;
@@ -234,13 +218,11 @@ function monitorBuffer(): void {
         const bufferedEnd = buffered.end(buffered.length - 1);
         const bufferAhead = bufferedEnd - currentTime;
 
-        // If buffer is low (less than threshold), show buffering overlay
         if (bufferAhead < BUFFER_LOW_THRESHOLD && !isBuffering.value && !video.ended) {
             console.log(`Buffer running low (${bufferAhead.toFixed(2)}s), waiting for more data...`);
             setBuffering(true);
         }
 
-        // If buffer has recovered (more than threshold), resume
         if (bufferAhead > BUFFER_RECOVERY_THRESHOLD && isBuffering.value) {
             console.log(`Buffer recovered (${bufferAhead.toFixed(2)}s), resuming playback...`);
             setBuffering(false);
@@ -318,23 +300,17 @@ function attachVideoEventHandlers(): void {
     };
 }
 
-// Cleanup when component is unmounted
 onUnmounted(async () => {
-    // Stop buffer monitoring
     clearBufferMonitoring();
 
-    // Destroy HLS player instance
     if (player.value) {
         player.value.destroy();
     }
 
-    // Clean up video lease from server
     await deleteLease();
 });
 
-// Initialize component when mounted
 onMounted(async () => {
-    // Start the video lease request process
     await requestLease();
 });
 
@@ -345,7 +321,6 @@ async function deleteLease(): Promise<void> {
     if (!videoLease.value) return;
 
     try {
-        // Delete the temporary video lease from server
         await std(`/api/video/lease/${videoLease.value.id}`, {
             method: 'DELETE',
         });
@@ -376,7 +351,6 @@ async function createPlayer(): Promise<void> {
             liveSyncDurationCount: 3, // More tolerant of discontinuities
             liveMaxLatencyDurationCount: 10,
             xhrSetup: (xhr: XMLHttpRequest) => {
-                // Add authentication if stream requires it
                 if (url.username && url.password) {
                     xhr.setRequestHeader('Authorization', 'Basic ' + btoa(`${url.username}:${url.password}`));
                 }
@@ -389,12 +363,10 @@ async function createPlayer(): Promise<void> {
             if (player.value) player.value.loadSource(url.toString());
         });
 
-        // Auto-play when manifest is loaded and parsed
         player.value.on(Hls.Events.MANIFEST_PARSED, async () => {
             try {
                 if (videoTag.value) await videoTag.value.play();
                 
-                // Start buffer monitoring interval
                 startBufferMonitoring();
             } catch (err) {
                 console.error("Error playing video:", err);
@@ -453,7 +425,6 @@ async function createPlayer(): Promise<void> {
                 default:
                     if (!data.fatal) return;
 
-                    // Handle other fatal errors with retry logic
                     handleStreamError(data.error);
                     break;
             }
@@ -473,7 +444,6 @@ async function createPlayer(): Promise<void> {
 
     console.log('Handling HLS stream restart (muxer restart detected)');
 
-    // Clear buffer monitoring before restarting player
     clearBufferMonitoring();
 
     try {
@@ -504,20 +474,16 @@ async function createPlayer(): Promise<void> {
 
 /**
  * Handle stream errors with exponential backoff retry logic
- * Implements 3-attempt retry system with increasing delays: 1s, 2s, 4s
  */
 function handleStreamError(streamError: Error): void {
-    // Clear buffer monitoring before destroying player
     clearBufferMonitoring();
 
     if (retryCount.value < maxRetries.value) {
-        // Calculate exponential backoff delay
         const delay = 1000 * Math.pow(2, retryCount.value); // 1s, 2s, 4s
         console.log(`Retrying stream in ${delay}ms (attempt ${retryCount.value + 1}/${maxRetries.value})`);
 
         retryCount.value++;
 
-        // Retry after delay
         setTimeout(() => {
             if (player.value) {
                 player.value.destroy();
@@ -527,7 +493,6 @@ function handleStreamError(streamError: Error): void {
             createPlayer();
         }, delay);
     } else {
-        // Max retries reached - give up and show error to user
         console.error('Max retries reached, giving up');
 
         if (player.value) {
@@ -556,24 +521,21 @@ async function requestLease(): Promise<void> {
     }
 
     try {
-        // Check if stream is already active on the server
         const url = stdurl('/api/video/active');
         url.searchParams.set('url', video.value.config.url)
         active.value = await std(url);
 
         if (active.value.metadata) {
-            // Stream is already active - use existing protocols
             videoProtocols.value = active.value.metadata.protocols;
             loading.value = false;
         } else if (active.value.leasable) {
-            // Stream can be leased - create temporary lease
             const lease = await std('/api/video/lease', {
                 method: 'POST',
                 body:  {
                     name: 'Temporary Lease',
                     ephemeral: true, // Hidden from streaming list
                     duration: 1 * 60 * 60, // 1 hour lease
-                    proxy: video.value.config.url // Proxy the external stream
+                    proxy: video.value.config.url
                 }
             }) as VideoLeaseResponse
 
@@ -584,13 +546,11 @@ async function requestLease(): Promise<void> {
 
             loading.value = false;
         } else if (!active.value.leasable) {
-            // Stream cannot be leased
             error.value = new Error(active.value.message || 'Could not start stream');
         }
 
-        // Initialize HLS player if we have protocols available
         if (!error.value && videoProtocols.value && videoProtocols.value.hls) {
-            retryCount.value = 0; // Reset retry count for new lease
+            retryCount.value = 0;
             nextTick(() => {
                 createPlayer();
             });

@@ -217,9 +217,6 @@ export default class SubscriptionFeature {
      * This will udpate the feature in the local DB, submit it to the TAK Server and
      * mark the subscription as dirty for a re-render
      *
-     * @param atlas - The Atlas instance
-     * @param cot - The COT object to upsert
-     * @param opts - Options for updating the feature
      * @param opts.skipNetwork - If true, the feature will not be updated on the server - IE in response to a Mission Change event
      */
     async update(

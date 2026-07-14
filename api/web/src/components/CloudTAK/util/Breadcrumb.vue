@@ -124,7 +124,6 @@ async function loadBreadcrumb() {
 
         for (const feat of crumb.features) {
             if (feat.geometry.type === 'LineString' && String(feat.id).endsWith('-track')) {
-                // Merge the historical track into the live breadcrumb trail (or seed it)
                 await mapStore.worker.db.breadcrumb.merge(
                     props.uid,
                     feat.geometry.coordinates as number[][]

@@ -266,7 +266,6 @@ watch(
 
         await mapStore.worker.profile.update(toRaw(newProfile) as DisplayProfileUpdate);
 
-        // Update distance unit
         mapStore.updateDistanceUnit(newProfile.display_distance);
 
         // Immediately update coordinate format and icon rotation to avoid requiring page reload

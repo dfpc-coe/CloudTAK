@@ -94,7 +94,6 @@ const props = defineProps({
 
 const mode = ref(props.unit === 'kilometer' ? 'kilometer' : props.unit === 'meter' ? 'meter' : 'mile');
 
-// Watch for prop changes and update mode accordingly
 watch(() => props.unit, (newUnit) => {
     mode.value = newUnit === 'kilometer' ? 'kilometer' : newUnit === 'meter' ? 'meter' : 'mile';
 });

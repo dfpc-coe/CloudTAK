@@ -126,7 +126,6 @@ onMounted(async () => {
 
 const state = computed(() => mapStore.navigation.state);
 
-// Convert a distance in kilometers into the user's preferred display unit.
 function formatDistance(km: number): string {
     const unit = units.value.display_distance;
     if (unit === 'meter') {
@@ -134,7 +133,6 @@ function formatDistance(km: number): string {
     } else if (unit === 'kilometer') {
         return `${(km).toFixed(km < 10 ? 2 : 1)} km`;
     } else {
-        // Default to miles.
         return `${(km * 0.621371).toFixed(km * 0.621371 < 10 ? 2 : 1)} mi`;
     }
 }

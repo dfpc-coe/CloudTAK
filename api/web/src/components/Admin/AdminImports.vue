@@ -259,7 +259,6 @@ async function fetchList() {
             page: paging.value.page,
         };
 
-        // Only add status filter if it's not 'All'
         if (paging.value.status && paging.value.status !== 'All') {
             params.status = paging.value.status as paths['/api/import']['get']['parameters']['query']['status'];
         }
