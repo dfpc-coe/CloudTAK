@@ -697,13 +697,17 @@ export default class AtlasDatabase {
                 exists = await COT.load(feat, {
                     mode: OriginMode.MISSION,
                     mode_id: mission_guid
-                }, opts);
+                }, {
+                    // Destination is a Data Sync - the feature lives in the
+                    // mission, so never submit it to the profile feature API.
+                    skipSave: true
+                });
             } else {
                 await exists.update({
                     path: feat.path,
                     properties: feat.properties,
                     geometry: feat.geometry
-                }, { skipSave: opts.skipSave })
+                }, { skipSave: true })
             }
 
             await sub.feature.update(this.atlas, exists, {
@@ -827,6 +831,26 @@ export default class AtlasDatabase {
             await this.breadcrumb.update(exists);
 
             return exists;
+        }
+    }
+
+    /**
+     * Batch variant of add() for importing many features at once (eg. a GeoJSON
+     * or lasso import). Runs the entire loop inside the worker so the caller
+     * pays a single Comlink round-trip instead of one per feature, and returns
+     * nothing so no COTs are serialized back across the worker boundary.
+     */
+    async addAll(
+        features: InputFeature[],
+        opts?: {
+            skipSave?: boolean;
+            skipBroadcast?: boolean;
+            authored?: boolean;
+            render?: boolean;
+        }
+    ): Promise<void> {
+        for (const feature of features) {
+            await this.add(feature, opts);
         }
     }
 

@@ -220,13 +220,13 @@ async function saveToMap() {
     });
 
     const adding = feats.value.map((feat: InputFeature) =>
-        mapStore.worker.db.add(JSON.parse(JSON.stringify(feat)), {
-            authored: true,
-            render: false
-        })
+        JSON.parse(JSON.stringify(feat))
     );
 
-    await Promise.all(adding);
+    await mapStore.worker.db.addAll(adding, {
+        authored: true,
+        render: false
+    });
 
     if (mapStore.mission) {
         await mapStore.loadMission(mapStore.mission.meta.guid);

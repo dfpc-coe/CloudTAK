@@ -26,6 +26,14 @@ export enum Import_Status {
     FAIL = 'Fail',
 }
 
+export enum CoreEvent_Priority {
+    NONE = 'none',
+    LOW = 'low',
+    MEDIUM = 'medium',
+    HIGH = 'high',
+    CRITICAL = 'critical',
+}
+
 export enum AllBoolean {
     TRUE = 'true',
     FALSE = 'false',

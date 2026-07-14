@@ -3,7 +3,7 @@ import { Type, Static } from '@sinclair/typebox';
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text, Profile_Radiation_Dose } from './enums.js';
-import { VideoLease_SourceType } from './enums.js';
+import { VideoLease_SourceType, CoreEvent_Priority } from './enums.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
 import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, BasemapTerrain_Encoding } from './enums.js';
@@ -141,6 +141,20 @@ export const StandardResponse = Type.Object({
 
 export const PaletteFeatureResponse = createSelectSchema(schemas.PaletteFeature, {
     uuid: Type.String(),
+});
+
+export const CoreEventResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    username: Type.Union([Type.Null(), Type.String()]),
+    priority: Type.Enum(CoreEvent_Priority),
+    type: Type.String({ description: 'MIL-STD-2525E Symbol ID' }),
+    name: Type.String(),
+    location: Type.String({ description: 'Human readable location - ie: an address' }),
+    remarks: Type.String(),
+    geometry: GeoJSONFeatureGeometryPoint,
+    channels: Type.Array(Type.Integer(), { description: 'TAK Server Channels the Event is shared with' }),
 });
 
 export const MissionTemplateResponse = Type.Object({
