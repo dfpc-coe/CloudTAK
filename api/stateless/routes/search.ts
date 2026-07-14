@@ -56,7 +56,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     const RouteResponse = Feature.FeatureCollection;
 
     await schema.get('/search', {
-        name: 'Search ConfigStateless',
+        name: 'Search Config',
         group: 'Search',
         description: 'Get information about the configured search provider(s)',
         res: SearchManagerConfig,

@@ -511,7 +511,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             res.json({
                 status: 200,
-                message: 'Incoming Layer ConfigStateless Deleted',
+                message: 'Incoming Layer Config Deleted',
             });
         } catch (err) {
             Err.respond(err, res);
@@ -678,7 +678,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             res.json({
                 status: 200,
-                message: 'Outgoing Layer ConfigStateless Deleted',
+                message: 'Outgoing Layer Config Deleted',
             });
         } catch (err) {
             Err.respond(err, res);

@@ -28,7 +28,7 @@ export default {
                 },
                 TargetGroupAttributes: [{
                     Key: 'deregistration_delay.timeout_seconds',
-                    Value: '15'
+                    Value: '0'
                 }]
             }
         },
@@ -204,8 +204,8 @@ export default {
                 HealthCheckGracePeriodSeconds: 300,
                 DesiredCount: 1,
                 DeploymentConfiguration: {
-                    MaximumPercent: 100,
-                    MinimumHealthyPercent: 0,
+                    MaximumPercent: 200,
+                    MinimumHealthyPercent: 100,
                     DeploymentCircuitBreaker: {
                         Enable: true,
                         Rollback: true

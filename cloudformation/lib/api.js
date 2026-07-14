@@ -498,6 +498,7 @@ export default {
                 PropagateTags: 'SERVICE',
                 EnableExecuteCommand: cf.ref('EnableExecute'),
                 HealthCheckGracePeriodSeconds: 300,
+                DesiredCount: 2,
                 NetworkConfiguration: {
                     AwsvpcConfiguration: {
                         AssignPublicIp: 'ENABLED',
