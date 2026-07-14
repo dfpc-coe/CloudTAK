@@ -33,10 +33,9 @@ function fingerprint(text: string): string {
 }
 
 /**
- * The deployed build is identified by fingerprinting the manifest bytes: any
- * deploy rewrites the manifest, and the SW registration URL derives from it,
- * so a new deploy always produces a new registration URL — which is what
- * triggers the browser to install a fresh SW with a fresh precache.
+ * Fingerprint the manifest bytes to identify the deployed build: every deploy
+ * rewrites the manifest, so the derived SW registration URL changes and the
+ * browser installs a fresh SW with a fresh precache.
  */
 async function fetchDeployedBuildId(): Promise<string | null> {
     const response = await fetch('/.vite/manifest.json', { cache: 'no-store' });
@@ -45,11 +44,9 @@ async function fetchDeployedBuildId(): Promise<string | null> {
     return fingerprint(await response.text());
 }
 
-// Set when THIS tab's update banner posts SKIP_WAITING, so the
-// controllerchange handler knows it is safe to auto-reload. Other tabs see
-// the same controllerchange without the flag and get a prompt instead of
-// silently reloading (which would lose unsaved state). A module variable
-// suffices: the flag is set and consumed within one page lifetime.
+// Set when THIS tab's update banner posts SKIP_WAITING so the controllerchange
+// handler auto-reloads only this tab. Other tabs see the same event without the
+// flag and get a prompt instead of silently reloading (losing unsaved state).
 let updateRequestedByThisTab = false;
 
 /**
@@ -129,10 +126,9 @@ export function initServiceWorker(): void {
             const scriptUrl = `/sw.js?build=${encodeURIComponent(buildId)}`;
             try {
                 console.log(`[SW] registering ${scriptUrl}`);
-                // `updateViaCache: 'none'` ensures the sw.js script itself
-                // is never served from HTTP cache. Without this, a stale
-                // intermediary could pin users to an old service worker
-                // indefinitely.
+                // `updateViaCache: 'none'` keeps the sw.js script itself out of
+                // the HTTP cache, so a stale intermediary can't pin users to an
+                // old service worker.
                 const registration = await navigator.serviceWorker.register(
                     scriptUrl,
                     { updateViaCache: 'none' }
@@ -146,10 +142,9 @@ export function initServiceWorker(): void {
             }
         };
 
-        // Register against whatever is deployed right now, then poll so
-        // long-lived tabs pick up new deploys. If the manifest is
-        // unreachable (offline start), the existing registration keeps
-        // serving and the next successful poll registers the current build.
+        // Register the current deploy, then poll so long-lived tabs pick up new
+        // deploys. If the manifest is unreachable (offline start), the existing
+        // registration keeps serving until the next successful poll.
         const checkDeployedBuild = async () => {
             try {
                 const buildId = await fetchDeployedBuildId();
@@ -192,12 +187,9 @@ export function initServiceWorker(): void {
         });
     };
 
-    // Registration is deferred until the page has loaded so it does not
-    // compete with critical resources — but the app's module graph can
-    // finish evaluating *after* `load` has already fired, and a `load`
-    // listener attached past the event never runs. Check `readyState` so a
-    // late start still registers instead of waiting forever for an event
-    // that will not come again.
+    // Defer registration until load so it doesn't compete with critical
+    // resources, but check `readyState` first: if the module graph evaluates
+    // after `load` has already fired, a `load` listener would never run.
     if (document.readyState === 'complete') {
         console.log('[SW] init — document already loaded, registering immediately');
         start();

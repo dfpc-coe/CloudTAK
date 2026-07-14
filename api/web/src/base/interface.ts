@@ -73,8 +73,7 @@ export default class BaseInterface {
     /**
      * Returns a single item from the database by its unique identifier
      *
-     * @param id - The unique identifier of the item to retrieve
-     * @param opts - Optional parameters for fetching the item, such as whether to trigger a sync before fetching
+     * @param opts - Optional parameters, such as whether to trigger a sync before fetching
      */
     static async from(
         id: string,
@@ -85,8 +84,6 @@ export default class BaseInterface {
 
     /**
      * Returns a single item from the database by its unique identifier and updates in real-time when the item changes
-     *
-     * @param id - The unique identifier of the item to retrieve
      */
     static liveFrom(id: string): Observable<unknown> {
         throw new Error('Method not implemented.');
@@ -101,9 +98,6 @@ export default class BaseInterface {
 
     /**
      * Updates an item in the database by its unique identifier and attempts to update it via the API
-     *
-     * @param id - The unique identifier of the item to update
-     * @param data - The data to update the item with
      */
     static async update(id: string, data: unknown): Promise<void> {
         throw new Error('Method not implemented.');
@@ -111,8 +105,6 @@ export default class BaseInterface {
 
     /**
      * Deletes an item from the database by its unique identifier and attempts to delete it via the API
-     *
-     * @param id - The unique identifier of the item to delete
      */
     static async delete(id?: unknown): Promise<void> {
         throw new Error('Method not implemented.');

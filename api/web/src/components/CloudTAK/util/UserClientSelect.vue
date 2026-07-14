@@ -46,7 +46,6 @@ const filter = ref(props.modelValue || '');
 
 const filteredList = computed(() => {
     if (!filter.value) {
-        // Return initial list if no filter
         return contacts.value.slice(0, props.limit || 10);
     }
     
@@ -80,7 +79,6 @@ onMounted(async () => {
     });
 });
 
-// Sync filter changes back to parent if using v-model
 watch(filter, (val) => {
     emit('update:modelValue', val);
 });

@@ -7,7 +7,7 @@ import type ConfigStateful from '../config.js';
 import { randomUUID } from 'node:crypto';
 import Modeler from '@openaddresses/batch-generic';
 import { Connection } from '../../common/schema.js';
-import { setTimeout as sleep } from 'node:timers/promises';
+import { setTimeout as delay } from 'node:timers/promises';
 import TAK, { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
 import type ConnectionConfig from '../../common/connection-config.js';
@@ -475,7 +475,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                         console.warn(`Connection: ${connConfig.id} (${connConfig.uid()}) - Sync: ${sub.name}: ${err instanceof Error ? err.message : String(err)}`);
 
                         if (err instanceof Error && err.message.includes('ECONNREFUSED')) {
-                            await sleep(1000);
+                            await delay(1000);
                         } else {
                             // We don't retry for unknown issues as it could be the Sync has been remotely deleted and will
                             // retry forwever
@@ -533,7 +533,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         connClient.retry = nextRetry;
 
         console.log(`not ok - ${connClient.config.uid()} - ${connClient.config.name} - retrying in ${retryms}ms`);
-        if (retryms > 0) await sleep(retryms);
+        if (retryms > 0) await delay(retryms);
 
         if (this.closed) {
             console.error(`ok - Not Retrying: ${connClient.config.id} - ${connClient.config.name} - Connection Pool Closed`);

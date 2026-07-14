@@ -1,4 +1,5 @@
 import Modeler, { Pool } from '@openaddresses/batch-generic';
+import CoreEvent from './models/CoreEvent.js';
 import Data from './models/Data.js';
 import Import from './models/Import.js';
 import Layer from './models/Layer.js';
@@ -19,6 +20,8 @@ export default class Models {
     ImportResult: Modeler<typeof pgtypes.ImportResult>;
     Data: Data;
     Server: Modeler<typeof pgtypes.Server>;
+
+    CoreEvent: CoreEvent;
 
     Connection: Modeler<typeof pgtypes.Connection>;
     ConnectionToken: Modeler<typeof pgtypes.ConnectionToken>;
@@ -58,6 +61,7 @@ export default class Models {
     LayerOutgoing: Modeler<typeof pgtypes.LayerOutgoing>;
 
     constructor(pg: Pool<typeof pgtypes>) {
+        this.CoreEvent = new CoreEvent(pg);
         this.ProfileChat = new ProfileChat(pg);
         this.Icon = new Icon(pg);
 

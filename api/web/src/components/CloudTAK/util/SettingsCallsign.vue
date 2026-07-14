@@ -243,7 +243,6 @@ onMounted(async () => {
 
     profile.value = p;
 
-    // Snapshot initial values
     for (const item of settings.value) {
         previousValues[item.key] = (profile.value as Profile)[item.key as keyof Profile];
     }
@@ -292,7 +291,6 @@ async function saveField(key: string) {
         mapStore.defaultPointType = p.tak_type || 'u-d-p';
     }
 
-    // Show saved indicator
     savedKey.value = key;
     changedFields.value.delete(key);
     previousValues[key] = (profile.value as Profile)[key as keyof Profile];
@@ -307,13 +305,11 @@ async function saveField(key: string) {
     }
 }
 
-// Watch for changes to auto-save non-input fields
 watch(
     () => profile.value,
     async (newProfile) => {
         if (!newProfile || loading.value) return;
 
-        // Detect which fields changed
         for (const item of settings.value) {
             const current = (newProfile as Profile)[item.key as keyof Profile];
             if (current !== previousValues[item.key]) {

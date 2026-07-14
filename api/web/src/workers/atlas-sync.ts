@@ -298,7 +298,6 @@ export default class AtlasSync {
                 // feature (a no-op) while other clients render it.
                 await this.atlas.db.add(event.body as Feature, { skipSave: true });
             } else if (event.id !== undefined) {
-                // No inline payload - fetch just the mutated feature
                 await this.syncFeature(String(event.id));
             } else {
                 // Bulk feature change with no id (e.g. delete-all) - reconcile

@@ -15,7 +15,6 @@
 
             <div class='mx-2 py-2'>
                 <div class='rounded px-2 cloudtak-accent pb-2'>
-                    <!-- Sensor Info -->
                     <div class='d-flex align-items-center mt-2 mb-3'>
                         <IconInfoCircle
                             :size='16'
@@ -96,7 +95,6 @@
                         </div>
                     </div>
 
-                    <!-- Measurements -->
                     <div
                         v-if='radsensordetail.radmeasurement && radsensordetail.radmeasurement.length > 0'
                         class='mt-4'
@@ -140,7 +138,6 @@
                         </div>
                     </div>
 
-                    <!-- Isotopes -->
                     <div
                         v-if='radsensordetail.isotope && radsensordetail.isotope.length > 0'
                         class='mt-4'

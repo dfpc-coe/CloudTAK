@@ -1,7 +1,3 @@
-/*
-* ConnectionStore - Maintain the WebSocket connection with CloudTAK Server
-*/
-
 import COT from '../base/cot.ts';
 import type { TransferHandler } from 'comlink'
 import type { Feature } from '../types.ts';

@@ -424,8 +424,6 @@ const customBackgroundColor = computed(() => {
 const footerLogo = computed(() => {
     if (!brandStore.login) return undefined;
 
-    // Check if brand is enabled, if not return undefined (hidden)
-    // If enabled or default, check logic below
     if (brandStore.login.brand?.enabled === 'disabled') {
         return undefined;
     } else if (brandStore.login.brand?.logo) {
@@ -555,10 +553,8 @@ onMounted(async () => {
         startConditionalPasskey();
     }
 
-    // Detect an existing (un-cleared) session left behind by a previous login.
-    // The database is intentionally NOT deleted here - it is only cleared on an
-    // explicit sign-out or when a different user logs in. This avoids a costly
-    // resync when a token simply expires.
+    // The database is intentionally kept until an explicit sign-out or a
+    // different user logs in, avoiding a costly resync on token expiry.
     try {
         const existing = await appStore.getUsername();
         if (existing) {
@@ -570,8 +566,7 @@ onMounted(async () => {
     }
 });
 
-// Clear the stored session and wipe the local database. Triggered by the
-// "Not Me" button when the user wants to log in as a different account.
+// Clear the stored session and wipe the local database ("Not Me" button).
 async function notMe(): Promise<void> {
     try {
         await appStore.destroySession();
@@ -584,9 +579,8 @@ async function notMe(): Promise<void> {
     body.value.password = '';
 }
 
-// Persist a successful login. If the authenticated user differs from the one
-// whose data is already cached locally, wipe the database first so the new
-// user does not inherit the previous user's data.
+// Persist a successful login, wiping the database first if a different user
+// than the one cached locally is authenticating.
 async function applySession(login: { token: string; email: string; session: string }): Promise<void> {
     if (storedUsername.value && storedUsername.value !== login.email) {
         await appStore.destroySession();

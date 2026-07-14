@@ -14,11 +14,9 @@
  *                              fallback for icons that haven't synced locally
  *
  * Bulk hydration of the Dexie icon cache is owned by the Atlas worker (see
- * workers/atlas-sync.ts). Hydration exists to prime the offline cache, not
- * to invalidate the map: only iconsets whose content actually changed
- * (version bump, removal, explicit mutation) purge their MapLibre images;
- * iconsets cached for the first time merely retry fallback placeholders,
- * since successfully resolved icons are identical to the cached rows.
+ * workers/atlas-sync.ts) and primes the offline cache; only iconsets whose
+ * content changed purge their MapLibre images, while first-time cached
+ * iconsets merely retry fallback placeholders.
  */
 import { Preferences } from '@capacitor/preferences';
 import ms from 'milsymbol'
@@ -106,16 +104,10 @@ export default class IconManager {
         spriteProtocolRegistered = true;
 
         mapgl.addProtocol(SPRITE_PROTOCOL, async (params) => {
-            // MapLibre normalizes the declared sprite URL through `new URL()`
-            // before appending the `.json`/`.png` (and `@2x`) suffixes, so the
-            // handler sees URLs in two shapes:
-            //   cloudtak-sprite://<id>.json          (no path separator)
-            //   cloudtak-sprite://<id>/.json         (URL-normalized form)
-            //   cloudtak-sprite://<id>@2x.png        (HiDPI, no separator)
-            //   cloudtak-sprite://<id>/@2x.png       (HiDPI, normalized)
-            // `@` must be excluded from the id class so the optional
-            // pixel-ratio suffix is matched by its dedicated group instead of
-            // being swallowed into the id.
+            // MapLibre appends `.json`/`.png` (and `@2x`) suffixes after
+            // normalizing via `new URL()`, so ids may appear with or without a
+            // trailing slash. `@` is excluded from the id class so the optional
+            // pixel-ratio suffix matches its own group instead of the id.
             const match = /^cloudtak-sprite:\/\/([^/.@]+)\/?(?:@\dx)?\.(json|png)$/.exec(params.url);
             if (!match) throw new Error(`Unsupported sprite URL: ${params.url}`);
 
@@ -427,15 +419,12 @@ export default class IconManager {
         for (let i = 0; i < data.length; i += 4) {
             const alpha = data[i + 3];
 
-            // Skip transparent pixels
             if (alpha === 0) continue;
 
-            // Check if pixel is white or light colored
             if (this.isWhitePixel(data[i], data[i + 1], data[i + 2])) {
-                data[i] = r;     // Red
-                data[i + 1] = g; // Green
-                data[i + 2] = b; // Blue
-                // Keep original alpha
+                data[i] = r;
+                data[i + 1] = g;
+                data[i + 2] = b;
             }
         }
     }
@@ -444,7 +433,6 @@ export default class IconManager {
      * Check if a pixel is considered "white" (should be recolored)
      */
     private isWhitePixel(r: number, g: number, b: number): boolean {
-        // Consider pixels white if they are very light (above 200 in all channels)
         return r > 200 && g > 200 && b > 200;
     }
 

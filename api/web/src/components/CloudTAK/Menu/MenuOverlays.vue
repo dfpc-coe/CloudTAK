@@ -67,8 +67,8 @@
                             :class='{
                                 "border-primary": isDraggable
                             }'
-                            :hover='!isDraggable && card.overlay.id !== 0'
-                            @click='handleCardClick(card.overlay.id)'
+                            :hover='!isDraggable && card.overlay.id !== 0 && hasOverlayDetails(card.overlay)'
+                            @click='handleCardClick(card.overlay)'
                         >
                             <div
                                 class='d-flex justify-content-between gap-3'
@@ -208,7 +208,7 @@
                             </div>
 
                             <div
-                                v-if='!isDraggable && opened.has(card.overlay.id)'
+                                v-if='!isDraggable && opened.has(card.overlay.id) && hasOverlayDetails(card.overlay)'
                                 class='mt-3 p-3 rounded-3 border border-white border-opacity-10 bg-black bg-opacity-25'
                                 @click.stop
                             >
@@ -242,14 +242,6 @@
                                 >
                                     <TreeCots
                                         :element='card.overlay'
-                                    />
-                                </div>
-                                <div
-                                    v-if='card.overlay.mode === "mission"'
-                                    class='mb-3'
-                                >
-                                    <TreeMission
-                                        :overlay='card.overlay'
                                     />
                                 </div>
                                 <TreeVector
@@ -287,7 +279,6 @@ import {
 } from '@tak-ps/vue-tabler';
 import TreeCots from './Overlays/TreeCots.vue';
 import TreeVector from './Overlays/TreeVector.vue';
-import TreeMission from './Overlays/TreeMission.vue';
 import {
     IconGripVertical,
     IconAmbulance,
@@ -358,13 +349,11 @@ const overlayCards = computed<OverlayCard[]>(() => {
         });
     };
 
-    // Database-backed overlays drive membership and ordering (pos)
     for (const record of dbOverlays.value) {
         consider(OverlayManager.loadedFrom(record.id));
     }
 
-    // Internal / loaded-only overlays (e.g. the "Map Features" overlay) are
-    // never persisted to the database, so merge them in from the loaded set
+    // Internal overlays (e.g. "Map Features") are never persisted, so merge them from the loaded set
     for (const overlay of OverlayManager.loaded) {
         consider(overlay);
     }
@@ -473,10 +462,19 @@ function toggleOverlay(id: number) {
     }
 }
 
-function handleCardClick(id: number) {
+function handleCardClick(overlay: Overlay) {
     if (isDraggable.value) return;
-    if (id === 0) return;
-    toggleOverlay(id);
+    if (overlay.id === 0) return;
+    if (!hasOverlayDetails(overlay)) return;
+    toggleOverlay(overlay.id);
+}
+
+/** Whether an overlay has an expandable details panel. Mission overlays are managed from MenuMission and are not expandable here. */
+function hasOverlayDetails(overlay: Overlay): boolean {
+    return overlay.type === 'raster'
+        || overlay.type === 'raster-dem'
+        || overlay.type === 'vector'
+        || (overlay.type === 'geojson' && overlay.id === -1);
 }
 
 function resolveOverlayStatus(overlay: Overlay): OverlayStatus {

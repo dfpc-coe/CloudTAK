@@ -1,6 +1,5 @@
 <template>
     <MenuTemplate
-        v-if='props.menu !== false'
         name='Mission Layers'
         :zindex='0'
         :back='false'
@@ -116,89 +115,6 @@
             </template>
         </div>
     </MenuTemplate>
-    <div
-        v-else
-        class='col-12'
-    >
-        <TablerLoading
-            v-if='loading'
-            class='mx-2'
-            desc='Loading Layers...'
-        />
-        <template v-else>
-            <div
-                v-if='editLayer'
-                class='col-12 px-2 pb-4'
-            >
-                <MissionLayerEdit
-                    :subscription='props.subscription'
-                    :layer='editLayer'
-                    @layer='refresh'
-                    @cancel='editLayer = undefined'
-                />
-            </div>
-
-            <div class='d-flex align-items-center gap-2 px-2 py-2'>
-                <TablerIconButton
-                    title='Home'
-                    @click='navigateHome'
-                >
-                    <IconFolder
-                        :size='20'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-                <template
-                    v-for='(crumb, idx) in pathStack'
-                    :key='crumb.uid'
-                >
-                    <IconChevronRight
-                        :size='20'
-                        stroke='1'
-                        class='text-white-50'
-                    />
-                    <span
-                        class='fw-semibold cursor-pointer'
-                        @click='navigateToCrumb(idx)'
-                    >{{ tree.layerMap.get(crumb.uid)?.name ?? '(deleted)' }}</span>
-                </template>
-                <span
-                    v-if='!pathStack.length'
-                    class='small text-white-50'
-                >/</span>
-            </div>
-
-            <TablerNone
-                v-if='!currentFolders.length && !currentItems.length'
-                :create='false'
-                :compact='true'
-                :label='pathStack.length ? "Folder is empty" : "No Layers"'
-            />
-            <template v-else>
-                <PathBrowser
-                    v-if='currentFolders.length'
-                    :nodes='currentFolders'
-                    :renamable='writable'
-                    :deletable='writable'
-                    :visibility-toggle='true'
-                    :is-node-hidden='isMissionFolderHidden'
-                    @navigate='navigateToFolder'
-                    @delete='deleteLayer'
-                    @rename='openEdit'
-                    @toggle-visibility='toggleMissionFolderVisibility'
-                />
-                <div class='mt-2'>
-                    <FeatureRow
-                        v-for='feat of currentItems'
-                        :key='feat.id'
-                        :delete-button='false'
-                        :visibility-toggle='true'
-                        :feature='feat'
-                    />
-                </div>
-            </template>
-        </template>
-    </div>
 </template>
 
 <script setup lang='ts'>
@@ -231,12 +147,9 @@ import FeatureRow from '../../util/FeatureRow.vue';
 import MissionLayerCreate from './MissionLayerCreate.vue';
 import MissionLayerEdit from './MissionLayerEdit.vue';
 
-const props = withDefaults(defineProps<{
-    menu?: boolean,
+const props = defineProps<{
     subscription: Subscription
-}>(), {
-    menu: true
-})
+}>()
 
 const createLayer = ref(false);
 const editLayer = ref<MissionLayer | undefined>();
@@ -279,11 +192,7 @@ const feats = computed<Map<string, Feature>>(() => {
     return map;
 });
 
-/**
- * Adapt the recursive Mission Layer tree into the generic PathNode tree
- * consumed by PathBrowser. Only GROUP & UID layers are surfaced as folders;
- * a sidecar map preserves the original layer for mutation handlers.
- */
+/** Adapt the recursive Mission Layer tree into PathBrowser's PathNode tree; a sidecar map preserves the original layer for mutation handlers. */
 const tree = computed<{ nodes: PathNode<Feature>[], layerMap: Map<string, MissionLayer> }>(() => {
     const layerMap = new Map<string, MissionLayer>();
 
@@ -370,11 +279,7 @@ const currentItems = computed<Feature[]>(() => {
     return node ? Array.from(node.items) : orphanedFeats.value;
 });
 
-/**
- * Collect every feature id contained within a mission folder node, recursing
- * into child folders. Mission "folders" are server-defined layer groups rather
- * than feature `path` values, so visibility is toggled by the contained ids.
- */
+/** Collect every feature id within a mission folder node (recursing into children). Mission folders are server-defined layer groups, so visibility is toggled by contained ids. */
 function collectNodeIds(node: PathNode<Feature>): string[] {
     const ids: string[] = [];
 

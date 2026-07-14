@@ -77,7 +77,6 @@ const props = defineProps({
 
 const mode = ref(props.unit);
 
-// Keep mode in sync with unit prop changes
 watchEffect(() => {
     mode.value = props.unit;
 });

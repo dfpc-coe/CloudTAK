@@ -21,7 +21,6 @@
                     class='position-relative d-flex justify-content-center align-items-center'
                     style='width: 100px; height: 100px;'
                 >
-                    <!-- True North -->
                     <div
                         class='position-absolute d-flex flex-column align-items-center'
                         style='height: 100%; top: 0;'
@@ -43,7 +42,6 @@
                         />
                     </div>
 
-                    <!-- Magnetic North -->
                     <div
                         class='position-absolute d-flex flex-column align-items-center'
                         style='height: 100%; top: 0; transition: transform 0.3s ease;'

@@ -1,6 +1,5 @@
 <template>
     <div class='row g-2'>
-        <!-- Global Defaults -->
         <div class='col-12'>
             <span class='text-muted subheader'>Global Defaults</span>
         </div>
@@ -239,7 +238,6 @@
             />
         </div>
 
-        <!-- Geometry Overrides -->
         <div class='col-12 mt-2'>
             <span class='text-muted subheader'>Geometry Overrides</span>
         </div>

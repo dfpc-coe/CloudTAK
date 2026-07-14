@@ -171,7 +171,6 @@ async function generateRoute(): Promise<void> {
         let provider: string | undefined = undefined;
         let travelMode: string | undefined = undefined;
 
-        // Convert Human Name => ID
         if (config.value) {
             for (const p of config.value.providers) {
                 if (p.name === routePlan.value.provider) {
@@ -181,7 +180,6 @@ async function generateRoute(): Promise<void> {
             }
         }
 
-        // Convert Human Name => ID
         if (routePlan.value.travelMode) {
             for (const m of modes.value) {
                 if (m.name === routePlan.value.travelMode) {

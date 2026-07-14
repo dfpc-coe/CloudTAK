@@ -15,7 +15,7 @@ import {
     BasemapTerrain_Encoding,
     ProfilePaging_Type,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
-    ProfileChatStatus,
+    ProfileChatStatus, CoreEvent_Priority,
 } from './enums.js';
 import { bigint, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
@@ -41,6 +41,31 @@ export const CoreIncident = pgTable('core_incident', {
     center: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(),
     metadata: jsonb().notNull().default({}),
 });
+
+export const CoreEvent = pgTable('core_event', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    ended: timestamp({ withTimezone: true, mode: 'string' }),
+    username: text().references(() => Profile.username),
+    priority: text().$type<CoreEvent_Priority>().notNull().default(CoreEvent_Priority.NONE),
+    type: text().notNull(), // MIL-STD-2525E Symbol ID
+    name: text().notNull(),
+    external_id: text().notNull().default(''),
+    editable: boolean().notNull().default(true), // Can users other than the creator edit the Event
+    location: text().notNull().default(''), // Human readable location - ie: an address
+    remarks: text().notNull().default(''),
+    geometry: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>().notNull(),
+});
+
+export const CoreEventChannel = pgTable('core_event_channel', {
+    event: uuid().notNull().references(() => CoreEvent.id, { onDelete: 'cascade' }),
+    channel: bigint({ mode: 'bigint' }).notNull(),
+}, table => ({
+    pk: primaryKey({
+        columns: [table.event, table.channel],
+    }),
+}));
 
 export const PaletteFeature = pgTable('palette_feature', {
     uuid: uuid().primaryKey().default(sql`gen_random_uuid()`),

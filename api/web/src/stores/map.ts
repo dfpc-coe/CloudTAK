@@ -727,10 +727,8 @@ export const useMapStore = defineStore('cloudtak', {
             return sub;
         },
         init: async function(container: HTMLElement) {
-            // Start the worker here rather than in state() so that std.ts
-            // inside the worker resolves serverUrl from KV only after
-            // initializeApp() has written it — eliminating the race that
-            // caused the worker to fall back to capacitor://localhost.
+            // Start the worker here (not in state()) so the worker's std.ts
+            // resolves serverUrl from KV only after initializeApp() writes it.
             this.loadingStage = 'Starting worker…';
             this.startWorker();
 
@@ -864,12 +862,8 @@ export const useMapStore = defineStore('cloudtak', {
                         await this.reconcileOverlays();
                     }
                 } else if (msg.type === WorkerMessageType.Iconset_Change) {
-                    // The Atlas worker synced iconsets into Dexie. Iconsets
-                    // whose content actually changed (`purge`) drop their
-                    // MapLibre images so they re-resolve on demand;
-                    // first-time cached iconsets (`added`) only retry
-                    // fallback placeholders since their icons match what the
-                    // network fallback already served.
+                    // `purge` iconsets changed content: drop their MapLibre images to
+                    // re-resolve. `added` iconsets are newly cached: only retry fallbacks.
                     const body = msg.body as { purge: string[], added: string[] };
                     if (this._icons) {
                         this.icons.purgeIconsets(body.purge);
@@ -886,12 +880,8 @@ export const useMapStore = defineStore('cloudtak', {
                 void this.startLocationWatch();
             });
 
-            // Keep this device's push notification registration in sync. The
-            // device store already obtained the current token during
-            // initialization (when permission is granted) and emits future
-            // rotations via `onMessagingToken`. Store the unsubscribe handle so
-            // destroy() can remove it and avoid accumulating listeners across
-            // mount/unmount cycles.
+            // Keep this device's push registration in sync with token rotations.
+            // Store the unsubscribe handle so destroy() can remove the listener.
             if (this._removePushTokenListener) this._removePushTokenListener();
             this._removePushTokenListener = deviceStore.onMessagingToken((token) => {
                 void syncPushToken(token);
@@ -981,7 +971,6 @@ export const useMapStore = defineStore('cloudtak', {
             mapgl.setWorkerUrl(maplibreWorkerUrl);
             const map = new mapgl.Map(init);
 
-            // Add scale control
             const scaleControl = new mapgl.ScaleControl({
                 maxWidth: 100,
                 unit: 'metric'
@@ -989,11 +978,8 @@ export const useMapStore = defineStore('cloudtak', {
             map.addControl(scaleControl, 'bottom-right');
             (map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl })._scaleControl = scaleControl;
 
-            // Add the self-location puck control. Position/accuracy/heading are
-            // fed from the existing location pipeline (see syncGeolocateControl
-            // and the device orientation handler). The puck is non-interactive;
-            // recentring on the user's location is handled by the BottomBar
-            // callsign control.
+            // Self-location puck. Position/accuracy/heading are fed from the
+            // location pipeline (syncGeolocateControl + orientation handler).
             const geolocateControl = new GeolocateControl({
                 onClick: () => {
                     void this.openSelfFeature();
@@ -1002,9 +988,8 @@ export const useMapStore = defineStore('cloudtak', {
             map.addControl(geolocateControl, 'top-right');
             (map as mapgl.Map & { _geolocateControl?: GeolocateControl })._geolocateControl = geolocateControl;
 
-            // Add the route-navigation control. Renders guidance (connector +
-            // remaining-segment highlight) along an active TAK Route. Position is
-            // fed from the same location pipeline via syncRoutingControl().
+            // Route-navigation control. Renders guidance along an active TAK Route;
+            // position is fed via syncRoutingControl().
             const routingControl = new RoutingControl({
                 onUpdate: (state) => {
                     this.navigation.state = state;
@@ -1082,7 +1067,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.distanceUnit = (await ProfileConfig.get('display_distance'))?.value || 'meter';
 
-            // Initialize scale control settings
             this.updateDistanceUnit(this.distanceUnit);
 
             this.isOpen = await this.worker.conn.isOpen;
@@ -1146,7 +1130,6 @@ export const useMapStore = defineStore('cloudtak', {
                 if (this.draw.mode !== DrawToolMode.STATIC) return;
 
                 if (this.radial.mode) {
-                    // Clicking away closes the radial menu
                     this.radial.mode = undefined;
                     this.radial.cot = undefined;
                     return;
@@ -1154,12 +1137,10 @@ export const useMapStore = defineStore('cloudtak', {
 
                 if (this.select.feats) this.select.feats = [];
 
-                // Ignore Non-Clickable Layer
                 const clickMap = OverlayManager.clickableLayerMap();
 
-                // Each Visual Layer will return a Feature for a click
-                // Since a single "feature" may exist in multiple layers (text, polygon, line) etc
-                // dedupe them based on the ID
+                // A single feature may exist in multiple layers (text, polygon,
+                // line) so dedupe the click results by ID
                 const dedupe: Map<string, MapGeoJSONFeature> = new Map();
                 map.queryRenderedFeatures(e.point)
                     .filter((feat) => {
@@ -1173,7 +1154,6 @@ export const useMapStore = defineStore('cloudtak', {
 
                 if (!features.length) return;
 
-                // MultiSelect Mode
                 if (e.originalEvent.ctrlKey && features.length) {
                     const cot = await this.worker.db.get(features[0].properties.id, {
                         mission: true
@@ -1257,7 +1237,6 @@ export const useMapStore = defineStore('cloudtak', {
                 });
             });
 
-            // Long-press event handler for mobile devices
             let pressTimer: number | undefined;
             let pressEvent: MapTouchEvent | undefined;
             let pressStartPoint: Point | undefined;
@@ -1268,14 +1247,11 @@ export const useMapStore = defineStore('cloudtak', {
                 // Only handle single-touch (avoid interfering with multi-touch gestures like pinch-to-zoom)
                 if (e.originalEvent && e.originalEvent.touches.length !== 1) return;
 
-                // Store the event and starting point for later use
                 pressEvent = e;
                 pressStartPoint = e.point;
 
-                // Set a timer for long-press detection (500ms)
                 pressTimer = window.setTimeout(() => {
                     if (pressEvent) {
-                        // Prevent default context menu on mobile
                         if (pressEvent.originalEvent) {
                             pressEvent.originalEvent.preventDefault();
                         }
@@ -1315,7 +1291,6 @@ export const useMapStore = defineStore('cloudtak', {
             });
 
             map.on('touchend', () => {
-                // Clear the timer if touch ends before long-press threshold
                 if (pressTimer) {
                     clearTimeout(pressTimer);
                     pressTimer = undefined;
@@ -1325,15 +1300,13 @@ export const useMapStore = defineStore('cloudtak', {
             });
 
             map.on('touchmove', (e) => {
-                // Only clear if there's an active timer
                 if (pressTimer && pressStartPoint) {
-                    // Calculate squared distance moved from starting point (avoiding expensive sqrt)
+                    // Squared distance avoids an expensive sqrt
                     const deltaX = e.point.x - pressStartPoint.x;
                     const deltaY = e.point.y - pressStartPoint.y;
                     const distanceSquared = deltaX * deltaX + deltaY * deltaY;
 
-                    // Clear the timer if user moves more than 10 pixels (10^2 = 100)
-                    // This allows for minor finger tremors while still preventing accidental triggers
+                    // Ignore minor finger tremors; trigger only past 10px (10^2 = 100)
                     if (distanceSquared > 100) {
                         clearTimeout(pressTimer);
                         pressTimer = undefined;
@@ -1348,12 +1321,9 @@ export const useMapStore = defineStore('cloudtak', {
 
             await FeatureVisibility.load();
 
-            // Parallelize Overlay Creation. Use allSettled so a single
-            // overlay whose /tiles endpoint fails (404, network blip,
-            // upstream outage) does not prevent every other overlay -- and
-            // the rest of map init -- from completing. Failed entries are
-            // logged and dropped; Overlay.init also records the error on
-            // the overlay instance so the MenuOverlays UI can surface it.
+            // allSettled so one overlay's failed /tiles endpoint doesn't abort
+            // the rest of map init. Failures are logged and recorded on the
+            // overlay instance for MenuOverlays to surface.
             const overlayResults = await Promise.allSettled(profileOverlays.map(item =>
                 Overlay.create(item as ProfileOverlay, { skipSave: true, skipLayers: true })
             ));
@@ -1388,12 +1358,8 @@ export const useMapStore = defineStore('cloudtak', {
 
             await FeatureVisibility.apply();
 
-            // Data Syncs are specially loaded as they are dynamic
-            // Mission loading is fire-and-forget so logs/changes/features
-            // do not block the rest of map initialization. Each overlay is
-            // marked as `loading` while its mission data is being fetched
-            // and the maplibre source/layer + overlay entry are already in
-            // place from the steps above.
+            // Mission loading is fire-and-forget so it does not block map init;
+            // each overlay is marked `loading` while its data is fetched.
             for (const overlay of OverlayManager.missionOverlays()) {
                 const source = map.getSource(String(overlay.id));
                 if (!source) continue;
@@ -1412,8 +1378,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.isMapLoaded = true;
 
-            // Map is initialized & loaded - kick off a full data type
-            // synchronization with the TAK Server in the Atlas worker
+            // Kick off a full data sync with the TAK Server in the Atlas worker
             this.worker.sync.start()
                 .catch((err: unknown) => {
                     console.error('Failed to perform full sync after map load', err);
@@ -1502,13 +1467,11 @@ export const useMapStore = defineStore('cloudtak', {
         updateIconRotation: function(enabled: boolean): void {
             for (const overlay of OverlayManager.loaded) {
                 if (overlay.type === 'geojson') {
-                    // Update icon rotation
                     const iconLayerId = `${overlay.id}-icon`;
                     if (this.map.getLayer(iconLayerId)) {
                         this.map.setLayoutProperty(iconLayerId, 'icon-rotate', enabled ? ['get', 'course'] : 0);
                     }
 
-                    // Update course arrow filter based on rotation setting
                     const courseLayerId = `${overlay.id}-course`;
                     if (this.map.getLayer(courseLayerId)) {
                         if (enabled) {
@@ -1529,7 +1492,6 @@ export const useMapStore = defineStore('cloudtak', {
                         }
                     }
 
-                    // Update text offset
                     const textLayerId = `${overlay.id}-text-point`;
                     if (this.map.getLayer(textLayerId)) {
                         this.map.setLayoutProperty(textLayerId, 'text-offset', [0, enabled ? 2 : 2.5]);
@@ -1537,12 +1499,10 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
-            // Force a map repaint to ensure changes are visible immediately
             this.map.triggerRepaint();
         },
         updateDistanceUnit: function(unit: string): void {
             this.distanceUnit = unit;
-            // Remove existing scale control and add new one with correct unit
             const mapWithControl = this.map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl };
             const existingControl = mapWithControl._scaleControl;
             if (existingControl) {
@@ -1558,11 +1518,8 @@ export const useMapStore = defineStore('cloudtak', {
         updateBackground: function(): void {
             if (!this._map) return;
 
-            // A visible basemap style may carry its own background layer -
-            // its paint color takes over the shared CloudTAK background
-            // layer. Basemaps are checked bottom-up; the base-most one wins.
-            // Overlays never control the base color, and when no visible
-            // basemap provides a background the themed default is restored.
+            // A visible basemap's own background layer overrides the shared
+            // background color; checked bottom-up, the base-most one wins.
             let color: PropertyValueSpecification<string> = 'hsl(47, 26%, 88%)';
 
             for (const overlay of OverlayManager.visibleBasemaps()) {
@@ -1596,7 +1553,6 @@ export const useMapStore = defineStore('cloudtak', {
             const results = await Promise.all(attributionPromises);
             const attributions = results.filter((a): a is string => !!a);
 
-            // Update attribution by manipulating the DOM directly
             const attributionContainer = document.querySelector('.maplibregl-ctrl-attrib-inner');
             if (attributionContainer && attributions.length > 0) {
                 attributionContainer.innerHTML = attributions.join(' | ');
