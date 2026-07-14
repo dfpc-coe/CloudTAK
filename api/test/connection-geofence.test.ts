@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import ConnectionPool from '../stateful/connection-pool.js';
 import ConnectionGeofence from '../stateful/connection-geofence.js';
 import type ConnectionConfig from '../common/connection-config.js';
-import type Config from '../common/config.js';
+import type ConfigStateful from '../stateful/config.js';
 import type { Feature } from 'geojson';
 import type { Tile38 } from '@iwpnd/tile38-ts';
 
@@ -30,7 +30,7 @@ test('ConnectionPool.loadGeofences - disabled', async () => {
                 loadCalled = true;
             },
         },
-    } as unknown as Config);
+    } as unknown as ConfigStateful);
 
     await pool.loadGeofences({
         id: 1,
@@ -63,7 +63,7 @@ test('ConnectionPool.loadGeofences - disabled by nogeofence', async () => {
                 loadCalled = true;
             },
         },
-    } as unknown as Config);
+    } as unknown as ConfigStateful);
 
     await pool.loadGeofences({
         id: 1,
@@ -95,7 +95,7 @@ test('ConnectionPool.loadGeofences - enabled', async () => {
                 loadedFeatures = features;
             },
         },
-    } as unknown as Config);
+    } as unknown as ConfigStateful);
 
     await pool.loadGeofences({
         id: 1,
@@ -133,7 +133,7 @@ test('ConnectionGeofence.load - synchronizes connection geofences to Tile38', as
                 },
             },
         },
-    } as unknown as Config);
+    } as unknown as ConfigStateful);
 
     geofence.state = 'connected';
     geofence.tile38 = {

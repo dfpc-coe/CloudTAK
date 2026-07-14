@@ -1,14 +1,14 @@
 import { Type } from '@sinclair/typebox';
 import crypto from 'node:crypto';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import { ConnectionAuth } from '../../common/connection-config.js';
-import { Channel, ChannelAccess } from '../../common/interface-user.js';
+import { Channel, ChannelAccess } from '../interface-user.js';
 import { TAKAPI, APIAuthPassword } from '@tak-ps/node-tak';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/ldap/channel', {
         name: 'List Channel',
         group: 'LDAP',

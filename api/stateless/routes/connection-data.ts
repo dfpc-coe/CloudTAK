@@ -3,7 +3,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthResourceAccess, AuthUser } from '../../common/auth.js';
 import { Data, Connection } from '../../common/schema.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import S3 from '../../common/aws/s3.js';
 import { sql, inArray, and } from 'drizzle-orm';
 import DataMission from '../data-mission.js';
@@ -11,7 +11,7 @@ import { StandardResponse, DataResponse, DataListResponse } from '../../common/t
 import { MissionSubscriberRole } from '@tak-ps/node-tak/lib/api/mission';
 import * as Default from '../limits.js';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/data', {
         private: true,
         name: 'List Data',

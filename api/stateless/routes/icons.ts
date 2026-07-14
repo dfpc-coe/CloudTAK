@@ -5,7 +5,7 @@ import Auth, { AuthUserAccess, ResourceCreationScope } from '../../common/auth.j
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import Err from '@openaddresses/batch-error';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import Sprites from '../sprites.js';
 import { ZipArchive } from '@archiver/archiver';
 import xmljs from 'xml-js';
@@ -25,7 +25,7 @@ export enum IconsetFormatEnum {
     ZIP = 'zip',
 }
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const DefaultSprite = {
         json: JSON.parse(String(await fs.readFile(new URL('../../icons/generator.json', import.meta.url)))),
         image: await fs.readFile(new URL('../../icons/generator.png', import.meta.url)),

@@ -10,11 +10,11 @@ import S3 from '../../common/aws/s3.js';
 import jwt from 'jsonwebtoken';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { ProfileFile, ProfileFileChannel } from '../../common/schema.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import activeChannels from '../tak-channels.js';
 import * as Default from '../limits.js';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     async function ensureIconsetPermission(iconset: string | null | undefined, email: string) {
         if (iconset === undefined || iconset === null || iconset === '') return;
 

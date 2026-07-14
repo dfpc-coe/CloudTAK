@@ -1,7 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import S3 from '../../common/aws/s3.js';
 import { sql, and, inArray } from 'drizzle-orm';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import Auth, { AuthResourceAccess } from '../../common/auth.js';
 import { X509Certificate, createPrivateKey } from 'crypto';
 import { Type } from '@sinclair/typebox';
@@ -12,7 +12,7 @@ import Schema from '@openaddresses/batch-schema';
 import * as Default from '../limits.js';
 import { generateClientP12, generateTrustP12 } from '../certificate.js';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/connection', {
         name: 'List Connections',
         group: 'Connection',

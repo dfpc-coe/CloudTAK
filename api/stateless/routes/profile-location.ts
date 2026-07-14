@@ -1,4 +1,4 @@
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
@@ -7,7 +7,7 @@ import { Type } from '@sinclair/typebox';
 import { StandardResponse } from '../../common/types.js';
 import ProfileControl from '../control/profile.js';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const profileControl = new ProfileControl(config);
 
     await schema.put('/profile/location', {

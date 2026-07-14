@@ -6,7 +6,7 @@ import { BasemapProtocol, TileJSONActions } from '../interface-basemap.js';
 import { fromProtocol } from '../factory-basemap.js';
 import Auth, { AuthUserAccess, AuthUser, AuthResource, ResourceCreationScope, AuthResourceAccess } from '../../common/auth.js';
 import { Busboy } from '@fastify/busboy';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { Response } from 'express';
 import stream2buffer from '../stream.js';
 import bboxPolygon from '@turf/bbox-polygon';
@@ -75,7 +75,7 @@ function augmentBasemap(basemap: any): any {
 }
 
 async function listChildren(
-    config: Config,
+    config: ConfigStateless,
     parent: number,
     user?: { email: string; access: AuthUserAccess },
 ): Promise<Array<any>> {
@@ -92,7 +92,7 @@ async function listChildren(
 }
 
 async function validateParent(
-    config: Config,
+    config: ConfigStateless,
     parentid: number,
     user: { email: string; access: AuthUserAccess },
 ): Promise<void> {
@@ -129,7 +129,7 @@ function normalizeBasemapFormat(value: string): string {
 }
 
 async function importBasemapURL(
-    config: Config,
+    config: ConfigStateless,
     rawURL: string,
     auth?: Static<typeof BasemapImportAuth>,
 ): Promise<Static<typeof OptionalTileJSON>> {
@@ -208,7 +208,7 @@ async function importBasemapURL(
     return imported;
 }
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.put('/basemap', {
         name: 'Import Basemaps',
         group: 'BaseMap',

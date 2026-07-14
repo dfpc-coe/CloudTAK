@@ -5,12 +5,12 @@ import type { Connection } from '../../common/schema.js';
 import type { InferSelectModel } from 'drizzle-orm';
 import type { GeofenceStatus } from '../connection-geofence.js';
 import type { HubClient, ConnStatus, PoolSummary, PresenceMap, SubmitCotsRequest } from '../../common/hub/index.js';
-import type Config from '../../common/config.js';
+import type ConfigStateful from '../config.js';
 
 export default class LocalHub implements HubClient {
-    config: Config;
+    config: ConfigStateful;
 
-    constructor(config: Config) {
+    constructor(config: ConfigStateful) {
         this.config = config;
     }
 

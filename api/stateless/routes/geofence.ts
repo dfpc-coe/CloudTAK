@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import Auth from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 
 const GeofenceStatusResponse = Type.Object({
     state: Type.String({
@@ -16,7 +16,7 @@ const GeofenceStatusResponse = Type.Object({
     lastError: Type.Optional(Type.String()),
 });
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/geofence', {
         name: 'Get Geofence',
         group: 'Geofence',

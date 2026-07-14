@@ -5,14 +5,14 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../../common/auth.js';
 import { sql } from 'drizzle-orm';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { ServerResponse } from '../../common/types.js';
 import UserControl from '../control/user.js';
 import { TAKAPI, APIAuthCertificate, APIAuthPassword } from '@tak-ps/node-tak';
 
 const pkg = JSON.parse(String(fs.readFileSync(new URL('../../package.json', import.meta.url))));
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const userControl = new UserControl(config);
 
     await schema.get('/server', {

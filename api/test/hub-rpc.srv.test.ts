@@ -17,7 +17,7 @@ let rpc: Server;
 let hub: RemoteHub;
 
 test('Hub RPC: start server & client', async () => {
-    rpc = await startHubRpc(flight.config!);
+    rpc = await startHubRpc(flight.stateful!);
 
     const address = rpc.address();
     if (!address || typeof address !== 'object') throw new Error('Could not determine Hub RPC port');

@@ -1,4 +1,6 @@
 import type Config from './config.js';
+import type ConfigStateful from '../stateful/config.js';
+import type ConfigStateless from '../stateless/config.js';
 import type { Server } from 'node:http';
 import type { WebSocketServer } from 'ws';
 import CpuWatchdog from './cpu-watchdog.js';
@@ -8,12 +10,17 @@ export default class ServerManager {
     wss?: WebSocketServer;
     rpc?: Server;
     config: Config;
+    stateful?: ConfigStateful;
+    stateless?: ConfigStateless;
     watchdog: CpuWatchdog;
 
     constructor(
         server: Server,
         wss: WebSocketServer | undefined,
-        config: Config,
+        configs: {
+            stateful?: ConfigStateful;
+            stateless?: ConfigStateless;
+        },
         opts: {
             rpc?: Server;
         } = {},
@@ -21,13 +28,18 @@ export default class ServerManager {
         this.wss = wss;
         this.server = server;
         this.rpc = opts.rpc;
-        this.config = config;
+        this.stateful = configs.stateful;
+        this.stateless = configs.stateless;
 
-        this.watchdog = new CpuWatchdog(config);
+        const primary = configs.stateless || configs.stateful;
+        if (!primary) throw new Error('ServerManager requires a stateful and/or stateless Config');
+        this.config = primary;
+
+        this.watchdog = new CpuWatchdog(this.config);
 
         // The watchdog uploads profiles to the asset bucket, which isn't
         // available in the test harness, so only run it outside of tests.
-        if (config.StackName !== 'test') {
+        if (this.config.StackName !== 'test') {
             this.watchdog.start();
         }
     }
@@ -57,13 +69,15 @@ export default class ServerManager {
             }));
         }
 
-        if (this.config.mode !== 'api') {
-            closing.push(this.config.conns.close());
-            closing.push(this.config.geofence.close());
+        if (this.stateful) {
+            closing.push(this.stateful.conns.close());
+            closing.push(this.stateful.geofence.close());
         }
 
         await Promise.allSettled(closing);
 
-        this.config.pg.end();
+        // The stateful and stateless configs each own a database pool
+        this.stateful?.pg.end();
+        this.stateless?.pg.end();
     }
 }

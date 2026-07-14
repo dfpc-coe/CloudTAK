@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import ImportControl, { ImportSourceEnum } from '../common/control/import.js';
 import Sinks from './sinks.js';
-import Config from '../common/config.js';
+import type ConfigStateful from './config.js';
 import { randomUUID } from 'node:crypto';
 import Modeler from '@openaddresses/batch-generic';
 import { Connection } from '../common/schema.js';
@@ -118,7 +118,7 @@ export class ConnectionClient {
  * @class
  */
 export default class ConnectionPool extends Map<number | string, ConnectionClient> {
-    config: Config;
+    config: ConfigStateful;
     sinks: Sinks;
     importControl: ImportControl;
     closed: boolean;
@@ -133,7 +133,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
      */
     pingInterval: ReturnType<typeof setInterval>;
 
-    constructor(config: Config) {
+    constructor(config: ConfigStateful) {
         super();
 
         this.closed = false;

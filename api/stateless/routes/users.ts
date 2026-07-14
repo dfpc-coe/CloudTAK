@@ -4,7 +4,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import { ProfileResponse, ProfileListResponse } from '../../common/types.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types';
 import { Profile, ProfileSession } from '../../common/schema.js';
 import * as Default from '../limits.js';
@@ -23,7 +23,7 @@ const UserPatchBody = Type.Object({
 type UserPatchBodyType = Static<typeof UserPatchBody>;
 type UserPatchValue = UserPatchBodyType[keyof UserPatchBodyType];
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const profileControl = new ProfileControl(config);
 
     await schema.get('/user', {

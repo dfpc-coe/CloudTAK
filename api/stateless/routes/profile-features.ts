@@ -3,7 +3,7 @@ import { CoTParser } from '@tak-ps/node-cot';
 import tokml from 'tokml';
 import { coordEach } from '@turf/meta';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
@@ -15,7 +15,7 @@ import ConnectionEvents, { ConnectionEventDataType, ConnectionEventAction } from
 import { sql } from 'drizzle-orm';
 import * as Default from '../limits.js';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/profile/feature', {
         name: 'Get Features',
         group: 'ProfileFeature',

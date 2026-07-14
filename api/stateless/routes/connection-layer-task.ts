@@ -7,11 +7,11 @@ import Lambda from '../aws/lambda.js';
 import LayerDeploy from '../aws/layer-deploy.js';
 import LayerControl from '../control/layer.js';
 import Logs from '../aws/lambda-logs.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { Capabilities } from '@tak-ps/etl';
 import { StandardResponse, JobLogResponse } from '../../common/types.js';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const layerControl = new LayerControl(config);
 
     await schema.get('/connection/:connectionid/layer/:layerid/task', {

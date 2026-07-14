@@ -4,13 +4,13 @@ import { GenerateUpsert } from '@openaddresses/batch-generic';
 import ProfileControl, { DefaultUnits } from '../control/profile.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { FullConfig } from '../../common/types.js';
 import { FullConfigDefaults } from '../../common/defaults.js';
 
 export { FullConfigDefaults };
 
-// Allows Unauthenticated Access to these Config Keys
+// Allows Unauthenticated Access to these ConfigStateless Keys
 export const PublicConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'media::url',
     'login::signup',
@@ -30,7 +30,7 @@ export const PublicConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'passkey::enabled',
 ];
 
-// Allow Authenticated but Non-Admin Access to these Config Keys
+// Allow Authenticated but Non-Admin Access to these ConfigStateless Keys
 export const UserConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'notification::enabled',
     'notification::email::enabled',
@@ -84,13 +84,13 @@ function serializeConfigValue<K extends keyof Static<typeof FullConfig>>(
     return String(value);
 }
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const profileControl = new ProfileControl(config);
 
     await schema.get('/config', {
-        name: 'Get Config',
-        group: 'Config',
-        description: 'Get Config',
+        name: 'Get ConfigStateless',
+        group: 'ConfigStateless',
+        description: 'Get ConfigStateless',
         query: Type.Object({
             keys: Type.String(),
         }),
@@ -113,9 +113,9 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.put('/config', {
-        name: 'Update Config',
-        group: 'Config',
-        description: 'Update Config Key/Values',
+        name: 'Update ConfigStateless',
+        group: 'ConfigStateless',
+        description: 'Update ConfigStateless Key/Values',
         body: Type.Partial(FullConfig),
         res: Type.Partial(FullConfig),
     }, async (req, res) => {
@@ -172,9 +172,9 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.get('/config/display', {
-        name: 'Default Display Config',
-        group: 'Config',
-        description: 'Return Default Display Config',
+        name: 'Default Display ConfigStateless',
+        group: 'ConfigStateless',
+        description: 'Return Default Display ConfigStateless',
         res: DefaultUnits,
     }, async (req, res) => {
         try {
@@ -187,9 +187,9 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.get('/config/login', {
-        name: 'Login Config',
-        group: 'Config',
-        description: 'Return Login Config',
+        name: 'Login ConfigStateless',
+        group: 'ConfigStateless',
+        description: 'Return Login ConfigStateless',
         res: Type.Object({
             name: Type.Optional(Type.String()),
             logo: Type.Optional(Type.String()),
@@ -257,9 +257,9 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.get('/config/tiles', {
-        name: 'Tile Config',
-        group: 'Config',
-        description: 'Return Tile Config',
+        name: 'Tile ConfigStateless',
+        group: 'ConfigStateless',
+        description: 'Return Tile ConfigStateless',
         res: Type.Object({
             url: Type.String(),
         }),

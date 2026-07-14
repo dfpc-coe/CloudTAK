@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox';
 import { UAParser } from 'ua-parser-js';
@@ -18,7 +18,7 @@ import type {
     AuthenticationResponseJSON as WebAuthnAuthenticationResponseJSON,
 } from '@simplewebauthn/server';
 
-function rpFromConfig(config: Config, req?: { headers: { origin?: string } }): { rpID: string; origin: string | string[] } {
+function rpFromConfig(config: ConfigStateless, req?: { headers: { origin?: string } }): { rpID: string; origin: string | string[] } {
     const url = new URL(config.API_URL);
     const origins: string[] = [url.origin];
 
@@ -37,7 +37,7 @@ function rpFromConfig(config: Config, req?: { headers: { origin?: string } }): {
     };
 }
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const rpName = 'CloudTAK';
 
     const RegistrationResponseJSON = Type.Object({

@@ -1,12 +1,12 @@
 import { sql } from 'drizzle-orm';
 
-import type Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { ProfileChat } from '../../common/schema.js';
 import type { RetentionTask, RetentionTaskResult } from '../retention.js';
 
 const task: RetentionTask = {
     name: 'chat',
-    run: async (config: Config): Promise<RetentionTaskResult> => {
+    run: async (config: ConfigStateless): Promise<RetentionTaskResult> => {
         const start = Date.now();
 
         const days = (await config.models.Setting.typed('retention::chat::days')).value || 30;

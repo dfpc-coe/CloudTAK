@@ -1,13 +1,13 @@
 import { sql } from 'drizzle-orm';
 
-import type Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { Import } from '../../common/schema.js';
 import ImportControl from '../../common/control/import.js';
 import type { RetentionTask, RetentionTaskResult } from '../retention.js';
 
 const task: RetentionTask = {
     name: 'import',
-    run: async (config: Config): Promise<RetentionTaskResult> => {
+    run: async (config: ConfigStateless): Promise<RetentionTaskResult> => {
         const start = Date.now();
 
         const days = (await config.models.Setting.typed('retention::import::days')).value || 30;

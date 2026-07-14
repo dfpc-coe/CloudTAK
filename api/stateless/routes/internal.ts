@@ -5,13 +5,13 @@ import Alarm from '../aws/alarm.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthResourceAccess, AuthUser, AuthUserAccess } from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import DataMission from '../data-mission.js';
 import { DataResponse, LayerResponse } from '../../common/types.js';
 import { Layer } from '../../common/schema.js';
 import * as Default from '../limits.js';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const alarm = new Alarm(config.StackName);
 
     await schema.get('/layer', {

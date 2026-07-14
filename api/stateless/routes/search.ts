@@ -4,18 +4,18 @@ import geomagnetism from 'geomagnetism';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
-import { FetchHourly } from '../../common/interface-weather.js';
+import { FetchHourly } from '../interface-weather.js';
 import { SearchManager } from '../interface-search.js';
 import { SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from '../search/types.js';
 import { Feature } from '@tak-ps/node-cot';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 
 function optionalISOString(date: Date | null): string | null {
     if (date === null) return null;
     return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const searchManager = await SearchManager.init(config);
     const SunTime = (description: string) => Type.Union([Type.String(), Type.Null()], { description });
 
@@ -56,7 +56,7 @@ export default async function router(schema: Schema, config: Config) {
     const RouteResponse = Feature.FeatureCollection;
 
     await schema.get('/search', {
-        name: 'Search Config',
+        name: 'Search ConfigStateless',
         group: 'Search',
         description: 'Get information about the configured search provider(s)',
         res: SearchManagerConfig,

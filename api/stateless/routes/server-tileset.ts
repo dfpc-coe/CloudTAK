@@ -6,9 +6,9 @@ import Err from '@openaddresses/batch-error';
 import { Busboy } from '@fastify/busboy';
 import Auth from '../../common/auth.js';
 import S3 from '../../common/aws/s3.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.post('/server/tileset', {
         name: 'Upload Hosted Tileset',
         group: 'ServerTilesets',

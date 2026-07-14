@@ -4,7 +4,7 @@ import moment from 'moment';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess, AuthUser, AuthResource, AuthResourceAccess } from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { StandardResponse, VideoLeaseResponse } from '../../common/types.js';
@@ -15,7 +15,7 @@ import ECSVideoControl, { Action, Protocols, PathListItem, ProtocolPopulation } 
 import * as Default from '../limits.js';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const videoControl = new ECSVideoControl(config);
 
     await schema.post('/video/auth', {

@@ -1,14 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import STS from '@aws-sdk/client-sts';
-import { UserManager } from './interface-user.js';
-import { WeatherManager } from './interface-weather.js';
 import SecretsManager from '@aws-sdk/client-secrets-manager';
-import type EventsPool from '../stateful/events-pool.js';
 import { Pool, GenerateUpsert } from '@openaddresses/batch-generic';
-import type ConnectionPool from '../stateful/connection-pool.js';
-import type ConnectionGeofence from '../stateful/connection-geofence.js';
-import type { HubClient } from './hub/index.js';
-import type { ConnectionWebSocket } from '../stateful/connection-web.js';
 import type { Server } from './schema.js';
 import { type InferSelectModel } from 'drizzle-orm';
 import Models from './models.js';
@@ -19,7 +12,7 @@ export type ServerMode = 'both' | 'api' | 'hub';
 
 const SERVER_MODES: ServerMode[] = ['both', 'api', 'hub'];
 
-interface ConfigArgs {
+export interface ConfigArgs {
     silent: boolean;
     postgres: string;
     noevents: boolean;
@@ -28,17 +21,41 @@ interface ConfigArgs {
     nocache: boolean;
     mode?: ServerMode;
     hubUrl?: string;
-
-    /**
-     * Composition-root hook. Config lives in common/ and must not import the
-     * stateful/ or stateless/ hub implementations (doing so would pull the
-     * connection pool into the stateless process). Instead the caller injects
-     * a wiring fn that constructs the right HubClient + managers and calls
-     * config.attach(). See stateful/wire.ts and stateless/wire.ts.
-     */
-    wire?: (config: Config) => void | Promise<void>;
 }
 
+export interface ConfigInit {
+    silent: boolean;
+    noevents: boolean;
+    nosinks: boolean;
+    nogeofence: boolean;
+    nocache: boolean;
+    models: Models;
+    StackName: string;
+    API_URL: string;
+    PMTILES_URL: string;
+    SigningSecret: string;
+    pg: Pool<typeof pgtypes>;
+    server: InferSelectModel<typeof Server>;
+    Bucket?: string;
+    mode: ServerMode;
+    hubUrl?: string;
+}
+
+// envInit() side effects (boot logging, CLOUDTAK_Config_ settings upsert) only
+// run once per process - in 'both' mode the stateful and stateless configs
+// each bootstrap their own database pool and would otherwise repeat them.
+let envInitOnce = false;
+
+/**
+ * Shared configuration base. Owns everything both server halves need - the
+ * database pool, models, server record, secrets and URLs - and nothing that
+ * belongs to only one half. ConfigStateful (stateful/config.ts) adds the
+ * in-memory connection/geofence/event/ws managers and the in-process LocalHub;
+ * ConfigStateless (stateless/config.ts) adds the HubClient, UserManager and
+ * WeatherManager that request handling needs. Each subclass bootstraps its own
+ * pool via Config.envInit() - in 'both' mode two instances coexist, bridged
+ * only by the stateful side's LocalHub.
+ */
 export default class Config {
     silent: boolean;
     noevents: boolean;
@@ -48,41 +65,15 @@ export default class Config {
     models: Models;
     StackName: string;
     SigningSecret: string;
-    user?: UserManager;
-    weather: WeatherManager;
     API_URL: string;
     PMTILES_URL: string;
     Bucket?: string;
     pg: Pool<typeof pgtypes>;
     server: InferSelectModel<typeof Server>;
     mode: ServerMode;
-    hubUrl?: string;
-    hub!: HubClient;
     arnPrefix?: string;
 
-    #wsClients?: Map<string, ConnectionWebSocket[]>;
-    #conns?: ConnectionPool;
-    #geofence?: ConnectionGeofence;
-    #events?: EventsPool;
-
-    constructor(init: {
-        silent: boolean;
-        noevents: boolean;
-        nosinks: boolean;
-        nogeofence: boolean;
-        nocache: boolean;
-        models: Models;
-        StackName: string;
-        API_URL: string;
-        PMTILES_URL: string;
-        SigningSecret: string;
-        wsClients: Map<string, ConnectionWebSocket[]>;
-        pg: Pool<typeof pgtypes>;
-        server: InferSelectModel<typeof Server>;
-        Bucket?: string;
-        mode?: ServerMode;
-        hubUrl?: string;
-    }) {
+    constructor(init: ConfigInit) {
         this.silent = init.silent;
         this.noevents = init.noevents;
         this.nosinks = init.nosinks;
@@ -96,55 +87,7 @@ export default class Config {
         this.pg = init.pg;
         this.Bucket = init.Bucket;
         this.server = init.server;
-        this.mode = init.mode || 'both';
-        this.hubUrl = init.hubUrl;
-
-        // In-memory state only exists on the stateful side (both/hub modes).
-        // The hub client and managers are attached post-construction by the
-        // injected wire fn; see the `wire` note on ConfigArgs.
-        if (this.mode !== 'api') {
-            this.#wsClients = init.wsClients;
-        }
-
-        this.weather = new WeatherManager();
-    }
-
-    /**
-     * Attach the mode-appropriate HubClient and (for stateful modes) the
-     * in-memory managers. Called by the injected wire fn during Config.env,
-     * inverting the dependency so common/ never imports stateful/ or
-     * stateless/ at runtime.
-     */
-    attach(parts: {
-        hub: HubClient;
-        conns?: ConnectionPool;
-        geofence?: ConnectionGeofence;
-        events?: EventsPool;
-    }): void {
-        this.hub = parts.hub;
-        if (parts.conns) this.#conns = parts.conns;
-        if (parts.geofence) this.#geofence = parts.geofence;
-        if (parts.events) this.#events = parts.events;
-    }
-
-    get wsClients(): Map<string, ConnectionWebSocket[]> {
-        if (!this.#wsClients) throw new Error(`WebSocket Clients are not available in '${this.mode}' server mode`);
-        return this.#wsClients;
-    }
-
-    get conns(): ConnectionPool {
-        if (!this.#conns) throw new Error(`Connection Pool is not available in '${this.mode}' server mode`);
-        return this.#conns;
-    }
-
-    get geofence(): ConnectionGeofence {
-        if (!this.#geofence) throw new Error(`Geofence is not available in '${this.mode}' server mode`);
-        return this.#geofence;
-    }
-
-    get events(): EventsPool {
-        if (!this.#events) throw new Error(`Events Pool is not available in '${this.mode}' server mode`);
-        return this.#events;
+        this.mode = init.mode;
     }
 
     serverCert(): {
@@ -161,6 +104,10 @@ export default class Config {
     }
 
     static async env(args: ConfigArgs): Promise<Config> {
+        return new Config(await Config.envInit(args));
+    }
+
+    static async envInit(args: ConfigArgs): Promise<ConfigInit> {
         if (!process.env.AWS_REGION) {
             process.env.AWS_REGION = 'us-east-1';
         }
@@ -223,46 +170,42 @@ export default class Config {
             });
         }
 
-        const config = new Config({
+        if (!envInitOnce) {
+            envInitOnce = true;
+
+            if (!args.silent) {
+                console.error(`ok - set env AWS_REGION: ${process.env.AWS_REGION}`);
+                console.log(`ok - PMTiles: ${PMTILES_URL}`);
+                console.error(`ok - StackName: ${process.env.StackName}`);
+            }
+
+            for (const envkey in process.env) {
+                if (!envkey.startsWith('CLOUDTAK')) continue;
+
+                // TODO Strongly type via the Type in routes/config
+                if (envkey.startsWith('CLOUDTAK_Config_')) {
+                    const key = envkey.replace(/^CLOUDTAK_Config_/, '').replace(/_/g, '::');
+                    console.error(`ok - Updating ${key} with value from environment`);
+                    await models.Setting.generate({
+                        key,
+                        value: process.env[envkey],
+                    }, {
+                        upsert: GenerateUpsert.UPDATE,
+                    });
+                }
+            }
+        }
+
+        return {
             silent: (args.silent || false),
             noevents: (args.noevents || false),
             nosinks: (args.nosinks || false),
             nogeofence: (args.nogeofence || false),
             nocache: (args.nocache || false),
             StackName: process.env.StackName,
-            wsClients: new Map(),
             server, SigningSecret, API_URL, Bucket, pg, models, PMTILES_URL,
             mode, hubUrl,
-        });
-
-        if (args.wire) await args.wire(config);
-
-        if (!config.silent) {
-            console.error(`ok - set env AWS_REGION: ${process.env.AWS_REGION}`);
-            console.log(`ok - PMTiles: ${config.PMTILES_URL}`);
-            console.error(`ok - StackName: ${config.StackName}`);
-        }
-
-        config.user = new UserManager(config);
-        await config.user.init();
-
-        for (const envkey in process.env) {
-            if (!envkey.startsWith('CLOUDTAK')) continue;
-
-            // TODO Strongly type via the Type in routes/config
-            if (envkey.startsWith('CLOUDTAK_Config_')) {
-                const key = envkey.replace(/^CLOUDTAK_Config_/, '').replace(/_/g, '::');
-                console.error(`ok - Updating ${key} with value from environment`);
-                await config.models.Setting.generate({
-                    key,
-                    value: process.env[envkey],
-                }, {
-                    upsert: GenerateUpsert.UPDATE,
-                });
-            }
-        }
-
-        return config;
+        };
     }
 
     /**

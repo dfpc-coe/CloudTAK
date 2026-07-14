@@ -3,10 +3,10 @@ import { StandardResponse } from '../../common/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.delete('/marti/api/files/:hash', {
         name: 'Delete File',
         group: 'MartiFiles',

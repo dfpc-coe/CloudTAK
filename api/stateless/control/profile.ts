@@ -1,7 +1,7 @@
 import { Static, Type } from '@sinclair/typebox';
 import { sql } from 'drizzle-orm';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import {
     toEnum, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom, Profile_Style, Profile_Coordinate, Profile_Radiation_Dose,
 } from '../../common/enums.js';
@@ -107,9 +107,9 @@ export const DefaultUnits = Type.Object({
 });
 
 export default class ProfileControl {
-    config: Config;
+    config: ConfigStateless;
 
-    constructor(config: Config) {
+    constructor(config: ConfigStateless) {
         this.config = config;
     }
 

@@ -1,9 +1,9 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { CoTParser } from '@tak-ps/node-cot';
-import type Config from '../../common/config.js';
+import type ConfigStateful from '../config.js';
 
-export default function hubRouter(config: Config): express.Router {
+export default function hubRouter(config: ConfigStateful): express.Router {
     const router = express.Router();
 
     router.use((req: express.Request, res: express.Response, next: express.NextFunction) => {

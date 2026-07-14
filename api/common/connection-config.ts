@@ -3,7 +3,7 @@ import type { Feature } from 'geojson';
 import type { Connection } from './schema.js';
 import { InferSelectModel, sql } from 'drizzle-orm';
 import ConnectionControl from './control/connection.js';
-import Config from './config.js';
+import type ConfigStateful from '../stateful/config.js';
 
 export const ConnectionAuth = Type.Object({
     ca: Type.Optional(Type.Array(Type.String())),
@@ -29,7 +29,7 @@ export default interface ConnectionConfig {
     name: string;
     enabled: boolean;
     auth: Static<typeof ConnectionAuth>;
-    config: Config;
+    config: ConfigStateful;
 
     subscription: (name: string) => Promise<null | MissionSub>;
     subscriptions: () => Promise<Array<MissionSub>>;
@@ -45,9 +45,9 @@ export class MachineConnConfig implements ConnectionConfig {
     name: string;
     enabled: boolean;
     auth: Static<typeof ConnectionAuth>;
-    config: Config;
+    config: ConfigStateful;
 
-    constructor(config: Config, connection: InferSelectModel<typeof Connection>) {
+    constructor(config: ConfigStateful, connection: InferSelectModel<typeof Connection>) {
         this.config = config;
         this.id = connection.id;
         this.name = connection.name;
@@ -126,10 +126,10 @@ export class ProfileConnConfig implements ConnectionConfig {
     name: string;
     enabled: boolean;
     auth: Static<typeof ConnectionAuth>;
-    config: Config;
+    config: ConfigStateful;
 
     constructor(
-        config: Config,
+        config: ConfigStateful,
         email: string,
         auth: Static<typeof ConnectionAuth>,
     ) {
@@ -211,9 +211,9 @@ export class AdminConnConfig implements ConnectionConfig {
     name: string;
     enabled: boolean;
     auth: Static<typeof ConnectionAuth>;
-    config: Config;
+    config: ConfigStateful;
 
-    constructor(config: Config) {
+    constructor(config: ConfigStateful) {
         this.config = config;
         this.id = 0;
         this.name = 'admin';

@@ -3,7 +3,12 @@ import Err from '@openaddresses/batch-error';
 import path from 'node:path';
 import S3 from '../aws/s3.js';
 import { Static } from '@sinclair/typebox';
+import type { HubClient } from '../hub/index.js';
 import type { ImportResponse } from '../types.js';
+
+// Import control runs on both sides (connection pool ingest + routes), so it
+// accepts either config class - anything carrying the base Config plus a hub
+export type HubConfig = Config & { hub: HubClient };
 import crypto from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { Import_Status } from '../enums.js';
@@ -24,9 +29,9 @@ export enum ImportResultTypeEnum {
 }
 
 export default class ImportControl {
-    config: Config;
+    config: HubConfig;
 
-    constructor(config: Config) {
+    constructor(config: HubConfig) {
         this.config = config;
     }
 

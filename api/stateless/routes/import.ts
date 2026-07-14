@@ -5,7 +5,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { Param } from '@openaddresses/batch-generic';
 import { Busboy } from '@fastify/busboy';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import S3 from '../../common/aws/s3.js';
 import crypto from 'node:crypto';
 import { sql } from 'drizzle-orm';
@@ -15,7 +15,7 @@ import { Import_Status } from '../../common/enums.js';
 import { Import } from '../../common/schema.js';
 import * as Default from '../limits.js';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const importControl = new ImportControl(config);
 
     await schema.get('/import', {

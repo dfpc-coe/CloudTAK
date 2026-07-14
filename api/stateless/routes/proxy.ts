@@ -4,7 +4,7 @@ import Err from '@openaddresses/batch-error';
 import { fetch, Headers, Response } from 'undici';
 import { isSafeUrl } from '@tak-ps/node-safeurl';
 import Auth from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 
 const REQUEST_BODY_LIMIT = 256 * 1024;
 const RESPONSE_BODY_LIMIT = 1024 * 1024;
@@ -204,7 +204,7 @@ async function readUpstreamBody(response: Response): Promise<{
     };
 }
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.post('/proxy', {
         name: 'Proxy Request',
         group: 'Proxy',

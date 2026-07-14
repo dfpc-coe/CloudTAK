@@ -7,7 +7,7 @@ import { Feature } from '@tak-ps/node-cot';
 import S3 from '../../common/aws/s3.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import ProfileControl from '../control/profile.js';
 import { GenericMartiResponse, StandardResponse } from '../../common/types.js';
 import * as Default from '../limits.js';
@@ -28,7 +28,7 @@ import {
 } from '@tak-ps/node-tak/lib/api/types';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const profileControl = new ProfileControl(config);
 
     await schema.get('/marti/missions/:name', {

@@ -3,7 +3,7 @@ import moment from 'moment';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthResourceAccess } from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { sql } from 'drizzle-orm';
 import { VideoLease } from '../../common/schema.js';
 import { randomUUID } from 'node:crypto';
@@ -12,7 +12,7 @@ import { VideoLease_SourceType } from '../../common/enums.js';
 import ECSVideoControl, { Protocols } from '../control/video-service.js';
 import * as Default from '../limits.js';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const videoControl = new ECSVideoControl(config);
 
     await schema.get('/connection/:connectionid/video/lease', {

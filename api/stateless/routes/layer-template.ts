@@ -2,14 +2,14 @@ import { Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { sql } from 'drizzle-orm';
 import { Layer } from '../../common/schema.js';
 import LayerControl from '../control/layer.js';
 import { LayerResponse } from '../../common/types.js';
 import * as Default from '../limits.js';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const layerControl = new LayerControl(config);
 
     await schema.get('/template', {

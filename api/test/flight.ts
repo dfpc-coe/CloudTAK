@@ -9,8 +9,8 @@ import MockTAKServer from './tak-server.js';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import api from '../index.js';
-import Config from '../common/config.js';
-import wireLocal from '../stateful/wire.js';
+import ConfigStateful from '../stateful/config.js';
+import ConfigStateless from '../stateless/config.js';
 import drop from './drop.js';
 import { pathToRegexp } from 'path-to-regexp';
 import test from 'node:test';
@@ -47,7 +47,8 @@ class FlightResponse {
  * @class
  */
 export default class Flight {
-    config?: Config;
+    config?: ConfigStateless;
+    stateful?: ConfigStateful;
     srv?: any; // TODO: HTTP Server
     base: string;
     schema?: object;
@@ -250,15 +251,20 @@ export default class Flight {
      */
     takeoff(custom = {}) {
         test('test server takeoff', async () => {
-            this.config = await Config.env({
+            const envArgs = {
                 postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
                 silent: true,
                 noevents: true,
                 nosinks: true,
                 nocache: true,
-                wire: wireLocal,
-            });
+            };
 
+            // Each config owns its own database pool; construct sequentially
+            // so only one pool runs migrations at a time
+            this.stateful = await ConfigStateful.env(envArgs);
+            this.config = await ConfigStateless.env(envArgs, { hub: this.stateful.hub });
+
+            Object.assign(this.stateful, custom);
             Object.assign(this.config, custom);
 
             this.config.server = await this.config.models.Server.commit(this.config.server.id, {
@@ -271,7 +277,12 @@ export default class Flight {
                 api: `https://localhost:${this.tak.ports.marti}`,
             });
 
-            this.srv = await api(this.config);
+            // Both configs hold their own copy of the server record - the
+            // stateful side reads TLS certs from it when opening the admin
+            // connection, so it must see the Test Runner cert too
+            this.stateful.server = this.config.server;
+
+            this.srv = await api({ stateful: this.stateful, stateless: this.config });
 
             const address = this.srv.server.address();
             if (!address || typeof address !== 'object') throw new Error('Could not determine API server port');

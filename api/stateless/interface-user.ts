@@ -1,4 +1,4 @@
-import Config from './config.js';
+import Config from '../common/config.js';
 import { Static, Type } from '@sinclair/typebox';
 import CoTAKUser from './user/cotak.js';
 

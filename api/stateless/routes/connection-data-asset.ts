@@ -7,14 +7,14 @@ import S3 from '../../common/aws/s3.js';
 import Stream from 'node:stream';
 import { includesWithGlob } from 'array-includes-with-glob';
 import assetList from '../asset.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import DataMission from '../data-mission.js';
 import { InferSelectModel } from 'drizzle-orm';
 import type { Data } from '../../common/schema.js';
 import { StandardResponse, AssetResponse } from '../../common/types.js';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/connection/:connectionid/data/:dataid/asset', {
         name: 'List Assets',
         group: 'DataAssets',

@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import Auth from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import Retention from '../retention.js';
 
 const RetentionTaskResult = Type.Object({
@@ -16,7 +16,7 @@ const RetentionTaskResult = Type.Object({
     message: Type.Optional(Type.String()),
 });
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const retention = await Retention.load(config);
 
     await schema.post('/retention', {

@@ -3,11 +3,11 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import Schema from '@openaddresses/batch-schema';
 import { StandardResponse } from '../../common/types.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { Repeater } from '@tak-ps/node-tak/lib/api/repeater';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/server/repeater', {
         name: 'List Repeaters',
         group: 'ServerRepeater',

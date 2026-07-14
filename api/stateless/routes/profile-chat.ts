@@ -5,10 +5,10 @@ import { ProfileChat } from '../../common/schema.js';
 import Err from '@openaddresses/batch-error';
 import { StandardResponse } from '../../common/types.js';
 import Auth from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import * as Default from '../limits.js';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/profile/chatroom', {
         name: 'Get Chatrooms',
         group: 'ProfileChats',

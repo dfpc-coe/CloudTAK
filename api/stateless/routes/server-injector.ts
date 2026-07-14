@@ -1,13 +1,13 @@
 import { Type } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { StandardResponse } from '../../common/types.js';
 import Schema from '@openaddresses/batch-schema';
 import { Injector } from '@tak-ps/node-tak/lib/api/injectors';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/server/injector', {
         name: 'List Injectors',
         group: 'ServerInjector',

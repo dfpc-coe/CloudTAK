@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import Err from '@openaddresses/batch-error';
 
-import Config from '../common/config.js';
+import type ConfigStateless from './config.js';
 
 export interface RetentionInvocation {
     name: string;
@@ -17,19 +17,19 @@ export interface RetentionTaskResult {
 
 export interface RetentionTask {
     name: string;
-    run: (config: Config, retention: RetentionInvocation) => Promise<RetentionTaskResult>;
+    run: (config: ConfigStateless, retention: RetentionInvocation) => Promise<RetentionTaskResult>;
 }
 
 export default class Retention {
-    config: Config;
+    config: ConfigStateless;
     tasks: Map<string, RetentionTask>;
 
-    constructor(config: Config) {
+    constructor(config: ConfigStateless) {
         this.config = config;
         this.tasks = new Map();
     }
 
-    static async load(config: Config): Promise<Retention> {
+    static async load(config: ConfigStateless): Promise<Retention> {
         const retention = new Retention(config);
         await retention.init();
 

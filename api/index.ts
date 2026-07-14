@@ -5,10 +5,10 @@ import Bulldozer from './stateful/initialization.js';
 import type { WebSocketServer } from 'ws';
 import buildApi from './stateless/server/api.js';
 import { attachWebsocket, startHubRpc } from './stateful/server/hub.js';
-import Config from './common/config.js';
+import type { ServerMode } from './common/config.js';
+import ConfigStateful from './stateful/config.js';
+import ConfigStateless from './stateless/config.js';
 import ServerManager from './common/server.js';
-import wireLocal from './stateful/wire.js';
-import wireRemote from './stateless/wire.js';
 import process from 'node:process';
 
 type CliArgs = {
@@ -42,6 +42,11 @@ process.on('uncaughtExceptionMonitor', (exception, origin) => {
     console.trace('FATAL', exception, origin);
 });
 
+export type ServerConfigs = {
+    stateful?: ConfigStateful;
+    stateless?: ConfigStateless;
+};
+
 if (import.meta.url === `file://${process.argv[1]}`) {
     try {
         const dotfile = new URL(`.env${args.env ? '-' + args.env : ''}`, import.meta.url);
@@ -57,35 +62,47 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         }
     }
 
-    const config = await Config.env({
+    const envArgs = {
         silent: args.silent || false,
         noevents: args.noevents || false,
         postgres: process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl',
         nosinks: args.nosinks || false,
         nogeofence: args.nogeofence || false,
         nocache: args.nocache || false,
-        wire: config => config.mode === 'api'
-            ? wireRemote(config, config.hubUrl!)
-            : wireLocal(config),
-    });
+    };
 
-    await server(config);
+    const mode = (process.env.CLOUDTAK_Server_Mode || 'both') as ServerMode;
+
+    // Each config bootstraps its own database pool; construct sequentially so
+    // only one pool runs migrations at a time
+    const stateful = mode !== 'api' ? await ConfigStateful.env(envArgs) : undefined;
+    const stateless = mode !== 'hub'
+        ? await ConfigStateless.env(envArgs, stateful ? { hub: stateful.hub } : {})
+        : undefined;
+
+    await server({ stateful, stateless });
 }
 
-export default async function server(config: Config): Promise<ServerManager> {
-    if (config.mode !== 'api') {
-        if (config.StackName !== 'test' || process.env.CLOUDTAK_Mode === 'docker-compose') {
-            await Bulldozer.fireItUp(config);
+export default async function server(configs: ServerConfigs): Promise<ServerManager> {
+    const { stateful, stateless } = configs;
+
+    if (!stateful && !stateless) throw new Error('server() requires a stateful and/or stateless Config');
+
+    const primary = (stateless || stateful)!;
+
+    if (stateful) {
+        if (stateful.StackName !== 'test' || process.env.CLOUDTAK_Mode === 'docker-compose') {
+            await Bulldozer.fireItUp(stateful);
         }
 
-        if (!config.nogeofence) await config.geofence.init();
-        await config.conns.init();
+        if (!stateful.nogeofence) await stateful.geofence.init();
+        await stateful.conns.init();
 
-        if (!config.noevents) await config.events.init(config.pg);
+        if (!stateful.noevents) await stateful.events.init(stateful.pg);
     }
 
     let app: express.Application;
-    if (config.mode === 'hub') {
+    if (!stateless) {
         app = express();
         app.disable('x-powered-by');
         app.get('/api', (req, res) => {
@@ -94,14 +111,14 @@ export default async function server(config: Config): Promise<ServerManager> {
             });
         });
     } else {
-        app = await buildApi(config);
+        app = await buildApi(stateless);
     }
 
-    const rpc = config.mode === 'hub' ? await startHubRpc(config) : undefined;
+    const rpc = stateful && !stateless ? await startHubRpc(stateful) : undefined;
 
     return new Promise((resolve) => {
         const srv = app.listen(parseInt(process.env.PORT || '5001'), () => {
-            if (!config.silent) {
+            if (!primary.silent) {
                 if (process.env.CLOUDTAK_Mode === 'docker-compose') {
                     console.log('ok - http://localhost:5000');
                 } else {
@@ -111,7 +128,7 @@ export default async function server(config: Config): Promise<ServerManager> {
                 }
             }
 
-            const sm = new ServerManager(srv, wss, config, {
+            const sm = new ServerManager(srv, wss, configs, {
                 rpc,
             });
 
@@ -119,8 +136,8 @@ export default async function server(config: Config): Promise<ServerManager> {
         });
 
         let wss: WebSocketServer | undefined;
-        if (config.mode !== 'api') {
-            wss = attachWebsocket(srv, config);
+        if (stateful) {
+            wss = attachWebsocket(srv, stateful);
         } else {
             srv.on('upgrade', (request, socket) => {
                 socket.on('error', () => socket.destroy());
@@ -134,9 +151,9 @@ export default async function server(config: Config): Promise<ServerManager> {
                 rpc.close();
             }
 
-            if (config.mode !== 'api') {
-                await config.geofence.close();
-                await config.conns.close();
+            if (stateful) {
+                await stateful.geofence.close();
+                await stateful.conns.close();
             }
         });
     });

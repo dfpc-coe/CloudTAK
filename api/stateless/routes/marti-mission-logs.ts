@@ -5,14 +5,14 @@ import Err from '@openaddresses/batch-error';
 import { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
 import { MissionLog } from '@tak-ps/node-tak/lib/api/mission-log';
 import Auth from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import ProfileControl from '../control/profile.js';
 import {
     TAKItem,
 } from '@tak-ps/node-tak/lib/api/types';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const profileControl = new ProfileControl(config);
 
     await schema.get('/marti/missions/:name/log', {

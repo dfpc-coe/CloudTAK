@@ -13,7 +13,7 @@ import { StandardResponse } from '../../common/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import ProfileControl from '../control/profile.js';
 import activeChannels from '../tak-channels.js';
 import { Basemap as BasemapParser } from '@tak-ps/node-cot';
@@ -122,7 +122,7 @@ function packageExpirationForUpdate(value: string | number | null | undefined): 
     return Number.isNaN(parsed) ? undefined : parsed;
 }
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const profileControl = new ProfileControl(config);
 
     await schema.post('/marti/package', {

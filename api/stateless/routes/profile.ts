@@ -3,14 +3,14 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import { ProfileResponse, ProfilePatchBody } from '../../common/types.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { sql } from 'drizzle-orm';
 import ProfileControl from '../control/profile.js';
 
 type ProfilePatchBodyType = Static<typeof ProfilePatchBody>;
 type ProfilePatchValue = ProfilePatchBodyType[keyof ProfilePatchBodyType];
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const profileControl = new ProfileControl(config);
 
     await schema.get('/profile', {

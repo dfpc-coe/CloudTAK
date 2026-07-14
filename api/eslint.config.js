@@ -29,7 +29,7 @@ export default tseslint.config(
         files: ['common/**/*.ts'],
         rules: boundary(
             ['**/stateful/**', '**/stateless/**'],
-            'common/ is the shared base and must not import stateful/ or stateless/ at runtime. Invert via the wire() hook (see stateful/wire.ts) or use a type-only import.',
+            'common/ is the shared base and must not import stateful/ or stateless/ at runtime. Construct side-specific services in ConfigStateful/ConfigStateless or use a type-only import.',
         ),
     },
     {

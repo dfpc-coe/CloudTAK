@@ -1,6 +1,6 @@
 import { Type, Static } from '@sinclair/typebox';
 import tokml from 'tokml';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import Schema from '@openaddresses/batch-schema';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
 import { coordEach } from '@turf/meta';
@@ -13,7 +13,7 @@ import { enabledGeofence } from '../control/feature.js';
 import { sql } from 'drizzle-orm';
 import * as Default from '../limits.js';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/connection/:connectionid/feature', {
         name: 'Get Features',
         group: 'ConnectionFeature',

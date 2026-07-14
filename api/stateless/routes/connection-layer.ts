@@ -9,7 +9,7 @@ import LayerDeploy from '../aws/layer-deploy.js';
 import Style, { StyleContainer } from '../../common/style.js';
 import Filter, { FilterContainer } from '../../common/filter.js';
 import Alarm from '../aws/alarm.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import Schedule from '../../common/schedule.js';
 import LayerControl from '../control/layer.js';
 import { Param } from '@openaddresses/batch-generic';
@@ -30,7 +30,7 @@ import { Layer_Priority } from '../../common/enums.js';
 import { Layer } from '../../common/schema.js';
 import * as Default from '../limits.js';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const alarm = new Alarm(config.StackName);
     const layerControl = new LayerControl(config);
 
@@ -511,7 +511,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 status: 200,
-                message: 'Incoming Layer Config Deleted',
+                message: 'Incoming Layer ConfigStateless Deleted',
             });
         } catch (err) {
             Err.respond(err, res);
@@ -678,7 +678,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 status: 200,
-                message: 'Outgoing Layer Config Deleted',
+                message: 'Outgoing Layer ConfigStateless Deleted',
             });
         } catch (err) {
             Err.respond(err, res);

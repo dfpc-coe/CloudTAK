@@ -3,7 +3,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { GenericMartiResponse } from '../../common/types.js';
 import Auth from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { ConnectionAuth } from '../../common/connection-config.js';
 import { Contact } from '@tak-ps/node-tak/lib/api/contacts';
 import { Group } from '@tak-ps/node-tak/lib/api/groups';
@@ -11,7 +11,7 @@ import { ClientEndpoint } from '@tak-ps/node-tak/lib/api/client';
 import { TAKList } from '@tak-ps/node-tak/lib/api/types';
 import { TAKAPI, APIAuthPassword, APIAuthCertificate } from '@tak-ps/node-tak';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/marti/group', {
         name: 'List Groups',
         group: 'Marti',

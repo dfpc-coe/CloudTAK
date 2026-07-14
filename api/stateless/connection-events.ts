@@ -1,4 +1,4 @@
-import type Config from '../common/config.js';
+import type ConfigStateless from './config.js';
 import type { AuthUser } from '../common/auth.js';
 
 /**
@@ -75,13 +75,13 @@ export default class ConnectionEvents {
     /**
      * Broadcast a sync event to all of a user's connected WebSocket clients
      *
-     * @param config        - Server Config
+     * @param config        - Server ConfigStateless
      * @param username      - Username (email) whose clients should be notified
      * @param event         - Event to broadcast
      * @param opts.exclude  - Session ID of the originating client to exclude
      */
     static broadcast(
-        config: Config,
+        config: ConfigStateless,
         username: string,
         event: ConnectionSyncEvent,
         opts: {
@@ -98,14 +98,14 @@ export default class ConnectionEvents {
      * performed by an authenticated user, excluding the session that made the
      * request from the broadcast
      *
-     * @param config    - Server Config
+     * @param config    - Server ConfigStateless
      * @param user      - Authenticated User that performed the operation
      * @param type      - Data Type that was mutated
      * @param action    - Mutation that took place
      * @param id        - Optional ID of the mutated resource
      */
     static user(
-        config: Config,
+        config: ConfigStateless,
         user: AuthUser,
         type: ConnectionEventDataType,
         action: ConnectionEventAction,

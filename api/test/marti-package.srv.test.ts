@@ -597,7 +597,7 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
     } catch (err) {
         assert.ifError(err);
     } finally {
-        flight.config?.conns.delete('pkgowner@example.com');
+        flight.stateful?.conns.delete('pkgowner@example.com');
     }
 
     flight.tak.reset();
@@ -766,7 +766,7 @@ test('PATCH api/marti/package/:uid - User without overlapping active channel can
     } catch (err) {
         assert.ifError(err);
     } finally {
-        flight.config?.conns.delete('pkgviewer@example.com');
+        flight.stateful?.conns.delete('pkgviewer@example.com');
     }
 
     flight.tak.reset();

@@ -6,10 +6,10 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import * as Default from '../limits.js';
 import { ErrorResponse, StandardResponse } from '../../common/types.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { Errors } from '../../common/schema.js';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/error', {
         name: 'List Errors',
         group: 'Errors',

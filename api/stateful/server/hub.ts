@@ -9,9 +9,9 @@ import { ConnectionWebSocket } from '../connection-web.js';
 import sleep from '../../common/sleep.js';
 import hubRouter from '../hub/routes.js';
 import { tokenParser, AuthUser } from '../../common/auth.js';
-import type Config from '../../common/config.js';
+import type ConfigStateful from '../config.js';
 
-export function attachWebsocket(srv: Server, config: Config): ws.WebSocketServer {
+export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSocketServer {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const WebSocketServer = ws.WebSocketServer ?? (ws as any).default.WebSocketServer;
 
@@ -166,7 +166,7 @@ export function attachWebsocket(srv: Server, config: Config): ws.WebSocketServer
     return wss;
 }
 
-export function startHubRpc(config: Config): Promise<Server> {
+export function startHubRpc(config: ConfigStateful): Promise<Server> {
     const app = express();
 
     app.disable('x-powered-by');

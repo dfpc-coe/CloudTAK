@@ -2,9 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert';
 import ws from 'ws';
 import Flight from './flight.js';
-import Config from '../common/config.js';
-import wireLocal from '../stateful/wire.js';
-import wireRemote from '../stateless/wire.js';
+import ConfigStateful from '../stateful/config.js';
+import ConfigStateless from '../stateless/config.js';
 import server from '../index.js';
 import type ServerManager from '../common/server.js';
 
@@ -23,17 +22,16 @@ let apiSrv: ServerManager;
 let apiBase = '';
 
 test('Split: boot a hub-mode server', async () => {
-    const config = await Config.env({
+    const config = await ConfigStateful.env({
         postgres: POSTGRES,
         silent: true,
         noevents: true,
         nosinks: true,
         nocache: true,
         mode: 'hub',
-        wire: wireLocal,
     });
 
-    hubSrv = await server(config);
+    hubSrv = await server({ stateful: config });
 
     assert.ok(hubSrv.rpc, 'hub exposes an RPC server');
     assert.ok(hubSrv.wss, 'hub hosts the WebSocket server');
@@ -43,7 +41,7 @@ test('Split: boot an api-mode server pointed at the hub', async () => {
     const rpcAddress = hubSrv.rpc!.address();
     if (!rpcAddress || typeof rpcAddress !== 'object') throw new Error('Could not determine Hub RPC port');
 
-    const config = await Config.env({
+    const config = await ConfigStateless.env({
         postgres: POSTGRES,
         silent: true,
         noevents: true,
@@ -51,15 +49,15 @@ test('Split: boot an api-mode server pointed at the hub', async () => {
         nocache: true,
         mode: 'api',
         hubUrl: `http://localhost:${rpcAddress.port}`,
-        wire: config => wireRemote(config, config.hubUrl!),
     });
 
-    apiSrv = await server(config);
+    apiSrv = await server({ stateless: config });
 
     assert.equal(apiSrv.wss, undefined, 'api mode hosts no WebSocket server');
     assert.equal(apiSrv.rpc, undefined, 'api mode hosts no RPC server');
-    assert.throws(() => apiSrv.config.conns, /Connection Pool is not available/);
-    assert.throws(() => apiSrv.config.wsClients, /WebSocket Clients are not available/);
+    assert.equal(apiSrv.stateful, undefined, 'api mode holds no stateful config');
+    assert.ok(!('conns' in apiSrv.config), 'stateless config carries no connection pool');
+    assert.ok(!('wsClients' in apiSrv.config), 'stateless config carries no ws clients');
 
     const address = apiSrv.server.address();
     if (!address || typeof address !== 'object') throw new Error('Could not determine API server port');
@@ -67,7 +65,7 @@ test('Split: boot an api-mode server pointed at the hub', async () => {
 });
 
 test('Split: api mode requires a hub URL', async () => {
-    await assert.rejects(Config.env({
+    await assert.rejects(ConfigStateless.env({
         postgres: POSTGRES,
         silent: true,
         noevents: true,

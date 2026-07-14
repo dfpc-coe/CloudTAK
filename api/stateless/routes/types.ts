@@ -1,6 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox';
 import { CoTTypes } from '@tak-ps/node-cot';
@@ -40,7 +40,7 @@ export const PackageResponse = Type.Object({
     items: Type.Array(Package),
 });
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema, config: ConfigStateless) {
     const types = await CoTTypes.default.load();
 
     await schema.get('/type/cot', {
