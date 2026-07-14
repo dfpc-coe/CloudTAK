@@ -16,6 +16,15 @@
 
 ### Pending Release
 
+### v13.45.0 - 2026-07-13
+
+- :tada: Split server into `stateful` (hub) and `stateless` (api) modes to support independent ECS service deployment
+- :tada: Route all stateful interactions through a `HubClient` interface, decoupling stateless routes from direct connection state
+- :rocket: Split `Config` into separate `ConfigStateful` and `ConfigStateless` classes
+- :rocket: Wire up stateful RPC endpoints to `batch-schema` framework
+- :rocket: Harden stateful service CloudFormation stack
+- :rocket: Replace internal `sleep` utility with native `node:timers/promises` `setTimeout`
+
 ### v13.44.0 - 2026-07-13
 
 - :rocket: Migrate away from async style missinge event and to icon missing callback with async support
