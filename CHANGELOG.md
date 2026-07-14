@@ -16,6 +16,17 @@
 
 ### Pending Release
 
+### v13.46.0 - 2026-07-14
+
+- :rocket: Remove Mission Feature listing from overlay menu in favour of a single source of truth in the mission features menu
+- :rocket: Improve speed of adding large number of features by skipping rendering until all features have been added
+- :rocket: Use white text on incoming chat messages regardless of theme
+- :rocket: Add Search Input to Draw Tools dropdown menu and migrate it to be programatically scaffolded from an array of values to support search
+- :tada: Introduce new CoreEvent table and assoc.
+- :bug: Fix vertical line in TablerInput when using a pre or post icon which was visually intrusive
+- :rocket: Add ability to Filter by Active or Inactive channel in MenuChannels
+- :arrow_up: Update to Pinia v4
+
 ### v13.45.1 - 2026-07-14
 
 - :rocket: Add loading states to the Map Loading screen
