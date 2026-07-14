@@ -1,3 +1,4 @@
+import { Type } from '@sinclair/typebox';
 import type CoT from '@tak-ps/node-cot';
 import type { GeofenceStatus } from '../../stateful/connection-geofence.js';
 
@@ -13,6 +14,36 @@ export type PresenceMap = Record<string, {
     active: boolean;
     sessions: string[];
 }>;
+
+// TypeBox equivalents of the wire types above, used by the hub RPC routes
+// (stateful/routes/) to validate and document the internal API
+
+export const ConnStatusSchema = Type.String({
+    enum: ['live', 'dead', 'unknown'],
+});
+
+export const PoolSummarySchema = Type.Object({
+    dead: Type.Integer(),
+    live: Type.Integer(),
+    unknown: Type.Integer(),
+});
+
+export const PresenceMapSchema = Type.Record(Type.String(), Type.Object({
+    active: Type.Boolean(),
+    sessions: Type.Array(Type.String()),
+}));
+
+export const GeofenceStatusSchema = Type.Object({
+    state: Type.String({
+        enum: ['disabled', 'disconnected', 'connecting', 'connected', 'reconnecting', 'error', 'closing'],
+    }),
+    enabled: Type.Boolean(),
+    configured: Type.Boolean(),
+    connected: Type.Boolean(),
+    url: Type.String(),
+    reconnectAttempts: Type.Integer(),
+    lastError: Type.Optional(Type.String()),
+});
 
 export type SubmitCotsRequest = {
     connection: number | string;

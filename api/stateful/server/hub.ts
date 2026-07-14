@@ -1,13 +1,15 @@
 import express from 'express';
+import jwt from 'jsonwebtoken';
 import type { Server } from 'node:http';
 import type { IncomingMessage } from 'node:http';
 import type WebSocket from 'ws';
 import * as ws from 'ws';
+import Schema from '@openaddresses/batch-schema';
+import { StandardResponse } from '../../common/types.js';
 import { ProfileConnConfig, AdminConnConfig } from '../../common/connection-config.js';
 import { ConnectionClient } from '../connection-pool.js';
 import { ConnectionWebSocket } from '../connection-web.js';
 import sleep from '../../common/sleep.js';
-import hubRouter from '../hub/routes.js';
 import { tokenParser, AuthUser } from '../../common/auth.js';
 import type ConfigStateful from '../config.js';
 
@@ -166,7 +168,7 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
     return wss;
 }
 
-export function startHubRpc(config: ConfigStateful): Promise<Server> {
+export async function startHubRpc(config: ConfigStateful): Promise<Server> {
     const app = express();
 
     app.disable('x-powered-by');
@@ -175,7 +177,77 @@ export function startHubRpc(config: ConfigStateful): Promise<Server> {
         res.json({ status: 200, message: 'CloudTAK Hub' });
     });
 
-    app.use('/hub', hubRouter(config));
+    // Token gate ahead of the schema router so unauthorized requests are
+    // rejected before their (up to 250mb) bodies are parsed. The 401 body
+    // deliberately omits batch-error's `messages` marker - RemoteHub reads it
+    // as an infrastructure fault (502), not an application error to relay
+    app.use('/hub', (req: express.Request, res: express.Response, next: express.NextFunction) => {
+        try {
+            const header = req.headers.authorization;
+            if (!header || !header.startsWith('Bearer ')) throw new Error('No Token Provided');
+
+            const decoded = jwt.verify(header.slice('Bearer '.length), config.SigningSecret) as {
+                svc?: string;
+                internal?: boolean;
+            };
+
+            if (decoded.svc !== 'cloudtak-api' || decoded.internal !== true) {
+                throw new Error('Invalid Token Claims');
+            }
+
+            next();
+        } catch (err) {
+            console.error('Hub RPC Auth Error:', err instanceof Error ? err.message : String(err));
+            res.status(401).json({ status: 401, message: 'Unauthorized' });
+        }
+    });
+
+    const schema = new Schema(express.Router(), {
+        prefix: '/hub',
+        logging: {
+            skip: function (req, res) {
+                return res.statusCode <= 399 && res.statusCode >= 200;
+            },
+        },
+        limit: 250,
+        error: {
+            400: StandardResponse,
+            401: StandardResponse,
+            403: StandardResponse,
+            404: StandardResponse,
+            500: StandardResponse,
+        },
+        openapi: {
+            info: {
+                title: 'CloudTAK Hub RPC',
+                version: '1.0.0',
+            },
+            components: {
+                securitySchemes: {
+                    bearerAuth: {
+                        type: 'http',
+                        scheme: 'bearer',
+                        bearerFormat: 'JWT',
+                    },
+                },
+            },
+            security: [{
+                bearerAuth: [],
+            }],
+        },
+    });
+
+    app.use('/hub', schema.router);
+
+    await schema.api();
+
+    await schema.load(
+        new URL('../routes/', import.meta.url),
+        config,
+        {
+            silent: !!config.silent,
+        },
+    );
 
     return new Promise((resolve, reject) => {
         const srv = app.listen(parseInt(process.env.HUB_RPC_PORT || '5002'), () => {

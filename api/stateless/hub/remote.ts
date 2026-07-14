@@ -12,14 +12,22 @@ const CONNECT_TIMEOUT_MS = 30 * 1000;
 const TOKEN_TTL_MS = 15 * 60 * 1000;
 const TOKEN_REMINT_MS = 5 * 60 * 1000;
 
-type Envelope<T> = {
-    ok: true;
-    result: T;
-} | {
-    ok: false;
+type WireError = {
     status: number;
     message: string;
+    messages: unknown[];
 };
+
+// batch-error's Err.respond always includes a `messages` array alongside
+// status/message; hub route success responses never do. Its presence is what
+// marks an application error - even on HTTP 200, which carries soft errors
+// like Err(200, 'Received but Connection Paused') across the wire
+function isWireError(body: unknown): body is WireError {
+    return !!body && typeof body === 'object'
+        && typeof (body as WireError).status === 'number'
+        && typeof (body as WireError).message === 'string'
+        && Array.isArray((body as WireError).messages);
+}
 
 export default class RemoteHub implements HubClient {
     config: Config;
@@ -66,32 +74,36 @@ export default class RemoteHub implements HubClient {
             throw new Err(502, err instanceof Error ? err : new Error(String(err)), 'CloudTAK Hub Unreachable');
         }
 
-        if (res.status !== 200) {
-            throw new Err(502, null, `CloudTAK Hub Error: HTTP ${res.status}`);
-        }
-
-        let envelope: Envelope<T>;
+        let parsed: unknown;
         try {
-            envelope = await res.json() as Envelope<T>;
+            parsed = await res.json();
         } catch (err) {
             throw new Err(502, err instanceof Error ? err : new Error(String(err)), 'CloudTAK Hub returned an invalid response');
         }
 
-        if (!envelope.ok) {
-            throw new Err(envelope.status, null, envelope.message);
+        if (isWireError(parsed)) {
+            throw new Err(parsed.status, null, parsed.message);
         }
 
-        return envelope.result;
+        // Non-200 without a batch-error body: the auth gate or something in
+        // front of the hub responded, not a route handler
+        if (res.status !== 200) {
+            throw new Err(502, null, `CloudTAK Hub Error: HTTP ${res.status}`);
+        }
+
+        return parsed as T;
     }
 
     async connectionSync(id: number, opts: { force?: boolean; deleted?: boolean } = {}): Promise<ConnStatus> {
-        return await this.#call('/connection/sync', {
+        const res = await this.#call<{ status: ConnStatus }>('/connection/sync', {
             id,
             force: opts.force || false,
             deleted: opts.deleted || false,
         }, {
             timeout: CONNECT_TIMEOUT_MS,
         });
+
+        return res.status;
     }
 
     async connectionStatus(ids: Array<number | string>): Promise<Record<string, ConnStatus>> {
@@ -103,11 +115,13 @@ export default class RemoteHub implements HubClient {
     }
 
     async serverRefresh(opts: { refreshAll?: boolean } = {}): Promise<ConnStatus> {
-        return await this.#call('/server/refresh', {
+        const res = await this.#call<{ status: ConnStatus }>('/server/refresh', {
             refreshAll: opts.refreshAll || false,
         }, {
             timeout: CONNECT_TIMEOUT_MS,
         });
+
+        return res.status;
     }
 
     async submitCots(req: SubmitCotsRequest): Promise<void> {
