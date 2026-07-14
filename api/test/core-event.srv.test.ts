@@ -63,6 +63,9 @@ test('POST: api/core/event', async () => {
             priority: 'high',
             type: '10031000001213000000',
             name: 'Wildfire Report',
+            ended: null,
+            external_id: '',
+            editable: true,
             location: '1234 Main St, Boulder, CO',
             remarks: 'Fast moving fire North of Boulder',
             geometry: {
@@ -154,6 +157,8 @@ test('PATCH: api/core/event/:event', async () => {
             body: {
                 priority: 'critical',
                 remarks: 'Fire has jumped the ridge',
+                external_id: 'INC-1234',
+                ended: '2026-07-14T12:00:00.000Z',
                 geometry: {
                     type: 'Point',
                     coordinates: [-105.3005, 40.0455],
@@ -165,11 +170,43 @@ test('PATCH: api/core/event/:event', async () => {
         assert.equal(res.body.priority, 'critical');
         assert.equal(res.body.remarks, 'Fire has jumped the ridge');
         assert.equal(res.body.name, 'Wildfire Report');
+        assert.equal(res.body.external_id, 'INC-1234');
+        assert.ok(res.body.ended, 'has ended');
         assert.deepEqual(res.body.geometry, {
             type: 'Point',
             coordinates: [-105.3005, 40.0455],
         });
         assert.deepEqual(res.body.channels, [1]);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/core/event/:event - creator can disable editing', async () => {
+    try {
+        const res = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                editable: false,
+            },
+        }, true);
+
+        assert.equal(res.body.editable, false);
+
+        const reenable = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                editable: true,
+            },
+        }, true);
+
+        assert.equal(reenable.body.editable, true);
     } catch (err) {
         assert.ifError(err);
     }

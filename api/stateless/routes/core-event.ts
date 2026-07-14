@@ -139,6 +139,18 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             remarks: Type.String({
                 default: '',
             }),
+            ended: Type.Optional(Type.Union([Type.Null(), Type.String({
+                format: 'date-time',
+                description: 'Time at which the Event ended',
+            })])),
+            external_id: Type.String({
+                default: '',
+                description: 'ID of the Event in an external system',
+            }),
+            editable: Type.Boolean({
+                default: true,
+                description: 'Can users other than the creator edit the Event',
+            }),
             channels: Type.Array(Type.Integer({ minimum: 0 }), {
                 uniqueItems: true,
                 default: [],
@@ -187,6 +199,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             geometry: Type.Optional(GeoJSONFeatureGeometryPoint),
             location: Type.Optional(Type.String()),
             remarks: Type.Optional(Type.String()),
+            ended: Type.Optional(Type.Union([Type.Null(), Type.String({
+                format: 'date-time',
+            })])),
+            external_id: Type.Optional(Type.String()),
+            editable: Type.Optional(Type.Boolean()),
             channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), { uniqueItems: true })),
         }),
         res: CoreEventResponse,
@@ -200,8 +217,18 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const { channels, ...body } = req.body;
 
-            if (channels !== undefined && !user.is_admin() && event.username !== user.email) {
+            const creator = user.is_admin() || event.username === user.email;
+
+            if (channels !== undefined && !creator) {
                 throw new Err(403, null, 'Only the Event creator can modify sharing');
+            }
+
+            if (body.editable !== undefined && !creator) {
+                throw new Err(403, null, 'Only the Event creator can modify the editable flag');
+            }
+
+            if (Object.keys(body).length > 0 && !event.editable && !creator) {
+                throw new Err(403, null, 'The Event creator has disabled editing of this Event');
             }
 
             if (Object.keys(body).length > 0) {

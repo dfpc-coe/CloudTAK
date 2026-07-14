@@ -1,5 +1,5 @@
 {
-  "id": "fc769d02-04d0-4900-8292-e1525212782c",
+  "id": "1304fb99-246d-4cd6-a22a-8fd0df864d59",
   "prevId": "c945f036-c78f-47b6-a4c1-27c59c9b29a5",
   "version": "7",
   "dialect": "postgresql",
@@ -774,6 +774,12 @@
           "notNull": true,
           "default": "Now()"
         },
+        "ended": {
+          "name": "ended",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
         "username": {
           "name": "username",
           "type": "text",
@@ -798,6 +804,20 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "editable": {
+          "name": "editable",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
         },
         "location": {
           "name": "location",

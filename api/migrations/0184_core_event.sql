@@ -2,10 +2,13 @@ CREATE TABLE "core_event" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"created" timestamp with time zone DEFAULT Now() NOT NULL,
 	"updated" timestamp with time zone DEFAULT Now() NOT NULL,
+	"ended" timestamp with time zone,
 	"username" text,
 	"priority" text DEFAULT 'none' NOT NULL,
 	"type" text NOT NULL,
 	"name" text NOT NULL,
+	"external_id" text DEFAULT '' NOT NULL,
+	"editable" boolean DEFAULT true NOT NULL,
 	"location" text DEFAULT '' NOT NULL,
 	"remarks" text DEFAULT '' NOT NULL,
 	"geometry" GEOMETRY(POINT, 4326) NOT NULL
