@@ -26,7 +26,7 @@ function isDuplicateNameError(err: unknown): boolean {
         } else {
             parts.push(String(current));
         }
-        if (current && typeof current === 'object' && 'safe' in current) {
+        if (typeof current === 'object' && 'safe' in current) {
             parts.push(String((current as { safe?: unknown }).safe));
         }
 
