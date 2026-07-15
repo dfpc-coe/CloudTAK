@@ -1,6 +1,6 @@
 <template>
     <TablerDropdown
-        style='display: block; width: 100%;'
+        class='task-select w-100'
         position='bottom-start'
     >
             <template #default>
@@ -73,3 +73,14 @@ function select(task: string): void {
     search.value = '';
 }
 </script>
+
+<style scoped>
+.task-select {
+    display: flex !important;
+    width: 100%;
+}
+
+.task-select :deep(> div) {
+    width: 100%;
+}
+</style>
