@@ -145,6 +145,47 @@ export default class SubscriptionLayer {
     }
 
     /**
+     * File existing mission features under a mission layer, moving them from
+     * any layer they are currently filed under, then refresh the local store.
+     */
+    async attachFeatures(
+        layeruid: string,
+        uids: string[]
+    ): Promise<void> {
+        const { error } = await server.PUT('/api/marti/missions/{:name}/layer/{:uid}/cot', {
+            params: {
+                path: { ':name': this.parent.guid, ':uid': layeruid }
+            },
+            headers: this.headers(),
+            body: { uids }
+        });
+
+        if (error) throw new Error('Failed to move features into mission layer');
+
+        await this.refresh();
+    }
+
+    /**
+     * Move a mission feature out of a mission layer and back to the mission
+     * root - the feature remains part of the mission - then refresh the local store.
+     */
+    async detachFeature(
+        layeruid: string,
+        uid: string
+    ): Promise<void> {
+        const { error } = await server.DELETE('/api/marti/missions/{:name}/layer/{:uid}/cot/{:cotuid}', {
+            params: {
+                path: { ':name': this.parent.guid, ':uid': layeruid, ':cotuid': uid }
+            },
+            headers: this.headers()
+        });
+
+        if (error) throw new Error('Failed to move feature out of mission layer');
+
+        await this.refresh();
+    }
+
+    /**
      * Delete a mission layer, then refresh the local store.
      */
     async delete(
