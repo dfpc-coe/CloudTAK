@@ -135,18 +135,27 @@
                     @chat='router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
                 >
                     <template
-                        v-if='canManageRoles'
+                        v-if='canInvite || canManageRoles'
                         #actions
                     >
-                        <TablerIconButton
-                            title='Edit User'
-                            @click.stop='toggleEdit(sub.clientUid)'
-                        >
-                            <IconPencil
-                                :size='20'
-                                stroke='1'
+                        <div class='d-flex align-items-center gap-2'>
+                            <TablerIconButton
+                                v-if='canManageRoles'
+                                title='Edit User'
+                                @click.stop='toggleEdit(sub.clientUid)'
+                            >
+                                <IconPencil
+                                    :size='20'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                            <TablerDelete
+                                v-if='canInvite'
+                                label='Remove User'
+                                displaytype='icon'
+                                @delete='removeUser(sub)'
                             />
-                        </TablerIconButton>
+                        </div>
                     </template>
 
                     <template
@@ -170,11 +179,6 @@
                                     Read Only
                                 </option>
                             </select>
-                            <TablerDelete
-                                label='Remove User'
-                                displaytype='icon'
-                                @delete='removeUser(sub)'
-                            />
                         </div>
                     </template>
                 </Contact>

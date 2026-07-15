@@ -562,7 +562,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             await api.Mission.setRole(
                 req.params.name,
-                req.body,
+                {
+                    clientUid: req.body.clientUid,
+                    username: req.body.username,
+                    role: req.body.role,
+                },
                 opts,
             );
 
