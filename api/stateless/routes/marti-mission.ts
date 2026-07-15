@@ -537,6 +537,44 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
+    await schema.put('/marti/missions/:name/role', {
+        name: 'Set Mission Role',
+        group: 'MartiMissions',
+        params: Type.Object({
+            name: Type.String(),
+        }),
+        description: 'Change the role of an existing mission subscriber',
+        body: Type.Object({
+            clientUid: Type.String(),
+            username: Type.String(),
+            role: Type.Enum(MissionSubscriberRole),
+        }),
+        res: StandardResponse,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await profileControl.subscription(user.email, req.params.name);
+
+            await api.Mission.setRole(
+                req.params.name,
+                req.body,
+                opts,
+            );
+
+            res.json({
+                status: 200,
+                message: 'Role Updated',
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
     await schema.get('/marti/missions/:name/contacts', {
         name: 'Mission Contacts',
         group: 'MartiMissions',

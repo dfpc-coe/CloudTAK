@@ -62,6 +62,7 @@ export type MissionList = paths["/api/marti/mission"]["get"]["responses"]["200"]
 export type MissionInvite = paths["/api/marti/mission"]["get"]["responses"]["200"]["content"]["application/json"]["invites"][0];
 
 export type MissionRole = paths["/api/marti/missions/{:name}/role"]["get"]["responses"]["200"]["content"]["application/json"];
+export type MissionRoleType = MissionRole["type"];
 
 export type MissionLog = paths["/api/marti/missions/{:name}/log/{:logid}"]["patch"]["responses"]["200"]["content"]["application/json"]["data"];
 export type MissionLogList = paths["/api/marti/missions/{:name}/log"]["get"]["responses"]["200"]["content"]["application/json"];
