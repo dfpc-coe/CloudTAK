@@ -16,6 +16,15 @@
 
 ### Pending Release
 
+### v13.47.0 - 2026-07-15
+
+- :tada: Ability to change Mission Sync role
+- :tada: Allow Connection/Layers to create Core Events
+- :rocket: Rename `--no-<type>` flags for consistently
+- :tada: Add `--no-connections` dev flag to disable connecting TAK with ETL connections
+- :rocket: Throw human readable name on unique constraint in connection name - Closes: https://github.com/dfpc-coe/CloudTAK/issues/619
+- :rocket: Custom Task Type dropdown that supports search
+
 ### v13.46.0 - 2026-07-14
 
 - :rocket: Remove Mission Feature listing from overlay menu in favour of a single source of truth in the mission features menu
