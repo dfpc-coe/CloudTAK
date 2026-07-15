@@ -327,6 +327,7 @@ import {
     TablerModal,
     TablerLoading,
     TablerPillGroup,
+    TablerInput,
 } from '@tak-ps/vue-tabler';
 import type { Mission, MissionInvite } from '../../../types.ts';
 import { server } from '../../../std.ts';
