@@ -784,6 +784,16 @@
         "query": false,
         "res": true
     },
+    "PUT /marti/missions/:name/layer/:uid/cot": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /marti/missions/:name/layer/:uid/cot/:cotuid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "DELETE /marti/missions/:name/layer/:uid": {
         "body": false,
         "query": false,
