@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.47.1 - 2026-07-15
+
+- :bug: Fix password protected Data Sync password input
+
 ### v13.47.0 - 2026-07-15
 
 - :tada: Ability to change Mission Sync role
