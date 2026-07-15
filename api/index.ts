@@ -17,24 +17,46 @@ type CliArgs = {
     noevents?: boolean;
     nosinks?: boolean;
     nogeofence?: boolean;
+    noconnections?: boolean;
     postgres?: string;
     env?: string;
 };
 
-const { values: args } = parseArgs({
+const { values: parsedArgs } = parseArgs({
     args: process.argv.slice(2),
     options: {
-        silent: { type: 'boolean' }, // Turn off logging as much as possible
-        nocache: { type: 'boolean' }, // Ignore MemCached
-        noevents: { type: 'boolean' }, // Disable Initialization of Second Level Events
-        nosinks: { type: 'boolean' }, // Disable Push to Sinks
-        nogeofence: { type: 'boolean' }, // Disable Geofence Server Integration
-        postgres: { type: 'string' }, // Postgres Connection String
-        env: { type: 'string' }, // Load a non-default .env file --env local would read .env-local
+        'silent': { type: 'boolean' }, // Turn off logging as much as possible
+        'no-cache': { type: 'boolean' }, // Ignore MemCached
+        'no-events': { type: 'boolean' }, // Disable Initialization of Second Level Events
+        'no-sinks': { type: 'boolean' }, // Disable Push to Sinks
+        'no-geofence': { type: 'boolean' }, // Disable Geofence Server Integration
+        'no-connections': { type: 'boolean' }, // Disable Automatic Initialization of ETL Connections
+        'postgres': { type: 'string' }, // Postgres Connection String
+        'env': { type: 'string' }, // Load a non-default .env file --env local would read .env-local
     },
     allowPositionals: true,
     strict: false,
-}) as { values: CliArgs };
+}) as { values: {
+    'silent'?: boolean;
+    'no-cache'?: boolean;
+    'no-events'?: boolean;
+    'no-sinks'?: boolean;
+    'no-geofence'?: boolean;
+    'no-connections'?: boolean;
+    'postgres'?: string;
+    'env'?: string;
+}; };
+
+const args: CliArgs = {
+    silent: parsedArgs.silent,
+    nocache: parsedArgs['no-cache'],
+    noevents: parsedArgs['no-events'],
+    nosinks: parsedArgs['no-sinks'],
+    nogeofence: parsedArgs['no-geofence'],
+    noconnections: parsedArgs['no-connections'],
+    postgres: parsedArgs.postgres,
+    env: parsedArgs.env,
+};
 
 const pkg = JSON.parse(String(fs.readFileSync(new URL('./package.json', import.meta.url))));
 
@@ -68,6 +90,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         postgres: process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl',
         nosinks: args.nosinks || false,
         nogeofence: args.nogeofence || false,
+        noconnections: args.noconnections || false,
         nocache: args.nocache || false,
     };
 

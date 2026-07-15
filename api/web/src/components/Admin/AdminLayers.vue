@@ -52,10 +52,9 @@
                     />
                 </div>
                 <div class='col-md-3 px-2'>
-                    <TablerEnum
+                    <TaskSelect
                         v-model='paging.task'
-                        default='All Tasks'
-                        :options='taskTypes'
+                        :tasks='list.tasks'
                     />
                 </div>
                 <div class='col-md-3 px-2'>
@@ -177,7 +176,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
 import { openSecondaryView } from '../../base/capacitor.ts';
 import { server } from '../../std.ts';
@@ -185,6 +184,7 @@ import type { ETLLayerList, ETLLayer } from '../../types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import Status from '../ETL/Layer/utils/StatusDot.vue';
+import TaskSelect from './TaskSelect.vue';
 import {
     TablerNone,
     TablerInput,
@@ -229,10 +229,6 @@ const list = ref<ETLLayerList>({
     },
     tasks: [],
     items: []
-});
-
-const taskTypes = computed(() => {
-    return ["All Tasks"].concat(list.value.tasks)
 });
 
 watch(paging.value, async () => {

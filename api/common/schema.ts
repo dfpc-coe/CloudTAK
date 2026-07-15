@@ -48,6 +48,7 @@ export const CoreEvent = pgTable('core_event', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     ended: timestamp({ withTimezone: true, mode: 'string' }),
     username: text().references(() => Profile.username),
+    connection: integer().references(() => Connection.id, { onDelete: 'set null' }),
     priority: text().$type<CoreEvent_Priority>().notNull().default(CoreEvent_Priority.NONE),
     type: text().notNull(), // MIL-STD-2525E Symbol ID
     name: text().notNull(),
@@ -412,7 +413,7 @@ export const Connection = pgTable('connections', {
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     username: text().references(() => Profile.username),
-    name: text().notNull(),
+    name: text().notNull().unique(),
     description: text().notNull().default(''),
     enabled: boolean().notNull().default(true),
     features: boolean().notNull().default(false),

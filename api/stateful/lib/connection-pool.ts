@@ -250,10 +250,12 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             );
         }
 
-        const ConnectionModel = new Modeler(this.config.pg, Connection);
-        for await (const conn of ConnectionModel.iter()) {
-            if (conn.enabled) {
-                conns.push(this.add(new MachineConnConfig(this.config, conn)));
+        if (!this.config.noconnections) {
+            const ConnectionModel = new Modeler(this.config.pg, Connection);
+            for await (const conn of ConnectionModel.iter()) {
+                if (conn.enabled) {
+                    conns.push(this.add(new MachineConnConfig(this.config, conn)));
+                }
             }
         }
 

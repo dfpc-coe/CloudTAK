@@ -149,6 +149,7 @@ export const CoreEventResponse = Type.Object({
     updated: Type.String(),
     ended: Type.Union([Type.Null(), Type.String()], { description: 'Time at which the Event ended' }),
     username: Type.Union([Type.Null(), Type.String()]),
+    connection: Type.Union([Type.Null(), Type.Integer()], { description: 'Connection that created the Event if created by a Connection or Layer token' }),
     priority: Type.Enum(CoreEvent_Priority),
     type: Type.String({ description: 'MIL-STD-2525E Symbol ID' }),
     name: Type.String(),

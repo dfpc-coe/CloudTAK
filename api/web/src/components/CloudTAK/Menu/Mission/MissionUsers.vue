@@ -135,14 +135,51 @@
                     @chat='router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
                 >
                     <template
-                        v-if='canInvite'
+                        v-if='canInvite || canManageRoles'
                         #actions
                     >
-                        <TablerDelete
-                            label='Remove User'
-                            displaytype='icon'
-                            @delete='removeUser(sub)'
-                        />
+                        <div class='d-flex align-items-center gap-2'>
+                            <TablerIconButton
+                                v-if='canManageRoles'
+                                title='Edit User'
+                                @click.stop='toggleEdit(sub.clientUid)'
+                            >
+                                <IconPencil
+                                    :size='20'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                            <TablerDelete
+                                v-if='canInvite'
+                                label='Remove User'
+                                displaytype='icon'
+                                @delete='removeUser(sub)'
+                            />
+                        </div>
+                    </template>
+
+                    <template
+                        v-if='canManageRoles && editingUid === sub.clientUid'
+                        #expanded
+                    >
+                        <div class='d-flex align-items-center gap-2'>
+                            <select
+                                class='form-select form-select-sm'
+                                style='width: auto;'
+                                :value='sub.role.type'
+                                @change='changeRole(sub, ($event.target as HTMLSelectElement).value as MissionRoleType)'
+                            >
+                                <option value='MISSION_OWNER'>
+                                    Owner
+                                </option>
+                                <option value='MISSION_SUBSCRIBER'>
+                                    Subscriber
+                                </option>
+                                <option value='MISSION_READONLY_SUBSCRIBER'>
+                                    Read Only
+                                </option>
+                            </select>
+                        </div>
                     </template>
                 </Contact>
             </div>
@@ -154,8 +191,8 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { TablerBadge, TablerNone, TablerInput, TablerDropdown, TablerIconButton, TablerDelete } from '@tak-ps/vue-tabler';
-import { IconPlus, IconMail, IconChevronDown, IconChevronUp } from '@tabler/icons-vue';
-import type { MissionSubscriptions, Contact as ContactType, MissionInvite } from '../../../../types.ts';
+import { IconPlus, IconMail, IconChevronDown, IconChevronUp, IconPencil } from '@tabler/icons-vue';
+import type { MissionSubscriptions, Contact as ContactType, MissionInvite, MissionRoleType } from '../../../../types.ts';
 import Subscription from '../../../../base/subscription.ts';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import StandardItem from '../../util/StandardItem.vue';
@@ -176,6 +213,7 @@ const subscriptions = ref<MissionSubscriptions>([])
 const invites = ref<MissionInvite[]>([]);
 const inviteUsername = ref('');
 const showInvites = ref(false);
+const editingUid = ref<string | null>(null);
 
 const isOffline = computed(() => !deviceStore.network.isOnline);
 
@@ -183,6 +221,12 @@ const canInvite = computed(() => {
     if (!props.subscription.role) return false;
     return props.subscription.role.type === 'MISSION_OWNER'
         || props.subscription.role.permissions.includes('MISSION_WRITE');
+});
+
+const canManageRoles = computed(() => {
+    if (!props.subscription.role) return false;
+    return props.subscription.role.type === 'MISSION_OWNER'
+        || props.subscription.role.permissions.includes('MISSION_SET_ROLE');
 });
 
 const filteredSubscriptions = computed(() => {
@@ -206,8 +250,19 @@ async function inviteUser(selection?: { callsign: string } | ContactType) {
     await fetchSubscriptions();
 }
 
+function toggleEdit(clientUid: string) {
+    editingUid.value = editingUid.value === clientUid ? null : clientUid;
+}
+
 async function removeUser(sub: MissionSubscriptions[number]) {
     await props.subscription.removeUser(sub.clientUid);
+    if (editingUid.value === sub.clientUid) editingUid.value = null;
+    await fetchSubscriptions();
+}
+
+async function changeRole(sub: MissionSubscriptions[number], role: MissionRoleType) {
+    if (role === sub.role.type) return;
+    await props.subscription.changeRole(sub, role);
     await fetchSubscriptions();
 }
 

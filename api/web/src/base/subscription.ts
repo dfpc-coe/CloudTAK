@@ -10,6 +10,7 @@ import MissionTemplate from './mission-template.ts';
 import type {
     Mission,
     MissionRole,
+    MissionRoleType,
     MissionList,
     MissionSubscriptions,
     MissionInvite
@@ -490,6 +491,22 @@ export default class Subscription {
         });
 
         if (error) throw new Error('Failed to invite user to mission');
+    }
+
+    async changeRole(sub: { clientUid: string, username: string }, role: MissionRoleType): Promise<void> {
+        const { error } = await server.PUT('/api/marti/missions/{:name}/role', {
+            params: {
+                path: { ':name': this.guid }
+            },
+            headers: Subscription.headers(this.missiontoken),
+            body: {
+                clientUid: sub.clientUid,
+                username: sub.username,
+                role
+            }
+        });
+
+        if (error) throw new Error('Failed to change user role');
     }
 
     async invites(): Promise<MissionInvite[]> {

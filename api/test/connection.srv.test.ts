@@ -293,6 +293,30 @@ test('Creating Enabled Connection', async () => {
     }
 });
 
+test('POST: api/connection - Duplicate name handled gracefully', async () => {
+    try {
+        const res = await flight.fetch('/api/connection', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                name: 'Test Connection',
+                description: 'Duplicate name connection',
+                auth: {
+                    key: String(fs.readFileSync('/tmp/cloudtak-test-alice.key')),
+                    cert: String(fs.readFileSync('/tmp/cloudtak-test-alice.cert')),
+                },
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'A connection with this name already exists');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: api/connection - Admin with connections', async () => {
     try {
         const res = await flight.fetch('/api/connection', {
@@ -434,6 +458,25 @@ test('PATCH: api/connection/:connectionid - Invalid X509 Certificate', async () 
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Invalid X509 Certificate Provided');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/connection/:connectionid - Duplicate name handled gracefully', async () => {
+    try {
+        const res = await flight.fetch(`/api/connection/${enabledConnId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                name: 'Readonly Connection',
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'A connection with this name already exists');
     } catch (err) {
         assert.ifError(err);
     }

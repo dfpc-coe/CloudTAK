@@ -17,7 +17,7 @@
         "migratedb-custom": "npm run migratedb-pre && tsx ./node_modules/.bin/drizzle-kit generate --custom && npm run migratedb-commit",
         "migratedb-pre": "npm run lint && git stash && tsc --outDir .",
         "migratedb-commit": "git add migrations/* && git commit -m 'Custom DB Migration'",
-        "dev": "tsx watch --ignore web/ index.ts --noevents --nosinks --nogeofence",
+        "dev": "tsx watch --ignore web/ index.ts --no-events --no-sinks --no-geofence --no-connections",
         "prod": "NODE_OPTIONS='--max-old-space-size=6144' node dist/index.js"
     },
     "engines": {
@@ -56,7 +56,7 @@
         "@tak-ps/etl": "^10.0.0",
         "@tak-ps/node-cot": "^14.45.0",
         "@tak-ps/node-safeurl": "^1.5.0",
-        "@tak-ps/node-tak": "^12.18.2",
+        "@tak-ps/node-tak": "^12.22.0",
         "@turf/bbox": "^7.1.0",
         "@turf/bbox-polygon": "^7.2.0",
         "@turf/meta": "^7.0.0",

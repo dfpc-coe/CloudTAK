@@ -12,6 +12,39 @@ import Schema from '@openaddresses/batch-schema';
 import * as Default from '../lib/limits.js';
 import { generateClientP12, generateTrustP12 } from '../lib/certificate.js';
 
+/**
+ * Detect a Postgres unique-constraint violation on the connection name across the
+ * DrizzleQueryError cause chain, as the wrapped error's top-level message does not
+ * always include the underlying Postgres text.
+ */
+function isDuplicateNameError(err: unknown): boolean {
+    let current: unknown = err;
+    while (current) {
+        const parts: string[] = [];
+        if (current instanceof Error) {
+            parts.push(current.message);
+        } else {
+            parts.push(String(current));
+        }
+        if (typeof current === 'object' && 'safe' in current) {
+            parts.push(String((current as { safe?: unknown }).safe));
+        }
+
+        for (const message of parts) {
+            if (
+                message.includes('duplicate key value violates unique constraint')
+                || message.includes('connections_name_unique')
+                || /Key \(name\)=.* already exists/.test(message)
+            ) {
+                return true;
+            }
+        }
+
+        current = current instanceof Error ? current.cause : undefined;
+    }
+    return false;
+}
+
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/connection', {
         name: 'List Connections',
@@ -154,7 +187,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ...conn,
             });
         } catch (err) {
-            Err.respond(err, res);
+            if (isDuplicateNameError(err)) {
+                Err.respond(new Err(400, err instanceof Error ? err : new Error(String(err)), 'A connection with this name already exists'), res);
+            } else {
+                Err.respond(err, res);
+            }
         }
     });
 
@@ -252,7 +289,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ...conn,
             });
         } catch (err) {
-            Err.respond(err, res);
+            if (isDuplicateNameError(err)) {
+                Err.respond(new Err(400, err instanceof Error ? err : new Error(String(err)), 'A connection with this name already exists'), res);
+            } else {
+                Err.respond(err, res);
+            }
         }
     });
 

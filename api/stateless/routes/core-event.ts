@@ -3,7 +3,7 @@ import { StandardResponse, CoreEventResponse, GeoJSONFeatureGeometryPoint } from
 import { sql, eq } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthUser } from '../../common/auth.js';
+import Auth, { AuthUser, AuthResource, AuthResourceAccess } from '../../common/auth.js';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { CoreEvent, CoreEventChannel } from '../../common/schema.js';
 import { CoreEvent_Priority } from '../../common/enums.js';
@@ -19,16 +19,48 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }
 
     /**
-     * An Event is visible to its creator, System Admins, and any user with an
-     * active channel the Event has been shared with
+     * Resolve the Connection a Connection or Layer resource token belongs to
      */
-    async function ensureEventAccess(user: AuthUser, event: Static<typeof CoreEventResponse>): Promise<void> {
-        if (user.is_admin() || event.username === user.email) return;
+    async function resourceConnection(auth: AuthResource): Promise<number> {
+        if (auth.access === AuthResourceAccess.LAYER) {
+            if (auth.id === undefined) throw new Err(401, null, 'Layer Resource Token must contain a Layer ID');
+            const layer = await config.models.Layer.from(auth.id);
+            if (layer.connection === null) throw new Err(401, null, 'Layer is not associated with a Connection');
+            return layer.connection;
+        } else {
+            if (auth.id === undefined) throw new Err(401, null, 'Connection Resource Token must contain a Connection ID');
+            const connection = await config.models.Connection.from(auth.id);
+            return connection.id;
+        }
+    }
 
-        const shared = (event.channels || []).map(c => Number(c));
-        if (shared.length) {
-            const active = await userChannels(user.email);
-            if (shared.some(c => active.has(c))) return;
+    /**
+     * Is the requester the creator of the Event - the user that created it,
+     * a System Admin, or a Connection/Layer token belonging to the Connection
+     * that created it
+     */
+    function isEventCreator(auth: AuthUser | AuthResource, event: Static<typeof CoreEventResponse>, connection: number | null): boolean {
+        if (auth instanceof AuthUser) {
+            return auth.is_admin() || event.username === auth.email;
+        } else {
+            return connection !== null && event.connection === connection;
+        }
+    }
+
+    /**
+     * An Event is visible to its creator, System Admins, any user with an
+     * active channel the Event has been shared with, and Connection/Layer
+     * tokens belonging to the Connection that created it
+     */
+    async function ensureEventAccess(auth: AuthUser | AuthResource, event: Static<typeof CoreEventResponse>, connection: number | null): Promise<void> {
+        if (isEventCreator(auth, event, connection)) return;
+
+        if (auth instanceof AuthUser) {
+            const shared = (event.channels || []).map(c => Number(c));
+            if (shared.length) {
+                const active = await userChannels(auth.email);
+                if (shared.some(c => active.has(c))) return;
+            }
         }
 
         throw new Err(403, null, 'You do not have permission to access this Event');
@@ -54,12 +86,25 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const auth = await Auth.is_auth(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION },
+                    { access: AuthResourceAccess.LAYER },
+                ],
+            });
 
             let where;
-            if (user.is_admin()) {
+            if (auth instanceof AuthResource) {
+                const connection = await resourceConnection(auth);
+
+                where = sql`
+                    name ~* ${req.query.filter}
+                    AND connection = ${connection}
+                `;
+            } else if (auth.is_admin()) {
                 where = sql`name ~* ${req.query.filter}`;
             } else {
+                const user = auth;
                 const channels = [...await userChannels(user.email)];
 
                 where = channels.length
@@ -107,11 +152,18 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CoreEventResponse,
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const auth = await Auth.is_auth(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION },
+                    { access: AuthResourceAccess.LAYER },
+                ],
+            });
+
+            const connection = auth instanceof AuthResource ? await resourceConnection(auth) : null;
 
             const event = await config.models.CoreEvent.augmented_from(req.params.event);
 
-            await ensureEventAccess(user, event);
+            await ensureEventAccess(auth, event, connection);
 
             res.json(event);
         } catch (err) {
@@ -160,13 +212,19 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CoreEventResponse,
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const auth = await Auth.is_auth(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION },
+                    { access: AuthResourceAccess.LAYER },
+                ],
+            });
 
             const { channels, ...body } = req.body;
 
             const event = await config.models.CoreEvent.generate({
                 ...body,
-                username: user.email,
+                username: auth instanceof AuthUser ? auth.email : null,
+                connection: auth instanceof AuthResource ? await resourceConnection(auth) : null,
             });
 
             if (channels.length > 0) {
@@ -209,15 +267,22 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CoreEventResponse,
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const auth = await Auth.is_auth(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION },
+                    { access: AuthResourceAccess.LAYER },
+                ],
+            });
+
+            const connection = auth instanceof AuthResource ? await resourceConnection(auth) : null;
 
             const event = await config.models.CoreEvent.augmented_from(req.params.event);
 
-            await ensureEventAccess(user, event);
+            await ensureEventAccess(auth, event, connection);
 
             const { channels, ...body } = req.body;
 
-            const creator = user.is_admin() || event.username === user.email;
+            const creator = isEventCreator(auth, event, connection);
 
             if (channels !== undefined && !creator) {
                 throw new Err(403, null, 'Only the Event creator can modify sharing');
