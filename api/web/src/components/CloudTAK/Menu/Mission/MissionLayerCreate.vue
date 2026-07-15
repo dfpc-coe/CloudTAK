@@ -56,9 +56,11 @@ const loading = ref({
     layer: false,
 });
 
+// UID type folders are the native Data Sync folder for map items - the TAK
+// Server only returns features filed under UID layers, not GROUP layers
 const layer = ref<MissionLayer_Create>({
     name: '',
-    type: 'GROUP'
+    type: 'UID'
 });
 
 async function createLayer() {

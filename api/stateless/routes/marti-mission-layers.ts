@@ -120,6 +120,87 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
+    await schema.put('/marti/missions/:name/layer/:uid/cot', {
+        name: 'Attach Layer CoTs',
+        group: 'MartiMissionLayer',
+        params: Type.Object({
+            name: Type.String(),
+            uid: Type.String(),
+        }),
+        body: Type.Object({
+            uids: Type.Array(Type.String(), { minItems: 1 }),
+        }),
+        description: 'Helper API to file existing Mission CoTs under a mission layer, moving them from any layer they are currently filed under',
+        res: StandardResponse,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await profileControl.subscription(user.email, req.params.name);
+
+            await api.MissionLayer.attachUids(
+                req.params.name,
+                req.params.uid,
+                {
+                    uids: req.body.uids,
+                    creatorUid: user.email,
+                },
+                opts,
+            );
+
+            res.json({
+                status: 200,
+                message: 'CoTs Attached to Layer',
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/marti/missions/:name/layer/:uid/cot/:cotuid', {
+        name: 'Detach Layer CoT',
+        group: 'MartiMissionLayer',
+        params: Type.Object({
+            name: Type.String(),
+            uid: Type.String(),
+            cotuid: Type.String(),
+        }),
+        description: 'Helper API to move a Mission CoT out of a mission layer and back to the mission root - the CoT remains part of the Mission',
+        res: StandardResponse,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await profileControl.subscription(user.email, req.params.name);
+
+            await api.MissionLayer.setParent(
+                req.params.name,
+                {
+                    layerUids: [req.params.cotuid],
+                    creatorUid: user.email,
+                },
+                opts,
+            );
+
+            res.json({
+                status: 200,
+                message: 'CoT Detached from Layer',
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
     await schema.patch('/marti/missions/:name/layer/:uid', {
         name: 'Update Layer',
         group: 'MartiMissionLayer',
