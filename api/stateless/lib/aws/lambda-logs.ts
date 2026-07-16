@@ -45,7 +45,8 @@ export default class LogGroup {
             }));
 
             for (const stream of streams.logStreams || []) {
-                if (logs.length >= limit || !stream.logStreamName) break;
+                if (logs.length >= limit) break;
+                if (!stream.logStreamName) continue;
 
                 const page = await cwl.send(new CloudWatchLogs.GetLogEventsCommand({
                     logGroupName,
