@@ -16,6 +16,11 @@
 
 ### Pending Release
 
+### v13.48.0 - 2026-07-16
+
+- :rocket: Avoid calling features API on every reload
+- :rocket: Immediatey render all local data on reload
+
 ### v13.47.2 - 2026-07-16
 
 - :rocket: Ensure floating pane position doesn't overlap other UI components by default
