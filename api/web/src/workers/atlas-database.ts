@@ -38,9 +38,8 @@ export default class AtlasDatabase {
     // loadArchive() to prune features deleted remotely
     archiveIds: Set<string>;
 
-    // In-flight background hydration of the local feature cache started by
-    // init(). loadArchive() awaits it so the network reconcile never races
-    // (or resurrects features pruned by) the local hydrate.
+    // While base features are hydrating, disallow loadArchive() from running to avoid
+    // competing against a half-populated store
     hydrating?: Promise<void>;
 
     // Stores Active Mission if present
@@ -106,12 +105,6 @@ export default class AtlasDatabase {
     async init(): Promise<void> {
         COT.selfUid = this.atlas.profile.uid();
 
-        // Hydrate the in-memory store from the local database in the
-        // background rather than awaiting it. Styling, adding and persisting
-        // every stored feature is O(features) work that would otherwise block
-        // the loading screen on a warm-cache refresh. The map's 500ms diff
-        // poll renders each feature as it lands in the store, so init() can
-        // return immediately and the features stream in a beat later.
         this.hydrating = this.hydrate().catch((err) => {
             console.error('Failed to hydrate features from local database:', err);
         });
