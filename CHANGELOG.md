@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.49.0 - 2026-07-16
+
+- :rocket: Switch to using Filter Logs endpoint which allows displaying logs across log streams
+
 ### v13.48.0 - 2026-07-16
 
 - :rocket: Avoid calling features API on every reload
