@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.47.2 - 2026-07-16
+
+- :rocket: Ensure floating pane position doesn't overlap other UI components by default
+
 ### v13.47.1 - 2026-07-15
 
 - :bug: Fix password protected Data Sync password input
