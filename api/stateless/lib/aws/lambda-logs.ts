@@ -24,15 +24,31 @@ export default class LogGroup {
         }>;
     }> {
         const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_REGION });
+        const logGroupName = `/aws/lambda/${config.StackName}-layer-${layer.id}`;
 
-        let streams;
+        const logs: Array<{ message: string; timestamp: number }> = [];
+
         try {
-            streams = await cwl.send(new CloudWatchLogs.DescribeLogStreamsCommand({
-                limit: 1,
-                descending: true,
-                logGroupName: `/aws/lambda/${config.StackName}-layer-${layer.id}`,
-                orderBy: 'LastEventTime',
-            }));
+            let nextToken: string | undefined;
+
+            // Log group retention is only 7 days (see ETLFunctionLogs in lambda.ts),
+            // so this loop is naturally bounded without needing a startTime.
+            do {
+                const page = await cwl.send(new CloudWatchLogs.FilterLogEventsCommand({
+                    logGroupName,
+                    nextToken,
+                    interleaved: true,
+                }));
+
+                for (const event of page.events || []) {
+                    logs.push({
+                        message: String(event.message),
+                        timestamp: event.timestamp || 0,
+                    });
+                }
+
+                nextToken = page.nextToken;
+            } while (nextToken);
         } catch (err) {
             if (String(err).includes('ResourceNotFoundException')) {
                 return { logs: [] };
@@ -41,21 +57,8 @@ export default class LogGroup {
             }
         }
 
-        if (!streams.logStreams || !streams.logStreams.length) {
-            return { logs: [] };
-        }
+        logs.sort((a, b) => a.timestamp - b.timestamp);
 
-        return {
-            logs: ((await cwl.send(new CloudWatchLogs.GetLogEventsCommand({
-                logStreamName: streams.logStreams[0].logStreamName,
-                logGroupName: `/aws/lambda/${config.StackName}-layer-${layer.id}`,
-                startFromHead: true,
-            }))).events || []).map((log) => {
-                return {
-                    message: String(log.message),
-                    timestamp: log.timestamp || 0,
-                };
-            }),
-        };
+        return { logs };
     }
 }
