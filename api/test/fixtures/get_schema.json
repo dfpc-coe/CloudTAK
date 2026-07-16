@@ -534,6 +534,56 @@
         "query": false,
         "res": true
     },
+    "GET /import": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PUT /import/:import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PUT /import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import/raw": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
+    "POST /import/:import/result": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /import/:import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "POST /import/:import/retry": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -598,56 +648,6 @@
         "body": false,
         "query": true,
         "res": false
-    },
-    "GET /import": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PUT /import/:import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PUT /import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import/raw": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
-    "POST /import/:import/result": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /import/:import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "POST /import/:import/retry": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
     },
     "GET /layer": {
         "body": false,
@@ -1319,11 +1319,6 @@
         "query": true,
         "res": true
     },
-    "POST /retention": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "GET /server/repeater": {
         "body": false,
         "query": false,
@@ -1382,6 +1377,11 @@
     "GET /search/suggest": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "POST /retention": {
+        "body": true,
+        "query": false,
         "res": true
     },
     "POST /server/tileset": {

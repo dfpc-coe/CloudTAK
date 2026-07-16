@@ -38,6 +38,10 @@ export default class AtlasDatabase {
     // loadArchive() to prune features deleted remotely
     archiveIds: Set<string>;
 
+    // While base features are hydrating, disallow loadArchive() from running to avoid
+    // competing against a half-populated store
+    hydrating?: Promise<void>;
+
     // Stores Active Mission if present
     mission?: string;
 
@@ -100,11 +104,11 @@ export default class AtlasDatabase {
 
     async init(): Promise<void> {
         COT.selfUid = this.atlas.profile.uid();
-        try {
-            await this.loadArchive();
-        } catch (err) {
-            console.error('Failed to load archived features:', err);
-        }
+
+        this.hydrating = this.hydrate().catch((err) => {
+            console.error('Failed to hydrate features from local database:', err);
+        });
+
         await this.breadcrumb.load();
     }
 
@@ -391,6 +395,47 @@ export default class AtlasDatabase {
     }
 
     /**
+     * Hydrate the in-memory store from the local Dexie feature database.
+     *
+     * Runs at startup instead of loadArchive() so that every feature the
+     * client has previously persisted (archived and non-archived alike) is
+     * rendered immediately without waiting on a network round-trip. This lets
+     * CloudTAK restore its last-known state when refreshed offline or on a
+     * degraded connection. The authoritative reconciliation against the
+     * server still happens later via loadArchive() during the AtlasSync full
+     * sync.
+     */
+    async hydrate(): Promise<void> {
+        const features = await db.feature.toArray();
+
+        for (const feat of features) {
+            // Seed archiveIds so the subsequent loadArchive() can prune
+            // features deleted on the server while this client was offline -
+            // without this the cached copy would linger until a later sync.
+            if (feat.properties.archived) {
+                this.archiveIds.add(String(feat.id));
+            }
+
+            await this.add({
+                ...feat,
+                type: 'Feature'
+            } as InputFeature, {
+                skipSave: true,
+                skipBroadcast: true,
+                // The feature already lives in db.feature and is a
+                // CONNECTION-origin profile feature, so avoid the redundant
+                // write-back and the per-feature mission-store scan.
+                skipDatabase: true,
+                skipMissionLookup: true
+            });
+        }
+
+        this.atlas.postMessage({
+            type: WorkerMessageType.Feature_Archived_Added,
+        });
+    }
+
+    /**
      * Load Archived CoTs
      *
      * Reconciles the local store against the server's archive: features are
@@ -402,6 +447,11 @@ export default class AtlasDatabase {
      * still in flight is never removed.
      */
     async loadArchive(): Promise<void> {
+        // Wait for the local hydrate to finish first so we never reconcile
+        // against a half-populated store or resurrect a feature the server
+        // deleted (hydrate seeds archiveIds; this prunes against it).
+        if (this.hydrating) await this.hydrating;
+
         const archive = await std('/api/profile/feature', {
             token: this.atlas.token
         }) as APIList<Feature>;
@@ -635,6 +685,8 @@ export default class AtlasDatabase {
      * @param opts.skipBroadcast - Don't broadcast the COT on the internal message bus to the UI
      * @param opts.authored - If the COT is authored, append creator information if the CoT is new & potentially add it to a mission
      * @param opts.render - Defaults to true. When false, suppress the Mission_Change_Feature notification that reloads & re-renders the mission overlay. Callers adding many features to a mission at once (eg. a lasso import) should pass false and trigger a single loadMission() when finished.
+     * @param opts.skipDatabase - Don't persist a newly created COT back to the Dexie feature table. Used when the feature already originates from that table (eg. startup hydrate) so we avoid a redundant IndexedDB write per feature.
+     * @param opts.skipMissionLookup - Don't scan subscribed mission stores when checking for an existing COT. Used when the caller knows the feature is a CONNECTION-origin profile feature (eg. startup hydrate) so we avoid an IndexedDB mission scan per feature.
      */
     async add(
         feature: InputFeature,
@@ -643,6 +695,8 @@ export default class AtlasDatabase {
             skipBroadcast?: boolean;
             authored?: boolean,
             render?: boolean,
+            skipDatabase?: boolean,
+            skipMissionLookup?: boolean,
         }
     ): Promise<COT | void> {
         if (!opts) opts = {};
@@ -652,7 +706,7 @@ export default class AtlasDatabase {
         const feat = feature as Feature;
 
         let exists = await this.get(feat.properties.id, {
-            mission: true
+            mission: opts.skipMissionLookup !== true
         });
 
         if (opts.authored && !exists) {
@@ -782,12 +836,14 @@ export default class AtlasDatabase {
                 this.cots.set(exists.id, exists);
 
                 const created = exists;
-                await withDbRetry(() => db.feature.put({
-                    id: created.id,
-                    path: created.path,
-                    properties: created.properties,
-                    geometry: created.geometry
-                }));
+                if (opts.skipDatabase !== true) {
+                    await withDbRetry(() => db.feature.put({
+                        id: created.id,
+                        path: created.path,
+                        properties: created.properties,
+                        geometry: created.geometry
+                    }));
+                }
 
                 if (opts.skipBroadcast !== true && exists.properties.archived) {
                     this.atlas.postMessage({
