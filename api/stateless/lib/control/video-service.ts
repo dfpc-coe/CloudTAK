@@ -1,7 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import jwt from 'jsonwebtoken';
 import Config from '../../../common/config.js';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { AuthResourceAccess } from '../../../common/auth.js';
 import { Type, Static } from '@sinclair/typebox';
 import { VideoLease } from '../../../common/schema.js';
@@ -862,6 +862,8 @@ export default class VideoServiceControl {
         } else if (!opts.admin && opts.username && lease.username !== opts.username) {
             throw new Err(400, null, `Lease does not belong to user ${opts.username}`);
         }
+
+        await this.config.models.ProfileVideo.delete(sql`lease = ${leaseid}`);
 
         await this.config.models.VideoLease.delete(leaseid);
 

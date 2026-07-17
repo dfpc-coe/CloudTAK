@@ -1,6 +1,6 @@
 import path from 'node:path';
 import type { Message, LocalMessage, Transform, ConvertResponse } from '../types.ts';
-import cp from 'node:child_process';
+import { run } from '../utils.ts';
 
 const MAX_ZOOM = 22;
 const MAX_RESOLUTION_DEGREES = 360 / (Math.pow(2, MAX_ZOOM) * 256);
@@ -58,9 +58,9 @@ export default class GDALTranslate implements Transform {
         try {
             // Run gdal raster info WITHOUT SRC_METHOD=NO_GEOTRANSFORM to detect
             // whether the file actually contains geospatial information
-            const info = cp.execFileSync('gdal', [
+            const info = run('gdal', [
                 'raster', 'info', '--format=json', input,
-            ], { env }).toString();
+            ], { env });
             gdalinfo = JSON.parse(info);
 
             // Validate that PDF contains geospatial information (GeoPDF vs regular PDF)
@@ -82,6 +82,7 @@ export default class GDALTranslate implements Transform {
                 throw err;
             }
             // For non-PDF rasters, continue without zoom clamping
+            console.error(`warn - gdal raster info failed for ${input}:`, err instanceof Error ? err.message : String(err));
         }
 
         try {
@@ -109,7 +110,7 @@ export default class GDALTranslate implements Transform {
                         const zoom = Math.ceil(Math.log2(360 / (resDegrees * 256)));
                         if (zoom > MAX_ZOOM) {
                             const warped = path.resolve(this.local.tmpdir, path.parse(this.local.raw).name + '-warped.tif');
-                            cp.execFileSync('gdal', [
+                            run('gdal', [
                                 'raster', 'reproject',
                                 '--resolution', `${maxRes},${maxRes}`,
                                 '--resampling', 'cubic',
@@ -123,17 +124,18 @@ export default class GDALTranslate implements Transform {
                     }
                 }
             }
-        } catch {
+        } catch (err) {
             // If zoom clamping fails, continue without it
+            console.error(`warn - zoom clamping failed for ${input}:`, err instanceof Error ? err.message : String(err));
         }
 
-        cp.execFileSync('gdal', [
+        run('gdal', [
             'raster', 'convert',
             '--overwrite',
             convertInput, output,
         ], { env });
 
-        cp.execFileSync('gdal', [
+        run('gdal', [
             'raster', 'overview', 'add',
             '--resampling', 'cubic',
             '--levels', '2,4,8,16,32,64,128,256',
