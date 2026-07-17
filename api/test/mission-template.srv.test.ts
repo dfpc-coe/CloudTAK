@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
+import { eq } from 'drizzle-orm';
+import { PaletteFeature, MissionTemplateLog } from '../common/schema.js';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -123,6 +125,22 @@ test('PATCH: /template/mission/:mission - update', async () => {
 
 test('DELETE: /template/mission/:mission - delete', async () => {
     try {
+        if (!flight.config) throw new Error('Flight config not initialized');
+
+        // Child rows that reference the template via a non-nullable FK
+        const feature = await flight.config.models.PaletteFeature.generate({
+            name: 'Template Feature',
+            template: templateId,
+            type: 'Point',
+            style: {},
+        });
+
+        const log = await flight.config.models.MissionTemplateLog.generate({
+            name: 'Template Log',
+            template: templateId,
+            schema: {},
+        });
+
         const res = await flight.fetch(`/api/template/mission/${templateId}`, {
             method: 'DELETE',
             auth: {
@@ -132,6 +150,15 @@ test('DELETE: /template/mission/:mission - delete', async () => {
 
         assert.equal(res.body.status, 200);
         assert.equal(res.body.message, 'Mission Template Deleted');
+
+        // Child rows should be removed along with the template
+        const features = await flight.config.pg
+            .select().from(PaletteFeature).where(eq(PaletteFeature.uuid, feature.uuid));
+        assert.equal(features.length, 0);
+
+        const logs = await flight.config.pg
+            .select().from(MissionTemplateLog).where(eq(MissionTemplateLog.id, log.id));
+        assert.equal(logs.length, 0);
     } catch (err) {
         assert.ifError(err);
     }

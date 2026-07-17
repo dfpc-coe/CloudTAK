@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { sql } from 'drizzle-orm';
-import { ConnectionFeature } from '../common/schema.js';
+import { sql, eq } from 'drizzle-orm';
+import { ConnectionFeature, VideoLease } from '../common/schema.js';
 import Flight from './flight.js';
 import Sinon from 'sinon';
 import {
@@ -497,6 +497,7 @@ test('PATCH: api/connection/1/layer/1 - update task version', async () => {
 
 test('DELETE: api/connection/1/layer/:id - layer with written COT features', async () => {
     let layerId: number | undefined;
+    let leaseId: number | undefined;
 
     try {
         const layer = await flight.config!.models.Layer.generate({
@@ -523,6 +524,16 @@ test('DELETE: api/connection/1/layer/:id - layer with written COT features', asy
                 coordinates: [0, 0, 0],
             },
         });
+
+        // Simulate a video lease scoped to this layer
+        const lease = await flight.config!.models.VideoLease.generate({
+            name: 'Layer Lease',
+            path: '/layer/1594',
+            connection: 1,
+            layer: layer.id,
+        });
+
+        leaseId = lease.id;
 
         Sinon.stub(CloudFormationClient.prototype, 'send').callsFake((command) => {
             if (command instanceof DescribeStacksCommand) {
@@ -560,6 +571,15 @@ test('DELETE: api/connection/1/layer/:id - layer with written COT features', asy
             `);
 
         assert.equal(features.length, 0);
+
+        // The video lease should be preserved but detached from the deleted layer
+        const leases = await flight.config!.pg
+            .select()
+            .from(VideoLease)
+            .where(eq(VideoLease.id, leaseId!));
+
+        assert.equal(leases.length, 1);
+        assert.equal(leases[0].layer, null);
     } catch (err) {
         assert.ifError(err);
     } finally {
@@ -567,6 +587,10 @@ test('DELETE: api/connection/1/layer/:id - layer with written COT features', asy
             id = ${'feature-1594'}
             AND connection = ${1}
         `);
+
+        if (leaseId !== undefined) {
+            await flight.config!.models.VideoLease.delete(leaseId);
+        }
 
         if (layerId !== undefined) {
             await flight.config!.models.Layer.delete(layerId);

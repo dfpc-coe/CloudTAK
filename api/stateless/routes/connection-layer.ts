@@ -22,7 +22,7 @@ import {
     LayerOutgoingResponse,
     LayerUpdateManagementListResponse,
 } from '../../common/types.js';
-import { LayerIncoming, LayerOutgoing, ConnectionFeature } from '../../common/schema.js';
+import { LayerIncoming, LayerOutgoing, ConnectionFeature, VideoLease } from '../../common/schema.js';
 import DataMission from '../lib/data-mission.js';
 import { MAX_LAYERS_IN_DATA_SYNC } from '../lib/data-mission.js';
 import { Layer_Config } from '../../common/models/Layer.js';
@@ -953,6 +953,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             await config.pg.delete(ConnectionFeature)
                 .where(eq(ConnectionFeature.layer, layer.id));
+
+            await config.pg.update(VideoLease)
+                .set({ layer: null })
+                .where(eq(VideoLease.layer, layer.id));
 
             await config.models.Layer.delete(req.params.layerid);
 
