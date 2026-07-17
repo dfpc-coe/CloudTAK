@@ -16,6 +16,13 @@
 
 ### Pending Release
 
+- :tada: Implement the Video Wall - a full-page grid of a user's saved video streams with drag & drop re-ordering, dynamic resizing & removal
+- :tada: Add a "Push to Video Wall" button to the Floating Video Pane which saves the stream to the wall & opens (or notifies) the Video Wall tab
+- :tada: Persist Video Wall placement in the `profile_videos` table via a new `position` column & `PATCH /api/profile/video/:id` endpoint
+- :tada: `POST /api/profile/video` now accepts a raw stream `url` - resolving it to an existing Video Lease or creating a user-owned proxy lease
+- :rocket: Extract a unified `VideoPlayer` component (hls.js) shared by the Floating Video Pane & the Video Wall
+- :white_check_mark: Add tests covering Profile Video creation from leases & URLs, placement updates & deletion
+
 ### v13.50.0 - 2026-07-17
 
 - :bug: Delete Connection Features related to a layer if the layer is deleted - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1594
