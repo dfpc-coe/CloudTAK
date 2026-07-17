@@ -93,9 +93,10 @@ export default class Tippecanoe {
                 env: process.env,
             })
                 .on('error', reject)
-                .on('close', (code) => {
+                .on('close', (code, signal) => {
                     if (code !== 0) {
-                        return reject(new Error(`tippecanoe exited with code ${code}${stderr ? `: ${stderr.trim()}` : ''}`));
+                        const detail = signal ? `killed by signal ${signal}` : `exited with code ${code}`;
+                        return reject(new Error(`tippecanoe ${detail}${stderr ? `: ${stderr.trim()}` : ''}`));
                     }
                     resolve(code);
                 });
@@ -164,9 +165,10 @@ export default class Tippecanoe {
                 env: process.env,
             })
                 .on('error', reject)
-                .on('close', (code) => {
+                .on('close', (code, signal) => {
                     if (code !== 0) {
-                        return reject(new Error(`tile-join exited with code ${code}${stderr ? `: ${stderr.trim()}` : ''}`));
+                        const detail = signal ? `killed by signal ${signal}` : `exited with code ${code}`;
+                        return reject(new Error(`tile-join ${detail}${stderr ? `: ${stderr.trim()}` : ''}`));
                     }
                     resolve(code);
                 });

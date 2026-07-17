@@ -4,7 +4,8 @@ import readline from 'node:readline';
 
 /**
  * Run a command synchronously, surfacing the child's stderr, exit code and
- * signal on failure - execFileSync's default error discards all of them
+ * signal on failure - execFileSync attaches them to the thrown error but its
+ * default message includes none of them
  *
  * @param command Executable to run
  * @param args Arguments to pass to the executable
@@ -21,8 +22,12 @@ export function run(
     } catch (err) {
         const e = err as Error & cp.SpawnSyncReturns<Buffer>;
         const stderr = e.stderr ? String(e.stderr).trim().slice(-2000) : '';
-        const detail = e.signal ? `killed by signal ${e.signal}` : `exit code ${e.status}`;
-        throw new Error(`${command} ${args.slice(0, 2).join(' ')} failed (${detail})${stderr ? `: ${stderr}` : ''}`, { cause: err });
+        const detail = e.signal
+            ? `killed by signal ${e.signal}`
+            : e.status !== null && e.status !== undefined
+                ? `exit code ${e.status}`
+                : 'failed to spawn';
+        throw new Error(`${command} ${args.join(' ')} failed (${detail})${stderr ? `: ${stderr}` : ''}`, { cause: err });
     }
 }
 
