@@ -16,6 +16,13 @@
 
 ### Pending Release
 
+### v13.50.0 - 2026-07-17
+
+- :bug: Delete Connection Features related to a layer if the layer is deleted - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1594
+- :bug: Increase event worker memory to handle PDF imports reliably
+- :bug: Surface OOM errors in shell calls more reliably
+- :bug: Fix other instances of DELETE endpoints throwing 5xx errors due to database relations
+
 ### v13.49.0 - 2026-07-16
 
 - :rocket: Switch to using Filter Logs endpoint which allows displaying logs across log streams
