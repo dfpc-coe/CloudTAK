@@ -51,21 +51,23 @@
                 />
             </span>
 
-            <TablerIconButton
-                v-if='!pushing'
-                title='Push to Video Wall'
-                @click='pushToWall'
-            >
-                <IconCast
-                    :size='24'
-                    stroke='1'
+            <template v-if='!isNativePlatform()'>
+                <TablerIconButton
+                    v-if='!pushing'
+                    title='Push to Video Wall'
+                    @click='pushToWall'
+                >
+                    <IconCast
+                        :size='24'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+                <TablerLoading
+                    v-else
+                    :inline='true'
+                    desc='Pushing'
                 />
-            </TablerIconButton>
-            <TablerLoading
-                v-else
-                :inline='true'
-                desc='Pushing'
-            />
+            </template>
         </template>
 
         <div class='h-100 w-100 d-flex flex-column'>
@@ -99,6 +101,7 @@ import FloatingPane from './FloatingPane.vue';
 import VideoPlayer from '../../util/VideoPlayer.vue';
 import type { VideoPlayerMetadata } from '../../util/VideoPlayer.vue';
 import { notifyVideoWall } from '../../../lib/video-wall.ts';
+import { isNativePlatform } from '../../../base/capacitor.ts';
 import { useFloatStore } from '../../../stores/float.ts';
 import type { Pane, PaneVideoConfig } from '../../../stores/float.ts';
 import {
