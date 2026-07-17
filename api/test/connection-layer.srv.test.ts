@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
+import { sql } from 'drizzle-orm';
+import { ConnectionFeature } from '../common/schema.js';
 import Flight from './flight.js';
 import Sinon from 'sinon';
 import {
@@ -489,6 +491,87 @@ test('PATCH: api/connection/1/layer/1 - update task version', async () => {
     } catch (err) {
         assert.ifError(err);
     } finally {
+        Sinon.restore();
+    }
+});
+
+test('DELETE: api/connection/1/layer/:id - layer with written COT features', async () => {
+    let layerId: number | undefined;
+
+    try {
+        const layer = await flight.config!.models.Layer.generate({
+            name: 'Feature Layer',
+            description: 'Layer that has written COT features to the map',
+            task: 'etl-test-v1.0.0',
+            connection: 1,
+        });
+
+        layerId = layer.id;
+
+        // Simulate a COT feature written to the map by this layer
+        await flight.config!.models.ConnectionFeature.generate({
+            id: 'feature-1594',
+            connection: 1,
+            layer: layer.id,
+            path: '/',
+            properties: {
+                type: 'a-f-g',
+                callsign: 'Feature 1594',
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [0, 0, 0],
+            },
+        });
+
+        Sinon.stub(CloudFormationClient.prototype, 'send').callsFake((command) => {
+            if (command instanceof DescribeStacksCommand) {
+                return Promise.resolve({
+                    Stacks: [{
+                        StackName: 'test',
+                        StackStatus: 'UPDATE_COMPLETE',
+                        CreationTime: new Date(),
+                    }],
+                });
+            } else {
+                return Promise.resolve({});
+            }
+        });
+
+        const res = await flight.fetch(`/api/connection/1/layer/${layer.id}`, {
+            method: 'DELETE',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.deepEqual(res.body, {
+            status: 200,
+            message: 'Layer Deleted',
+        });
+
+        // The features written by the layer should be deleted along with it
+        const features = await flight.config!.pg
+            .select()
+            .from(ConnectionFeature)
+            .where(sql`
+                connection = ${1}
+                AND id = ${'feature-1594'}
+            `);
+
+        assert.equal(features.length, 0);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        await flight.config!.models.ConnectionFeature.delete(sql`
+            id = ${'feature-1594'}
+            AND connection = ${1}
+        `);
+
+        if (layerId !== undefined) {
+            await flight.config!.models.Layer.delete(layerId);
+        }
+
         Sinon.restore();
     }
 });
