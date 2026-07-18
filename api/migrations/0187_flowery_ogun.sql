@@ -1,1 +1,1 @@
-ALTER TABLE "profile_videos" ADD COLUMN "position" jsonb DEFAULT '{"x":0,"y":0,"w":4,"h":6}'::jsonb NOT NULL;
+ALTER TABLE "profile_videos" ADD COLUMN IF NOT EXISTS "position" jsonb DEFAULT '{"x":0,"y":0,"w":4,"h":6}'::jsonb NOT NULL;

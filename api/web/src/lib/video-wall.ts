@@ -6,22 +6,18 @@
  * can either notify it to refresh or open a new tab.
  */
 
-const CHANNEL_NAME = 'cloudtak:video-wall';
+import { WorkerMessageType } from '../base/events.ts';
+import type { WorkerMessage } from '../base/events.ts';
 
 export const VIDEO_WALL_PATH = '/video';
 export const VIDEO_WALL_WINDOW = 'cloudtak-video-wall';
-
-type WallMessage = {
-    type: 'ping' | 'pong' | 'refresh';
-    nonce?: string;
-};
 
 /**
  * Determine if a Video Wall tab is currently open by pinging over the BroadcastChannel
  */
 export function isVideoWallOpen(timeout = 500): Promise<boolean> {
     return new Promise((resolve) => {
-        const channel = new BroadcastChannel(CHANNEL_NAME);
+        const channel = new BroadcastChannel('cloudtak');
         const nonce = crypto.randomUUID();
 
         const timer = window.setTimeout(() => {
@@ -29,15 +25,15 @@ export function isVideoWallOpen(timeout = 500): Promise<boolean> {
             resolve(false);
         }, timeout);
 
-        channel.onmessage = (msg: MessageEvent<WallMessage>) => {
-            if (msg.data && msg.data.type === 'pong' && msg.data.nonce === nonce) {
+        channel.onmessage = (msg: MessageEvent<WorkerMessage>) => {
+            if (msg.data && msg.data.type === WorkerMessageType.VideoWall_Pong && msg.data.body.nonce === nonce) {
                 window.clearTimeout(timer);
                 channel.close();
                 resolve(true);
             }
         };
 
-        channel.postMessage({ type: 'ping', nonce });
+        channel.postMessage({ type: WorkerMessageType.VideoWall_Ping, body: { nonce } });
     });
 }
 
@@ -47,8 +43,8 @@ export function isVideoWallOpen(timeout = 500): Promise<boolean> {
  */
 export async function notifyVideoWall(): Promise<void> {
     if (await isVideoWallOpen()) {
-        const channel = new BroadcastChannel(CHANNEL_NAME);
-        channel.postMessage({ type: 'refresh' });
+        const channel = new BroadcastChannel('cloudtak');
+        channel.postMessage({ type: WorkerMessageType.VideoWall_Refresh });
         channel.close();
     } else {
         window.open(VIDEO_WALL_PATH, VIDEO_WALL_WINDOW);
@@ -60,14 +56,14 @@ export async function notifyVideoWall(): Promise<void> {
  * the callback when another tab pushes a new video. Returns a cleanup function.
  */
 export function registerVideoWall(onRefresh: () => void): () => void {
-    const channel = new BroadcastChannel(CHANNEL_NAME);
+    const channel = new BroadcastChannel('cloudtak');
 
-    channel.onmessage = (msg: MessageEvent<WallMessage>) => {
+    channel.onmessage = (msg: MessageEvent<WorkerMessage>) => {
         if (!msg.data) return;
 
-        if (msg.data.type === 'ping') {
-            channel.postMessage({ type: 'pong', nonce: msg.data.nonce });
-        } else if (msg.data.type === 'refresh') {
+        if (msg.data.type === WorkerMessageType.VideoWall_Ping) {
+            channel.postMessage({ type: WorkerMessageType.VideoWall_Pong, body: { nonce: msg.data.body.nonce } });
+        } else if (msg.data.type === WorkerMessageType.VideoWall_Refresh) {
             onRefresh();
         }
     };

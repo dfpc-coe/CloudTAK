@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { primaryKey } from 'drizzle-orm/pg-core';
 import { Static } from '@sinclair/typebox';
+import type { ProfileVideoPosition } from './types.js';
 import type { StyleContainer } from './style.js';
 import type { FilterContainer } from './filter.js';
 import type { PaletteFeatureStyle } from '../stateless/lib/palette.js';
@@ -225,13 +226,7 @@ export const ProfileVideo = pgTable('profile_videos', {
     lease: integer().notNull().references(() => VideoLease.id),
     username: text().notNull().references(() => Profile.username),
 
-    // Video Wall grid placement - x/y in grid units on a 12 column grid, w/h in grid units
-    position: jsonb().$type<{
-        x: number;
-        y: number;
-        w: number;
-        h: number;
-    }>().notNull().default({ x: 0, y: 0, w: 4, h: 6 }),
+    position: jsonb().$type<Static<typeof ProfileVideoPosition>>().notNull().default({ x: 0, y: 0, w: 4, h: 6 }),
 }, (table) => {
     return {
         username_idx: index('profile_videos_username_idx').on(table.username),
