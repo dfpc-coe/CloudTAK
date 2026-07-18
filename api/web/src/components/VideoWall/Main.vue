@@ -252,7 +252,7 @@ async function removeVideo(id: string): Promise<void> {
 
         layout.value = layout.value.filter((item) => String(item.i) !== id);
         leases.value.delete(id);
-        names.value.delete(id);
+        names.delete(id);
         saved.value.delete(id);
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
