@@ -1284,6 +1284,11 @@
         "query": false,
         "res": true
     },
+    "PATCH /profile/video/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /profile/video/:id": {
         "body": false,
         "query": false,
