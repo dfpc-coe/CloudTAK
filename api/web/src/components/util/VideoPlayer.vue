@@ -71,10 +71,10 @@
  * Lease `lease` ID (renewed automatically when expired).
  */
 
-import { ref, onMounted, onUnmounted, nextTick, useTemplateRef } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, useTemplateRef } from 'vue';
 import { std, stdurl } from '../../std.ts';
 import type { VideoLeaseResponse, VideoLeaseMetadata } from '../../types.ts';
-import Hls from 'hls.js'
+import Hls from 'hls.js';
 import {
     IconPlayerPauseFilled
 } from '@tabler/icons-vue';
@@ -255,12 +255,12 @@ async function deleteLease(): Promise<void> {
 
         loading.value = false;
     } catch (err) {
-        loading.value = false;
         setError(err instanceof Error ? err : new Error(String(err)));
     }
 }
 
 function setError(err: Error): void {
+    loading.value = false;
     error.value = err;
     emit('error', err);
 }
@@ -271,6 +271,13 @@ function setError(err: Error): void {
 async function createPlayer(): Promise<void> {
     try {
         const url = new URL(videoProtocols.value!.hls!.url);
+
+        // Send embedded basic-auth credentials via the Authorization header only,
+        // keeping them out of the URL exposed to devtools, caches & hls.js telemetry
+        const username = decodeURIComponent(url.username);
+        const password = decodeURIComponent(url.password);
+        url.username = '';
+        url.password = '';
 
         attachVideoEventHandlers();
 
@@ -284,8 +291,8 @@ async function createPlayer(): Promise<void> {
             liveSyncDurationCount: 3, // More tolerant of discontinuities
             liveMaxLatencyDurationCount: 10,
             xhrSetup: (xhr: XMLHttpRequest) => {
-                if (url.username && url.password) {
-                    xhr.setRequestHeader('Authorization', 'Basic ' + btoa(`${url.username}:${url.password}`));
+                if (username && password) {
+                    xhr.setRequestHeader('Authorization', 'Basic ' + btoa(`${username}:${password}`));
                 }
             }
         });
@@ -342,7 +349,7 @@ async function createPlayer(): Promise<void> {
                         console.log("Fatal media error:", data);
 
                         if (data.details === 'bufferAddCodecError' && data.error instanceof Error && data.error.name === 'NotSupportedError') {
-                            setError(new Error(`Your browser does not support the required video codec for this stream (${data.mimeType}`));
+                            setError(new Error(`Your browser does not support the required video codec for this stream${data.mimeType ? ` (${data.mimeType})` : ''}`));
                         } else if (player.value) {
                             try {
                                 player.value.recoverMediaError();
@@ -361,7 +368,7 @@ async function createPlayer(): Promise<void> {
                     handleStreamError(data.error);
                     break;
             }
-        })
+        });
     } catch (err) {
         setError(err instanceof Error ? err : new Error(String(err)));
     }
@@ -444,7 +451,7 @@ function handleStreamError(streamError: Error): void {
  */
 async function requestUrlStream(url: string): Promise<void> {
     const active_url = stdurl('/api/video/active');
-    active_url.searchParams.set('url', url)
+    active_url.searchParams.set('url', url);
     const active = await std(active_url) as {
         leasable: boolean;
         message?: string;
@@ -464,7 +471,7 @@ async function requestUrlStream(url: string): Promise<void> {
                 duration: 1 * 60 * 60, // 1 hour lease
                 proxy: url
             }
-        }) as VideoLeaseResponse
+        }) as VideoLeaseResponse;
 
         const { protocols } = await std(`/api/video/lease/${lease.path}/metadata`) as VideoLeaseMetadata;
 
@@ -516,12 +523,14 @@ async function requestLeaseStream(leaseId: number): Promise<void> {
  * Request the video stream from the CloudTAK server and initialize playback
  */
 async function requestStream(): Promise<void> {
+    loading.value = true;
+
     if (!Hls.isSupported()) {
         setError(new Error('HLS.js is not supported in this browser.'));
         return;
-    } else {
-        error.value = undefined;
     }
+
+    error.value = undefined;
 
     try {
         if (props.lease !== undefined) {
@@ -540,7 +549,6 @@ async function requestStream(): Promise<void> {
             });
         }
     } catch (err) {
-        loading.value = false;
         setError(err instanceof Error ? err : new Error(String(err)));
     }
 }

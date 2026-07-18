@@ -131,6 +131,7 @@ const props = withDefaults(defineProps<{
 }>(), {
     keywords: () => [],
     placeholder: 'No Keywords',
+    relevant: undefined,
 });
 
 const { placeholder } = props;

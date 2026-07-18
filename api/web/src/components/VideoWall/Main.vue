@@ -115,7 +115,7 @@
  * the wall from the Map View and placement is persisted per-user.
  */
 
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { GridLayout, GridItem } from 'grid-layout-plus';
 import type { Layout } from 'grid-layout-plus';
 import { std, stdurl } from '../../std.ts';
@@ -141,7 +141,7 @@ const layout = ref<Layout>([]);
 
 // ProfileVideo ID => Video Lease ID / resolved lease name
 const leases = ref<Map<string, number>>(new Map());
-const names = ref<Map<string, string>>(new Map());
+const names = reactive(new Map<string, string>());
 
 // Last known server-side positions - used to only PATCH videos that moved
 const saved = ref<Map<string, { x: number, y: number, w: number, h: number }>>(new Map());
@@ -252,7 +252,7 @@ async function removeVideo(id: string): Promise<void> {
 
         layout.value = layout.value.filter((item) => String(item.i) !== id);
         leases.value.delete(id);
-        names.value.delete(id);
+        names.delete(id);
         saved.value.delete(id);
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
