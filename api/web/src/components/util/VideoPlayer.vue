@@ -111,7 +111,7 @@ const error = ref<Error | undefined>();
 const retryCount = ref(0);
 const maxRetries = ref(3);
 
-const player = ref<Hls | undefined>()
+const player = ref<Hls | undefined>();
 
 const videoLease = ref<VideoLeaseResponse | undefined>();
 const videoProtocols = ref<VideoLeaseMetadata["protocols"] | undefined>();
