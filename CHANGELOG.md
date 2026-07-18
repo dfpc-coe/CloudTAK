@@ -16,6 +16,8 @@
 
 ### Pending Release
 
+### v13.51.0 - 2026-07-18
+
 - :tada: Implement the Video Wall - a full-page grid of a user's saved video streams with drag & drop re-ordering, dynamic resizing & removal
 - :tada: Add a "Push to Video Wall" button to the Floating Video Pane which saves the stream to the wall & opens (or notifies) the Video Wall tab
 - :tada: Persist Video Wall placement in the `profile_videos` table via a new `position` column & `PATCH /api/profile/video/:id` endpoint
