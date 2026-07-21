@@ -131,7 +131,7 @@
         "typescript-eslint": "^8.0.0"
     },
     "optionalDependencies": {
-        "@img/sharp-libvips-linuxmusl-x64": "1.2.4",
-        "@img/sharp-linuxmusl-x64": "0.34.5"
+        "@img/sharp-libvips-linuxmusl-x64": "1.3.2",
+        "@img/sharp-linuxmusl-x64": "0.35.3"
     }
 }
