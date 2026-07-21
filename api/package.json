@@ -54,7 +54,7 @@
         "@simplewebauthn/server": "^13.3.0",
         "@sinclair/typebox": "^0.34.0",
         "@tak-ps/etl": "^10.0.0",
-        "@tak-ps/node-cot": "^14.45.0",
+        "@tak-ps/node-cot": "^14.46.0",
         "@tak-ps/node-safeurl": "^1.5.0",
         "@tak-ps/node-tak": "^12.22.0",
         "@turf/bbox": "^7.1.0",
@@ -86,7 +86,7 @@
         "qr-image": "^3.2.0",
         "sanitize-html": "^2.17.0",
         "semver-sort": "^1.0.0",
-        "sharp": "^0.34.0",
+        "sharp": "^0.35.0",
         "spritesmith": "^3.4.1",
         "suncalc": "^2.0.0",
         "tokml": "^0.4.0",
@@ -121,7 +121,7 @@
         "@types/tough-cookie": "^4.0.2",
         "@types/ua-parser-js": "^0.7.39",
         "@types/ws": "^8.5.4",
-        "c8": "^11.0.0",
+        "c8": "^12.0.0",
         "eslint": "^10.0.0",
         "globals": "^17.3.0",
         "openapi-typescript": "^7.13.0",
@@ -131,7 +131,7 @@
         "typescript-eslint": "^8.0.0"
     },
     "optionalDependencies": {
-        "@img/sharp-libvips-linuxmusl-x64": "1.2.4",
-        "@img/sharp-linuxmusl-x64": "0.34.5"
+        "@img/sharp-libvips-linuxmusl-x64": "1.3.2",
+        "@img/sharp-linuxmusl-x64": "0.35.3"
     }
 }
