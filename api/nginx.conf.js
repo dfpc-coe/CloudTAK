@@ -26,6 +26,22 @@ if (url.hostname === 'localhost') {
         'connect-src': [`'self'`]
     }
 
+    // Optional space-separated extra connect-src origins so a deployment can
+    // authorize plugins that consume an external data feed (e.g. a public
+    // websocket API) without editing this file or forking the image.
+    // Example: CSP_CONNECT_SRC='wss://ws1.blitzortung.org wss://*.example.com'
+    // Only conservative source-expression characters are accepted so a
+    // malformed value cannot break out of the quoted header.
+    if (process.env.CSP_CONNECT_SRC) {
+        for (const src of process.env.CSP_CONNECT_SRC.split(/\s+/).filter(Boolean)) {
+            if (/^[A-Za-z0-9*.:/-]+$/.test(src)) {
+                csp['connect-src'].push(src);
+            } else {
+                console.error(`CSP_CONNECT_SRC: ignoring invalid source "${src}"`);
+            }
+        }
+    }
+
     cspstr = `add_header 'Content-Security-Policy' "`
     for (const [key, value] of Object.entries(csp)) {
         console.error(key, value);
