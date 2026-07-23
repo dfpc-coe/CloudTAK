@@ -1186,22 +1186,16 @@ export const useMapStore = defineStore('cloudtak', {
                         this.select.y = e.point.y;
                     }
 
-                    const feats = [];
-
-                    for (const feat of features) {
+                    const feats = (await Promise.all(features.map(async (feat) => {
                         const featId = feat.properties.id || feat.id;
-                        if (!featId) continue;
+                        if (!featId) return undefined;
 
                         const cot = await this.worker.db.get(String(featId), {
                             mission: true
                         });
 
-                        if (cot) {
-                            feats.push(cot);
-                        } else {
-                            feats.push(feat);
-                        }
-                    }
+                        return cot || feat;
+                    }))).filter((feat) => feat !== undefined);
 
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     this.select.feats = feats as any;

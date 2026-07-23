@@ -929,31 +929,32 @@ export default class AtlasDatabase {
 
         if (!opts) opts = {};
 
-        let cot = this.cots.get(id);
+        const cot = this.cots.get(id);
 
         if (cot) {
             return cot;
         } else if (opts.mission) {
-            for (const sub of await Subscription.localList({
-                subscribed: true
-            })) {
-                const store = await Subscription.from(sub.guid, this.atlas.token, {
-                    subscribed: true
-                });
+            // subscription_feature is keyed on the feature id, so resolve the
+            // owning mission with two indexed gets rather than iterating every
+            // subscribed mission's store
+            const feat = await db.subscription_feature.get(id);
 
-                if (!store) continue;
+            if (!feat) return;
 
-                const feat = await store.feature.from(id);
+            const sub = await db.subscription.get(feat.mission);
 
-                if (!feat) continue;
+            if (!sub || !sub.subscribed) return;
 
-                cot = await COT.load(feat, {
-                    mode: OriginMode.MISSION,
-                    mode_id: sub.guid
-                });
-
-                return cot;
-            }
+            return await COT.load({
+                id: feat.id,
+                type: 'Feature',
+                path: feat.path,
+                properties: feat.properties,
+                geometry: feat.geometry,
+            }, {
+                mode: OriginMode.MISSION,
+                mode_id: feat.mission
+            });
         }
 
         return;

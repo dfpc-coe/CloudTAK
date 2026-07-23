@@ -388,7 +388,7 @@ watch(props, async () => {
             && StandardAffiliationInverse[props.modelValue.split('-')[1]]
             && config.value.affiliation !== props.modelValue.split('-')[1]
         ) {
-            config.value.affiliation = config.value.type.split('-')[1];
+            config.value.affiliation = props.modelValue.split('-')[1];
             await fetchList();
         } else if (Type2525.isNumericSIDCConvertable(props.modelValue)) {
             const affiliation = SID_REVERSE_MAP[props.modelValue.substring(2, 4)] || 'u';
