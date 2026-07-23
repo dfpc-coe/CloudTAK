@@ -16,6 +16,8 @@
 
 ### Pending Release
 
+### v13.52.0 - 2026-07-18
+
 - :tada: Add `GET /api/type/2525e` endpoint exposing the MIL-STD-2525E Symbol Sets & Symbols via the `milstandard-e` package
 - :tada: Add `GET /api/type/2525e/:sidc` endpoint returning metadata (name, remarks, symbolset) for a given numeric SIDC
 - :tada: Add a 2525B/2525E standard toggle to the Feature Type editor - 2525E symbols are selected by numeric SIDC & rendered via `milsymbol`
