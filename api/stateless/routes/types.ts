@@ -10,9 +10,11 @@ import { MilSymType } from '@tak-ps/node-cot';
 import { Package } from '@tak-ps/node-tak/lib/api/package';
 import * as Default from '../lib/limits.js';
 
-// 2525E Numeric SIDCs are 20 digits:
-// <2: version><1: context><1: standard identity><2: symbol set><1: status><1: hq/task force/dummy><2: amplifier><6: entity><2: mod1><2: mod2>
-// Context: 0: Reality, 1: Exercise, 2: Simulation
+// 2525E Numeric SIDCs used here are 20 digits.
+// Positions used by this router:
+// - standard identity: sidc.substring(2, 4)
+// - symbol set:        sidc.substring(4, 6)
+// - entity code:       sidc.substring(10, 16)
 
 const symbolsets: Array<{
     id: string;
