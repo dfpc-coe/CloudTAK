@@ -555,16 +555,6 @@ export default class COT {
             properties.remarks = 'None';
         }
 
-        // Features whose CoT type was augmented with a 2525D/E SIDC (milicon)
-        // treat the SIDC as the first-class type
-        if (
-            properties.milicon
-            && properties.type.startsWith('a-')
-            && Type2525.isNumericSIDCConvertable(properties.milicon.id)
-        ) {
-            properties.type = properties.milicon.id;
-        }
-
         if (!properties.how && properties.type.startsWith('u-')) {
             properties.how = 'h-g-i-g-o';
         } else if (!properties.how) {

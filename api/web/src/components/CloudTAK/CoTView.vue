@@ -643,12 +643,6 @@
                     label='Unit Information'
                     :model-value='cot.properties.type'
                 />
-                <PropertyMilSym
-                    v-else-if='cot.properties.milicon'
-                    :key='cot.properties.id'
-                    label='Unit Information'
-                    :model-value='cot.properties.milicon.id'
-                />
 
                 <PropertyStyle
                     v-if='is_editable && !cot.is_self'

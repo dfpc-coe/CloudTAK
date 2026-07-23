@@ -26,7 +26,7 @@ COPY ./ $HOME/api
 RUN WEB_PLUGINS="$WEB_PLUGINS" node bin/plugin.ts
 
 RUN cd web \
-    && npm install --legacy-peer-deps \
+    && npm install \
     && npm run lint \
     && npm run check \
     && npm run build \
