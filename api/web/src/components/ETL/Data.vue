@@ -43,20 +43,26 @@
 
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
-                                        <IconAccessPoint
+                                        <span
                                             v-if='data.mission_sync'
-                                            v-tooltip='"Mission Sync On"'
-                                            :size='32'
-                                            stroke='1'
-                                            class='text-green'
-                                        />
-                                        <IconAccessPointOff
+                                            title='Mission Sync On'
+                                        >
+                                            <IconAccessPoint
+                                                :size='32'
+                                                stroke='1'
+                                                class='text-green'
+                                            />
+                                        </span>
+                                        <span
                                             v-else
-                                            v-tooltip='"Mission Sync Off"'
-                                            :size='32'
-                                            stroke='1'
-                                            class='text-red'
-                                        />
+                                            title='Mission Sync Off'
+                                        >
+                                            <IconAccessPointOff
+                                                :size='32'
+                                                stroke='1'
+                                                class='text-red'
+                                            />
+                                        </span>
 
                                         <TablerIconButton
                                             title='Edit'

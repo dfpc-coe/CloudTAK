@@ -15,7 +15,10 @@
             v-else-if='weather'
             class='col-12'
         >
-            <TablerSlidedown :click-anywhere-expand='true'>
+            <TablerSlidedown
+                :click-anywhere-expand='true'
+                :click-anywhere-collapse='true'
+            >
                 <div class='d-flex align-items-center py-2 px-2'>
                     <component
                         :is='getIcon(weather.properties.periods[0].shortForecast)'

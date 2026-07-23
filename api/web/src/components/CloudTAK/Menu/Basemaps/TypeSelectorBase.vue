@@ -70,7 +70,7 @@
                 <TablerBadge
                     v-for='token in config.urlTokens'
                     :key='token.value'
-                    v-tooltip='token.tooltip'
+                    :title='token.tooltip'
                     class='cursor-pointer'
                     background-color='rgba(6, 182, 212, 0.15)'
                     border-color='rgba(6, 182, 212, 0.4)'

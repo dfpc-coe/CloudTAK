@@ -20,24 +20,24 @@
                 role='menu'
             >
                 <span
-                    v-tooltip='"Feet"'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom text-blue": mode === "feet",
                         "cursor-pointer": mode !== "feet",
                     }'
+                    title='Feet'
                     role='menuitem'
                     tabindex='0'
                     @keyup.enter='mode = "feet"'
                     @click='mode = "feet"'
                 >Feet</span>
                 <span
-                    v-tooltip='"Meters"'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom text-blue": mode === "meter",
                         "cursor-pointer": mode !== "meter",
                     }'
+                    title='Meters'
                     role='menuitem'
                     tabindex='0'
                     @keyup.enter='mode = "meter"'

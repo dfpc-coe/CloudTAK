@@ -14,12 +14,13 @@
             <slot name='prefix' />
         </div>
 
-        <div class='menu-item-card__icon-wrapper'>
+        <div
+            class='menu-item-card__icon-wrapper'
+            :title='tooltip'
+        >
             <component
                 :is='icon'
                 v-if='icon'
-                v-tooltip='tooltipBinding'
-                :title='tooltip'
                 :size='iconSize'
                 :color='resolvedIconColor'
                 stroke='1'
@@ -138,7 +139,6 @@ const classes = computed(() => ({
 
 const iconSize = computed(() => props.layout === 'tiles' ? 36 : 32);
 const resolvedIconColor = computed(() => props.compact ? '#fff' : props.iconColor);
-const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, placement: 'left' } : undefined);
 </script>
 
 <style scoped>

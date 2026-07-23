@@ -82,13 +82,15 @@
                         v-if='regen && edit'
                         class='btn-list'
                     >
-                        <IconPlus
-                            v-tooltip='"Upload P12"'
-                            :size='32'
-                            stroke='1'
-                            class='cursor-pointer'
+                        <TablerIconButton
+                            title='Upload P12'
                             @click='modal.upload = true'
-                        />
+                        >
+                            <IconPlus
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </div>
                 </div>
             </div>

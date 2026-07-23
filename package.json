@@ -6,7 +6,7 @@
     "scripts": {
         "lint": "eslint bin/ cloudformation/",
         "build": "node bin/build.js",
-        "app": "npm install && cd api/web && npm install --legacy-peer-deps && npm run build && cd ../.. && npx cap sync",
+        "app": "npm install && cd api/web && npm install && npm run build && cd ../.. && npx cap sync",
         "test": "echo \"Error: no test specified\" && exit 1",
         "version": "node bin/version.js --stage",
         "postversion": "git push && git push --tags"

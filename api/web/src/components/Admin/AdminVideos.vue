@@ -13,18 +13,24 @@
         @update:model-value='(v: string) => router.push({ name: v })'
     >
         <template #option='{ option }'>
-            <IconVideo
+            <span
                 v-if='option.value === "admin-video-service"'
-                v-tooltip='"Video Service"'
-                :size='32'
-                stroke='1'
-            />
-            <IconServer2
+                title='Video Service'
+            >
+                <IconVideo
+                    :size='32'
+                    stroke='1'
+                />
+            </span>
+            <span
                 v-else
-                v-tooltip='"Video Leases"'
-                :size='32'
-                stroke='1'
-            />
+                title='Video Leases'
+            >
+                <IconServer2
+                    :size='32'
+                    stroke='1'
+                />
+            </span>
             <span class='mx-2'>{{ option.label }}</span>
         </template>
     </TablerPillGroup>

@@ -72,8 +72,8 @@
                         stroke='1'
                     />
                     <span
-                        v-tooltip='change.contentUid'
                         class='mx-2'
+                        :title='change.contentUid'
                     >Content Added</span>
                 </template>
                 <template v-else-if='change.type === "REMOVE_CONTENT" && change.contentResource'>
@@ -92,8 +92,8 @@
                         stroke='1'
                     />
                     <span
-                        v-tooltip='change.contentUid'
                         class='mx-2'
+                        :title='change.contentUid'
                     >Content Removed</span>
                 </template>
                 <template v-else>

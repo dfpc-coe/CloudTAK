@@ -4764,6 +4764,8 @@ export interface paths {
                                     };
                                     /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
+                                    /** @description Presence of the detail.__forcedelete tag - on a t-x-d-d tasking, instructs the TAK client to remove the linked CoT immediately rather than marking it stale */
+                                    forcedelete?: boolean;
                                     geofence?: {
                                         elevationMonitored?: boolean;
                                         minElevation?: string;
@@ -5368,6 +5370,8 @@ export interface paths {
                             };
                             /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                             archived?: boolean;
+                            /** @description Presence of the detail.__forcedelete tag - on a t-x-d-d tasking, instructs the TAK client to remove the linked CoT immediately rather than marking it stale */
+                            forcedelete?: boolean;
                             geofence?: {
                                 elevationMonitored?: boolean;
                                 minElevation?: string;
@@ -5903,6 +5907,8 @@ export interface paths {
                                 };
                                 /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
+                                /** @description Presence of the detail.__forcedelete tag - on a t-x-d-d tasking, instructs the TAK client to remove the linked CoT immediately rather than marking it stale */
+                                forcedelete?: boolean;
                                 geofence?: {
                                     elevationMonitored?: boolean;
                                     minElevation?: string;
@@ -6617,6 +6623,8 @@ export interface paths {
                                 };
                                 /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
+                                /** @description Presence of the detail.__forcedelete tag - on a t-x-d-d tasking, instructs the TAK client to remove the linked CoT immediately rather than marking it stale */
+                                forcedelete?: boolean;
                                 geofence?: {
                                     elevationMonitored?: boolean;
                                     minElevation?: string;
@@ -7334,6 +7342,8 @@ export interface paths {
                                 };
                                 /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
+                                /** @description Presence of the detail.__forcedelete tag - on a t-x-d-d tasking, instructs the TAK client to remove the linked CoT immediately rather than marking it stale */
+                                forcedelete?: boolean;
                                 geofence?: {
                                     elevationMonitored?: boolean;
                                     minElevation?: string;
@@ -7875,6 +7885,8 @@ export interface paths {
                                         };
                                         /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                         archived?: boolean;
+                                        /** @description Presence of the detail.__forcedelete tag - on a t-x-d-d tasking, instructs the TAK client to remove the linked CoT immediately rather than marking it stale */
+                                        forcedelete?: boolean;
                                         geofence?: {
                                             elevationMonitored?: boolean;
                                             minElevation?: string;
@@ -8503,6 +8515,8 @@ export interface paths {
                                 };
                                 /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
+                                /** @description Presence of the detail.__forcedelete tag - on a t-x-d-d tasking, instructs the TAK client to remove the linked CoT immediately rather than marking it stale */
+                                forcedelete?: boolean;
                                 geofence?: {
                                     elevationMonitored?: boolean;
                                     minElevation?: string;
@@ -9140,6 +9154,8 @@ export interface paths {
                                     };
                                     /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
+                                    /** @description Presence of the detail.__forcedelete tag - on a t-x-d-d tasking, instructs the TAK client to remove the linked CoT immediately rather than marking it stale */
+                                    forcedelete?: boolean;
                                     geofence?: {
                                         elevationMonitored?: boolean;
                                         minElevation?: string;
@@ -23060,6 +23076,8 @@ export interface paths {
                                 };
                                 /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
+                                /** @description Presence of the detail.__forcedelete tag - on a t-x-d-d tasking, instructs the TAK client to remove the linked CoT immediately rather than marking it stale */
+                                forcedelete?: boolean;
                                 geofence?: {
                                     elevationMonitored?: boolean;
                                     minElevation?: string;
@@ -23695,6 +23713,8 @@ export interface paths {
                                     };
                                     /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
+                                    /** @description Presence of the detail.__forcedelete tag - on a t-x-d-d tasking, instructs the TAK client to remove the linked CoT immediately rather than marking it stale */
+                                    forcedelete?: boolean;
                                     geofence?: {
                                         elevationMonitored?: boolean;
                                         minElevation?: string;
@@ -24439,6 +24459,216 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/manifest.webmanifest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return the Web Manifest for PWA Use */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name: string;
+                            short_name: string;
+                            description: string;
+                            start_url: string;
+                            display: string;
+                            background_color: string;
+                            theme_color: string;
+                            lang: string;
+                            scope: string;
+                            icons: {
+                                src: string;
+                                sizes: string;
+                                type: string;
+                            }[];
+                            orientation: string;
+                            categories: string[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/manifest.webmanifest/logos/{:size}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return a resized PNG logo for PWA use */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Logo size in pixels */
+                    ":size": number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/marti/missions/{:name}/layer": {
         parameters: {
             query?: never;
@@ -25020,216 +25250,6 @@ export interface paths {
                 };
             };
         };
-        trace?: never;
-    };
-    "/api/manifest.webmanifest": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Return the Web Manifest for PWA Use */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            name: string;
-                            short_name: string;
-                            description: string;
-                            start_url: string;
-                            display: string;
-                            background_color: string;
-                            theme_color: string;
-                            lang: string;
-                            scope: string;
-                            icons: {
-                                src: string;
-                                sizes: string;
-                                type: string;
-                            }[];
-                            orientation: string;
-                            categories: string[];
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/manifest.webmanifest/logos/{:size}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Return a resized PNG logo for PWA use */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Logo size in pixels */
-                    ":size": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/api/marti/missions/{:name}/log": {
@@ -26241,6 +26261,8 @@ export interface paths {
                                     };
                                     /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
+                                    /** @description Presence of the detail.__forcedelete tag - on a t-x-d-d tasking, instructs the TAK client to remove the linked CoT immediately rather than marking it stale */
+                                    forcedelete?: boolean;
                                     geofence?: {
                                         elevationMonitored?: boolean;
                                         minElevation?: string;
@@ -33928,6 +33950,8 @@ export interface paths {
                                     };
                                     /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
+                                    /** @description Presence of the detail.__forcedelete tag - on a t-x-d-d tasking, instructs the TAK client to remove the linked CoT immediately rather than marking it stale */
+                                    forcedelete?: boolean;
                                     geofence?: {
                                         elevationMonitored?: boolean;
                                         minElevation?: string;
@@ -34535,6 +34559,8 @@ export interface paths {
                             };
                             /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                             archived?: boolean;
+                            /** @description Presence of the detail.__forcedelete tag - on a t-x-d-d tasking, instructs the TAK client to remove the linked CoT immediately rather than marking it stale */
+                            forcedelete?: boolean;
                             geofence?: {
                                 elevationMonitored?: boolean;
                                 minElevation?: string;
@@ -35070,6 +35096,8 @@ export interface paths {
                                 };
                                 /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
+                                /** @description Presence of the detail.__forcedelete tag - on a t-x-d-d tasking, instructs the TAK client to remove the linked CoT immediately rather than marking it stale */
+                                forcedelete?: boolean;
                                 geofence?: {
                                     elevationMonitored?: boolean;
                                     minElevation?: string;
@@ -35781,6 +35809,8 @@ export interface paths {
                                 };
                                 /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
+                                /** @description Presence of the detail.__forcedelete tag - on a t-x-d-d tasking, instructs the TAK client to remove the linked CoT immediately rather than marking it stale */
+                                forcedelete?: boolean;
                                 geofence?: {
                                     elevationMonitored?: boolean;
                                     minElevation?: string;
@@ -39985,114 +40015,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/retention": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Run a retention action */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        action: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            name: string;
-                            status: "success" | "error";
-                            deleted: number;
-                            duration: number;
-                            message?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/server/repeater": {
         parameters: {
             query?: never;
@@ -40296,6 +40218,114 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/retention": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Run a retention action */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        action: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name: string;
+                            status: "success" | "error";
+                            deleted: number;
+                            duration: number;
+                            message?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -41870,6 +41900,239 @@ export interface paths {
                                 desc: string;
                                 full?: string;
                             }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/type/2525e": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List 2525E Symbol Sets & Symbols - returned SIDCs can be used on the Feature `type` property
+         *
+         *                 Symbols are hierarchical: Symbol Set => Entity => Entity Type => Entity Subtype
+         *                 When no filter is provided and a symbolset is given, only top-level Entities are returned -
+         *                 pass an Entity Code as `parent` to descend into its Entity Types / Subtypes.
+         *                 When a filter is provided a flat search across all Symbols is performed.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    filter: string;
+                    /** @description No Description */
+                    identity: "p" | "u" | "a" | "f" | "n" | "s" | "h" | "j" | "k" | "o";
+                    /** @description No Description */
+                    symbolset?: string;
+                    /** @description 6 digit Entity Code to list the children of - requires symbolset */
+                    parent?: string;
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            symbolsets: {
+                                id: string;
+                                name: string;
+                            }[];
+                            items: {
+                                sidc: string;
+                                name: string;
+                                /** @description The most specific level of the Symbol name - ie the Entity Subtype name */
+                                title: string;
+                                remarks: string;
+                                symbolset: string;
+                                children: number;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/type/2525e/{:sidc}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get metadata for a given 2525D/2525E Numeric SIDC */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":sidc": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            sidc: string;
+                            name: string;
+                            remarks: string;
+                            symbolset: string;
                         };
                     };
                 };
@@ -46260,6 +46523,8 @@ export interface paths {
                                     };
                                     /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
+                                    /** @description Presence of the detail.__forcedelete tag - on a t-x-d-d tasking, instructs the TAK client to remove the linked CoT immediately rather than marking it stale */
+                                    forcedelete?: boolean;
                                     geofence?: {
                                         elevationMonitored?: boolean;
                                         minElevation?: string;

@@ -13,14 +13,17 @@
                 />
             </template>
             <template #right>
-                <IconFileUpload
+                <TablerIconButton
                     v-if='!upload'
-                    v-tooltip='"Add Attachment"'
-                    :size='20'
-                    stroke='1'
-                    class='cursor-pointer me-2'
+                    title='Add Attachment'
+                    class='me-2'
                     @click.stop='upload = true; expanded = true'
-                />
+                >
+                    <IconFileUpload
+                        :size='20'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <TablerBadge
                     class='me-2'
                     background-color='rgba(59, 130, 246, 0.15)'

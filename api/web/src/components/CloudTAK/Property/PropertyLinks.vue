@@ -14,14 +14,17 @@
                     />
                 </template>
                 <template #right>
-                    <IconPlus
+                    <TablerIconButton
                         v-if='props.edit'
-                        v-tooltip='"Add External Link"'
-                        :size='20'
-                        stroke='1'
-                        class='cursor-pointer me-2'
+                        title='Add External Link'
+                        class='me-2'
                         @click.stop='addExternalLink'
-                    />
+                    >
+                        <IconPlus
+                            :size='20'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
                     <TablerBadge
                         class='me-2'
                         background-color='rgba(59, 130, 246, 0.15)'

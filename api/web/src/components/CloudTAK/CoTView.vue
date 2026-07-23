@@ -416,9 +416,11 @@
                     </div>
 
                     <div class='pt-2 col-12 px-2'>
+                        <!-- Not keyed on the type - a remount would collapse the
+                             type selector every time a new type is picked -->
                         <PropertyType
-                            v-if='cot.properties.type.startsWith("a-") || cot.properties.type.startsWith("u-")'
-                            :key='cot.properties.type'
+                            v-if='cot.properties.type.startsWith("a-") || cot.properties.type.startsWith("u-") || isSIDCType(cot.properties.type)'
+                            :key='cot.properties.id'
                             :edit='is_editable'
                             :model-value='cot.properties.type'
                             @update:model-value='updatePropertyType($event)'
@@ -636,10 +638,10 @@
                 />
 
                 <PropertyMilSym
-                    v-if='cot.properties.milsym'
+                    v-if='isSIDCType(cot.properties.type)'
                     :key='cot.properties.id'
                     label='Unit Information'
-                    :model-value='cot.properties.milsym.id'
+                    :model-value='cot.properties.type'
                 />
 
                 <PropertyStyle
@@ -725,6 +727,11 @@ import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
 import PropertyProfile from './Property/PropertyProfile.vue';
 import PropertyType from './Property/PropertyType.vue';
+import Type2525 from '@tak-ps/node-cot/2525';
+
+function isSIDCType(type: string): boolean {
+    return Type2525.isNumericSIDCConvertable(type);
+}
 import PropertyBattery from './Property/PropertyBattery.vue';
 import PropertyDistance from './Property/PropertyDistance.vue';
 import PropertyBearing from './Property/PropertyBearing.vue';
@@ -999,11 +1006,25 @@ function updateProperty(key: string, event: any) {
 function updatePropertyType(type: string): void {
     if (!cot.value) return;
 
-    if (type.startsWith('a-') && cot.value.properties.type.startsWith('u-')) {
+    const isSIDC = Type2525.isNumericSIDCConvertable(type);
+
+    // The type property is authoritative - a stale milicon would otherwise be
+    // preferred by node-cot's from_geojson when the Feature is converted to a CoT
+    if (cot.value.properties.milicon) {
+        delete cot.value.properties.milicon;
+    }
+
+    if ((type.startsWith('a-') || isSIDC) && cot.value.properties.type.startsWith('u-')) {
         cot.value.properties["marker-color"] = '#FFFFFF';
     }
 
     cot.value.properties.type = type;
+
+    if (isSIDC) {
+        cot.value.properties.icon = `2525E:${type}`;
+    } else if (cot.value.properties.icon && cot.value.properties.icon.startsWith('2525')) {
+        delete cot.value.properties.icon;
+    }
 
     if (!cot.value.properties.icon || !cot.value.properties.icon.includes(':')) {
         cot.value.properties.icon = type;
@@ -1054,15 +1075,33 @@ function openBufferInput(): void {
 
 async function fetchType() {
     if (!cot.value) return;
-    const { data, error } = await server.GET('/api/type/cot/{:type}', {
-        params: {
-            path: {
-                ':type': cot.value.properties.type
+
+    if (isSIDCType(cot.value.properties.type)) {
+        const { data, error } = await server.GET('/api/type/2525e/{:sidc}', {
+            params: {
+                path: {
+                    ':sidc': cot.value.properties.type
+                }
             }
-        }
-    });
-    if (error) throw new Error(String(error));
-    type.value = data;
+        });
+        if (error) throw new Error(String(error));
+
+        type.value = {
+            cot: data.sidc,
+            full: data.name,
+            desc: data.remarks
+        };
+    } else {
+        const { data, error } = await server.GET('/api/type/cot/{:type}', {
+            params: {
+                path: {
+                    ':type': cot.value.properties.type
+                }
+            }
+        });
+        if (error) throw new Error(String(error));
+        type.value = data;
+    }
 }
 
 function updatePropertyAttachment(hashes: string[]) {
