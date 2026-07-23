@@ -10,7 +10,6 @@ import { Connection } from '../../common/schema.js';
 import { setTimeout as delay } from 'node:timers/promises';
 import TAK, { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
-import Type2525 from '@tak-ps/node-cot/2525';
 import type ConnectionConfig from '../../common/connection-config.js';
 import { MachineConnConfig, ProfileConnConfig, AdminConnConfig } from '../../common/connection-config.js';
 import { ProfileChatStatus } from '../../common/enums.js';
@@ -293,19 +292,9 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                         cot.archived(true);
                     }
 
-                    const feat = await CoTParser.to_geojson(cot);
-
-                    // The milsym augment stores a numeric SIDC in the milicon detail - surface
-                    // it as the GeoJSON type as both the Web Client & node-cot's from_geojson
-                    // treat a 2525D/E SIDC on the type property as first-class
-                    if (
-                        feat.properties
-                        && feat.properties.milicon
-                        && feat.properties.type.startsWith('a-')
-                        && Type2525.isNumericSIDCConvertable(feat.properties.milicon.id)
-                    ) {
-                        feat.properties.type = feat.properties.milicon.id;
-                    }
+                    const feat = await CoTParser.to_geojson(cot, {
+                        normalize2525: true
+                    });
 
                     const receiptStatus: ProfileChatStatus | undefined = feat.properties && feat.properties.chat
                         ? ChatReceiptTypes[feat.properties.type]
