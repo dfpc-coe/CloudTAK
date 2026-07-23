@@ -293,7 +293,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                     }
 
                     const feat = await CoTParser.to_geojson(cot, {
-                        normalize2525: true
+                        normalize2525: true,
                     });
 
                     const receiptStatus: ProfileChatStatus | undefined = feat.properties && feat.properties.chat
