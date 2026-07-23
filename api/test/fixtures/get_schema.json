@@ -1279,6 +1279,11 @@
         "query": false,
         "res": true
     },
+    "PATCH /profile/video/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "DELETE /profile/video/:id": {
         "body": false,
         "query": false,
@@ -1326,11 +1331,6 @@
     },
     "DELETE /server/repeater/:uid": {
         "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /retention": {
-        "body": true,
         "query": false,
         "res": true
     },
@@ -1385,6 +1385,11 @@
         "res": true
     },
     "POST /server/tileset": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "POST /retention": {
         "body": true,
         "query": false,
         "res": true
@@ -1457,6 +1462,16 @@
     "GET /type/cot": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "GET /type/2525e": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /type/2525e/:sidc": {
+        "body": false,
+        "query": false,
         "res": true
     },
     "GET /type/cot/:type": {

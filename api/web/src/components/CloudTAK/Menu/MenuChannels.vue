@@ -129,24 +129,33 @@
                     </div>
 
                     <div class='ms-auto'>
-                        <IconLocation
+                        <span
                             v-if='ch.direction.length === 2'
-                            v-tooltip='"Bi-Directional"'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <IconLocation
+                            title='Bi-Directional'
+                        >
+                            <IconLocation
+                                :size='32'
+                                stroke='1'
+                            />
+                        </span>
+                        <span
                             v-else-if='ch.direction.includes("IN")'
-                            v-tooltip='"Location Sharing"'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <IconLocationOff
+                            title='Location Sharing'
+                        >
+                            <IconLocation
+                                :size='32'
+                                stroke='1'
+                            />
+                        </span>
+                        <span
                             v-else-if='ch.direction.includes("OUT")'
-                            v-tooltip='"No Location Sharing"'
-                            :size='32'
-                            stroke='1'
-                        />
+                            title='No Location Sharing'
+                        >
+                            <IconLocationOff
+                                :size='32'
+                                stroke='1'
+                            />
+                        </span>
                     </div>
                 </StandardItem>
             </div>

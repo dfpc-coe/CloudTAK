@@ -71,22 +71,26 @@
                     v-if='!disabled'
                     class='ms-auto'
                 >
-                    <IconTrash
+                    <TablerIconButton
                         v-if='selected.name'
-                        v-tooltip='"Remove Icon"'
-                        :size='32'
-                        stroke='1'
-                        class='cursor-pointer'
+                        title='Remove Icon'
                         @click='removeIcon'
-                    />
+                    >
+                        <IconTrash
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
 
-                    <IconPhotoSearch
-                        v-tooltip='"Select Icon"'
-                        :size='32'
-                        stroke='1'
-                        class='cursor-pointer'
+                    <TablerIconButton
+                        title='Select Icon'
                         @click='modal = true'
-                    />
+                    >
+                        <IconPhotoSearch
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
                 </div>
             </div>
         </template>
@@ -190,7 +194,8 @@ import {
     TablerInput,
     TablerModal,
     TablerLoading,
-    TablerToggle
+    TablerToggle,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import type { Iconset, Icon, IconList } from '../../types.ts';
 

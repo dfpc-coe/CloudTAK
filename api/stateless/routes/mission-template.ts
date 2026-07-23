@@ -166,6 +166,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 admin: true,
             });
 
+            await config.models.PaletteFeature.delete(sql`template = ${req.params.mission}`);
+            await config.models.MissionTemplateLog.delete(sql`template = ${req.params.mission}`);
+
             await config.models.MissionTemplate.delete(req.params.mission);
 
             res.json({ status: 200, message: 'Mission Template Deleted' });

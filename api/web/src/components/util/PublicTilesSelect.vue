@@ -19,13 +19,15 @@
                     <div class='col-12 d-flex align-items-center user-select-none'>
                         <div v-text='selected.name' />
                         <div class='ms-auto btn-list'>
-                            <IconX
-                                v-tooltip='"Remove Tile"'
-                                :size='32'
-                                stroke='1'
-                                class='cursor-pointer'
+                            <TablerIconButton
+                                title='Remove Tile'
                                 @click='selected = undefined'
-                            />
+                            >
+                                <IconX
+                                    :size='32'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
                         </div>
                     </div>
                 </template>
@@ -91,6 +93,7 @@ import {
     TablerInput,
     TablerPager,
     TablerNone,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
 interface TileDetail {

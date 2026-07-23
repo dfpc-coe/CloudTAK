@@ -29,44 +29,59 @@
                 <div class='cloudtak-hover'>
                     <div class='px-2'>
                         <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                            <IconEye
-                                v-if='ch.active'
-                                v-tooltip='"User has Channel Enabled"'
-                                :size='32'
-                                stroke='1'
-                            />
-                            <IconEyeOff
-                                v-else
-                                v-tooltip='"User has Channel Disabled"'
-                                :size='32'
-                                stroke='1'
-                            />
                             <span
-                                v-tooltip='"Show Details"'
+                                v-if='ch.active'
+                                title='User has Channel Enabled'
+                            >
+                                <IconEye
+                                    :size='32'
+                                    stroke='1'
+                                />
+                            </span>
+                            <span
+                                v-else
+                                title='User has Channel Disabled'
+                            >
+                                <IconEyeOff
+                                    :size='32'
+                                    stroke='1'
+                                />
+                            </span>
+                            <span
                                 class='mx-2 cursor-pointer'
+                                title='Show Details'
                                 @click='shown[ch.name] = !shown[ch.name]'
                                 v-text='ch.name'
                             />
 
                             <div class='ms-auto'>
-                                <IconLocation
+                                <span
                                     v-if='ch.direction.length === 2'
-                                    v-tooltip='"Bi-Directional"'
-                                    :size='32'
-                                    stroke='1'
-                                />
-                                <IconLocation
+                                    title='Bi-Directional'
+                                >
+                                    <IconLocation
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </span>
+                                <span
                                     v-else-if='ch.direction.includes("IN")'
-                                    v-tooltip='"Location Sharing"'
-                                    :size='32'
-                                    stroke='1'
-                                />
-                                <IconLocationOff
+                                    title='Location Sharing'
+                                >
+                                    <IconLocation
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </span>
+                                <span
                                     v-else-if='ch.direction.includes("OUT")'
-                                    v-tooltip='"No Location Sharing"'
-                                    :size='32'
-                                    stroke='1'
-                                />
+                                    title='No Location Sharing'
+                                >
+                                    <IconLocationOff
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </span>
                             </div>
                         </div>
                         <div

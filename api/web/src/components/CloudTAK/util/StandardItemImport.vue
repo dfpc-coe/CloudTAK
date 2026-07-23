@@ -7,7 +7,7 @@
             />
 
             <div
-                v-tooltip='`${imp.source} Import`'
+                :title='`${imp.source} Import`'
                 class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 flex-shrink-0'
                 style='width: 36px; height: 36px;'
             >

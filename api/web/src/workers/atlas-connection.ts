@@ -8,6 +8,7 @@ import { version } from '../../package.json'
 import Chatroom from '../base/chatroom.ts';
 import { db, ChatStatusRank, ChatStatus } from '../database.ts';
 import TAKNotification, { NotificationType } from '../base/notification.ts';
+import { OriginMode } from '../base/cot.ts';
 import { WorkerMessageType } from '../base/events.ts';
 import type { SyncEvent } from './atlas-sync.ts';
 import type { Feature, Import, Chat } from '../types.ts';
@@ -221,8 +222,32 @@ export default class AtlasConnection {
                     // Mission Change Tasking
                     await this.atlas.db.subChange(task);
                 } else if (task.properties.type === 't-x-d-d') {
-                    // CoT Delete Tasking
-                    console.error('DELETE', task.properties);
+                    const forcedelete = task.properties.forcedelete === true;
+
+                    for (const link of task.properties.links || []) {
+                        if (!link.uid) continue;
+
+                        const cot = await this.atlas.db.get(link.uid);
+
+                        if (!cot) continue;
+
+                        // Don't allow remote access to a Data Sync Mission (Priv. Escalation)
+                        if (cot.origin.mode === OriginMode.MISSION) {
+                            console.warn(`Ignoring t-x-d-d for ${link.uid} as it originates from a Mission`);
+                            continue;
+                        }
+
+                        if (forcedelete) {
+                            await this.atlas.db.remove(link.uid);
+                        } else {
+                            await cot.update({
+                                properties: {
+                                    ...cot.properties,
+                                    stale: new Date().toISOString()
+                                }
+                            });
+                        }
+                    }
                 } else if (task.properties.type === 't-x-m-n' && task.properties.mission) {
                     await TAKNotification.create(
                         NotificationType.Mission,

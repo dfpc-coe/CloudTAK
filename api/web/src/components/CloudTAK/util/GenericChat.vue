@@ -84,7 +84,7 @@
                         <span v-text='formatTime(chat.created)' />
                         <span
                             v-if='chat.status'
-                            v-tooltip='statusLabel(chat.status)'
+                            :title='statusLabel(chat.status)'
                             class='ms-1 d-flex align-items-center'
                             :aria-label='statusLabel(chat.status)'
                         >

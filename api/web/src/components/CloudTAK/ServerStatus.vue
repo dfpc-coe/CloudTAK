@@ -1,7 +1,7 @@
 <template>
     <div class='d-flex flex-column align-items-center'>
         <div
-            v-tooltip='"Return Home"'
+            title='Return Home'
             class='position-relative cursor-pointer cloudtak-hover'
             role='button'
             tabindex='0'
