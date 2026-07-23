@@ -63,16 +63,30 @@ for (const symbolset of Object.keys(ms2525e)) {
 symbolsets.sort((a, b) => a.id.localeCompare(b.id));
 symbols.sort((a, b) => a.symbolset.localeCompare(b.symbolset) || a.id.localeCompare(b.id));
 
+const childCounts = new Map<string, number>();
+
 for (const symbol of symbols) {
-    symbol.children = symbols.filter((child) => {
-        return child.symbolset === symbol.symbolset && isChildOf(symbol.id, child.id);
-    }).length;
+    const parent = parentOf(symbol.id);
+    if (!parent) continue;
+
+    const key = `${symbol.symbolset}:${parent}`;
+    childCounts.set(key, (childCounts.get(key) || 0) + 1);
+}
+
+for (const symbol of symbols) {
+    symbol.children = childCounts.get(`${symbol.symbolset}:${symbol.id}`) || 0;
 }
 
 /**
  * Entity Codes are hierarchical: <2: entity><2: entity type><2: entity subtype>
  * with `00` padding - ie `110000` (entity) > `110100` (entity type) > `110114` (entity subtype)
  */
+function parentOf(id: string): string | null {
+    if (id.endsWith('0000')) return null;
+    if (id.endsWith('00')) return `${id.substring(0, 2)}0000`;
+    return `${id.substring(0, 4)}00`;
+}
+
 function isChildOf(parent: string, child: string): boolean {
     if (child === parent) return false;
 
