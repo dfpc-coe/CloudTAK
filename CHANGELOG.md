@@ -16,7 +16,12 @@
 
 ### Pending Release
 
-### v13.52.0 - 2026-07-18
+### v13.52.1 - 2026-07-23
+
+- :bug: Ensure draw modes are reactive for consistent Draw Tools popup
+- :rocket: Update iOS XCode version on new CloudTAK release
+
+### v13.52.0 - 2026-07-23
 
 - :tada: Add `GET /api/type/2525e` endpoint exposing the MIL-STD-2525E Symbol Sets & Symbols via the `milstandard-e` package
 - :tada: Add `GET /api/type/2525e/:sidc` endpoint returning metadata (name, remarks, symbolset) for a given numeric SIDC
