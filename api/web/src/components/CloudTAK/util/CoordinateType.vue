@@ -66,11 +66,13 @@ const emit = defineEmits([ 'update:modelValue' ])
 const iconCache = new Map<string, string>();
 
 function sidcIcon(sidc: string): string {
-    let icon = iconCache.get(sidc);
+    const key = `${sidc}:${props.size}`;
+
+    let icon = iconCache.get(key);
 
     if (!icon) {
         icon = new ms.Symbol(sidc, { size: props.size }).toDataURL();
-        iconCache.set(sidc, icon);
+        iconCache.set(key, icon);
     }
 
     return icon;

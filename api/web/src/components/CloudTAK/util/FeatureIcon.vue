@@ -122,7 +122,8 @@ watch(() => props.feature.properties.icon, async (iconId) => {
         await mapStore.icons.resolve(iconId);
         resolvedTick.value += 1;
     } catch {
-        // Icon Manager not yet initialized
+        // Icon Manager not yet initialized - allow a later icon change to retry
+        resolveAttempted.delete(iconId);
     }
 }, { immediate: true });
 

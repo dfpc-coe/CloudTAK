@@ -60,6 +60,9 @@ for (const symbolset of Object.keys(ms2525e)) {
     }
 }
 
+symbolsets.sort((a, b) => a.id.localeCompare(b.id));
+symbols.sort((a, b) => a.symbolset.localeCompare(b.symbolset) || a.id.localeCompare(b.id));
+
 for (const symbol of symbols) {
     symbol.children = symbols.filter((child) => {
         return child.symbolset === symbol.symbolset && isChildOf(symbol.id, child.id);
@@ -208,6 +211,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
+
+            if (req.query.parent && !req.query.symbolset) {
+                throw new Err(400, null, 'parent requires symbolset to be set');
+            }
 
             const items = symbols.filter((symbol) => {
                 if (req.query.symbolset && symbol.symbolset !== req.query.symbolset) {
