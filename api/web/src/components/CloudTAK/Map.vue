@@ -81,7 +81,6 @@
             </GenericBottomPane>
             <BottomBar
                 :mode='mode'
-                :mouse-coord='mouseCoord'
                 @set-location='setLocation'
                 @to-location='toLocation'
             />
@@ -618,8 +617,6 @@ const toggleCompass = () => {
 
 const mapRef = useTemplateRef<HTMLElement>('map');
 
-const mouseCoord = ref<{ lat: number; lng: number } | null>(null);
-
 const noMenuShown = computed<boolean>(() => {
     return (!route.name || !String(route.name).startsWith('home-menu'))
 });
@@ -647,17 +644,6 @@ onMounted(async () => {
 
     if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
     await mapStore.init(mapRef.value);
-
-    mapStore.map.on('mousemove', (e) => {
-        mouseCoord.value = {
-            lat: e.lngLat.lat,
-            lng: e.lngLat.lng,
-        };
-    });
-
-    mapStore.map.on('mouseleave' as Parameters<typeof mapStore.map.on>[0], () => {
-        mouseCoord.value = null;
-    });
 
     // TODO these are no longer reactive, does it matter?
     warnChannels.value = await mapStore.worker.profile.hasNoChannels();

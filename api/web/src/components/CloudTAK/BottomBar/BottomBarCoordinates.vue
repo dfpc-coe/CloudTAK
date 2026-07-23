@@ -95,7 +95,8 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import type { MapMouseEvent } from 'maplibre-gl';
 import { Clipboard } from '@capacitor/clipboard';
 import { TablerDropdown, TablerPillGroup } from '@tak-ps/vue-tabler';
 import {
@@ -109,16 +110,61 @@ import { useAppStore } from '../../../stores/app.ts';
 import { isNativePlatform } from '../../../base/capacitor.ts';
 import CopyButton from '../util/CopyButton.vue';
 
-const props = defineProps<{
-    coord: { lat: number; lng: number } | null;
-}>();
-
 const mapStore = useMapStore();
 const appStore = useAppStore();
 
 const isNative = isNativePlatform();
 
 const coordSource = ref<string>(isNative ? 'gps' : 'cursor');
+
+// The cursor position is tracked here rather than in Map.vue so that a
+// mousemove only re-renders this readout, not the whole map shell, and
+// ref writes are throttled to one per animation frame
+const cursorCoord = ref<{ lat: number; lng: number } | null>(null);
+
+let pendingCoord: { lat: number; lng: number } | null = null;
+let rafId: number | null = null;
+
+function onMouseMove(e: MapMouseEvent): void {
+    pendingCoord = {
+        lat: e.lngLat.lat,
+        lng: e.lngLat.lng,
+    };
+
+    if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+            rafId = null;
+            cursorCoord.value = pendingCoord;
+        });
+    }
+}
+
+function onMouseOut(): void {
+    pendingCoord = null;
+
+    if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+    }
+
+    cursorCoord.value = null;
+}
+
+onMounted(() => {
+    mapStore.map.on('mousemove', onMouseMove);
+    mapStore.map.on('mouseout', onMouseOut);
+});
+
+onBeforeUnmount(() => {
+    if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+    }
+
+    if (!mapStore._map) return;
+    mapStore.map.off('mousemove', onMouseMove);
+    mapStore.map.off('mouseout', onMouseOut);
+});
 
 const sourceOptions = [
     { value: 'cursor', label: 'Cursor' },
@@ -130,7 +176,7 @@ const displayCoord = computed(() => {
         return mapStore.gpsCoordinates;
     }
 
-    return props.coord;
+    return cursorCoord.value;
 });
 
 async function setCoordFormat(mode: CoordMode): Promise<void> {

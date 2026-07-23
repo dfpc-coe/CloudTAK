@@ -7,7 +7,7 @@ import { Preferences } from '@capacitor/preferences';
 import { DrawToolMode } from '../stores/modules/draw.ts';
 import type { FeatureCollection } from 'geojson';
 import { bbox } from '@turf/bbox'
-import type { LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource } from 'maplibre-gl'
+import type { LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl'
 import cotStyles from './utils/styles.ts'
 import { std, stdurl } from '../std.js';
 import { db, type DBOverlay } from '../database.ts';
@@ -23,6 +23,15 @@ export default class Overlay {
     _timer: ReturnType<typeof setInterval> | null;
 
     _clickable: Array<{ id: string; type: string }>;
+
+    // Each MapLibre layer-scoped listener runs its own queryRenderedFeatures
+    // hit-test on every mousemove, so hover listeners are registered once per
+    // overlay (with the full layer id array) and tracked here for removal
+    _hoverListeners: Array<{
+        type: 'mouseenter' | 'mousemove' | 'mouseleave';
+        layerIds: string[];
+        handler: (e: MapLayerMouseEvent) => void;
+    }>;
 
     _error?: Error;
     _loaded: boolean;
@@ -155,6 +164,7 @@ export default class Overlay {
         this._destroyed = false;
         this._internal = opts.internal || false;
         this._clickable = [];
+        this._hoverListeners = [];
         this._loaded = false;
 
         this.loading = false;
@@ -269,61 +279,88 @@ export default class Overlay {
             await mapStore.updateAttribution();
         }
 
-        for (const click of this._clickable) {
+        this.removeHoverListeners();
+
+        const hoverLayerIds = this._clickable.map((click) => click.id);
+
+        if (hoverLayerIds.length) {
             const hoverIds = new Set<string>();
 
-            mapStore.map.on('mouseenter', click.id, () => {
+            const onMouseEnter = () => {
                 if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
                 mapStore.map.getCanvas().style.cursor = 'pointer';
-            })
+            };
 
-            mapStore.map.on('mousemove', click.id, (e) => {
+            const onMouseMove = (e: MapLayerMouseEvent) => {
                 if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
+                if (!e.features) return;
 
-                if (this.type === 'vector' && e.features) {
-                    const newIds = e.features.map(f => String(f.id));
+                const newIds = new Set<string>();
+                for (const f of e.features) newIds.add(String(f.id));
 
-                    for (const id of hoverIds) {
-                        if (newIds.includes(id)) continue;
+                for (const id of hoverIds) {
+                    if (newIds.has(id)) continue;
 
-                        mapStore.map.setFeatureState({
-                            id: id,
-                            source: String(this.id),
-                            sourceLayer: 'out'
-                        }, { hover: false });
+                    mapStore.map.setFeatureState({
+                        id: id,
+                        source: String(this.id),
+                        sourceLayer: 'out'
+                    }, { hover: false });
 
-                        hoverIds.delete(id);
-                    }
-
-                    for (const id of newIds) {
-                        mapStore.map.setFeatureState({
-                            id: id,
-                            source: String(this.id),
-                            sourceLayer: 'out'
-                        }, { hover: true });
-
-                        hoverIds.add(id);
-                    }
+                    hoverIds.delete(id);
                 }
-            });
 
-            mapStore.map.on('mouseleave', click.id, () => {
+                for (const id of newIds) {
+                    if (hoverIds.has(id)) continue;
+
+                    mapStore.map.setFeatureState({
+                        id: id,
+                        source: String(this.id),
+                        sourceLayer: 'out'
+                    }, { hover: true });
+
+                    hoverIds.add(id);
+                }
+            };
+
+            const onMouseLeave = () => {
                 if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
                 mapStore.map.getCanvas().style.cursor = '';
 
-                if (this.type === 'vector') {
-                    for (const id of hoverIds) {
-                        mapStore.map.setFeatureState({
-                            id: id,
-                            source: String(this.id),
-                            sourceLayer: 'out'
-                        }, { hover: false });
-                    }
-
-                    hoverIds.clear()
+                for (const id of hoverIds) {
+                    mapStore.map.setFeatureState({
+                        id: id,
+                        source: String(this.id),
+                        sourceLayer: 'out'
+                    }, { hover: false });
                 }
-            })
+
+                hoverIds.clear();
+            };
+
+            mapStore.map.on('mouseenter', hoverLayerIds, onMouseEnter);
+            this._hoverListeners.push({ type: 'mouseenter', layerIds: hoverLayerIds, handler: onMouseEnter });
+
+            mapStore.map.on('mouseleave', hoverLayerIds, onMouseLeave);
+            this._hoverListeners.push({ type: 'mouseleave', layerIds: hoverLayerIds, handler: onMouseLeave });
+
+            // Only vector overlays track hover feature-state, so only they pay
+            // for a per-mousemove hit-test
+            if (this.type === 'vector') {
+                mapStore.map.on('mousemove', hoverLayerIds, onMouseMove);
+                this._hoverListeners.push({ type: 'mousemove', layerIds: hoverLayerIds, handler: onMouseMove });
+            }
         }
+    }
+
+    removeHoverListeners(): void {
+        const mapStore = useMapStore();
+
+        for (const l of this._hoverListeners) {
+            mapStore.map.off(l.type, l.layerIds, l.handler);
+        }
+
+        this._hoverListeners = [];
     }
 
     async init(opts: {
@@ -448,6 +485,8 @@ export default class Overlay {
 
     remove() {
         const mapStore = useMapStore();
+
+        this.removeHoverListeners();
 
         for (const l of this.styles) {
             if (mapStore.map.getLayer(String(l.id))) {
