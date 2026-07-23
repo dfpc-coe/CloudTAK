@@ -9,7 +9,7 @@
         padding=''
     >
         <template #option='{ option }'>
-            <span v-tooltip='option.label'>
+            <span :title='option.label'>
                 <IconPoint
                     v-if='option.value === "u-d-p"'
                     title='Point Icon'

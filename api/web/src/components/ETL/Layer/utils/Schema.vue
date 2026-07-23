@@ -71,27 +71,33 @@
                         v-if='!props.disabled'
                         class='ms-auto'
                     >
-                        <IconTrash
-                            v-tooltip='"Clear Table"'
-                            :size='32'
-                            stroke='1'
-                            class='cursor-pointer'
+                        <TablerIconButton
+                            title='Clear Table'
                             @click='(data[key] as unknown[]).splice(0, (data[key] as unknown[]).length)'
-                        />
-                        <IconDatabaseImport
-                            v-tooltip='"Import CSV"'
-                            :size='32'
-                            stroke='1'
-                            class='cursor-pointer'
+                        >
+                            <IconTrash
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                        <TablerIconButton
+                            title='Import CSV'
                             @click='importModal(Object.keys(props.schema.properties[key].items.properties), data[key] as Record<string, unknown>[])'
-                        />
-                        <IconPlus
-                            v-tooltip='"Add Row"'
-                            :size='32'
-                            stroke='1'
-                            class='cursor-pointer'
+                        >
+                            <IconDatabaseImport
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                        <TablerIconButton
+                            title='Add Row'
                             @click='editModal(props.schema.properties[key].items, {}, key)'
-                        />
+                        >
+                            <IconPlus
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </div>
                 </div>
                 <template v-if='props.schema.properties[key].items.type === "object" && props.schema.properties[key].items.properties'>
@@ -207,7 +213,8 @@ import {
     TablerInput,
     TablerToggle,
     TablerSchema,
-    TablerEnum
+    TablerEnum,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import UploadCSV from '../../../util/UploadCSV.vue';
 import SchemaModal from './SchemaModal.vue';

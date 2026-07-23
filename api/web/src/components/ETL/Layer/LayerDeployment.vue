@@ -96,14 +96,16 @@
                             <div class='ms-auto'>
                                 <div class='btn-list'>
                                     <div>
-                                        <IconRefresh
+                                        <TablerIconButton
                                             v-if='!newTaskVersion && !loading.version'
-                                            v-tooltip='"Check for new version"'
-                                            :size='16'
-                                            stroke='1'
-                                            class='cursor-pointer'
+                                            title='Check for new version'
                                             @click='latestVersion'
-                                        />
+                                        >
+                                            <IconRefresh
+                                                :size='16'
+                                                stroke='1'
+                                            />
+                                        </TablerIconButton>
                                         <div
                                             v-else-if='loading.version'
                                             class='d-flex justify-content-center'

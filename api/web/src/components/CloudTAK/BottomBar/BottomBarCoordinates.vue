@@ -85,7 +85,7 @@
 
         <CopyButton
             v-if='coordSource === "gps" && !appStore.isMobileDetected'
-            v-tooltip='"Copy Coordinates"'
+            title='Copy Coordinates'
             :text='formattedCoord'
             class='position-absolute top-50 end-0 translate-middle-y me-2'
             :size='24'

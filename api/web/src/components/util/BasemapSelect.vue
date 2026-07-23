@@ -16,13 +16,15 @@
                         v-if='!disabled'
                         #actions
                     >
-                        <IconTrash
-                            v-tooltip='"Remove Basemap"'
-                            :size='20'
-                            stroke='1'
-                            class='cursor-pointer'
+                        <TablerIconButton
+                            title='Remove Basemap'
                             @click='emit("update:modelValue", null)'
-                        />
+                        >
+                            <IconTrash
+                                :size='20'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </template>
                 </StandardItemBasemap>
                 <div
@@ -34,13 +36,15 @@
                         v-if='!disabled'
                         class='ms-auto'
                     >
-                        <IconTrash
-                            v-tooltip='"Remove Basemap"'
-                            :size='20'
-                            stroke='1'
-                            class='cursor-pointer'
+                        <TablerIconButton
+                            title='Remove Basemap'
                             @click='emit("update:modelValue", null)'
-                        />
+                        >
+                            <IconTrash
+                                :size='20'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </div>
                 </div>
             </div>
@@ -132,7 +136,8 @@ import {
     TablerInput,
     TablerNone,
     TablerPager,
-    TablerInlineAlert
+    TablerInlineAlert,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import type { Basemap, BasemapList } from '../../types.ts';
 import StandardItemBasemap from '../CloudTAK/util/StandardItemBasemap.vue';

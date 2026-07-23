@@ -1,6 +1,6 @@
 <template>
     <span
-        v-tooltip='battery + "% Battery"'
+        :title='battery + "% Battery"'
         class='d-flex'
         style='margin-right: 10px;'
     >

@@ -98,10 +98,10 @@
                                         <div
                                             v-if='(!basemap.username && isSystemAdmin) || basemap.username'
                                             class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
+                                            title='Edit Basemap'
                                             @click.stop.prevent='editModal = basemap'
                                         >
                                             <IconSettings
-                                                v-tooltip='"Edit Basemap"'
                                                 :size='32'
                                                 stroke='1'
                                             />
@@ -113,10 +113,10 @@
                                                 basemapOverlayExists(basemap) ? "opacity-50 pe-none" : "cursor-pointer cloudtak-hover"
                                             ]'
                                             :aria-disabled='basemapOverlayExists(basemap)'
+                                            :title='basemapOverlayExists(basemap) ? "Overlay already added" : "Add Overlay"'
                                             @click.stop.prevent='!basemapOverlayExists(basemap) && addOverlay(basemap)'
                                         >
                                             <IconBoxMultiple
-                                                v-tooltip='basemapOverlayExists(basemap) ? "Overlay already added" : "Add Overlay"'
                                                 :size='32'
                                                 stroke='1'
                                             />

@@ -8,7 +8,7 @@
         <template #buttons>
             <TablerDelete
                 v-if='!loading && subscription && subscription.role.permissions.includes("MISSION_WRITE")'
-                v-tooltip='"Delete"'
+                title='Delete'
                 :label='"Delete " + (subscription.meta.name || "Data Sync")'
                 displaytype='icon'
                 match='Delete Data Sync'
@@ -94,12 +94,13 @@
                     @update:model-value='navigateMissionTab'
                 >
                     <template #option='{ option }'>
-                        <component
-                            :is='missionTabIcons[option.value]'
-                            v-tooltip='option.label'
-                            :size='32'
-                            stroke='1'
-                        />
+                        <span :title='option.label'>
+                            <component
+                                :is='missionTabIcons[option.value]'
+                                :size='32'
+                                stroke='1'
+                            />
+                        </span>
                     </template>
                 </TablerPillGroup>
 

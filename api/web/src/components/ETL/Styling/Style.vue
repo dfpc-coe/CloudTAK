@@ -140,7 +140,7 @@
                         </TablerIconButton>
 
                         <TablerDelete
-                            v-tooltip='"Remove Layer"'
+                            title='Remove Layer'
                             displaytype='icon'
                             @delete='removeLayer(l, l_it)'
                         />

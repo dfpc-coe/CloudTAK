@@ -7,30 +7,36 @@
 
             <div class='ms-auto'>
                 <div class='btn-list'>
-                    <IconTrash
-                        v-tooltip='"Clear Events"'
-                        :size='32'
-                        stroke='1'
-                        class='cursor-pointer'
+                    <TablerIconButton
+                        title='Clear Events'
                         @click='events = []'
-                    />
+                    >
+                        <IconTrash
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
 
-                    <IconPlayerPlay
+                    <TablerIconButton
                         v-if='paused'
-                        v-tooltip='"Play Events"'
-                        :size='32'
-                        stroke='1'
-                        class='cursor-pointer'
+                        title='Play Events'
                         @click='paused = false'
-                    />
-                    <IconPlayerPause
+                    >
+                        <IconPlayerPlay
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <TablerIconButton
                         v-else
-                        v-tooltip='"Pause Events"'
-                        :size='32'
-                        stroke='1'
-                        class='cursor-pointer'
+                        title='Pause Events'
                         @click='paused = true'
-                    />
+                    >
+                        <IconPlayerPause
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
                 </div>
             </div>
         </div>
@@ -47,6 +53,9 @@ import {
     IconPlayerPlay,
     IconPlayerPause
 } from '@tabler/icons-vue';
+import {
+    TablerIconButton
+} from '@tak-ps/vue-tabler';
 
 const emit = defineEmits<{
     (e: 'err', value: Event): void;

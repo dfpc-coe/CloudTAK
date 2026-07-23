@@ -17,7 +17,7 @@
                 role='menu'
             >
                 <span
-                    v-tooltip='"Square Feet"'
+                    title='Square Feet'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom text-blue": mode === "sqfeet",
@@ -29,7 +29,7 @@
                     @click='mode = "sqfeet"'
                 >Feet<sup>2</sup></span>
                 <span
-                    v-tooltip='"Square Meters"'
+                    title='Square Meters'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom text-blue": mode === "sqmeter",
@@ -41,7 +41,7 @@
                     @click='mode = "sqmeter"'
                 >Meters<sup>2</sup></span>
                 <span
-                    v-tooltip='"Acres"'
+                    title='Acres'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom": mode === "acre",
@@ -53,7 +53,7 @@
                     @click='mode = "acre"'
                 >Acres</span>
                 <span
-                    v-tooltip='"Hectare"'
+                    title='Hectare'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom": mode === "ha",

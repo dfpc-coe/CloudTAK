@@ -120,7 +120,6 @@
             >
                 <div class='cloudtak-ctrl-group cloudtak-panel'>
                     <div
-                        v-tooltip='"Search"'
                         role='button'
                         tabindex='0'
                         title='Search Button'
@@ -138,18 +137,17 @@
                         role='button'
                         tabindex='0'
                         class='cloudtak-ctrl-btn'
+                        :title='mapStore.userOrientationMode ? "Orient North" : "Snap to North"'
                         @click='toggleCompass'
                     >
                         <IconCompass
                             v-if='mapStore.userOrientationMode'
-                            v-tooltip='"Orient North"'
                             :size='24'
                             stroke='2'
                             color='#1E90FF'
                         />
                         <template v-else>
                             <IconCircleArrowUp
-                                v-tooltip='"Snap to North"'
                                 :alt='`Map Rotated to ${humanBearing}`'
                                 :transform='`rotate(${360 - mapStore.bearing})`'
                                 :size='24'
@@ -168,10 +166,10 @@
                         role='button'
                         tabindex='0'
                         class='cloudtak-ctrl-btn'
+                        title='Snap Flat'
                         @click='mapStore.map.setPitch(0)'
                     >
                         <IconAngle
-                            v-tooltip='"Snap Flat"'
                             :alt='`Map Pitch to ${humanPitch}`'
                             :size='24'
                             stroke='2'
@@ -184,7 +182,6 @@
 
                     <template v-if='displayZoom'>
                         <div
-                            v-tooltip='"Zoom In"'
                             role='button'
                             tabindex='0'
                             title='Zoom In Button'
@@ -197,7 +194,6 @@
                             />
                         </div>
                         <div
-                            v-tooltip='"Zoom Out"'
                             role='button'
                             tabindex='0'
                             title='Zoom Out Button'
@@ -213,10 +209,9 @@
 
                     <div
                         v-if='hasTerrain'
-                        v-tooltip='mapStore.terrainEnabled ? "Disable 3D Terrain" : "Enable 3D Terrain"'
                         role='button'
                         tabindex='0'
-                        title='3D Terrain'
+                        :title='mapStore.terrainEnabled ? "Disable 3D Terrain" : "Enable 3D Terrain"'
                         class='cloudtak-ctrl-btn'
                         @click='mapStore.terrainEnabled ? mapStore.removeTerrain() : mapStore.addTerrain()'
                     >
@@ -232,7 +227,6 @@
                             (mapStore.radial.cot && mapStore.locked.length >= 2)
                                 || (!mapStore.radial.cot && mapStore.locked.length >= 1)
                         '
-                        v-tooltip='"Map is locked to marker - Click to Unlock"'
                         title='Map is locked to marker - Click to Unlock'
                         role='button'
                         tabindex='0'
