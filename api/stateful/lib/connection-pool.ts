@@ -10,6 +10,7 @@ import { Connection } from '../../common/schema.js';
 import { setTimeout as delay } from 'node:timers/promises';
 import TAK, { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
+import Type2525 from '@tak-ps/node-cot/2525';
 import type ConnectionConfig from '../../common/connection-config.js';
 import { MachineConnConfig, ProfileConnConfig, AdminConnConfig } from '../../common/connection-config.js';
 import { ProfileChatStatus } from '../../common/enums.js';
@@ -294,6 +295,18 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
                     const feat = await CoTParser.to_geojson(cot);
 
+                    // The milsym augment stores a numeric SIDC in the milicon detail - surface
+                    // it as the GeoJSON type as both the Web Client & node-cot's from_geojson
+                    // treat a 2525D/E SIDC on the type property as first-class
+                    if (
+                        feat.properties
+                        && feat.properties.milicon
+                        && feat.properties.type.startsWith('a-')
+                        && Type2525.isNumericSIDCConvertable(feat.properties.milicon.id)
+                    ) {
+                        feat.properties.type = feat.properties.milicon.id;
+                    }
+
                     const receiptStatus: ProfileChatStatus | undefined = feat.properties && feat.properties.chat
                         ? ChatReceiptTypes[feat.properties.type]
                         : undefined;
@@ -434,6 +447,11 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                 ca: this.config.server.auth.cert,
             }, {
                 id: connConfig.id,
+                cot: {
+                    milsym: {
+                        augment: true,
+                    },
+                },
             });
         } else {
             tak = await TAK.connect(new URL(this.config.server.url), {
@@ -441,6 +459,11 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                 cert: connConfig.auth.cert,
             }, {
                 id: connConfig.id,
+                cot: {
+                    milsym: {
+                        augment: true,
+                    },
+                },
             });
         }
 

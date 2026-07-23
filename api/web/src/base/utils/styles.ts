@@ -181,7 +181,7 @@ export default function styles(id: string, opts: {
                 'icon-allow-overlap': true,
                 'icon-image': [
                     'case',
-                    ['all', ['has', 'marker-color'], ['!=', ['slice', ['get', 'icon'], 0, 6], '2525D:']],
+                    ['all', ['has', 'marker-color'], ['!=', ['slice', ['get', 'icon'], 0, 4], '2525']],
                     ['concat', ['get', 'icon'], '-colored-', ['slice', ['get', 'marker-color'], 1]],
                     ['get', 'icon']
                 ],

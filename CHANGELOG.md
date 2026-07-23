@@ -16,6 +16,22 @@
 
 ### Pending Release
 
+- :tada: Add `GET /api/type/2525e` endpoint exposing the MIL-STD-2525E Symbol Sets & Symbols via the `milstandard-e` package
+- :tada: Add `GET /api/type/2525e/:sidc` endpoint returning metadata (name, remarks, symbolset) for a given numeric SIDC
+- :tada: Add a 2525B/2525E standard toggle to the Feature Type editor - 2525E symbols are selected by numeric SIDC & rendered via `milsymbol`
+- :tada: 2525E symbols are browsed as a drill-down tree (Symbol Set => Entity => Entity Type => Entity Subtype) with breadcrumb navigation - typing a filter switches to a flat search across all Symbol Sets
+- :rocket: `GET /api/type/2525e` is hierarchy-aware - a `parent` Entity Code query param lists children & items carry `children` counts and a leaf `title`
+- :rocket: Hide the 2525B tab in the Feature Type editor once a Feature carries a 2525E type
+- :tada: Treat 2525D/2525E numeric SIDCs on the Feature `type` property as first-class - `node-cot@14.47` maps them to a basic CoT type + `__milicon` detail at the CoT boundary
+- :tada: Surface the `milicon` SIDC of augmented CoTs as the Feature `type` in the Profile WebSocket feed & the Web Map
+- :tada: Render SIDC-typed Features as military symbols on the map & show Unit Information for them (replaces the previous numeric `milsym` rendering path)
+- :tada: Default point creation (Draw Point, Coordinate Entry, Default Point Type setting) to 2525E Land Unit SIDCs where possible - `u-d-p` Custom Points & Spotted Map Items retain their traditional CoT types
+- :rocket: Augment CoTs flowing through TAK Connections with a 2525D `__milicon` detail derived from their CoT type
+- :bug: Fix the Feature Type editor panel rendering with its top cut off under the type label - an autofocused filter input scrolled the collapsed slidedown content
+- :bug: Keep the Feature Type editor open when a type is selected - it was remounting (and collapsing) on every type change as it was keyed on the type property
+- :arrow_up: Update `@tak-ps/node-cot` to `^14.47.0`
+- :arrow_up: Update `@tak-ps/vue-tabler` to `^5.1.0` - the Feature Type editor slidedown now only collapses explicitly; other `clickAnywhereExpand` slidedowns opt into `clickAnywhereCollapse` to retain their previous toggle behavior
+
 ### v13.51.0 - 2026-07-18
 
 - :tada: Implement the Video Wall - a full-page grid of a user's saved video streams with drag & drop re-ordering, dynamic resizing & removal

@@ -1,4 +1,6 @@
 import Err from '@openaddresses/batch-error';
+import Type2525 from '@tak-ps/node-cot/2525';
+import { ms2525e } from 'milstandard-e';
 import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import Schema from '@openaddresses/batch-schema';
@@ -7,6 +9,88 @@ import { CoTTypes } from '@tak-ps/node-cot';
 import { MilSymType } from '@tak-ps/node-cot';
 import { Package } from '@tak-ps/node-tak/lib/api/package';
 import * as Default from '../lib/limits.js';
+
+// 2525E Numeric SIDCs are 20 digits:
+// <2: version><1: context><1: standard identity><2: symbol set><1: status><1: hq/task force/dummy><2: amplifier><6: entity><2: mod1><2: mod2>
+// Context: 0: Reality, 1: Exercise, 2: Simulation
+
+const symbolsets: Array<{
+    id: string;
+    name: string;
+}> = [];
+
+const symbols: Array<{
+    id: string;
+    name: string;
+    title: string;
+    remarks: string;
+    symbolset: string;
+    children: number;
+}> = [];
+
+for (const symbolset of Object.keys(ms2525e)) {
+    if (!/^\d{2}$/.test(symbolset)) continue;
+
+    symbolsets.push({
+        id: symbolset,
+        name: ms2525e[symbolset].name,
+    });
+
+    for (const mainIcon of ms2525e[symbolset].mainIcon) {
+        let name = mainIcon.Entity;
+
+        if (mainIcon['Entity Type']) {
+            name += ` - ${mainIcon['Entity Type']}`;
+        }
+
+        if (mainIcon['Entity Subtype']) {
+            name += ` - ${mainIcon['Entity Subtype']}`;
+        }
+
+        symbols.push({
+            id: mainIcon.Code,
+            name,
+            title: mainIcon['Entity Subtype'] || mainIcon['Entity Type'] || mainIcon.Entity,
+            remarks: mainIcon.Remarks || '',
+            symbolset,
+            children: 0,
+        });
+    }
+}
+
+for (const symbol of symbols) {
+    symbol.children = symbols.filter((child) => {
+        return child.symbolset === symbol.symbolset && isChildOf(symbol.id, child.id);
+    }).length;
+}
+
+/**
+ * Entity Codes are hierarchical: <2: entity><2: entity type><2: entity subtype>
+ * with `00` padding - ie `110000` (entity) > `110100` (entity type) > `110114` (entity subtype)
+ */
+function isChildOf(parent: string, child: string): boolean {
+    if (child === parent) return false;
+
+    if (parent.endsWith('0000')) {
+        return child.startsWith(parent.substring(0, 2))
+            && child.endsWith('00')
+            && child.substring(2, 4) !== '00';
+    } else if (parent.endsWith('00')) {
+        return child.startsWith(parent.substring(0, 4))
+            && !child.endsWith('00');
+    }
+
+    return false;
+}
+
+function sidc(
+    symbol: { id: string; symbolset: string },
+    identity: MilSymType.StandardIdentity,
+): string {
+    const sid = MilSymType.SID_MAP[identity.toUpperCase()] || '01';
+
+    return `13${sid}${symbol.symbolset}0000${symbol.id}0000`;
+}
 
 export const PackageResponse = Type.Object({
     uid: Type.String({
@@ -44,8 +128,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     const types = await CoTTypes.default.load();
 
     await schema.get('/type/cot', {
-        name: 'List Types',
-        group: 'COTTypes',
+        name: 'List 2525B / CoT Types',
+        group: 'Symbology',
         description: 'Get Type',
         query: Type.Object({
             filter: Type.String({
@@ -78,9 +162,137 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
+    await schema.get('/type/2525e', {
+        name: 'List 2525E Types',
+        group: 'Symbology',
+        description: `
+            List 2525E Symbol Sets & Symbols - returned SIDCs can be used on the Feature \`type\` property
+
+            Symbols are hierarchical: Symbol Set => Entity => Entity Type => Entity Subtype
+            When no filter is provided and a symbolset is given, only top-level Entities are returned -
+            pass an Entity Code as \`parent\` to descend into its Entity Types / Subtypes.
+            When a filter is provided a flat search across all Symbols is performed.
+        `,
+        query: Type.Object({
+            filter: Type.String({
+                default: '',
+            }),
+            identity: Type.Enum(MilSymType.StandardIdentity, {
+                default: MilSymType.StandardIdentity.FRIEND,
+            }),
+            symbolset: Type.Optional(Type.String()),
+            parent: Type.Optional(Type.String({
+                description: '6 digit Entity Code to list the children of - requires symbolset',
+            })),
+            limit: Default.Limit,
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            symbolsets: Type.Array(Type.Object({
+                id: Type.String(),
+                name: Type.String(),
+            })),
+            items: Type.Array(Type.Object({
+                sidc: Type.String(),
+                name: Type.String(),
+                title: Type.String({
+                    description: 'The most specific level of the Symbol name - ie the Entity Subtype name',
+                }),
+                remarks: Type.String(),
+                symbolset: Type.String(),
+                children: Type.Integer(),
+            })),
+        }),
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req);
+
+            const items = symbols.filter((symbol) => {
+                if (req.query.symbolset && symbol.symbolset !== req.query.symbolset) {
+                    return false;
+                }
+
+                if (req.query.filter) {
+                    return symbol.name.toLowerCase().includes(req.query.filter.toLowerCase());
+                } else if (req.query.symbolset && req.query.parent) {
+                    return isChildOf(req.query.parent, symbol.id);
+                } else if (req.query.symbolset) {
+                    return symbol.id.endsWith('0000');
+                }
+
+                return true;
+            });
+
+            res.json({
+                total: items.length,
+                symbolsets,
+                items: items.slice(0, req.query.limit).map((symbol) => {
+                    return {
+                        sidc: sidc(symbol, req.query.identity),
+                        name: symbol.name,
+                        title: symbol.title,
+                        remarks: symbol.remarks,
+                        symbolset: symbol.symbolset,
+                        children: symbol.children,
+                    };
+                }),
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/type/2525e/:sidc', {
+        name: 'Get 2525E Type',
+        group: 'Symbology',
+        description: 'Get metadata for a given 2525D/2525E Numeric SIDC',
+        params: Type.Object({
+            sidc: Type.String(),
+        }),
+        res: Type.Object({
+            sidc: Type.String(),
+            name: Type.String(),
+            remarks: Type.String(),
+            symbolset: Type.String(),
+        }),
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req);
+
+            if (!Type2525.isNumericSIDCConvertable(req.params.sidc)) {
+                throw new Err(400, null, 'Invalid 2525D/2525E Numeric SIDC');
+            }
+
+            const symbolset = req.params.sidc.substring(4, 6);
+            const entity = req.params.sidc.substring(10, 16);
+
+            const symbol = symbols.find((symbol) => {
+                return symbol.symbolset === symbolset && symbol.id === entity;
+            });
+
+            if (!symbol) {
+                res.json({
+                    sidc: req.params.sidc,
+                    name: 'Unknown 2525 Symbol',
+                    remarks: '',
+                    symbolset,
+                });
+            } else {
+                res.json({
+                    sidc: req.params.sidc,
+                    name: symbol.name,
+                    remarks: symbol.remarks,
+                    symbolset,
+                });
+            }
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
     await schema.get('/type/cot/:type', {
-        name: 'Get Type',
-        group: 'COTTypes',
+        name: 'Get 2525B / CoT Type',
+        group: 'Symbology',
         description: 'Get Type',
         params: Type.Object({
             type: Type.String(),

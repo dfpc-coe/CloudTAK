@@ -101,6 +101,7 @@ import {
     IconCircleCheck,
 } from '@tabler/icons-vue';
 import CoordinateType from './CoordinateType.vue';
+import { normalizePointType } from '../../../base/utils/point-type.ts';
 import StandardItem from './StandardItem.vue';
 import type { Profile } from '../../../../src/types.ts';
 import Config from '../../../base/config.ts';
@@ -288,7 +289,7 @@ async function saveField(key: string) {
     });
 
     if (key === 'tak_type') {
-        mapStore.defaultPointType = p.tak_type || 'u-d-p';
+        mapStore.defaultPointType = normalizePointType(p.tak_type);
     }
 
     savedKey.value = key;
@@ -328,7 +329,7 @@ watch(
                     });
 
                     if (item.key === 'tak_type') {
-                        mapStore.defaultPointType = p.tak_type || 'u-d-p';
+                        mapStore.defaultPointType = normalizePointType(p.tak_type);
                     }
 
                     previousValues[item.key] = current;

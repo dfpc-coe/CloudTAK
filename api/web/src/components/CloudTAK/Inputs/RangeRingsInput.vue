@@ -79,6 +79,7 @@
                 <TablerSlidedown
                     :arrow='true'
                     :click-anywhere-expand='true'
+                    :click-anywhere-collapse='true'
                 >
                     <div class='d-flex align-items-center w-100'>
                         <span>Style Options</span>

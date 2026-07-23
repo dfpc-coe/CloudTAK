@@ -1,4 +1,5 @@
 import { v4 as randomUUID } from 'uuid';
+import Type2525 from '@tak-ps/node-cot/2525';
 import { std } from '../std.ts';
 import { db, withDbRetry } from '../database.ts';
 import { liveQuery } from 'dexie';
@@ -554,6 +555,16 @@ export default class COT {
             properties.remarks = 'None';
         }
 
+        // Features whose CoT type was augmented with a 2525D/E SIDC (milicon)
+        // treat the SIDC as the first-class type
+        if (
+            properties.milicon
+            && properties.type.startsWith('a-')
+            && Type2525.isNumericSIDCConvertable(properties.milicon.id)
+        ) {
+            properties.type = properties.milicon.id;
+        }
+
         if (!properties.how && properties.type.startsWith('u-')) {
             properties.how = 'h-g-i-g-o';
         } else if (!properties.how) {
@@ -612,8 +623,8 @@ export default class COT {
                 if (properties.icon.endsWith('.png')) {
                     properties.icon = properties.icon.replace(/.png$/, '');
                 }
-            } else if (properties.milsym && !isNaN(Number(properties.milsym.id))) {
-                properties.icon = `2525D:${properties.milsym.id}`;
+            } else if (Type2525.isNumericSIDCConvertable(properties.type)) {
+                properties.icon = `2525E:${properties.type}`;
             } else {
                 // TODO Only add icon if one actually exists in the spritejson
                 if (!['u-d-p', 'b-m-p-s-m'].includes(properties.type)) {

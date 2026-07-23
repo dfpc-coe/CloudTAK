@@ -8,7 +8,8 @@
  * actually requests them.
  *
  * Supported id shapes:
- *  - `2525D:<sidc>`          - milsymbol-generated military symbols
+ *  - `2525C:<sidc>` / `2525D:<sidc>` / `2525E:<sidc>`
+ *                            - milsymbol-generated military symbols
  *  - `<base>-colored-<hex>`  - runtime-recolored variant of another image
  *  - `<iconsetUid>:<path>`   - iconset icons served from Dexie with a network
  *                              fallback for icons that haven't synced locally
@@ -158,8 +159,8 @@ export default class IconManager {
     private async resolveImage(id: string): Promise<void> {
         if (this.map.hasImage(id)) return;
 
-        if (id.startsWith('2525D:')) {
-            const sidc = id.replace('2525D:', '');
+        if (id.startsWith('2525C:') || id.startsWith('2525D:') || id.startsWith('2525E:')) {
+            const sidc = id.replace(/^2525[CDE]:/, '');
             const symbol = new ms.Symbol(sidc, { size: 24 }).asCanvas();
 
             this.addImage(id, await createImageBitmap(symbol));

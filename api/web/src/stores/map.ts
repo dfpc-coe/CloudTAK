@@ -25,6 +25,7 @@ import GeolocateControl from '../lib/geolocate/main.ts';
 import RoutingControl from '../lib/routing/main.ts';
 import type { NavigationState, NavigationDirection } from '../lib/routing/main.ts';
 import { syncPushToken } from '../base/push.ts';
+import { normalizePointType } from '../base/utils/point-type.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay-class.ts';
@@ -1052,7 +1053,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.callsign = (await ProfileConfig.get('tak_callsign'))?.value || 'Unknown';
             this.zoom = (await ProfileConfig.get('display_zoom'))?.value || 'conditional';
             this.coordFormat = (await ProfileConfig.get('display_coordinate'))?.value || 'dd';
-            this.defaultPointType = (await ProfileConfig.get('tak_type'))?.value || 'u-d-p';
+            this.defaultPointType = normalizePointType((await ProfileConfig.get('tak_type'))?.value);
 
             // Colour the self-location puck with the user's TAK team colour to
             // match the previously rendered self CoT marker.
