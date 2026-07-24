@@ -1073,9 +1073,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.updateDistanceUnit(this.distanceUnit);
 
             const wakeLockMode = (await ProfileConfig.get('display_wakelock'))?.value;
-            await deviceStore.wakeLock.applyPreference(
-                typeof wakeLockMode === 'string' ? wakeLockMode : 'Charging'
-            );
+            await deviceStore.wakeLock.applyPreference(wakeLockMode);
 
             this.isOpen = await this.worker.conn.isOpen;
 

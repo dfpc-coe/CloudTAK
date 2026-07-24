@@ -637,13 +637,6 @@
                     :biosensordetail='cot.properties.biosensordetail'
                 />
 
-                <PropertyMilSym
-                    v-if='isSIDCType(cot.properties.type)'
-                    :key='cot.properties.id'
-                    label='Unit Information'
-                    :model-value='cot.properties.type'
-                />
-
                 <PropertyStyle
                     v-if='is_editable && !cot.is_self'
                     :geometry='cot.geometry.type'
@@ -735,7 +728,6 @@ function isSIDCType(type: string): boolean {
 import PropertyBattery from './Property/PropertyBattery.vue';
 import PropertyDistance from './Property/PropertyDistance.vue';
 import PropertyBearing from './Property/PropertyBearing.vue';
-import PropertyMilSym from './Property/PropertyMilSym.vue';
 import PropertySensor from './Property/PropertySensor.vue';
 import PropertyPhone from './Property/PropertyPhone.vue';
 import PropertyCreator from './Property/PropertyCreator.vue';

@@ -101,7 +101,6 @@ import {
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../../stores/map.ts';
 import { useDeviceStore } from '../../../stores/device.ts';
-import type { WakeLockMode } from '../../../stores/device/wake-lock.ts';
 import ProfileConfig from '../../../base/profile.ts';
 import { COORD_MODES, type CoordMode } from '../../../base/utils/coordinateFormat.ts';
 const mapStore = useMapStore();
@@ -284,9 +283,7 @@ watch(
         mapStore.coordFormat = (newProfile.display_coordinate as CoordMode) || 'dd';
         mapStore.updateIconRotation(newProfile.display_icon_rotation as unknown as boolean);
 
-        await deviceStore.wakeLock.applyPreference(
-            (newProfile.display_wakelock as WakeLockMode | undefined) ?? 'Charging'
-        );
+        await deviceStore.wakeLock.applyPreference(newProfile.display_wakelock);
 
         if (saveTimeout) clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {

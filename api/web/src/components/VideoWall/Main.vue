@@ -3,7 +3,7 @@
         <div class='d-flex align-items-center px-3 py-2 border-bottom video-wall-header'>
             <img
                 class='cloudtak-logo me-2'
-                src='/CloudTAKLogo.svg'
+                :src='headerLogo'
                 alt='CloudTAK Logo'
                 draggable='false'
             >
@@ -115,9 +115,10 @@
  * the wall from the Map View and placement is persisted per-user.
  */
 
-import { ref, reactive, onMounted, onUnmounted } from 'vue';
+import { ref, computed, reactive, onMounted, onUnmounted } from 'vue';
 import { GridLayout, GridItem } from 'grid-layout-plus';
 import type { Layout } from 'grid-layout-plus';
+import Config from '../../base/config.ts';
 import { std, stdurl } from '../../std.ts';
 import { registerVideoWall } from '../../lib/video-wall.ts';
 import type { ProfileVideoList } from '../../types.ts';
@@ -137,6 +138,23 @@ import {
 const loading = ref(true);
 const error = ref<Error | undefined>();
 
+const brandStore = reactive<{
+    loaded: boolean;
+    login: {
+        logo?: string;
+    } | undefined;
+}>({
+    loaded: false,
+    login: undefined,
+});
+
+const headerLogo = computed(() => {
+    if (brandStore.login && brandStore.login.logo) {
+        return brandStore.login.logo;
+    }
+    return '/CloudTAKLogo.svg';
+});
+
 const layout = ref<Layout>([]);
 
 // ProfileVideo ID => Video Lease ID / resolved lease name
@@ -154,6 +172,15 @@ onMounted(async () => {
     deregister = registerVideoWall(() => {
         refresh();
     });
+
+    const config = await Config.list([
+        'login::logo',
+    ]);
+
+    brandStore.login = {
+        logo: config['login::logo'],
+    };
+    brandStore.loaded = true;
 
     await listVideos();
 });

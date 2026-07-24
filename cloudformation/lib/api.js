@@ -525,7 +525,7 @@ export default {
             Type: 'AWS::ApplicationAutoScaling::ScalableTarget',
             DependsOn: ['Service'],
             Properties: {
-                MinCapacity: 2,
+                MinCapacity: cf.ref('ApiDesiredCount'),
                 MaxCapacity: 10,
                 ResourceId: cf.join([
                     'service/',

@@ -11,6 +11,19 @@ const WAKE_LOCK_DEFAULT: WakeLockMode = 'Default';
 const WAKE_LOCK_CHARGING: WakeLockMode = 'Charging';
 const WAKE_LOCK_ALWAYS: WakeLockMode = 'Always On';
 
+const WAKE_LOCK_MODES: readonly WakeLockMode[] = [WAKE_LOCK_DEFAULT, WAKE_LOCK_CHARGING, WAKE_LOCK_ALWAYS];
+
+/**
+ * Coerce a stored preference (which may be a stale or corrupt value from an
+ * older client) to a known mode. Falls back to "Charging" to match the
+ * server-side profile default (api/stateless/lib/control/profile.ts).
+ */
+export function coerceWakeLockMode(value: unknown): WakeLockMode {
+    return WAKE_LOCK_MODES.includes(value as WakeLockMode)
+        ? value as WakeLockMode
+        : WAKE_LOCK_CHARGING;
+}
+
 export class WakeLockPermission {
     private readonly battery = new BatteryStatus();
     private mode: WakeLockMode = WAKE_LOCK_DEFAULT;
@@ -22,8 +35,9 @@ export class WakeLockPermission {
      * screen awake for the session, "Charging" only while the device is
      * charging, "Default" lets the OS sleep the screen normally.
      */
-    async applyPreference(mode: WakeLockMode): Promise<void> {
-        this.mode = mode;
+    async applyPreference(mode: unknown): Promise<void> {
+        const resolved = coerceWakeLockMode(mode);
+        this.mode = resolved;
 
         await this.battery.unwatch();
 
@@ -32,9 +46,9 @@ export class WakeLockPermission {
             return;
         }
 
-        if (mode === WAKE_LOCK_ALWAYS) {
+        if (resolved === WAKE_LOCK_ALWAYS) {
             await this.acquire();
-        } else if (mode === WAKE_LOCK_CHARGING) {
+        } else if (resolved === WAKE_LOCK_CHARGING) {
             await this.battery.watch((charging) => {
                 void this.onChargingChange(charging);
             });
