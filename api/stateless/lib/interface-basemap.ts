@@ -151,7 +151,16 @@ export class BasemapProtocol implements BasemapProtocolInterface {
      */
     static json(config: TileJSONInterface): Static<typeof TileJSON> {
         const bounds = (config.bounds as [number, number, number, number]) || [-180, -90, 180, 90];
-        const center = config.center || pointOnFeature(bboxPolygon(bounds as BBox)).geometry.coordinates;
+
+        // TileJSON 3.0.0 centers are [longitude, latitude, zoom]
+        const lonlat = config.center && config.center.length >= 2
+            ? config.center.slice(0, 2)
+            : pointOnFeature(bboxPolygon(bounds as BBox)).geometry.coordinates;
+        const zoom = config.center && config.center.length >= 3
+            ? config.center[2]
+            : Math.round(((config.minzoom ?? 0) + (config.maxzoom ?? 16)) / 2);
+        const center = [...lonlat, zoom];
+
         const type = config.type || 'raster';
         const isVectorType = type !== 'raster' && type !== 'raster-dem';
 

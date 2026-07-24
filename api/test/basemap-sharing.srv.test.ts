@@ -99,7 +99,7 @@ test('GET: api/basemap/1/tiles - Ensure Token Works', async () => {
             scheme: 'xyz',
             type: 'raster',
             bounds: [-180, -90, 180, 90],
-            center: [0, 0],
+            center: [0, 0, 8],
             tileSize: 256,
             minzoom: 0,
             maxzoom: 16,
