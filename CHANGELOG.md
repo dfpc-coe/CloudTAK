@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.54.1 - 2026-07-24
+
+- :bug: Fix bug in nginx tests
+
 ### v13.54.0 - 2026-07-24
 
 - :rocket: Allow changing CSP behavior in nginx via `NGINX_CSP_<directive>` environment variables
