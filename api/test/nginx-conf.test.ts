@@ -188,6 +188,127 @@ test('nginx.conf: static server configuration', async () => {
     assert.ok(stdout.includes(`add_header 'Permissions-Policy' 'fullscreen=(self), geolocation=(self), clipboard-read=(self), clipboard-write=(self)' always;`));
 });
 
+test('nginx.conf: NGINX_CSP_* appends sources to a single directive', async () => {
+    const { stdout } = await exec(process.execPath, [SCRIPT], {
+        env: {
+            ...process.env,
+            API_URL: 'https://map.example.com',
+            NGINX_CSP_IMG_SRC: 'https://tiles.example.com',
+        },
+    });
+
+    const csp = stdout.match(CSP_REGEX);
+    assert.ok(csp, 'Config should contain a Content-Security-Policy header');
+
+    assert.ok(csp[0].includes(`img-src 'self' data: blob: https://tiles.example.com map.example.com:* *.example.com:*;`));
+
+    // Other directives are untouched
+    assert.ok(csp[0].includes(`media-src 'self' blob: map.example.com:* *.example.com:*;`));
+    assert.ok(csp[0].includes(`connect-src 'self' map.example.com:* *.example.com:*;`));
+});
+
+test('nginx.conf: NGINX_CSP_* CSV values are split, trimmed and empties dropped', async () => {
+    const { stdout } = await exec(process.execPath, [SCRIPT], {
+        env: {
+            ...process.env,
+            API_URL: 'https://map.example.com',
+            NGINX_CSP_CONNECT_SRC: ' https://a.example.com , wss://b.example.com:8443, ,',
+        },
+    });
+
+    const csp = stdout.match(CSP_REGEX);
+    assert.ok(csp, 'Config should contain a Content-Security-Policy header');
+
+    assert.ok(csp[0].includes(`connect-src 'self' https://a.example.com wss://b.example.com:8443 map.example.com:* *.example.com:*;`));
+});
+
+test('nginx.conf: NGINX_CSP_* augments multiple directives at once', async () => {
+    const { stdout } = await exec(process.execPath, [SCRIPT], {
+        env: {
+            ...process.env,
+            API_URL: 'https://map.example.com',
+            NGINX_CSP_MEDIA_SRC: 'https://video.example.com',
+            NGINX_CSP_STYLE_SRC_ELEM: `'unsafe-eval'`,
+        },
+    });
+
+    const csp = stdout.match(CSP_REGEX);
+    assert.ok(csp, 'Config should contain a Content-Security-Policy header');
+
+    assert.ok(csp[0].includes(`media-src 'self' blob: https://video.example.com map.example.com:* *.example.com:*;`));
+    assert.ok(csp[0].includes(`style-src-elem 'self' 'unsafe-inline' 'unsafe-eval';`));
+});
+
+test('nginx.conf: NGINX_CSP_* with an empty value is a no-op', async () => {
+    const { stdout } = await exec(process.execPath, [SCRIPT], {
+        env: {
+            ...process.env,
+            API_URL: 'https://map.example.com',
+            NGINX_CSP_IMG_SRC: '',
+        },
+    });
+
+    const csp = stdout.match(CSP_REGEX);
+    assert.ok(csp, 'Config should contain a Content-Security-Policy header');
+
+    assert.ok(csp[0].includes(`img-src 'self' data: blob: map.example.com:* *.example.com:*;`));
+});
+
+test('nginx.conf: unknown NGINX_CSP_* variable is a startup error', async () => {
+    await assert.rejects(exec(process.execPath, [SCRIPT], {
+        env: {
+            ...process.env,
+            API_URL: 'https://map.example.com',
+            NGINX_CSP_IMGSRC: 'https://tiles.example.com',
+        },
+    }), (err: Error & { code: number; stderr: string }) => {
+        assert.notEqual(err.code, 0);
+        assert.match(err.stderr, /Unknown CSP environment variable: NGINX_CSP_IMGSRC/);
+        assert.match(err.stderr, /NGINX_CSP_IMG_SRC/);
+        return true;
+    });
+});
+
+test('nginx.conf: NGINX_CSP_* values with nginx-unsafe characters are a startup error', async () => {
+    for (const source of ['https://a.com;"', 'https://$host', 'a.com b.com', `x";add_header 'X' 'y`]) {
+        await assert.rejects(exec(process.execPath, [SCRIPT], {
+            env: {
+                ...process.env,
+                API_URL: 'https://map.example.com',
+                NGINX_CSP_CONNECT_SRC: source,
+            },
+        }), (err: Error & { code: number; stderr: string }) => {
+            assert.notEqual(err.code, 0);
+            assert.match(err.stderr, /Invalid CSP source/);
+            return true;
+        });
+    }
+});
+
+test('nginx.conf: NGINX_CSP_* is validated but a no-op on localhost', async () => {
+    const { stdout } = await exec(process.execPath, [SCRIPT], {
+        env: {
+            ...process.env,
+            API_URL: 'http://localhost:5000',
+            NGINX_CSP_IMG_SRC: 'https://tiles.example.com',
+        },
+    });
+
+    assert.ok(!stdout.includes('Content-Security-Policy'));
+
+    await assert.rejects(exec(process.execPath, [SCRIPT], {
+        env: {
+            ...process.env,
+            API_URL: 'http://localhost:5000',
+            NGINX_CSP_IMGSRC: 'https://tiles.example.com',
+        },
+    }), (err: Error & { code: number; stderr: string }) => {
+        assert.notEqual(err.code, 0);
+        assert.match(err.stderr, /Unknown CSP environment variable/);
+        return true;
+    });
+});
+
 test('nginx.conf: SPA entrypoints and API proxy', async () => {
     const { stdout } = await exec(process.execPath, [SCRIPT], {
         env: { ...process.env, API_URL: 'https://map.example.com' },
