@@ -518,6 +518,11 @@ test('DELETE: api/connection/1/layer/:id - layer with written COT features', asy
             properties: {
                 type: 'a-f-g',
                 callsign: 'Feature 1594',
+                how: 'h-g-i-g-o',
+                time: '2026-07-24T00:00:00.000Z',
+                start: '2026-07-24T00:00:00.000Z',
+                stale: '2026-07-24T00:05:00.000Z',
+                center: [0, 0, 0],
             },
             geometry: {
                 type: 'Point',

@@ -1,12 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import path from 'node:path';
+import fs from 'node:fs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
 const exec = promisify(execFile);
-const SCRIPT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../nginx.conf.js');
+
+// nginx.conf.js lives at the api root and is not part of the TS build, so it is
+// not copied into dist/. Depending on whether the test runs from source
+// (test/) via tsx or from the compiled output (dist/test/) via the coverage
+// script, the script sits one or two directories up. Resolve to whichever
+// candidate actually exists.
+const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
+const SCRIPT = [
+    path.resolve(TEST_DIR, '../nginx.conf.js'),
+    path.resolve(TEST_DIR, '../../nginx.conf.js'),
+].find((candidate) => fs.existsSync(candidate))
+    ?? path.resolve(TEST_DIR, '../nginx.conf.js');
 const CSP_REGEX = /add_header 'Content-Security-Policy' "[^"]+" always;/;
 
 test('nginx.conf: fails when API_URL is not set', async () => {
