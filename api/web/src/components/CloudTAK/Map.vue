@@ -501,6 +501,7 @@ import { stdurl } from '../../std.ts';
 import ProfileConfig from '../../base/profile.ts';
 import Config from '../../base/config.ts';
 import { cutOverlayFeature } from './util/featureCut.ts';
+import { copyFeatureToClipboard, readFeatureFromClipboard } from '../../stores/device/clipboard.ts';
 import MissionInviteModal from './Menu/Mission/MissionInviteModal.vue';
 
 const mapStore = useMapStore();
@@ -854,6 +855,49 @@ async function handleRadial(event: string): Promise<void> {
 
         await mapStore.refresh();
         closeRadial()
+    } else if (event === 'cot:copy') {
+        const cotFeat = await mapStore.worker.db.get(
+            mapStore.radial.cot.properties.id || String(mapStore.radial.cot.id),
+            { mission: true }
+        );
+
+        closeRadial();
+        if (!cotFeat) throw new Error('Cannot find COT to copy');
+
+        await copyFeatureToClipboard({
+            id: cotFeat.id,
+            type: 'Feature',
+            path: cotFeat.path || '/',
+            properties: cotFeat.properties,
+            geometry: cotFeat.geometry
+        } as Feature);
+    } else if (event === 'context:paste') {
+        const lngLat = mapStore.radial.lngLat;
+        closeRadial();
+
+        if (!lngLat) throw new Error('Cannot determine paste location');
+
+        const feat = await readFeatureFromClipboard();
+        if (!feat) throw new Error('Clipboard does not contain a GeoJSON Point Feature');
+
+        const id = randomUUID();
+        feat.id = id;
+        feat.properties.id = id;
+
+        feat.geometry = {
+            type: 'Point',
+            coordinates: [lngLat.lng, lngLat.lat]
+        };
+        feat.properties.center = [lngLat.lng, lngLat.lat];
+
+        // Pasted features are authored copies - archive so they survive going stale
+        feat.properties.archived = true;
+
+        await mapStore.worker.db.add(feat, {
+            authored: true
+        });
+
+        await mapStore.refresh();
     } else if (event === 'context:info') {
         // @ts-expect-error Figure out geometry.coordinates type
         router.push(`/query/${encodeURIComponent(mapStore.radial.cot.geometry.coordinates.join(','))}`);
