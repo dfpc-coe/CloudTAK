@@ -14,7 +14,7 @@ import { CloudTAKTransferHandler } from '../base/handler.ts';
 import { db, recoverDatabase } from '../database.ts';
 
 export default class Atlas {
-    channel!: BroadcastChannel;
+    channel: BroadcastChannel;
 
     token: string;
     username: string;
@@ -26,29 +26,11 @@ export default class Atlas {
     sync = Comlink.proxy(new AtlasSync(this));
 
     constructor() {
+        this.channel = new BroadcastChannel('cloudtak');
         this.token = '';
         this.username = '';
         this.initialized = false;
 
-        this.openChannel();
-    }
-
-    /**
-     * (Re)create the BroadcastChannel to the main thread. A WebView
-     * suspension can wedge the existing channel such that WebKit throws
-     * DataCloneError on every post, even for plain payloads, so recover()
-     * replaces it alongside the database connection.
-     */
-    openChannel(): void {
-        if (this.channel) {
-            try {
-                this.channel.close();
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        this.channel = new BroadcastChannel('cloudtak');
         this.channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
             const msg = event.data;
             if (!msg || !msg.type) return;
@@ -77,14 +59,7 @@ export default class Atlas {
     }
 
     async postMessage(msg: WorkerMessage): Promise<void> {
-        try {
-            this.channel.postMessage(msg);
-        } catch (err) {
-            // A wedged channel throws on every post - replace it and retry
-            console.error('BroadcastChannel post failed, recreating channel:', err);
-            this.openChannel();
-            this.channel.postMessage(msg);
-        }
+        return this.channel.postMessage(msg);
     }
 
     /**
@@ -92,7 +67,6 @@ export default class Atlas {
      * visibility events to recover their own IndexedDB connection.
      */
     async recover(): Promise<void> {
-        this.openChannel();
         await recoverDatabase();
     }
 

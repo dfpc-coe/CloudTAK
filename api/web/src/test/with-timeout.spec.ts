@@ -27,6 +27,25 @@ describe('withTimeout', () => {
         await assertion
     })
 
+    it('only uses `then` on bare thenables such as Comlink property proxies', async () => {
+        // A Comlink property proxy (e.g. worker.initialized) is a thenable
+        // where any member other than `then` - including `catch` - resolves
+        // to a remote call. Invoking that call posts the callback function
+        // itself, which structured clone rejects with DataCloneError, so
+        // withTimeout must never touch anything beyond `then`.
+        const thenable = new Proxy({}, {
+            get(_target, prop) {
+                if (prop === 'then') {
+                    return (resolve: (v: string) => void) => { resolve('remote') }
+                }
+
+                throw new Error(`withTimeout accessed .${String(prop)} on a bare thenable`)
+            }
+        }) as Promise<string>
+
+        await expect(withTimeout(thenable, 1000, 'Test')).resolves.toBe('remote')
+    })
+
     it('does not surface a late rejection as unhandled', async () => {
         vi.useFakeTimers()
 

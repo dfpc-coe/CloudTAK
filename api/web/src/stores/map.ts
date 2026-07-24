@@ -90,7 +90,6 @@ export const useMapStore = defineStore('cloudtak', {
         _removePushTokenListener?: () => void;
 
         channel: BroadcastChannel;
-        _channelOnMessage?: (event: MessageEvent<WorkerMessage>) => void;
 
         toImport: Feature[]
 
@@ -261,33 +260,22 @@ export const useMapStore = defineStore('cloudtak', {
                     : null;
                 this.syncRoutingControl();
 
-                const locationMsg = {
-                    type: WorkerMessageType.Profile_Location_Coordinates,
-                    body: {
-                        accuracy: position.coords.accuracy,
-                        altitude: position.coords.altitude,
-                        altitudeAccuracy: position.coords.altitudeAccuracy,
-                        speed: position.coords.speed,
-                        heading: position.coords.heading,
-                        timestamp: position.timestamp,
-                        coordinates: [ position.coords.longitude, position.coords.latitude ]
-                    }
-                };
-
                 try {
-                    this.channel.postMessage(locationMsg);
+                    this.channel.postMessage({
+                        type: WorkerMessageType.Profile_Location_Coordinates,
+                        body: {
+                            accuracy: position.coords.accuracy,
+                            altitude: position.coords.altitude,
+                            altitudeAccuracy: position.coords.altitudeAccuracy,
+                            speed: position.coords.speed,
+                            heading: position.coords.heading,
+                            timestamp: position.timestamp,
+                            coordinates: [ position.coords.longitude, position.coords.latitude ]
+                        }
+                    });
                 } catch (err) {
-                    // channel may be closed during teardown, or wedged by a
-                    // WebView suspension (WebKit throws DataCloneError on
-                    // every post) - recreate it and retry once
+                    // channel may be closed during teardown
                     console.error(err);
-
-                    try {
-                        this.openChannel();
-                        this.channel.postMessage(locationMsg);
-                    } catch (retryErr) {
-                        console.error(retryErr);
-                    }
                 }
 
                 if (isNativePlatform() && this.isBackgrounded) {
@@ -741,22 +729,6 @@ export const useMapStore = defineStore('cloudtak', {
             return sub;
         },
         /**
-         * (Re)create the BroadcastChannel to the Atlas worker. A WebView
-         * suspension can wedge the existing channel such that WebKit throws
-         * DataCloneError ("The object can not be cloned") on every post, even
-         * for plain payloads, so resume recovery replaces it outright.
-         */
-        openChannel: function(): void {
-            try {
-                this.channel.close();
-            } catch (err) {
-                console.error(err);
-            }
-
-            this.channel = markRaw(new BroadcastChannel('cloudtak'));
-            if (this._channelOnMessage) this.channel.onmessage = this._channelOnMessage;
-        },
-        /**
          * Recover IndexedDB connections and the TAK WebSocket after the app
          * returns to the foreground.
          */
@@ -764,11 +736,6 @@ export const useMapStore = defineStore('cloudtak', {
             if (this._resumeRecovery) return this._resumeRecovery;
 
             this._resumeRecovery = (async () => {
-                // WebView suspension wedges BroadcastChannels the same way it
-                // wedges IndexedDB - WebKit throws DataCloneError on every
-                // post - so recreate the channel alongside the database
-                this.openChannel();
-
                 try {
                     await recoverDatabase();
                 } catch (err) {
@@ -847,7 +814,7 @@ export const useMapStore = defineStore('cloudtak', {
             await this._workerReady!;
             await this.worker.init(token || '');
 
-            this._channelOnMessage = async (event: MessageEvent<WorkerMessage>) => {
+            this.channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
                 const msg = event.data;
 
                 if (!msg || !msg.type) return;
@@ -933,8 +900,6 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                 }
             }
-
-            this.openChannel();
 
             let startedGPSWatchFromPermissionSubscription = false;
 
