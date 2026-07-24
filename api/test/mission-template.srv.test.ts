@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert';
 import { eq } from 'drizzle-orm';
 import { PaletteFeature, MissionTemplateLog } from '../common/schema.js';
+import { BasicGeometryType } from '../common/enums.js';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -131,7 +132,7 @@ test('DELETE: /template/mission/:mission - delete', async () => {
         const feature = await flight.config.models.PaletteFeature.generate({
             name: 'Template Feature',
             template: templateId,
-            type: 'Point',
+            type: BasicGeometryType.POINT,
             style: {},
         });
 

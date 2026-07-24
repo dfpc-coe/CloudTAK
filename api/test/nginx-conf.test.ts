@@ -17,8 +17,7 @@ const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const SCRIPT = [
     path.resolve(TEST_DIR, '../nginx.conf.js'),
     path.resolve(TEST_DIR, '../../nginx.conf.js'),
-].find((candidate) => fs.existsSync(candidate))
-    ?? path.resolve(TEST_DIR, '../nginx.conf.js');
+].find(candidate => fs.existsSync(candidate)) ?? path.resolve(TEST_DIR, '../nginx.conf.js');
 const CSP_REGEX = /add_header 'Content-Security-Policy' "[^"]+" always;/;
 
 test('nginx.conf: fails when API_URL is not set', async () => {
