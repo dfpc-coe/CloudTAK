@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.54.2 - 2026-07-24
+
+- :bug: Fix lints and checks
+
 ### v13.54.1 - 2026-07-24
 
 - :bug: Fix bug in nginx tests
