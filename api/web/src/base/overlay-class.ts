@@ -253,6 +253,10 @@ export default class Overlay {
         for (const l of this.styles) {
             if (l.type === 'background') continue;
 
+            // A previous partially-failed initOverlays() attempt may have
+            // already registered this layer; addLayer throws on duplicate ids
+            if (mapStore.map.getLayer(l.id)) continue;
+
             if (before) {
                 mapStore.map.addLayer(l, before);
             } else {

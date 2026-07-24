@@ -681,7 +681,7 @@ export const useMapStore = defineStore('cloudtak', {
                 return null;
             }
 
-            if (!this.map) throw new Error('Cannot loadMission before map has loaded');
+            if (!this._map) throw new Error('Cannot loadMission before map has loaded');
             const oStore = this.map.getSource(String(overlay.id));
 
             if (!oStore) {
@@ -735,7 +735,7 @@ export const useMapStore = defineStore('cloudtak', {
         resumeFromBackground: async function(): Promise<void> {
             if (this._resumeRecovery) return this._resumeRecovery;
 
-            this._resumeRecovery = (async () => {
+            const recover = async (): Promise<void> => {
                 try {
                     await recoverDatabase();
                 } catch (err) {
@@ -744,25 +744,29 @@ export const useMapStore = defineStore('cloudtak', {
 
                 if (!this._worker) return;
 
-                try {
-                    // Still booting - Map.vue owns recovery until init completes
-                    if (!(await withTimeout(this.worker.initialized, 5000, 'Worker init probe'))) return;
+                // Still booting - Map.vue owns recovery until init completes
+                if (!(await this.worker.initialized)) return;
 
-                    await withTimeout(this.worker.recover(), 10000, 'Worker database recovery');
+                await this.worker.recover();
 
-                    const isOpen = await withTimeout(this.worker.conn.isOpen, 5000, 'Worker connection probe');
-                    if (!isOpen) {
-                        console.log('App resumed with closed connection, reconnecting...');
-                        await this.worker.conn.reconnect(await this.worker.username);
-                    }
-
-                    await this.updateCOT();
-                } catch (err) {
-                    console.error('Resume recovery failed:', err);
+                if (!(await this.worker.conn.isOpen)) {
+                    console.log('App resumed with closed connection, reconnecting...');
+                    await this.worker.conn.reconnect(await this.worker.username);
                 }
-            })().finally(() => {
-                this._resumeRecovery = undefined;
-            });
+
+                await this.updateCOT();
+            };
+
+            // Deadline-bound the whole pass: a wedged worker call that never
+            // settles would otherwise strand _resumeRecovery and block every
+            // future recovery attempt
+            this._resumeRecovery = withTimeout(recover(), 30000, 'Resume recovery')
+                .catch((err) => {
+                    console.error('Resume recovery failed:', err);
+                })
+                .finally(() => {
+                    this._resumeRecovery = undefined;
+                });
 
             return this._resumeRecovery;
         },
@@ -1029,23 +1033,8 @@ export const useMapStore = defineStore('cloudtak', {
                 map.setGlobalStateProperty('theme', useAppStore().resolvedTheme);
             });
 
-            map.once('idle', async () => {
-                const displayProjection = await ProfileConfig.get('display_projection');
-
-                if (displayProjection && displayProjection.value === 'globe') {
-                    map.setProjection({ type: "globe" });
-                }
-
-                this.loadingStage = 'Loading overlays…';
-                await this.initOverlays();
-
-                this.isMapLoadedFully = true;
-                this.loadingStage = '';
-
-                this.timer = setInterval(async () => {
-                    if (!this.map) return;
-                    await this.refresh();
-                }, 500);
+            map.once('idle', () => {
+                void this.onMapReady();
             });
 
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -1083,13 +1072,6 @@ export const useMapStore = defineStore('cloudtak', {
             const takGroup = (await ProfileConfig.get('tak_group'))?.value;
             const puckControl = (this._map as mapgl.Map & { _geolocateControl?: GeolocateControl })._geolocateControl;
             if (puckControl) puckControl.setTeam(typeof takGroup === 'string' ? takGroup : undefined);
-
-            const icon_rotation = (await ProfileConfig.get('display_icon_rotation'))?.value;
-
-            // Initialize icon rotation setting after overlays are loaded
-            setTimeout(() => {
-                this.updateIconRotation(icon_rotation as unknown as boolean);
-            }, 100);
 
             this.distanceUnit = (await ProfileConfig.get('display_distance'))?.value || 'meter';
 
@@ -1134,8 +1116,51 @@ export const useMapStore = defineStore('cloudtak', {
                 console.warn('Failed to submit background location via HTTP', err);
             }
         },
-        initOverlays: async function() {
-            if (!this.map) throw new Error('Cannot initLayers before map has loaded');
+        /**
+         * Runs once the initial style settles. The loading screen is only
+         * dismissed at the end of initOverlays(), so a single failure there
+         * (a timed-out request, a dead IndexedDB connection on a
+         * low-bandwidth native resume) must not strand the user on it:
+         * overlay loading is retried with capped backoff until it succeeds
+         * or the map is torn down.
+         */
+        onMapReady: async function(): Promise<void> {
+            try {
+                const displayProjection = await ProfileConfig.get('display_projection');
+
+                if (displayProjection && displayProjection.value === 'globe') {
+                    this.map.setProjection({ type: 'globe' });
+                }
+            } catch (err) {
+                console.error('Failed to apply saved display projection', err);
+            }
+
+            this.registerMapListeners();
+
+            this.loadingStage = 'Loading overlays…';
+
+            for (let attempt = 0; this._map && !this.isMapLoadedFully; attempt++) {
+                try {
+                    await this.initOverlays();
+                    this.isMapLoadedFully = true;
+                } catch (err) {
+                    const delay = Math.min(2000 * 2 ** attempt, 30000);
+                    console.error(`Failed to load overlays (attempt ${attempt + 1}), retrying in ${delay}ms:`, err);
+                    await new Promise((resolve) => setTimeout(resolve, delay));
+                }
+            }
+
+            if (!this._map) return;
+
+            this.loadingStage = '';
+
+            this.timer = setInterval(async () => {
+                if (!this._map) return;
+                await this.refresh();
+            }, 500);
+        },
+        registerMapListeners: function(): void {
+            if (!this._map) throw new Error('Cannot registerMapListeners before map has loaded');
 
             const map: mapgl.Map = this.map as mapgl.Map;
 
@@ -1338,6 +1363,16 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                 }
             });
+        },
+        /**
+         * Load Profile Overlays onto the map. Must be re-runnable: onMapReady()
+         * retries it after a failure, and source/layer registration is guarded
+         * against duplicates left by a previous partial attempt.
+         */
+        initOverlays: async function() {
+            if (!this._map) throw new Error('Cannot initOverlays before map has loaded');
+
+            const map: mapgl.Map = this.map as mapgl.Map;
 
             OverlayManager.clearLoaded();
             const profileOverlays = await OverlayManager.list({ localFirst: true });
@@ -1380,6 +1415,11 @@ export const useMapStore = defineStore('cloudtak', {
             }));
 
             await FeatureVisibility.apply();
+
+            // Applied here rather than during init() - the preference only
+            // takes effect once the overlay layers exist
+            const iconRotation = (await ProfileConfig.get('display_icon_rotation'))?.value;
+            this.updateIconRotation(Boolean(iconRotation));
 
             // Mission loading is fire-and-forget so it does not block map init;
             // each overlay is marked `loading` while its data is fetched.
