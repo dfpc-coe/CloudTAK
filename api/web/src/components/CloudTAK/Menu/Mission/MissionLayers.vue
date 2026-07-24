@@ -103,7 +103,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch, nextTick, useTemplateRef } from 'vue';
+import { ref, computed, watch, nextTick, useTemplateRef, onBeforeUnmount } from 'vue';
 import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
@@ -366,7 +366,11 @@ function initSortable(): void {
         handle: '.drag-handle',
         dataIdAttr: 'id',
         onStart: (evt) => {
-            draggedId.value = evt.item.id;
+            // FeatureRow's root is a conditional (v-if) element, so the bound
+            // feature id does not fall through to it - it lives on the inner
+            // .drag-handle. Read the id from the handle to identify the feature.
+            const handle = evt.item.querySelector<HTMLElement>('.drag-handle');
+            draggedId.value = handle?.id || undefined;
         },
         onEnd: () => {
             draggedId.value = undefined;
@@ -379,6 +383,13 @@ watch([loading, currentItems], () => {
         initSortable();
     });
 }, { immediate: true });
+
+onBeforeUnmount(() => {
+    if (!sortableItemsRef.value) return;
+
+    const existing = Sortable.get(sortableItemsRef.value);
+    if (existing) existing.destroy();
+});
 
 function openEdit(node: PathNode<Feature>): void {
     editLayer.value = tree.value.layerMap.get(node.id);

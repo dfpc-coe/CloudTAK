@@ -5,7 +5,7 @@
             class='d-inline-flex rounded'
             @dragover='onDragOver(0, $event)'
             @dragleave='hoverDepth = undefined'
-            @drop.stop.prevent='onDrop(0)'
+            @drop='onDrop(0, $event)'
         >
             <TablerIconButton
                 title='Home'
@@ -33,7 +33,7 @@
                 :class='{ "drop-target": droppable && hoverDepth === idx + 1 }'
                 @dragover='onDragOver(idx + 1, $event)'
                 @dragleave='hoverDepth = undefined'
-                @drop.stop.prevent='onDrop(idx + 1)'
+                @drop='onDrop(idx + 1, $event)'
                 @click='navigateTo(idx + 1)'
             >{{ segment }}</span>
         </template>
@@ -94,8 +94,12 @@ function onDragOver(depth: number, event: DragEvent): void {
     hoverDepth.value = depth;
 }
 
-function onDrop(depth: number): void {
+function onDrop(depth: number, event: DragEvent): void {
+    // Only claim the drop (and stop it bubbling to other drop targets) when this
+    // breadcrumb is actually acting as a droppable target
     if (!props.droppable) return;
+    event.preventDefault();
+    event.stopPropagation();
     hoverDepth.value = undefined;
     emit('segment-drop', depth);
 }
