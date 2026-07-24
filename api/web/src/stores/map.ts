@@ -775,9 +775,14 @@ export const useMapStore = defineStore('cloudtak', {
             // background location gating and resume recovery hang off the
             // native appStateChange signal
             this.isBackgrounded = false;
+            let initialFire = true;
             this._removeBackgroundStateListener = await addBackgroundStateListener((isBackgrounded) => {
                 this.isBackgrounded = isBackgrounded;
-                if (!isBackgrounded) void this.resumeFromBackground();
+
+                // The initial fire only syncs state - running recovery there
+                // would race boot's own database open
+                if (!isBackgrounded && !initialFire) void this.resumeFromBackground();
+                initialFire = false;
             });
 
             // iOS restores a killed WebView on background wakes with networking
