@@ -6,6 +6,38 @@ if (!process.env.API_URL) {
 
 const url = new URL(process.env.API_URL);
 
+const csp = {
+    'default-src': [`'self'`],
+    'img-src': [`'self'`, 'data:', 'blob:'],
+    'media-src': [`'self'`, 'blob:'],
+    'font-src': [`'self'`, 'data:'],
+    'worker-src': [`'self'`, 'blob:'],
+    'style-src-elem': [`'self'`, `'unsafe-inline'`],
+    'style-src-attr': [`'unsafe-inline'`],
+    'connect-src': [`'self'`]
+}
+
+// Additional CSP sources can be appended to any directive above via CSV
+// environment variables: NGINX_CSP_IMG_SRC='https://tiles.example.com,data:'
+const cspenv = new Map(Object.keys(csp).map((key) => {
+    return [`NGINX_CSP_${key.toUpperCase().replace(/-/g, '_')}`, key];
+}));
+
+for (const [name, value] of Object.entries(process.env)) {
+    if (!name.startsWith('NGINX_CSP_')) continue;
+
+    const key = cspenv.get(name);
+    if (!key) throw new Error(`Unknown CSP environment variable: ${name} - Supported: ${Array.from(cspenv.keys()).join(', ')}`);
+
+    for (const source of value.split(',').map((s) => s.trim()).filter((s) => s.length)) {
+        if (!/^[A-Za-z0-9.:/*_'~%+-]+$/.test(source)) {
+            throw new Error(`Invalid CSP source "${source}" in ${name}`);
+        }
+
+        csp[key].push(source);
+    }
+}
+
 let cspstr = '';
 if (url.hostname === 'localhost') {
     // CSP is disabled when running on localhost
@@ -14,17 +46,6 @@ if (url.hostname === 'localhost') {
     const isIP = net.isIP(url.hostname) || net.isIPv6(url.hostname)
     // FQDN: Check if API_URL is something.example.com vs example.com
     const isSub = process.env.API_URL.match(/.*\.*\..*?\..*?$/)
-
-    const csp = {
-        'default-src': [`'self'`],
-        'img-src': [`'self'`, 'data:', 'blob:'],
-        'media-src': [`'self'`, 'blob:'],
-        'font-src': [`'self'`, 'data:'],
-        'worker-src': [`'self'`, 'blob:'],
-        'style-src-elem': [`'self'`, `'unsafe-inline'`],
-        'style-src-attr': [`'unsafe-inline'`],
-        'connect-src': [`'self'`]
-    }
 
     cspstr = `add_header 'Content-Security-Policy' "`
     for (const [key, value] of Object.entries(csp)) {

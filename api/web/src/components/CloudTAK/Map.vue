@@ -501,6 +501,7 @@ import { stdurl } from '../../std.ts';
 import ProfileConfig from '../../base/profile.ts';
 import Config from '../../base/config.ts';
 import { cutOverlayFeature } from './util/featureCut.ts';
+import { isNativePlatform, addBackgroundStateListener } from '../../base/capacitor.ts';
 import { copyFeatureToClipboard, readFeatureFromClipboard } from '../../stores/device/clipboard.ts';
 import MissionInviteModal from './Menu/Mission/MissionInviteModal.vue';
 
@@ -549,6 +550,32 @@ const inviteMission = ref<{
 let inviteChannel: BroadcastChannel | undefined;
 
 const loading = ref(true)
+
+// If the app backgrounds mid-boot, awaits inside mapStore.init() can wedge
+// permanently (suspended networking, invalidated IndexedDB). Reload once -
+// the Hard Reset recovery, but automatic - when the boot still hasn't
+// completed this long after returning to the foreground.
+const BOOT_STALL_RELOAD_MS = 30000;
+const BOOT_STALL_RELOAD_KEY = 'cloudtak::boot-stall-reloaded';
+let bootComplete = false;
+let bootStallTimer: ReturnType<typeof setTimeout> | undefined;
+let removeBootWatchdog: (() => void) | undefined;
+
+function onBootStalled(): void {
+    if (bootComplete) return;
+
+    try {
+        if (sessionStorage.getItem(BOOT_STALL_RELOAD_KEY)) return;
+        sessionStorage.setItem(BOOT_STALL_RELOAD_KEY, '1');
+    } catch (err) {
+        // Unguarded automatic reloads could loop - fall back to the Hard Reset button
+        console.warn('Boot stall reload guard unavailable, skipping automatic reload', err);
+        return;
+    }
+
+    console.error('Map boot stalled after app resume - reloading');
+    location.reload();
+}
 
 const notifications = useObservable<number>(
     from(liveQuery(async () => {
@@ -644,7 +671,46 @@ onMounted(async () => {
     });
 
     if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
-    await mapStore.init(mapRef.value);
+
+    if (isNativePlatform()) {
+        removeBootWatchdog = await addBackgroundStateListener((isBackgrounded) => {
+            clearTimeout(bootStallTimer);
+            if (bootComplete || isBackgrounded) return;
+
+            bootStallTimer = setTimeout(onBootStalled, BOOT_STALL_RELOAD_MS);
+        });
+    }
+
+    let bootError: Error | undefined;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+            await mapStore.init(mapRef.value);
+            bootError = undefined;
+            break;
+        } catch (err) {
+            bootError = err instanceof Error ? err : new Error(String(err));
+            console.error(`Map boot attempt ${attempt} failed:`, err);
+
+            if (attempt === 3) break;
+
+            await mapStore.destroy();
+            mapStore.loadingStage = 'Load failed - retrying…';
+            await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+        }
+    }
+
+    bootComplete = true;
+    clearTimeout(bootStallTimer);
+    try {
+        sessionStorage.removeItem(BOOT_STALL_RELOAD_KEY);
+    } catch (err) {
+        console.warn('Failed to clear boot stall reload guard', err);
+    }
+
+    if (bootError) {
+        emit('err', bootError);
+        return;
+    }
 
     // TODO these are no longer reactive, does it matter?
     warnChannels.value = await mapStore.worker.profile.hasNoChannels();
@@ -693,6 +759,9 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+    bootComplete = true;
+    clearTimeout(bootStallTimer);
+    if (removeBootWatchdog) removeBootWatchdog();
     inviteChannel?.close();
     void mapStore.destroy();
 });

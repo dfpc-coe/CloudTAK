@@ -39,8 +39,9 @@ import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
-import { isNativePlatform, addBackgroundStateListener } from '../base/capacitor.ts';
-import { ensureDatabase } from '../database.ts';
+import { isNativePlatform, addBackgroundStateListener, whenForegrounded } from '../base/capacitor.ts';
+import { withTimeout } from '../base/async.ts';
+import { recoverDatabase } from '../database.ts';
 
 import type { ProfileOverlay, Basemap, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource, LayerSpecification, PropertyValueSpecification } from 'maplibre-gl';
@@ -84,7 +85,7 @@ export const useMapStore = defineStore('cloudtak', {
         _bottomBar?: unknown;
 
         _removeOrientationListener?: () => Promise<void>;
-        _boundOnVisibilityChange?: () => Promise<void>;
+        _resumeRecovery?: Promise<void>;
         _removeBackgroundStateListener?: () => void;
         _removePushTokenListener?: () => void;
 
@@ -405,7 +406,8 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (currentWorker && currentRawWorker) {
                 try {
-                    await currentWorker.destroy();
+                    // A wedged worker must not hang teardown - it is terminated below regardless
+                    await withTimeout(currentWorker.destroy(), 5000, 'Atlas worker destroy');
                 } catch (err: unknown) {
                     console.error('Failed to destroy atlas worker:', err);
                 } finally {
@@ -430,7 +432,6 @@ export const useMapStore = defineStore('cloudtak', {
                 await this._removeOrientationListener();
                 this._removeOrientationListener = undefined;
             }
-            if (this._boundOnVisibilityChange) document.removeEventListener('visibilitychange', this._boundOnVisibilityChange);
             if (this._removeBackgroundStateListener) {
                 this._removeBackgroundStateListener();
                 this._removeBackgroundStateListener = undefined;
@@ -727,36 +728,72 @@ export const useMapStore = defineStore('cloudtak', {
 
             return sub;
         },
-        init: async function(container: HTMLElement) {
-            // Start the worker here (not in state()) so the worker's std.ts
-            // resolves serverUrl from KV only after initializeApp() writes it.
-            this.loadingStage = 'Starting worker…';
-            this.startWorker();
+        /**
+         * Recover IndexedDB connections and the TAK WebSocket after the app
+         * returns to the foreground.
+         */
+        resumeFromBackground: async function(): Promise<void> {
+            if (this._resumeRecovery) return this._resumeRecovery;
 
+            this._resumeRecovery = (async () => {
+                try {
+                    await recoverDatabase();
+                } catch (err) {
+                    console.error('Failed to recover IndexedDB on resume:', err);
+                }
+
+                if (!this._worker) return;
+
+                try {
+                    // Still booting - Map.vue owns recovery until init completes
+                    if (!(await withTimeout(this.worker.initialized, 5000, 'Worker init probe'))) return;
+
+                    await withTimeout(this.worker.recover(), 10000, 'Worker database recovery');
+
+                    const isOpen = await withTimeout(this.worker.conn.isOpen, 5000, 'Worker connection probe');
+                    if (!isOpen) {
+                        console.log('App resumed with closed connection, reconnecting...');
+                        await this.worker.conn.reconnect(await this.worker.username);
+                    }
+
+                    await this.updateCOT();
+                } catch (err) {
+                    console.error('Resume recovery failed:', err);
+                }
+            })().finally(() => {
+                this._resumeRecovery = undefined;
+            });
+
+            return this._resumeRecovery;
+        },
+        init: async function(container: HTMLElement) {
             const deviceStore = useDeviceStore();
 
             this.container = container;
 
-            this._boundOnVisibilityChange = async (): Promise<void> => {
-                if (document.hidden) return;
-                if (!(await this.worker.initialized)) return;
+            // visibilitychange is unreliable inside an iOS WebView, so both
+            // background location gating and resume recovery hang off the
+            // native appStateChange signal
+            this.isBackgrounded = false;
+            let initialFire = true;
+            this._removeBackgroundStateListener = await addBackgroundStateListener((isBackgrounded) => {
+                this.isBackgrounded = isBackgrounded;
 
-                // Proactively reopen the main-thread IndexedDB connection.
-                // WebKit may have force-closed it while the app was backgrounded.
-                try {
-                    await ensureDatabase();
-                } catch (err) {
-                    console.error('Failed to reopen IndexedDB on resume:', err);
-                }
+                // The initial fire only syncs state - running recovery there
+                // would race boot's own database open
+                if (!isBackgrounded && !initialFire) void this.resumeFromBackground();
+                initialFire = false;
+            });
 
-                const isOpen = await this.worker.conn.isOpen;
-                if (!isOpen) {
-                    console.log('Tab became visible with closed connection, reconnecting...');
-                    await this.worker.conn.reconnect(await this.worker.username);
-                }
+            // iOS restores a killed WebView on background wakes with networking
+            // and IndexedDB suspended - booting in that state wedges partway
+            this.loadingStage = 'Waiting for app to resume…';
+            await whenForegrounded();
 
-                await this.updateCOT();
-            };
+            // Start the worker here (not in state()) so the worker's std.ts
+            // resolves serverUrl from KV only after initializeApp() writes it.
+            this.loadingStage = 'Starting worker…';
+            this.startWorker();
 
             this._removeOrientationListener = await deviceStore.orientation.addListener((heading) => {
                 // Drive the self-location puck's heading cone regardless of
@@ -769,15 +806,6 @@ export const useMapStore = defineStore('cloudtak', {
                 if (this.userOrientationMode && heading !== null && this._map) {
                     this.map.setBearing(heading);
                 }
-            });
-            document.addEventListener('visibilitychange', this._boundOnVisibilityChange);
-
-            // Track foreground/background transitions using a native-reliable
-            // signal so background location reporting (submitLocationHttp) is
-            // gated correctly on iOS, where document.hidden is unreliable.
-            this.isBackgrounded = false;
-            this._removeBackgroundStateListener = await addBackgroundStateListener((isBackgrounded) => {
-                this.isBackgrounded = isBackgrounded;
             });
 
             const { value: token } = await Preferences.get({ key: 'token' });
