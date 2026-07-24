@@ -17,7 +17,7 @@
                 role='menu'
             >
                 <span
-                    v-tooltip='"Meters Per Second"'
+                    title='Meters Per Second'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom text-blue": mode === "m/s",
@@ -29,7 +29,7 @@
                     @click='mode = "m/s"'
                 >M/S</span>
                 <span
-                    v-tooltip='"Miles Per Hour"'
+                    title='Miles Per Hour'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom text-blue": mode === "mi/h",
@@ -41,7 +41,7 @@
                     @click='mode = "mi/h"'
                 >MPH</span>
                 <span
-                    v-tooltip='"Kilometers Per Hour"'
+                    title='Kilometers Per Hour'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom text-blue": mode === "km/h",

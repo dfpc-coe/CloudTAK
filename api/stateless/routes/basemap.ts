@@ -69,7 +69,7 @@ function augmentBasemap(basemap: any): any {
     return {
         ...basemap,
         bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
-        center: basemap.center ? basemap.center.coordinates : undefined,
+        center: basemap.center ?? undefined,
         actions: fromProtocol(basemap.protocol, basemap).actions(),
     };
 }
@@ -476,7 +476,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     return {
                         ...basemap,
                         bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
-                        center: basemap.center ? basemap.center.coordinates : undefined,
+                        center: basemap.center ?? undefined,
                         actions: fromProtocol(basemap.protocol, basemap).actions(),
                     };
                 }),
@@ -526,7 +526,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             style: Type.Optional(Type.Enum(Basemap_Scheme)),
             type: Type.Optional(Type.Enum(Basemap_Type)),
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
-            center: Type.Optional(Type.Array(Type.Number())),
+            center: Type.Optional(Type.Array(Type.Number(), {
+                minItems: 2,
+                maxItems: 3,
+                description: 'TileJSON 3.0.0 center as [longitude, latitude, zoom] - the zoom element is optional',
+            })),
             styles: Type.Optional(Type.Array(Type.Unknown())),
             title: Type.Optional(Type.String()),
             iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
@@ -547,12 +551,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             if (req.body.bounds) {
                 bounds = bboxPolygon(req.body.bounds as BBox).geometry;
                 delete req.body.bounds;
-            }
-
-            let center: Geometry | undefined = undefined;
-            if (req.body.center) {
-                center = { type: 'Point', coordinates: req.body.center };
-                delete req.body.center;
             }
 
             fromProtocol(req.body.protocol).isValidURL(req.body.url);
@@ -596,7 +594,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ...req.body,
                 collection,
                 bounds,
-                center,
                 username,
             });
 
@@ -609,7 +606,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             res.json({
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
-                center: basemap.center ? basemap.center.coordinates : undefined,
+                center: basemap.center ?? undefined,
                 actions: fromProtocol(basemap.protocol, basemap).actions(),
             });
         } catch (err) {
@@ -655,7 +652,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             style: Type.Optional(Type.Enum(Basemap_Scheme)),
             type: Type.Optional(Type.Enum(Basemap_Type)),
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
-            center: Type.Optional(Type.Array(Type.Number())),
+            center: Type.Optional(Type.Array(Type.Number(), {
+                minItems: 2,
+                maxItems: 3,
+                description: 'TileJSON 3.0.0 center as [longitude, latitude, zoom] - the zoom element is optional',
+            })),
             styles: Type.Optional(Type.Array(Type.Unknown())),
             title: Type.Optional(Type.String()),
             iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
@@ -669,9 +670,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 : await Auth.as_user(config, req);
 
             let bounds: Geometry | undefined = undefined;
-            let center: Geometry | undefined = undefined;
             if (req.body.bounds) bounds = bboxPolygon(req.body.bounds as BBox).geometry;
-            if (req.body.center) center = { type: 'Point', coordinates: req.body.center };
 
             const existing = await config.models.Basemap.from(req.params.basemapid);
 
@@ -736,7 +735,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 updated: sql`Now()`,
                 ...req.body,
                 collection,
-                bounds, center,
+                bounds,
             });
 
             if (req.body.sharing_enabled !== undefined) {
@@ -754,7 +753,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             res.json({
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
-                center: basemap.center ? basemap.center.coordinates : undefined,
+                center: basemap.center ?? undefined,
                 actions: fromProtocol(basemap.protocol, basemap).actions(),
             });
         } catch (err) {
@@ -873,7 +872,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     minzoom: basemap.minzoom ?? metadata.minzoom,
                     maxzoom: basemap.maxzoom ?? metadata.maxzoom,
                     bounds: basemap.bounds ? bbox(basemap.bounds) : metadata.bounds,
-                    center: basemap.center ? basemap.center.coordinates : metadata.center,
+                    center: basemap.center ?? metadata.center,
                     url: tileURL,
                 });
 
@@ -938,7 +937,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 const json = BasemapProtocol.json({
                     ...basemap,
                     bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
-                    center: basemap.center ? basemap.center.coordinates : undefined,
+                    center: basemap.center ?? undefined,
                     url: tileURL,
                 });
 

@@ -253,13 +253,12 @@
                         role='button'
                         style='width: 40px;'
                         class='py-2 px-2 ms-auto d-flex cloudtak-hover cursor-pointer'
+                        title='Logout'
                         @click.stop.prevent='logout'
                         @keyup.enter='logout'
                     >
                         <IconLogout
-                            v-tooltip='"Logout"'
                             tabindex='0'
-                            title='Logout'
                             :size='32'
                             stroke='1'
                         />

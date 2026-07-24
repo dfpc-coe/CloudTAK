@@ -7,31 +7,37 @@
             />
 
             <div class='ms-auto btn-list mx-3'>
-                <IconRefresh
+                <TablerIconButton
                     v-if='!disabled && !err && !loading'
-                    v-tooltip='"Refresh"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
+                    title='Refresh'
                     @click='getList'
-                />
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
 
-                <IconArrowBack
+                <TablerIconButton
                     v-if='!disabled && !err && !loading'
-                    v-tooltip='"Back"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
+                    title='Back'
                     @click='back'
-                />
-                <IconX
+                >
+                    <IconArrowBack
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+                <TablerIconButton
                     v-if='!disabled'
-                    v-tooltip='"Close Explorer"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
+                    title='Close Explorer'
                     @click='$emit("close")'
-                />
+                >
+                    <IconX
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
 
@@ -206,6 +212,7 @@ import {
     TablerNone,
     TablerLoading,
     TablerDelete,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
 import {
     IconX,

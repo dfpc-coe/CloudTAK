@@ -6,13 +6,15 @@
             </h1>
 
             <div class='ms-auto btn-list'>
-                <IconRefresh
-                    v-tooltip='"Refresh"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
+                <TablerIconButton
+                    title='Refresh'
                     @click='fetchList'
-                />
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
@@ -86,7 +88,8 @@ import TableFooter from '../util/TableFooter.vue';
 import {
     TablerNone,
     TablerInput,
-    TablerLoading
+    TablerLoading,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
     IconRefresh,

@@ -11,9 +11,6 @@ import { initGlobalErrorReporting, vueErrorHandler } from './lib/reporting/index
 initServiceWorker();
 initGlobalErrorReporting();
 
-import 'floating-vue/dist/style.css'
-import FloatingVue from 'floating-vue'
-
 import App from './App.vue'
 import { CapacitorUpdater } from '@capgo/capacitor-updater';
 
@@ -102,7 +99,6 @@ app.config.errorHandler = vueErrorHandler;
 
 app.use(router);
 app.use(pinia);
-app.use(FloatingVue);
 
 const plugins: Record<string, {
     default: PluginStatic

@@ -16,8 +16,7 @@ describe('BottomBar', () => {
         expect(() => {
             mount(BottomBar, {
                 props: {
-                    mode: 'standard',
-                    mouseCoord: null
+                    mode: 'standard'
                 },
                 global: {
                     stubs: {

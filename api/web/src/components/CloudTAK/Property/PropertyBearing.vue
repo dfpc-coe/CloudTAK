@@ -22,7 +22,7 @@
                 role='menu'
             >
                 <span
-                    v-tooltip='"Degrees"'
+                    title='Degrees'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom text-blue": mode === "deg",
@@ -34,7 +34,7 @@
                     @click='changeMode("deg")'
                 >Deg</span>
                 <span
-                    v-tooltip='"Radians"'
+                    title='Radians'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom text-blue": mode === "rad",
@@ -46,7 +46,7 @@
                     @click='changeMode("rad")'
                 >Rads</span>
                 <span
-                    v-tooltip='"Mil-Radians"'
+                    title='Mil-Radians'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom text-blue": mode === "mil",

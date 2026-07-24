@@ -74,18 +74,24 @@
                                                 @update:model-value='(v: string) => { connection.readonly = v === "external" }'
                                             >
                                                 <template #option='{ option }'>
-                                                    <IconCloud
+                                                    <span
                                                         v-if='option.value === "cloud"'
-                                                        v-tooltip='"Cloud Integration"'
-                                                        :size='32'
-                                                        stroke='1'
-                                                    />
-                                                    <IconDrone
+                                                        title='Cloud Integration'
+                                                    >
+                                                        <IconCloud
+                                                            :size='32'
+                                                            stroke='1'
+                                                        />
+                                                    </span>
+                                                    <span
                                                         v-if='option.value === "external"'
-                                                        v-tooltip='"External Integration"'
-                                                        :size='32'
-                                                        stroke='1'
-                                                    />
+                                                        title='External Integration'
+                                                    >
+                                                        <IconDrone
+                                                            :size='32'
+                                                            stroke='1'
+                                                        />
+                                                    </span>
                                                     <span class='mx-2'>{{ option.label }}</span>
                                                 </template>
                                             </TablerPillGroup>

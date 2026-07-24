@@ -123,6 +123,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer(),
         }),
+        query: Type.Object({
+            limit: Type.Optional(Type.Integer({ minimum: 0, maximum: 1000, default: Logs.DEFAULT_LINE_LIMIT })),
+        }),
         description: 'Get the logs related to the given task',
         res: Type.Object({
             logs: Type.Array(JobLogResponse),
@@ -142,7 +145,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 layer = await layerControl.from(connection, req.params.layerid);
             }
 
-            res.json(await Logs.list(config, layer));
+            res.json(await Logs.list(config, layer, { limit: req.query.limit }));
         } catch (err) {
             Err.respond(err, res);
         }

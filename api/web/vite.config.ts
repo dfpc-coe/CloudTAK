@@ -78,6 +78,8 @@ export default defineConfig(({ mode }) => {
                             req.url = '/connection.html';
                         } else if (req.url?.startsWith('/setup') && !path.extname(req.url)) {
                             req.url = '/setup.html';
+                        } else if (req.url?.startsWith('/video') && !path.extname(req.url)) {
+                            req.url = '/video.html';
                         }
                         next();
                     });

@@ -251,7 +251,7 @@
     },
     "GET /connection/:connectionid/layer/:layerid/task/logs": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": true
     },
     "GET /connection/:connectionid/layer/:layerid/task/capabilities": {
@@ -534,71 +534,6 @@
         "query": false,
         "res": true
     },
-    "GET /iconset": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /iconset": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /iconset/:iconset": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /iconset/:iconset": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /iconset/:iconset/regen": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /iconset/:iconset": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /iconset/:iconset/icon": {
-        "body": true,
-        "query": true,
-        "res": true
-    },
-    "GET /icon": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /iconset/:iconset/icon/:icon": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /iconset/:iconset/icon/:icon": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /iconset/:iconset/icon/:icon": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /iconset/:iconset/sprite{:size}.json": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /iconset/:iconset/sprite{:size}.png": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
     "GET /import": {
         "body": false,
         "query": true,
@@ -663,6 +598,71 @@
         "body": false,
         "query": true,
         "res": true
+    },
+    "GET /iconset": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /iconset": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /iconset/:iconset": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /iconset/:iconset": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /iconset/:iconset/regen": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /iconset/:iconset": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /iconset/:iconset/icon": {
+        "body": true,
+        "query": true,
+        "res": true
+    },
+    "GET /icon": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /iconset/:iconset/icon/:icon": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /iconset/:iconset/icon/:icon": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /iconset/:iconset/icon/:icon": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /iconset/:iconset/sprite{:size}.json": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /iconset/:iconset/sprite{:size}.png": {
+        "body": false,
+        "query": true,
+        "res": false
     },
     "GET /template": {
         "body": false,
@@ -1289,6 +1289,11 @@
         "query": false,
         "res": true
     },
+    "PATCH /profile/video/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "DELETE /profile/video/:id": {
         "body": false,
         "query": false,
@@ -1327,11 +1332,6 @@
     "DELETE /server/injector": {
         "body": false,
         "query": true,
-        "res": true
-    },
-    "POST /retention": {
-        "body": true,
-        "query": false,
         "res": true
     },
     "GET /server/repeater": {
@@ -1395,6 +1395,11 @@
         "res": true
     },
     "POST /server/tileset": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "POST /retention": {
         "body": true,
         "query": false,
         "res": true
@@ -1467,6 +1472,16 @@
     "GET /type/cot": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "GET /type/2525e": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /type/2525e/:sidc": {
+        "body": false,
+        "query": false,
         "res": true
     },
     "GET /type/cot/:type": {

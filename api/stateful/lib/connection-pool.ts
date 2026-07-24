@@ -292,7 +292,9 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                         cot.archived(true);
                     }
 
-                    const feat = await CoTParser.to_geojson(cot);
+                    const feat = await CoTParser.to_geojson(cot, {
+                        normalize2525: true,
+                    });
 
                     const receiptStatus: ProfileChatStatus | undefined = feat.properties && feat.properties.chat
                         ? ChatReceiptTypes[feat.properties.type]
@@ -434,6 +436,11 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                 ca: this.config.server.auth.cert,
             }, {
                 id: connConfig.id,
+                cot: {
+                    milsym: {
+                        augment: true,
+                    },
+                },
             });
         } else {
             tak = await TAK.connect(new URL(this.config.server.url), {
@@ -441,6 +448,11 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                 cert: connConfig.auth.cert,
             }, {
                 id: connConfig.id,
+                cot: {
+                    milsym: {
+                        augment: true,
+                    },
+                },
             });
         }
 

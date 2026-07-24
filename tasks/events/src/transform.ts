@@ -6,10 +6,9 @@ import type { Message, LocalMessage, Asset } from './types.ts';
 import s3client from './s3.ts';
 import { Upload } from '@aws-sdk/lib-storage';
 import path from 'node:path';
-import cp from 'node:child_process';
 
 import Tippecanoe from './tippecanoe.ts';
-import { countFeatures } from './utils.ts';
+import { countFeatures, run } from './utils.ts';
 import { isPMTiles } from './sniff.ts';
 
 // Formats
@@ -255,8 +254,8 @@ export default class DataTransform {
             );
         } else {
             console.log(`ok - converting ${conversion.asset}`);
-            const pmout = cp.execFileSync('pmtiles', ['convert', conversion.asset, path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')], { maxBuffer: 100 * 1024 * 1024 });
-            console.log(String(pmout));
+            const pmout = run('pmtiles', ['convert', conversion.asset, path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')]);
+            console.log(pmout);
 
             console.log(`ok - converted: ${path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')}`);
         }

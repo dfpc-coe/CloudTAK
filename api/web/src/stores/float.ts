@@ -67,8 +67,8 @@ export const useFloatStore = defineStore('float', {
                 config: opts.config || {},
                 height: opts.height ?? 300,
                 width: opts.width ?? 400,
-                x: opts.x ?? 60,
-                y: opts.y ?? 40,
+                x: opts.x ?? 60, // Clear the left-hand map control column
+                y: opts.y ?? 70, // Open below the 60px Active Mission header (matches the map controls' 70px offset)
             };
             this.panes.set(opts.uid, pane);
             return pane;
@@ -82,8 +82,8 @@ export const useFloatStore = defineStore('float', {
                 },
                 height: 300,
                 width: 400,
-                x: 50,
-                y: 60
+                x: 60, // Clear the left-hand map control column
+                y: 70 // Open below the 60px Active Mission header (matches the map controls' 70px offset)
             })
         },
         addConnection(connection: VideoConnection): void {
@@ -99,8 +99,8 @@ export const useFloatStore = defineStore('float', {
                 },
                 height: 300,
                 width: 400,
-                x: 60, // The width of the Nav Toolbar
-                y: 40 // The height of the Active Mission / Search Toolbar
+                x: 60, // Clear the left-hand map control column
+                y: 70 // Open below the 60px Active Mission header (matches the map controls' 70px offset)
             })
         },
         async addCOT(uid: string): Promise<void> {
@@ -123,8 +123,8 @@ export const useFloatStore = defineStore('float', {
                 },
                 height: 300,
                 width: 400,
-                x: 60, // The width of the Nav Toolbar
-                y: 40 // The height of the Active Mission / Search Toolbar
+                x: 60, // Clear the left-hand map control column
+                y: 70 // Open below the 60px Active Mission header (matches the map controls' 70px offset)
             })
         }
     }

@@ -220,13 +220,16 @@
                                 </div>
 
                                 <div class='d-flex align-items-center gap-2 pe-2'>
-                                    <IconAccessPoint
+                                    <span
                                         v-if='subscribed.has(mission.guid)'
-                                        v-tooltip='"Subscribed"'
-                                        class='text-success'
-                                        :size='32'
-                                        stroke='1'
-                                    />
+                                        title='Subscribed'
+                                    >
+                                        <IconAccessPoint
+                                            class='text-success'
+                                            :size='32'
+                                            stroke='1'
+                                        />
+                                    </span>
                                 </div>
                             </StandardItem>
                         </div>
@@ -275,9 +278,11 @@
                                     </div>
                                 </div>
 
-                                <div class='d-flex align-items-center gap-2 pe-2'>
+                                <div
+                                    class='d-flex align-items-center gap-2 pe-2'
+                                    title='Subscribed'
+                                >
                                     <IconAccessPoint
-                                        v-tooltip='"Subscribed"'
                                         class='text-success'
                                         :size='32'
                                         stroke='1'

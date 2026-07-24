@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
+import { withTimeout } from './base/async.ts';
 import type {
     Feature,
     GroupChannel,
@@ -381,6 +382,32 @@ export async function ensureDatabase(): Promise<void> {
     }
 
     return reopenPromise;
+}
+
+/**
+ * Probe the IndexedDB connection with a real read and reopen it if needed.
+ * An iOS suspend can invalidate the connection without a close event -
+ * db.isOpen() still reports true while every request wedges - so a failed
+ * probe forces an explicit close before reopening.
+ */
+export async function recoverDatabase(probeTimeoutMs = 2000): Promise<void> {
+    if (!shuttingDown && db.isOpen()) {
+        try {
+            await withTimeout(db.kv.get('__connection_probe__'), probeTimeoutMs, 'IndexedDB probe');
+
+            return;
+        } catch (err) {
+            console.warn('IndexedDB connection probe failed, forcing reopen:', err);
+
+            try {
+                db.close();
+            } catch (closeErr) {
+                console.warn('Failed to close zombie IndexedDB connection:', closeErr);
+            }
+        }
+    }
+
+    await ensureDatabase();
 }
 
 const TRANSIENT_DB_ERROR_NAMES = new Set([

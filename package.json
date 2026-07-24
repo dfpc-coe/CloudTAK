@@ -1,12 +1,12 @@
 {
     "name": "@tak-ps/CloudTAK",
     "type": "module",
-    "version": "13.47.1",
+    "version": "13.54.2",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "scripts": {
         "lint": "eslint bin/ cloudformation/",
         "build": "node bin/build.js",
-        "app": "npm install && cd api/web && npm install --legacy-peer-deps && npm run build && cd ../.. && npx cap sync",
+        "app": "npm install && cd api/web && npm install && npm run build && cd ../.. && npx cap sync",
         "test": "echo \"Error: no test specified\" && exit 1",
         "version": "node bin/version.js --stage",
         "postversion": "git push && git push --tags"
@@ -32,6 +32,7 @@
         "@capacitor/camera": "^8.2.0",
         "@capacitor/clipboard": "^8.0.1",
         "@capacitor/core": "^8.3.1",
+        "@capacitor/device": "^8.0.3",
         "@capacitor/geolocation": "^8.1.0",
         "@capacitor/haptics": "^8.0.2",
         "@capacitor/ios": "^8.3.1",

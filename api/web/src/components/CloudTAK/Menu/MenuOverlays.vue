@@ -77,43 +77,58 @@
                                     class='d-flex align-items-center gap-2 flex-grow-1 w-100 overflow-hidden'
                                     :aria-disabled='isDraggable || card.overlay.id === 0'
                                 >
-                                    <IconGripVertical
+                                    <span
                                         v-if='isDraggable'
-                                        v-tooltip='"Drag to reorder"'
-                                        class='drag-handle cursor-move text-white-50'
-                                        role='button'
-                                        tabindex='0'
-                                        :size='20'
-                                        stroke='1'
-                                    />
-                                    <IconMap
+                                        title='Drag to reorder'
+                                    >
+                                        <IconGripVertical
+                                            class='drag-handle cursor-move text-white-50'
+                                            role='button'
+                                            tabindex='0'
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                    </span>
+                                    <span
                                         v-if='card.overlay.type === "raster"'
-                                        v-tooltip='"Raster"'
-                                        :size='20'
-                                        stroke='1'
                                         class='flex-shrink-0 text-white-50'
-                                    />
-                                    <IconMap
+                                        title='Raster'
+                                    >
+                                        <IconMap
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                    </span>
+                                    <span
                                         v-else-if='card.overlay.type === "raster-dem"'
-                                        v-tooltip='"Terrain"'
-                                        :size='20'
-                                        stroke='1'
                                         class='flex-shrink-0 text-white-50'
-                                    />
-                                    <IconAmbulance
+                                        title='Terrain'
+                                    >
+                                        <IconMap
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                    </span>
+                                    <span
                                         v-else-if='card.overlay.type === "geojson" && card.overlay.mode === "mission"'
-                                        v-tooltip='"Data Sync"'
-                                        :size='20'
-                                        stroke='1'
                                         class='flex-shrink-0 text-white-50'
-                                    />
-                                    <IconVector
+                                        title='Data Sync'
+                                    >
+                                        <IconAmbulance
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                    </span>
+                                    <span
                                         v-else
-                                        v-tooltip='"Vector"'
-                                        :size='20'
-                                        stroke='1'
                                         class='flex-shrink-0 text-white-50'
-                                    />
+                                        title='Vector'
+                                    >
+                                        <IconVector
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                    </span>
 
                                     <div class='flex-grow-1 w-100 overflow-hidden'>
                                         <div class='d-flex align-items-center gap-2 w-100'>
@@ -196,7 +211,7 @@
                                         <TablerDelete
                                             v-if='["mission", "data", "profile", "overlay"].includes(card.overlay.mode)'
                                             :key='card.overlay.id'
-                                            v-tooltip='"Delete Overlay"'
+                                            title='Delete Overlay'
                                             :size='20'
                                             role='button'
                                             tabindex='0'

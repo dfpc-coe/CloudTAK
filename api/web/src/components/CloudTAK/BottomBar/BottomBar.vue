@@ -22,7 +22,7 @@
                 v-else
                 class='flex-grow-1'
             />
-            <BottomBarCoordinates :coord='mouseCoord' />
+            <BottomBarCoordinates />
         </div>
     </div>
 </template>
@@ -35,7 +35,6 @@ import BottomBarCoordinates from './BottomBarCoordinates.vue';
 
 defineProps<{
     mode: string;
-    mouseCoord: { lat: number; lng: number } | null;
 }>();
 
 defineEmits(['set-location', 'to-location']);

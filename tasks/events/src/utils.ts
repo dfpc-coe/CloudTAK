@@ -1,5 +1,35 @@
+import cp from 'node:child_process';
 import fs from 'node:fs';
 import readline from 'node:readline';
+
+/**
+ * Run a command synchronously, surfacing the child's stderr, exit code and
+ * signal on failure - execFileSync attaches them to the thrown error but its
+ * default message includes none of them
+ *
+ * @param command Executable to run
+ * @param args Arguments to pass to the executable
+ * @param opts Options passed through to execFileSync
+ * @returns The command's stdout
+ */
+export function run(
+    command: string,
+    args: string[],
+    opts: cp.ExecFileSyncOptions = {},
+): string {
+    try {
+        return cp.execFileSync(command, args, { maxBuffer: 100 * 1024 * 1024, ...opts }).toString();
+    } catch (err) {
+        const e = err as Error & cp.SpawnSyncReturns<Buffer>;
+        const stderr = e.stderr ? String(e.stderr).trim().slice(-2000) : '';
+        const detail = e.signal
+            ? `killed by signal ${e.signal}`
+            : e.status !== null && e.status !== undefined
+                ? `exit code ${e.status}`
+                : 'failed to spawn';
+        throw new Error(`${command} ${args.join(' ')} failed (${detail})${stderr ? `: ${stderr}` : ''}`, { cause: err });
+    }
+}
 
 /**
  * Count the number of features in a line-delimited GeoJSON file

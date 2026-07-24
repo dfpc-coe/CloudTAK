@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang='ts'>
-import { useTemplateRef, watch, computed } from 'vue';
+import { ref, useTemplateRef, watch, computed } from 'vue';
 import ContactPuck from './ContactPuck.vue'
 import {
     IconVideo,
@@ -93,16 +93,39 @@ const props = defineProps({
 
 const canvas = useTemplateRef<HTMLCanvasElement>('imgCanvas');
 
-const supportedIcon = computed<string | null>(() => {
-    if (!props.feature.properties.icon) return null;
+// Bumped when an on-demand icon resolution completes so supportedIcon re-runs
+const resolvedTick = ref(0);
+const resolveAttempted = new Set<string>();
 
-    const icon = mapStore.map.getImage(props.feature.properties.icon)
-    if (icon) {
-        return props.feature.properties.icon;
-    } else {
-        return null;
-    }
+const supportedIcon = computed<string | null>(() => {
+    void resolvedTick.value;
+
+    const iconId = props.feature.properties.icon;
+    if (!iconId) return null;
+
+    return mapStore.map.getImage(iconId) ? iconId : null;
 });
+
+// Military symbols are generated on demand - they only exist in the map
+// once a map feature has requested them, so trigger resolution here
+watch(() => props.feature.properties.icon, async (iconId) => {
+    if (
+        !iconId
+        || supportedIcon.value
+        || !/^2525[CDE]:/.test(iconId)
+        || resolveAttempted.has(iconId)
+    ) return;
+
+    resolveAttempted.add(iconId);
+
+    try {
+        await mapStore.icons.resolve(iconId);
+        resolvedTick.value += 1;
+    } catch {
+        // Icon Manager not yet initialized - allow a later icon change to retry
+        resolveAttempted.delete(iconId);
+    }
+}, { immediate: true });
 
 watch([canvas, supportedIcon, () => props.size], async () => {
     if (!canvas.value) return;

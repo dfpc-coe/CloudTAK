@@ -4,9 +4,6 @@ import { createPinia } from 'pinia'
 import { initServiceWorker } from '../../base/service-worker.ts';
 import { initGlobalErrorReporting, vueErrorHandler } from '../../lib/reporting/index.ts';
 
-import 'floating-vue/dist/style.css'
-import FloatingVue from 'floating-vue'
-
 import App from '../../App.vue';
 
 initServiceWorker();
@@ -187,6 +184,5 @@ app.config.errorHandler = vueErrorHandler;
 
 app.use(router);
 app.use(pinia);
-app.use(FloatingVue);
 
 app.mount('#app');

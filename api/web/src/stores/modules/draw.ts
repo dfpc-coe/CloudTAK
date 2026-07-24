@@ -1,4 +1,5 @@
 import router from '../../router.ts';
+import { ref, reactive, shallowRef, shallowReactive } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import * as terraDraw from 'terra-draw';
 import * as tilecover from '@mapbox/tile-cover';
@@ -46,12 +47,31 @@ export enum DrawToolMode {
 
 export default class DrawTool {
     private draw: terraDraw.TerraDraw;
-    public editing: COT | null;
 
-    public mode: DrawToolMode;
+    // The DrawTool instance is stored with markRaw() in the map store, so any
+    // state the UI renders must be individually reactive (refs/reactive objects)
+    private _editing = shallowRef<COT | null>(null);
+
+    private _mode = ref<DrawToolMode>(DrawToolMode.STATIC);
 
     // Bumped on every TerraDraw change event to drive reactivity for canFinish
-    public _changeCount: number = 0;
+    private _changeCount = ref(0);
+
+    public get editing(): COT | null {
+        return this._editing.value;
+    }
+
+    public set editing(cot: COT | null) {
+        this._editing.value = cot;
+    }
+
+    public get mode(): DrawToolMode {
+        return this._mode.value;
+    }
+
+    public set mode(mode: DrawToolMode) {
+        this._mode.value = mode;
+    }
 
     public route: {
         graph: Routing;
@@ -79,7 +99,15 @@ export default class DrawTool {
         overlay: string;
     }
 
-    public snappingOptions: string[] = ['No Snapping'];
+    private _snappingOptions = ref<string[]>(['No Snapping']);
+
+    public get snappingOptions(): string[] {
+        return this._snappingOptions.value;
+    }
+
+    public set snappingOptions(options: string[]) {
+        this._snappingOptions.value = options;
+    }
 
     public get snappingLayer(): string {
         return this.route.layer;
@@ -114,7 +142,7 @@ export default class DrawTool {
 
     public get canFinish(): boolean {
         // Access _changeCount to establish reactivity
-        void this._changeCount;
+        void this._changeCount.value;
 
         if (this.mode === DrawToolMode.SELECT) {
             return !!this.editing;
@@ -200,14 +228,14 @@ export default class DrawTool {
             routeFinder: finder
         })
 
-        this.route = {
+        this.route = shallowReactive({
             finder,
             graph,
             tiles: new Map(),
             zoom: 12,
             layer: 'No Snapping',
             definitions: new Map()
-        };
+        });
 
         const routeSnapMode = new TerraDrawRouteSnapMode({
             straightLineFallback: {
@@ -453,21 +481,21 @@ export default class DrawTool {
         });
 
         this.draw.on('change', () => {
-            this._changeCount++;
+            this._changeCount.value++;
         });
 
         this.mode = DrawToolMode.STATIC;
         this.snapping = new Set();
         this.editing = null;
 
-        this.point = {
+        this.point = reactive({
             type: this.mapStore.defaultPointType
-        }
+        })
 
-        this.lasso = {
+        this.lasso = reactive({
             loading: false,
             overlay: 'Map Features'
-        }
+        })
     }
 
     async populateSnappingLayers(): Promise<void> {

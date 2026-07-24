@@ -69,7 +69,7 @@
         </div>
         <div class='modal-footer'>
             <TablerButton
-                v-tooltip='"Cancel Share"'
+                title='Cancel Share'
                 @click='emit("close")'
             >
                 Cancel
@@ -77,8 +77,8 @@
 
             <div class='ms-auto'>
                 <TablerButton
-                    v-tooltip='"Share to Selected"'
                     class='btn-primary'
+                    title='Share to Selected'
                     :disabled='selected.size === 0'
                     @click='share'
                 >

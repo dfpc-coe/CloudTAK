@@ -96,13 +96,15 @@
                                                     <span class='mx-3'>Certificate Uploaded</span>
 
                                                     <div class='ms-auto'>
-                                                        <IconTrash
-                                                            v-tooltip='"Remove Certificate"'
-                                                            :size='32'
-                                                            stroke='1'
-                                                            class='cursor-pointer'
+                                                        <TablerIconButton
+                                                            title='Remove Certificate'
                                                             @click='body.auth = { cert: "", key: "" };'
-                                                        />
+                                                        >
+                                                            <IconTrash
+                                                                :size='32'
+                                                                stroke='1'
+                                                            />
+                                                        </TablerIconButton>
                                                     </div>
                                                 </div>
                                             </template>
@@ -158,7 +160,8 @@ import ServerManager from '../base/server.ts';
 import CertificateP12 from './ETL/Connection/CertificateP12.vue';
 import {
     TablerLoading,
-    TablerInput
+    TablerInput,
+    TablerIconButton
 } from '@tak-ps/vue-tabler'
 import {
     IconCheck,

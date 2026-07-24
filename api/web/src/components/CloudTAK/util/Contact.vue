@@ -52,14 +52,16 @@
                 v-if='props.buttonChat'
                 class='align-self-center me-2'
             >
-                <IconMessage
+                <TablerIconButton
                     v-if='props.buttonChat && chatable'
-                    v-tooltip='"Start Chat"'
-                    :size='compact ? 20 : 32'
-                    stroke='1'
-                    class='cursor-pointer'
+                    title='Start Chat'
                     @click.stop='emit("chat", contact)'
-                />
+                >
+                    <IconMessage
+                        :size='compact ? 20 : 32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
 
             <div
@@ -86,6 +88,7 @@ import {
     IconCheck,
     IconMessage,
 } from '@tabler/icons-vue';
+import { TablerIconButton } from '@tak-ps/vue-tabler';
 import ContactPuck from './ContactPuck.vue';
 import StandardItem from './StandardItem.vue';
 import { useMapStore } from '../../../stores/map.ts';

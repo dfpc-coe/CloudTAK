@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
+import { eq } from 'drizzle-orm';
+import { ProfileVideo } from '../common/schema.js';
 import Flight from './flight.js';
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 
@@ -190,6 +192,52 @@ test('PATCH: api/video/lease/:lease - Update Lease', async () => {
         assert.equal(res.status, 200, 'Status 200');
         assert.equal(res.body.id, leaseId, 'Lease ID matches');
         assert.equal(res.body.name, 'Updated Lease Name', 'Name updated');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('DELETE: api/video/lease/:lease - lease saved as a Profile Video', async () => {
+    if (!flight.config) throw new Error('Flight config not initialized');
+
+    // A user has saved this lease as a Profile Video (non-nullable FK)
+    await flight.config.models.ProfileVideo.generate({
+        lease: leaseId,
+        username: 'admin@example.com',
+    });
+
+    flight.tak.mockMarti.push(async (request, response) => {
+        if (request.method === 'DELETE' && request.url && request.url.startsWith('/Marti/api/video/')) {
+            response.setHeader('Content-Type', 'application/json');
+            response.write(JSON.stringify({}));
+            response.end();
+            return true;
+        }
+        return false;
+    });
+
+    const mediaClient = agent.get('http://media-server:9997');
+
+    mediaClient.intercept({
+        path: `/path/${leasePath}`,
+        method: 'DELETE',
+    }).reply(200, {});
+
+    try {
+        const res = await flight.fetch(`/api/video/lease/${leaseId}`, {
+            method: 'DELETE',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.equal(res.status, 200, 'Status 200');
+        assert.equal(res.body.message, 'Video Lease Deleted');
+
+        // The saved Profile Video should be removed along with the lease
+        const videos = await flight.config.pg
+            .select().from(ProfileVideo).where(eq(ProfileVideo.lease, leaseId));
+        assert.equal(videos.length, 0);
     } catch (err) {
         assert.ifError(err);
     }

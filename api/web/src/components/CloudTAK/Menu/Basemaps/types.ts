@@ -223,7 +223,8 @@ export function normalizeEditing(data: Basemap | BasemapImport | BasemapListItem
         sharing_enabled: ('sharing_enabled' in data ? data.sharing_enabled : undefined) ?? true,
         format: (rawFormat === 'png' || rawFormat === 'jpeg' || rawFormat === 'mvt' || rawFormat === 'webp') ? rawFormat : 'png',
         bounds: ('bounds' in data && Array.isArray(data.bounds) ? data.bounds : null) ?? [-180, -90, 180, 90],
-        center: ('center' in data && Array.isArray(data.center) ? data.center : null) ?? [0, 0],
+        // TileJSON 3.0.0 centers are [lon, lat, zoom] - the zoom element is optional
+        center: ('center' in data && Array.isArray(data.center) && data.center.length >= 2 ? data.center.slice(0, 3) : null) ?? [0, 0],
         collection: ('collection' in data ? data.collection : undefined) ?? '',
         title: ('title' in data ? data.title : undefined) ?? '{{callsign}}',
         overlay: ('overlay' in data ? data.overlay : undefined) ?? false,

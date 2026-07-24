@@ -54,13 +54,15 @@
                 v-if='!props.disabled'
                 class='ms-auto btn-list'
             >
-                <IconPlus
-                    v-tooltip='"Add Destination"'
-                    :size='20'
-                    stroke='1'
-                    class='cursor-pointer'
+                <TablerIconButton
+                    title='Add Destination'
                     @click='addDest'
-                />
+                >
+                    <IconPlus
+                        :size='20'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
 
@@ -124,7 +126,8 @@ import { ref, watch, onMounted } from 'vue';
 import {
     TablerInput,
     TablerEnum,
-    TablerNone
+    TablerNone,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
     IconArchive,

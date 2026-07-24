@@ -38,6 +38,10 @@ export enum WorkerMessageType {
     Sync_Update = 'cloudtak:sync:update',
 
     Iconset_Change = 'cloudtak:iconset:change',
+
+    VideoWall_Ping = 'cloudtak:videowall:ping',
+    VideoWall_Pong = 'cloudtak:videowall:pong',
+    VideoWall_Refresh = 'cloudtak:videowall:refresh',
 }
 
 export type WorkerMessage = {

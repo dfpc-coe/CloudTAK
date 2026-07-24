@@ -131,6 +131,7 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
+import Type2525 from '@tak-ps/node-cot/2525';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
 import { IconPaint } from '@tabler/icons-vue';
 import {
@@ -193,7 +194,9 @@ function updatePropertyIcon(event: string | null) {
         properties["marker-color"] = '#FFFFFF';
         emit('update:modelValue', properties);
     } else if (properties.icon && !event) {
-        if (properties.type && properties.type !== 'u-d-p') {
+        if (properties.type && Type2525.isNumericSIDCConvertable(String(properties.type))) {
+            properties.icon = `2525E:${properties.type}`;
+        } else if (properties.type && properties.type !== 'u-d-p') {
             properties.icon = properties.type;
         } else {
             properties.icon = undefined;

@@ -23,7 +23,7 @@
                 role='menu'
             >
                 <span
-                    v-tooltip='"Feet"'
+                    title='Feet'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom text-blue": mode === "feet",
@@ -35,7 +35,7 @@
                     @click='changeMode("feet")'
                 >Feet</span>
                 <span
-                    v-tooltip='"Yards"'
+                    title='Yards'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom text-blue": mode === "yard",
@@ -47,7 +47,7 @@
                     @click='changeMode("yard")'
                 >Yards</span>
                 <span
-                    v-tooltip='"Meters"'
+                    title='Meters'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom text-blue": mode === "meter",
@@ -59,7 +59,7 @@
                     @click='changeMode("meter")'
                 >Meters</span>
                 <span
-                    v-tooltip='"Kilometers"'
+                    title='Kilometers'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom text-blue": mode === "kilometer",
@@ -71,7 +71,7 @@
                     @click='changeMode("kilometer")'
                 >Kilometers</span>
                 <span
-                    v-tooltip='"Miles"'
+                    title='Miles'
                     class='my-1 px-2 user-select-none'
                     :class='{
                         "cloudtak-accent rounded-bottom text-blue": mode === "mile",

@@ -2,7 +2,7 @@ import { createSelectSchema } from 'drizzle-typebox';
 import { Type, Static } from '@sinclair/typebox';
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
-import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text, Profile_Radiation_Dose } from './enums.js';
+import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text, Profile_Radiation_Dose, Profile_Wake_Lock } from './enums.js';
 import { VideoLease_SourceType, CoreEvent_Priority } from './enums.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
@@ -283,6 +283,7 @@ export const Profile = Type.Object({
     display_elevation: Type.Enum(Profile_Elevation),
     display_speed: Type.Enum(Profile_Speed),
     display_radiation_dose: Type.Enum(Profile_Radiation_Dose),
+    display_wakelock: Type.Enum(Profile_Wake_Lock),
 
     geometry_point_type: Type.Optional(Type.String()),
     geometry_point_color: Type.Optional(Type.String()),
@@ -342,8 +343,16 @@ export const ProfilePagingResponse = Type.Object({
     updated: Type.String(),
 });
 
+export const ProfileVideoPosition = Type.Object({
+    x: Type.Integer({ minimum: 0, description: 'Column position on a 12 column grid' }),
+    y: Type.Integer({ minimum: 0, description: 'Row position in grid units' }),
+    w: Type.Integer({ minimum: 1, maximum: 12, description: 'Width in grid columns' }),
+    h: Type.Integer({ minimum: 1, description: 'Height in grid rows' }),
+});
+
 export const ProfileVideoResponse = createSelectSchema(schemas.ProfileVideo, {
     lease: Type.Integer(),
+    position: ProfileVideoPosition,
 });
 
 export const FeatureResponse = Type.Composite([Feature.Feature, Type.Object({
@@ -493,7 +502,11 @@ export const BasemapResponse = Type.Object({
     url: Type.String(),
     protocol: Type.Enum(Basemap_Protocol),
     bounds: Type.Any(),
-    center: Type.Any(),
+    center: Type.Union([Type.Null(), Type.Array(Type.Number(), {
+        minItems: 2,
+        maxItems: 3,
+        description: 'TileJSON 3.0.0 center as [longitude, latitude, zoom] - the zoom element is optional',
+    })]),
     minzoom: Type.Integer(),
     maxzoom: Type.Integer(),
     format: Type.Enum(Basemap_Format),

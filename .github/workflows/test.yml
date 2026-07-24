@@ -181,7 +181,7 @@ jobs:
 
       - name: Install
         working-directory: ./api/web/
-        run: npm install --legacy-peer-deps
+        run: npm install
 
       - name: Lint
         working-directory: ./api/web/

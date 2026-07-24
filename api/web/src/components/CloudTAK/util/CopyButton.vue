@@ -1,7 +1,7 @@
 <template>
     <TablerIconButton
         v-if='!copied'
-        title='Copy'
+        :title='title'
         @click.stop.prevent='copy'
     >
         <IconCopy
@@ -37,6 +37,10 @@ const props = defineProps({
     text: {
         type: [String, Number],
         required: true
+    },
+    title: {
+        type: String,
+        default: 'Copy'
     },
     size: {
         type: Number,

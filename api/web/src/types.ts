@@ -21,6 +21,8 @@ export type APIList<T> = {
 
 export type COTTypeList = paths["/api/type/cot"]["get"]["responses"]["200"]["content"]["application/json"];
 export type COTType = paths["/api/type/cot/{:type}"]["get"]["responses"]["200"]["content"]["application/json"];
+export type COT2525EList = paths["/api/type/2525e"]["get"]["responses"]["200"]["content"]["application/json"];
+export type COT2525EType = COT2525EList["items"][number];
 
 export type Search = paths["/api/search"]["get"]["responses"]["200"]["content"]["application/json"];
 export type SearchSuggest = paths["/api/search/suggest"]["get"]["responses"]["200"]["content"]["application/json"];

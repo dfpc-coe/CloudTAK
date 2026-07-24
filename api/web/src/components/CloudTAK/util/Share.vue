@@ -54,24 +54,33 @@
                 :disabled='loading'
             >
                 <template #option='{ option }'>
-                    <IconUsers
+                    <span
                         v-if='option.value === "users"'
-                        v-tooltip='"Users"'
-                        :size='24'
-                        stroke='1'
-                    />
-                    <IconAffiliate
+                        title='Users'
+                    >
+                        <IconUsers
+                            :size='24'
+                            stroke='1'
+                        />
+                    </span>
+                    <span
                         v-else-if='option.value === "groups"'
-                        v-tooltip='"Channels"'
-                        :size='24'
-                        stroke='1'
-                    />
-                    <IconAmbulance
+                        title='Channels'
+                    >
+                        <IconAffiliate
+                            :size='24'
+                            stroke='1'
+                        />
+                    </span>
+                    <span
                         v-else
-                        v-tooltip='"Data Syncs"'
-                        :size='24'
-                        stroke='1'
-                    />
+                        title='Data Syncs'
+                    >
+                        <IconAmbulance
+                            :size='24'
+                            stroke='1'
+                        />
+                    </span>
                     <span class='ms-2'>{{ option.label }}</span>
                 </template>
             </TablerPillGroup>
@@ -174,7 +183,7 @@
                     class='col-6'
                 >
                     <TablerButton
-                        v-tooltip='"Share to Selected"'
+                        title='Share to Selected'
                         :disabled='(selectedUsers.size === 0 && selectedGroups.size === 0 && selectedMissions.size === 0) || loading'
                         class='w-100 btn-primary'
                         @click='share'
@@ -189,7 +198,7 @@
                 </div>
                 <div class='col-6'>
                     <TablerButton
-                        v-tooltip='"Broadcast to All Users"'
+                        title='Broadcast to All Users'
                         :disabled='loading'
                         class='w-100 btn-secondary'
                         @click='broadcast'
