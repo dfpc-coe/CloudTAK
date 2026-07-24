@@ -11,7 +11,7 @@ import AtlasDatabase from './atlas-database.ts';
 import AtlasConnection from './atlas-connection.ts';
 import AtlasSync from './atlas-sync.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
-import { db } from '../database.ts';
+import { db, recoverDatabase } from '../database.ts';
 
 export default class Atlas {
     channel: BroadcastChannel;
@@ -60,6 +60,14 @@ export default class Atlas {
 
     async postMessage(msg: WorkerMessage): Promise<void> {
         return this.channel.postMessage(msg);
+    }
+
+    /**
+     * Called by the main thread on app resume - workers receive no
+     * visibility events to recover their own IndexedDB connection.
+     */
+    async recover(): Promise<void> {
+        await recoverDatabase();
     }
 
     async init(authToken: string) {

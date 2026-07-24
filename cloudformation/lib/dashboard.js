@@ -111,38 +111,17 @@ export default {
                         type: 'metric',
                         x: 12,
                         y: 18,
-                        width: 6,
+                        width: 12,
                         height: 6,
                         properties: {
-                            title: 'Stateless CPU / Memory',
+                            title: 'CPU / Memory',
                             view: 'timeSeries',
                             stacked: false,
                             metrics: [
-                                ['AWS/ECS', 'CPUUtilization', 'ServiceName', '${ServiceName}', 'ClusterName', '${Cluster}', { label: 'cpu', color: '#1f77b4', period: 60 }],
-                                ['.', 'MemoryUtilization', '.', '.', '.', '.', { label: 'memory', color: '#2ca02c', period: 60 }]
-                            ],
-                            region: '${AWS::Region}',
-                            period: 300,
-                            yAxis: { left: { min: 0, max: 110 } },
-                            annotations: {
-                                horizontal: [
-                                    { color: '#d62728', label: 'alarm', value: 80 }
-                                ]
-                            }
-                        }
-                    }, {
-                        type: 'metric',
-                        x: 18,
-                        y: 18,
-                        width: 6,
-                        height: 6,
-                        properties: {
-                            title: 'Stateful CPU / Memory',
-                            view: 'timeSeries',
-                            stacked: false,
-                            metrics: [
-                                ['AWS/ECS', 'CPUUtilization', 'ServiceName', '${StatefulServiceName}', 'ClusterName', '${Cluster}', { label: 'cpu', color: '#1f77b4', period: 60 }],
-                                ['.', 'MemoryUtilization', '.', '.', '.', '.', { label: 'memory', color: '#2ca02c', period: 60 }]
+                                ['AWS/ECS', 'CPUUtilization', 'ServiceName', '${ServiceName}', 'ClusterName', '${Cluster}', { label: 'stateless cpu', color: '#1f77b4', period: 60 }],
+                                ['.', 'MemoryUtilization', '.', '.', '.', '.', { label: 'stateless memory', color: '#2ca02c', period: 60 }],
+                                ['AWS/ECS', 'CPUUtilization', 'ServiceName', '${StatefulServiceName}', 'ClusterName', '${Cluster}', { label: 'stateful cpu', color: '#ff7f0e', period: 60 }],
+                                ['.', 'MemoryUtilization', '.', '.', '.', '.', { label: 'stateful memory', color: '#9467bd', period: 60 }]
                             ],
                             region: '${AWS::Region}',
                             period: 300,
