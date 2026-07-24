@@ -194,3 +194,9 @@ export enum Profile_Radiation_Dose {
     SIEVERTS = 'sieverts',
     REMS = 'rems',
 }
+
+export enum Profile_Wake_Lock {
+    DEFAULT = 'Default',
+    CHARGING = 'Charging',
+    ALWAYS = 'Always On',
+}

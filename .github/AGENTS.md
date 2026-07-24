@@ -7,6 +7,7 @@ a clear separation of concerns between components, features, and utilities.
 ## Rules
 
 * Never commit or push code using the `git` command directly. The author will handle git operations unless explicitly requested to do so.
+* Avoid excessive comments, keep comments concise and relevant. Use comments to explain "why" something is done, not "what" is done.
 
 ## Directories
 

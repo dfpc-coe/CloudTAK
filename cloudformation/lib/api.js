@@ -12,6 +12,11 @@ export default {
             Type: 'Number',
             Default: 4096 * 2
         },
+        ApiDesiredCount: {
+            Description: 'The desired number of stateless API service tasks',
+            Type: 'Number',
+            Default: 2
+        },
         ApiTargetCPUUtilization: {
             Description: 'Target average CPU utilization percentage for the stateless API service',
             Type: 'Number',
@@ -498,7 +503,7 @@ export default {
                 PropagateTags: 'SERVICE',
                 EnableExecuteCommand: cf.ref('EnableExecute'),
                 HealthCheckGracePeriodSeconds: 300,
-                DesiredCount: 2,
+                DesiredCount: cf.ref('ApiDesiredCount'),
                 NetworkConfiguration: {
                     AwsvpcConfiguration: {
                         AssignPublicIp: 'ENABLED',

@@ -1,10 +1,74 @@
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { isNativePlatform } from '../../base/capacitor.ts';
 import { PermissionQuery } from './shared.ts';
+import { BatteryStatus } from './battery.ts';
 import type { DevicePermissionContext } from './types.ts';
 
+// Mirrors the Profile_Wake_Lock enum (api/common/enums.ts).
+export type WakeLockMode = 'Default' | 'Charging' | 'Always On';
+
+const WAKE_LOCK_DEFAULT: WakeLockMode = 'Default';
+const WAKE_LOCK_CHARGING: WakeLockMode = 'Charging';
+const WAKE_LOCK_ALWAYS: WakeLockMode = 'Always On';
+
 export class WakeLockPermission {
+    private readonly battery = new BatteryStatus();
+    private mode: WakeLockMode = WAKE_LOCK_DEFAULT;
+
     constructor(private readonly context: DevicePermissionContext) {}
+
+    /**
+     * Apply the user's wake lock display preference. "Always On" holds the
+     * screen awake for the session, "Charging" only while the device is
+     * charging, "Default" lets the OS sleep the screen normally.
+     */
+    async applyPreference(mode: WakeLockMode): Promise<void> {
+        this.mode = mode;
+
+        await this.battery.unwatch();
+
+        if (!await this.isSupported()) {
+            this.context.setPermissionStatus('wakeLock', 'unsupported');
+            return;
+        }
+
+        if (mode === WAKE_LOCK_ALWAYS) {
+            await this.acquire();
+        } else if (mode === WAKE_LOCK_CHARGING) {
+            await this.battery.watch((charging) => {
+                void this.onChargingChange(charging);
+            });
+        } else {
+            await this.releaseSentinel();
+        }
+    }
+
+    async teardown(): Promise<void> {
+        this.mode = WAKE_LOCK_DEFAULT;
+        await this.battery.unwatch();
+        await this.releaseSentinel();
+    }
+
+    private async onChargingChange(charging: boolean): Promise<void> {
+        // A watch from a prior preference may still fire - ignore unless active
+        if (this.mode !== WAKE_LOCK_CHARGING) return;
+
+        if (charging) {
+            await this.acquire();
+        } else {
+            await this.releaseSentinel();
+        }
+    }
+
+    private async acquire(): Promise<void> {
+        try {
+            await KeepAwake.keepAwake();
+            this.context.setWakeLockSentinel(null);
+            this.context.setPermissionStatus('wakeLock', 'granted');
+        } catch (err) {
+            console.warn('Failed to acquire wake lock', err);
+        }
+    }
 
     async refreshStatus(): Promise<void> {
         if (!await this.isSupported()) {
