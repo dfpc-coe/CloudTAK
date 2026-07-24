@@ -16,6 +16,15 @@
 
 ### Pending Release
 
+### v13.53.0 - 2026-07-24
+
+- :tada: Introduce Battery Charging State
+- :rocket: Introduce Profile Config option for Wake Lock - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1600
+- :tada: Add support for copying features to the clipboard in GeoJSON format
+- :tada: Add support for pasting features from clipboard onto the map in GeoJSON format
+- :rocket: Allow changing Min/Max Desired count for Stateless API Service
+- :rocket: Merge Unit Status into 2525E PropertyType for better visibility and filtering of Unit Status in the Feature Type Editor
+
 ### v13.52.1 - 2026-07-23
 
 - :bug: Ensure draw modes are reactive for consistent Draw Tools popup
