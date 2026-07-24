@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.53.2 - 2026-07-24
+
+= :bug: TileJSON@3 supports a 3rd zoom value in the `center` field
+
 ### v13.53.1 - 2026-07-24
 
 - :arrow_up: Update Alpine to 3.24

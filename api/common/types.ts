@@ -502,7 +502,11 @@ export const BasemapResponse = Type.Object({
     url: Type.String(),
     protocol: Type.Enum(Basemap_Protocol),
     bounds: Type.Any(),
-    center: Type.Any(),
+    center: Type.Union([Type.Null(), Type.Array(Type.Number(), {
+        minItems: 2,
+        maxItems: 3,
+        description: 'TileJSON 3.0.0 center as [longitude, latitude, zoom] - the zoom element is optional',
+    })]),
     minzoom: Type.Integer(),
     maxzoom: Type.Integer(),
     format: Type.Enum(Basemap_Format),
