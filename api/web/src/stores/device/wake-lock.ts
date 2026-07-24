@@ -81,6 +81,7 @@ export class WakeLockPermission {
             this.context.setPermissionStatus('wakeLock', 'granted');
         } catch (err) {
             console.warn('Failed to acquire wake lock', err);
+            await this.refreshStatus();
         }
     }
 

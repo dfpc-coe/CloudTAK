@@ -173,14 +173,20 @@ onMounted(async () => {
         refresh();
     });
 
-    const config = await Config.list([
-        'login::logo',
-    ]);
+    try {
+        const config = await Config.list([
+            'login::logo',
+        ]);
 
-    brandStore.login = {
-        logo: config['login::logo'],
-    };
-    brandStore.loaded = true;
+        brandStore.login = {
+            logo: config['login::logo'],
+        };
+    } catch (err) {
+        // Non-fatal - fall through to the default logo so the wall still loads
+        console.error('Failed to load login logo', err);
+    } finally {
+        brandStore.loaded = true;
+    }
 
     await listVideos();
 });

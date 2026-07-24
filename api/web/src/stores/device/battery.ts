@@ -53,9 +53,13 @@ export class BatteryStatus {
                 battery.addEventListener('chargingchange', handler);
                 this.webBattery = battery;
                 this.webListener = (): void => battery.removeEventListener('chargingchange', handler);
-                await emit();
-                return;
             }
+
+            // Without the Battery Status API (iOS WebKit) charging state is
+            // unknowable and isCharging() always reports false - polling would
+            // be a permanent no-op, so just emit the one known state
+            await emit();
+            return;
         }
 
         this.pollTimer = setInterval(() => { void emit(); }, NATIVE_POLL_MS);

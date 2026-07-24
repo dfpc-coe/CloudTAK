@@ -15,7 +15,9 @@ export default {
         ApiDesiredCount: {
             Description: 'The desired number of stateless API service tasks',
             Type: 'Number',
-            Default: 2
+            Default: 2,
+            MinValue: 1,
+            MaxValue: 10
         },
         ApiTargetCPUUtilization: {
             Description: 'Target average CPU utilization percentage for the stateless API service',
