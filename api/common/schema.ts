@@ -18,7 +18,7 @@ import {
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
     ProfileChatStatus, CoreEvent_Priority,
 } from './enums.js';
-import { bigint, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
+import { bigint, boolean, uuid, numeric, integer, doublePrecision, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
@@ -270,7 +270,8 @@ export const Basemap = pgTable('basemaps', {
     protocol: text().notNull().default(Basemap_Protocol.ZXY),
 
     bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
-    center: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(),
+    // TileJSON 3.0.0 center: [longitude, latitude, zoom]
+    center: doublePrecision().array(),
     minzoom: integer().notNull().default(0),
     maxzoom: integer().notNull().default(16),
     format: text().$type<Basemap_Format>().notNull().default(Basemap_Format.PNG),
