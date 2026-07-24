@@ -16,6 +16,11 @@
 
 ### Pending Release
 
+### v13.54.0 - 2026-07-24
+
+- :rocket: Allow changing CSP behavior in nginx via `NGINX_CSP_<directive>` environment variables
+- :bug: Improved iOS resume behavior
+
 ### v13.53.2 - 2026-07-24
 
 = :bug: TileJSON@3 supports a 3rd zoom value in the `center` field
