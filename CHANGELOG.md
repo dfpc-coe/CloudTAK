@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.53.1 - 2026-07-24
+
+- :arrow_up: Update Alpine to 3.24
+
 ### v13.53.0 - 2026-07-24
 
 - :tada: Introduce Battery Charging State
