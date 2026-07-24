@@ -3,7 +3,7 @@ import { sql } from 'drizzle-orm';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types';
 import type ConfigStateless from '../../config.js';
 import {
-    toEnum, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom, Profile_Style, Profile_Coordinate, Profile_Radiation_Dose,
+    toEnum, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom, Profile_Style, Profile_Coordinate, Profile_Radiation_Dose, Profile_Wake_Lock,
 } from '../../../common/enums.js';
 import { ProfileResponse } from '../../../common/types.js';
 
@@ -19,6 +19,7 @@ export const ProfileConfigDefaults = {
     'display::text': Profile_Text.Medium,
     'display::icon_rotation': true,
     'display::radiation_dose': Profile_Radiation_Dose.SIEVERTS,
+    'display::wakelock': Profile_Wake_Lock.CHARGING,
 
     'geometry::point::type': 'u-d-p',
     'geometry::point::color': '#ff0000',

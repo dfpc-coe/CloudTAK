@@ -39373,6 +39373,7 @@ export interface paths {
                             display_elevation: "meter" | "feet";
                             display_speed: "m/s" | "km/h" | "mi/h";
                             display_radiation_dose: "sieverts" | "rems";
+                            display_wakelock: "Default" | "Charging" | "Always On";
                             geometry_point_type?: string;
                             geometry_point_color?: string;
                             geometry_point_icon?: string;
@@ -39489,6 +39490,7 @@ export interface paths {
                         display_elevation?: "meter" | "feet";
                         display_speed?: "m/s" | "km/h" | "mi/h";
                         display_radiation_dose?: "sieverts" | "rems";
+                        display_wakelock?: "Default" | "Charging" | "Always On";
                         geometry_point_type?: string;
                         geometry_point_color?: string;
                         geometry_point_icon?: string;
@@ -39543,6 +39545,7 @@ export interface paths {
                             display_elevation: "meter" | "feet";
                             display_speed: "m/s" | "km/h" | "mi/h";
                             display_radiation_dose: "sieverts" | "rems";
+                            display_wakelock: "Default" | "Charging" | "Always On";
                             geometry_point_type?: string;
                             geometry_point_color?: string;
                             geometry_point_icon?: string;
@@ -42495,6 +42498,7 @@ export interface paths {
                             display_elevation: "meter" | "feet";
                             display_speed: "m/s" | "km/h" | "mi/h";
                             display_radiation_dose: "sieverts" | "rems";
+                            display_wakelock: "Default" | "Charging" | "Always On";
                             geometry_point_type?: string;
                             geometry_point_color?: string;
                             geometry_point_icon?: string;
@@ -42639,6 +42643,7 @@ export interface paths {
                             display_elevation: "meter" | "feet";
                             display_speed: "m/s" | "km/h" | "mi/h";
                             display_radiation_dose: "sieverts" | "rems";
+                            display_wakelock: "Default" | "Charging" | "Always On";
                             geometry_point_type?: string;
                             geometry_point_color?: string;
                             geometry_point_icon?: string;

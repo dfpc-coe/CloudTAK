@@ -14,6 +14,13 @@
                     class='mx-2 text-truncate'
                     v-text='meta ? meta.full : config.type'
                 />
+
+                <span
+                    v-if='statusIsSet'
+                    :class='statusBadge'
+                    class='ms-auto me-1 text-truncate'
+                    v-text='status'
+                />
             </div>
         </template>
         <TablerSlidedown
@@ -40,6 +47,13 @@
                     <div
                         class='mx-2 text-truncate'
                         v-text='meta ? meta.full : config.type'
+                    />
+
+                    <span
+                        v-if='statusIsSet'
+                        :class='statusBadge'
+                        class='ms-auto me-1 text-truncate'
+                        v-text='status'
                     />
                 </div>
             </div>
@@ -105,7 +119,22 @@
                     </div>
 
                     <div
-                        class='overflow-y-auto'
+                        v-if='standard === "2525E"'
+                        class='row g-2 mt-1'
+                    >
+                        <div class='col-12'>
+                            <label class='subheader user-select-none'>Status</label>
+                            <TablerEnum
+                                :model-value='status'
+                                :default='statusOptions[0]'
+                                :options='statusOptions'
+                                @update:model-value='updateStatus($event)'
+                            />
+                        </div>
+                    </div>
+
+                    <div
+                        class='overflow-y-auto mt-2'
                         style='max-height: 18rem;'
                     >
                         <TablerLoading
@@ -356,6 +385,31 @@ const headerIcon = computed<string>(() => {
         : config.value.type;
 });
 
+// 2525E Status/Operational Condition - digit index 6 of the numeric SIDC
+// (see node-cot STATUS_MAP). Index 0 (Present) is the default/unset state.
+const statusOptions = ['Present', 'Planned', 'Fully Capable', 'Damaged', 'Destroyed', 'Full to Capacity'];
+
+const status = computed<string>(() => {
+    if (!Type2525.isNumericSIDCConvertable(config.value.type)) return statusOptions[0];
+    return statusOptions[Number(config.value.type[6])] || statusOptions[0];
+});
+
+// A "set" status is any non-default (non-Present) condition - only these are
+// surfaced in the collapsed header
+const statusIsSet = computed<boolean>(() => {
+    return Type2525.isNumericSIDCConvertable(config.value.type) && config.value.type[6] !== '0';
+});
+
+const statusBadge = computed<string>(() => {
+    switch (config.value.type[6]) {
+        case '2': return 'badge bg-green-lt text-green';
+        case '3': return 'badge bg-yellow-lt text-yellow';
+        case '4': return 'badge bg-red-lt text-red';
+        case '5': return 'badge bg-blue-lt text-blue';
+        default: return 'badge bg-secondary-lt text-secondary';
+    }
+});
+
 const list = ref<COTTypeList>({
     total: 0,
     items: []
@@ -469,6 +523,18 @@ function updateType2525E(item: COT2525EType) {
     // The numeric SIDC is emitted as the type - node-cot's from_geojson maps
     // it to a basic CoT type + milicon detail at the CoT boundary
     emit('update:modelValue', item.sidc);
+}
+
+function updateStatus(label: string) {
+    const idx = statusOptions.indexOf(label);
+    if (idx < 0) return;
+    if (!Type2525.isNumericSIDCConvertable(config.value.type)) return;
+
+    // Splice the single status digit (index 6) - name/entity are unaffected so
+    // there is no need to refetch meta or the list
+    config.value.type = config.value.type.substring(0, 6) + String(idx) + config.value.type.substring(7);
+
+    emit('update:modelValue', config.value.type);
 }
 
 async function updateAffiliation(affil: string) {

@@ -152,6 +152,32 @@
             fill='none'
         /><path d='M6 7m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0' /><path d='M6 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0' /><path d='M8.5 8.5l7.5 7.5' /><path d='M8.5 15.5l7.5 -7.5' /></symbol>
         <symbol
+            id='radial-copy'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='#fff'
+            stroke-width='2'
+            stroke-linecap='round'
+            stroke-linejoin='round'
+        ><path
+            stroke='none'
+            d='M0 0h24v24H0z'
+            fill='none'
+        /><path d='M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z' /><path d='M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1' /></symbol>
+        <symbol
+            id='radial-clipboard'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='#fff'
+            stroke-width='2'
+            stroke-linecap='round'
+            stroke-linejoin='round'
+        ><path
+            stroke='none'
+            d='M0 0h24v24H0z'
+            fill='none'
+        /><path d='M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2' /><path d='M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z' /></symbol>
+        <symbol
             id='radial-buffer'
             viewBox='0 0 24 24'
             fill='none'
@@ -187,6 +213,7 @@ import './RadialMenu.css';
 import { useMapStore } from '../../../stores/map.ts';
 import * as mapgl from 'maplibre-gl';
 import { canCutOverlayFeature } from '../util/featureCut.ts';
+import { clipboardReadAccess, readFeatureFromClipboard } from '../../../stores/device/clipboard.ts';
 
 interface RadialMenuItem {
     id: string;
@@ -351,6 +378,7 @@ async function genMenuItems(
                 geometryItems.push({ id: 'geometry-split', icon: '#radial-geometry-split' });
             }
             geometryItems.push({ id: 'geometry-buffer', icon: '#radial-buffer' });
+            geometryItems.push({ id: 'copy', icon: '#radial-copy' });
             menuItems.value.push({
                 id: 'geometry-change',
                 icon: '#radial-geometry-change',
@@ -366,6 +394,15 @@ async function genMenuItems(
         menuItems.value.push({ id: 'view', icon: '#radial-view' })
     } else if (mode === 'context') {
         menuItems.value.push({ id: 'new', icon: '#radial-pencil-plus' })
+
+        // Only inspect the clipboard when it can be read silently - with 'prompt'
+        // access the read itself fires browser UI (Firefox's paste popup) over the
+        // radial menu, so show the button and defer validation to the paste action
+        const access = await clipboardReadAccess();
+        if (access === 'granted' ? await readFeatureFromClipboard() : access === 'prompt') {
+            menuItems.value.push({ id: 'paste', icon: '#radial-clipboard' })
+        }
+
         menuItems.value.push({ id: 'info', icon: '#radial-question' })
     }
 }

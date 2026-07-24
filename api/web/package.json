@@ -37,6 +37,7 @@
         "@capacitor/camera": "^8.2.0",
         "@capacitor/clipboard": "^8.0.1",
         "@capacitor/core": "^8.3.1",
+        "@capacitor/device": "^8.0.3",
         "@capacitor/geolocation": "^8.1.0",
         "@capacitor/haptics": "^8.0.2",
         "@capacitor/keyboard": "^8.0.3",

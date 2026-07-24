@@ -89,6 +89,7 @@ import {
     IconZoomIn,
     IconRotate,
     IconCircleCheck,
+    IconBulb,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
@@ -99,9 +100,11 @@ import {
     TablerToggle,
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../../stores/map.ts';
+import { useDeviceStore } from '../../../stores/device.ts';
 import ProfileConfig from '../../../base/profile.ts';
 import { COORD_MODES, type CoordMode } from '../../../base/utils/coordinateFormat.ts';
 const mapStore = useMapStore();
+const deviceStore = useDeviceStore();
 
 type DisplayStyleMode = 'System Default' | 'Light' | 'Dark';
 type DisplayProfile = Profile & {
@@ -203,6 +206,13 @@ const settings: SettingItem[] = [
         icon: IconRotate,
         type: 'toggle',
     },
+    {
+        key: 'display_wakelock',
+        label: 'Keep Screen Awake',
+        icon: IconBulb,
+        type: 'enum',
+        options: ['Default', 'Charging', 'Always On'],
+    },
 ];
 
 const filteredSettings = computed(() => {
@@ -226,6 +236,7 @@ async function getProfile() {
         display_coordinate: (await ProfileConfig.get('display_coordinate'))?.value,
         display_zoom: (await ProfileConfig.get('display_zoom'))?.value,
         display_icon_rotation: (await ProfileConfig.get('display_icon_rotation'))?.value,
+        display_wakelock: (await ProfileConfig.get('display_wakelock'))?.value,
     } as DisplayProfile;
 }
 
@@ -271,6 +282,8 @@ watch(
         // Immediately update coordinate format and icon rotation to avoid requiring page reload
         mapStore.coordFormat = (newProfile.display_coordinate as CoordMode) || 'dd';
         mapStore.updateIconRotation(newProfile.display_icon_rotation as unknown as boolean);
+
+        await deviceStore.wakeLock.applyPreference(newProfile.display_wakelock);
 
         if (saveTimeout) clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {

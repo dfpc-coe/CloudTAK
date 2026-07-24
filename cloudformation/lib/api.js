@@ -12,6 +12,13 @@ export default {
             Type: 'Number',
             Default: 4096 * 2
         },
+        ApiDesiredCount: {
+            Description: 'The desired number of stateless API service tasks',
+            Type: 'Number',
+            MinValue: 0,
+            MaxValue: 10,
+            Default: 2
+        },
         ApiTargetCPUUtilization: {
             Description: 'Target average CPU utilization percentage for the stateless API service',
             Type: 'Number',
@@ -498,7 +505,7 @@ export default {
                 PropagateTags: 'SERVICE',
                 EnableExecuteCommand: cf.ref('EnableExecute'),
                 HealthCheckGracePeriodSeconds: 300,
-                DesiredCount: 2,
+                DesiredCount: cf.ref('ApiDesiredCount'),
                 NetworkConfiguration: {
                     AwsvpcConfiguration: {
                         AssignPublicIp: 'ENABLED',
@@ -520,7 +527,7 @@ export default {
             Type: 'AWS::ApplicationAutoScaling::ScalableTarget',
             DependsOn: ['Service'],
             Properties: {
-                MinCapacity: 2,
+                MinCapacity: cf.ref('ApiDesiredCount'),
                 MaxCapacity: 10,
                 ResourceId: cf.join([
                     'service/',
