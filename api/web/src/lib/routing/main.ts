@@ -31,6 +31,16 @@ const SOURCE = 'cloudtak-routing';
 const KV_ROUTE = 'routing::route';
 const KV_DIRECTION = 'routing::direction';
 
+// KV persistence is best-effort - a failed write must never break live
+// navigation - but surface failures instead of dropping the rejection
+function kvPut(key: string, value: string): void {
+    KV.update(key, value).catch((err) => console.warn(`Failed to persist ${key}`, err));
+}
+
+function kvDelete(key: string): void {
+    KV.delete(key).catch((err) => console.warn(`Failed to remove persisted ${key}`, err));
+}
+
 const LAYER_ROUTE = 'cloudtak-routing-route-line';
 const LAYER_ROUTE_ARROWS = 'cloudtak-routing-route-arrows';
 const LAYER_REMAINING = 'cloudtak-routing-remaining-line';
@@ -103,16 +113,16 @@ export class RoutingControl implements IControl {
             this.snappedPoint = null;
             this.state = null;
             this.teardownLayers();
-            void KV.delete(KV_ROUTE);
-            void KV.delete(KV_DIRECTION);
+            kvDelete(KV_ROUTE);
+            kvDelete(KV_DIRECTION);
             this.options.onUpdate?.(null);
             return;
         }
 
         this.route = turfLineString(route.geometry.coordinates, { role: 'route' });
         this.direction = 'forward';
-        void KV.update(KV_ROUTE, JSON.stringify(route.geometry.coordinates));
-        void KV.update(KV_DIRECTION, this.direction);
+        kvPut(KV_ROUTE, JSON.stringify(route.geometry.coordinates));
+        kvPut(KV_DIRECTION, this.direction);
         this.ensureLayers();
         this.recompute();
     }
@@ -134,14 +144,22 @@ export class RoutingControl implements IControl {
 
         try {
             const coordinates = JSON.parse(routeVal) as Position[];
-            if (!Array.isArray(coordinates) || coordinates.length < 2) {
-                throw new Error('Persisted route must have at least 2 coordinates');
+            const valid = Array.isArray(coordinates)
+                && coordinates.length >= 2
+                && coordinates.every((pos) =>
+                    Array.isArray(pos)
+                    && pos.length >= 2
+                    && pos.every((n) => Number.isFinite(n)));
+
+            if (!valid) {
+                throw new Error('Persisted route must be a list of at least 2 finite [lng, lat] positions');
             }
+
             this.route = turfLineString(coordinates, { role: 'route' });
         } catch (err) {
-            console.warn('Discarding unparseable persisted route', err);
-            void KV.delete(KV_ROUTE);
-            void KV.delete(KV_DIRECTION);
+            console.warn('Discarding invalid persisted route', err);
+            kvDelete(KV_ROUTE);
+            kvDelete(KV_DIRECTION);
             return false;
         }
 
@@ -159,7 +177,7 @@ export class RoutingControl implements IControl {
     setDirection(direction: NavigationDirection): void {
         if (this.direction === direction) return;
         this.direction = direction;
-        if (this.route) void KV.update(KV_DIRECTION, direction);
+        if (this.route) kvPut(KV_DIRECTION, direction);
         this.recompute();
     }
 

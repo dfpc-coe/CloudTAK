@@ -30,6 +30,7 @@ export class BatteryStatus {
     private pollTimer: ReturnType<typeof setInterval> | null = null;
     private webBattery: WebBatteryManager | null = null;
     private webListener: (() => void) | null = null;
+    private webManagerPromise: Promise<WebBatteryManager | null> | null = null;
 
     async isCharging(): Promise<boolean> {
         return (await this.info()).charging ?? false;
@@ -109,11 +110,17 @@ export class BatteryStatus {
         const nav = navigator as WebNavigator;
         if (typeof nav.getBattery !== 'function') return null;
 
-        try {
-            return await nav.getBattery();
-        } catch (err) {
-            console.warn('Failed to read web battery info', err);
-            return null;
+        // The BatteryManager instance is stable for the lifetime of the page
+        // and info() is called on every location fix, so memoize the lookup.
+        // A failed lookup resets the cache so the next call retries.
+        if (!this.webManagerPromise) {
+            this.webManagerPromise = nav.getBattery().catch((err): null => {
+                console.warn('Failed to read web battery info', err);
+                this.webManagerPromise = null;
+                return null;
+            });
         }
+
+        return await this.webManagerPromise;
     }
 }

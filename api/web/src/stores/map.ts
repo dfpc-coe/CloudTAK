@@ -343,8 +343,10 @@ export const useMapStore = defineStore('cloudtak', {
             this.navigation.callsign = feature.properties.callsign || 'Route';
             this.navigation.direction = control.getDirection();
 
-            void KV.update('routing::cotId', cotId);
-            void KV.update('routing::callsign', this.navigation.callsign);
+            KV.update('routing::cotId', cotId)
+                .catch((err) => console.warn('Failed to persist navigation cotId', err));
+            KV.update('routing::callsign', this.navigation.callsign)
+                .catch((err) => console.warn('Failed to persist navigation callsign', err));
 
             this.syncRoutingControl();
         },
@@ -373,8 +375,10 @@ export const useMapStore = defineStore('cloudtak', {
             this.navigation.direction = 'forward';
             this.navigation.state = null;
 
-            void KV.delete('routing::cotId');
-            void KV.delete('routing::callsign');
+            KV.delete('routing::cotId')
+                .catch((err) => console.warn('Failed to remove persisted navigation cotId', err));
+            KV.delete('routing::callsign')
+                .catch((err) => console.warn('Failed to remove persisted navigation callsign', err));
         },
         reverseNavigation: function() {
             const control = this.routingControl();
