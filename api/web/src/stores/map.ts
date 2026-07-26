@@ -317,7 +317,7 @@ export const useMapStore = defineStore('cloudtak', {
             const control = this.routingControl();
             if (!control) return;
 
-            const cot = await this.worker.db.get(cotId);
+            const cot = await this.worker.db.get(cotId, { mission: true });
             if (!cot) throw new Error('Unable to load Route for navigation');
 
             if (!cot.is_route) {
