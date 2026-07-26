@@ -78,7 +78,7 @@ services:
             RETENTION_SCHEDULE: ${RETENTION_SCHEDULE:-0 3 * * *}
 
     media:
-        image: ghcr.io/dfpc-coe/media-infra:v9.1.1
+        image: ghcr.io/dfpc-coe/media-infra:v9.8.0
         restart: 'always'
         environment:
             - API_URL=${API_URL}
