@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.54.4 - 2026-07-25
+
+- :arrow_up: Update MediaInfra@9.8
+
 ### v13.54.3 - 2026-07-25
 
 - :rocket: Migrate the feature sidebar from a custom div to MenuTemplate for consistent mobile UI
