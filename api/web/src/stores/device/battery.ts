@@ -4,6 +4,14 @@ import { isNativePlatform } from '../../base/capacitor.ts';
 // in iOS WebKit - model just the bits we consume.
 interface WebBatteryManager extends EventTarget {
     charging: boolean;
+    level: number;
+}
+
+export interface BatteryInfo {
+    /** Battery level as a percentage (0-100), or null when unknown. */
+    level: number | null;
+    /** Whether the device is charging, or null when unknown. */
+    charging: boolean | null;
 }
 
 type WebNavigator = Navigator & {
@@ -22,21 +30,38 @@ export class BatteryStatus {
     private pollTimer: ReturnType<typeof setInterval> | null = null;
     private webBattery: WebBatteryManager | null = null;
     private webListener: (() => void) | null = null;
+    private webManagerPromise: Promise<WebBatteryManager | null> | null = null;
 
     async isCharging(): Promise<boolean> {
+        return (await this.info()).charging ?? false;
+    }
+
+    async info(): Promise<BatteryInfo> {
         if (isNativePlatform()) {
             try {
                 const { Device } = await import('@capacitor/device');
                 const info = await Device.getBatteryInfo();
-                return info.isCharging ?? false;
+
+                // Native reports level as a 0-1 fraction; negative values
+                // (e.g. iOS simulator) mean the level is unknown.
+                const level = typeof info.batteryLevel === 'number' && info.batteryLevel >= 0
+                    ? Math.round(info.batteryLevel * 100)
+                    : null;
+
+                return { level, charging: info.isCharging ?? null };
             } catch (err) {
                 console.warn('Failed to read native battery info', err);
-                return false;
+                return { level: null, charging: null };
             }
         }
 
         const battery = await this.webBatteryManager();
-        return battery ? battery.charging : false;
+        if (!battery) return { level: null, charging: null };
+
+        return {
+            level: typeof battery.level === 'number' ? Math.round(battery.level * 100) : null,
+            charging: battery.charging
+        };
     }
 
     async watch(onChange: (charging: boolean) => void): Promise<void> {
@@ -85,11 +110,17 @@ export class BatteryStatus {
         const nav = navigator as WebNavigator;
         if (typeof nav.getBattery !== 'function') return null;
 
-        try {
-            return await nav.getBattery();
-        } catch (err) {
-            console.warn('Failed to read web battery info', err);
-            return null;
+        // The BatteryManager instance is stable for the lifetime of the page
+        // and info() is called on every location fix, so memoize the lookup.
+        // A failed lookup resets the cache so the next call retries.
+        if (!this.webManagerPromise) {
+            this.webManagerPromise = nav.getBattery().catch((err): null => {
+                console.warn('Failed to read web battery info', err);
+                this.webManagerPromise = null;
+                return null;
+            });
         }
+
+        return await this.webManagerPromise;
     }
 }

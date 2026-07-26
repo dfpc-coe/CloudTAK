@@ -239,7 +239,17 @@ export class GeolocateControl implements IControl {
         if (!this.map || !this.lastLngLat) return;
 
         if (this.dotMarker) this.dotMarker.setLngLat(this.lastLngLat).addTo(this.map);
-        if (this.accuracyMarker) this.accuracyMarker.setLngLat(this.lastLngLat).addTo(this.map);
+
+        // No (or zero) accuracy - e.g. a manually set location - means the
+        // position is exact, so hide the accuracy circle entirely rather
+        // than leaving it at its last rendered size.
+        if (this.accuracyMarker) {
+            if (this.accuracy > 0) {
+                this.accuracyMarker.setLngLat(this.lastLngLat).addTo(this.map);
+            } else {
+                this.accuracyMarker.remove();
+            }
+        }
 
         this.updateCircleRadius();
         this.updateHeadingRotation();

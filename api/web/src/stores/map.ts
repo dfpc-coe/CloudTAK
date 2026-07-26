@@ -21,6 +21,7 @@ import { useAppStore } from './app.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
+import KV from '../base/kv.ts';
 import GeolocateControl from '../lib/geolocate/main.ts';
 import RoutingControl from '../lib/routing/main.ts';
 import type { NavigationState, NavigationDirection } from '../lib/routing/main.ts';
@@ -247,7 +248,7 @@ export const useMapStore = defineStore('cloudtak', {
     actions: {
         startLocationWatch: async function() {
             const deviceStore = useDeviceStore();
-            await deviceStore.geolocation.startWatch((position: Position) => {
+            await deviceStore.geolocation.startWatch(async (position: Position) => {
                 if (this.manualLocationMode) return;
 
                 this.locationAccuracy = position.coords.accuracy;
@@ -260,6 +261,10 @@ export const useMapStore = defineStore('cloudtak', {
                     : null;
                 this.syncRoutingControl();
 
+                // Battery state rides along with each location broadcast so the
+                // self CoT can report it to the TAK Server
+                const battery = await deviceStore.battery.info();
+
                 try {
                     this.channel.postMessage({
                         type: WorkerMessageType.Profile_Location_Coordinates,
@@ -270,7 +275,9 @@ export const useMapStore = defineStore('cloudtak', {
                             speed: position.coords.speed,
                             heading: position.coords.heading,
                             timestamp: position.timestamp,
-                            coordinates: [ position.coords.longitude, position.coords.latitude ]
+                            coordinates: [ position.coords.longitude, position.coords.latitude ],
+                            battery: battery.level,
+                            charging: battery.charging
                         }
                     });
                 } catch (err) {
@@ -316,7 +323,7 @@ export const useMapStore = defineStore('cloudtak', {
             const control = this.routingControl();
             if (!control) return;
 
-            const cot = await this.worker.db.get(cotId);
+            const cot = await this.worker.db.get(cotId, { mission: true });
             if (!cot) throw new Error('Unable to load Route for navigation');
 
             if (!cot.is_route) {
@@ -336,6 +343,26 @@ export const useMapStore = defineStore('cloudtak', {
             this.navigation.callsign = feature.properties.callsign || 'Route';
             this.navigation.direction = control.getDirection();
 
+            KV.update('routing::cotId', cotId)
+                .catch((err) => console.warn('Failed to persist navigation cotId', err));
+            KV.update('routing::callsign', this.navigation.callsign)
+                .catch((err) => console.warn('Failed to persist navigation callsign', err));
+
+            this.syncRoutingControl();
+        },
+        // Rehydrate navigation persisted in the KV store (routing:: keys) so
+        // an active route survives a page refresh
+        restoreNavigation: async function() {
+            const control = this.routingControl();
+            if (!control || this.navigation.active) return;
+
+            if (!await control.restore()) return;
+
+            this.navigation.active = true;
+            this.navigation.cotId = (await KV.value('routing::cotId')) || null;
+            this.navigation.callsign = (await KV.value('routing::callsign')) || 'Route';
+            this.navigation.direction = control.getDirection();
+
             this.syncRoutingControl();
         },
         stopNavigation: function() {
@@ -347,6 +374,11 @@ export const useMapStore = defineStore('cloudtak', {
             this.navigation.callsign = null;
             this.navigation.direction = 'forward';
             this.navigation.state = null;
+
+            KV.delete('routing::cotId')
+                .catch((err) => console.warn('Failed to remove persisted navigation cotId', err));
+            KV.delete('routing::callsign')
+                .catch((err) => console.warn('Failed to remove persisted navigation callsign', err));
         },
         reverseNavigation: function() {
             const control = this.routingControl();
@@ -1075,6 +1107,7 @@ export const useMapStore = defineStore('cloudtak', {
                 };
             }
             this.syncGeolocateControl();
+            await this.restoreNavigation();
 
             await this.worker.profile.load();
 

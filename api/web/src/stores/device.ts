@@ -9,6 +9,7 @@ import { OrientationPermission } from './device/orientation.ts';
 import { StoragePermission } from './device/storage.ts';
 import { WakeLockPermission } from './device/wake-lock.ts';
 import { NetworkStatus } from './device/network.ts';
+import { BatteryStatus } from './device/battery.ts';
 import type { BrowserPermissionState, BrowserPermissionType, DevicePermissionContext, FileSystemAccessHandle } from './device/types.ts';
 export type { BrowserPermissionState, BrowserPermissionType } from './device/types.ts';
 export { CameraPermission } from './device/camera.ts';
@@ -20,6 +21,8 @@ export { OrientationPermission } from './device/orientation.ts';
 export { StoragePermission } from './device/storage.ts';
 export { WakeLockPermission } from './device/wake-lock.ts';
 export { NetworkStatus } from './device/network.ts';
+export { BatteryStatus } from './device/battery.ts';
+export type { BatteryInfo } from './device/battery.ts';
 
 export const useDeviceStore = defineStore('device', () => {
     const permissions = reactive<Record<BrowserPermissionType, BrowserPermissionState>>({
@@ -60,6 +63,7 @@ export const useDeviceStore = defineStore('device', () => {
     const wakeLock = markRaw(new WakeLockPermission(context));
     const fileSystem = markRaw(new FileSystemPermission(context));
     const network = markRaw(new NetworkStatus());
+    const battery = markRaw(new BatteryStatus());
 
     async function refreshPermissionStatuses(): Promise<void> {
         await Promise.all([
@@ -85,6 +89,7 @@ export const useDeviceStore = defineStore('device', () => {
     return {
         permissions,
         network,
+        battery,
         geolocation,
         notification,
         orientation,
