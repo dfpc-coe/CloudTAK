@@ -3,6 +3,7 @@ import type { Feature, LineString, Point, Position, FeatureCollection } from 'ge
 import { length } from '@turf/length';
 import { lineString as turfLineString, point as turfPoint } from '@turf/helpers';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
+import KV from '../../base/kv.ts';
 
 export type NavigationDirection = 'forward' | 'reverse';
 
@@ -26,6 +27,9 @@ export type RoutingControlOptions = {
 };
 
 const SOURCE = 'cloudtak-routing';
+
+const KV_ROUTE = 'routing::route';
+const KV_DIRECTION = 'routing::direction';
 
 const LAYER_ROUTE = 'cloudtak-routing-route-line';
 const LAYER_ROUTE_ARROWS = 'cloudtak-routing-route-arrows';
@@ -99,14 +103,52 @@ export class RoutingControl implements IControl {
             this.snappedPoint = null;
             this.state = null;
             this.teardownLayers();
+            void KV.delete(KV_ROUTE);
+            void KV.delete(KV_DIRECTION);
             this.options.onUpdate?.(null);
             return;
         }
 
         this.route = turfLineString(route.geometry.coordinates, { role: 'route' });
         this.direction = 'forward';
+        void KV.update(KV_ROUTE, JSON.stringify(route.geometry.coordinates));
+        void KV.update(KV_DIRECTION, this.direction);
         this.ensureLayers();
         this.recompute();
+    }
+
+    /**
+     * Rehydrate a previously persisted route from the KV store. Returns true
+     * if a route was restored - the caller is responsible for re-feeding
+     * location updates via setLocation().
+     */
+    async restore(): Promise<boolean> {
+        if (this.route) return true;
+
+        const [routeVal, directionVal] = await Promise.all([
+            KV.value(KV_ROUTE),
+            KV.value(KV_DIRECTION)
+        ]);
+
+        if (!routeVal) return false;
+
+        try {
+            const coordinates = JSON.parse(routeVal) as Position[];
+            if (!Array.isArray(coordinates) || coordinates.length < 2) {
+                throw new Error('Persisted route must have at least 2 coordinates');
+            }
+            this.route = turfLineString(coordinates, { role: 'route' });
+        } catch (err) {
+            console.warn('Discarding unparseable persisted route', err);
+            void KV.delete(KV_ROUTE);
+            void KV.delete(KV_DIRECTION);
+            return false;
+        }
+
+        this.direction = directionVal === 'reverse' ? 'reverse' : 'forward';
+        this.ensureLayers();
+        this.recompute();
+        return true;
     }
 
     setLocation(location: { lng: number; lat: number } | null): void {
@@ -117,6 +159,7 @@ export class RoutingControl implements IControl {
     setDirection(direction: NavigationDirection): void {
         if (this.direction === direction) return;
         this.direction = direction;
+        if (this.route) void KV.update(KV_DIRECTION, direction);
         this.recompute();
     }
 

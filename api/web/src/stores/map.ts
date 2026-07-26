@@ -21,6 +21,7 @@ import { useAppStore } from './app.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
+import KV from '../base/kv.ts';
 import GeolocateControl from '../lib/geolocate/main.ts';
 import RoutingControl from '../lib/routing/main.ts';
 import type { NavigationState, NavigationDirection } from '../lib/routing/main.ts';
@@ -336,6 +337,24 @@ export const useMapStore = defineStore('cloudtak', {
             this.navigation.callsign = feature.properties.callsign || 'Route';
             this.navigation.direction = control.getDirection();
 
+            void KV.update('routing::cotId', cotId);
+            void KV.update('routing::callsign', this.navigation.callsign);
+
+            this.syncRoutingControl();
+        },
+        // Rehydrate navigation persisted in the KV store (routing:: keys) so
+        // an active route survives a page refresh
+        restoreNavigation: async function() {
+            const control = this.routingControl();
+            if (!control || this.navigation.active) return;
+
+            if (!await control.restore()) return;
+
+            this.navigation.active = true;
+            this.navigation.cotId = (await KV.value('routing::cotId')) || null;
+            this.navigation.callsign = (await KV.value('routing::callsign')) || 'Route';
+            this.navigation.direction = control.getDirection();
+
             this.syncRoutingControl();
         },
         stopNavigation: function() {
@@ -347,6 +366,9 @@ export const useMapStore = defineStore('cloudtak', {
             this.navigation.callsign = null;
             this.navigation.direction = 'forward';
             this.navigation.state = null;
+
+            void KV.delete('routing::cotId');
+            void KV.delete('routing::callsign');
         },
         reverseNavigation: function() {
             const control = this.routingControl();
@@ -1075,6 +1097,7 @@ export const useMapStore = defineStore('cloudtak', {
                 };
             }
             this.syncGeolocateControl();
+            await this.restoreNavigation();
 
             await this.worker.profile.load();
 
