@@ -1,77 +1,55 @@
 <template>
-    <div
-        v-if='feature'
-        class='d-flex flex-column'
-        style='height: 100%;'
+    <MenuTemplate
+        :name='featureTitle'
+        :none='!feature'
     >
-        <div
-            class='col-12 border-light border-bottom flex-shrink-0'
-            style='
-                height: 90px;
-                border-radius: 0px;
-            '
-        >
-            <div class='col-12 card-header px-1 py-2'>
-                <div
-                    class='card-title mx-2 text-truncate'
-                    style='width: 280px'
-                    v-text='featureTitle'
+        <template #buttons>
+            <TablerIconButton
+                v-if='feature'
+                title='Zoom To'
+                @click='zoomTo'
+            >
+                <IconZoomPan
+                    :size='32'
+                    stroke='1'
                 />
-            </div>
-            <div class='col-12 btn-list my-2 d-flex align-items-center mx-2'>
-                <TablerIconButton
-                    title='Zoom To'
-                    @click='zoomTo'
-                >
-                    <IconZoomPan
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+            </TablerIconButton>
 
-                <TablerIconButton
-                    v-if='overlay && ["basemap", "overlay"].includes(overlay.mode) && overlay.actions.feature.includes("fetch")'
-                    title='Cut to Marker'
-                    @click='cutFeature'
-                >
-                    <IconScissors
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-                <div
-                    class='ms-auto'
-                    style='margin-right: 14px;'
-                >
-                    <TablerIconButton
-                        v-if='mode === "default"'
-                        title='Raw View'
-                        @click='mode = "raw"'
-                    >
-                        <IconCode
-                            :size='32'
-                            stroke='1'
-                        />
-                    </TablerIconButton>
+            <TablerIconButton
+                v-if='overlay && ["basemap", "overlay"].includes(overlay.mode) && overlay.actions.feature.includes("fetch")'
+                title='Cut to Marker'
+                @click='cutFeature'
+            >
+                <IconScissors
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
 
-                    <TablerIconButton
-                        v-if='mode === "raw"'
-                        title='Default View'
-                        @click='mode = "default"'
-                    >
-                        <IconX
-                            :size='32'
-                            stroke='1'
-                        />
-                    </TablerIconButton>
-                </div>
-            </div>
-        </div>
+            <TablerIconButton
+                v-if='mode === "default"'
+                title='Raw View'
+                @click='mode = "raw"'
+            >
+                <IconCode
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
 
-        <div
-            class='col-12 overflow-auto flex-fill'
-            style='min-height: 0'
-        >
+            <TablerIconButton
+                v-else
+                title='Default View'
+                @click='mode = "default"'
+            >
+                <IconX
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+        </template>
+
+        <template v-if='feature'>
             <template v-if='mode === "default"'>
                 <div class='col-12 px-2 py-2'>
                     <Coordinate v-model='center' />
@@ -137,8 +115,8 @@
             <template v-else-if='mode === "raw"'>
                 <pre v-text='feature' />
             </template>
-        </div>
-    </div>
+        </template>
+    </MenuTemplate>
 </template>
 
 <script setup lang='ts'>
@@ -149,6 +127,7 @@ import type { Feature } from 'geojson';
 import pointOnFeature from '@turf/point-on-feature';
 import Handlebars from 'handlebars';
 import { server } from '../../../std.ts';
+import MenuTemplate from '../util/MenuTemplate.vue';
 import Coordinate from '../util/Coordinate.vue';
 import CopyField from '../util/CopyField.vue';
 import { cutOverlayFeature, getFeatureOverlay } from '../util/featureCut.ts';
