@@ -5,6 +5,7 @@
     >
         <template #buttons>
             <TablerIconButton
+                v-if='feature'
                 title='Zoom To'
                 @click='zoomTo'
             >
