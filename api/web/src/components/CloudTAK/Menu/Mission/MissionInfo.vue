@@ -416,8 +416,13 @@ const loading = ref({
 async function fetchSubscriptions() {
     if (isOffline.value) return;
     loading.value.users = true;
-    subscriptions.value = await props.subscription.subscriptions();
-    loading.value.users = false;
+    try {
+        subscriptions.value = await props.subscription.subscriptions();
+    } catch (err) {
+        console.error(err);
+    } finally {
+        loading.value.users = false;
+    }
 }
 
 async function updateDescription(description: string) {

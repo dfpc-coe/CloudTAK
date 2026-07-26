@@ -278,11 +278,16 @@ async function removeInvite(invite: MissionInvite) {
 async function fetchSubscriptions() {
     if (isOffline.value) return;
     loading.value = true;
-    subscriptions.value = await props.subscription.subscriptions();
-    if (canInvite.value) {
-        invites.value = await props.subscription.invites();
+    try {
+        subscriptions.value = await props.subscription.subscriptions();
+        if (canInvite.value) {
+            invites.value = await props.subscription.invites();
+        }
+    } catch (err) {
+        console.error(err);
+    } finally {
+        loading.value = false;
     }
-    loading.value = false;
 }
 
 function toContact(sub: MissionSubscriptions[number]): ContactType {

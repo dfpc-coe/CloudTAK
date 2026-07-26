@@ -53,6 +53,12 @@
                     />
                 </div>
 
+                <TablerAlert
+                    v-if='error'
+                    class='mx-2'
+                    :err='error'
+                />
+
                 <div class='px-2 py-2'>
                     <PathBreadcrumb
                         :segments='crumbNames'
@@ -88,7 +94,6 @@
                     >
                         <FeatureRow
                             v-for='feat of currentItems'
-                            :id='feat.id'
                             :key='feat.id'
                             :delete-button='false'
                             :grip-handle='writable'
@@ -103,7 +108,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch, nextTick, useTemplateRef, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, useTemplateRef, onBeforeUnmount } from 'vue';
 import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
@@ -113,6 +118,7 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerNone,
+    TablerAlert,
     TablerLoading,
     TablerIconButton,
     TablerRefreshButton,
@@ -138,6 +144,7 @@ const props = defineProps<{
 
 const createLayer = ref(false);
 const editLayer = ref<MissionLayer | undefined>();
+const error = ref<Error | undefined>();
 const refreshing = ref(false);
 const currentUid = ref<string | null>(null);
 const pathStack = ref<Array<{ uid: string, name: string }>>([]);
@@ -298,12 +305,14 @@ const crumbNames = computed<string[]>(() => {
 });
 
 function navigateToFolder(node: PathNode<Feature>): void {
+    error.value = undefined;
     pathStack.value.push({ uid: node.id, name: node.name });
     currentUid.value = node.id;
 }
 
 /** Navigate to a breadcrumb depth - 0 is the mission root */
 function navigateToDepth(depth: number): void {
+    error.value = undefined;
     pathStack.value = pathStack.value.slice(0, depth);
     currentUid.value = depth === 0 ? null : pathStack.value[depth - 1].uid;
 }
@@ -324,39 +333,46 @@ async function onFolderDrop(node: PathNode<Feature>): Promise<void> {
     if (!draggedId.value || !writable.value) return;
     const id = draggedId.value;
 
-    assertHoldsFeatures(node.id);
+    try {
+        assertHoldsFeatures(node.id);
 
-    await props.subscription.layer.attachFeatures(node.id, [id]);
+        await props.subscription.layer.attachFeatures(node.id, [id]);
+
+        error.value = undefined;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
 }
 
 async function onBreadcrumbDrop(depth: number): Promise<void> {
     if (!draggedId.value || !writable.value) return;
     const id = draggedId.value;
 
-    if (depth === 0) {
-        // Already at the mission root - nothing to move
-        if (!currentUid.value) return;
+    try {
+        if (depth === 0) {
+            // Already at the mission root - nothing to move
+            if (!currentUid.value) return;
 
-        await props.subscription.layer.detachFeature(currentUid.value, id);
-    } else {
-        const crumb = pathStack.value[depth - 1];
+            await props.subscription.layer.detachFeature(currentUid.value, id);
+        } else {
+            const crumb = pathStack.value[depth - 1];
 
-        // Dropped on the folder currently being viewed - nothing to move
-        if (crumb.uid === currentUid.value) return;
+            // Dropped on the folder currently being viewed - nothing to move
+            if (crumb.uid === currentUid.value) return;
 
-        assertHoldsFeatures(crumb.uid);
+            assertHoldsFeatures(crumb.uid);
 
-        await props.subscription.layer.attachFeatures(crumb.uid, [id]);
+            await props.subscription.layer.attachFeatures(crumb.uid, [id]);
+        }
+
+        error.value = undefined;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
 
-function initSortable(): void {
-    if (!sortableItemsRef.value) return;
-
-    const existing = Sortable.get(sortableItemsRef.value);
-    if (existing) existing.destroy();
-
-    new Sortable(sortableItemsRef.value, {
+function initSortable(element: HTMLElement): void {
+    new Sortable(element, {
         sort: false,
         group: {
             name: 'mission-features',
@@ -364,11 +380,8 @@ function initSortable(): void {
             put: false
         },
         handle: '.drag-handle',
-        dataIdAttr: 'id',
         onStart: (evt) => {
-            // FeatureRow's root is a conditional (v-if) element, so the bound
-            // feature id does not fall through to it - it lives on the inner
-            // .drag-handle. Read the id from the handle to identify the feature.
+            // FeatureRow renders the feature id on its .drag-handle element
             const handle = evt.item.querySelector<HTMLElement>('.drag-handle');
             draggedId.value = handle?.id || undefined;
         },
@@ -378,17 +391,15 @@ function initSortable(): void {
     });
 }
 
-watch([loading, currentItems], () => {
-    nextTick(() => {
-        initSortable();
-    });
-}, { immediate: true });
+// Sortable tracks the container's children dynamically, so it only needs to be
+// created when the container element itself enters the DOM
+watch(sortableItemsRef, (element, previous) => {
+    if (previous) Sortable.get(previous)?.destroy();
+    if (element) initSortable(element);
+}, { flush: 'post' });
 
 onBeforeUnmount(() => {
-    if (!sortableItemsRef.value) return;
-
-    const existing = Sortable.get(sortableItemsRef.value);
-    if (existing) existing.destroy();
+    if (sortableItemsRef.value) Sortable.get(sortableItemsRef.value)?.destroy();
 });
 
 function openEdit(node: PathNode<Feature>): void {
@@ -402,6 +413,7 @@ async function deleteLayer(node: PathNode<Feature>): Promise<void> {
 async function refresh() {
     createLayer.value = false;
     editLayer.value = undefined;
+    error.value = undefined;
     refreshing.value = true;
     try {
         await Promise.all([
