@@ -16,7 +16,7 @@
 
 ### Pending Release
 
-### v13.54.4 - 2026-07-25
+### v13.55.0 - 2026-07-25
 
 - :arrow_up: Update MediaInfra@9.8
 
