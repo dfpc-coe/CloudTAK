@@ -16,6 +16,13 @@
 
 ### Pending Release
 
+### v13.56.0 - 2026-07-25
+
+- :tada: Introduce Mission/Data-Sync layer editing
+- :rocket: Add Routing persistence so reloads don't stop routing
+- :bug: Allow Routing on Mission/Data Sync routes
+- :rocket: Include Battery Info in Self-SA Message
+
 ### v13.55.0 - 2026-07-25
 
 - :arrow_up: Update MediaInfra@9.8
