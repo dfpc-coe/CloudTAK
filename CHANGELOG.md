@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.54.3 - 2026-07-25
+
+- :rocket: Migrate the feature sidebar from a custom div to MenuTemplate for consistent mobile UI
+
 ### v13.54.2 - 2026-07-24
 
 - :bug: Fix lints and checks
