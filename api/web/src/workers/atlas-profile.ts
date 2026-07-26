@@ -11,6 +11,9 @@ export type ProfileLocationState = {
     accuracy: number | undefined
     altitude: number | null | undefined
     coordinates: number[]
+    /** Battery level as a percentage (0-100) - null/undefined when unknown */
+    battery?: number | null
+    charging?: boolean | null
 }
 
 export default class AtlasProfile {
@@ -276,6 +279,10 @@ export default class AtlasProfile {
             this.location.source = LocationState.Preset;
             this.location.accuracy = undefined;
             this.location.altitude = undefined;
+            // Manual locations receive no live GPS broadcasts, so any battery
+            // state from a previous Live fix would go permanently stale
+            this.location.battery = undefined;
+            this.location.charging = undefined;
             this.location.coordinates = (this.profile_loc.value as { coordinates: number[] }).coordinates;
 
             this.atlas.postMessage({
@@ -370,6 +377,8 @@ export default class AtlasProfile {
             this.location.coordinates = coords;
             this.location.accuracy = undefined;
             this.location.altitude = undefined;
+            this.location.battery = undefined;
+            this.location.charging = undefined;
             if (this.profile_loc) this.profile_loc.value = body.tak_loc;
 
             this.atlas.postMessage({
@@ -505,7 +514,11 @@ export default class AtlasProfile {
                     version: this.server.version
                 },
                 hae,
-                ...(accuracy !== undefined && { ce: accuracy })
+                ...(accuracy !== undefined && { ce: accuracy }),
+                // TAK status battery is a stringified percentage
+                ...(typeof this.location.battery === 'number' && {
+                    status: { battery: String(this.location.battery) }
+                })
             } as Feature['properties'],
             geometry: { type: 'Point', coordinates: [...coordinates, hae] }
         }

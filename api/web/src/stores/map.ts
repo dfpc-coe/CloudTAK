@@ -248,7 +248,7 @@ export const useMapStore = defineStore('cloudtak', {
     actions: {
         startLocationWatch: async function() {
             const deviceStore = useDeviceStore();
-            await deviceStore.geolocation.startWatch((position: Position) => {
+            await deviceStore.geolocation.startWatch(async (position: Position) => {
                 if (this.manualLocationMode) return;
 
                 this.locationAccuracy = position.coords.accuracy;
@@ -261,6 +261,10 @@ export const useMapStore = defineStore('cloudtak', {
                     : null;
                 this.syncRoutingControl();
 
+                // Battery state rides along with each location broadcast so the
+                // self CoT can report it to the TAK Server
+                const battery = await deviceStore.battery.info();
+
                 try {
                     this.channel.postMessage({
                         type: WorkerMessageType.Profile_Location_Coordinates,
@@ -271,7 +275,9 @@ export const useMapStore = defineStore('cloudtak', {
                             speed: position.coords.speed,
                             heading: position.coords.heading,
                             timestamp: position.timestamp,
-                            coordinates: [ position.coords.longitude, position.coords.latitude ]
+                            coordinates: [ position.coords.longitude, position.coords.latitude ],
+                            battery: battery.level,
+                            charging: battery.charging
                         }
                     });
                 } catch (err) {
