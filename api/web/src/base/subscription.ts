@@ -548,12 +548,14 @@ export default class Subscription {
     async subscriptions(): Promise<MissionSubscriptions> {
         if (!navigator.onLine) return [];
 
-        const { data } = await server.GET('/api/marti/missions/{:name}/subscriptions/roles', {
+        const { data, error } = await server.GET('/api/marti/missions/{:name}/subscriptions/roles', {
             params: {
                 path: { ':name': this.guid }
             },
             headers: Subscription.headers(this.missiontoken)
         });
+
+        if (error || !data) throw new Error('Failed to fetch mission subscriptions');
 
         return (data as unknown as { data: MissionSubscriptions }).data;
     }
