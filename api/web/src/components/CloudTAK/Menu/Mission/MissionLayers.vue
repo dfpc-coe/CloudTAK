@@ -196,6 +196,7 @@ const tree = computed<{ nodes: PathNode<Feature>[], layerMap: Map<string, Missio
 
         for (const layer of mlayers) {
             if (layer.type !== 'GROUP' && layer.type !== 'UID') continue;
+            if (layer.name === undefined) continue;
 
             layerMap.set(layer.uid, layer);
 
