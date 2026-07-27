@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.56.1 - 2026-07-27
+
+- :bug: Fix Mission Contents schema for API
+
 ### v13.56.0 - 2026-07-25
 
 - :tada: Introduce Mission/Data-Sync layer editing
