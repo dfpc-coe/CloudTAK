@@ -730,10 +730,14 @@ export default class AtlasDatabase {
             const pendingGuid = this.subscriptionPending.get(feat.id);
             this.subscriptionPending.delete(feat.id);
 
+            // The feature's own mission must win over the Active Mission -
+            // otherwise updates to features in other subscribed missions get
+            // refiled (and, if authored, re-published) into the Active Mission
             const mission_guid =
-                this.mission // An Active Mission
-                || pendingGuid
-                || feat.origin?.mode_id; // The feature has a Mission Origin
+                pendingGuid // A Mission Change event told us which mission this belongs to
+                || feat.origin?.mode_id // The feature carries an explicit Mission Origin
+                || (exists && exists.origin.mode === OriginMode.MISSION ? exists.origin.mode_id : undefined) // Already filed in a Mission store
+                || this.mission; // An authored feature destined for the Active Mission
 
             if (!mission_guid) {
                 throw new Error(`Cannot add ${feat.id} to a mission as no mission GUID was found - Please report this error`);
