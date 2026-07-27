@@ -179,6 +179,13 @@
                                     />
                                     <span>Deactivate</span>
                                 </button>
+
+                                <TablerInlineAlert
+                                    v-if='!canEditMission'
+                                    severity='info'
+                                    title='Read-Only Access'
+                                    description='You only have READ access to this mission so it cannot be made active.'
+                                />
                             </template>
                         </template>
 
@@ -268,6 +275,7 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerBorder,
+    TablerInlineAlert,
     TablerLoading,
     TablerModal,
     TablerNone,
