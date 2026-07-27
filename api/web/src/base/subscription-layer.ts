@@ -89,7 +89,7 @@ export default class SubscriptionLayer {
         const list = data as unknown as MissionLayerList;
 
         list.data.sort((a, b) => {
-            return a.name.localeCompare(b.name);
+            return (a.name ?? '').localeCompare(b.name ?? '');
         });
 
         await db.transaction('rw', db.subscription_layer, async () => {
@@ -130,7 +130,7 @@ export default class SubscriptionLayer {
 
         return layers
             .map((l) => l.layer)
-            .sort((a, b) => a.name.localeCompare(b.name));
+            .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
     }
 
     /**
