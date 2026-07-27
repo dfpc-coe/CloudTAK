@@ -184,7 +184,7 @@
                                     v-if='!canEditMission'
                                     severity='info'
                                     title='Read-Only Access'
-                                    description='You only have READ access to this mission so it cannot be made active.'
+description='You have read-only access to this mission, so you cannot activate or deactivate it.'
                                 />
                             </template>
                         </template>
