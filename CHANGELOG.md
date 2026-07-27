@@ -16,6 +16,12 @@
 
 ### Pending Release
 
+### v13.56.2 - 2026-07-27
+
+- :bug: Fix Mission Token handling in `Subscription.update` - tokens were written to the user JWT field instead of `missiontoken`, never persisted, and never propagated to the Log/Change/Contents/Feature/Layer sub-stores, causing persistent 401s on password-protected Data Syncs
+- :bug: Fix Active Mission hijacking feature filing - updates to features belonging to other subscribed missions were refiled (and re-published to the TAK Server if authored) into the Active Mission; the feature's own mission now takes precedence
+- :bug: Fix Mission file uploads sending the CloudTAK JWT as the `MissionAuthorization` header instead of the Mission Token, breaking uploads to protected missions
+
 ### v13.56.1 - 2026-07-27
 
 - :bug: Fix Mission Contents schema for API
