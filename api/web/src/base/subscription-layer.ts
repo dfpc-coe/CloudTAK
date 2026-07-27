@@ -50,19 +50,16 @@ async function updateLocalLayers(
 export default class SubscriptionLayer {
     parent: Subscription;
 
-    token: string;
     missiontoken?: string;
 
     constructor(
         parent: Subscription,
         opts: {
-            token: string,
             missiontoken?: string,
         }
     ) {
         this.parent = parent;
 
-        this.token = opts.token;
         this.missiontoken = opts.missiontoken;
     }
 

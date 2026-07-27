@@ -204,7 +204,6 @@
 
 <script setup lang="ts">
 import { ref, shallowRef, onMounted, onUnmounted, nextTick, useTemplateRef, watch } from 'vue';
-import { Preferences } from '@capacitor/preferences';
 import { OriginMode } from '../../../base/cot.ts';
 import Subscription from '../../../base/subscription.ts';
 // @ts-expect-error no declaration file for RadialMenu.js
@@ -357,8 +356,7 @@ async function genMenuItems(
                     menuItems.value.push({ id: 'lock', icon: '#radial-lock' })
                 }
             } else if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
-                const { value: token } = await Preferences.get({ key: 'token' });
-                const sub = await Subscription.from(cot.value.origin.mode_id, token || '');
+                const sub = await Subscription.from(cot.value.origin.mode_id);
 
                 if (sub && sub.role && sub.role.permissions.includes("MISSION_WRITE")) {
                     // User pucks/skittles cannot be edited

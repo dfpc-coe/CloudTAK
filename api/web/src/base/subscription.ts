@@ -48,7 +48,6 @@ export default class Subscription {
     layer: SubscriptionLayer;
     chat: SubscriptionChat;
 
-    token: string;
     missiontoken?: string;
 
     dirty: boolean;
@@ -63,7 +62,6 @@ export default class Subscription {
         role: MissionRole,
         opts: {
             subscribed: boolean,
-            token: string,
             missiontoken?: string,
         }
     ) {
@@ -76,28 +74,23 @@ export default class Subscription {
         };
 
         this.log = new SubscriptionLog(mission.guid, {
-            missiontoken: opts.missiontoken,
-            token: opts.token
+            missiontoken: opts.missiontoken
         });
 
         this.change = new SubscriptionChanges(mission.guid, {
-            missiontoken: opts.missiontoken,
-            token: opts.token
+            missiontoken: opts.missiontoken
         });
 
         this.contents = new SubscriptionContents(mission.guid, {
-            missiontoken: opts.missiontoken,
-            token: opts.token
+            missiontoken: opts.missiontoken
         });
 
         this.feature = new SubscriptionFeature(this, {
-            missiontoken: opts.missiontoken,
-            token: opts.token
+            missiontoken: opts.missiontoken
         });
 
         this.layer = new SubscriptionLayer(this, {
-            missiontoken: opts.missiontoken,
-            token: opts.token
+            missiontoken: opts.missiontoken
         });
 
         this.chat = new SubscriptionChat(mission.guid, mission.name);
@@ -119,8 +112,6 @@ export default class Subscription {
             }
         }
 
-        this.token = opts.token;
-
         if (opts?.missiontoken) this.missiontoken = opts.missiontoken;
 
         this.dirty = false;
@@ -131,7 +122,6 @@ export default class Subscription {
      */
     static async from(
         guid: string,
-        token: string,
         opts?: {
             subscribed?: boolean
         }
@@ -147,7 +137,6 @@ export default class Subscription {
             exists.meta,
             exists.role,
             {
-                token: token,
                 missiontoken: exists.token,
                 subscribed: opts?.subscribed !== undefined ? opts.subscribed : exists.subscribed,
             }
@@ -161,20 +150,20 @@ export default class Subscription {
     static async load(
         guid: string,
         opts: {
-            token: string
             reload?: boolean,
             missiontoken?: string,
             subscribed?: boolean
-        }
+        } = {}
     ): Promise<Subscription> {
-        const exists = await this.from(guid, opts.token);
+        const exists = await this.from(guid);
 
         if (exists) {
             if (opts.subscribed !== undefined || opts.missiontoken !== undefined) {
-                await exists.update({
-                    subscribed: opts.subscribed ?? exists.subscribed,
-                    token: opts.missiontoken ?? exists.token
-                });
+                const update: { subscribed?: boolean, token?: string } = {};
+                if (opts.subscribed !== undefined) update.subscribed = opts.subscribed;
+                if (opts.missiontoken !== undefined) update.token = opts.missiontoken;
+
+                await exists.update(update);
             }
 
             if (opts.reload !== false) {
@@ -266,7 +255,7 @@ export default class Subscription {
         }
 
         if (body.token !== undefined) {
-            this.token = body.token;
+            this.setMissionToken(body.token);
         }
 
         if (body.description !== undefined) {
@@ -276,7 +265,7 @@ export default class Subscription {
         await db.subscription.update(this.guid, {
             dirty: this.dirty,
             subscribed: this.subscribed,
-            token: this.missiontoken
+            token: this.missiontoken || ''
         });
 
         if (body.description !== undefined || body.keywords !== undefined || body.groups !== undefined) {
@@ -339,6 +328,20 @@ export default class Subscription {
     }
 
     /**
+     * Update the Mission Token, propagating it to the sub-stores which
+     * each hold their own copy for generating MissionAuthorization headers
+     */
+    setMissionToken(token?: string): void {
+        this.missiontoken = token || undefined;
+
+        this.log.missiontoken = this.missiontoken;
+        this.change.missiontoken = this.missiontoken;
+        this.contents.missiontoken = this.missiontoken;
+        this.feature.missiontoken = this.missiontoken;
+        this.layer.missiontoken = this.missiontoken;
+    }
+
+    /**
      * Reload the Mission from the local Database
      */
     async reload(): Promise<void> {
@@ -348,7 +351,7 @@ export default class Subscription {
         if (exists) {
             Object.assign(this.meta, exists.meta);
             this.role = exists.role;
-            this.missiontoken = exists.token;
+            this.setMissionToken(exists.token);
             this.subscribed = exists.subscribed;
         }
     };

@@ -308,7 +308,7 @@ export default class AtlasDatabase {
             for (const sub of await Subscription.localList({
                 subscribed: true
             })) {
-                const store = await Subscription.from(sub.guid, this.atlas.token, {
+                const store = await Subscription.from(sub.guid, {
                     subscribed: true
                 });
 
@@ -541,7 +541,7 @@ export default class AtlasDatabase {
                 });
             }
         } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
-            const subscription = await Subscription.from(cot.origin.mode_id, this.atlas.token, {
+            const subscription = await Subscription.from(cot.origin.mode_id, {
                 subscribed: true
             });
 
@@ -611,7 +611,7 @@ export default class AtlasDatabase {
                 if (change.type === 'ADD_CONTENT') {
                     if (change.contentUid) this.subscriptionPending.set(change.contentUid, task.properties.mission.guid);
                 } else if (change.type === 'REMOVE_CONTENT') {
-                    const sub = await Subscription.from(task.properties.mission.guid, this.atlas.token, {
+                    const sub = await Subscription.from(task.properties.mission.guid, {
                         subscribed: true
                     });
                     if (!sub) {
@@ -631,7 +631,7 @@ export default class AtlasDatabase {
             }
 
             if (doMissionRefresh && task.properties.mission.guid) {
-                const sub = await Subscription.from(task.properties.mission.guid, this.atlas.token, {
+                const sub = await Subscription.from(task.properties.mission.guid, {
                     subscribed: true
                 });
 
@@ -649,7 +649,7 @@ export default class AtlasDatabase {
                 });
             }
         } else if (task.properties.type === 't-x-m-c-l' && task.properties.mission && task.properties.mission.guid) {
-            const sub = await Subscription.from(task.properties.mission.guid, this.atlas.token, {
+            const sub = await Subscription.from(task.properties.mission.guid, {
                 subscribed: true
             });
 
@@ -660,7 +660,7 @@ export default class AtlasDatabase {
 
             await sub.log.refresh();
         } else if (task.properties.type === 't-x-m-c-m' && task.properties.mission && task.properties.mission.guid) {
-            const sub = await Subscription.from(task.properties.mission.guid, this.atlas.token, {
+            const sub = await Subscription.from(task.properties.mission.guid, {
                 subscribed: true
             });
 
@@ -730,16 +730,20 @@ export default class AtlasDatabase {
             const pendingGuid = this.subscriptionPending.get(feat.id);
             this.subscriptionPending.delete(feat.id);
 
+            // The feature's own mission must win over the Active Mission -
+            // otherwise updates to features in other subscribed missions get
+            // refiled (and, if authored, re-published) into the Active Mission
             const mission_guid =
-                this.mission // An Active Mission
-                || pendingGuid
-                || feat.origin?.mode_id; // The feature has a Mission Origin
+                pendingGuid // A Mission Change event told us which mission this belongs to
+                || feat.origin?.mode_id // The feature carries an explicit Mission Origin
+                || (exists && exists.origin.mode === OriginMode.MISSION ? exists.origin.mode_id : undefined) // Already filed in a Mission store
+                || this.mission; // An authored feature destined for the Active Mission
 
             if (!mission_guid) {
                 throw new Error(`Cannot add ${feat.id} to a mission as no mission GUID was found - Please report this error`);
             }
 
-            const sub = await Subscription.from(mission_guid, this.atlas.token, {
+            const sub = await Subscription.from(mission_guid, {
                 subscribed: true
             });
 

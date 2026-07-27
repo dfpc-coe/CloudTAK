@@ -721,9 +721,7 @@ export const useMapStore = defineStore('cloudtak', {
                 return null
             }
 
-            const { value: token } = await Preferences.get({ key: 'token' });
-
-            let sub = (await Subscription.from(guid, token || '', { subscribed: true })) || null;
+            let sub = (await Subscription.from(guid, { subscribed: true })) || null;
 
             if (sub) {
                 // Get map data on the map ASAP, even if it is stale
@@ -740,7 +738,6 @@ export const useMapStore = defineStore('cloudtak', {
             } else {
                 try {
                     sub = await Subscription.load(guid, {
-                        token: token || '',
                         reload: opts?.reload || false,
                         subscribed: true,
                         missiontoken: overlay.token || undefined

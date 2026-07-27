@@ -287,13 +287,9 @@ async function deleteFile(hash: string) {
 }
 
 const uploadHeaders = computed(() => {
-    const headers: Record<string, string> = {}
-
-    if (props.subscription.token) {
-        headers.MissionAuthorization = props.subscription.token;
-    };
-
-    return headers;
+    // The mission token, NOT the CloudTAK JWT - the server forwards this
+    // header verbatim to TAK Server as the Mission Token when present
+    return props.subscription.headers();
 });
 
 async function doneUpload() {

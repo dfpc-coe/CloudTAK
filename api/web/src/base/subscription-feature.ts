@@ -15,19 +15,16 @@ import { WorkerMessageType } from './events.ts';
 export default class SubscriptionFeature {
     parent: Subscription;
 
-    token: string;
     missiontoken?: string;
 
     constructor(
         parent: Subscription,
         opts: {
-            token: string,
             missiontoken?: string,
         }
     ) {
         this.parent = parent;
 
-        this.token = opts.token;
         this.missiontoken = opts.missiontoken;
     }
 

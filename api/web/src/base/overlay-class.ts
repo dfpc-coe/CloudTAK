@@ -592,8 +592,7 @@ export default class Overlay {
                 await mapStore.makeActiveMission(undefined);
             }
 
-            const { value: token } = await Preferences.get({ key: 'token' });
-            const sub = await Subscription.from(this.mode_id, token || '', {
+            const sub = await Subscription.from(this.mode_id, {
                 subscribed: true
             });
 
