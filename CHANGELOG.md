@@ -16,6 +16,12 @@
 
 ### Pending Release
 
+### v13.57.0 - 2026-07-28
+
+- :tada: Introduce Admin support for Core Events
+- :rocket: Remove unused `core_incident` table
+- :rocket: Fix bug where large number of feature insertions would cause postgres to reject insert by inserting in batches
+
 ### v13.56.2 - 2026-07-27
 
 - :bug: Fix Mission Token handling in `Subscription.update` - tokens were written to the user JWT field instead of `missiontoken`, never persisted, and never propagated to the Log/Change/Contents/Feature/Layer sub-stores, causing persistent 401s on password-protected Data Syncs
