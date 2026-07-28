@@ -147,6 +147,7 @@ export const CoreEventResponse = Type.Object({
     id: Type.String(),
     created: Type.String(),
     updated: Type.String(),
+    active: Type.Boolean({ description: 'Is the Event currently active' }),
     ended: Type.Union([Type.Null(), Type.String()], { description: 'Time at which the Event ended' }),
     username: Type.Union([Type.Null(), Type.String()]),
     connection: Type.Union([Type.Null(), Type.Integer()], { description: 'Connection that created the Event if created by a Connection or Layer token' }),
@@ -157,6 +158,7 @@ export const CoreEventResponse = Type.Object({
     editable: Type.Boolean({ description: 'Can users other than the creator edit the Event' }),
     location: Type.String({ description: 'Human readable location - ie: an address' }),
     remarks: Type.String(),
+    metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Event metadata' }),
     geometry: GeoJSONFeatureGeometryPoint,
     channels: Type.Array(Type.Integer(), { description: 'TAK Server Channels the Event is shared with' }),
 });

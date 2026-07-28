@@ -222,6 +222,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 default: true,
                 description: 'Can users other than the creator edit the Event',
             }),
+            metadata: Type.Record(Type.String(), Type.Unknown(), {
+                default: {},
+                description: 'User defined key/value Event metadata',
+            }),
             channels: Type.Array(Type.Integer({ minimum: 0 }), {
                 uniqueItems: true,
                 default: [],
@@ -276,11 +280,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             geometry: Type.Optional(GeoJSONFeatureGeometryPoint),
             location: Type.Optional(Type.String()),
             remarks: Type.Optional(Type.String()),
+            active: Type.Optional(Type.Boolean({
+                description: 'Set to false to end the Event - the ended timestamp is set automatically',
+            })),
             ended: Type.Optional(Type.Union([Type.Null(), Type.String({
                 format: 'date-time',
             })])),
             external_id: Type.Optional(Type.String()),
             editable: Type.Optional(Type.Boolean()),
+            metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown(), {
+                description: 'User defined key/value Event metadata - replaces the existing metadata object',
+            })),
             channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), { uniqueItems: true })),
         }),
         res: CoreEventResponse,
@@ -316,8 +326,21 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (Object.keys(body).length > 0) {
+                // An explicit ended value in the body always wins over the
+                // active-derived timestamp; an existing ended is preserved
+                // so re-ending an Event doesn't move its original end time
+                let ended: typeof body.ended | ReturnType<typeof sql> = body.ended;
+                if (body.ended === undefined) {
+                    if (body.active === false && !event.ended) {
+                        ended = sql`Now()`;
+                    } else if (body.active === true) {
+                        ended = null;
+                    }
+                }
+
                 await config.models.CoreEvent.commit(req.params.event, {
                     ...body,
+                    ...(ended === undefined ? {} : { ended }),
                     updated: sql`Now()`,
                 });
             }
