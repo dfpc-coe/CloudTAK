@@ -305,6 +305,7 @@ async function submit(): Promise<void> {
                 remarks: config.value.remarks,
                 external_id: '',
                 editable: true,
+                metadata: {},
                 channels,
                 geometry: {
                     type: 'Point',

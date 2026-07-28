@@ -16674,6 +16674,8 @@ export interface paths {
                                 id: string;
                                 created: string;
                                 updated: string;
+                                /** @description Is the Event currently active */
+                                active: boolean;
                                 /** @description Time at which the Event ended */
                                 ended: null | string;
                                 username: null | string;
@@ -16690,6 +16692,10 @@ export interface paths {
                                 /** @description Human readable location - ie: an address */
                                 location: string;
                                 remarks: string;
+                                /** @description User defined key/value Event metadata */
+                                metadata: {
+                                    [key: string]: unknown;
+                                };
                                 geometry: {
                                     /** @constant */
                                     type: "Point";
@@ -16811,6 +16817,13 @@ export interface paths {
                          */
                         editable: boolean;
                         /**
+                         * @description User defined key/value Event metadata
+                         * @default {}
+                         */
+                        metadata: {
+                            [key: string]: unknown;
+                        };
+                        /**
                          * @description TAK Server Channels to share the Event with
                          * @default []
                          */
@@ -16829,6 +16842,8 @@ export interface paths {
                             id: string;
                             created: string;
                             updated: string;
+                            /** @description Is the Event currently active */
+                            active: boolean;
                             /** @description Time at which the Event ended */
                             ended: null | string;
                             username: null | string;
@@ -16845,6 +16860,10 @@ export interface paths {
                             /** @description Human readable location - ie: an address */
                             location: string;
                             remarks: string;
+                            /** @description User defined key/value Event metadata */
+                            metadata: {
+                                [key: string]: unknown;
+                            };
                             geometry: {
                                 /** @constant */
                                 type: "Point";
@@ -16956,6 +16975,8 @@ export interface paths {
                             id: string;
                             created: string;
                             updated: string;
+                            /** @description Is the Event currently active */
+                            active: boolean;
                             /** @description Time at which the Event ended */
                             ended: null | string;
                             username: null | string;
@@ -16972,6 +16993,10 @@ export interface paths {
                             /** @description Human readable location - ie: an address */
                             location: string;
                             remarks: string;
+                            /** @description User defined key/value Event metadata */
+                            metadata: {
+                                [key: string]: unknown;
+                            };
                             geometry: {
                                 /** @constant */
                                 type: "Point";
@@ -17166,9 +17191,15 @@ export interface paths {
                         };
                         location?: string;
                         remarks?: string;
+                        /** @description Set to false to end the Event - the ended timestamp is set automatically */
+                        active?: boolean;
                         ended?: null | string;
                         external_id?: string;
                         editable?: boolean;
+                        /** @description User defined key/value Event metadata - replaces the existing metadata object */
+                        metadata?: {
+                            [key: string]: unknown;
+                        };
                         channels?: number[];
                     };
                 };
@@ -17184,6 +17215,8 @@ export interface paths {
                             id: string;
                             created: string;
                             updated: string;
+                            /** @description Is the Event currently active */
+                            active: boolean;
                             /** @description Time at which the Event ended */
                             ended: null | string;
                             username: null | string;
@@ -17200,6 +17233,10 @@ export interface paths {
                             /** @description Human readable location - ie: an address */
                             location: string;
                             remarks: string;
+                            /** @description User defined key/value Event metadata */
+                            metadata: {
+                                [key: string]: unknown;
+                            };
                             geometry: {
                                 /** @constant */
                                 type: "Point";
