@@ -59,7 +59,8 @@ export const UserConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'group::Teal',
     'group::Dark Green',
     'group::Brown',
-    'external::applications'];
+    'external::applications',
+    'core::event::types'];
 
 const GeofenceConfigKeys = new Set<keyof Static<typeof FullConfig>>([
     'geofence::enabled',

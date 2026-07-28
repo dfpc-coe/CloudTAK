@@ -57,6 +57,30 @@
                                 />
                             </div>
                         </template>
+                        <template v-else-if='presets.length && !customMode'>
+                            <div class='overflow-auto border rounded'>
+                                <div
+                                    v-for='preset in presets'
+                                    :key='preset.name'
+                                    class='px-2 py-1 cloudtak-hover cursor-pointer user-select-none text-truncate d-flex align-items-center gap-2'
+                                    @click='selectedType = { sidc: preset.type, name: preset.name }'
+                                >
+                                    <img
+                                        v-if='preset.icon'
+                                        :src='preset.icon'
+                                        :alt='preset.name'
+                                        style='width: 20px; height: 20px; object-fit: contain;'
+                                    >
+                                    <span class='text-truncate'>{{ preset.name }}</span>
+                                </div>
+                            </div>
+                            <button
+                                class='btn btn-sm w-100 mt-2'
+                                @click='customMode = true'
+                            >
+                                Custom
+                            </button>
+                        </template>
                         <template v-else>
                             <TablerInput
                                 v-model='typeFilter'
@@ -88,6 +112,13 @@
                                     {{ type.name }}
                                 </div>
                             </div>
+                            <button
+                                v-if='presets.length'
+                                class='btn btn-sm w-100 mt-2'
+                                @click='customMode = false'
+                            >
+                                Back to Preconfigured Types
+                            </button>
                         </template>
                     </div>
 
@@ -167,6 +198,12 @@ type Symbol2525E = {
     name: string;
 };
 
+type CoreEventTypePreset = {
+    name: string;
+    type: string;
+    icon?: string;
+};
+
 type CoreEventPriority = 'none' | 'low' | 'medium' | 'high' | 'critical';
 
 const error = ref<Error | undefined>(undefined);
@@ -176,6 +213,9 @@ const typeFilter = ref('');
 const typeLoading = ref(false);
 const types = ref<Symbol2525E[]>([]);
 const selectedType = ref<Symbol2525E | undefined>(undefined);
+
+const presets = ref<CoreEventTypePreset[]>([]);
+const customMode = ref(false);
 
 const center = mapStore.map.getCenter();
 
@@ -196,8 +236,30 @@ watch(typeFilter, async () => {
 });
 
 onMounted(async () => {
-    await fetchTypes();
+    await Promise.all([
+        fetchTypes(),
+        fetchPresets(),
+    ]);
 });
+
+async function fetchPresets(): Promise<void> {
+    try {
+        const res = await server.GET('/api/config', {
+            params: {
+                query: {
+                    keys: 'core::event::types'
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+        presets.value = (res.data['core::event::types'] || []).filter((preset) => {
+            return preset.name && preset.type;
+        });
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
 
 async function fetchTypes(): Promise<void> {
     try {

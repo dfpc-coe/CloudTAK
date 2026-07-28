@@ -2345,6 +2345,15 @@ export interface paths {
                                 /** @description Application URL */
                                 url: string;
                             }[];
+                            /** @description Preconfigured Core Event Types */
+                            "core::event::types"?: {
+                                /** @description Preconfigured Event Type Name */
+                                name: string;
+                                /** @description MIL-STD-2525E Symbol ID */
+                                type: string;
+                                /** @description Base64 encoded custom icon */
+                                icon?: string;
+                            }[];
                         };
                     };
                 };
@@ -2585,6 +2594,15 @@ export interface paths {
                             /** @description Application URL */
                             url: string;
                         }[];
+                        /** @description Preconfigured Core Event Types */
+                        "core::event::types"?: {
+                            /** @description Preconfigured Event Type Name */
+                            name: string;
+                            /** @description MIL-STD-2525E Symbol ID */
+                            type: string;
+                            /** @description Base64 encoded custom icon */
+                            icon?: string;
+                        }[];
                     };
                 };
             };
@@ -2759,6 +2777,15 @@ export interface paths {
                                 icon: string;
                                 /** @description Application URL */
                                 url: string;
+                            }[];
+                            /** @description Preconfigured Core Event Types */
+                            "core::event::types"?: {
+                                /** @description Preconfigured Event Type Name */
+                                name: string;
+                                /** @description MIL-STD-2525E Symbol ID */
+                                type: string;
+                                /** @description Base64 encoded custom icon */
+                                icon?: string;
                             }[];
                         };
                     };

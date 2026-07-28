@@ -624,6 +624,11 @@ export const FullConfig = Type.Object({
         icon: Type.String({ description: 'Base64 encoded icon' }),
         url: Type.String({ description: 'Application URL' }),
     }), { description: 'External application links' }),
+    'core::event::types': Type.Array(Type.Object({
+        name: Type.String({ description: 'Preconfigured Event Type Name' }),
+        type: Type.String({ description: 'MIL-STD-2525E Symbol ID' }),
+        icon: Type.Optional(Type.String({ description: 'Base64 encoded custom icon' })),
+    }), { description: 'Preconfigured Core Event Types' }),
 });
 
 export type FullConfigType = Static<typeof FullConfig>;

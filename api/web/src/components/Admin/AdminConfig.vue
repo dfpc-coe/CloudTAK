@@ -14,6 +14,7 @@
             <ConfigNotifications />
             <ConfigDisplay />
             <ConfigApplications />
+            <ConfigCoreEvents />
             <ConfigGroups />
             <ConfigMap />
             <ConfigProvider />
@@ -31,6 +32,7 @@ import ConfigRetention from './AdminConfig/ConfigRetention.vue';
 import ConfigNotifications from './AdminConfig/ConfigNotifications.vue';
 import ConfigDisplay from './AdminConfig/ConfigDisplay.vue';
 import ConfigApplications from './AdminConfig/ConfigApplications.vue';
+import ConfigCoreEvents from './AdminConfig/ConfigCoreEvents.vue';
 import ConfigGroups from './AdminConfig/ConfigGroups.vue';
 import ConfigMap from './AdminConfig/ConfigMap.vue';
 import ConfigProvider from './AdminConfig/ConfigProvider.vue';
