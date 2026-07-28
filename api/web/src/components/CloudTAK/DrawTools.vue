@@ -164,7 +164,7 @@ const drawTools: DrawToolItem[] = [
     { key: 'sector', label: 'Draw Sector', icon: IconCone, action: () => { mapStore.draw.start(DrawToolMode.SECTOR); } },
     { key: 'lasso', label: 'Lasso Select', icon: IconLasso, action: () => { mapStore.draw.start(DrawToolMode.FREEHAND); } },
     { key: 'import', label: 'GeoJSON Import', icon: IconFileImport, action: () => { modal.value = ModalInputType.IMPORT; } },
-    { key: 'event', label: 'Create Event', icon: IconAlertOctagon, action: () => { modal.value = ModalInputType.EVENT; } },
+    // { key: 'event', label: 'Create Event', icon: IconAlertOctagon, action: () => { modal.value = ModalInputType.EVENT; } },
 ];
 
 const filteredDrawTools = computed<DrawToolItem[]>(() => {
