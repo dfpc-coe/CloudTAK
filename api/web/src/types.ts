@@ -48,6 +48,9 @@ export type UserList = paths["/api/user"]["get"]["responses"]["200"]["content"][
 export type ErrorReport = paths["/api/error/{:errorid}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type ErrorReportList = paths["/api/error"]["get"]["responses"]["200"]["content"]["application/json"];
 
+export type CoreEvent = paths["/api/core/event/{:event}"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEventList = paths["/api/core/event"]["get"]["responses"]["200"]["content"]["application/json"];
+
 export type Contact = paths["/api/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"][0];
 export type ContactList = paths["/api/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"];
 

@@ -246,6 +246,27 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
+                                                    "active": String(route.name).startsWith("admin-coredata"),
+                                                    "cursor-pointer": !String(route.name).startsWith("admin-coredata")
+                                                }'
+                                                :title='nest ? "Core Data" : undefined'
+                                                @keyup.enter='router.push(`/admin/coredata`)'
+                                                @click='router.push(`/admin/coredata`)'
+                                            >
+                                                <IconDatabaseCog
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >Core Data</span>
+                                            </span>
+                                            <span
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                :class='{
                                                     "active": String(route.name) === "admin-layers",
                                                     "cursor-pointer": String(route.name) !== "admin-layers"
                                                 }'
@@ -426,6 +447,7 @@ import {
     IconServer,
     IconHeartbeat,
     IconDatabase,
+    IconDatabaseCog,
     IconDatabaseExport,
     IconBrandDocker,
     IconBuildingBroadcastTower,
@@ -438,7 +460,7 @@ const router = useRouter();
 const isAdmin = ref<boolean | undefined>(undefined)
 
 const nest = computed(() => {
-    if (String(route.name).startsWith('admin-server')) {
+    if (String(route.name).startsWith('admin-server') || String(route.name).startsWith('admin-coredata')) {
         return true;
     } else {
         return false;

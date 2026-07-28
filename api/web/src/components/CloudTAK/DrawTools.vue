@@ -89,6 +89,11 @@
         v-if='modal === ModalInputType.IMPORT'
         @close='modal = ModalInputType.NONE'
     />
+
+    <CreateCoreEvent
+        v-if='modal === ModalInputType.INCIDENT'
+        @close='modal = ModalInputType.NONE'
+    />
 </template>
 
 <script setup lang='ts'>
@@ -99,10 +104,12 @@ import CoordInput from './Inputs/CoordInput.vue';
 import RangeRingsInput from './Inputs/RangeRingsInput.vue';
 import RangeInput from './Inputs/RangeInput.vue';
 import GeoJSONInput from './Inputs/GeoJSONInput.vue';
+import CreateCoreEvent from './util/CreateCoreEvent.vue';
 import {
     IconTarget,
     IconLasso,
     IconSearch,
+    IconAlertOctagon,
     IconFileImport,
     IconCone,
     IconCircle,
@@ -128,6 +135,7 @@ enum ModalInputType {
     POINT = 'point',
     IMPORT = 'import',
     RANGE_RINGS = 'range_rings',
+    INCIDENT = 'incident',
 }
 
 const modal = ref<ModalInputType>(ModalInputType.NONE);
@@ -156,6 +164,7 @@ const drawTools: DrawToolItem[] = [
     { key: 'sector', label: 'Draw Sector', icon: IconCone, action: () => { mapStore.draw.start(DrawToolMode.SECTOR); } },
     { key: 'lasso', label: 'Lasso Select', icon: IconLasso, action: () => { mapStore.draw.start(DrawToolMode.FREEHAND); } },
     { key: 'import', label: 'GeoJSON Import', icon: IconFileImport, action: () => { modal.value = ModalInputType.IMPORT; } },
+    { key: 'incident', label: 'Create Incident', icon: IconAlertOctagon, action: () => { modal.value = ModalInputType.INCIDENT; } },
 ];
 
 const filteredDrawTools = computed<DrawToolItem[]>(() => {
