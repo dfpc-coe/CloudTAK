@@ -91,7 +91,7 @@
     />
 
     <CreateCoreEvent
-        v-if='modal === ModalInputType.INCIDENT'
+        v-if='modal === ModalInputType.EVENT'
         @close='modal = ModalInputType.NONE'
     />
 </template>
@@ -135,7 +135,7 @@ enum ModalInputType {
     POINT = 'point',
     IMPORT = 'import',
     RANGE_RINGS = 'range_rings',
-    INCIDENT = 'incident',
+    EVENT = 'event',
 }
 
 const modal = ref<ModalInputType>(ModalInputType.NONE);
@@ -164,7 +164,7 @@ const drawTools: DrawToolItem[] = [
     { key: 'sector', label: 'Draw Sector', icon: IconCone, action: () => { mapStore.draw.start(DrawToolMode.SECTOR); } },
     { key: 'lasso', label: 'Lasso Select', icon: IconLasso, action: () => { mapStore.draw.start(DrawToolMode.FREEHAND); } },
     { key: 'import', label: 'GeoJSON Import', icon: IconFileImport, action: () => { modal.value = ModalInputType.IMPORT; } },
-    { key: 'incident', label: 'Create Incident', icon: IconAlertOctagon, action: () => { modal.value = ModalInputType.INCIDENT; } },
+    { key: 'event', label: 'Create Event', icon: IconAlertOctagon, action: () => { modal.value = ModalInputType.EVENT; } },
 ];
 
 const filteredDrawTools = computed<DrawToolItem[]>(() => {
