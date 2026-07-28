@@ -100,6 +100,40 @@ test('GET: api/core/event/:event', async () => {
     }
 });
 
+test('GET: api/core/event - filter by shared channel', async () => {
+    try {
+        const res = await flight.fetch('/api/core/event?channel=7', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.equal(res.body.total, 1);
+        assert.equal(res.body.items[0].id, eventId);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: api/core/event - filter by unshared channel', async () => {
+    try {
+        const res = await flight.fetch('/api/core/event?channel=13', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.deepEqual(res.body, {
+            total: 0,
+            items: [],
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: api/core/event - hidden from user without channel access', async () => {
     try {
         const res = await flight.fetch('/api/core/event', {

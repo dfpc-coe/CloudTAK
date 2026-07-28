@@ -79,6 +79,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 enum: Object.keys(CoreEvent),
             }),
             filter: Default.Filter,
+            channel: Type.Optional(Type.Integer({
+                minimum: 0,
+                description: 'Only return Events shared with the given TAK Channel bitpos',
+            })),
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -93,6 +97,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ],
             });
 
+            const channel = req.query.channel === undefined
+                ? sql`True`
+                : sql`EXISTS (
+                    SELECT 1
+                    FROM core_event_channel
+                    WHERE core_event_channel.event = core_event.id
+                    AND core_event_channel.channel = ${req.query.channel}
+                )`;
+
             let where;
             if (auth instanceof AuthResource) {
                 const connection = await resourceConnection(auth);
@@ -100,9 +113,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 where = sql`
                     name ~* ${req.query.filter}
                     AND connection = ${connection}
+                    AND ${channel}
                 `;
             } else if (auth.is_admin()) {
-                where = sql`name ~* ${req.query.filter}`;
+                where = sql`
+                    name ~* ${req.query.filter}
+                    AND ${channel}
+                `;
             } else {
                 const user = auth;
                 const channels = [...await userChannels(user.email)];
@@ -119,10 +136,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                                 AND core_event_channel.channel IN ${channels}
                             )
                         )
+                        AND ${channel}
                     `
                     : sql`
                         name ~* ${req.query.filter}
                         AND username = ${user.email}
+                        AND ${channel}
                     `;
             }
 

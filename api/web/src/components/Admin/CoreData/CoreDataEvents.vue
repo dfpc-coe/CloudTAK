@@ -14,11 +14,77 @@
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
             <div class='mx-1 my-2'>
-                <TablerInput
+                <SearchSortFilter
                     v-model='paging.filter'
-                    icon='search'
+                    v-model:sort='sort'
+                    :sort-options='sortOptions'
+                    :active-filters='paging.channel === undefined ? 0 : 1'
                     placeholder='Filter by name...'
-                />
+                >
+                    <template #sort-icon>
+                        <template v-if='sort'>
+                            <component
+                                :is='sortTypeIcon'
+                                :size='20'
+                                stroke='1'
+                            />
+                            <component
+                                :is='sortDirectionIcon'
+                                :size='20'
+                                stroke='1'
+                            />
+                        </template>
+                        <IconArrowsSort
+                            v-else
+                            :size='20'
+                            stroke='1'
+                        />
+                    </template>
+                    <template #filters>
+                        <div class='d-flex flex-column'>
+                            <div class='d-flex align-items-center justify-content-between px-3 py-2'>
+                                <strong class='small text-uppercase text-secondary'>Filters</strong>
+                                <button
+                                    v-if='paging.channel !== undefined'
+                                    type='button'
+                                    class='btn btn-link btn-sm p-0'
+                                    @click='paging.channel = undefined'
+                                >
+                                    Clear
+                                </button>
+                            </div>
+                            <div class='px-3 pb-2 d-flex flex-column gap-2'>
+                                <div>
+                                    <div class='small text-uppercase text-secondary mb-1'>
+                                        Channels
+                                    </div>
+                                    <div
+                                        v-if='!channels.length'
+                                        class='small text-secondary'
+                                    >
+                                        No channels available
+                                    </div>
+                                    <label
+                                        v-for='channel in channels'
+                                        :key='"channel-" + channel.bitpos'
+                                        class='form-check mb-1'
+                                    >
+                                        <input
+                                            class='form-check-input'
+                                            type='checkbox'
+                                            :checked='paging.channel === channel.bitpos'
+                                            @change='toggleChannel(channel.bitpos)'
+                                        >
+                                        <span
+                                            class='form-check-label'
+                                            v-text='channel.name'
+                                        />
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </SearchSortFilter>
             </div>
 
             <TablerAlert
@@ -178,15 +244,22 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { server } from '../../../std.ts';
 import type { CoreEventList } from '../../../types.ts';
 import TableFooter from '../../util/TableFooter.vue';
 import StandardCoreEvent from '../../CloudTAK/util/StandardCoreEvent.vue';
+import SearchSortFilter from '../../CloudTAK/util/SearchSortFilter.vue';
+import {
+    IconClock,
+    IconArrowUp,
+    IconArrowDown,
+    IconArrowsSort,
+    IconLetterCase,
+} from '@tabler/icons-vue';
 import {
     TablerNone,
     TablerAlert,
-    TablerInput,
     TablerDelete,
     TablerLoading,
     TablerRefreshButton,
@@ -201,10 +274,35 @@ const expanded = ref<string | undefined>(undefined);
 const list = ref<CoreEventList>({ total: 0, items: [] });
 const paging = ref({
     filter: '',
+    channel: undefined as number | undefined,
     sort: 'created' as CoreEventSort,
     order: 'desc' as 'asc' | 'desc',
     limit: 100,
     page: 0
+});
+
+const sort = ref('');
+const sortOptions = ['Newest → Oldest', 'Oldest → Newest', 'A → Z', 'Z → A'];
+
+const sortTypeIcon = computed(() => (sort.value === 'A → Z' || sort.value === 'Z → A') ? IconLetterCase : IconClock);
+const sortDirectionIcon = computed(() => (sort.value === 'Oldest → Newest' || sort.value === 'A → Z') ? IconArrowUp : IconArrowDown);
+
+const channels = ref<Array<{ name: string, bitpos: number }>>([]);
+
+watch(sort, () => {
+    if (sort.value === 'Oldest → Newest') {
+        paging.value.sort = 'created';
+        paging.value.order = 'asc';
+    } else if (sort.value === 'A → Z') {
+        paging.value.sort = 'name';
+        paging.value.order = 'asc';
+    } else if (sort.value === 'Z → A') {
+        paging.value.sort = 'name';
+        paging.value.order = 'desc';
+    } else {
+        paging.value.sort = 'created';
+        paging.value.order = 'desc';
+    }
 });
 
 watch(paging.value, async () => {
@@ -212,8 +310,41 @@ watch(paging.value, async () => {
 });
 
 onMounted(async () => {
-    await fetchList();
+    await Promise.all([
+        fetchList(),
+        fetchChannels(),
+    ]);
 });
+
+function toggleChannel(bitpos: number): void {
+    paging.value.channel = paging.value.channel === bitpos ? undefined : bitpos;
+}
+
+async function fetchChannels(): Promise<void> {
+    try {
+        const res = await server.GET('/api/marti/group', {
+            params: {
+                query: {
+                    useCache: true
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        const seen = new Set<number>();
+        channels.value = res.data.data
+            .filter((group) => {
+                if (seen.has(group.bitpos)) return false;
+                seen.add(group.bitpos);
+                return true;
+            })
+            .map((group) => ({ name: group.name, bitpos: group.bitpos }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
 
 function toggle(id: string): void {
     expanded.value = expanded.value === id ? undefined : id;
@@ -226,6 +357,7 @@ async function fetchList(): Promise<void> {
             params: {
                 query: {
                     filter: paging.value.filter,
+                    channel: paging.value.channel,
                     limit: paging.value.limit,
                     page: paging.value.page,
                     sort: paging.value.sort,
