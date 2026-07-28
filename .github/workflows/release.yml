@@ -42,7 +42,9 @@ jobs:
         run: cd api/web && npm publish --provenance --access public
 
       - name: Generate CHANGELOG
-        run: grep -Pzo "### ${{ github.ref_name }}(?s).*?(?=###)" CHANGELOG.md > RELEASE
+        run: |
+          grep -Pzo "### ${{ github.ref_name }}(?s).*?(?=###)" CHANGELOG.md > RELEASE \
+            || echo "See CHANGELOG.md for release notes" > RELEASE
 
       - name: Github Release
         uses: softprops/action-gh-release@v2

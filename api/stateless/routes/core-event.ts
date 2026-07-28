@@ -79,9 +79,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 enum: Object.keys(CoreEvent),
             }),
             filter: Default.Filter,
-            channel: Type.Optional(Type.Integer({
-                minimum: 0,
-                description: 'Only return Events shared with the given TAK Channel bitpos',
+            channel: Type.Optional(Type.Union([
+                Type.Integer({ minimum: 0 }),
+                Type.Array(Type.Integer({ minimum: 0 })),
+            ], {
+                description: 'Only return Events shared with the given TAK Channel bitpos - can be provided multiple times to match any of the given Channels',
             })),
         }),
         res: Type.Object({
@@ -97,13 +99,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ],
             });
 
-            const channel = req.query.channel === undefined
+            const filterChannels = req.query.channel === undefined
+                ? []
+                : Array.isArray(req.query.channel) ? req.query.channel : [req.query.channel];
+
+            const channel = filterChannels.length === 0
                 ? sql`True`
                 : sql`EXISTS (
                     SELECT 1
                     FROM core_event_channel
                     WHERE core_event_channel.event = core_event.id
-                    AND core_event_channel.channel = ${req.query.channel}
+                    AND core_event_channel.channel IN ${filterChannels}
                 )`;
 
             let where;

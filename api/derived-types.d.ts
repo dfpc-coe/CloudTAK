@@ -16653,8 +16653,8 @@ export interface paths {
                     sort: "id" | "created" | "updated" | "ended" | "username" | "connection" | "priority" | "type" | "name" | "external_id" | "editable" | "location" | "remarks" | "geometry" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
-                    /** @description Only return Events shared with the given TAK Channel bitpos */
-                    channel?: number;
+                    /** @description Only return Events shared with the given TAK Channel bitpos - can be provided multiple times to match any of the given Channels */
+                    channel?: number | number[];
                 };
                 header?: never;
                 path?: never;
