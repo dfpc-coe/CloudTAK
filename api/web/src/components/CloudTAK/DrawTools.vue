@@ -109,7 +109,6 @@ import {
     IconTarget,
     IconLasso,
     IconSearch,
-    IconAlertOctagon,
     IconFileImport,
     IconCone,
     IconCircle,
