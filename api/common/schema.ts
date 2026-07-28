@@ -30,23 +30,11 @@ export const SpatialRefSys = pgTable('spatial_ref_sys', {
     proj4text: varchar({ length: 2048 }),
 });
 
-export const CoreIncident = pgTable('core_incident', {
-    id: serial().primaryKey(),
-    name: text().notNull(),
-    external_id: text(),
-    status: text().notNull().default('Active'),
-    description: text().notNull().default(''),
-    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
-    center: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(),
-    metadata: jsonb().notNull().default({}),
-});
-
 export const CoreEvent = pgTable('core_event', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    active: boolean().notNull().default(true),
     ended: timestamp({ withTimezone: true, mode: 'string' }),
     username: text().references(() => Profile.username),
     connection: integer().references(() => Connection.id, { onDelete: 'set null' }),
@@ -57,6 +45,7 @@ export const CoreEvent = pgTable('core_event', {
     editable: boolean().notNull().default(true), // Can users other than the creator edit the Event
     location: text().notNull().default(''), // Human readable location - ie: an address
     remarks: text().notNull().default(''),
+    metadata: jsonb().$type<Record<string, unknown>>().notNull().default({}),
     geometry: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>().notNull(),
 });
 

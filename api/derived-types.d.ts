@@ -2345,6 +2345,15 @@ export interface paths {
                                 /** @description Application URL */
                                 url: string;
                             }[];
+                            /** @description Preconfigured Core Event Types */
+                            "core::event::types"?: {
+                                /** @description Preconfigured Event Type Name */
+                                name: string;
+                                /** @description MIL-STD-2525E Symbol ID */
+                                type: string;
+                                /** @description Base64 encoded custom icon */
+                                icon?: string;
+                            }[];
                         };
                     };
                 };
@@ -2585,6 +2594,15 @@ export interface paths {
                             /** @description Application URL */
                             url: string;
                         }[];
+                        /** @description Preconfigured Core Event Types */
+                        "core::event::types"?: {
+                            /** @description Preconfigured Event Type Name */
+                            name: string;
+                            /** @description MIL-STD-2525E Symbol ID */
+                            type: string;
+                            /** @description Base64 encoded custom icon */
+                            icon?: string;
+                        }[];
                     };
                 };
             };
@@ -2759,6 +2777,15 @@ export interface paths {
                                 icon: string;
                                 /** @description Application URL */
                                 url: string;
+                            }[];
+                            /** @description Preconfigured Core Event Types */
+                            "core::event::types"?: {
+                                /** @description Preconfigured Event Type Name */
+                                name: string;
+                                /** @description MIL-STD-2525E Symbol ID */
+                                type: string;
+                                /** @description Base64 encoded custom icon */
+                                icon?: string;
                             }[];
                         };
                     };
@@ -16626,6 +16653,8 @@ export interface paths {
                     sort: "id" | "created" | "updated" | "ended" | "username" | "connection" | "priority" | "type" | "name" | "external_id" | "editable" | "location" | "remarks" | "geometry" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
+                    /** @description Only return Events shared with the given TAK Channel bitpos - can be provided multiple times to match any of the given Channels */
+                    channel?: number | number[];
                 };
                 header?: never;
                 path?: never;
@@ -16645,6 +16674,8 @@ export interface paths {
                                 id: string;
                                 created: string;
                                 updated: string;
+                                /** @description Is the Event currently active */
+                                active: boolean;
                                 /** @description Time at which the Event ended */
                                 ended: null | string;
                                 username: null | string;
@@ -16661,6 +16692,10 @@ export interface paths {
                                 /** @description Human readable location - ie: an address */
                                 location: string;
                                 remarks: string;
+                                /** @description User defined key/value Event metadata */
+                                metadata: {
+                                    [key: string]: unknown;
+                                };
                                 geometry: {
                                     /** @constant */
                                     type: "Point";
@@ -16782,6 +16817,13 @@ export interface paths {
                          */
                         editable: boolean;
                         /**
+                         * @description User defined key/value Event metadata
+                         * @default {}
+                         */
+                        metadata: {
+                            [key: string]: unknown;
+                        };
+                        /**
                          * @description TAK Server Channels to share the Event with
                          * @default []
                          */
@@ -16800,6 +16842,8 @@ export interface paths {
                             id: string;
                             created: string;
                             updated: string;
+                            /** @description Is the Event currently active */
+                            active: boolean;
                             /** @description Time at which the Event ended */
                             ended: null | string;
                             username: null | string;
@@ -16816,6 +16860,10 @@ export interface paths {
                             /** @description Human readable location - ie: an address */
                             location: string;
                             remarks: string;
+                            /** @description User defined key/value Event metadata */
+                            metadata: {
+                                [key: string]: unknown;
+                            };
                             geometry: {
                                 /** @constant */
                                 type: "Point";
@@ -16927,6 +16975,8 @@ export interface paths {
                             id: string;
                             created: string;
                             updated: string;
+                            /** @description Is the Event currently active */
+                            active: boolean;
                             /** @description Time at which the Event ended */
                             ended: null | string;
                             username: null | string;
@@ -16943,6 +16993,10 @@ export interface paths {
                             /** @description Human readable location - ie: an address */
                             location: string;
                             remarks: string;
+                            /** @description User defined key/value Event metadata */
+                            metadata: {
+                                [key: string]: unknown;
+                            };
                             geometry: {
                                 /** @constant */
                                 type: "Point";
@@ -17137,9 +17191,15 @@ export interface paths {
                         };
                         location?: string;
                         remarks?: string;
+                        /** @description Set to false to end the Event - the ended timestamp is set automatically */
+                        active?: boolean;
                         ended?: null | string;
                         external_id?: string;
                         editable?: boolean;
+                        /** @description User defined key/value Event metadata - replaces the existing metadata object */
+                        metadata?: {
+                            [key: string]: unknown;
+                        };
                         channels?: number[];
                     };
                 };
@@ -17155,6 +17215,8 @@ export interface paths {
                             id: string;
                             created: string;
                             updated: string;
+                            /** @description Is the Event currently active */
+                            active: boolean;
                             /** @description Time at which the Event ended */
                             ended: null | string;
                             username: null | string;
@@ -17171,6 +17233,10 @@ export interface paths {
                             /** @description Human readable location - ie: an address */
                             location: string;
                             remarks: string;
+                            /** @description User defined key/value Event metadata */
+                            metadata: {
+                                [key: string]: unknown;
+                            };
                             geometry: {
                                 /** @constant */
                                 type: "Point";

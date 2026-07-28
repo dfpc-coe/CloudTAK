@@ -250,10 +250,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 try {
                     if (insertValues.length && req.query.archive) {
-                        await config.models.ConnectionFeature.generate(insertValues, {
-                            upsert: GenerateUpsert.UPDATE,
-                            upsertTarget: [ConnectionFeature.connection, ConnectionFeature.id],
-                        });
+                        const INSERT_BATCH = 10000;
+
+                        for (let i = 0; i < insertValues.length; i += INSERT_BATCH) {
+                            await config.models.ConnectionFeature.generate(insertValues.slice(i, i + INSERT_BATCH), {
+                                upsert: GenerateUpsert.UPDATE,
+                                upsertTarget: [ConnectionFeature.connection, ConnectionFeature.id],
+                            });
+                        }
                     }
                 } catch (err) {
                     // We don't throw as priority is TAK Server Delivery

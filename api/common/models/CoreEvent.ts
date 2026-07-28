@@ -1,7 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import Modeler, { GenericList, GenericListInput } from '@openaddresses/batch-generic';
 import { Static } from '@sinclair/typebox';
-import { CoreEventResponse } from '../types.js';
+import { CoreEventResponse, GeoJSONFeatureGeometryPoint } from '../types.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { CoreEvent, CoreEventChannel } from '../schema.js';
 import { SQL, is, sql, eq, asc, desc } from 'drizzle-orm';
@@ -37,8 +37,9 @@ export default class CoreEventModel extends Modeler<typeof CoreEvent> {
 
         return {
             ...pgres[0].event,
-            channels: pgres[0].channels,
-        } as Static<typeof CoreEventResponse>;
+            geometry: pgres[0].event.geometry as Static<typeof GeoJSONFeatureGeometryPoint>,
+            channels: pgres[0].channels as number[],
+        };
     }
 
     async augmented_list(query: GenericListInput = {}): Promise<GenericList<Static<typeof CoreEventResponse>>> {
@@ -75,8 +76,9 @@ export default class CoreEventModel extends Modeler<typeof CoreEvent> {
                 items: pgres.map((t) => {
                     return {
                         ...t.event,
-                        channels: t.channels,
-                    } as Static<typeof CoreEventResponse>;
+                        geometry: t.event.geometry as Static<typeof GeoJSONFeatureGeometryPoint>,
+                        channels: t.channels as number[],
+                    };
                 }),
             };
         }

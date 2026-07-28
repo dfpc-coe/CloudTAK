@@ -42,4 +42,5 @@ export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'login::background::color': '#03384f',
     'login::brand::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../web/public/CloudTAKLogoText.svg', import.meta.url)).toString('base64')}`,
     'external::applications': [],
+    'core::event::types': [],
 };

@@ -49,6 +49,9 @@ test('POST: api/core/event', async () => {
                     type: 'Point',
                     coordinates: [-105.2705, 40.015],
                 },
+                metadata: {
+                    source: 'test-suite',
+                },
                 channels: [7, 42],
             },
         }, true);
@@ -67,11 +70,15 @@ test('POST: api/core/event', async () => {
             priority: 'high',
             type: '10031000001213000000',
             name: 'Wildfire Report',
+            active: true,
             ended: null,
             external_id: '',
             editable: true,
             location: '1234 Main St, Boulder, CO',
             remarks: 'Fast moving fire North of Boulder',
+            metadata: {
+                source: 'test-suite',
+            },
             geometry: {
                 type: 'Point',
                 coordinates: [-105.2705, 40.015],
@@ -95,6 +102,74 @@ test('GET: api/core/event/:event', async () => {
         assert.equal(res.body.id, eventId);
         assert.equal(res.body.name, 'Wildfire Report');
         assert.deepEqual(res.body.channels, [7, 42]);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: api/core/event - filter by shared channel', async () => {
+    try {
+        const res = await flight.fetch('/api/core/event?channel=7', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.equal(res.body.total, 1);
+        assert.equal(res.body.items[0].id, eventId);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: api/core/event - filter by multiple channels matches any', async () => {
+    try {
+        const res = await flight.fetch('/api/core/event?channel=13&channel=7', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.equal(res.body.total, 1);
+        assert.equal(res.body.items[0].id, eventId);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: api/core/event - filter by multiple unshared channels', async () => {
+    try {
+        const res = await flight.fetch('/api/core/event?channel=13&channel=99', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.deepEqual(res.body, {
+            total: 0,
+            items: [],
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: api/core/event - filter by unshared channel', async () => {
+    try {
+        const res = await flight.fetch('/api/core/event?channel=13', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.deepEqual(res.body, {
+            total: 0,
+            items: [],
+        });
     } catch (err) {
         assert.ifError(err);
     }
@@ -211,6 +286,108 @@ test('PATCH: api/core/event/:event - creator can disable editing', async () => {
         }, true);
 
         assert.equal(reenable.body.editable, true);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/core/event/:event - update metadata', async () => {
+    try {
+        const res = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                metadata: {
+                    source: 'test-suite',
+                    severity: 'extreme',
+                    acres: 500,
+                },
+            },
+        }, true);
+
+        assert.deepEqual(res.body.metadata, {
+            source: 'test-suite',
+            severity: 'extreme',
+            acres: 500,
+        });
+
+        const replaced = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                metadata: {},
+            },
+        }, true);
+
+        assert.deepEqual(replaced.body.metadata, {}, 'metadata object is replaced, not merged');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/core/event/:event - active true clears ended', async () => {
+    try {
+        const res = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                active: true,
+            },
+        }, true);
+
+        assert.equal(res.body.active, true);
+        assert.equal(res.body.ended, null);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/core/event/:event - active false sets ended', async () => {
+    try {
+        const res = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                active: false,
+            },
+        }, true);
+
+        assert.equal(res.body.active, false);
+        assert.ok(res.body.ended, 'ended set automatically');
+
+        const again = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                active: false,
+                remarks: 'Still ended',
+            },
+        }, true);
+
+        assert.equal(again.body.ended, res.body.ended, 'existing ended preserved');
+
+        const explicit = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                active: false,
+                ended: '2026-07-20T12:00:00.000Z',
+            },
+        }, true);
+
+        assert.ok(String(explicit.body.ended).startsWith('2026-07-20'), 'explicit ended wins');
     } catch (err) {
         assert.ifError(err);
     }

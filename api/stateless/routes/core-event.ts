@@ -79,6 +79,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 enum: Object.keys(CoreEvent),
             }),
             filter: Default.Filter,
+            channel: Type.Optional(Type.Union([
+                Type.Integer({ minimum: 0 }),
+                Type.Array(Type.Integer({ minimum: 0 })),
+            ], {
+                description: 'Only return Events shared with the given TAK Channel bitpos - can be provided multiple times to match any of the given Channels',
+            })),
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -93,6 +99,19 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ],
             });
 
+            const filterChannels = req.query.channel === undefined
+                ? []
+                : Array.isArray(req.query.channel) ? req.query.channel : [req.query.channel];
+
+            const channel = filterChannels.length === 0
+                ? sql`True`
+                : sql`EXISTS (
+                    SELECT 1
+                    FROM core_event_channel
+                    WHERE core_event_channel.event = core_event.id
+                    AND core_event_channel.channel IN ${filterChannels}
+                )`;
+
             let where;
             if (auth instanceof AuthResource) {
                 const connection = await resourceConnection(auth);
@@ -100,9 +119,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 where = sql`
                     name ~* ${req.query.filter}
                     AND connection = ${connection}
+                    AND ${channel}
                 `;
             } else if (auth.is_admin()) {
-                where = sql`name ~* ${req.query.filter}`;
+                where = sql`
+                    name ~* ${req.query.filter}
+                    AND ${channel}
+                `;
             } else {
                 const user = auth;
                 const channels = [...await userChannels(user.email)];
@@ -119,10 +142,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                                 AND core_event_channel.channel IN ${channels}
                             )
                         )
+                        AND ${channel}
                     `
                     : sql`
                         name ~* ${req.query.filter}
                         AND username = ${user.email}
+                        AND ${channel}
                     `;
             }
 
@@ -203,6 +228,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 default: true,
                 description: 'Can users other than the creator edit the Event',
             }),
+            metadata: Type.Record(Type.String(), Type.Unknown(), {
+                default: {},
+                description: 'User defined key/value Event metadata',
+            }),
             channels: Type.Array(Type.Integer({ minimum: 0 }), {
                 uniqueItems: true,
                 default: [],
@@ -257,11 +286,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             geometry: Type.Optional(GeoJSONFeatureGeometryPoint),
             location: Type.Optional(Type.String()),
             remarks: Type.Optional(Type.String()),
+            active: Type.Optional(Type.Boolean({
+                description: 'Set to false to end the Event - the ended timestamp is set automatically',
+            })),
             ended: Type.Optional(Type.Union([Type.Null(), Type.String({
                 format: 'date-time',
             })])),
             external_id: Type.Optional(Type.String()),
             editable: Type.Optional(Type.Boolean()),
+            metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown(), {
+                description: 'User defined key/value Event metadata - replaces the existing metadata object',
+            })),
             channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), { uniqueItems: true })),
         }),
         res: CoreEventResponse,
@@ -297,8 +332,21 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (Object.keys(body).length > 0) {
+                // An explicit ended value in the body always wins over the
+                // active-derived timestamp; an existing ended is preserved
+                // so re-ending an Event doesn't move its original end time
+                let ended: typeof body.ended | ReturnType<typeof sql> = body.ended;
+                if (body.ended === undefined) {
+                    if (body.active === false && !event.ended) {
+                        ended = sql`Now()`;
+                    } else if (body.active === true) {
+                        ended = null;
+                    }
+                }
+
                 await config.models.CoreEvent.commit(req.params.event, {
                     ...body,
+                    ...(ended === undefined ? {} : { ended }),
                     updated: sql`Now()`,
                 });
             }

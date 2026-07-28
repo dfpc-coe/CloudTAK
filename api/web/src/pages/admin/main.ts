@@ -74,6 +74,25 @@ const router = VueRouter.createRouter({
                 name: 'admin-connection',
                 component: () => import('../../components/Admin/AdminConnections.vue')
             },{
+                path: 'coredata',
+                name: 'admin-coredata',
+                component: () => import('../../components/Admin/AdminCoreData.vue'),
+                children: [{
+                    path: '',
+                    name: 'admin-coredata-default',
+                    redirect: () => {
+                        return { name: 'admin-coredata-features' };
+                    }
+                },{
+                    path: 'features',
+                    name: 'admin-coredata-features',
+                    component: () => import('../../components/Admin/CoreData/CoreDataFeatures.vue')
+                },{
+                    path: 'events',
+                    name: 'admin-coredata-events',
+                    component: () => import('../../components/Admin/CoreData/CoreDataEvents.vue')
+                }]
+            },{
                 path: 'user',
                 name: 'admin-users',
                 component: () => import('../../components/Admin/AdminUsers.vue')
