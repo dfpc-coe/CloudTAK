@@ -363,8 +363,12 @@ test('PATCH: api/core/event/:event - update links & style', async () => {
                     name: 'Evacuation Map',
                     url: 'https://example.com/incident/1234/evac',
                 }],
+                // The shape the Event View submits - the icon picker and the
+                // opacity range both feed the style object
                 style: {
+                    'icon': '2525E:10031000001213000000',
                     'marker-color': '#00ff00',
+                    'marker-opacity': 0.75,
                 },
             },
         }, true);
@@ -378,7 +382,9 @@ test('PATCH: api/core/event/:event - update links & style', async () => {
         }]);
 
         assert.deepEqual(res.body.style, {
+            'icon': '2525E:10031000001213000000',
             'marker-color': '#00ff00',
+            'marker-opacity': 0.75,
         }, 'style object is replaced, not merged');
 
         const cleared = await flight.fetch(`/api/core/event/${eventId}`, {

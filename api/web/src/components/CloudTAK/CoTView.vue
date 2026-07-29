@@ -446,6 +446,14 @@
                     </div>
 
                     <div
+                        v-for='guid of missionLinks'
+                        :key='guid'
+                        class='pt-2 col-12 px-2'
+                    >
+                        <PropertyMission :guid='guid' />
+                    </div>
+
+                    <div
                         class='pt-2'
                         :class='{
                             "col-md-8": center.length > 2,
@@ -739,6 +747,7 @@ import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
 import PropertyProfile from './Property/PropertyProfile.vue';
 import PropertyType from './Property/PropertyType.vue';
+import PropertyMission from './Property/PropertyMission.vue';
 import Type2525 from '@tak-ps/node-cot/2525';
 
 function isSIDCType(type: string): boolean {
@@ -949,6 +958,20 @@ const center = computed(() => {
 
     return arr;
 })
+
+/**
+ * GUIDs of the Missions the CoT links to - a Link can carry a `mission`
+ * attribute, and the same Mission can be referenced by more than one Link
+ */
+const missionLinks = computed<string[]>(() => {
+    if (!cot.value) return [];
+
+    return [...new Set(
+        (cot.value.properties.links || [])
+            .map((link) => link.mission)
+            .filter((mission): mission is string => !!mission)
+    )];
+});
 
 const lineGeometry = computed(() => {
     if (!cot.value || cot.value.geometry.type !== 'LineString') return null;
