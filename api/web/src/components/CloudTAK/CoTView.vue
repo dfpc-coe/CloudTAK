@@ -41,6 +41,24 @@
             class='d-flex flex-column h-100'
             style='min-height: 0;'
         >
+            <div
+                v-if='offlineEvent'
+                class='col-12 flex-shrink-0 px-2 pt-2'
+            >
+                <TablerInlineAlert
+                    severity='warning'
+                    title='Event Details Unavailable'
+                    description='This marker is a CloudTAK Event - the Event it was generated from can only be loaded while online.'
+                />
+                <TablerButton
+                    class='w-100'
+                    :disabled='retrying'
+                    @click='retryEvent'
+                >
+                    Retry
+                </TablerButton>
+            </div>
+
             <div class='col-12 border-bottom cloudtak-bg flex-shrink-0 d-flex align-items-center flex-nowrap gap-0 px-1 py-1'>
                 <div class='btn-list d-flex flex-nowrap align-items-center gap-0 mb-0'>
                     <IconStarFilled
@@ -706,10 +724,12 @@ import { OriginMode } from '../../base/cot.ts'
 import Subscription from '../../base/subscription.ts'
 import {
     TablerNone,
+    TablerButton,
     TablerDelete,
     TablerDropdown,
     TablerIconButton,
     TablerPillGroup,
+    TablerInlineAlert,
 } from '@tak-ps/vue-tabler';
 
 import CopyField from './util/CopyField.vue';
@@ -775,6 +795,7 @@ import Subscriptions from './util/Subscriptions.vue';
 import { server } from '../../std.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { useFloatStore } from '../../stores/float.ts';
+import { useDeviceStore } from '../../stores/device.ts';
 import ProfileConfig from '../../base/profile.ts';
 import Config from '../../base/config.ts';
 import { setCircleRadius } from '../../base/cot/ellipse.ts';
@@ -782,6 +803,8 @@ import { setCircleRadius } from '../../base/cot/ellipse.ts';
 const mapStore = useMapStore();
 
 const floatStore = useFloatStore();
+
+const deviceStore = useDeviceStore();
 
 const terrainBasemapId = ref<number | null>(null);
 Config.list(['map::terrain'], { defaults: { 'map::terrain': null } }).then((cfg) => {
@@ -821,6 +844,11 @@ const remarksExpanded = ref(true);
 const bufferCotId = ref<string | null>(null);
 const actionIconSize = 28;
 
+// The Event a CoT is a projection of, when it couldn't be opened because
+// the device is offline
+const offlineEvent = ref<string | undefined>(undefined);
+const retrying = ref(false);
+
 const isNavigating = computed(() => {
     return mapStore.navigation.active
         && !!cot.value
@@ -853,6 +881,7 @@ watch(cot, async () => {
 watch(route, async () => {
     mode.value = 'default'
     breadcrumbLive.value = false;
+    offlineEvent.value = undefined;
     await load_cot();
     if (cot.value) {
         breadcrumbLive.value = await mapStore.worker.db.breadcrumb.get(cot.value.id);
@@ -947,6 +976,29 @@ function toggleLock() {
     }
 }
 
+/**
+ * Retry loading the Event - load_cot redirects to the Event View if the
+ * network has come back, otherwise the alert stays put
+ */
+async function retryEvent(): Promise<void> {
+    retrying.value = true;
+
+    try {
+        await load_cot();
+    } finally {
+        retrying.value = false;
+    }
+}
+
+/**
+ * The UUID of the Core Event a CoT is the projection of - CloudTAK submits
+ * these with a `p` (parent) relation Link carrying the Event UUID
+ */
+function coreEvent(cot: COT): string | undefined {
+    const marker = (cot.properties.links || []).find((link) => !!link.event);
+    return marker ? marker.event : undefined;
+}
+
 async function load_cot() {
     username.value = undefined;
 
@@ -959,6 +1011,19 @@ async function load_cot() {
     }
 
     if (baseCOT) {
+        // The CoT is only a projection of the Event - the Event View is the
+        // richer representation and can only be loaded from the API, so
+        // offline the CoT remains the best available view of it
+        const event = coreEvent(baseCOT);
+        if (event && deviceStore.network.isOnline) {
+            // Replaced so a back navigation doesn't bounce into this view and
+            // immediately redirect again
+            await router.replace(`/event/${event}`);
+            return;
+        }
+
+        offlineEvent.value = event;
+
         if (cot.value && cot.value._liveQuerySubscription) {
             cot.value._liveQuerySubscription.unsubscribe();
         }

@@ -308,18 +308,31 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
                 // broadcast to every Channel the Admin cert can see
                 if (!dest.length) continue;
 
+                // A `p` (parent) relation Link marks the CoT as the projection
+                // of a richer record - the custom `event` attribute and the URL
+                // let a CloudTAK client open the Event it was generated from
+                // without probing the API for every marker it renders
+                // (`event` is typed on node-cot's LinkAttributes as of 14.49)
+                const links: Array<Record<string, string>> = [{
+                    relation: 'p',
+                    type: 'core-event',
+                    event: event.id,
+                    url: `${this.config.API_URL}/event/${event.id}`,
+                    remarks: event.name,
+                }];
+
                 // Named URLs are submitted as refinement url links, the
                 // representation ATAK renders as a tappable external link
-                const links = event.links
-                    .filter(link => !!link.url)
-                    .map((link) => {
-                        return {
-                            relation: 'r-u',
-                            mime: 'text/html',
-                            url: link.url,
-                            remarks: link.name,
-                        };
+                for (const link of event.links) {
+                    if (!link.url) continue;
+
+                    links.push({
+                        relation: 'r-u',
+                        mime: 'text/html',
+                        url: link.url,
+                        remarks: link.name,
                     });
+                }
 
                 try {
                     // The numeric 2525E SIDC type is converted to a CoT Atom
@@ -338,7 +351,7 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
                             remarks: event.remarks,
                             stale: 30 * 1000,
                             dest,
-                            ...(links.length ? { links } : {}),
+                            links,
                         },
                         geometry: event.geometry,
                     }));

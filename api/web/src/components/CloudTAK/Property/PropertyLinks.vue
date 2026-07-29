@@ -302,6 +302,7 @@ interface LinkEntry {
     uid?: string;
     callsign?: string;
     production_time?: string;
+    event?: string;
 }
 
 const props = defineProps<{
@@ -316,8 +317,16 @@ const links = computed<LinkEntry[]>(() => {
 const external_links = computed(() => {
     return links.value
         .map((link, index) => ({ link, index }))
-        .filter((item) => item.link.relation !== 't-s');
+        .filter((item) => item.link.relation !== 't-s' && !isObjectMarker(item.link));
 });
+
+/**
+ * A Link marking the CoT as the projection of a richer CloudTAK record - it
+ * exists for the client to resolve the record, not as a user facing link
+ */
+function isObjectMarker(link: LinkEntry): boolean {
+    return link.event !== undefined;
+}
 
 const responder_links = computed(() => {
     return links.value.filter((link) => {
