@@ -50,6 +50,8 @@ export type ErrorReportList = paths["/api/error"]["get"]["responses"]["200"]["co
 
 export type CoreEvent = paths["/api/core/event/{:event}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreEventList = paths["/api/core/event"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEventLink = CoreEvent["links"][0];
+export type CoreEventStyle = CoreEvent["style"];
 
 export type Contact = paths["/api/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"][0];
 export type ContactList = paths["/api/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"];

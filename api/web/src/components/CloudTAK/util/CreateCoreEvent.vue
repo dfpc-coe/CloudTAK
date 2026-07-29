@@ -306,6 +306,8 @@ async function submit(): Promise<void> {
                 external_id: '',
                 editable: true,
                 metadata: {},
+                links: [],
+                style: {},
                 channels,
                 geometry: {
                     type: 'Point',
