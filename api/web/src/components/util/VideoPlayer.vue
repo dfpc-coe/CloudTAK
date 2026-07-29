@@ -110,6 +110,7 @@ const error = ref<Error | undefined>();
 
 const retryCount = ref(0);
 const maxRetries = ref(3);
+const lastStreamErrorAt = ref<number | undefined>();
 
 const player = ref<Hls | undefined>();
 
@@ -124,6 +125,7 @@ const BUFFER_LOW_THRESHOLD = 2;
 const BUFFER_RECOVERY_THRESHOLD = 5;
 const BUFFER_CHECK_INTERVAL_MS = 500;
 const BUFFER_RECOVERY_TIMEOUT_MS = 10000;
+const RETRY_RESET_STABLE_MS = 30000;
 const LEASE_RENEW_DURATION = 60 * 60 * 24;
 
 /**
@@ -303,6 +305,16 @@ async function createPlayer(): Promise<void> {
             if (player.value) player.value.loadSource(url.toString());
         });
 
+        // The retry budget is otherwise never replenished, so a wall tile left up
+        // for hours is permanently retired by a handful of unrelated errors spread
+        // across the session. Sustained playback clears it instead
+        player.value.on(Hls.Events.FRAG_BUFFERED, () => {
+            if (!retryCount.value) return;
+            if (lastStreamErrorAt.value && Date.now() - lastStreamErrorAt.value < RETRY_RESET_STABLE_MS) return;
+
+            retryCount.value = 0;
+        });
+
         player.value.on(Hls.Events.MANIFEST_PARSED, async () => {
             try {
                 if (videoTag.value) await videoTag.value.play();
@@ -417,6 +429,8 @@ async function createPlayer(): Promise<void> {
  */
 function handleStreamError(streamError: Error): void {
     clearBufferMonitoring();
+
+    lastStreamErrorAt.value = Date.now();
 
     if (retryCount.value < maxRetries.value) {
         const delay = 1000 * Math.pow(2, retryCount.value); // 1s, 2s, 4s

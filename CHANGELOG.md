@@ -16,6 +16,8 @@
 
 ### Pending Release
 
+- :bug: Replenish the `VideoPlayer` retry budget after sustained playback, so a long running Video Wall tile is no longer permanently retired by a few unrelated stream errors spread across a session
+
 ### v13.57.1 - 2026-07-29
 
 - :arrow_up: Update DockerCompose MediaInfra image
