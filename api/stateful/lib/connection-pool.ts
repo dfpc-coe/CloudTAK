@@ -11,7 +11,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import TAK, { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
 import type ConnectionConfig from '../../common/connection-config.js';
-import { MachineConnConfig, ProfileConnConfig, AdminConnConfig } from '../../common/connection-config.js';
+import { MachineConnConfig, ProfileConnConfig, AdminConnConfig, isCoreEventSubmitter } from '../../common/connection-config.js';
 import { ProfileChatStatus } from '../../common/enums.js';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')) as {
@@ -109,6 +109,10 @@ export class ConnectionClient {
     }
 
     destroy(): void {
+        if (isCoreEventSubmitter(this.config)) {
+            this.config.stopEvents();
+        }
+
         this.tak.destroy();
     }
 }
@@ -459,6 +463,10 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(connConfig.auth.cert, connConfig.auth.key));
         const connClient = new ConnectionClient(connConfig, tak, api);
         this.set(connConfig.id, connClient);
+
+        if (isCoreEventSubmitter(connConfig)) {
+            connConfig.startEvents(tak, api);
+        }
 
         tak.on('cot', async (cot: CoT) => {
             connClient.retry = 0;

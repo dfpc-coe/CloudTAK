@@ -4,6 +4,7 @@ import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text, Profile_Radiation_Dose, Profile_Wake_Lock } from './enums.js';
 import { VideoLease_SourceType, CoreEvent_Priority } from './enums.js';
+import { CoreEventLink, CoreEventStyle } from './core-event.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
 import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, BasemapTerrain_Encoding } from './enums.js';
@@ -145,6 +146,7 @@ export const PaletteFeatureResponse = createSelectSchema(schemas.PaletteFeature,
 
 export const CoreEventResponse = Type.Object({
     id: Type.String(),
+    mission_guid: Type.Union([Type.Null(), Type.String()], { description: 'GUID of the TAK Server Mission associated with the Event' }),
     created: Type.String(),
     updated: Type.String(),
     active: Type.Boolean({ description: 'Is the Event currently active' }),
@@ -159,6 +161,8 @@ export const CoreEventResponse = Type.Object({
     location: Type.String({ description: 'Human readable location - ie: an address' }),
     remarks: Type.String(),
     metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Event metadata' }),
+    links: Type.Array(CoreEventLink, { description: 'Named URLs associated with the Event' }),
+    style: CoreEventStyle,
     geometry: GeoJSONFeatureGeometryPoint,
     channels: Type.Array(Type.Integer(), { description: 'TAK Server Channels the Event is shared with' }),
 });

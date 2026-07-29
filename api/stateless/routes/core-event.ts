@@ -7,6 +7,7 @@ import Auth, { AuthUser, AuthResource, AuthResourceAccess } from '../../common/a
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { CoreEvent, CoreEventChannel } from '../../common/schema.js';
 import { CoreEvent_Priority } from '../../common/enums.js';
+import { CoreEventLink, CoreEventStyle } from '../../common/core-event.js';
 import type ConfigStateless from '../config.js';
 import activeChannels from '../lib/tak-channels.js';
 import * as Default from '../lib/limits.js';
@@ -232,6 +233,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 default: {},
                 description: 'User defined key/value Event metadata',
             }),
+            links: Type.Array(CoreEventLink, {
+                default: [],
+                description: 'Named URLs associated with the Event',
+            }),
+            style: Type.Object(CoreEventStyle.properties, {
+                default: {},
+                description: 'Point styling for the Event',
+            }),
             channels: Type.Array(Type.Integer({ minimum: 0 }), {
                 uniqueItems: true,
                 default: [],
@@ -282,6 +291,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         body: Type.Object({
             name: Type.Optional(Default.NameField),
             type: Type.Optional(Type.String()),
+            mission_guid: Type.Optional(Type.Union([Type.Null(), Type.String({
+                format: 'uuid',
+            })], {
+                description: 'GUID of a TAK Server Mission to associate with the Event - set to null to remove the association',
+            })),
             priority: Type.Optional(Type.Enum(CoreEvent_Priority)),
             geometry: Type.Optional(GeoJSONFeatureGeometryPoint),
             location: Type.Optional(Type.String()),
@@ -296,6 +310,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             editable: Type.Optional(Type.Boolean()),
             metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown(), {
                 description: 'User defined key/value Event metadata - replaces the existing metadata object',
+            })),
+            links: Type.Optional(Type.Array(CoreEventLink, {
+                description: 'Named URLs associated with the Event - replaces the existing links array',
+            })),
+            style: Type.Optional(Type.Object(CoreEventStyle.properties, {
+                description: 'Point styling for the Event - replaces the existing style object',
             })),
             channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), { uniqueItems: true })),
         }),

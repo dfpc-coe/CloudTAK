@@ -3,6 +3,7 @@ import type { ConfigArgs, ConfigInit } from '../common/config.js';
 import ConnectionPool from './lib/connection-pool.js';
 import ConnectionGeofence from './lib/connection-geofence.js';
 import EventsPool from './lib/events-pool.js';
+import Groups from './lib/groups.js';
 import LocalHub from './lib/hub/local.js';
 import type { ConnectionWebSocket } from './lib/connection-web.js';
 
@@ -16,6 +17,7 @@ export default class ConfigStateful extends Config {
     conns: ConnectionPool;
     geofence: ConnectionGeofence;
     events: EventsPool;
+    groups: Groups;
     hub: LocalHub;
 
     constructor(init: ConfigInit) {
@@ -24,6 +26,7 @@ export default class ConfigStateful extends Config {
         this.conns = new ConnectionPool(this);
         this.geofence = new ConnectionGeofence(this);
         this.events = new EventsPool(this.StackName);
+        this.groups = new Groups(this);
         this.hub = new LocalHub(this);
     }
 

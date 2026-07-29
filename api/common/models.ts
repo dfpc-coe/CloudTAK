@@ -21,6 +21,8 @@ export default class Models {
     Data: Data;
     Server: Modeler<typeof pgtypes.Server>;
 
+    Channel: Modeler<typeof pgtypes.Channel>;
+
     CoreEvent: CoreEvent;
 
     Connection: Modeler<typeof pgtypes.Connection>;
@@ -61,6 +63,7 @@ export default class Models {
     LayerOutgoing: Modeler<typeof pgtypes.LayerOutgoing>;
 
     constructor(pg: Pool<typeof pgtypes>) {
+        this.Channel = new Modeler(pg, pgtypes.Channel);
         this.CoreEvent = new CoreEvent(pg);
         this.ProfileChat = new ProfileChat(pg);
         this.Icon = new Icon(pg);

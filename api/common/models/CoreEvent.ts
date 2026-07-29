@@ -1,5 +1,5 @@
 import Err from '@openaddresses/batch-error';
-import Modeler, { GenericList, GenericListInput } from '@openaddresses/batch-generic';
+import Modeler, { GenericList, GenericListInput, GenericIterInput } from '@openaddresses/batch-generic';
 import { Static } from '@sinclair/typebox';
 import { CoreEventResponse, GeoJSONFeatureGeometryPoint } from '../types.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
@@ -40,6 +40,31 @@ export default class CoreEventModel extends Modeler<typeof CoreEvent> {
             geometry: pgres[0].event.geometry as Static<typeof GeoJSONFeatureGeometryPoint>,
             channels: pgres[0].channels as number[],
         };
+    }
+
+    /**
+     * Iterate over Core Events, including the Channels each Event is
+     * shared with in a single call
+     */
+    async* augmented_iter(query: GenericIterInput = {}): AsyncGenerator<Static<typeof CoreEventResponse>> {
+        const pagesize = query.pagesize || 100;
+        let page = 0;
+        let pgres;
+
+        do {
+            pgres = await this.augmented_list({
+                page,
+                limit: pagesize,
+                order: query.order,
+                where: query.where,
+            });
+
+            for (const row of pgres.items) {
+                yield row;
+            }
+
+            page++;
+        } while (pgres.items.length);
     }
 
     async augmented_list(query: GenericListInput = {}): Promise<GenericList<Static<typeof CoreEventResponse>>> {

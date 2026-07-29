@@ -116,6 +116,7 @@ import {
     IconPolygon,
     IconLine,
     IconPoint,
+    IconCalendarEvent,
     IconCompass,
     IconCursorText,
     IconPencilPlus,
@@ -153,6 +154,7 @@ type DrawToolItem = {
 
 const drawTools: DrawToolItem[] = [
     { key: 'coordinate', label: 'Coordinate Input', icon: IconCursorText, action: () => { modal.value = ModalInputType.POINT; } },
+    { key: 'event', label: 'Create Event', icon: IconCalendarEvent, action: () => { modal.value = ModalInputType.EVENT; } },
     { key: 'range', label: 'Range & Bearing', icon: IconCompass, action: () => { modal.value = ModalInputType.RANGE; } },
     { key: 'range_rings', label: 'Range Rings', icon: IconTarget, action: () => { modal.value = ModalInputType.RANGE_RINGS; } },
     { key: 'point', label: 'Draw Point', icon: IconPoint, action: () => { mapStore.draw.start(DrawToolMode.POINT); } },
@@ -163,7 +165,6 @@ const drawTools: DrawToolItem[] = [
     { key: 'sector', label: 'Draw Sector', icon: IconCone, action: () => { mapStore.draw.start(DrawToolMode.SECTOR); } },
     { key: 'lasso', label: 'Lasso Select', icon: IconLasso, action: () => { mapStore.draw.start(DrawToolMode.FREEHAND); } },
     { key: 'import', label: 'GeoJSON Import', icon: IconFileImport, action: () => { modal.value = ModalInputType.IMPORT; } },
-    // { key: 'event', label: 'Create Event', icon: IconAlertOctagon, action: () => { modal.value = ModalInputType.EVENT; } },
 ];
 
 const filteredDrawTools = computed<DrawToolItem[]>(() => {

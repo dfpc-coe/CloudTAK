@@ -3,6 +3,7 @@ import { primaryKey } from 'drizzle-orm/pg-core';
 import { Static } from '@sinclair/typebox';
 import type { ProfileVideoPosition } from './types.js';
 import type { StyleContainer } from './style.js';
+import type { CoreEventLink, CoreEventStyle } from './core-event.js';
 import type { FilterContainer } from './filter.js';
 import type { PaletteFeatureStyle } from '../stateless/lib/palette.js';
 import { Polygon, Point } from 'geojson';
@@ -32,6 +33,7 @@ export const SpatialRefSys = pgTable('spatial_ref_sys', {
 
 export const CoreEvent = pgTable('core_event', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    mission_guid: uuid(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     active: boolean().notNull().default(true),
@@ -46,6 +48,8 @@ export const CoreEvent = pgTable('core_event', {
     location: text().notNull().default(''), // Human readable location - ie: an address
     remarks: text().notNull().default(''),
     metadata: jsonb().$type<Record<string, unknown>>().notNull().default({}),
+    links: jsonb().$type<Array<Static<typeof CoreEventLink>>>().notNull().default([]),
+    style: jsonb().$type<Static<typeof CoreEventStyle>>().notNull().default({}),
     geometry: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>().notNull(),
 });
 
@@ -57,6 +61,16 @@ export const CoreEventChannel = pgTable('core_event_channel', {
         columns: [table.event, table.channel],
     }),
 }));
+
+/** TAK Server Groups, periodically synced via the Admin Certificate */
+export const Channel = pgTable('channel', {
+    bitpos: integer().primaryKey(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    name: text().notNull(),
+    type: text().notNull().default(''),
+    description: text().notNull().default(''),
+});
 
 export const PaletteFeature = pgTable('palette_feature', {
     uuid: uuid().primaryKey().default(sql`gen_random_uuid()`),

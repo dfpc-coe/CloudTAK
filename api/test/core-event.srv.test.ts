@@ -52,6 +52,15 @@ test('POST: api/core/event', async () => {
                 metadata: {
                     source: 'test-suite',
                 },
+                links: [{
+                    name: 'Incident Report',
+                    url: 'https://example.com/incident/1234',
+                }],
+                style: {
+                    'icon': 'f7f71666-8b28-4b57-9fbb-e38e61d33b79/Public Safety/Fire.png',
+                    'marker-color': '#ff0000',
+                    'marker-opacity': 0.5,
+                },
                 channels: [7, 42],
             },
         }, true);
@@ -65,6 +74,7 @@ test('POST: api/core/event', async () => {
         delete res.body.updated;
 
         assert.deepEqual(res.body, {
+            mission_guid: null,
             username: 'admin@example.com',
             connection: null,
             priority: 'high',
@@ -78,6 +88,15 @@ test('POST: api/core/event', async () => {
             remarks: 'Fast moving fire North of Boulder',
             metadata: {
                 source: 'test-suite',
+            },
+            links: [{
+                name: 'Incident Report',
+                url: 'https://example.com/incident/1234',
+            }],
+            style: {
+                'icon': 'f7f71666-8b28-4b57-9fbb-e38e61d33b79/Public Safety/Fire.png',
+                'marker-color': '#ff0000',
+                'marker-opacity': 0.5,
             },
             geometry: {
                 type: 'Point',
@@ -329,6 +348,87 @@ test('PATCH: api/core/event/:event - update metadata', async () => {
     }
 });
 
+test('PATCH: api/core/event/:event - update links & style', async () => {
+    try {
+        const res = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                links: [{
+                    name: 'Incident Report',
+                    url: 'https://example.com/incident/1234',
+                }, {
+                    name: 'Evacuation Map',
+                    url: 'https://example.com/incident/1234/evac',
+                }],
+                style: {
+                    'marker-color': '#00ff00',
+                },
+            },
+        }, true);
+
+        assert.deepEqual(res.body.links, [{
+            name: 'Incident Report',
+            url: 'https://example.com/incident/1234',
+        }, {
+            name: 'Evacuation Map',
+            url: 'https://example.com/incident/1234/evac',
+        }]);
+
+        assert.deepEqual(res.body.style, {
+            'marker-color': '#00ff00',
+        }, 'style object is replaced, not merged');
+
+        const cleared = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                links: [],
+                style: {},
+            },
+        }, true);
+
+        assert.deepEqual(cleared.body.links, []);
+        assert.deepEqual(cleared.body.style, {});
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/core/event/:event - set and clear mission_guid', async () => {
+    try {
+        const res = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                mission_guid: 'f3170b6c-fbf1-45b7-9077-2e2e63251eb7',
+            },
+        }, true);
+
+        assert.equal(res.body.mission_guid, 'f3170b6c-fbf1-45b7-9077-2e2e63251eb7');
+
+        const cleared = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                mission_guid: null,
+            },
+        }, true);
+
+        assert.equal(cleared.body.mission_guid, null);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('PATCH: api/core/event/:event - active true clears ended', async () => {
     try {
         const res = await flight.fetch(`/api/core/event/${eventId}`, {
@@ -460,6 +560,8 @@ test('POST: api/core/event - connection token', async () => {
         assert.equal(res.body.connection, 1);
         assert.equal(res.body.name, 'Sensor Alert');
         assert.deepEqual(res.body.channels, [7]);
+        assert.deepEqual(res.body.links, [], 'links default to an empty array');
+        assert.deepEqual(res.body.style, {}, 'style defaults to an empty object');
     } catch (err) {
         assert.ifError(err);
     }
