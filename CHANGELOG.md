@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.57.1 - 2026-07-29
+
+- :arrow_up: Update DockerCompose MediaInfra image
+
 ### v13.57.0 - 2026-07-28
 
 - :tada: Introduce Admin support for Core Events
