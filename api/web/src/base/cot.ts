@@ -305,11 +305,27 @@ export default class COT {
     }
 
     /**
+     * A machine generated feature that this client didn't author - Core Events
+     * are submitted by the server as `m-g` CoTs and are reposted on every
+     * submission cycle, so any local edit to one is silently overwritten.
+     * Locally created features carry a creator entry and Routes are an explicit
+     * user conversion, so neither is treated as machine generated
+     */
+    get is_machine_generated(): boolean {
+        return this._properties.how === 'm-g'
+            && !this._properties.creator
+            && !this.is_route;
+    }
+
+    /**
      * Determines if the COT type allows editing
      * But does not determine if a COT is part of a Misison Sync, if the mission allows editing
      */
     get is_editable(): boolean {
-        return this.properties.archived || this.is_self || false;
+        if (this.is_self) return true;
+        if (this.is_machine_generated) return false;
+
+        return this.properties.archived || false;
     }
 
     /**

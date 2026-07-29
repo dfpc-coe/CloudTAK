@@ -330,7 +330,10 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
                         properties: {
                             ...event.style,
                             type: event.type,
-                            how: 'h-g-i-g-o',
+                            // Machine generated - CloudTAK uses this to
+                            // disallow editing the Event as a plain CoT, it is
+                            // managed via the Event API and reposted each cycle
+                            how: 'm-g',
                             callsign: event.name,
                             remarks: event.remarks,
                             stale: 30 * 1000,
