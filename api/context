@@ -1,32 +1,93 @@
-if [[ -z $1 ]]; then
-    Stack="cotak-prod"
-else
-    Stack=$1
-fi
-
 set -euo pipefail
 
-echo "Loading $Stack"
+Stack=""
+AwsProfileOverride=""
+AwsRegionOverride=""
 
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --profile)
+            AwsProfileOverride="${2:-}"
+            if [[ -z "$AwsProfileOverride" ]]; then
+                echo "not ok - --profile requires a value" >&2
+                exit 1
+            fi
+            shift 2
+            ;;
+        --profile=*)
+            AwsProfileOverride="${1#*=}"
+            shift
+            ;;
+        --region)
+            AwsRegionOverride="${2:-}"
+            if [[ -z "$AwsRegionOverride" ]]; then
+                echo "not ok - --region requires a value" >&2
+                exit 1
+            fi
+            shift 2
+            ;;
+        --region=*)
+            AwsRegionOverride="${1#*=}"
+            shift
+            ;;
+        -h|--help)
+            echo "Usage: ./context [stack] [--profile <aws-profile>] [--region <aws-region>]"
+            exit 0
+            ;;
+        -*)
+            echo "not ok - unknown option: $1" >&2
+            exit 1
+            ;;
+        *)
+            Stack="$1"
+            shift
+            ;;
+    esac
+done
+
+if [[ -z "$Stack" ]]; then
+    Stack="cotak-prod"
+fi
+
+echo "Stack: $Stack"
 
 cd ..
 
 Repo=$(jq -r .name .deploy)
 FullStack="${Repo}-${Stack}"
 
-if [[ $Stack == *"staging"* ]]; then
-    AwsProfile="coestaging"
+if [[ -n "$AwsRegionOverride" ]]; then
+    AwsRegion="$AwsRegionOverride"
+elif [[ $Stack == *"staging"* ]]; then
     AwsRegion="us-east-1"
+elif [[ -n "${AWS_REGION:-}" ]]; then
+    AwsRegion="$AWS_REGION"
 else
-    AwsProfile=$(jq -r .profile .deploy)
-    AwsRegion=$(jq -r .region .deploy)
+    AwsRegion=$(jq -r '.region // empty' .deploy)
 fi
 
-if [[ $Stack == *"staging"* ]]; then
-    StackInfo=$(deploy info ${Stack} --profile coestaging --region us-east-1)
+if [[ -n "$AwsProfileOverride" ]]; then
+    AwsProfile="$AwsProfileOverride"
+elif [[ $Stack == *"staging"* ]]; then
+    AwsProfile="coestaging"
 else
-    StackInfo=$(deploy info ${Stack})
+    AwsProfile=$(jq -r '.profile // empty' .deploy)
 fi
+
+if [[ -z "$AwsRegion" ]]; then
+    echo "not ok - no region for ${Stack}: set .region in .deploy or pass --region" >&2
+    exit 1
+fi
+
+if [[ -z "$AwsProfile" ]]; then
+    echo "not ok - no profile for ${Stack}: set .profile in .deploy or pass --profile" >&2
+    exit 1
+fi
+
+echo "Profile: $AwsProfile"
+echo "Region: $AwsRegion"
+
+StackInfo=$(deploy info "${Stack}" --profile "${AwsProfile}" --region "${AwsRegion}")
 
 # Postgres connection string (quoted JSON value, as the bastion pg_dump expects).
 POSTGRES=$(echo "$StackInfo" | jq .Outputs.DB)
