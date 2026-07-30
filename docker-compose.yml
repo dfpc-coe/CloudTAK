@@ -78,11 +78,12 @@ services:
             RETENTION_SCHEDULE: ${RETENTION_SCHEDULE:-0 3 * * *}
 
     media:
-        image: ghcr.io/dfpc-coe/media-infra:v9.8.0
+        image: ghcr.io/dfpc-coe/media-infra:v9.9.0
         restart: 'always'
         environment:
             - API_URL=${API_URL}
             - SigningSecret=${SigningSecret}
+            - MEDIAMTX_LOGLEVEL=${MEDIAMTX_LOGLEVEL:-info}
             - CLOUDTAK_Config_media_url=${CLOUDTAK_Config_media_url}
         ports:
             - "${MEDIA_PORT_API:-9997}:9997"
