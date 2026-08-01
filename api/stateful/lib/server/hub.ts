@@ -50,12 +50,14 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
                 }
 
                 let client: ConnectionClient;
+                let created = false;
 
                 if (!config.conns.has(0)) {
                     if (!config.server.connection) {
                         throw new Error('Admin connection is disabled');
                     } else if (config.server.auth.cert && config.server.auth.key) {
                         client = await config.conns.add(new AdminConnConfig(config));
+                        created = true;
                     } else {
                         throw new Error('Admin connection not configured');
                     }
@@ -84,15 +86,24 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
                     config.wsClients.delete('admin');
                 });
 
-                await client.awaitSecure();
+                if (created) {
+                    try {
+                        await client.awaitSecure();
+                    } catch (err) {
+                        console.error(`not ok - admin - TAK connection not ready, proceeding with websocket attach: ${err instanceof Error ? err.message : String(err)}`);
+                    }
+                }
+
                 ws.send(JSON.stringify({ type: 'connected' }));
             } else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
                 let client: ConnectionClient;
+                let created = false;
                 if (!config.conns.has(parsedParams.connection)) {
                     const profile = await config.models.Profile.from(parsedParams.connection);
                     if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
 
                     client = await config.conns.add(new ProfileConnConfig(config, parsedParams.connection, profile.auth));
+                    created = true;
                 } else {
                     client = config.conns.get(parsedParams.connection) as ConnectionClient;
                 }
@@ -120,7 +131,14 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
                     config.conns.delete(parsedParams.connection);
                 });
 
-                await client.awaitSecure();
+                if (created) {
+                    try {
+                        await client.awaitSecure();
+                    } catch (err) {
+                        console.error(`not ok - ${parsedParams.connection} - TAK connection not ready, proceeding with websocket attach: ${err instanceof Error ? err.message : String(err)}`);
+                    }
+                }
+
                 ws.send(JSON.stringify({ type: 'connected' }));
             } else {
                 throw new Error('Unauthorized');
