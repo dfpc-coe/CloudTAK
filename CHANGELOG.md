@@ -16,6 +16,14 @@
 
 ### Pending Release
 
+### v13.57.4 - 2026-08-01
+
+- :arrow_up: Update all Capacitor Dependencies
+
+### v13.57.3 - 2026-07-31
+
+- :bug: Fix WebSocket Disconnection Bug
+
 ### v13.57.2 - 2026-07-29
 
 - :bug: Replenish the `VideoPlayer` retry budget after sustained playback, so a long running Video Wall tile is no longer permanently retired by a few unrelated stream errors spread across a session

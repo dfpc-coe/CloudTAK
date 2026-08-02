@@ -38,6 +38,8 @@ export class ConnectionClient {
 
     retrying: boolean;
 
+    secure: boolean;
+
     /**
      * Set of bitpos integers representing the active channels
      * this connection is currently bound to
@@ -55,7 +57,14 @@ export class ConnectionClient {
         this.retry = 0;
         this.initial = true;
         this.retrying = false;
+        this.secure = false;
         this.channels = new Set();
+
+        this.tak.setMaxListeners(64);
+    }
+
+    get ready(): boolean {
+        return this.secure && !this.tak.destroyed;
     }
 
     /**
@@ -79,7 +88,7 @@ export class ConnectionClient {
     }
 
     async awaitSecure(timeoutMs = 15000): Promise<void> {
-        if (!this.tak.client || this.tak.client.authorized) return;
+        if (this.ready) return;
 
         await new Promise<void>((resolve, reject) => {
             const timer = setTimeout(() => {
@@ -92,19 +101,12 @@ export class ConnectionClient {
                 resolve();
             };
 
-            const onError = (err: Error) => {
-                cleanup();
-                reject(new Err(502, err, 'Failed to connect to TAK Server'));
-            };
-
             const cleanup = () => {
                 clearTimeout(timer);
                 this.tak.removeListener('secureConnect', onSecure);
-                this.tak.removeListener('error', onError);
             };
 
             this.tak.once('secureConnect', onSecure);
-            this.tak.once('error', onError);
         });
     }
 
@@ -270,7 +272,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         const conn = this.get(id);
 
         if (conn) {
-            return conn.tak.open ? 'live' : 'dead';
+            return conn.tak.open && !conn.tak.destroyed ? 'live' : 'dead';
         } else {
             return 'unknown';
         }
@@ -478,6 +480,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
             this.cots(connConfig, [cot]);
         }).on('secureConnect', async () => {
+            connClient.secure = true;
+
             await connClient.refreshChannels();
             await this.loadGeofences(connConfig);
 
@@ -507,21 +511,25 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                 } while (retry);
             }
         }).on('close', async () => {
+            connClient.secure = false;
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ close`);
             if (this.isTracked(connClient)) {
                 this.retry(connClient);
             }
         }).on('end', async () => {
+            connClient.secure = false;
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ end`);
             if (this.isTracked(connClient)) {
                 this.retry(connClient);
             }
         }).on('timeout', async () => {
+            connClient.secure = false;
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ timeout`);
             if (this.isTracked(connClient)) {
                 this.retry(connClient);
             }
         }).on('error', async (err) => {
+            connClient.secure = false;
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ error:${err}`);
             if (this.isTracked(connClient)) {
                 this.retry(connClient);
