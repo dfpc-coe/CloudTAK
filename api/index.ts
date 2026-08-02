@@ -121,6 +121,7 @@ export default async function server(configs: ServerConfigs): Promise<ServerMana
 
         if (!stateful.nogeofence) await stateful.geofence.init();
         await stateful.conns.init();
+        await stateful.groups.init();
 
         if (!stateful.noevents) await stateful.events.init(stateful.pg);
     }
@@ -178,6 +179,7 @@ export default async function server(configs: ServerConfigs): Promise<ServerMana
             if (stateful) {
                 await stateful.geofence.close();
                 await stateful.conns.close();
+                stateful.groups.close();
             }
         });
     });

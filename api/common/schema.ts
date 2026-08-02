@@ -58,6 +58,16 @@ export const CoreEventChannel = pgTable('core_event_channel', {
     }),
 }));
 
+/** TAK Server Groups, periodically synced via the Admin Certificate */
+export const Channel = pgTable('channel', {
+    bitpos: integer().primaryKey(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    name: text().notNull(),
+    type: text().notNull().default(''),
+    description: text().notNull().default(''),
+});
+
 export const PaletteFeature = pgTable('palette_feature', {
     uuid: uuid().primaryKey().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
