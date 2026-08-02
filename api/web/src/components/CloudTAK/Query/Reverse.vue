@@ -63,6 +63,10 @@ const props = defineProps<{
     latitude: number;
 }>();
 
+const emit = defineEmits<{
+    (e: 'reverse', reverse: SearchReverseReverse['reverse']): void;
+}>();
+
 const loading = ref(true);
 const error = ref<Error | undefined>();
 const reverse = ref<SearchReverseReverse['reverse']>(null);
@@ -78,6 +82,7 @@ onMounted(async () => {
 
         if (reqError) throw new Error(String(reqError));
         reverse.value = data.reverse;
+        emit('reverse', data.reverse);
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {

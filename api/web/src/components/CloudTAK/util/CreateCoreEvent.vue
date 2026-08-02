@@ -108,6 +108,11 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 
+const props = defineProps<{
+    coordinates?: number[];
+    location?: string;
+}>();
+
 const emit = defineEmits([ 'close' ]);
 
 const mapStore = useMapStore();
@@ -117,13 +122,15 @@ type CoreEventPriority = 'none' | 'low' | 'medium' | 'high' | 'critical';
 const error = ref<Error | undefined>(undefined);
 const loading = ref(false);
 
-const center = mapStore.map.getCenter();
+const center = props.coordinates && props.coordinates.length >= 2
+    ? { lng: props.coordinates[0], lat: props.coordinates[1] }
+    : mapStore.map.getCenter();
 
 const config = ref({
     name: '',
     type: '',
     priority: 'none' as CoreEventPriority,
-    location: '',
+    location: props.location || '',
     remarks: '',
     channels: [] as Array<string>,
     coordinates: [

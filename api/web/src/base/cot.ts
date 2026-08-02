@@ -629,6 +629,12 @@ export default class COT {
                 if (properties.icon.endsWith('.png')) {
                     properties.icon = properties.icon.replace(/.png$/, '');
                 }
+            } else if (properties.milicon && Type2525.isNumericSIDCConvertable(properties.milicon.id)) {
+                // The milicon detail is authoritative for the 2525 symbol - the
+                // type property only carries the SIDC on ingestion paths that
+                // opted into node-cot's normalize2525 (the live websocket does,
+                // Mission sync & CoT query paths don't)
+                properties.icon = `2525E:${properties.milicon.id}`;
             } else if (Type2525.isNumericSIDCConvertable(properties.type)) {
                 properties.icon = `2525E:${properties.type}`;
             } else {
