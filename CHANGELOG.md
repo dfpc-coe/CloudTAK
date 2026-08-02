@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.58.0 - 2026-08-01
+
+- :rocket: Use the Admin Cert to sync upstream group/channel information into new Group/Channels
+
 ### v13.57.4 - 2026-08-01
 
 - :arrow_up: Update all Capacitor Dependencies
