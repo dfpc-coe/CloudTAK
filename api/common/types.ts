@@ -150,6 +150,7 @@ export const CoreEventLink = Type.Object({
     }),
     url: Type.String({
         description: 'URL the Link points at',
+        pattern: '^(https?:\\/\\/|)$',
     }),
 });
 

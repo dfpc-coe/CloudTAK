@@ -524,7 +524,10 @@ async function editGeometry(): Promise<void> {
 }
 
 function openLink(url: string): void {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    try {
+        const u = new URL(url);
+        if (u.protocol === 'http:' || u.protocol === 'https:') window.open(u.href, '_blank', 'noopener,noreferrer');
+    } catch {}
 }
 
 async function deleteEvent(): Promise<void> {
