@@ -28,6 +28,10 @@
         "useLegacyBridge": true
     },
     "plugins": {
+        "StatusBar": {
+            "overlaysWebView": true,
+            "style": "DARK"
+        },
         "FirebaseMessaging": {
             "presentationOptions": [
                 "alert",
