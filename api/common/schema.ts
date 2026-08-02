@@ -3,7 +3,7 @@ import { primaryKey } from 'drizzle-orm/pg-core';
 import { Static } from '@sinclair/typebox';
 import type { ProfileVideoPosition } from './types.js';
 import type { StyleContainer } from './style.js';
-import type { CoreEventLink, CoreEventStyle } from './types.js';
+import { CoreEventLink, CoreEventStyle } from './types.js';
 import type { FilterContainer } from './filter.js';
 import type { PaletteFeatureStyle } from '../stateless/lib/palette.js';
 import { Polygon, Point } from 'geojson';
