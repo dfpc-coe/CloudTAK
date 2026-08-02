@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.57.4 - 2026-08-01
+
+- :arrow_up: Update all Capacitor Dependencies
+
 ### v13.57.3 - 2026-07-31
 
 - :bug: Fix WebSocket Disconnection Bug
