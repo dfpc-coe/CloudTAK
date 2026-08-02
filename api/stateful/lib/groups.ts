@@ -48,16 +48,33 @@ export default class Groups {
         }
     }
 
+    /**
+     * The Groups API can only be queried once an Admin Certificate has been
+     * configured - until then sync runs are skipped, resuming automatically
+     * on the next interval once the server is configured
+     */
+    configured(): boolean {
+        return !!(
+            this.config.server.api
+            && this.config.server.auth.cert
+            && this.config.server.auth.key
+        );
+    }
+
     async sync(): Promise<void> {
         if (this.syncing) return;
-        if (!this.config.server.auth.cert || !this.config.server.auth.key) return;
+        if (!this.configured()) return;
+
+        // Re-checked for TypeScript's benefit - configured() cannot narrow class properties
+        const { cert, key } = this.config.server.auth;
+        if (!cert || !key) return;
 
         this.syncing = true;
 
         try {
             const api = await TAKAPI.init(
                 new URL(String(this.config.server.api)),
-                new APIAuthCertificate(this.config.server.auth.cert, this.config.server.auth.key),
+                new APIAuthCertificate(cert, key),
             );
 
             // The same Group is returned once per direction (IN/OUT) - dedupe on bitpos

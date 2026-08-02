@@ -119,4 +119,30 @@ test('Groups Sync: Empty response leaves Channels untouched', async () => {
     flight.tak.reset();
 });
 
+test('Groups Sync: Skipped until server is configured', async () => {
+    try {
+        const server = flight.stateful!.server;
+
+        flight.stateful!.server = { ...server, auth: {} };
+
+        assert.equal(flight.stateful!.groups.configured(), false);
+
+        await flight.stateful!.groups.sync();
+
+        // An unconfigured server must result in no TAK Server API calls
+        assert.equal(flight.tak.martiRequests.length, 0);
+
+        const list = await flight.stateful!.models.Channel.list();
+        assert.equal(list.total, 2);
+
+        flight.stateful!.server = server;
+
+        assert.equal(flight.stateful!.groups.configured(), true);
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    flight.tak.reset();
+});
+
 flight.landing();
