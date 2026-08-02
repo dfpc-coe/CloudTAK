@@ -524,10 +524,16 @@ async function editGeometry(): Promise<void> {
 }
 
 function openLink(url: string): void {
+    let parsed: URL;
     try {
-        const u = new URL(url);
-        if (u.protocol === 'http:' || u.protocol === 'https:') window.open(u.href, '_blank', 'noopener,noreferrer');
-    } catch {}
+        parsed = new URL(url);
+    } catch {
+        return;
+    }
+
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        window.open(parsed.href, '_blank', 'noopener,noreferrer');
+    }
 }
 
 async function deleteEvent(): Promise<void> {
