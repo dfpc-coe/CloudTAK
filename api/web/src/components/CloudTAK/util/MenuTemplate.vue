@@ -237,9 +237,13 @@ const isModal = computed(() => props.standalone && appStore.isMobileDetected);
 
 <style scoped>
 /* Mobile standalone menu is shown as a near-fullscreen modal with a single header. */
+/*
+ * Subtracting the status bar inset twice keeps the centered modal's top edge
+ * clear of the transparent native status bar overlaying the webview.
+ */
 .main-menu-modal-frame {
-    height: calc(100dvh - 2rem);
-    max-height: calc(100dvh - 2rem);
+    height: calc(100dvh - 2rem - 2 * var(--status-bar-height, 0px));
+    max-height: calc(100dvh - 2rem - 2 * var(--status-bar-height, 0px));
 }
 
 /*

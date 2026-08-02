@@ -9,8 +9,8 @@
         <!-- New-version upgrade banner -->
         <div
             v-if='updateAvailable'
-            class='d-flex align-items-center justify-content-center flex-wrap gap-2 px-3 py-2'
-            style='background: rgba(20,20,20,0.88); backdrop-filter: blur(6px);'
+            class='d-flex align-items-center justify-content-center flex-wrap gap-2 px-3 pb-2'
+            style='background: rgba(20,20,20,0.88); backdrop-filter: blur(6px); padding-top: calc(0.5rem + var(--status-bar-height, 0px));'
         >
             <IconRefresh
                 size='16'
@@ -34,8 +34,8 @@
         <!-- Session expiry warning banner -->
         <div
             v-if='sessionWarningShown'
-            class='d-flex align-items-center justify-content-center flex-wrap gap-2 px-3 py-2'
-            style='background: rgba(20,20,20,0.88); backdrop-filter: blur(6px);'
+            class='d-flex align-items-center justify-content-center flex-wrap gap-2 px-3 pb-2'
+            style='background: rgba(20,20,20,0.88); backdrop-filter: blur(6px); padding-top: calc(0.5rem + var(--status-bar-height, 0px));'
         >
             <IconClock
                 size='16'
@@ -391,6 +391,11 @@ $cloudtak-blue: #07556D;
 
 :root {
     --cloudtak-light: rgba(var(--tblr-primary-rgb), 0.08);
+
+    /* Height of the native status bar overlaying the webview. 0 on web.
+     * --status-bar-native-height is set from the StatusBar plugin on Android,
+     * where env(safe-area-inset-top) is not reliably reported. */
+    --status-bar-height: max(env(safe-area-inset-top, 0px), var(--status-bar-native-height, 0px));
 }
 
 .cloudtak-gradient {

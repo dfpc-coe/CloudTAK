@@ -16,7 +16,7 @@
             }'
             style='
                 z-index: 4;
-                top: 60px;
+                top: calc(60px + var(--status-bar-height, 0px));
                 bottom: var(--map-bottom-bar-size, 50px);
             '
             :style='`

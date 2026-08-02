@@ -21,6 +21,21 @@
         />
 
         <template v-if='mapStore.isMapLoaded && !loading'>
+            <!--
+                The native status bar is transparent and overlays the map;
+                this scrim tints the inset to match the top map controls.
+                Collapses to 0 height on web.
+            -->
+            <div
+                class='position-absolute top-0 start-0 end-0'
+                style='
+                    z-index: 5;
+                    height: var(--status-bar-height, 0px);
+                    background-color: rgba(0, 0, 0, 0.5);
+                    pointer-events: none;
+                '
+            />
+
             <WarnConfiguration
                 v-if='warnConfiguration'
                 @close='warnConfiguration = false'
@@ -97,14 +112,15 @@
 
             <div
                 v-if='mode === "Default"'
-                class='position-absolute top-0 beginning-0 text-white'
+                class='position-absolute beginning-0 text-white'
+                style='top: var(--status-bar-height, 0px);'
             >
                 <ActiveMission />
             </div>
             <div
                 v-if='mapStore.navigation.active'
-                class='position-absolute top-0 start-50 translate-middle-x'
-                style='z-index: 2;'
+                class='position-absolute start-50 translate-middle-x'
+                style='z-index: 2; top: var(--status-bar-height, 0px);'
             >
                 <Navigating />
             </div>
@@ -113,7 +129,7 @@
                 class='position-absolute'
                 :class='{ "cloudtak-left-controls--nav": mapStore.navigation.active }'
                 style='
-                    top: 70px;
+                    top: calc(70px + var(--status-bar-height, 0px));
                     left: 8px;
                 '
             >
@@ -266,9 +282,10 @@
 
             <div
                 v-if='mapStore.isMapLoaded && mode === "Default"'
-                class='d-flex position-absolute top-0 text-white'
+                class='d-flex position-absolute text-white'
                 style='
                     z-index: 5;
+                    top: var(--status-bar-height, 0px);
                     width: 120px;
                     height: 60px;
                     right: var(--map-compact-menu-size, 60px);
@@ -317,9 +334,10 @@
 
             <div
                 v-if='mode === "Default"'
-                class='position-absolute top-0 end-0 text-white'
+                class='position-absolute end-0 text-white'
                 style='
                     z-index: 1;
+                    top: var(--status-bar-height, 0px);
                     width: var(--map-compact-menu-size, 60px);
                     height: 60px;
                     background-color: rgba(0, 0, 0, 0.5);

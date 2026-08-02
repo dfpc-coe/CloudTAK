@@ -1,14 +1,14 @@
 import { defineStore } from 'pinia';
 import { liveQuery, type Subscription } from 'dexie';
 import { Preferences } from '@capacitor/preferences';
-import { StatusBar } from '@capacitor/status-bar';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import KV from '../base/kv.ts';
 import { db, withDbRetry } from '../database.ts';
 import { withTimeout } from '../base/async.ts';
 import Config from '../base/config.ts';
 import ServerManager from '../base/server.ts';
 import router from '../router.ts';
-import { isNativePlatform } from '../base/capacitor.ts';
+import { isNativePlatform, isAndroidPlatform } from '../base/capacitor.ts';
 
 export type DisplayStyleMode = 'System Default' | 'Light' | 'Dark';
 export type ResolvedThemeMode = 'light' | 'dark';
@@ -218,7 +218,22 @@ export const useAppStore = defineStore('cloudtak-app', {
 
             if (isNativePlatform()) {
                 try {
-                    await StatusBar.setOverlaysWebView({ overlay: false });
+                    // Transparent status bar drawn over the map; a scrim in
+                    // Map.vue tints the inset area to match the top controls
+                    await StatusBar.setOverlaysWebView({ overlay: true });
+                    await StatusBar.setStyle({ style: Style.Dark });
+
+                    // Android WebViews don't reliably expose the inset via
+                    // env(safe-area-inset-top), so publish the native height
+                    // as a fallback for the --status-bar-height variable.
+                    // iOS relies on env() alone since its status bar hides in
+                    // landscape while this measurement would go stale.
+                    if (isAndroidPlatform()) {
+                        const { height } = await StatusBar.getInfo();
+                        if (height > 0) {
+                            document.documentElement.style.setProperty('--status-bar-native-height', `${height}px`);
+                        }
+                    }
                 } catch (err) {
                     console.warn('Failed to configure native status bar overlay', err);
                 }
