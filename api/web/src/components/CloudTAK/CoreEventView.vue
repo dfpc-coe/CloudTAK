@@ -221,8 +221,7 @@
                     @update:model-value='patch({ links: $event })'
                 />
 
-                <!-- PropertyStyle is always interactive - a user who can't edit
-                     the Event would only get a 403 from the API -->
+                <!-- PropertyStyle has no read-only mode so hide it for non-editors -->
                 <PropertyStyle
                     v-if='is_editable'
                     class='pt-2'
@@ -394,10 +393,8 @@ async function fetchEvent(): Promise<void> {
     loading.value = false;
 }
 
-/**
- * Submit a change to the Event - the API returns the updated Event so the
- * view always renders server state rather than an optimistic local copy
- */
+// The PATCH response replaces local state so the view always renders
+// server state rather than an optimistic local copy
 async function patch(body: Record<string, unknown>): Promise<void> {
     if (!event.value) return;
 
@@ -446,11 +443,12 @@ async function syncMapFeature(): Promise<void> {
 
         if (Type2525.isNumericSIDCConvertable(event.value.type)) {
             properties.milicon = { id: event.value.type };
+        } else {
+            delete properties.milicon;
         }
 
-        // The icon is derived once and then sticks - strip it (and mirror the
-        // style overrides) so styleProperties re-derives it from the new type
-        // unless the Event style pins an explicit icon
+        // The derived icon sticks once set - strip it so it re-derives from
+        // the new type unless the Event style pins an explicit icon
         if (event.value.style.icon) {
             properties.icon = event.value.style.icon;
         } else {

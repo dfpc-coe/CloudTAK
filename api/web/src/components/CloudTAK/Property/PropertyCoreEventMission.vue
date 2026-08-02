@@ -299,10 +299,7 @@ function selectMission(mission: Mission): void {
     emit('update:modelValue', mission.guid);
 }
 
-/**
- * Create a Mission directly from the Event - its name, remarks and Channel
- * sharing carry over so no further input is needed
- */
+// Create a Mission from the Event - its name, remarks and Channels carry over
 async function createMission(): Promise<void> {
     const missionName = (props.eventName || '').trim();
 
@@ -334,9 +331,8 @@ async function createMission(): Promise<void> {
 
         if (res.error) throw new Error(res.error.message);
 
-        // Subscribe to the new Mission so it loads onto the map just like one
-        // created from the Missions menu - the association still proceeds if
-        // this fails since the Mission itself was created
+        // Load the new Mission onto the map like one created from the Missions
+        // menu - the association still proceeds if this fails
         try {
             await OverlayManager.createLoaded({
                 name: res.data.name,

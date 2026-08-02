@@ -42,10 +42,7 @@ export default class CoreEventModel extends Modeler<typeof CoreEvent> {
         };
     }
 
-    /**
-     * Iterate over Core Events, including the Channels each Event is
-     * shared with in a single call
-     */
+    /** Iterating variant of augmented_list */
     async* augmented_iter(query: GenericIterInput = {}): AsyncGenerator<Static<typeof CoreEventResponse>> {
         const pagesize = query.pagesize || 100;
         let page = 0;
@@ -64,7 +61,7 @@ export default class CoreEventModel extends Modeler<typeof CoreEvent> {
             }
 
             page++;
-        } while (pgres.items.length);
+        } while (pgres.items.length === pagesize);
     }
 
     async augmented_list(query: GenericListInput = {}): Promise<GenericList<Static<typeof CoreEventResponse>>> {

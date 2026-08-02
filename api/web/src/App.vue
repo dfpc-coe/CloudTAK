@@ -392,9 +392,8 @@ $cloudtak-blue: #07556D;
 :root {
     --cloudtak-light: rgba(var(--tblr-primary-rgb), 0.08);
 
-    /* Height of the native status bar overlaying the webview. 0 on web.
-     * --status-bar-native-height is set from the StatusBar plugin on Android,
-     * where env(safe-area-inset-top) is not reliably reported. */
+    /* Native status bar height overlaying the webview - 0 on web. The Android
+     * StatusBar plugin sets --status-bar-native-height as env() is unreliable there. */
     --status-bar-height: max(env(safe-area-inset-top, 0px), var(--status-bar-native-height, 0px));
 }
 

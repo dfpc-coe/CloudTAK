@@ -320,10 +320,8 @@ const external_links = computed(() => {
         .filter((item) => item.link.relation !== 't-s' && !isObjectMarker(item.link));
 });
 
-/**
- * A Link marking the CoT as the projection of a richer CloudTAK record - it
- * exists for the client to resolve the record, not as a user facing link
- */
+// A Link marking the CoT as the projection of a richer CloudTAK record -
+// for the client to resolve the record, not a user facing link
 function isObjectMarker(link: LinkEntry): boolean {
     return link.event !== undefined;
 }

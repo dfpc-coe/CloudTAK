@@ -175,9 +175,8 @@ async function submit(): Promise<void> {
 
         if (res.error) throw new Error(res.error.message);
 
-        // Provisional marker so the Event appears immediately - the
-        // authoritative CoT broadcast arrives under the same UID and
-        // replaces it, or it goes stale if the broadcast never lands
+        // Provisional marker so the Event appears immediately - the CoT
+        // broadcast replaces it under the same UID, or it goes stale
         try {
             await mapStore.worker.db.add({
                 id: res.data.id,

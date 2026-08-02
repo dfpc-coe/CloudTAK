@@ -223,11 +223,10 @@ export const useAppStore = defineStore('cloudtak-app', {
                     await StatusBar.setOverlaysWebView({ overlay: true });
                     await StatusBar.setStyle({ style: Style.Dark });
 
-                    // Android WebViews don't reliably expose the inset via
-                    // env(safe-area-inset-top), so publish the native height
-                    // as a fallback for the --status-bar-height variable.
-                    // iOS relies on env() alone since its status bar hides in
-                    // landscape while this measurement would go stale.
+                    // Android WebViews don't reliably report env(safe-area-inset-top),
+                    // so publish the native height as a fallback for --status-bar-height.
+                    // iOS relies on env() alone - this measurement would go stale
+                    // when its status bar hides in landscape.
                     if (isAndroidPlatform()) {
                         const { height } = await StatusBar.getInfo();
                         if (height > 0) {

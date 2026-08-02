@@ -959,10 +959,7 @@ const center = computed(() => {
     return arr;
 })
 
-/**
- * GUIDs of the Missions the CoT links to - a Link can carry a `mission`
- * attribute, and the same Mission can be referenced by more than one Link
- */
+// Unique GUIDs of the Missions the CoT's Links reference
 const missionLinks = computed<string[]>(() => {
     if (!cot.value) return [];
 
@@ -999,10 +996,7 @@ function toggleLock() {
     }
 }
 
-/**
- * Retry loading the Event - load_cot redirects to the Event View if the
- * network has come back, otherwise the alert stays put
- */
+// load_cot redirects to the Event View if the network has come back
 async function retryEvent(): Promise<void> {
     retrying.value = true;
 
@@ -1013,10 +1007,7 @@ async function retryEvent(): Promise<void> {
     }
 }
 
-/**
- * The UUID of the Core Event a CoT is the projection of - CloudTAK submits
- * these with a `p` (parent) relation Link carrying the Event UUID
- */
+// UUID of the Core Event a CoT is the projection of, carried on its `p` Link
 function coreEvent(cot: COT): string | undefined {
     const marker = (cot.properties.links || []).find((link) => !!link.event);
     return marker ? marker.event : undefined;
@@ -1034,13 +1025,11 @@ async function load_cot() {
     }
 
     if (baseCOT) {
-        // The CoT is only a projection of the Event - the Event View is the
-        // richer representation and can only be loaded from the API, so
-        // offline the CoT remains the best available view of it
+        // The Event View is the richer representation but is API-only -
+        // offline, the CoT remains the best available view of the Event
         const event = coreEvent(baseCOT);
         if (event && deviceStore.network.isOnline) {
-            // Replaced so a back navigation doesn't bounce into this view and
-            // immediately redirect again
+            // replace() so back navigation doesn't immediately redirect again
             await router.replace(`/event/${event}`);
             return;
         }

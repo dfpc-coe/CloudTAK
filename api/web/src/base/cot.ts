@@ -305,11 +305,9 @@ export default class COT {
     }
 
     /**
-     * A machine generated feature that this client didn't author - Core Events
-     * are submitted by the server as `m-g` CoTs and are reposted on every
-     * submission cycle, so any local edit to one is silently overwritten.
-     * Locally created features carry a creator entry and Routes are an explicit
-     * user conversion, so neither is treated as machine generated
+     * A machine generated feature this client didn't author (eg a Core Event
+     * CoT, reposted every cycle so local edits are silently overwritten).
+     * Excludes locally created features (creator entry) and Routes
      */
     get is_machine_generated(): boolean {
         return this._properties.how === 'm-g'
@@ -630,10 +628,8 @@ export default class COT {
                     properties.icon = properties.icon.replace(/.png$/, '');
                 }
             } else if (properties.milicon && Type2525.isNumericSIDCConvertable(properties.milicon.id)) {
-                // The milicon detail is authoritative for the 2525 symbol - the
-                // type property only carries the SIDC on ingestion paths that
-                // opted into node-cot's normalize2525 (the live websocket does,
-                // Mission sync & CoT query paths don't)
+                // milicon is authoritative for the 2525 symbol - type only
+                // carries the SIDC on paths that ran node-cot's normalize2525
                 properties.icon = `2525E:${properties.milicon.id}`;
             } else if (Type2525.isNumericSIDCConvertable(properties.type)) {
                 properties.icon = `2525E:${properties.type}`;

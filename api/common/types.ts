@@ -143,10 +143,7 @@ export const PaletteFeatureResponse = createSelectSchema(schemas.PaletteFeature,
     uuid: Type.String(),
 });
 
-/**
- * A named URL associated with a Core Event - submitted to the TAK Server
- * as a CoT `link` with the `r-u` (refinement url) relation
- */
+/** A named URL on a Core Event - submitted as a CoT `r-u` (refinement url) link */
 export const CoreEventLink = Type.Object({
     name: Type.String({
         description: 'Human readable name of the Link',
@@ -156,10 +153,7 @@ export const CoreEventLink = Type.Object({
     }),
 });
 
-/**
- * Stylistic overrides for the Point the Core Event is rendered as -
- * property names match the CoT GeoJSON representation in node-cot
- */
+/** Point styling overrides - property names match node-cot's CoT GeoJSON representation */
 export const CoreEventStyle = Type.Object({
     'icon': Type.Optional(Type.String({
         description: 'Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>',

@@ -46,14 +46,10 @@ export default interface ConnectionConfig {
 
 /**
  * Implemented by Connection types that periodically submit active Core
- * Events to the TAK Server as CoTs, scoped to the Channels each Event
- * is shared with via Marti dest group entries
+ * Events to the TAK Server as CoTs scoped via Marti dest group entries
  */
 export interface CoreEventSubmitter {
-    /**
-     * Guard against overlapping submission runs if a run
-     * takes longer than the interval
-     */
+    /** Guards against overlapping submission runs */
     submittingEvents: boolean;
 
     eventInterval?: ReturnType<typeof setInterval>;
@@ -279,10 +275,6 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
         }
     }
 
-    /**
-     * Submit active Core Events to the TAK Server as CoTs, scoped to the
-     * Channels each Event is shared with via Marti dest group entries
-     */
     async submitEvents(tak: TAK, api: TAKAPI, opts?: { event?: string }): Promise<void> {
         if (this.submittingEvents || !tak.open) return;
 
@@ -310,11 +302,8 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
                 // broadcast to every Channel the Admin cert can see
                 if (!dest.length) continue;
 
-                // A `p` (parent) relation Link marks the CoT as the projection
-                // of a richer record - the custom `event` attribute and the URL
-                // let a CloudTAK client open the Event it was generated from
-                // without probing the API for every marker it renders
-                // (`event` is typed on node-cot's LinkAttributes as of 14.49)
+                // The `p` (parent) Link carries the Event UUID so a CloudTAK
+                // client can open the Event a marker was generated from
                 const links: Array<Record<string, string>> = [{
                     relation: 'p',
                     type: 'core-event',
@@ -323,8 +312,8 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
                     remarks: event.name,
                 }];
 
-                // Named URLs are submitted as refinement url links, the
-                // representation ATAK renders as a tappable external link
+                // `r-u` (refinement url) links render in ATAK as tappable
+                // external links
                 for (const link of event.links) {
                     if (!link.url) continue;
 
@@ -338,23 +327,22 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
 
                 const remarks = [
                     `Location:\n${event.location}`,
-                    `Priority:\n${event.priority}`
+                    `Priority:\n${event.priority}`,
                 ];
 
                 if (event.remarks) remarks.push(event.remarks);
 
                 try {
-                    // The numeric 2525E SIDC type is converted to a CoT Atom
-                    // type by node-cot which retains the SIDC in a milsym entry
+                    // node-cot converts a numeric 2525E SIDC type to a CoT
+                    // Atom type, retaining the SIDC in a milsym entry
                     cots.push(await CoTParser.from_geojson({
                         id: event.id,
                         type: 'Feature',
                         properties: {
                             ...event.style,
                             type: event.type,
-                            // Machine generated - CloudTAK uses this to
-                            // disallow editing the Event as a plain CoT, it is
-                            // managed via the Event API and reposted each cycle
+                            // Machine generated - clients disallow editing the
+                            // Event as a plain CoT
                             how: 'm-g',
                             callsign: event.name,
                             remarks: remarks.join('\n\n'),

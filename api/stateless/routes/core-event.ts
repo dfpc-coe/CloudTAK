@@ -357,9 +357,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (Object.keys(body).length > 0) {
-                // An explicit ended value in the body always wins over the
-                // active-derived timestamp; an existing ended is preserved
-                // so re-ending an Event doesn't move its original end time
+                // An explicit ended in the body wins; an existing ended is
+                // preserved so re-ending doesn't move the original end time
                 let ended: typeof body.ended | ReturnType<typeof sql> = body.ended;
                 if (body.ended === undefined) {
                     if (body.active === false && !event.ended) {
@@ -391,8 +390,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             if (Object.keys(body).length > 0 || channels !== undefined) {
                 // Best effort - a failed immediate submit is recovered by the
-                // next scheduled cycle. An ended Event no longer matches the
-                // active filter and simply ages out of client maps via stale
+                // next scheduled cycle; an ended Event ages out via stale
                 config.hub.coreEventSubmit(req.params.event).catch((err) => {
                     console.error(`not ok - failed to immediately submit Core Event ${req.params.event}:`, err);
                 });

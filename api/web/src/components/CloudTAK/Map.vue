@@ -21,11 +21,8 @@
         />
 
         <template v-if='mapStore.isMapLoaded && !loading'>
-            <!--
-                The native status bar is transparent and overlays the map;
-                this scrim tints the inset to match the top map controls.
-                Collapses to 0 height on web.
-            -->
+            <!-- Scrim tinting the transparent native status bar inset to match
+                 the top map controls - collapses to 0 height on web -->
             <div
                 class='position-absolute top-0 start-0 end-0'
                 style='

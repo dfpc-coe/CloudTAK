@@ -124,7 +124,9 @@ watch(() => props.modelValue, () => {
 });
 
 function startEditing(): void {
-    selected.value = names.value;
+    selected.value = channels.value
+        .filter((channel) => props.modelValue.includes(channel.bitpos))
+        .map((channel) => channel.name);
     editing.value = true;
     expanded.value = true;
 }
