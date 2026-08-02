@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.59.0 - 2026-08-02
+
+- :tada: Introduce Core Event data types
+
 ### v13.58.0 - 2026-08-01
 
 - :rocket: Use the Admin Cert to sync upstream group/channel information into new Group/Channels
