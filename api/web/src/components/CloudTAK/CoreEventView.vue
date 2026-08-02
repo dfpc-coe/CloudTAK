@@ -143,16 +143,10 @@
                     <div class='col-12 pt-2'>
                         <PropertyCoreEventPriority
                             :model-value='event.priority'
-                            :edit='is_editable'
-                            @update:model-value='patch({ priority: $event as CoreEvent["priority"] })'
-                        />
-                    </div>
-
-                    <div class='col-12 pt-2'>
-                        <PropertyCoreEventStatus
                             :active='event.active'
                             :ended='event.ended'
                             :edit='is_editable'
+                            @update:model-value='patch({ priority: $event as CoreEvent["priority"] })'
                             @update:active='patch({ active: $event })'
                         />
                     </div>
@@ -289,7 +283,6 @@ import PropertyType from './Property/PropertyType.vue';
 import PropertyStyle from './Property/PropertyStyle.vue';
 import PropertyEmail from './Property/PropertyEmail.vue';
 import PropertyCoreEventPriority from './Property/PropertyCoreEventPriority.vue';
-import PropertyCoreEventStatus from './Property/PropertyCoreEventStatus.vue';
 import PropertyCoreEventLocation from './Property/PropertyCoreEventLocation.vue';
 import PropertyCoreEventExternalId from './Property/PropertyCoreEventExternalId.vue';
 import PropertyCoreEventLinks from './Property/PropertyCoreEventLinks.vue';
@@ -549,6 +542,14 @@ async function deleteEvent(): Promise<void> {
         });
 
         if (res.error) throw new Error(res.error.message);
+
+        // The Event is gone server side - drop its marker locally rather than
+        // waiting for it to go stale on the map
+        try {
+            await mapStore.worker.db.remove(event.value.id, { skipNetwork: true });
+        } catch (err) {
+            console.error(`Failed to remove deleted Event ${event.value.id} from the map:`, err);
+        }
 
         router.push('/');
     } catch (err) {

@@ -351,7 +351,7 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
                             how: 'm-g',
                             callsign: event.name,
                             remarks: event.remarks,
-                            stale: 30 * 1000,
+                            stale: 30 * 60 * 1000,
                             dest,
                             links,
                         },
