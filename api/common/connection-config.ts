@@ -336,6 +336,13 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
                     });
                 }
 
+                const remarks = [
+                    `Location:\n${event.location}`,
+                    `Priority:\n${event.priority}`
+                ];
+
+                if (event.remarks) remarks.push(event.remarks);
+
                 try {
                     // The numeric 2525E SIDC type is converted to a CoT Atom
                     // type by node-cot which retains the SIDC in a milsym entry
@@ -350,7 +357,7 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
                             // managed via the Event API and reposted each cycle
                             how: 'm-g',
                             callsign: event.name,
-                            remarks: event.remarks,
+                            remarks: remarks.join('\n\n'),
                             stale: 30 * 60 * 1000,
                             dest,
                             links,
