@@ -1,1 +1,0 @@
-ALTER TABLE "core_event" ADD COLUMN "mission_guid" uuid DEFAULT gen_random_uuid() NOT NULL;

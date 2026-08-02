@@ -1336,21 +1336,7 @@
       "idx": 191,
       "version": "7",
       "when": 1785632867113,
-      "tag": "0191_tiresome_deadpool",
-      "breakpoints": true
-    },
-    {
-      "idx": 192,
-      "version": "7",
-      "when": 1785632867114,
-      "tag": "0192_orange_valkyrie",
-      "breakpoints": true
-    },
-    {
-      "idx": 193,
-      "version": "7",
-      "when": 1785632867115,
-      "tag": "0193_mixed_lyja",
+      "tag": "0191_core_event_properties",
       "breakpoints": true
     }
   ]

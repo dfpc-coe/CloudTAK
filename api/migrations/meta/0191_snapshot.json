@@ -1,5 +1,5 @@
 {
-  "id": "dcdbfde9-31c2-4944-88ef-9377f132457c",
+  "id": "c141fc0a-93f4-4eb4-bc20-1689a91ddb6c",
   "prevId": "6bc3e2d7-b86a-4920-98c4-e07f7743674e",
   "version": "7",
   "dialect": "postgresql",
@@ -455,6 +455,59 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.channel": {
+      "name": "channel",
+      "schema": "",
+      "columns": {
+        "bitpos": {
+          "name": "bitpos",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "created": {
+          "name": "created",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "Now()"
+        },
+        "updated": {
+          "name": "updated",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "Now()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.connections": {
       "name": "connections",
       "schema": "",
@@ -772,8 +825,7 @@
           "name": "mission_guid",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": false
         },
         "created": {
           "name": "created",
@@ -863,6 +915,20 @@
         },
         "metadata": {
           "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "links": {
+          "name": "links",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "style": {
+          "name": "style",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": true,
@@ -3855,59 +3921,6 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.channel": {
-      "name": "channel",
-      "schema": "",
-      "columns": {
-        "bitpos": {
-          "name": "bitpos",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "created": {
-          "name": "created",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "Now()"
-        },
-        "updated": {
-          "name": "updated",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "Now()"
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
