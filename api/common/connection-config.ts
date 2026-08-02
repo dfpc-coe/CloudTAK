@@ -64,7 +64,10 @@ export interface CoreEventSubmitter {
 }
 
 export function isCoreEventSubmitter(config: ConnectionConfig): config is ConnectionConfig & CoreEventSubmitter {
-    return 'submitEvents' in config;
+    const submitter = config as Partial<CoreEventSubmitter>;
+    return typeof submitter.submitEvents === 'function'
+        && typeof submitter.startEvents === 'function'
+        && typeof submitter.stopEvents === 'function';
 }
 
 export class MachineConnConfig implements ConnectionConfig {
