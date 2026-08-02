@@ -4,7 +4,6 @@ import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text, Profile_Radiation_Dose, Profile_Wake_Lock } from './enums.js';
 import { VideoLease_SourceType, CoreEvent_Priority } from './enums.js';
-import { CoreEventLink, CoreEventStyle } from './core-event.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
 import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, BasemapTerrain_Encoding } from './enums.js';
@@ -142,6 +141,37 @@ export const StandardResponse = Type.Object({
 
 export const PaletteFeatureResponse = createSelectSchema(schemas.PaletteFeature, {
     uuid: Type.String(),
+});
+
+/**
+ * A named URL associated with a Core Event - submitted to the TAK Server
+ * as a CoT `link` with the `r-u` (refinement url) relation
+ */
+export const CoreEventLink = Type.Object({
+    name: Type.String({
+        description: 'Human readable name of the Link',
+    }),
+    url: Type.String({
+        description: 'URL the Link points at',
+    }),
+});
+
+/**
+ * Stylistic overrides for the Point the Core Event is rendered as -
+ * property names match the CoT GeoJSON representation in node-cot
+ */
+export const CoreEventStyle = Type.Object({
+    'icon': Type.Optional(Type.String({
+        description: 'Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>',
+    })),
+    'marker-color': Type.Optional(Type.String({
+        description: 'Hex colour of the Event marker - ie: #00ff00',
+    })),
+    'marker-opacity': Type.Optional(Type.Number({
+        minimum: 0,
+        maximum: 1,
+        description: 'Opacity of the Event marker',
+    })),
 });
 
 export const CoreEventResponse = Type.Object({

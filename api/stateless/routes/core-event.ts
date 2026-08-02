@@ -1,5 +1,5 @@
 import { Type, Static } from '@sinclair/typebox';
-import { StandardResponse, CoreEventResponse, GeoJSONFeatureGeometryPoint } from '../../common/types.js';
+import { StandardResponse, CoreEventResponse, CoreEventLink, CoreEventStyle, GeoJSONFeatureGeometryPoint } from '../../common/types.js';
 import { sql, eq } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -7,7 +7,6 @@ import Auth, { AuthUser, AuthResource, AuthResourceAccess } from '../../common/a
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { CoreEvent, CoreEventChannel } from '../../common/schema.js';
 import { CoreEvent_Priority } from '../../common/enums.js';
-import { CoreEventLink, CoreEventStyle } from '../../common/core-event.js';
 import type ConfigStateless from '../config.js';
 import activeChannels from '../lib/tak-channels.js';
 import * as Default from '../lib/limits.js';
