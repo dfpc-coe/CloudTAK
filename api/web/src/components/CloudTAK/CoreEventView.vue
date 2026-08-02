@@ -56,6 +56,17 @@
                     </TablerIconButton>
 
                     <TablerIconButton
+                        v-if='is_editable'
+                        title='Edit'
+                        @click='editGeometry'
+                    >
+                        <IconPencil
+                            :size='actionIconSize'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+
+                    <TablerIconButton
                         v-if='event.links.length'
                         title='Open Primary Link'
                         @click='openLink(event.links[0].url)'
@@ -118,17 +129,6 @@
                         />
                     </div>
 
-                    <div
-                        v-if='event.mission_guid'
-                        class='pt-2 col-12 px-2'
-                    >
-                        <PropertyMission
-                            :guid='event.mission_guid'
-                            :edit='is_editable'
-                            @remove='patch({ mission_guid: null })'
-                        />
-                    </div>
-
                     <div class='col-12 pt-2'>
                         <Coordinate
                             :key='String(route.params.event)'
@@ -183,6 +183,16 @@
                         />
                     </div>
                 </div>
+
+                <PropertyCoreEventMission
+                    class='pt-2'
+                    :model-value='event.mission_guid'
+                    :edit='is_editable'
+                    :event-name='event.name'
+                    :remarks='event.remarks'
+                    :channels='event.channels'
+                    @update:model-value='patch({ mission_guid: $event })'
+                />
 
                 <div class='col-12 pt-2'>
                     <SlideDownHeader
@@ -264,6 +274,7 @@ import {
 import {
     IconLock,
     IconLockOpen,
+    IconPencil,
     IconZoomPan,
     IconBlockquote,
     IconExternalLink,
@@ -284,7 +295,7 @@ import PropertyCoreEventExternalId from './Property/PropertyCoreEventExternalId.
 import PropertyCoreEventLinks from './Property/PropertyCoreEventLinks.vue';
 import PropertyCoreEventChannels from './Property/PropertyCoreEventChannels.vue';
 import PropertyCoreEventMetadata from './Property/PropertyCoreEventMetadata.vue';
-import PropertyMission from './Property/PropertyMission.vue';
+import PropertyCoreEventMission from './Property/PropertyCoreEventMission.vue';
 import PropertyCoreEventTimes from './Property/PropertyCoreEventTimes.vue';
 import type { CoreEvent, CoreEventStyle } from '../../types.ts';
 import { server } from '../../std.ts';
@@ -412,12 +423,62 @@ async function patch(body: Record<string, unknown>): Promise<void> {
         if (res.error) throw new Error(res.error.message);
 
         event.value = res.data as CoreEvent;
+
+        await syncMapFeature();
     } catch (err) {
         // A rejected change must not take the whole view down with it - the
         // Event is reloaded so the UI stops showing a value the server refused
         await fetchEvent();
 
         saveError.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
+
+/**
+ * Mirror a saved change onto the Event's map marker so it updates
+ * immediately rather than on the next Event CoT broadcast
+ */
+async function syncMapFeature(): Promise<void> {
+    if (!event.value) return;
+
+    try {
+        const cot = await mapStore.worker.db.get(event.value.id);
+        if (!cot) return;
+
+        const properties = { ...cot.properties };
+
+        properties.type = event.value.type;
+        properties.callsign = event.value.name;
+        properties.remarks = event.value.remarks;
+
+        if (Type2525.isNumericSIDCConvertable(event.value.type)) {
+            properties.milicon = { id: event.value.type };
+        }
+
+        // The icon is derived once and then sticks - strip it (and mirror the
+        // style overrides) so styleProperties re-derives it from the new type
+        // unless the Event style pins an explicit icon
+        if (event.value.style.icon) {
+            properties.icon = event.value.style.icon;
+        } else {
+            delete properties.icon;
+        }
+
+        if (event.value.style['marker-color'] !== undefined) {
+            properties['marker-color'] = event.value.style['marker-color'];
+        } else {
+            delete properties['marker-color'];
+        }
+
+        if (event.value.style['marker-opacity'] !== undefined) {
+            properties['marker-opacity'] = event.value.style['marker-opacity'];
+        } else {
+            delete properties['marker-opacity'];
+        }
+
+        await cot.update({ properties });
+    } catch (err) {
+        console.error(`Failed to sync Event ${event.value.id} to its map feature:`, err);
     }
 }
 
@@ -452,6 +513,23 @@ function flyTo(): void {
         center: [event.value.geometry.coordinates[0], event.value.geometry.coordinates[1]],
         zoom: Math.max(mapStore.map.getZoom(), 14),
     });
+}
+
+// The geometry change is synced back to the Event API by the Atlas Database
+// when the edit finishes
+async function editGeometry(): Promise<void> {
+    if (!event.value) return;
+
+    saveError.value = undefined;
+
+    const cot = await mapStore.worker.db.get(event.value.id);
+
+    if (!cot) {
+        saveError.value = new Error('The Event marker is not currently on the map so its location cannot be edited here');
+        return;
+    }
+
+    await mapStore.draw.edit(cot);
 }
 
 function openLink(url: string): void {

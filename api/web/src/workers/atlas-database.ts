@@ -17,6 +17,7 @@ import TAKNotification, { NotificationType } from '../base/notification.ts';
 import { WorkerMessageType } from '../base/events.ts';
 import type { GeoJSONSourceDiff, LngLatLike } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
+import { isEqual } from '@ver0/deep-equal';
 import type { Polygon } from 'geojson';
 import type { InputFeature, Feature, APIList, Contact } from '../types.ts';
 import ProfileConfig from '../base/profile.ts';
@@ -786,6 +787,10 @@ export default class AtlasDatabase {
             return exists;
         } else {
             if (exists) {
+                const geometryMoved = opts.authored === true
+                    && !!feat.geometry
+                    && !isEqual(exists.geometry, feat.geometry);
+
                 const changed = await exists.update({
                     path: feat.path,
                     properties: feat.properties,
@@ -796,6 +801,10 @@ export default class AtlasDatabase {
                 // (mutated in place) to avoid a duplicate add+update in one diff.
                 if (changed && !this.pendingCreate.has(exists.id)) {
                     this.pendingUpdate.set(exists.id, exists);
+                }
+
+                if (geometryMoved) {
+                    await this.syncCoreEventGeometry(exists);
                 }
 
                 if (exists.is_self) {
@@ -854,6 +863,10 @@ export default class AtlasDatabase {
                         type: WorkerMessageType.Feature_Archived_Added,
                     });
                 }
+
+                if (opts.authored) {
+                    await this.syncCoreEventGeometry(exists);
+                }
             }
 
             if (exists.is_skittle) {
@@ -891,6 +904,34 @@ export default class AtlasDatabase {
             await this.breadcrumb.update(exists);
 
             return exists;
+        }
+    }
+
+    /**
+     * PATCH a locally moved Core Event marker back to the Event API - a
+     * failure is reverted on clients by the next Event rebroadcast
+     */
+    private async syncCoreEventGeometry(cot: COT): Promise<void> {
+        const link = (cot.properties.links || []).find((link) => {
+            return link.type === 'core-event' && link.event;
+        });
+
+        if (!link || !link.event) return;
+        if (cot.geometry.type !== 'Point') return;
+
+        try {
+            await std(`/api/core/event/${link.event}`, {
+                method: 'PATCH',
+                token: this.atlas.token,
+                body: {
+                    geometry: {
+                        type: 'Point',
+                        coordinates: cot.geometry.coordinates.slice(0, 2)
+                    }
+                }
+            });
+        } catch (err) {
+            console.error(`Failed to sync Core Event geometry for ${cot.id}:`, err);
         }
     }
 

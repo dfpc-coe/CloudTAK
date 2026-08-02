@@ -2,7 +2,7 @@ import { Static, Type } from '@sinclair/typebox';
 import type { Feature } from 'geojson';
 import type { Connection } from './schema.js';
 import { CoreEvent } from './schema.js';
-import { InferSelectModel, eq, sql } from 'drizzle-orm';
+import { InferSelectModel, and, eq, sql } from 'drizzle-orm';
 import ConnectionControl from './control/connection.js';
 import type ConfigStateful from '../stateful/config.js';
 import type TAK from '@tak-ps/node-tak';
@@ -60,7 +60,7 @@ export interface CoreEventSubmitter {
 
     startEvents(tak: TAK, api: TAKAPI): void;
     stopEvents(): void;
-    submitEvents(tak: TAK, api: TAKAPI): Promise<void>;
+    submitEvents(tak: TAK, api: TAKAPI, opts?: { event?: string }): Promise<void>;
 }
 
 export function isCoreEventSubmitter(config: ConnectionConfig): config is ConnectionConfig & CoreEventSubmitter {
@@ -283,7 +283,7 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
      * Submit active Core Events to the TAK Server as CoTs, scoped to the
      * Channels each Event is shared with via Marti dest group entries
      */
-    async submitEvents(tak: TAK, api: TAKAPI): Promise<void> {
+    async submitEvents(tak: TAK, api: TAKAPI, opts?: { event?: string }): Promise<void> {
         if (this.submittingEvents || !tak.open) return;
 
         this.submittingEvents = true;
@@ -297,7 +297,9 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
             const cots: CoT[] = [];
 
             for await (const event of this.config.models.CoreEvent.augmented_iter({
-                where: eq(CoreEvent.active, true),
+                where: opts && opts.event
+                    ? and(eq(CoreEvent.active, true), eq(CoreEvent.id, opts.event))
+                    : eq(CoreEvent.active, true),
             })) {
                 const dest = event.channels
                     .map(channel => groups.get(channel))

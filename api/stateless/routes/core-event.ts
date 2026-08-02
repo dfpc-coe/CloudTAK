@@ -272,6 +272,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     })));
             }
 
+            // Best effort - a failed immediate submit is recovered by the
+            // Admin Connection's next scheduled submit cycle
+            config.hub.coreEventSubmit(event.id).catch((err) => {
+                console.error(`not ok - failed to immediately submit Core Event ${event.id}:`, err);
+            });
+
             res.json(await config.models.CoreEvent.augmented_from(event.id));
         } catch (err) {
             Err.respond(err, res);
@@ -381,6 +387,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                             channel: BigInt(ch),
                         })));
                 }
+            }
+
+            if (Object.keys(body).length > 0 || channels !== undefined) {
+                // Best effort - a failed immediate submit is recovered by the
+                // next scheduled cycle. An ended Event no longer matches the
+                // active filter and simply ages out of client maps via stale
+                config.hub.coreEventSubmit(req.params.event).catch((err) => {
+                    console.error(`not ok - failed to immediately submit Core Event ${req.params.event}:`, err);
+                });
             }
 
             res.json(await config.models.CoreEvent.augmented_from(req.params.event));

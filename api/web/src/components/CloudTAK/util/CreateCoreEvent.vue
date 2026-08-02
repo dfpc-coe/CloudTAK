@@ -93,6 +93,7 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { server } from '../../../std.ts';
 import Coordinate from './Coordinate.vue';
 import CoreEventType from './CoreEventType.vue';
@@ -100,6 +101,7 @@ import PropertyCoreEventLocation from '../Property/PropertyCoreEventLocation.vue
 import GroupSelect from '../../util/GroupSelect.vue';
 import GroupManager from '../../../base/group.ts';
 import { useMapStore } from '../../../stores/map.ts';
+import type { InputFeature } from '../../../types.ts';
 import {
     TablerAlert,
     TablerEnum,
@@ -115,6 +117,7 @@ const props = defineProps<{
 
 const emit = defineEmits([ 'close' ]);
 
+const router = useRouter();
 const mapStore = useMapStore();
 
 type CoreEventPriority = 'none' | 'low' | 'medium' | 'high' | 'critical';
@@ -172,7 +175,36 @@ async function submit(): Promise<void> {
 
         if (res.error) throw new Error(res.error.message);
 
+        // Provisional marker so the Event appears immediately - the
+        // authoritative CoT broadcast arrives under the same UID and
+        // replaces it, or it goes stale if the broadcast never lands
+        try {
+            await mapStore.worker.db.add({
+                id: res.data.id,
+                type: 'Feature',
+                properties: {
+                    ...res.data.style,
+                    type: res.data.type,
+                    how: 'm-g',
+                    callsign: res.data.name,
+                    remarks: res.data.remarks,
+                    stale: new Date(Date.now() + 30 * 1000).toISOString(),
+                    links: [{
+                        relation: 'p',
+                        type: 'core-event',
+                        event: res.data.id,
+                        remarks: res.data.name,
+                    }],
+                },
+                geometry: res.data.geometry,
+            } as InputFeature);
+        } catch (err) {
+            console.error('Failed to place provisional Event marker:', err);
+        }
+
         emit('close');
+
+        void router.push(`/event/${res.data.id}`);
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
         loading.value = false;
