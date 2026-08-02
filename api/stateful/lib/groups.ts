@@ -1,5 +1,6 @@
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { notInArray, sql } from 'drizzle-orm';
+import { GenerateUpsert } from '@openaddresses/batch-generic';
 import { Channel } from '../../common/schema.js';
 import type ConfigStateful from '../config.js';
 
@@ -70,22 +71,24 @@ export default class Groups {
             }
 
             for (const [bitpos, group] of groups) {
-                await this.config.pg.insert(Channel)
-                    .values({ bitpos, ...group })
-                    .onConflictDoUpdate({
-                        target: Channel.bitpos,
-                        set: {
-                            ...group,
-                            updated: sql`Now()`,
-                        },
-                    });
+                await this.config.models.Channel.generate({
+                    bitpos, ...group,
+                }, {
+                    upsert: GenerateUpsert.DO_NOTHING,
+                });
+
+                await this.config.models.Channel.commit(bitpos, {
+                    ...group,
+                    updated: sql`Now()`,
+                });
             }
 
             // The Admin cert is always a member of at least one Group - treat an
             // empty response as an anomaly rather than truncating the table
             if (groups.size) {
-                await this.config.pg.delete(Channel)
-                    .where(notInArray(Channel.bitpos, [...groups.keys()]));
+                await this.config.models.Channel.delete(
+                    notInArray(Channel.bitpos, [...groups.keys()]),
+                );
             }
         } finally {
             this.syncing = false;
