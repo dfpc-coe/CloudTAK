@@ -157,6 +157,10 @@ export default class RemoteHub implements HubClient {
         await this.#call('/event/set', { layerid, cron });
     }
 
+    async coreEventSubmit(event: string): Promise<void> {
+        await this.#call(`/core/event/${encodeURIComponent(event)}`, {});
+    }
+
     async geofenceRefresh(): Promise<void> {
         await this.#call('/geofence/refresh', {});
     }

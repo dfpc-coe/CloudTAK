@@ -305,11 +305,25 @@ export default class COT {
     }
 
     /**
+     * A machine generated feature this client didn't author (eg a Core Event
+     * CoT, reposted every cycle so local edits are silently overwritten).
+     * Excludes locally created features (creator entry) and Routes
+     */
+    get is_machine_generated(): boolean {
+        return this._properties.how === 'm-g'
+            && !this._properties.creator
+            && !this.is_route;
+    }
+
+    /**
      * Determines if the COT type allows editing
      * But does not determine if a COT is part of a Misison Sync, if the mission allows editing
      */
     get is_editable(): boolean {
-        return this.properties.archived || this.is_self || false;
+        if (this.is_self) return true;
+        if (this.is_machine_generated) return false;
+
+        return this.properties.archived || false;
     }
 
     /**
@@ -613,6 +627,10 @@ export default class COT {
                 if (properties.icon.endsWith('.png')) {
                     properties.icon = properties.icon.replace(/.png$/, '');
                 }
+            } else if (properties.milicon && Type2525.isNumericSIDCConvertable(properties.milicon.id)) {
+                // milicon is authoritative for the 2525 symbol - type only
+                // carries the SIDC on paths that ran node-cot's normalize2525
+                properties.icon = `2525E:${properties.milicon.id}`;
             } else if (Type2525.isNumericSIDCConvertable(properties.type)) {
                 properties.icon = `2525E:${properties.type}`;
             } else {

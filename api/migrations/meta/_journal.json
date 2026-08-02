@@ -1331,6 +1331,13 @@
       "when": 1785632867112,
       "tag": "0190_groovy_randall_flagg",
       "breakpoints": true
+    },
+    {
+      "idx": 191,
+      "version": "7",
+      "when": 1785632867113,
+      "tag": "0191_core_event_properties",
+      "breakpoints": true
     }
   ]
 }

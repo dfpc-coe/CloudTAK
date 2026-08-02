@@ -28,11 +28,21 @@
         />
 
         <template v-if='coords && coords.length >= 2'>
+            <div class='px-2 py-2'>
+                <button
+                    class='btn btn-success w-100'
+                    @click='eventModal = true'
+                >
+                    Create Event
+                </button>
+            </div>
+
             <QueryReverse
                 :key='`reverse-${refreshKey}`'
                 :longitude='coords[0]'
                 :latitude='coords[1]'
                 class='py-2'
+                @reverse='reverse = $event'
             />
 
             <QueryElevation
@@ -64,11 +74,19 @@
             />
         </template>
     </MenuTemplate>
+
+    <CreateCoreEvent
+        v-if='eventModal && coords && coords.length >= 2'
+        :coordinates='coords'
+        :location='reverse ? reverse.LongLabel : ""'
+        @close='eventModal = false'
+    />
 </template>
 
 <script setup lang='ts'>
 import { ref, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import type { SearchReverseReverse } from '../../types.ts';
 import {
     IconRefresh,
     IconRoute
@@ -83,11 +101,14 @@ import {
 } from '@tak-ps/vue-tabler';
 import Coordinate from './util/Coordinate.vue';
 import MenuTemplate from './util/MenuTemplate.vue';
+import CreateCoreEvent from './util/CreateCoreEvent.vue';
 
 const route = useRoute();
 const router = useRouter();
 
 const refreshKey = ref(0);
+const eventModal = ref(false);
+const reverse = ref<SearchReverseReverse['reverse']>(null);
 
 const coords = computed<number[] | undefined>(() => {
     return route.params.coords
@@ -96,6 +117,7 @@ const coords = computed<number[] | undefined>(() => {
 });
 
 watch(coords, () => {
+    reverse.value = null;
     refreshKey.value++;
 });
 

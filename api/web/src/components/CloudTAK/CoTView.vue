@@ -41,6 +41,24 @@
             class='d-flex flex-column h-100'
             style='min-height: 0;'
         >
+            <div
+                v-if='offlineEvent'
+                class='col-12 flex-shrink-0 px-2 pt-2'
+            >
+                <TablerInlineAlert
+                    severity='warning'
+                    title='Event Details Unavailable'
+                    description='This marker is a CloudTAK Event - the Event it was generated from can only be loaded while online.'
+                />
+                <TablerButton
+                    class='w-100'
+                    :disabled='retrying'
+                    @click='retryEvent'
+                >
+                    Retry
+                </TablerButton>
+            </div>
+
             <div class='col-12 border-bottom cloudtak-bg flex-shrink-0 d-flex align-items-center flex-nowrap gap-0 px-1 py-1'>
                 <div class='btn-list d-flex flex-nowrap align-items-center gap-0 mb-0'>
                     <IconStarFilled
@@ -428,6 +446,14 @@
                     </div>
 
                     <div
+                        v-for='guid of missionLinks'
+                        :key='guid'
+                        class='pt-2 col-12 px-2'
+                    >
+                        <PropertyMission :guid='guid' />
+                    </div>
+
+                    <div
                         class='pt-2'
                         :class='{
                             "col-md-8": center.length > 2,
@@ -706,10 +732,12 @@ import { OriginMode } from '../../base/cot.ts'
 import Subscription from '../../base/subscription.ts'
 import {
     TablerNone,
+    TablerButton,
     TablerDelete,
     TablerDropdown,
     TablerIconButton,
     TablerPillGroup,
+    TablerInlineAlert,
 } from '@tak-ps/vue-tabler';
 
 import CopyField from './util/CopyField.vue';
@@ -719,6 +747,7 @@ import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
 import PropertyProfile from './Property/PropertyProfile.vue';
 import PropertyType from './Property/PropertyType.vue';
+import PropertyMission from './Property/PropertyMission.vue';
 import Type2525 from '@tak-ps/node-cot/2525';
 
 function isSIDCType(type: string): boolean {
@@ -775,6 +804,7 @@ import Subscriptions from './util/Subscriptions.vue';
 import { server } from '../../std.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { useFloatStore } from '../../stores/float.ts';
+import { useDeviceStore } from '../../stores/device.ts';
 import ProfileConfig from '../../base/profile.ts';
 import Config from '../../base/config.ts';
 import { setCircleRadius } from '../../base/cot/ellipse.ts';
@@ -782,6 +812,8 @@ import { setCircleRadius } from '../../base/cot/ellipse.ts';
 const mapStore = useMapStore();
 
 const floatStore = useFloatStore();
+
+const deviceStore = useDeviceStore();
 
 const terrainBasemapId = ref<number | null>(null);
 Config.list(['map::terrain'], { defaults: { 'map::terrain': null } }).then((cfg) => {
@@ -821,6 +853,11 @@ const remarksExpanded = ref(true);
 const bufferCotId = ref<string | null>(null);
 const actionIconSize = 28;
 
+// The Event a CoT is a projection of, when it couldn't be opened because
+// the device is offline
+const offlineEvent = ref<string | undefined>(undefined);
+const retrying = ref(false);
+
 const isNavigating = computed(() => {
     return mapStore.navigation.active
         && !!cot.value
@@ -853,6 +890,7 @@ watch(cot, async () => {
 watch(route, async () => {
     mode.value = 'default'
     breadcrumbLive.value = false;
+    offlineEvent.value = undefined;
     await load_cot();
     if (cot.value) {
         breadcrumbLive.value = await mapStore.worker.db.breadcrumb.get(cot.value.id);
@@ -921,6 +959,17 @@ const center = computed(() => {
     return arr;
 })
 
+// Unique GUIDs of the Missions the CoT's Links reference
+const missionLinks = computed<string[]>(() => {
+    if (!cot.value) return [];
+
+    return [...new Set(
+        (cot.value.properties.links || [])
+            .map((link) => link.mission)
+            .filter((mission): mission is string => !!mission)
+    )];
+});
+
 const lineGeometry = computed(() => {
     if (!cot.value || cot.value.geometry.type !== 'LineString') return null;
     return cot.value.geometry;
@@ -947,6 +996,23 @@ function toggleLock() {
     }
 }
 
+// load_cot redirects to the Event View if the network has come back
+async function retryEvent(): Promise<void> {
+    retrying.value = true;
+
+    try {
+        await load_cot();
+    } finally {
+        retrying.value = false;
+    }
+}
+
+// UUID of the Core Event a CoT is the projection of, carried on its `p` Link
+function coreEvent(cot: COT): string | undefined {
+    const marker = (cot.properties.links || []).find((link) => !!link.event);
+    return marker ? marker.event : undefined;
+}
+
 async function load_cot() {
     username.value = undefined;
 
@@ -959,6 +1025,17 @@ async function load_cot() {
     }
 
     if (baseCOT) {
+        // The Event View is the richer representation but is API-only -
+        // offline, the CoT remains the best available view of the Event
+        const event = coreEvent(baseCOT);
+        if (event && deviceStore.network.isOnline) {
+            // replace() so back navigation doesn't immediately redirect again
+            await router.replace(`/event/${event}`);
+            return;
+        }
+
+        offlineEvent.value = event;
+
         if (cot.value && cot.value._liveQuerySubscription) {
             cot.value._liveQuerySubscription.unsubscribe();
         }

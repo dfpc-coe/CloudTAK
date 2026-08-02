@@ -39,87 +39,7 @@
                     </div>
 
                     <div class='col-12'>
-                        <label class='form-label required'>Symbol</label>
-                        <template v-if='selectedType'>
-                            <div
-                                class='d-flex align-items-center gap-2 px-3 form-select'
-                                style='cursor: default;'
-                            >
-                                <span
-                                    class='flex-grow-1 user-select-none text-truncate'
-                                    v-text='selectedType.name'
-                                />
-                                <IconX
-                                    :size='16'
-                                    stroke='1'
-                                    class='cursor-pointer flex-shrink-0 text-muted'
-                                    @click.stop='selectedType = undefined'
-                                />
-                            </div>
-                        </template>
-                        <template v-else-if='presets.length && !customMode'>
-                            <div class='overflow-auto border rounded'>
-                                <div
-                                    v-for='preset in presets'
-                                    :key='preset.name'
-                                    class='px-2 py-1 cloudtak-hover cursor-pointer user-select-none text-truncate d-flex align-items-center gap-2'
-                                    @click='selectedType = { sidc: preset.type, name: preset.name }'
-                                >
-                                    <img
-                                        v-if='preset.icon'
-                                        :src='preset.icon'
-                                        :alt='preset.name'
-                                        style='width: 20px; height: 20px; object-fit: contain;'
-                                    >
-                                    <span class='text-truncate'>{{ preset.name }}</span>
-                                </div>
-                            </div>
-                            <button
-                                class='btn btn-sm w-100 mt-2'
-                                @click='customMode = true'
-                            >
-                                Custom
-                            </button>
-                        </template>
-                        <template v-else>
-                            <TablerInput
-                                v-model='typeFilter'
-                                icon='search'
-                                placeholder='Search 2525E Symbols...'
-                            />
-                            <TablerLoading
-                                v-if='typeLoading'
-                                :compact='true'
-                                desc='Loading Symbols'
-                            />
-                            <TablerNone
-                                v-else-if='!types.length'
-                                :compact='true'
-                                :create='false'
-                                label='No Symbols'
-                            />
-                            <div
-                                v-else
-                                class='overflow-auto border rounded'
-                                style='max-height: 200px;'
-                            >
-                                <div
-                                    v-for='type in types'
-                                    :key='type.sidc'
-                                    class='px-2 py-1 cloudtak-hover cursor-pointer user-select-none text-truncate'
-                                    @click='selectedType = type'
-                                >
-                                    {{ type.name }}
-                                </div>
-                            </div>
-                            <button
-                                v-if='presets.length'
-                                class='btn btn-sm w-100 mt-2'
-                                @click='customMode = false'
-                            >
-                                Back to Preconfigured Types
-                            </button>
-                        </template>
+                        <CoreEventType v-model='config.type' />
                     </div>
 
                     <div class='col-12'>
@@ -131,10 +51,9 @@
                     </div>
 
                     <div class='col-12'>
-                        <TablerInput
+                        <PropertyCoreEventLocation
                             v-model='config.location'
-                            label='Location'
-                            placeholder='Human readable location - ie: an address'
+                            :edit='true'
                         />
                     </div>
 
@@ -162,7 +81,7 @@
 
                 <button
                     class='btn btn-primary w-100 mt-3'
-                    :disabled='!config.name.trim() || !selectedType'
+                    :disabled='!config.name.trim() || !config.type'
                     @click='submit'
                 >
                     Create Event
@@ -173,15 +92,17 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted } from 'vue';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { server } from '../../../std.ts';
 import Coordinate from './Coordinate.vue';
+import CoreEventType from './CoreEventType.vue';
+import PropertyCoreEventLocation from '../Property/PropertyCoreEventLocation.vue';
 import GroupSelect from '../../util/GroupSelect.vue';
 import GroupManager from '../../../base/group.ts';
 import { useMapStore } from '../../../stores/map.ts';
-import { IconX } from '@tabler/icons-vue';
+import type { InputFeature } from '../../../types.ts';
 import {
-    TablerNone,
     TablerAlert,
     TablerEnum,
     TablerInput,
@@ -189,40 +110,30 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 
+const props = defineProps<{
+    coordinates?: number[];
+    location?: string;
+}>();
+
 const emit = defineEmits([ 'close' ]);
 
+const router = useRouter();
 const mapStore = useMapStore();
-
-type Symbol2525E = {
-    sidc: string;
-    name: string;
-};
-
-type CoreEventTypePreset = {
-    name: string;
-    type: string;
-    icon?: string;
-};
 
 type CoreEventPriority = 'none' | 'low' | 'medium' | 'high' | 'critical';
 
 const error = ref<Error | undefined>(undefined);
 const loading = ref(false);
 
-const typeFilter = ref('');
-const typeLoading = ref(false);
-const types = ref<Symbol2525E[]>([]);
-const selectedType = ref<Symbol2525E | undefined>(undefined);
-
-const presets = ref<CoreEventTypePreset[]>([]);
-const customMode = ref(false);
-
-const center = mapStore.map.getCenter();
+const center = props.coordinates && props.coordinates.length >= 2
+    ? { lng: props.coordinates[0], lat: props.coordinates[1] }
+    : mapStore.map.getCenter();
 
 const config = ref({
     name: '',
+    type: '',
     priority: 'none' as CoreEventPriority,
-    location: '',
+    location: props.location || '',
     remarks: '',
     channels: [] as Array<string>,
     coordinates: [
@@ -231,62 +142,8 @@ const config = ref({
     ]
 });
 
-watch(typeFilter, async () => {
-    await fetchTypes();
-});
-
-onMounted(async () => {
-    await Promise.all([
-        fetchTypes(),
-        fetchPresets(),
-    ]);
-});
-
-async function fetchPresets(): Promise<void> {
-    try {
-        const res = await server.GET('/api/config', {
-            params: {
-                query: {
-                    keys: 'core::event::types'
-                }
-            }
-        });
-
-        if (res.error) throw new Error(res.error.message);
-        presets.value = (res.data['core::event::types'] || []).filter((preset) => {
-            return preset.name && preset.type;
-        });
-    } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err));
-    }
-}
-
-async function fetchTypes(): Promise<void> {
-    try {
-        typeLoading.value = true;
-        const res = await server.GET('/api/type/2525e', {
-            params: {
-                query: {
-                    filter: typeFilter.value,
-                    identity: 'f',
-                    limit: 20
-                }
-            }
-        });
-
-        if (res.error) throw new Error(res.error.message);
-        types.value = res.data.items.map((item) => {
-            return { sidc: item.sidc, name: item.name };
-        });
-    } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err));
-    }
-
-    typeLoading.value = false;
-}
-
 async function submit(): Promise<void> {
-    if (!selectedType.value) return;
+    if (!config.value.type) return;
 
     try {
         loading.value = true;
@@ -299,13 +156,15 @@ async function submit(): Promise<void> {
         const res = await server.POST('/api/core/event', {
             body: {
                 name: config.value.name.trim(),
-                type: selectedType.value.sidc,
+                type: config.value.type,
                 priority: config.value.priority,
                 location: config.value.location,
                 remarks: config.value.remarks,
                 external_id: '',
                 editable: true,
                 metadata: {},
+                links: [],
+                style: {},
                 channels,
                 geometry: {
                     type: 'Point',
@@ -316,7 +175,35 @@ async function submit(): Promise<void> {
 
         if (res.error) throw new Error(res.error.message);
 
+        // Provisional marker so the Event appears immediately - the CoT
+        // broadcast replaces it under the same UID, or it goes stale
+        try {
+            await mapStore.worker.db.add({
+                id: res.data.id,
+                type: 'Feature',
+                properties: {
+                    ...res.data.style,
+                    type: res.data.type,
+                    how: 'm-g',
+                    callsign: res.data.name,
+                    remarks: res.data.remarks,
+                    stale: new Date(Date.now() + 30 * 1000).toISOString(),
+                    links: [{
+                        relation: 'p',
+                        type: 'core-event',
+                        event: res.data.id,
+                        remarks: res.data.name,
+                    }],
+                },
+                geometry: res.data.geometry,
+            } as InputFeature);
+        } catch (err) {
+            console.error('Failed to place provisional Event marker:', err);
+        }
+
         emit('close');
+
+        void router.push(`/event/${res.data.id}`);
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
         loading.value = false;

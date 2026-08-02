@@ -1,5 +1,5 @@
 import { Type, Static } from '@sinclair/typebox';
-import { StandardResponse, CoreEventResponse, GeoJSONFeatureGeometryPoint } from '../../common/types.js';
+import { StandardResponse, CoreEventResponse, CoreEventLink, CoreEventStyle, GeoJSONFeatureGeometryPoint } from '../../common/types.js';
 import { sql, eq } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -232,6 +232,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 default: {},
                 description: 'User defined key/value Event metadata',
             }),
+            links: Type.Array(CoreEventLink, {
+                default: [],
+                description: 'Named URLs associated with the Event',
+            }),
+            style: Type.Object(CoreEventStyle.properties, {
+                default: {},
+                description: 'Point styling for the Event',
+            }),
             channels: Type.Array(Type.Integer({ minimum: 0 }), {
                 uniqueItems: true,
                 default: [],
@@ -264,6 +272,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     })));
             }
 
+            // Best effort - a failed immediate submit is recovered by the
+            // Admin Connection's next scheduled submit cycle
+            config.hub.coreEventSubmit(event.id).catch((err) => {
+                console.error(`not ok - failed to immediately submit Core Event ${event.id}:`, err);
+            });
+
             res.json(await config.models.CoreEvent.augmented_from(event.id));
         } catch (err) {
             Err.respond(err, res);
@@ -282,6 +296,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         body: Type.Object({
             name: Type.Optional(Default.NameField),
             type: Type.Optional(Type.String()),
+            mission_guid: Type.Optional(Type.Union([Type.Null(), Type.String({
+                format: 'uuid',
+            })], {
+                description: 'GUID of a TAK Server Mission to associate with the Event - set to null to remove the association',
+            })),
             priority: Type.Optional(Type.Enum(CoreEvent_Priority)),
             geometry: Type.Optional(GeoJSONFeatureGeometryPoint),
             location: Type.Optional(Type.String()),
@@ -296,6 +315,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             editable: Type.Optional(Type.Boolean()),
             metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown(), {
                 description: 'User defined key/value Event metadata - replaces the existing metadata object',
+            })),
+            links: Type.Optional(Type.Array(CoreEventLink, {
+                description: 'Named URLs associated with the Event - replaces the existing links array',
+            })),
+            style: Type.Optional(Type.Object(CoreEventStyle.properties, {
+                description: 'Point styling for the Event - replaces the existing style object',
             })),
             channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), { uniqueItems: true })),
         }),
@@ -332,9 +357,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (Object.keys(body).length > 0) {
-                // An explicit ended value in the body always wins over the
-                // active-derived timestamp; an existing ended is preserved
-                // so re-ending an Event doesn't move its original end time
+                // An explicit ended in the body wins; an existing ended is
+                // preserved so re-ending doesn't move the original end time
                 let ended: typeof body.ended | ReturnType<typeof sql> = body.ended;
                 if (body.ended === undefined) {
                     if (body.active === false && !event.ended) {
@@ -362,6 +386,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                             channel: BigInt(ch),
                         })));
                 }
+            }
+
+            if (Object.keys(body).length > 0 || channels !== undefined) {
+                // Best effort - a failed immediate submit is recovered by the
+                // next scheduled cycle; an ended Event ages out via stale
+                config.hub.coreEventSubmit(req.params.event).catch((err) => {
+                    console.error(`not ok - failed to immediately submit Core Event ${req.params.event}:`, err);
+                });
             }
 
             res.json(await config.models.CoreEvent.augmented_from(req.params.event));

@@ -1,6 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import WebSocket from 'ws';
-import { MachineConnConfig, ProfileConnConfig, AdminConnConfig } from '../../../common/connection-config.js';
+import { MachineConnConfig, ProfileConnConfig, AdminConnConfig, isCoreEventSubmitter } from '../../../common/connection-config.js';
 import type { Connection } from '../../../common/schema.js';
 import type { InferSelectModel } from 'drizzle-orm';
 import type { GeofenceStatus } from '../connection-geofence.js';
@@ -164,6 +164,13 @@ export default class LocalHub implements HubClient {
         } else {
             await this.config.events.delete(layerid);
         }
+    }
+
+    async coreEventSubmit(event: string): Promise<void> {
+        const client = this.config.conns.get(0);
+        if (!client || !isCoreEventSubmitter(client.config)) return;
+
+        await client.config.submitEvents(client.tak, client.api, { event });
     }
 
     async geofenceRefresh(): Promise<void> {

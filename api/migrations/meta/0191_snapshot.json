@@ -1,6 +1,6 @@
 {
-  "id": "6bc3e2d7-b86a-4920-98c4-e07f7743674e",
-  "prevId": "ea20fdfb-26ab-42d1-b341-82d3cf4326de",
+  "id": "c141fc0a-93f4-4eb4-bc20-1689a91ddb6c",
+  "prevId": "6bc3e2d7-b86a-4920-98c4-e07f7743674e",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -821,6 +821,12 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
+        "mission_guid": {
+          "name": "mission_guid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created": {
           "name": "created",
           "type": "timestamp with time zone",
@@ -909,6 +915,20 @@
         },
         "metadata": {
           "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "links": {
+          "name": "links",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "style": {
+          "name": "style",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": true,
