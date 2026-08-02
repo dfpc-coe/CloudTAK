@@ -1,5 +1,6 @@
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { notInArray, sql } from 'drizzle-orm';
+import { GenerateUpsert } from '@openaddresses/batch-generic';
 import { Channel } from '../../common/schema.js';
 import type ConfigStateful from '../config.js';
 
@@ -47,16 +48,33 @@ export default class Groups {
         }
     }
 
+    /**
+     * The Groups API can only be queried once an Admin Certificate has been
+     * configured - until then sync runs are skipped, resuming automatically
+     * on the next interval once the server is configured
+     */
+    configured(): boolean {
+        return !!(
+            this.config.server.api
+            && this.config.server.auth.cert
+            && this.config.server.auth.key
+        );
+    }
+
     async sync(): Promise<void> {
         if (this.syncing) return;
-        if (!this.config.server.auth.cert || !this.config.server.auth.key) return;
+        if (!this.configured()) return;
+
+        // Re-checked for TypeScript's benefit - configured() cannot narrow class properties
+        const { cert, key } = this.config.server.auth;
+        if (!cert || !key) return;
 
         this.syncing = true;
 
         try {
             const api = await TAKAPI.init(
                 new URL(String(this.config.server.api)),
-                new APIAuthCertificate(this.config.server.auth.cert, this.config.server.auth.key),
+                new APIAuthCertificate(cert, key),
             );
 
             // The same Group is returned once per direction (IN/OUT) - dedupe on bitpos
@@ -70,22 +88,24 @@ export default class Groups {
             }
 
             for (const [bitpos, group] of groups) {
-                await this.config.pg.insert(Channel)
-                    .values({ bitpos, ...group })
-                    .onConflictDoUpdate({
-                        target: Channel.bitpos,
-                        set: {
-                            ...group,
-                            updated: sql`Now()`,
-                        },
-                    });
+                await this.config.models.Channel.generate({
+                    bitpos, ...group,
+                }, {
+                    upsert: GenerateUpsert.DO_NOTHING,
+                });
+
+                await this.config.models.Channel.commit(bitpos, {
+                    ...group,
+                    updated: sql`Now()`,
+                });
             }
 
             // The Admin cert is always a member of at least one Group - treat an
             // empty response as an anomaly rather than truncating the table
             if (groups.size) {
-                await this.config.pg.delete(Channel)
-                    .where(notInArray(Channel.bitpos, [...groups.keys()]));
+                await this.config.models.Channel.delete(
+                    notInArray(Channel.bitpos, [...groups.keys()]),
+                );
             }
         } finally {
             this.syncing = false;

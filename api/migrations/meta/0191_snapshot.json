@@ -1,6 +1,6 @@
 {
-  "id": "39fc9166-9cdb-490a-bed8-a3c9821e7c6a",
-  "prevId": "dcdbfde9-31c2-4944-88ef-9377f132457c",
+  "id": "dcdbfde9-31c2-4944-88ef-9377f132457c",
+  "prevId": "6bc3e2d7-b86a-4920-98c4-e07f7743674e",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -772,7 +772,8 @@
           "name": "mission_guid",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "created": {
           "name": "created",
@@ -3854,6 +3855,59 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.channel": {
+      "name": "channel",
+      "schema": "",
+      "columns": {
+        "bitpos": {
+          "name": "bitpos",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "created": {
+          "name": "created",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "Now()"
+        },
+        "updated": {
+          "name": "updated",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "Now()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
