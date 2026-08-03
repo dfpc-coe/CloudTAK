@@ -42,11 +42,14 @@ import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
 import { isNativePlatform, addBackgroundStateListener, whenForegrounded } from '../base/capacitor.ts';
 import { withTimeout } from '../base/async.ts';
-import { recoverDatabase } from '../database.ts';
+import { db, recoverDatabase } from '../database.ts';
 
 import type { ProfileOverlay, Basemap, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource, LayerSpecification, PropertyValueSpecification } from 'maplibre-gl';
 import type { Position } from '@capacitor/geolocation';
+
+// Missions the dirty sweep has already warned about having no overlay
+const sweepWarned = new Set<string>();
 
 function waitForAtlasWorkerReady(worker: Worker): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -581,6 +584,35 @@ export const useMapStore = defineStore('cloudtak', {
          */
         refresh: async function(): Promise<void> {
             await this.updateCOT();
+            await this.sweepDirtyMissions();
+        },
+        /**
+         * Repaint dirty subscribed Missions whose Mission_Change_Feature
+         * render was lost or failed - loadMission clears the flag when it
+         * paints, so this only touches missions the event path missed
+         */
+        sweepDirtyMissions: async function(): Promise<void> {
+            const dirty = await Subscription.localList({
+                dirty: true,
+                subscribed: true
+            });
+
+            await Promise.allSettled([...dirty].map(async ({ guid }) => {
+                // Leave the flag set so the repaint happens if the overlay returns
+                if (!OverlayManager.loadedByMode('mission', guid)) {
+                    if (!sweepWarned.has(guid)) {
+                        sweepWarned.add(guid);
+                        console.warn(`Mission:${guid} has unrendered changes but no loaded overlay`);
+                    }
+                    return;
+                }
+
+                sweepWarned.delete(guid);
+
+                // Clear first so a write landing mid-render stays flagged
+                await db.subscription.update(guid, { dirty: false });
+                await this.renderMission(guid);
+            }));
         },
         updateCOT: async function(): Promise<void> {
             try {
@@ -698,6 +730,28 @@ export const useMapStore = defineStore('cloudtak', {
         },
 
         /**
+         * Repaint a Mission overlay's source from locally stored features -
+         * no network or Active Mission side effects, safe for the dirty sweep
+         */
+        renderMission: async function(
+            guid: string,
+            sub?: Subscription
+        ): Promise<boolean> {
+            const overlay = OverlayManager.loadedByMode('mission', guid);
+            if (!overlay || !this.map) return false;
+
+            const oStore = this.map.getSource(String(overlay.id));
+            if (!oStore) return false;
+
+            const subscription = sub || await Subscription.from(guid, { subscribed: true });
+            if (!subscription) return false;
+
+            // @ts-expect-error Source.setData is not defined
+            oStore.setData(await subscription.feature.collection(false));
+
+            return true;
+        },
+        /**
          * Given a mission Guid, attempt to refresh the Map Layer, loading the mission if it isn't already loaded
          * @returns {boolean} True if successful, false if not
          */
@@ -714,9 +768,8 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             if (!this.map) throw new Error('Cannot loadMission before map has loaded');
-            const oStore = this.map.getSource(String(overlay.id));
 
-            if (!oStore) {
+            if (!this.map.getSource(String(overlay.id))) {
                 console.error(`Mission:${guid} No Source Found`);
                 return null
             }
@@ -725,8 +778,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (sub) {
                 // Get map data on the map ASAP, even if it is stale
-                // @ts-expect-error Source.setData is not defined
-                oStore.setData(await sub.feature.collection(false));
+                await this.renderMission(guid, sub);
 
                 if (overlay.active) {
                     await this.makeActiveMission(sub);
@@ -748,12 +800,10 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
-            // @ts-expect-error Source.setData is not defined
-            oStore.setData(await sub.feature.collection(false));
+            // Clear first so a write racing this render stays flagged for the sweep
+            await db.subscription.update(guid, { dirty: false });
 
-            if (sub.dirty) {
-                await sub.update({ dirty: false });
-            }
+            await this.renderMission(guid, sub);
 
             return sub;
         },
@@ -909,7 +959,10 @@ export const useMapStore = defineStore('cloudtak', {
                 } else if (msg.type === WorkerMessageType.Channel_Change) {
                     this.channelChange = true;
                 } else if (msg.type === WorkerMessageType.Mission_Change_Feature) {
-                    await this.loadMission(msg.body.guid);
+                    // A failed render stays dirty - the sweep repaints it
+                    await this.loadMission(msg.body.guid).catch((err: unknown) => {
+                        console.error(`Mission:${msg.body.guid} render failed after feature change:`, err);
+                    });
                 } else if (msg.type === WorkerMessageType.Sync_Update) {
                     const event = msg.body as { type: string; action: string; id?: string | number };
 
