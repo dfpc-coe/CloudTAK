@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.59.1 - 2026-08-02
+
+- :bug: Reintroduce schedule based Mission rendering checks as a fallback
+
 ### v13.59.0 - 2026-08-02
 
 - :tada: Introduce Core Event data types
