@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.59.2 - 2026-08-03
+
+- :rocket: Consistent Menu Styling
+
 ### v13.59.1 - 2026-08-02
 
 - :bug: Reintroduce schedule based Mission rendering checks as a fallback
