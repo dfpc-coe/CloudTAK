@@ -192,6 +192,23 @@ export const CoreEventResponse = Type.Object({
     channels: Type.Array(Type.Integer(), { description: 'TAK Server Channels the Event is shared with' }),
 });
 
+export const CoreDeviceResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    username: Type.Union([Type.Null(), Type.String()]),
+    connection: Type.Union([Type.Null(), Type.Integer()], { description: 'Connection that created the Device if created by a Connection or Layer token' }),
+    event: Type.Union([Type.Null(), Type.String()], { description: 'Core Event the Device is currently assigned to' }),
+    type: Type.String({ description: 'MIL-STD-2525E Symbol ID' }),
+    name: Type.String(),
+    external_id: Type.String({ description: 'ID of the Device in an external system' }),
+    remarks: Type.String(),
+    metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Device metadata' }),
+    last_seen: Type.Union([Type.Null(), Type.String()], { description: 'Time at which the Device position was last reported' }),
+    geometry: Type.Union([Type.Null(), GeoJSONFeatureGeometryPoint], { description: 'Last known position of the Device' }),
+    channels: Type.Array(Type.Integer(), { description: 'TAK Server Channels the Device is shared with' }),
+});
+
 export const MissionTemplateResponse = Type.Object({
     id: Type.String(),
     name: Type.String(),

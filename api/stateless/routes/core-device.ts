@@ -1,0 +1,409 @@
+import { Type, Static } from '@sinclair/typebox';
+import { StandardResponse, CoreDeviceResponse, GeoJSONFeatureGeometryPoint } from '../../common/types.js';
+import { sql, eq } from 'drizzle-orm';
+import Schema from '@openaddresses/batch-schema';
+import Err from '@openaddresses/batch-error';
+import Auth, { AuthUser, AuthResource, AuthResourceAccess } from '../../common/auth.js';
+import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
+import { CoreDevice, CoreDeviceChannel } from '../../common/schema.js';
+import type ConfigStateless from '../config.js';
+import activeChannels from '../lib/tak-channels.js';
+import * as Default from '../lib/limits.js';
+
+export default async function router(schema: Schema, config: ConfigStateless) {
+    async function userChannels(email: string): Promise<Set<number>> {
+        const profile = await config.models.Profile.from(email);
+        const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+        return await activeChannels(api);
+    }
+
+    /**
+     * Resolve the Connection a Connection or Layer resource token belongs to
+     */
+    async function resourceConnection(auth: AuthResource): Promise<number> {
+        if (auth.access === AuthResourceAccess.LAYER) {
+            if (auth.id === undefined) throw new Err(401, null, 'Layer Resource Token must contain a Layer ID');
+            const layer = await config.models.Layer.from(auth.id);
+            if (layer.connection === null) throw new Err(401, null, 'Layer is not associated with a Connection');
+            return layer.connection;
+        } else {
+            if (auth.id === undefined) throw new Err(401, null, 'Connection Resource Token must contain a Connection ID');
+            const connection = await config.models.Connection.from(auth.id);
+            return connection.id;
+        }
+    }
+
+    /**
+     * Is the requester the creator of the Device - the user that created it,
+     * a System Admin, or a Connection/Layer token belonging to the Connection
+     * that created it
+     */
+    function isDeviceCreator(auth: AuthUser | AuthResource, device: Static<typeof CoreDeviceResponse>, connection: number | null): boolean {
+        if (auth instanceof AuthUser) {
+            return auth.is_admin() || device.username === auth.email;
+        } else {
+            return connection !== null && device.connection === connection;
+        }
+    }
+
+    /**
+     * A Device is visible to its creator, System Admins, any user with an
+     * active channel the Device has been shared with, and Connection/Layer
+     * tokens belonging to the Connection that created it
+     */
+    async function ensureDeviceAccess(auth: AuthUser | AuthResource, device: Static<typeof CoreDeviceResponse>, connection: number | null): Promise<void> {
+        if (isDeviceCreator(auth, device, connection)) return;
+
+        if (auth instanceof AuthUser) {
+            const shared = (device.channels || []).map(c => Number(c));
+            if (shared.length) {
+                const active = await userChannels(auth.email);
+                if (shared.some(c => active.has(c))) return;
+            }
+        }
+
+        throw new Err(403, null, 'You do not have permission to access this Device');
+    }
+
+    /**
+     * Ensure a Core Event a Device is being assigned to exists
+     */
+    async function ensureEventExists(event: string): Promise<void> {
+        const list = await config.models.CoreEvent.list({
+            limit: 1,
+            where: sql`id = ${event}`,
+        });
+
+        if (list.total === 0) throw new Err(400, null, 'Assigned Core Event does not exist');
+    }
+
+    await schema.get('/core/device', {
+        name: 'List Devices',
+        group: 'CoreDevice',
+        description: 'List Core Devices',
+        query: Type.Object({
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order,
+            sort: Type.String({
+                default: 'created',
+                enum: Object.keys(CoreDevice),
+            }),
+            filter: Default.Filter,
+            event: Type.Optional(Type.String({
+                format: 'uuid',
+                description: 'Only return Devices assigned to the given Core Event',
+            })),
+            channel: Type.Optional(Type.Union([
+                Type.Integer({ minimum: 0 }),
+                Type.Array(Type.Integer({ minimum: 0 })),
+            ], {
+                description: 'Only return Devices shared with the given TAK Channel bitpos - can be provided multiple times to match any of the given Channels',
+            })),
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(CoreDeviceResponse),
+        }),
+    }, async (req, res) => {
+        try {
+            const auth = await Auth.is_auth(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION },
+                    { access: AuthResourceAccess.LAYER },
+                ],
+            });
+
+            const filterChannels = req.query.channel === undefined
+                ? []
+                : Array.isArray(req.query.channel) ? req.query.channel : [req.query.channel];
+
+            const channel = filterChannels.length === 0
+                ? sql`True`
+                : sql`EXISTS (
+                    SELECT 1
+                    FROM core_device_channel
+                    WHERE core_device_channel.device = core_device.id
+                    AND core_device_channel.channel IN ${filterChannels}
+                )`;
+
+            const event = req.query.event === undefined
+                ? sql`True`
+                : sql`event = ${req.query.event}`;
+
+            let where;
+            if (auth instanceof AuthResource) {
+                const connection = await resourceConnection(auth);
+
+                where = sql`
+                    name ~* ${req.query.filter}
+                    AND connection = ${connection}
+                    AND ${channel}
+                    AND ${event}
+                `;
+            } else if (auth.is_admin()) {
+                where = sql`
+                    name ~* ${req.query.filter}
+                    AND ${channel}
+                    AND ${event}
+                `;
+            } else {
+                const user = auth;
+                const channels = [...await userChannels(user.email)];
+
+                where = channels.length
+                    ? sql`
+                        name ~* ${req.query.filter}
+                        AND (
+                            username = ${user.email}
+                            OR EXISTS (
+                                SELECT 1
+                                FROM core_device_channel
+                                WHERE core_device_channel.device = core_device.id
+                                AND core_device_channel.channel IN ${channels}
+                            )
+                        )
+                        AND ${channel}
+                        AND ${event}
+                    `
+                    : sql`
+                        name ~* ${req.query.filter}
+                        AND username = ${user.email}
+                        AND ${channel}
+                        AND ${event}
+                    `;
+            }
+
+            const list = await config.models.CoreDevice.augmented_list({
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
+                where,
+            });
+
+            res.json(list);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/core/device/:device', {
+        name: 'Get Device',
+        group: 'CoreDevice',
+        description: 'Get a Core Device',
+        params: Type.Object({
+            device: Type.String({
+                format: 'uuid',
+            }),
+        }),
+        res: CoreDeviceResponse,
+    }, async (req, res) => {
+        try {
+            const auth = await Auth.is_auth(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION },
+                    { access: AuthResourceAccess.LAYER },
+                ],
+            });
+
+            const connection = auth instanceof AuthResource ? await resourceConnection(auth) : null;
+
+            const device = await config.models.CoreDevice.augmented_from(req.params.device);
+
+            await ensureDeviceAccess(auth, device, connection);
+
+            res.json(device);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/core/device', {
+        name: 'Create Device',
+        group: 'CoreDevice',
+        description: 'Create a new Core Device',
+        body: Type.Object({
+            name: Default.NameField,
+            type: Type.String({
+                description: 'MIL-STD-2525E Symbol ID',
+            }),
+            event: Type.Optional(Type.Union([Type.Null(), Type.String({
+                format: 'uuid',
+            })], {
+                description: 'Core Event to assign the Device to',
+            })),
+            geometry: Type.Optional(Type.Union([Type.Null(), GeoJSONFeatureGeometryPoint], {
+                description: 'Last known position of the Device',
+            })),
+            last_seen: Type.Optional(Type.Union([Type.Null(), Type.String({
+                format: 'date-time',
+                description: 'Time at which the Device position was last reported - defaults to Now() if a geometry is provided',
+            })])),
+            external_id: Type.String({
+                default: '',
+                description: 'ID of the Device in an external system',
+            }),
+            remarks: Type.String({
+                default: '',
+            }),
+            metadata: Type.Record(Type.String(), Type.Unknown(), {
+                default: {},
+                description: 'User defined key/value Device metadata',
+            }),
+            channels: Type.Array(Type.Integer({ minimum: 0 }), {
+                uniqueItems: true,
+                default: [],
+                description: 'TAK Server Channels to share the Device with',
+            }),
+        }),
+        res: CoreDeviceResponse,
+    }, async (req, res) => {
+        try {
+            const auth = await Auth.is_auth(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION },
+                    { access: AuthResourceAccess.LAYER },
+                ],
+            });
+
+            const { channels, ...body } = req.body;
+
+            if (body.event) await ensureEventExists(body.event);
+
+            const device = await config.models.CoreDevice.generate({
+                ...body,
+                last_seen: body.last_seen !== undefined
+                    ? body.last_seen
+                    : (body.geometry ? sql`Now()` : null),
+                username: auth instanceof AuthUser ? auth.email : null,
+                connection: auth instanceof AuthResource ? await resourceConnection(auth) : null,
+            });
+
+            if (channels.length > 0) {
+                await config.pg.insert(CoreDeviceChannel)
+                    .values(channels.map(ch => ({
+                        device: device.id,
+                        channel: BigInt(ch),
+                    })));
+            }
+
+            res.json(await config.models.CoreDevice.augmented_from(device.id));
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/core/device/:device', {
+        name: 'Update Device',
+        group: 'CoreDevice',
+        description: 'Update properties of a Core Device - only the Device creator can make changes',
+        params: Type.Object({
+            device: Type.String({
+                format: 'uuid',
+            }),
+        }),
+        body: Type.Object({
+            name: Type.Optional(Default.NameField),
+            type: Type.Optional(Type.String()),
+            event: Type.Optional(Type.Union([Type.Null(), Type.String({
+                format: 'uuid',
+            })], {
+                description: 'Core Event to assign the Device to - set to null to unassign',
+            })),
+            geometry: Type.Optional(Type.Union([Type.Null(), GeoJSONFeatureGeometryPoint])),
+            last_seen: Type.Optional(Type.Union([Type.Null(), Type.String({
+                format: 'date-time',
+                description: 'Defaults to Now() when a geometry is submitted without an explicit last_seen',
+            })])),
+            external_id: Type.Optional(Type.String()),
+            remarks: Type.Optional(Type.String()),
+            metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown(), {
+                description: 'User defined key/value Device metadata - replaces the existing metadata object',
+            })),
+            channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), { uniqueItems: true })),
+        }),
+        res: CoreDeviceResponse,
+    }, async (req, res) => {
+        try {
+            const auth = await Auth.is_auth(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION },
+                    { access: AuthResourceAccess.LAYER },
+                ],
+            });
+
+            const connection = auth instanceof AuthResource ? await resourceConnection(auth) : null;
+
+            const device = await config.models.CoreDevice.augmented_from(req.params.device);
+
+            if (!isDeviceCreator(auth, device, connection)) {
+                throw new Err(403, null, 'Only the Device creator can modify this Device');
+            }
+
+            const { channels, ...body } = req.body;
+
+            if (body.event) await ensureEventExists(body.event);
+
+            if (Object.keys(body).length > 0) {
+                // A submitted position implies a fresh report unless an
+                // explicit last_seen accompanies it
+                let last_seen: typeof body.last_seen | ReturnType<typeof sql> = body.last_seen;
+                if (body.last_seen === undefined && body.geometry) {
+                    last_seen = sql`Now()`;
+                }
+
+                await config.models.CoreDevice.commit(req.params.device, {
+                    ...body,
+                    ...(last_seen === undefined ? {} : { last_seen }),
+                    updated: sql`Now()`,
+                });
+            }
+
+            if (channels !== undefined) {
+                await config.pg.delete(CoreDeviceChannel)
+                    .where(eq(CoreDeviceChannel.device, req.params.device));
+
+                if (channels.length > 0) {
+                    await config.pg.insert(CoreDeviceChannel)
+                        .values(channels.map(ch => ({
+                            device: req.params.device,
+                            channel: BigInt(ch),
+                        })));
+                }
+            }
+
+            res.json(await config.models.CoreDevice.augmented_from(req.params.device));
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/core/device/:device', {
+        name: 'Delete Device',
+        group: 'CoreDevice',
+        description: 'Delete a Core Device',
+        params: Type.Object({
+            device: Type.String({
+                format: 'uuid',
+            }),
+        }),
+        res: StandardResponse,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const device = await config.models.CoreDevice.from(req.params.device);
+
+            if (!user.is_admin() && device.username !== user.email) {
+                throw new Err(403, null, 'Only the Device creator can delete this Device');
+            }
+
+            await config.models.CoreDevice.delete(req.params.device);
+
+            res.json({ status: 200, message: 'Core Device Deleted' });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+}

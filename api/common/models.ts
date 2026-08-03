@@ -1,4 +1,5 @@
 import Modeler, { Pool } from '@openaddresses/batch-generic';
+import CoreDevice from './models/CoreDevice.js';
 import CoreEvent from './models/CoreEvent.js';
 import Data from './models/Data.js';
 import Import from './models/Import.js';
@@ -23,6 +24,7 @@ export default class Models {
 
     Channel: Modeler<typeof pgtypes.Channel>;
 
+    CoreDevice: CoreDevice;
     CoreEvent: CoreEvent;
 
     Connection: Modeler<typeof pgtypes.Connection>;
@@ -64,6 +66,7 @@ export default class Models {
 
     constructor(pg: Pool<typeof pgtypes>) {
         this.Channel = new Modeler(pg, pgtypes.Channel);
+        this.CoreDevice = new CoreDevice(pg);
         this.CoreEvent = new CoreEvent(pg);
         this.ProfileChat = new ProfileChat(pg);
         this.Icon = new Icon(pg);

@@ -62,6 +62,32 @@ export const CoreEventChannel = pgTable('core_event_channel', {
     }),
 }));
 
+/** A durable physical asset (sensor, tracker, vehicle) that exists independently of any Event */
+export const CoreDevice = pgTable('core_device', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    username: text().references(() => Profile.username),
+    connection: integer().references(() => Connection.id, { onDelete: 'set null' }),
+    event: uuid().references(() => CoreEvent.id, { onDelete: 'set null' }), // Event the Device is currently assigned to
+    type: text().notNull(), // MIL-STD-2525E Symbol ID
+    name: text().notNull(),
+    external_id: text().notNull().default(''),
+    remarks: text().notNull().default(''),
+    metadata: jsonb().$type<Record<string, unknown>>().notNull().default({}),
+    last_seen: timestamp({ withTimezone: true, mode: 'string' }), // Time at which the position was last reported
+    geometry: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(), // Last known position
+});
+
+export const CoreDeviceChannel = pgTable('core_device_channel', {
+    device: uuid().notNull().references(() => CoreDevice.id, { onDelete: 'cascade' }),
+    channel: bigint({ mode: 'bigint' }).notNull(),
+}, table => ({
+    pk: primaryKey({
+        columns: [table.device, table.channel],
+    }),
+}));
+
 /** TAK Server Groups, periodically synced via the Admin Certificate */
 export const Channel = pgTable('channel', {
     bitpos: integer().primaryKey(),
