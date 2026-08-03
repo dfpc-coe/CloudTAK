@@ -2,7 +2,7 @@
     <GenericBottomPane>
         <div
             v-if='mapStore.draw.mode === DrawToolMode.POINT'
-            class='card user-select-none'
+            class='card cloudtak-panel user-select-none'
         >
             <div class='card-header'>
                 <template v-if='!appStore.isMobileDetected'>
@@ -69,7 +69,7 @@
         </div>
         <div
             v-else-if='mapStore.draw.mode === DrawToolMode.CIRCLE'
-            class='card user-select-none'
+            class='card cloudtak-panel user-select-none'
         >
             <div class='card-header'>
                 <IconCircle
@@ -103,7 +103,7 @@
         </div>
         <div
             v-else-if='mapStore.draw.mode === DrawToolMode.RECTANGLE'
-            class='card user-select-none'
+            class='card cloudtak-panel user-select-none'
         >
             <div class='card-header'>
                 <IconVector
@@ -136,7 +136,7 @@
         </div>
         <div
             v-else-if='mapStore.draw.mode === DrawToolMode.LINESTRING || mapStore.draw.mode === DrawToolMode.SNAPPING'
-            class='card user-select-none'
+            class='card cloudtak-panel user-select-none'
         >
             <div class='card-header'>
                 <IconLine
@@ -210,7 +210,7 @@
         </div>
         <div
             v-else-if='mapStore.draw.mode === DrawToolMode.POLYGON'
-            class='card user-select-none'
+            class='card cloudtak-panel user-select-none'
         >
             <div class='card-header'>
                 <IconPolygon
@@ -243,7 +243,7 @@
         </div>
         <div
             v-else-if='mapStore.draw.mode === DrawToolMode.SECTOR'
-            class='card user-select-none'
+            class='card cloudtak-panel user-select-none'
         >
             <div class='card-header'>
                 <IconCone
@@ -276,7 +276,7 @@
         </div>
         <div
             v-else-if='mapStore.draw.mode === DrawToolMode.FREEHAND'
-            class='card user-select-none'
+            class='card cloudtak-panel user-select-none'
         >
             <div class='card-header'>
                 <IconLasso
@@ -341,7 +341,7 @@
         </div>
         <div
             v-else-if='mapStore.draw.mode === DrawToolMode.SELECT'
-            class='card user-select-none'
+            class='card cloudtak-panel user-select-none'
         >
             <div class='card-header'>
                 <IconPencil

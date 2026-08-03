@@ -460,25 +460,29 @@ html[data-bs-theme='light'] .cloudtak-accent .text-white-50:not(.badge):not(.btn
 
 /*
  * Shared surface for panels floating above the map (navigation banner,
- * map controls, draggable floating panes). Sets --tblr-border-color so
+ * map controls, draggable floating panes, bottom panes). Sets --tblr-border-color so
  * Bootstrap border utilities inside the panel pick up the same subtle
- * separator color.
+ * separator color, and --tblr-card-box-shadow so panels built on a Tabler
+ * card get the panel shadow instead of the flat card one.
  */
 .cloudtak-panel {
+    --tblr-card-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
     border-radius: 8px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+    box-shadow: var(--tblr-card-box-shadow);
 }
 
+/* Backgrounds mirror TablerDropdown's --tabler-dropdown-bg so floating panels
+ * read as the same surface as the notification dropdown. */
 html[data-bs-theme='dark'] .cloudtak-panel {
     --tblr-border-color: rgba(255, 255, 255, 0.14);
-    background-color: rgba(40, 53, 71, 0.95);
+    background-color: rgba(20, 20, 25, 0.96);
     color: rgba(255, 255, 255, 0.92);
     border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 html[data-bs-theme='light'] .cloudtak-panel {
     --tblr-border-color: rgba(0, 0, 0, 0.12);
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: rgba(255, 255, 255, 0.96);
     color: var(--tblr-body-color);
     border: 1px solid rgba(0, 0, 0, 0.12);
 }

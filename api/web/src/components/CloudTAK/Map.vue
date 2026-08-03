@@ -55,7 +55,7 @@
 
             <GenericBottomPane v-if='mode === "SetLocation"'>
                 <div
-                    class='card user-select-none text-white cloudtak-bg rounded-top'
+                    class='card cloudtak-panel user-select-none'
                 >
                     <div class='card-header'>
                         <div class='col-8'>
@@ -109,8 +109,11 @@
 
             <div
                 v-if='mode === "Default"'
-                class='position-absolute beginning-0 text-white'
-                style='top: var(--status-bar-height, 0px);'
+                class='position-absolute'
+                style='
+                    top: calc(8px + var(--status-bar-height, 0px));
+                    left: 8px;
+                '
             >
                 <ActiveMission />
             </div>
@@ -126,7 +129,7 @@
                 class='position-absolute'
                 :class='{ "cloudtak-left-controls--nav": mapStore.navigation.active }'
                 style='
-                    top: calc(70px + var(--status-bar-height, 0px));
+                    top: calc(76px + var(--status-bar-height, 0px));
                     left: 8px;
                 '
             >
@@ -1081,12 +1084,12 @@ async function handleRadial(event: string): Promise<void> {
  */
 @media (max-width: 767.98px) {
     .cloudtak-navigating {
-        margin-top: 66px;
+        margin-top: 74px;
         border-radius: 8px;
     }
 
     .cloudtak-left-controls--nav {
-        top: 126px !important;
+        top: 134px !important;
     }
 }
 

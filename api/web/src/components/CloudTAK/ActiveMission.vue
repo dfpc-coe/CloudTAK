@@ -1,12 +1,10 @@
 <template>
     <div
-        class='d-flex text-white align-items-center px-2'
+        class='cloudtak-panel d-flex align-items-center px-2'
         style='
             z-index: 1;
             height: 60px;
-            max-width: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            border-radius: 0px 0px 6px 0px;
+            max-width: calc(100vw - 16px);
         '
     >
         <template v-if='!mapStore.mission'>
@@ -45,7 +43,7 @@
             </div>
 
             <div
-                class='d-none d-md-block border-start border-white opacity-50 mx-1'
+                class='d-none d-md-block border-start mx-1'
                 style='height: 32px;'
             />
 
