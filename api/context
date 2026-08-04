@@ -114,7 +114,7 @@ AssetBucket=$(aws cloudformation describe-stack-resource \
     --query StackResourceDetail.PhysicalResourceId --output text \
     --profile "${AwsProfile}" --region "${AwsRegion}")
 
-EnvJson=$(jq -n --arg signing "$SigningSecret" '{ SigningSecret: $signing }')
+EnvJson=$(jq -n --arg signing "$SigningSecret" --arg stack "$FullStack" '{ SigningSecret: $signing, StackName: $stack }')
 if [[ -n "$AssetBucket" ]]; then
     EnvJson=$(echo "$EnvJson" | jq --arg bucket "$AssetBucket" '. + { "ASSET_BUCKET": $bucket }')
 fi
