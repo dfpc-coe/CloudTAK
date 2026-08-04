@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.61.0 - 2026-08-04
+
+- :bug: Perform a full map re-render when app is foregrounded
+
 ### v13.60.1 - 2026-08-04
 
 - :rocket: Sync Versions
