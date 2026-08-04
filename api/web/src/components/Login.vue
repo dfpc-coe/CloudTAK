@@ -1,6 +1,6 @@
 <template>
     <div
-        class='page page-center cloudtak-gradient position-relative'
+        class='page page-center cloudtak-page position-relative'
         style='overflow: auto;'
     >
         <div

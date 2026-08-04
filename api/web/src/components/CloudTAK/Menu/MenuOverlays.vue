@@ -251,14 +251,6 @@
                                         @update:model-value='void updateOverlay(card.overlay, { encoding: $event })'
                                     />
                                 </div>
-                                <div
-                                    v-if='card.overlay.type === "geojson" && card.overlay.id === -1'
-                                    class='mb-3'
-                                >
-                                    <TreeCots
-                                        :element='card.overlay'
-                                    />
-                                </div>
                                 <TreeVector
                                     v-if='card.overlay.type === "vector"'
                                     :overlay='card.overlay'
@@ -292,7 +284,6 @@ import {
     TablerNone,
     TablerRange
 } from '@tak-ps/vue-tabler';
-import TreeCots from './Overlays/TreeCots.vue';
 import TreeVector from './Overlays/TreeVector.vue';
 import {
     IconGripVertical,
@@ -488,8 +479,7 @@ function handleCardClick(overlay: Overlay) {
 function hasOverlayDetails(overlay: Overlay): boolean {
     return overlay.type === 'raster'
         || overlay.type === 'raster-dem'
-        || overlay.type === 'vector'
-        || (overlay.type === 'geojson' && overlay.id === -1);
+        || overlay.type === 'vector';
 }
 
 function resolveOverlayStatus(overlay: Overlay): OverlayStatus {

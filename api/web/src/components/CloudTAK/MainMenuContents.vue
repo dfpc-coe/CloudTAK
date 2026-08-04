@@ -218,7 +218,7 @@
 
         <template #footer>
             <div
-                class='main-menu-footer flex-shrink-0 cloudtak-bg border-top border-white'
+                class='main-menu-footer flex-shrink-0 cloudtak-bg border-top'
             >
                 <div
                     class='row g-0 align-items-center'

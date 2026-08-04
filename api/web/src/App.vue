@@ -405,6 +405,30 @@ $cloudtak-blue: #07556D;
     background: radial-gradient(at left top, #f7fbff, #dde8f4);
 }
 
+/*
+ * Flat page surface shared by the standalone full-screen views (login, video
+ * wall, event board) so they all sit on the same background. Kept a shade below
+ * the `.cloudtak-panel` surface in each theme so panels layered on top of a page
+ * still read as raised.
+ */
+html[data-bs-theme='dark'] .cloudtak-page {
+    background: #000000;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+html[data-bs-theme='light'] .cloudtak-page {
+    background: var(--tblr-body-bg);
+    color: var(--tblr-body-color);
+}
+
+html[data-bs-theme='light'] .cloudtak-page .text-white:not(.badge):not(.btn):not([class*='bg-']) {
+    color: var(--tblr-body-color) !important;
+}
+
+html[data-bs-theme='light'] .cloudtak-page .text-white-50:not(.badge):not(.btn):not([class*='bg-']) {
+    color: var(--tblr-secondary-color) !important;
+}
+
 .btn-primary {
     background-color: $cloudtak-blue !important;
 }
@@ -475,14 +499,16 @@ html[data-bs-theme='light'] .cloudtak-accent .text-white-50:not(.badge):not(.btn
  * read as the same surface as the notification dropdown. */
 html[data-bs-theme='dark'] .cloudtak-panel {
     --tblr-border-color: rgba(255, 255, 255, 0.14);
-    background-color: rgba(20, 20, 25, 0.96);
+    --cloudtak-panel-bg: rgba(20, 20, 25, 0.96);
+    background-color: var(--cloudtak-panel-bg);
     color: rgba(255, 255, 255, 0.92);
     border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 html[data-bs-theme='light'] .cloudtak-panel {
     --tblr-border-color: rgba(0, 0, 0, 0.12);
-    background-color: rgba(255, 255, 255, 0.96);
+    --cloudtak-panel-bg: rgba(255, 255, 255, 0.96);
+    background-color: var(--cloudtak-panel-bg);
     color: var(--tblr-body-color);
     border: 1px solid rgba(0, 0, 0, 0.12);
 }
