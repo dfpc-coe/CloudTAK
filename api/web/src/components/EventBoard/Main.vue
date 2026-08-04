@@ -86,16 +86,32 @@
                 class='d-flex align-items-stretch gap-3 h-100 overflow-x-auto p-3'
             >
                 <div
-                    v-for='board in boards'
+                    v-for='(board, columnIdx) in boards'
                     :key='board.id'
                     class='cloudtak-panel d-flex flex-column event-board-column flex-shrink-0'
-                    :class='{ "event-board-column--target": dropTarget && dropTarget.board === board.id }'
+                    :class='{
+                        "event-board-column--target": dropTarget && dropTarget.board === board.id,
+                        "event-board-column--insert-before": columnDrag && columnDropIndex === columnIdx,
+                        "event-board-column--insert-after": columnDrag && columnDropIndex === boards.length && columnIdx === boards.length - 1,
+                    }'
                     :data-board='board.id'
-                    @dragover='onColumnDragOver($event, board)'
+                    @dragover='onColumnDragOver($event, board, columnIdx)'
                     @dragleave='onColumnDragLeave($event, board)'
                     @drop.prevent='onDrop(board)'
                 >
                     <div class='d-flex align-items-center px-3 py-2 border-bottom event-board-column-header'>
+                        <div
+                            class='d-flex align-items-center flex-shrink-0 me-2 event-board-column-handle'
+                            draggable='true'
+                            title='Move Board'
+                            @dragstart='onColumnDragStart($event, board)'
+                            @dragend='onColumnDragEnd'
+                        >
+                            <IconGripVertical
+                                :size='18'
+                                stroke='1'
+                            />
+                        </div>
                         <TablerBadge
                             v-if='board.color'
                             class='text-truncate user-select-none'
@@ -156,6 +172,38 @@
                                     />
                                 </template>
                             </TablerDropdown>
+                        </div>
+                    </div>
+
+                    <div
+                        v-if='board.description'
+                        class='px-3 py-2 border-bottom event-board-column-desc'
+                    >
+                        <div
+                            :ref='(el) => setDescEl(board.id, el)'
+                            class='text-secondary event-board-desc'
+                            :class='{ "event-board-desc--clamped": !expandedDesc.has(board.id) }'
+                            v-text='board.description'
+                        />
+                        <div
+                            v-if='descOverflow[board.id] || expandedDesc.has(board.id)'
+                            class='d-flex align-items-center justify-content-center gap-1 cursor-pointer cloudtak-hover user-select-none mt-1 event-board-desc-toggle'
+                            role='button'
+                            tabindex='0'
+                            @click='toggleDesc(board.id)'
+                            @keydown.enter='toggleDesc(board.id)'
+                        >
+                            <span v-text='expandedDesc.has(board.id) ? "Less" : "More"' />
+                            <IconChevronUp
+                                v-if='expandedDesc.has(board.id)'
+                                :size='16'
+                                stroke='1'
+                            />
+                            <IconChevronDown
+                                v-else
+                                :size='16'
+                                stroke='1'
+                            />
                         </div>
                     </div>
 
@@ -287,7 +335,7 @@
  * and drag Events between them.
  */
 
-import { ref, computed, reactive, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, reactive, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Config from '../../base/config.ts';
 import { server } from '../../std.ts';
@@ -301,7 +349,10 @@ import {
     IconPlus,
     IconPencil,
     IconRefresh,
+    IconChevronUp,
+    IconChevronDown,
     IconDotsVertical,
+    IconGripVertical,
 } from '@tabler/icons-vue';
 import {
     TablerNone,
@@ -334,8 +385,19 @@ const adding = ref<string | undefined>();
 const editBoard = ref<CoreEventBoard | undefined>();
 const viewEvent = ref<string | undefined>();
 
+// Board descriptions clamp to 2 lines - the More/Less row only renders for
+// Boards whose text actually overflows the clamp (measured, not guessed)
+const expandedDesc = ref(new Set<string>());
+const descOverflow = ref<Record<string, boolean>>({});
+const descEls = new Map<string, HTMLElement>();
+
 const drag = ref<{ placement: CoreEventBoardEvent; from: string } | undefined>();
 const dropTarget = ref<{ board: string; index: number; precise: boolean } | undefined>();
+
+// Dragging a column by its grip handle repositions the Board itself -
+// kept apart from `drag`/`dropTarget` so card and column drags can't mix
+const columnDrag = ref<{ board: string } | undefined>();
+const columnDropIndex = ref<number | undefined>();
 
 const scroller = ref<HTMLElement | undefined>();
 
@@ -396,6 +458,8 @@ onMounted(async () => {
         console.error('Failed to load login logo', err);
     }
 
+    window.addEventListener('resize', measureDescs);
+
     await listChannels();
 
     const query = parseInt(String(route.query.channel), 10);
@@ -410,6 +474,36 @@ onMounted(async () => {
 
 onUnmounted(() => {
     cleanupTouch();
+    window.removeEventListener('resize', measureDescs);
+});
+
+function setDescEl(id: string, el: unknown): void {
+    if (el instanceof HTMLElement) {
+        descEls.set(id, el);
+    } else {
+        descEls.delete(id);
+    }
+}
+
+function measureDescs(): void {
+    for (const [id, el] of descEls) {
+        if (expandedDesc.value.has(id)) continue;
+        descOverflow.value[id] = el.scrollHeight > el.clientHeight + 1;
+    }
+}
+
+function toggleDesc(id: string): void {
+    if (expandedDesc.value.has(id)) {
+        expandedDesc.value.delete(id);
+        void nextTick().then(measureDescs);
+    } else {
+        expandedDesc.value.add(id);
+    }
+}
+
+watch(boards, async () => {
+    await nextTick();
+    measureDescs();
 });
 
 watch(channel, async () => {
@@ -504,6 +598,9 @@ async function saveBoard(update: { name: string; description: string; color: str
         board.name = res.data.name;
         board.description = res.data.description;
         board.color = res.data.color;
+
+        await nextTick();
+        measureDescs();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
@@ -635,7 +732,19 @@ function onCardDragOver(event: DragEvent, board: CoreEventBoard, index: number):
     dropTarget.value = { board: board.id, index: index + (after ? 1 : 0), precise: true };
 }
 
-function onColumnDragOver(event: DragEvent, board: CoreEventBoard): void {
+function onColumnDragOver(event: DragEvent, board: CoreEventBoard, idx: number): void {
+    if (columnDrag.value) {
+        event.preventDefault();
+
+        if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+
+        const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+        const after = event.clientX > rect.left + rect.width / 2;
+
+        columnDropIndex.value = idx + (after ? 1 : 0);
+        return;
+    }
+
     if (!drag.value) return;
 
     event.preventDefault();
@@ -644,6 +753,71 @@ function onColumnDragOver(event: DragEvent, board: CoreEventBoard): void {
 
     if (!dropTarget.value || dropTarget.value.board !== board.id) {
         dropTarget.value = { board: board.id, index: board.events.length, precise: false };
+    }
+}
+
+function onColumnDragStart(event: DragEvent, board: CoreEventBoard): void {
+    columnDrag.value = { board: board.id };
+
+    if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', board.id);
+
+        // Drag the whole column as the ghost rather than just the grip icon
+        const column = (event.currentTarget as HTMLElement).closest<HTMLElement>('.event-board-column');
+        if (column) {
+            const rect = column.getBoundingClientRect();
+            event.dataTransfer.setDragImage(column, event.clientX - rect.left, event.clientY - rect.top);
+        }
+    }
+}
+
+function onColumnDragEnd(): void {
+    columnDrag.value = undefined;
+    columnDropIndex.value = undefined;
+}
+
+async function onColumnDrop(): Promise<void> {
+    const dragging = columnDrag.value;
+    const to = columnDropIndex.value;
+
+    onColumnDragEnd();
+
+    if (!dragging || to === undefined) return;
+
+    const from = boards.value.findIndex((b) => b.id === dragging.board);
+    if (from === -1) return;
+
+    let index = to;
+    if (index > from) index -= 1;
+    if (index === from) return;
+
+    const [moved] = boards.value.splice(from, 1);
+    boards.value.splice(index, 0, moved);
+
+    try {
+        await persistColumnPositions();
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+        await listBoards();
+    }
+}
+
+/** Persist the horizontal position of any Board whose index changed */
+async function persistColumnPositions(): Promise<void> {
+    for (let i = 0; i < boards.value.length; i++) {
+        const board = boards.value[i];
+
+        if (board.position === i) continue;
+
+        const res = await server.PATCH('/api/board/{:board}', {
+            params: { path: { ':board': board.id } },
+            body: { position: i }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        board.position = i;
     }
 }
 
@@ -864,6 +1038,11 @@ function showIndicator(board: CoreEventBoard, index: number): boolean {
 }
 
 async function onDrop(target: CoreEventBoard): Promise<void> {
+    if (columnDrag.value) {
+        await onColumnDrop();
+        return;
+    }
+
     if (!drag.value || !dropTarget.value || dropTarget.value.board !== target.id) {
         onDragEnd();
         return;
@@ -917,8 +1096,45 @@ async function onDrop(target: CoreEventBoard): Promise<void> {
     outline-offset: -2px;
 }
 
+.event-board .event-board-column-handle {
+    cursor: grab;
+    opacity: 0.6;
+}
+
+.event-board .event-board-column-handle:hover {
+    opacity: 1;
+}
+
+.event-board .event-board-column--insert-before {
+    box-shadow: -4px 0 0 0 rgba(0, 132, 255, 0.9);
+}
+
+.event-board .event-board-column--insert-after {
+    box-shadow: 4px 0 0 0 rgba(0, 132, 255, 0.9);
+}
+
 .event-board .event-board-column-body {
     min-height: 100px;
+}
+
+.event-board .event-board-desc {
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.event-board .event-board-desc--clamped {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.event-board .event-board-desc-toggle {
+    font-size: 0.75rem;
+    border-radius: 4px;
+    padding: 2px 0;
 }
 
 .event-board .event-board-card {
