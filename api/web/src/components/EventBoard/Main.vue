@@ -12,39 +12,23 @@
             </div>
 
             <div class='d-flex align-items-center gap-2 ms-auto'>
-                <select
+                <GroupSelectDropdown
                     v-model='channel'
-                    class='form-select event-board-select'
-                    aria-label='Channel'
-                >
-                    <option
-                        :value='undefined'
-                        disabled
-                    >
-                        Select a Channel
-                    </option>
-                    <option
-                        v-for='ch in channels'
-                        :key='ch.bitpos'
-                        :value='ch.bitpos'
-                        v-text='ch.name'
-                    />
-                </select>
+                    class='event-board-select'
+                    :active='true'
+                    @channels='onChannels'
+                />
 
-                <select
-                    v-if='channel !== undefined && boards.length'
+                <BoardSelectDropdown
+                    v-if='channel !== undefined'
+                    ref='boardSelect'
                     v-model='board'
-                    class='form-select event-board-select'
-                    aria-label='Board'
-                    @change='onBoardChange'
-                >
-                    <option
-                        v-for='b in boards'
-                        :key='b.id'
-                        :value='b.id'
-                        v-text='b.name'
-                    />
-                </select>
+                    class='event-board-select'
+                    :channel='channel'
+                    @boards='onBoards'
+                    @error='error = $event'
+                    @update:model-value='onBoardChange'
+                />
 
                 <TablerDropdown
                     v-if='selectedBoard'
@@ -407,9 +391,11 @@ import { ref, computed, reactive, watch, nextTick, onMounted, onUnmounted } from
 import { useRoute, useRouter } from 'vue-router';
 import Config from '../../base/config.ts';
 import { server } from '../../std.ts';
-import GroupManager from '../../base/group.ts';
 import type { CoreEvent, CoreEventBoard, CoreEventBoardColumn, CoreEventBoardEvent } from '../../types.ts';
 import StandardCoreEvent from '../CloudTAK/util/StandardCoreEvent.vue';
+import GroupSelectDropdown from '../CloudTAK/util/GroupSelectDropdown.vue';
+import type { GroupSelectChannel } from '../CloudTAK/util/GroupSelectDropdown.vue';
+import BoardSelectDropdown from '../CloudTAK/util/BoardSelectDropdown.vue';
 import CoreEventView from '../CloudTAK/CoreEventView.vue';
 import NominateModal from './NominateModal.vue';
 import EditBoardModal from './EditBoardModal.vue';
@@ -449,11 +435,11 @@ const router = useRouter();
 const loading = ref(true);
 const error = ref<Error | undefined>();
 
-const channels = ref<Array<{ name: string; bitpos: number }>>([]);
 const channel = ref<number | undefined>();
 
 const boards = ref<Array<CoreEventBoard>>([]);
 const board = ref<string | undefined>();
+const boardSelect = ref<InstanceType<typeof BoardSelectDropdown> | null>(null);
 const columns = ref<Array<BoardColumn>>([]);
 
 const nominate = ref(false);
@@ -541,18 +527,25 @@ onMounted(async () => {
     }
 
     window.addEventListener('resize', measureDescs);
+});
 
-    await listChannels();
+/**
+ * The Channel selector owns the Channel fetch - the initial selection can only
+ * be resolved once it hands the list over
+ */
+function onChannels(list: Array<GroupSelectChannel>): void {
+    if (channel.value !== undefined) return;
 
     const query = parseInt(String(route.query.channel), 10);
-    if (!isNaN(query) && channels.value.some((ch) => ch.bitpos === query)) {
+
+    if (!isNaN(query) && list.some((ch) => ch.bitpos === query)) {
         channel.value = query;
-    } else if (channels.value.length === 1) {
-        channel.value = channels.value[0].bitpos;
+    } else if (list.length === 1) {
+        channel.value = list[0].bitpos;
     } else {
         loading.value = false;
     }
-});
+}
 
 onUnmounted(() => {
     cleanupTouch();
@@ -588,13 +581,37 @@ watch(columns, async () => {
     measureDescs();
 });
 
-watch(channel, async () => {
-    await refresh();
+// The Board selector watches the Channel itself and calls back through
+// `onBoards` once it has re-listed
+watch(channel, () => {
+    loading.value = true;
 });
 
-/** The Board selector is explicit rather than watched so listBoards can
- *  resolve a selection without triggering a second Column fetch */
-async function onBoardChange(): Promise<void> {
+/**
+ * Listing Boards is owned by the selector - resolving which one is shown stays
+ * here since the URL and a freshly created Board both feed into it
+ */
+function onBoards(list: Array<CoreEventBoard>): void {
+    boards.value = list;
+
+    const query = String(route.query.board || '');
+
+    if (board.value && list.some((b) => b.id === board.value)) {
+        // The current selection survived the re-list
+    } else if (list.some((b) => b.id === query)) {
+        board.value = query;
+    } else {
+        board.value = list.length ? list[0].id : undefined;
+    }
+
+    syncQuery();
+
+    void listColumns();
+}
+
+async function onBoardChange(id: string): Promise<void> {
+    board.value = id;
+
     syncQuery();
 
     loading.value = true;
@@ -611,60 +628,14 @@ function syncQuery(): void {
     void router.replace({ query });
 }
 
+/** Re-listing the Boards cascades into the Columns via `onBoards` */
 async function refresh(): Promise<void> {
     if (channel.value === undefined) return;
 
     loading.value = true;
+    error.value = undefined;
 
-    await listBoards();
-
-    syncQuery();
-
-    await listColumns();
-}
-
-async function listChannels(): Promise<void> {
-    try {
-        const groups = await GroupManager.list({ active: true });
-
-        channels.value = groups
-            .map((group) => ({ name: group.name, bitpos: group.bitpos }))
-            .sort((a, b) => a.name.localeCompare(b.name));
-    } catch (err) {
-        loading.value = false;
-        error.value = err instanceof Error ? err : new Error(String(err));
-    }
-}
-
-async function listBoards(): Promise<void> {
-    if (channel.value === undefined) return;
-
-    try {
-        error.value = undefined;
-
-        const res = await server.GET('/api/board', {
-            params: { query: { channel: channel.value } }
-        });
-
-        if (res.error) throw new Error(res.error.message);
-
-        boards.value = res.data.items;
-
-        // The board watcher would re-list the Columns - assign silently when
-        // the current selection is still valid for the new Channel
-        const query = String(route.query.board || '');
-
-        if (board.value && boards.value.some((b) => b.id === board.value)) {
-            return;
-        } else if (boards.value.some((b) => b.id === query)) {
-            board.value = query;
-        } else {
-            board.value = boards.value.length ? boards.value[0].id : undefined;
-        }
-    } catch (err) {
-        loading.value = false;
-        error.value = err instanceof Error ? err : new Error(String(err));
-    }
+    await boardSelect.value?.refresh();
 }
 
 /** Columns of the selected Board, each with the Events placed in it */
@@ -723,11 +694,10 @@ async function createBoard(update: { name: string; description: string }): Promi
 
         if (res.error) throw new Error(res.error.message);
 
-        boards.value.push(res.data);
-
+        // Selecting before the re-list means `onBoards` keeps the new Board
         board.value = res.data.id;
 
-        await onBoardChange();
+        await refresh();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
@@ -747,8 +717,8 @@ async function saveBoard(update: { name: string; description: string }): Promise
 
         if (res.error) throw new Error(res.error.message);
 
-        existing.name = res.data.name;
-        existing.description = res.data.description;
+        // The selector holds the Board list - re-list so the rename shows
+        await boardSelect.value?.refresh();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
@@ -764,11 +734,11 @@ async function deleteBoard(existing?: CoreEventBoard): Promise<void> {
 
         if (res.error) throw new Error(res.error.message);
 
-        boards.value = boards.value.filter((b) => b.id !== existing.id);
+        // Dropping the selection lets `onBoards` fall through to the first
+        // remaining Board of the Channel
+        board.value = undefined;
 
-        board.value = boards.value.length ? boards.value[0].id : undefined;
-
-        await onBoardChange();
+        await refresh();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
@@ -1305,8 +1275,10 @@ async function onDrop(target: BoardColumn): Promise<void> {
     width: 32px;
 }
 
+/* Both header selectors size their dropdown panel to their own width - wide
+   enough that neither panel spills under its neighbour */
 .event-board .event-board-select {
-    width: 200px;
+    width: 250px;
 }
 
 .event-board .event-board-column {

@@ -45,55 +45,78 @@
                 </TablerBadge>
             </template>
 
-            <div class='overflow-hidden mb-2'>
-                <div class='rounded mx-2 mt-2 px-2 py-2'>
-                    <TablerLoading
-                        v-if='loading'
+            <!-- SlideDownHeader owns the section's surface & bottom padding -
+                 rows sit directly on it rather than in a second box -->
+            <div class='px-2 pt-2'>
+                <TablerLoading
+                    v-if='loading'
+                    :compact='true'
+                    desc='Loading Channels'
+                />
+                <div
+                    v-else-if='editing'
+                    class='overflow-auto'
+                    style='max-height: 250px;'
+                >
+                    <GroupSelect v-model='selected' />
+                </div>
+                <template v-else>
+                    <TablerNone
+                        v-if='!shared.length'
+                        label='Not shared with any Channels'
                         :compact='true'
-                        desc='Loading Channels'
+                        :create='false'
                     />
-                    <template v-else-if='editing'>
-                        <div
-                            class='overflow-auto'
-                            style='max-height: 250px;'
-                        >
-                            <GroupSelect v-model='selected' />
-                        </div>
-                    </template>
-                    <template v-else>
-                        <div
-                            v-if='!shared.length'
-                            class='px-1 py-1 text-muted'
-                        >
-                            Not shared with any Channels
-                        </div>
-                        <div
-                            v-for='channel of shared'
-                            :key='channel.bitpos'
-                            class='px-1 py-1 rounded'
-                        >
-                            <div
-                                class='text-truncate cloudtak-hover-fill rounded px-1'
+
+                    <div
+                        v-for='channel of shared'
+                        :key='channel.bitpos'
+                        class='mb-2'
+                    >
+                        <div class='d-flex align-items-center gap-2 px-2 py-1'>
+                            <IconUsersGroup
+                                :size='18'
+                                stroke='1.5'
+                                class='flex-shrink-0 text-secondary'
+                            />
+                            <span
+                                class='fw-medium text-truncate user-select-none'
+                                :title='channel.name'
                                 v-text='channel.name'
                             />
+                        </div>
 
-                            <!-- Boards the Channel carries & where this Event sits on each -->
+                        <!-- Boards the Channel carries & where this Event sits on each -->
+                        <div
+                            v-if='channel.boards.length'
+                            class='d-flex flex-column'
+                        >
                             <div
                                 v-for='board of channel.boards'
                                 :key='board.id'
-                                class='d-flex align-items-center gap-2 ps-3 pe-1 py-1'
+                                class='d-flex align-items-center gap-2 ps-4 pe-2 py-1 cursor-pointer cloudtak-hover'
+                                role='button'
+                                tabindex='0'
+                                :title='`Open ${board.name} in the Event Board`'
+                                @click='openBoard(board)'
+                                @keydown.enter='openBoard(board)'
                             >
                                 <IconLayoutKanban
-                                    :size='16'
-                                    stroke='1'
-                                    color='#6b7990'
-                                    class='flex-shrink-0'
+                                    :size='18'
+                                    stroke='1.5'
+                                    class='flex-shrink-0 text-secondary'
                                 />
                                 <span
                                     class='text-truncate'
+                                    style='min-width: 0;'
                                     v-text='board.name'
                                 />
-                                <div class='ms-auto flex-shrink-0'>
+                                <IconExternalLink
+                                    :size='14'
+                                    stroke='1'
+                                    class='flex-shrink-0 text-secondary cloudtak-hover-hidden'
+                                />
+                                <div class='ms-auto ps-2 flex-shrink-0'>
                                     <TablerBadge
                                         v-if='columnOf(board)'
                                         :background-color='badge(columnOf(board)).background'
@@ -104,13 +127,13 @@
                                     </TablerBadge>
                                     <span
                                         v-else
-                                        class='text-muted'
+                                        class='small text-secondary user-select-none'
                                     >Not Nominated</span>
                                 </div>
                             </div>
                         </div>
-                    </template>
-                </div>
+                    </div>
+                </template>
             </div>
         </SlideDownHeader>
     </div>
@@ -121,9 +144,17 @@ import { ref, computed, onMounted, watch } from 'vue';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
 import GroupSelect from '../../util/GroupSelect.vue';
 import GroupManager from '../../../base/group.ts';
+import { openSecondaryView } from '../../../base/capacitor.ts';
 import type { GroupChannel, CoreEventBoardSummary, CoreEventBoardColumnSummary } from '../../../types.ts';
-import { TablerBadge, TablerLoading, TablerIconButton } from '@tak-ps/vue-tabler';
-import { IconAffiliate, IconPencil, IconCheck, IconLayoutKanban } from '@tabler/icons-vue';
+import { TablerNone, TablerBadge, TablerLoading, TablerIconButton } from '@tak-ps/vue-tabler';
+import {
+    IconAffiliate,
+    IconPencil,
+    IconCheck,
+    IconUsersGroup,
+    IconExternalLink,
+    IconLayoutKanban,
+} from '@tabler/icons-vue';
 
 const props = defineProps<{
     /** TAK Server Channel bitpositions the Event is shared with */
@@ -166,6 +197,16 @@ watch(() => props.modelValue, () => {
     editing.value = false;
 });
 
+/** Open the Event Board page focused on the given Board in a new tab */
+function openBoard(board: CoreEventBoardSummary): void {
+    const url = new URL('/board', window.location.origin);
+
+    url.searchParams.append('channel', String(board.channel));
+    url.searchParams.append('board', board.id);
+
+    void openSecondaryView(url);
+}
+
 /** The Column of the Board this Event is currently placed in, if any */
 function columnOf(board: CoreEventBoardSummary): CoreEventBoardColumnSummary | undefined {
     if (!board.column) return undefined;
@@ -177,9 +218,11 @@ function badge(column?: CoreEventBoardColumnSummary): { background: string, bord
     const base = (column && column.color) || '#667382';
 
     return {
-        background: base + '26',
-        border: base + '59',
-        text: base,
+        background: `color-mix(in srgb, ${base} 18%, transparent)`,
+        border: `color-mix(in srgb, ${base} 45%, transparent)`,
+        // Pulling the label toward the body colour keeps a dark Column colour
+        // legible on the dark theme and a light one legible on the light theme
+        text: `color-mix(in srgb, ${base} 65%, var(--tblr-body-color))`,
     };
 }
 
