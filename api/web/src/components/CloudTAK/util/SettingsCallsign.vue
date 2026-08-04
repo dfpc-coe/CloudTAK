@@ -51,11 +51,13 @@
                                 :error='item.key === "tak_callsign" ? validateTextNotEmpty(profile.tak_callsign) : ""'
                                 :required='item.key === "tak_callsign"'
                             />
-                            <TablerInput
-                                v-else-if='item.type === "seconds"'
-                                type='number'
-                                v-model='locFreqSeconds'
-                            />
+<TablerInput
+    v-else-if='item.type === "seconds"'
+    type='number'
+    min='0'
+    step='0.1'
+    v-model='locFreqSeconds'
+/>
                             <TablerEnum
                                 v-else-if='item.type === "enum"'
                                 v-model='(profile as any)[item.key]'
