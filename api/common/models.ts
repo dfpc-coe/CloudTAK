@@ -24,6 +24,8 @@ export default class Models {
     Channel: Modeler<typeof pgtypes.Channel>;
 
     CoreEvent: CoreEvent;
+    CoreEventBoard: Modeler<typeof pgtypes.CoreEventBoard>;
+    CoreEventBoardEvent: Modeler<typeof pgtypes.CoreEventBoardEvent>;
 
     Connection: Modeler<typeof pgtypes.Connection>;
     ConnectionToken: Modeler<typeof pgtypes.ConnectionToken>;
@@ -65,6 +67,8 @@ export default class Models {
     constructor(pg: Pool<typeof pgtypes>) {
         this.Channel = new Modeler(pg, pgtypes.Channel);
         this.CoreEvent = new CoreEvent(pg);
+        this.CoreEventBoard = new Modeler(pg, pgtypes.CoreEventBoard);
+        this.CoreEventBoardEvent = new Modeler(pg, pgtypes.CoreEventBoardEvent);
         this.ProfileChat = new ProfileChat(pg);
         this.Icon = new Icon(pg);
 

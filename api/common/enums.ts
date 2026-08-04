@@ -34,6 +34,11 @@ export enum CoreEvent_Priority {
     CRITICAL = 'critical',
 }
 
+export enum CoreEventBoard_Type {
+    NOMINATED = 'nominated',
+    CUSTOM = 'custom',
+}
+
 export enum AllBoolean {
     TRUE = 'true',
     FALSE = 'false',

@@ -5,6 +5,15 @@
         :width='props.size'
         :height='props.size'
     />
+    <!-- Military symbols render without the map (Event Board) via milsymbol -->
+    <img
+        v-else-if='standaloneIcon'
+        :src='standaloneIcon'
+        alt='Feature Icon'
+        :width='props.size'
+        :height='props.size'
+        style='object-fit: contain;'
+    >
     <!-- Icons are in order of most preferred display => Least-->
     <IconPointFilled
         v-else-if='feature.properties && feature.properties.type === "u-d-p"'
@@ -66,6 +75,7 @@
 
 <script setup lang='ts'>
 import { ref, useTemplateRef, watch, computed } from 'vue';
+import ms from 'milsymbol';
 import ContactPuck from './ContactPuck.vue'
 import {
     IconVideo,
@@ -101,9 +111,18 @@ const supportedIcon = computed<string | null>(() => {
     void resolvedTick.value;
 
     const iconId = props.feature.properties.icon;
-    if (!iconId) return null;
+    if (!iconId || !mapStore._map) return null;
 
     return mapStore.map.getImage(iconId) ? iconId : null;
+});
+
+// Pages without a MapLibre instance (Event Board) can't use the map's image
+// registry - military symbols are generated directly instead
+const standaloneIcon = computed<string | null>(() => {
+    const iconId = props.feature.properties.icon;
+    if (!iconId || mapStore._map || !/^2525[CDE]:/.test(iconId)) return null;
+
+    return new ms.Symbol(iconId.replace(/^2525[CDE]:/, ''), { size: 24 }).toDataURL();
 });
 
 // Military symbols are generated on demand - they only exist in the map
@@ -111,6 +130,7 @@ const supportedIcon = computed<string | null>(() => {
 watch(() => props.feature.properties.icon, async (iconId) => {
     if (
         !iconId
+        || !mapStore._map
         || supportedIcon.value
         || !/^2525[CDE]:/.test(iconId)
         || resolveAttempted.has(iconId)

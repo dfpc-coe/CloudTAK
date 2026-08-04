@@ -17,7 +17,7 @@ import {
     BasemapTerrain_Encoding,
     ProfilePaging_Type,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
-    ProfileChatStatus, CoreEvent_Priority,
+    ProfileChatStatus, CoreEvent_Priority, CoreEventBoard_Type,
 } from './enums.js';
 import { bigint, boolean, uuid, numeric, integer, doublePrecision, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
@@ -60,6 +60,36 @@ export const CoreEventChannel = pgTable('core_event_channel', {
     pk: primaryKey({
         columns: [table.event, table.channel],
     }),
+}));
+
+/** KanBan style columns - each Board belongs to a single TAK Channel */
+export const CoreEventBoard = pgTable('core_event_board', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    channel: bigint({ mode: 'bigint' }).notNull(),
+    name: text().notNull(),
+    description: text().notNull().default(''),
+    color: text().notNull().default(''), // Hex colour the Board is rendered with - ie: #ff0000
+    type: text().$type<CoreEventBoard_Type>().notNull().default(CoreEventBoard_Type.CUSTOM),
+    position: integer().notNull().default(0),
+}, (table) => {
+    return {
+        channel_idx: index('core_event_board_channel_idx').on(table.channel),
+    };
+});
+
+/** Placement of a Core Event on a Board - an Event can only sit on one Board per Channel */
+export const CoreEventBoardEvent = pgTable('core_event_board_event', {
+    id: serial().primaryKey(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    board: uuid().notNull().references(() => CoreEventBoard.id, { onDelete: 'cascade' }),
+    event: uuid().notNull().references(() => CoreEvent.id, { onDelete: 'cascade' }),
+    channel: bigint({ mode: 'bigint' }).notNull(),
+    position: integer().notNull().default(0),
+}, table => ({
+    channel_event_idx: unique().on(table.channel, table.event),
 }));
 
 /** TAK Server Groups, periodically synced via the Admin Certificate */

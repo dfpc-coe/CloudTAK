@@ -429,6 +429,36 @@
         "query": false,
         "res": true
     },
+    "GET /core/event/board": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /core/event/board": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /core/event/board/:board": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /core/event/board/:board": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /core/event/board/:board/event/:event": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /core/event/board/:board/event/:event": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /core/event": {
         "body": false,
         "query": true,
@@ -584,21 +614,6 @@
         "query": false,
         "res": true
     },
-    "GET /layer": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /data/:dataid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /layer/:layerid": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -663,6 +678,21 @@
         "body": false,
         "query": true,
         "res": false
+    },
+    "GET /layer": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /data/:dataid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /layer/:layerid": {
+        "body": false,
+        "query": true,
+        "res": true
     },
     "GET /template": {
         "body": false,
@@ -1344,6 +1374,11 @@
         "query": false,
         "res": true
     },
+    "POST /retention": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /search": {
         "body": false,
         "query": false,
@@ -1395,11 +1430,6 @@
         "res": true
     },
     "POST /server/tileset": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "POST /retention": {
         "body": true,
         "query": false,
         "res": true

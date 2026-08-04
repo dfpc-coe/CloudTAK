@@ -16642,6 +16642,906 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/core/event/board": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the KanBan Boards of a Channel along with the Core Events placed on them */
+        get: {
+            parameters: {
+                query: {
+                    /** @description TAK Channel bitpos to list Boards for */
+                    channel: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                created: string;
+                                updated: string;
+                                /** @description TAK Server Channel bitpos the Board belongs to */
+                                channel: number;
+                                name: string;
+                                description: string;
+                                /** @description Hex colour the Board is rendered with - ie: #ff0000 */
+                                color: string;
+                                /** @description Boards of type nominated are created automatically and cannot be removed */
+                                type: "nominated" | "custom";
+                                /** @description Horizontal position of the Board relative to other Boards in the Channel */
+                                position: number;
+                                /** @description Core Events placed on the Board */
+                                events: {
+                                    id: number;
+                                    created: string;
+                                    updated: string;
+                                    /** @description Board the Event is placed on */
+                                    board: string;
+                                    /** @description TAK Server Channel bitpos the placement belongs to */
+                                    channel: number;
+                                    /** @description Vertical position of the Event within the Board */
+                                    position: number;
+                                    event: {
+                                        id: string;
+                                        /** @description GUID of the TAK Server Mission associated with the Event */
+                                        mission_guid: null | string;
+                                        created: string;
+                                        updated: string;
+                                        /** @description Is the Event currently active */
+                                        active: boolean;
+                                        /** @description Time at which the Event ended */
+                                        ended: null | string;
+                                        username: null | string;
+                                        /** @description Connection that created the Event if created by a Connection or Layer token */
+                                        connection: null | number;
+                                        priority: "none" | "low" | "medium" | "high" | "critical";
+                                        /** @description MIL-STD-2525E Symbol ID */
+                                        type: string;
+                                        name: string;
+                                        /** @description ID of the Event in an external system */
+                                        external_id: string;
+                                        /** @description Can users other than the creator edit the Event */
+                                        editable: boolean;
+                                        /** @description Human readable location - ie: an address */
+                                        location: string;
+                                        remarks: string;
+                                        /** @description User defined key/value Event metadata */
+                                        metadata: {
+                                            [key: string]: unknown;
+                                        };
+                                        /** @description Named URLs associated with the Event */
+                                        links: {
+                                            /** @description Human readable name of the Link */
+                                            name: string;
+                                            /** @description URL the Link points at */
+                                            url: string;
+                                        }[];
+                                        style: {
+                                            /** @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path> */
+                                            icon?: string;
+                                            /** @description Hex colour of the Event marker - ie: #00ff00 */
+                                            "marker-color"?: string;
+                                            /** @description Opacity of the Event marker */
+                                            "marker-opacity"?: number;
+                                        };
+                                        geometry: {
+                                            /** @constant */
+                                            type: "Point";
+                                            coordinates: [
+                                                number,
+                                                number
+                                            ];
+                                        };
+                                        /** @description TAK Server Channels the Event is shared with */
+                                        channels: number[];
+                                    };
+                                }[];
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new KanBan Board on a Channel */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description TAK Channel bitpos the Board belongs to */
+                        channel: number;
+                        /** @description Human readable name */
+                        name: string;
+                        /** @description Human readable description */
+                        description?: string;
+                        /** @description Hex colour the Board is rendered with - ie: #ff0000 - or an empty string for the default */
+                        color?: string;
+                        /** @description Horizontal position of the Board - defaults to after the existing Boards */
+                        position?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            /** @description TAK Server Channel bitpos the Board belongs to */
+                            channel: number;
+                            name: string;
+                            description: string;
+                            /** @description Hex colour the Board is rendered with - ie: #ff0000 */
+                            color: string;
+                            /** @description Boards of type nominated are created automatically and cannot be removed */
+                            type: "nominated" | "custom";
+                            /** @description Horizontal position of the Board relative to other Boards in the Channel */
+                            position: number;
+                            /** @description Core Events placed on the Board */
+                            events: {
+                                id: number;
+                                created: string;
+                                updated: string;
+                                /** @description Board the Event is placed on */
+                                board: string;
+                                /** @description TAK Server Channel bitpos the placement belongs to */
+                                channel: number;
+                                /** @description Vertical position of the Event within the Board */
+                                position: number;
+                                event: {
+                                    id: string;
+                                    /** @description GUID of the TAK Server Mission associated with the Event */
+                                    mission_guid: null | string;
+                                    created: string;
+                                    updated: string;
+                                    /** @description Is the Event currently active */
+                                    active: boolean;
+                                    /** @description Time at which the Event ended */
+                                    ended: null | string;
+                                    username: null | string;
+                                    /** @description Connection that created the Event if created by a Connection or Layer token */
+                                    connection: null | number;
+                                    priority: "none" | "low" | "medium" | "high" | "critical";
+                                    /** @description MIL-STD-2525E Symbol ID */
+                                    type: string;
+                                    name: string;
+                                    /** @description ID of the Event in an external system */
+                                    external_id: string;
+                                    /** @description Can users other than the creator edit the Event */
+                                    editable: boolean;
+                                    /** @description Human readable location - ie: an address */
+                                    location: string;
+                                    remarks: string;
+                                    /** @description User defined key/value Event metadata */
+                                    metadata: {
+                                        [key: string]: unknown;
+                                    };
+                                    /** @description Named URLs associated with the Event */
+                                    links: {
+                                        /** @description Human readable name of the Link */
+                                        name: string;
+                                        /** @description URL the Link points at */
+                                        url: string;
+                                    }[];
+                                    style: {
+                                        /** @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path> */
+                                        icon?: string;
+                                        /** @description Hex colour of the Event marker - ie: #00ff00 */
+                                        "marker-color"?: string;
+                                        /** @description Opacity of the Event marker */
+                                        "marker-opacity"?: number;
+                                    };
+                                    geometry: {
+                                        /** @constant */
+                                        type: "Point";
+                                        coordinates: [
+                                            number,
+                                            number
+                                        ];
+                                    };
+                                    /** @description TAK Server Channels the Event is shared with */
+                                    channels: number[];
+                                };
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/core/event/board/{:board}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a KanBan Board - Events placed on the Board are removed from the Board but are not deleted */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":board": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Rename or re-order a KanBan Board */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":board": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name?: string;
+                        /** @description Human readable description */
+                        description?: string;
+                        /** @description Hex colour the Board is rendered with - ie: #ff0000 - or an empty string for the default */
+                        color?: string;
+                        position?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            /** @description TAK Server Channel bitpos the Board belongs to */
+                            channel: number;
+                            name: string;
+                            description: string;
+                            /** @description Hex colour the Board is rendered with - ie: #ff0000 */
+                            color: string;
+                            /** @description Boards of type nominated are created automatically and cannot be removed */
+                            type: "nominated" | "custom";
+                            /** @description Horizontal position of the Board relative to other Boards in the Channel */
+                            position: number;
+                            /** @description Core Events placed on the Board */
+                            events: {
+                                id: number;
+                                created: string;
+                                updated: string;
+                                /** @description Board the Event is placed on */
+                                board: string;
+                                /** @description TAK Server Channel bitpos the placement belongs to */
+                                channel: number;
+                                /** @description Vertical position of the Event within the Board */
+                                position: number;
+                                event: {
+                                    id: string;
+                                    /** @description GUID of the TAK Server Mission associated with the Event */
+                                    mission_guid: null | string;
+                                    created: string;
+                                    updated: string;
+                                    /** @description Is the Event currently active */
+                                    active: boolean;
+                                    /** @description Time at which the Event ended */
+                                    ended: null | string;
+                                    username: null | string;
+                                    /** @description Connection that created the Event if created by a Connection or Layer token */
+                                    connection: null | number;
+                                    priority: "none" | "low" | "medium" | "high" | "critical";
+                                    /** @description MIL-STD-2525E Symbol ID */
+                                    type: string;
+                                    name: string;
+                                    /** @description ID of the Event in an external system */
+                                    external_id: string;
+                                    /** @description Can users other than the creator edit the Event */
+                                    editable: boolean;
+                                    /** @description Human readable location - ie: an address */
+                                    location: string;
+                                    remarks: string;
+                                    /** @description User defined key/value Event metadata */
+                                    metadata: {
+                                        [key: string]: unknown;
+                                    };
+                                    /** @description Named URLs associated with the Event */
+                                    links: {
+                                        /** @description Human readable name of the Link */
+                                        name: string;
+                                        /** @description URL the Link points at */
+                                        url: string;
+                                    }[];
+                                    style: {
+                                        /** @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path> */
+                                        icon?: string;
+                                        /** @description Hex colour of the Event marker - ie: #00ff00 */
+                                        "marker-color"?: string;
+                                        /** @description Opacity of the Event marker */
+                                        "marker-opacity"?: number;
+                                    };
+                                    geometry: {
+                                        /** @constant */
+                                        type: "Point";
+                                        coordinates: [
+                                            number,
+                                            number
+                                        ];
+                                    };
+                                    /** @description TAK Server Channels the Event is shared with */
+                                    channels: number[];
+                                };
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/core/event/board/{:board}/event/{:event}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Nominate a Core Event to a Board or move it between the Boards
+         *                 of a Channel - the Event must be shared with the Board's Channel
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":board": string;
+                    /** @description No Description */
+                    ":event": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Vertical position of the Event within the Board
+                         * @default 0
+                         */
+                        position: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            /** @description Board the Event is placed on */
+                            board: string;
+                            /** @description TAK Server Channel bitpos the placement belongs to */
+                            channel: number;
+                            /** @description Vertical position of the Event within the Board */
+                            position: number;
+                            event: {
+                                id: string;
+                                /** @description GUID of the TAK Server Mission associated with the Event */
+                                mission_guid: null | string;
+                                created: string;
+                                updated: string;
+                                /** @description Is the Event currently active */
+                                active: boolean;
+                                /** @description Time at which the Event ended */
+                                ended: null | string;
+                                username: null | string;
+                                /** @description Connection that created the Event if created by a Connection or Layer token */
+                                connection: null | number;
+                                priority: "none" | "low" | "medium" | "high" | "critical";
+                                /** @description MIL-STD-2525E Symbol ID */
+                                type: string;
+                                name: string;
+                                /** @description ID of the Event in an external system */
+                                external_id: string;
+                                /** @description Can users other than the creator edit the Event */
+                                editable: boolean;
+                                /** @description Human readable location - ie: an address */
+                                location: string;
+                                remarks: string;
+                                /** @description User defined key/value Event metadata */
+                                metadata: {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Named URLs associated with the Event */
+                                links: {
+                                    /** @description Human readable name of the Link */
+                                    name: string;
+                                    /** @description URL the Link points at */
+                                    url: string;
+                                }[];
+                                style: {
+                                    /** @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path> */
+                                    icon?: string;
+                                    /** @description Hex colour of the Event marker - ie: #00ff00 */
+                                    "marker-color"?: string;
+                                    /** @description Opacity of the Event marker */
+                                    "marker-opacity"?: number;
+                                };
+                                geometry: {
+                                    /** @constant */
+                                    type: "Point";
+                                    coordinates: [
+                                        number,
+                                        number
+                                    ];
+                                };
+                                /** @description TAK Server Channels the Event is shared with */
+                                channels: number[];
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Remove a Core Event from a Board - the Event itself is not deleted */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":board": string;
+                    /** @description No Description */
+                    ":event": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/core/event": {
         parameters: {
             query?: never;
@@ -24454,216 +25354,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/manifest.webmanifest": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Return the Web Manifest for PWA Use */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            name: string;
-                            short_name: string;
-                            description: string;
-                            start_url: string;
-                            display: string;
-                            background_color: string;
-                            theme_color: string;
-                            lang: string;
-                            scope: string;
-                            icons: {
-                                src: string;
-                                sizes: string;
-                                type: string;
-                            }[];
-                            orientation: string;
-                            categories: string[];
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/manifest.webmanifest/logos/{:size}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Return a resized PNG logo for PWA use */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Logo size in pixels */
-                    ":size": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/marti/api/files/{:hash}": {
         parameters: {
             query?: never;
@@ -25652,6 +26342,216 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/api/manifest.webmanifest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return the Web Manifest for PWA Use */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name: string;
+                            short_name: string;
+                            description: string;
+                            start_url: string;
+                            display: string;
+                            background_color: string;
+                            theme_color: string;
+                            lang: string;
+                            scope: string;
+                            icons: {
+                                src: string;
+                                sizes: string;
+                                type: string;
+                            }[];
+                            orientation: string;
+                            categories: string[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/manifest.webmanifest/logos/{:size}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return a resized PNG logo for PWA use */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Logo size in pixels */
+                    ":size": number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/marti/missions/{:name}/log": {
@@ -40425,114 +41325,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/retention": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Run a retention action */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        action: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            name: string;
-                            status: "success" | "error";
-                            deleted: number;
-                            duration: number;
-                            message?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/server/repeater": {
         parameters: {
             query?: never;
@@ -40736,6 +41528,114 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/retention": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Run a retention action */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        action: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name: string;
+                            status: "success" | "error";
+                            deleted: number;
+                            duration: number;
+                            message?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -40975,253 +41875,6 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
-        trace?: never;
-    };
-    "/api/server": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Server */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            status: string;
-                            /**
-                             * @description The connected status of the Admin Connection (connection 0)
-                             * @default unknown
-                             */
-                            connection_status: "live" | "dead" | "unknown";
-                            /**
-                             * @description Whether the Admin Connection (connection 0) is enabled in the connection pool
-                             * @default true
-                             */
-                            connection: boolean;
-                            created: string;
-                            updated: string;
-                            version: string;
-                            name: string;
-                            url: string;
-                            api: string;
-                            webtak: string;
-                            /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
-                            auth: boolean;
-                            certificate?: {
-                                subject: string;
-                                validFrom: string;
-                                validTo: string;
-                            };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Patch Server */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        url: string;
-                        api: string;
-                        webtak: string;
-                        name?: string;
-                        /** @description Enable or disable the Admin Connection (connection 0) in the connection pool */
-                        connection?: boolean;
-                        username?: string;
-                        password?: string;
-                        auth?: {
-                            cert: string;
-                            key: string;
-                        };
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            status: string;
-                            /**
-                             * @description The connected status of the Admin Connection (connection 0)
-                             * @default unknown
-                             */
-                            connection_status: "live" | "dead" | "unknown";
-                            /**
-                             * @description Whether the Admin Connection (connection 0) is enabled in the connection pool
-                             * @default true
-                             */
-                            connection: boolean;
-                            created: string;
-                            updated: string;
-                            version: string;
-                            name: string;
-                            url: string;
-                            api: string;
-                            webtak: string;
-                            /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
-                            auth: boolean;
-                            certificate?: {
-                                subject: string;
-                                validFrom: string;
-                                validTo: string;
-                            };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
         trace?: never;
     };
     "/api/iconset": {
@@ -42637,6 +43290,253 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/server": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Server */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status: string;
+                            /**
+                             * @description The connected status of the Admin Connection (connection 0)
+                             * @default unknown
+                             */
+                            connection_status: "live" | "dead" | "unknown";
+                            /**
+                             * @description Whether the Admin Connection (connection 0) is enabled in the connection pool
+                             * @default true
+                             */
+                            connection: boolean;
+                            created: string;
+                            updated: string;
+                            version: string;
+                            name: string;
+                            url: string;
+                            api: string;
+                            webtak: string;
+                            /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
+                            auth: boolean;
+                            certificate?: {
+                                subject: string;
+                                validFrom: string;
+                                validTo: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Server */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        url: string;
+                        api: string;
+                        webtak: string;
+                        name?: string;
+                        /** @description Enable or disable the Admin Connection (connection 0) in the connection pool */
+                        connection?: boolean;
+                        username?: string;
+                        password?: string;
+                        auth?: {
+                            cert: string;
+                            key: string;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status: string;
+                            /**
+                             * @description The connected status of the Admin Connection (connection 0)
+                             * @default unknown
+                             */
+                            connection_status: "live" | "dead" | "unknown";
+                            /**
+                             * @description Whether the Admin Connection (connection 0) is enabled in the connection pool
+                             * @default true
+                             */
+                            connection: boolean;
+                            created: string;
+                            updated: string;
+                            version: string;
+                            name: string;
+                            url: string;
+                            api: string;
+                            webtak: string;
+                            /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
+                            auth: boolean;
+                            certificate?: {
+                                subject: string;
+                                validFrom: string;
+                                validTo: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/api/swagger": {
