@@ -53,7 +53,7 @@ export type CoreEventList = paths["/api/core/event"]["get"]["responses"]["200"][
 export type CoreEventLink = CoreEvent["links"][0];
 export type CoreEventStyle = CoreEvent["style"];
 
-export type CoreEventBoardList = paths["/api/core/event/board"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEventBoardList = paths["/api/board"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreEventBoard = CoreEventBoardList["items"][0];
 export type CoreEventBoardEvent = CoreEventBoard["events"][0];
 

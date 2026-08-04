@@ -74,7 +74,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         };
     }
 
-    await schema.get('/core/event/board', {
+    await schema.get('/board', {
         name: 'List Boards',
         group: 'CoreEventBoard',
         description: 'List the KanBan Boards of a Channel along with the Core Events placed on them',
@@ -151,7 +151,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
-    await schema.post('/core/event/board', {
+    await schema.post('/board', {
         name: 'Create Board',
         group: 'CoreEventBoard',
         description: 'Create a new KanBan Board on a Channel',
@@ -205,7 +205,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
-    await schema.patch('/core/event/board/:board', {
+    await schema.patch('/board/:board', {
         name: 'Update Board',
         group: 'CoreEventBoard',
         description: 'Rename or re-order a KanBan Board',
@@ -265,7 +265,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
-    await schema.delete('/core/event/board/:board', {
+    await schema.delete('/board/:board', {
         name: 'Delete Board',
         group: 'CoreEventBoard',
         description: 'Delete a KanBan Board - Events placed on the Board are removed from the Board but are not deleted',
@@ -295,7 +295,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
-    await schema.put('/core/event/board/:board/event/:event', {
+    await schema.put('/board/:board/event/:event', {
         name: 'Place Event',
         group: 'CoreEventBoard',
         description: `
@@ -367,7 +367,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
-    await schema.delete('/core/event/board/:board/event/:event', {
+    await schema.delete('/board/:board/event/:event', {
         name: 'Remove Event',
         group: 'CoreEventBoard',
         description: 'Remove a Core Event from a Board - the Event itself is not deleted',

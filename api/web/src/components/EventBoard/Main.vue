@@ -446,7 +446,7 @@ async function listBoards(): Promise<void> {
     try {
         error.value = undefined;
 
-        const res = await server.GET('/api/core/event/board', {
+        const res = await server.GET('/api/board', {
             params: { query: { channel: channel.value } }
         });
 
@@ -472,7 +472,7 @@ async function createBoard(): Promise<void> {
     adding.value = undefined;
 
     try {
-        const res = await server.POST('/api/core/event/board', {
+        const res = await server.POST('/api/board', {
             body: {
                 channel: channel.value,
                 name,
@@ -494,7 +494,7 @@ async function saveBoard(update: { name: string; description: string; color: str
     if (!board) return;
 
     try {
-        const res = await server.PATCH('/api/core/event/board/{:board}', {
+        const res = await server.PATCH('/api/board/{:board}', {
             params: { path: { ':board': board.id } },
             body: update
         });
@@ -511,7 +511,7 @@ async function saveBoard(update: { name: string; description: string; color: str
 
 async function deleteBoard(board: CoreEventBoard): Promise<void> {
     try {
-        const res = await server.DELETE('/api/core/event/board/{:board}', {
+        const res = await server.DELETE('/api/board/{:board}', {
             params: { path: { ':board': board.id } }
         });
 
@@ -531,7 +531,7 @@ async function nominateEvent(event: CoreEvent): Promise<void> {
     if (!board) return;
 
     try {
-        const res = await server.PUT('/api/core/event/board/{:board}/event/{:event}', {
+        const res = await server.PUT('/api/board/{:board}/event/{:event}', {
             params: { path: { ':board': board.id, ':event': event.id } },
             body: { position: board.events.length }
         });
@@ -546,7 +546,7 @@ async function nominateEvent(event: CoreEvent): Promise<void> {
 
 async function removeEvent(board: CoreEventBoard, placement: CoreEventBoardEvent): Promise<void> {
     try {
-        const res = await server.DELETE('/api/core/event/board/{:board}/event/{:event}', {
+        const res = await server.DELETE('/api/board/{:board}/event/{:event}', {
             params: { path: { ':board': board.id, ':event': placement.event.id } }
         });
 
@@ -562,7 +562,7 @@ async function removeEvent(board: CoreEventBoard, placement: CoreEventBoardEvent
 async function clearBoard(board: CoreEventBoard): Promise<void> {
     try {
         for (const placement of [...board.events]) {
-            const res = await server.DELETE('/api/core/event/board/{:board}/event/{:event}', {
+            const res = await server.DELETE('/api/board/{:board}/event/{:event}', {
                 params: { path: { ':board': board.id, ':event': placement.event.id } }
             });
 
@@ -594,7 +594,7 @@ async function persistPositions(board: CoreEventBoard): Promise<void> {
 
         if (placement.board === board.id && placement.position === i) continue;
 
-        const res = await server.PUT('/api/core/event/board/{:board}/event/{:event}', {
+        const res = await server.PUT('/api/board/{:board}/event/{:event}', {
             params: { path: { ':board': board.id, ':event': placement.event.id } },
             body: { position: i }
         });

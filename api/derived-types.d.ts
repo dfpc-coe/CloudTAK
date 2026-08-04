@@ -16642,7 +16642,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/core/event/board": {
+    "/api/board": {
         parameters: {
             query?: never;
             header?: never;
@@ -16999,7 +16999,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/core/event/board/{:board}": {
+    "/api/board/{:board}": {
         parameters: {
             query?: never;
             header?: never;
@@ -17276,7 +17276,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/api/core/event/board/{:board}/event/{:event}": {
+    "/api/board/{:board}/event/{:event}": {
         parameters: {
             query?: never;
             header?: never;

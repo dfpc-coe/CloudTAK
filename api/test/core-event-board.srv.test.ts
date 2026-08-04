@@ -14,9 +14,9 @@ let customId: string;
 let eventId: string;
 let unsharedEventId: string;
 
-test('GET: api/core/event/board - auto-creates Nominated board', async () => {
+test('GET: api/board - auto-creates Nominated board', async () => {
     try {
-        const res = await flight.fetch('/api/core/event/board?channel=7', {
+        const res = await flight.fetch('/api/board?channel=7', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -49,9 +49,9 @@ test('GET: api/core/event/board - auto-creates Nominated board', async () => {
     }
 });
 
-test('GET: api/core/event/board - Nominated board is not duplicated', async () => {
+test('GET: api/board - Nominated board is not duplicated', async () => {
     try {
-        const res = await flight.fetch('/api/core/event/board?channel=7', {
+        const res = await flight.fetch('/api/board?channel=7', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -65,9 +65,9 @@ test('GET: api/core/event/board - Nominated board is not duplicated', async () =
     }
 });
 
-test('GET: api/core/event/board - 403 without the channel active', async () => {
+test('GET: api/board - 403 without the channel active', async () => {
     try {
-        const res = await flight.fetch('/api/core/event/board?channel=7', {
+        const res = await flight.fetch('/api/board?channel=7', {
             method: 'GET',
             auth: {
                 bearer: flight.token.user,
@@ -80,9 +80,9 @@ test('GET: api/core/event/board - 403 without the channel active', async () => {
     }
 });
 
-test('POST: api/core/event/board', async () => {
+test('POST: api/board', async () => {
     try {
-        const res = await flight.fetch('/api/core/event/board', {
+        const res = await flight.fetch('/api/board', {
             method: 'POST',
             auth: {
                 bearer: flight.token.admin,
@@ -115,9 +115,9 @@ test('POST: api/core/event/board', async () => {
     }
 });
 
-test('PATCH: api/core/event/board/:board - rename Nominated board', async () => {
+test('PATCH: api/board/:board - rename Nominated board', async () => {
     try {
-        const res = await flight.fetch(`/api/core/event/board/${nominatedId}`, {
+        const res = await flight.fetch(`/api/board/${nominatedId}`, {
             method: 'PATCH',
             auth: {
                 bearer: flight.token.admin,
@@ -138,7 +138,7 @@ test('PATCH: api/core/event/board/:board - rename Nominated board', async () => 
     }
 });
 
-test('PUT: api/core/event/board/:board/event/:event - nominate Event', async () => {
+test('PUT: api/board/:board/event/:event - nominate Event', async () => {
     try {
         const event = await flight.fetch('/api/core/event', {
             method: 'POST',
@@ -158,7 +158,7 @@ test('PUT: api/core/event/board/:board/event/:event - nominate Event', async () 
 
         eventId = event.body.id;
 
-        const res = await flight.fetch(`/api/core/event/board/${nominatedId}/event/${eventId}`, {
+        const res = await flight.fetch(`/api/board/${nominatedId}/event/${eventId}`, {
             method: 'PUT',
             auth: {
                 bearer: flight.token.admin,
@@ -178,7 +178,7 @@ test('PUT: api/core/event/board/:board/event/:event - nominate Event', async () 
     }
 });
 
-test('PUT: api/core/event/board/:board/event/:event - 400 for unshared Event', async () => {
+test('PUT: api/board/:board/event/:event - 400 for unshared Event', async () => {
     try {
         const event = await flight.fetch('/api/core/event', {
             method: 'POST',
@@ -198,7 +198,7 @@ test('PUT: api/core/event/board/:board/event/:event - 400 for unshared Event', a
 
         unsharedEventId = event.body.id;
 
-        const res = await flight.fetch(`/api/core/event/board/${nominatedId}/event/${unsharedEventId}`, {
+        const res = await flight.fetch(`/api/board/${nominatedId}/event/${unsharedEventId}`, {
             method: 'PUT',
             auth: {
                 bearer: flight.token.admin,
@@ -214,9 +214,9 @@ test('PUT: api/core/event/board/:board/event/:event - 400 for unshared Event', a
     }
 });
 
-test('PUT: api/core/event/board/:board/event/:event - move Event between boards', async () => {
+test('PUT: api/board/:board/event/:event - move Event between boards', async () => {
     try {
-        const res = await flight.fetch(`/api/core/event/board/${customId}/event/${eventId}`, {
+        const res = await flight.fetch(`/api/board/${customId}/event/${eventId}`, {
             method: 'PUT',
             auth: {
                 bearer: flight.token.admin,
@@ -228,7 +228,7 @@ test('PUT: api/core/event/board/:board/event/:event - move Event between boards'
 
         assert.equal(res.body.board, customId);
 
-        const list = await flight.fetch('/api/core/event/board?channel=7', {
+        const list = await flight.fetch('/api/board?channel=7', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -246,9 +246,9 @@ test('PUT: api/core/event/board/:board/event/:event - move Event between boards'
     }
 });
 
-test('DELETE: api/core/event/board/:board - Nominated board cannot be deleted', async () => {
+test('DELETE: api/board/:board - Nominated board cannot be deleted', async () => {
     try {
-        const res = await flight.fetch(`/api/core/event/board/${nominatedId}`, {
+        const res = await flight.fetch(`/api/board/${nominatedId}`, {
             method: 'DELETE',
             auth: {
                 bearer: flight.token.admin,
@@ -261,9 +261,9 @@ test('DELETE: api/core/event/board/:board - Nominated board cannot be deleted', 
     }
 });
 
-test('DELETE: api/core/event/board/:board - custom board', async () => {
+test('DELETE: api/board/:board - custom board', async () => {
     try {
-        const res = await flight.fetch(`/api/core/event/board/${customId}`, {
+        const res = await flight.fetch(`/api/board/${customId}`, {
             method: 'DELETE',
             auth: {
                 bearer: flight.token.admin,
@@ -273,7 +273,7 @@ test('DELETE: api/core/event/board/:board - custom board', async () => {
         assert.deepEqual(res.body, { status: 200, message: 'Board Deleted' });
 
         // Placements on the deleted Board are removed but the Event survives
-        const list = await flight.fetch('/api/core/event/board?channel=7', {
+        const list = await flight.fetch('/api/board?channel=7', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -297,9 +297,9 @@ test('DELETE: api/core/event/board/:board - custom board', async () => {
     }
 });
 
-test('DELETE: api/core/event/board/:board/event/:event - remove placement', async () => {
+test('DELETE: api/board/:board/event/:event - remove placement', async () => {
     try {
-        await flight.fetch(`/api/core/event/board/${nominatedId}/event/${eventId}`, {
+        await flight.fetch(`/api/board/${nominatedId}/event/${eventId}`, {
             method: 'PUT',
             auth: {
                 bearer: flight.token.admin,
@@ -309,7 +309,7 @@ test('DELETE: api/core/event/board/:board/event/:event - remove placement', asyn
             },
         }, true);
 
-        const res = await flight.fetch(`/api/core/event/board/${nominatedId}/event/${eventId}`, {
+        const res = await flight.fetch(`/api/board/${nominatedId}/event/${eventId}`, {
             method: 'DELETE',
             auth: {
                 bearer: flight.token.admin,
@@ -318,7 +318,7 @@ test('DELETE: api/core/event/board/:board/event/:event - remove placement', asyn
 
         assert.deepEqual(res.body, { status: 200, message: 'Event removed from Board' });
 
-        const list = await flight.fetch('/api/core/event/board?channel=7', {
+        const list = await flight.fetch('/api/board?channel=7', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,

@@ -429,32 +429,32 @@
         "query": false,
         "res": true
     },
-    "GET /core/event/board": {
+    "GET /board": {
         "body": false,
         "query": true,
         "res": true
     },
-    "POST /core/event/board": {
+    "POST /board": {
         "body": true,
         "query": false,
         "res": true
     },
-    "PATCH /core/event/board/:board": {
+    "PATCH /board/:board": {
         "body": true,
         "query": false,
         "res": true
     },
-    "DELETE /core/event/board/:board": {
+    "DELETE /board/:board": {
         "body": false,
         "query": false,
         "res": true
     },
-    "PUT /core/event/board/:board/event/:event": {
+    "PUT /board/:board/event/:event": {
         "body": true,
         "query": false,
         "res": true
     },
-    "DELETE /core/event/board/:board/event/:event": {
+    "DELETE /board/:board/event/:event": {
         "body": false,
         "query": false,
         "res": true
