@@ -243,6 +243,7 @@
 
                 <PropertyCoreEventChannels
                     :model-value='event.channels'
+                    :boards='event.boards'
                     :edit='is_creator'
                     @update:model-value='patch({ channels: $event })'
                 />

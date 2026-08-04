@@ -52,10 +52,15 @@ export type CoreEvent = paths["/api/core/event/{:event}"]["get"]["responses"]["2
 export type CoreEventList = paths["/api/core/event"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreEventLink = CoreEvent["links"][0];
 export type CoreEventStyle = CoreEvent["style"];
+export type CoreEventBoardSummary = CoreEvent["boards"][0];
+export type CoreEventBoardColumnSummary = CoreEventBoardSummary["columns"][0];
 
 export type CoreEventBoardList = paths["/api/board"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreEventBoard = CoreEventBoardList["items"][0];
-export type CoreEventBoardEvent = CoreEventBoard["events"][0];
+export type CoreEventBoardColumnList = paths["/api/board/column"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEventBoardColumn = CoreEventBoardColumnList["items"][0];
+export type CoreEventBoardEventList = paths["/api/board/event"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEventBoardEvent = CoreEventBoardEventList["items"][0];
 
 export type Contact = paths["/api/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"][0];
 export type ContactList = paths["/api/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"];

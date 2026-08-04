@@ -34,7 +34,7 @@ export enum CoreEvent_Priority {
     CRITICAL = 'critical',
 }
 
-export enum CoreEventBoard_Type {
+export enum CoreEventBoardColumn_Type {
     NOMINATED = 'nominated',
     CUSTOM = 'custom',
 }

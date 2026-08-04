@@ -1345,6 +1345,13 @@
       "when": 1785866032267,
       "tag": "0192_core_event_board",
       "breakpoints": true
+    },
+    {
+      "idx": 193,
+      "version": "7",
+      "when": 1785866032268,
+      "tag": "0193_core_event_board_column",
+      "breakpoints": true
     }
   ]
 }

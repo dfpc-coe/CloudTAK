@@ -3,7 +3,7 @@ import { Type, Static } from '@sinclair/typebox';
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text, Profile_Radiation_Dose, Profile_Wake_Lock } from './enums.js';
-import { VideoLease_SourceType, CoreEvent_Priority, CoreEventBoard_Type } from './enums.js';
+import { VideoLease_SourceType, CoreEvent_Priority, CoreEventBoardColumn_Type } from './enums.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
 import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, BasemapTerrain_Encoding } from './enums.js';
@@ -169,6 +169,26 @@ export const CoreEventStyle = Type.Object({
     })),
 });
 
+/** Enough of a Column to render its name & badge styling inline */
+export const CoreEventBoardColumnSummary = Type.Object({
+    id: Type.String(),
+    name: Type.String(),
+    color: Type.String({ description: 'Hex colour the Column is rendered with - ie: #ff0000' }),
+    type: Type.Enum(CoreEventBoardColumn_Type),
+    position: Type.Integer(),
+});
+
+/** A Board of one of the Event's Channels & where the Event sits on it */
+export const CoreEventBoardSummary = Type.Object({
+    id: Type.String(),
+    name: Type.String(),
+    channel: Type.Integer({ description: 'TAK Server Channel bitpos the Board belongs to' }),
+    column: Type.Union([Type.Null(), Type.String()], {
+        description: 'Column of the Board the Event is placed in - null when the Event has not been nominated to this Board',
+    }),
+    columns: Type.Array(CoreEventBoardColumnSummary, { description: 'Columns of the Board' }),
+});
+
 export const CoreEventResponse = Type.Object({
     id: Type.String(),
     mission_guid: Type.Union([Type.Null(), Type.String()], { description: 'GUID of the TAK Server Mission associated with the Event' }),
@@ -190,16 +210,9 @@ export const CoreEventResponse = Type.Object({
     style: CoreEventStyle,
     geometry: GeoJSONFeatureGeometryPoint,
     channels: Type.Array(Type.Integer(), { description: 'TAK Server Channels the Event is shared with' }),
-});
-
-export const CoreEventBoardEventResponse = Type.Object({
-    id: Type.Integer(),
-    created: Type.String(),
-    updated: Type.String(),
-    board: Type.String({ description: 'Board the Event is placed on' }),
-    channel: Type.Integer({ description: 'TAK Server Channel bitpos the placement belongs to' }),
-    position: Type.Integer({ description: 'Vertical position of the Event within the Board' }),
-    event: CoreEventResponse,
+    boards: Type.Array(CoreEventBoardSummary, {
+        description: 'Boards of every Channel the Event is shared with, along with the Column the Event is placed in on each',
+    }),
 });
 
 export const CoreEventBoardResponse = Type.Object({
@@ -209,10 +222,28 @@ export const CoreEventBoardResponse = Type.Object({
     channel: Type.Integer({ description: 'TAK Server Channel bitpos the Board belongs to' }),
     name: Type.String(),
     description: Type.String(),
-    color: Type.String({ description: 'Hex colour the Board is rendered with - ie: #ff0000' }),
-    type: Type.Enum(CoreEventBoard_Type, { description: 'Boards of type nominated are created automatically and cannot be removed' }),
-    position: Type.Integer({ description: 'Horizontal position of the Board relative to other Boards in the Channel' }),
-    events: Type.Array(CoreEventBoardEventResponse, { description: 'Core Events placed on the Board' }),
+});
+
+export const CoreEventBoardColumnResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    board: Type.String({ description: 'Board the Column belongs to' }),
+    name: Type.String(),
+    description: Type.String(),
+    color: Type.String({ description: 'Hex colour the Column is rendered with - ie: #ff0000' }),
+    type: Type.Enum(CoreEventBoardColumn_Type, { description: 'Columns of type nominated are created automatically and cannot be removed' }),
+    position: Type.Integer({ description: 'Horizontal position of the Column relative to the other Columns of the Board' }),
+});
+
+export const CoreEventBoardEventResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    board: Type.String({ description: 'Board the Event is placed on' }),
+    column: Type.String({ description: 'Column of the Board the Event is placed in' }),
+    position: Type.Integer({ description: 'Vertical position of the Event within the Column' }),
+    event: CoreEventResponse,
 });
 
 export const MissionTemplateResponse = Type.Object({

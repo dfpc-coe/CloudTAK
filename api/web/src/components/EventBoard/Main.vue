@@ -14,7 +14,7 @@
             <div class='d-flex align-items-center gap-2 ms-auto'>
                 <select
                     v-model='channel'
-                    class='form-select event-board-channel'
+                    class='form-select event-board-select'
                     aria-label='Channel'
                 >
                     <option
@@ -31,9 +31,67 @@
                     />
                 </select>
 
+                <select
+                    v-if='channel !== undefined && boards.length'
+                    v-model='board'
+                    class='form-select event-board-select'
+                    aria-label='Board'
+                    @change='onBoardChange'
+                >
+                    <option
+                        v-for='b in boards'
+                        :key='b.id'
+                        :value='b.id'
+                        v-text='b.name'
+                    />
+                </select>
+
+                <TablerDropdown
+                    v-if='selectedBoard'
+                    :width='170'
+                >
+                    <TablerIconButton title='Board Options'>
+                        <IconDotsVertical
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+
+                    <template #dropdown>
+                        <div
+                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
+                            @click='editBoard = selectedBoard'
+                        >
+                            <IconPencil
+                                :size='20'
+                                stroke='1'
+                            />
+                            <span class='mx-2'>Edit Board</span>
+                        </div>
+                        <div
+                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
+                            @click='addBoard = true'
+                        >
+                            <IconPlus
+                                :size='20'
+                                stroke='1'
+                            />
+                            <span class='mx-2'>New Board</span>
+                        </div>
+                        <TablerDelete
+                            v-if='boards.length > 1'
+                            class='cloudtak-hover event-board-menu-delete'
+                            displaytype='menu'
+                            label='Delete Board'
+                            title='Delete Board'
+                            @delete='deleteBoard(selectedBoard)'
+                        />
+                    </template>
+                </TablerDropdown>
+
                 <button
                     class='btn btn-primary flex-shrink-0'
-                    :disabled='channel === undefined || loading'
+                    :disabled='!nominatedColumn || loading'
                     @click='nominate = true'
                 >
                     <IconPlus
@@ -44,7 +102,7 @@
                 </button>
 
                 <TablerIconButton
-                    title='Refresh Boards'
+                    title='Refresh Board'
                     @click='refresh'
                 >
                     <IconRefresh
@@ -86,25 +144,25 @@
                 class='d-flex align-items-stretch gap-3 h-100 overflow-x-auto p-3'
             >
                 <div
-                    v-for='(board, columnIdx) in boards'
-                    :key='board.id'
+                    v-for='(column, columnIdx) in columns'
+                    :key='column.id'
                     class='cloudtak-panel d-flex flex-column event-board-column flex-shrink-0'
                     :class='{
-                        "event-board-column--target": dropTarget && dropTarget.board === board.id,
+                        "event-board-column--target": dropTarget && dropTarget.column === column.id,
                         "event-board-column--insert-before": columnDrag && columnDropIndex === columnIdx,
-                        "event-board-column--insert-after": columnDrag && columnDropIndex === boards.length && columnIdx === boards.length - 1,
+                        "event-board-column--insert-after": columnDrag && columnDropIndex === columns.length && columnIdx === columns.length - 1,
                     }'
-                    :data-board='board.id'
-                    @dragover='onColumnDragOver($event, board, columnIdx)'
-                    @dragleave='onColumnDragLeave($event, board)'
-                    @drop.prevent='onDrop(board)'
+                    :data-column='column.id'
+                    @dragover='onColumnDragOver($event, column, columnIdx)'
+                    @dragleave='onColumnDragLeave($event, column)'
+                    @drop.prevent='onDrop(column)'
                 >
                     <div class='d-flex align-items-center px-3 py-2 border-bottom event-board-column-header'>
                         <div
                             class='d-flex align-items-center flex-shrink-0 me-2 event-board-column-handle'
                             draggable='true'
-                            title='Move Board'
-                            @dragstart='onColumnDragStart($event, board)'
+                            title='Move Column'
+                            @dragstart='onColumnDragStart($event, column)'
                             @dragend='onColumnDragEnd'
                         >
                             <IconGripVertical
@@ -113,29 +171,29 @@
                             />
                         </div>
                         <TablerBadge
-                            v-if='board.color'
+                            v-if='column.color'
                             class='text-truncate user-select-none'
-                            :background-color='board.color + "26"'
-                            :border-color='board.color + "59"'
-                            :text-color='board.color'
-                            :title='board.description || undefined'
+                            :background-color='column.color + "26"'
+                            :border-color='column.color + "59"'
+                            :text-color='column.color'
+                            :title='column.description || undefined'
                         >
-                            {{ board.name }}
+                            {{ column.name }}
                         </TablerBadge>
                         <span
                             v-else
                             class='fw-semibold text-truncate user-select-none'
-                            :title='board.description || undefined'
-                            v-text='board.name'
+                            :title='column.description || undefined'
+                            v-text='column.name'
                         />
                         <span
                             class='badge bg-secondary text-secondary-fg ms-2 flex-shrink-0'
-                            v-text='board.events.length'
+                            v-text='column.events.length'
                         />
 
                         <div class='ms-auto flex-shrink-0'>
                             <TablerDropdown :width='170'>
-                                <TablerIconButton title='Board Options'>
+                                <TablerIconButton title='Column Options'>
                                     <IconDotsVertical
                                         :size='18'
                                         stroke='1'
@@ -145,7 +203,7 @@
                                 <template #dropdown>
                                     <div
                                         class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
-                                        @click='editBoard = board'
+                                        @click='editColumn = column'
                                     >
                                         <IconPencil
                                             :size='20'
@@ -154,24 +212,24 @@
                                         <span class='mx-2'>Edit</span>
                                     </div>
                                     <!-- TablerDelete's confirm modal only closes on unmount -
-                                         the key remounts it once the clear empties the Board -->
+                                         the key remounts it once the clear empties the Column -->
                                     <TablerDelete
-                                        :key='`clear-${board.events.length}`'
+                                        :key='`clear-${column.events.length}`'
                                         class='event-board-menu-delete'
-                                        :class='{ "cloudtak-hover": board.events.length > 0 }'
+                                        :class='{ "cloudtak-hover": column.events.length > 0 }'
                                         displaytype='menu'
                                         label='Clear'
-                                        title='Clear Board'
-                                        :disabled='board.events.length === 0'
-                                        @delete='clearBoard(board)'
+                                        title='Clear Column'
+                                        :disabled='column.events.length === 0'
+                                        @delete='clearColumn(column)'
                                     />
                                     <TablerDelete
-                                        v-if='board.type !== "nominated"'
+                                        v-if='column.type !== "nominated"'
                                         class='cloudtak-hover event-board-menu-delete'
                                         displaytype='menu'
                                         label='Delete Column'
                                         title='Delete Column'
-                                        @delete='deleteBoard(board)'
+                                        @delete='deleteColumn(column)'
                                     />
                                 </template>
                             </TablerDropdown>
@@ -179,26 +237,26 @@
                     </div>
 
                     <div
-                        v-if='board.description'
+                        v-if='column.description'
                         class='px-3 py-2 border-bottom event-board-column-desc'
                     >
                         <div
-                            :ref='(el) => setDescEl(board.id, el)'
+                            :ref='(el) => setDescEl(column.id, el)'
                             class='text-secondary event-board-desc'
-                            :class='{ "event-board-desc--clamped": !expandedDesc.has(board.id) }'
-                            v-text='board.description'
+                            :class='{ "event-board-desc--clamped": !expandedDesc.has(column.id) }'
+                            v-text='column.description'
                         />
                         <div
-                            v-if='descOverflow[board.id] || expandedDesc.has(board.id)'
+                            v-if='descOverflow[column.id] || expandedDesc.has(column.id)'
                             class='d-flex align-items-center justify-content-center gap-1 cursor-pointer cloudtak-hover user-select-none mt-1 event-board-desc-toggle'
                             role='button'
                             tabindex='0'
-                            @click='toggleDesc(board.id)'
-                            @keydown.enter='toggleDesc(board.id)'
+                            @click='toggleDesc(column.id)'
+                            @keydown.enter='toggleDesc(column.id)'
                         >
-                            <span v-text='expandedDesc.has(board.id) ? "Less" : "More"' />
+                            <span v-text='expandedDesc.has(column.id) ? "Less" : "More"' />
                             <IconChevronUp
-                                v-if='expandedDesc.has(board.id)'
+                                v-if='expandedDesc.has(column.id)'
                                 :size='16'
                                 stroke='1'
                             />
@@ -212,11 +270,11 @@
 
                     <div class='flex-grow-1 overflow-auto px-2 py-2 d-flex flex-column gap-2 event-board-column-body'>
                         <template
-                            v-for='(placement, idx) in board.events'
+                            v-for='(placement, idx) in column.events'
                             :key='placement.event.id'
                         >
                             <div
-                                v-if='showIndicator(board, idx)'
+                                v-if='showIndicator(column, idx)'
                                 class='event-board-indicator'
                             />
                             <div
@@ -224,10 +282,10 @@
                                 :class='{ "event-board-card--dragging": drag && drag.placement.event.id === placement.event.id }'
                                 :data-index='idx'
                                 draggable='true'
-                                @dragstart='onDragStart($event, board, placement)'
+                                @dragstart='onDragStart($event, column, placement)'
                                 @dragend='onDragEnd'
-                                @dragover='onCardDragOver($event, board, idx)'
-                                @touchstart='onTouchStart($event, board, placement)'
+                                @dragover='onCardDragOver($event, column, idx)'
+                                @touchstart='onTouchStart($event, column, placement)'
                                 @touchmove='onTouchMove'
                                 @touchend='onTouchEnd'
                                 @touchcancel='cancelTouchDrag'
@@ -245,7 +303,7 @@
                                             label='Remove'
                                             title='Remove from Board'
                                             class='mt-1'
-                                            @delete='removeEvent(board, placement)'
+                                            @delete='removeEvent(column, placement)'
                                         />
                                     </template>
                                 </StandardCoreEvent>
@@ -253,15 +311,15 @@
                         </template>
 
                         <div
-                            v-if='showIndicator(board, board.events.length)'
+                            v-if='showIndicator(column, column.events.length)'
                             class='event-board-indicator'
                         />
 
                         <div
-                            v-if='board.events.length === 0 && !dropTarget'
+                            v-if='column.events.length === 0 && !dropTarget'
                             class='text-muted small text-center py-4 user-select-none'
                         >
-                            No Events on this Board
+                            No Events in this Column
                         </div>
                     </div>
                 </div>
@@ -275,19 +333,19 @@
                             v-model='adding'
                             v-focus
                             class='form-control form-control-sm'
-                            placeholder='Board Name'
-                            @keyup.enter='createBoard'
+                            placeholder='Column Name'
+                            @keyup.enter='createColumn'
                             @keyup.esc='adding = undefined'
-                            @blur='createBoard'
+                            @blur='createColumn'
                         >
                     </div>
                 </div>
                 <div
-                    v-else
+                    v-else-if='selectedBoard'
                     class='flex-shrink-0'
                 >
                     <TablerIconButton
-                        title='Add Board'
+                        title='Add Column'
                         @click='adding = ""'
                     >
                         <IconPlus
@@ -307,11 +365,18 @@
             @close='nominate = false'
         />
 
+        <EditColumnModal
+            v-if='editColumn'
+            :column='editColumn'
+            @save='saveColumn($event)'
+            @close='editColumn = undefined'
+        />
+
         <EditBoardModal
-            v-if='editBoard'
-            :board='editBoard'
-            @save='saveBoard($event)'
-            @close='editBoard = undefined'
+            v-if='editBoard || addBoard'
+            :board='addBoard ? undefined : editBoard'
+            @save='addBoard ? createBoard($event) : saveBoard($event)'
+            @close='editBoard = undefined; addBoard = false'
         />
 
         <TablerModal
@@ -332,10 +397,10 @@
 
 <script setup lang='ts'>
 /**
- * EventBoard - KanBan style board of Core Events nominated to a TAK
- * Channel. Every Channel has an automatically managed "Nominated" Board
- * (renameable) that nominations land on and users can add further Boards
- * and drag Events between them.
+ * EventBoard - KanBan style Board of Core Events nominated to a TAK Channel.
+ * Every Channel has an automatically managed Board and every Board an
+ * automatically managed "Nominated" Column (renameable) that nominations land
+ * in - users can add further Boards & Columns and drag Events between them.
  */
 
 import { ref, computed, reactive, watch, nextTick, onMounted, onUnmounted } from 'vue';
@@ -343,11 +408,12 @@ import { useRoute, useRouter } from 'vue-router';
 import Config from '../../base/config.ts';
 import { server } from '../../std.ts';
 import GroupManager from '../../base/group.ts';
-import type { CoreEvent, CoreEventBoard, CoreEventBoardEvent } from '../../types.ts';
+import type { CoreEvent, CoreEventBoard, CoreEventBoardColumn, CoreEventBoardEvent } from '../../types.ts';
 import StandardCoreEvent from '../CloudTAK/util/StandardCoreEvent.vue';
 import CoreEventView from '../CloudTAK/CoreEventView.vue';
 import NominateModal from './NominateModal.vue';
 import EditBoardModal from './EditBoardModal.vue';
+import EditColumnModal from './EditColumnModal.vue';
 import {
     IconPlus,
     IconPencil,
@@ -368,6 +434,11 @@ import {
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
+/** A Column with the Events currently placed in it */
+type BoardColumn = CoreEventBoardColumn & {
+    events: Array<CoreEventBoardEvent>;
+};
+
 const vFocus = {
     mounted: (el: HTMLElement) => el.focus()
 };
@@ -382,24 +453,28 @@ const channels = ref<Array<{ name: string; bitpos: number }>>([]);
 const channel = ref<number | undefined>();
 
 const boards = ref<Array<CoreEventBoard>>([]);
+const board = ref<string | undefined>();
+const columns = ref<Array<BoardColumn>>([]);
 
 const nominate = ref(false);
 const adding = ref<string | undefined>();
+const addBoard = ref(false);
 const editBoard = ref<CoreEventBoard | undefined>();
+const editColumn = ref<BoardColumn | undefined>();
 const viewEvent = ref<string | undefined>();
 
-// Board descriptions clamp to 2 lines - the More/Less row only renders for
-// Boards whose text actually overflows the clamp (measured, not guessed)
+// Column descriptions clamp to 2 lines - the More/Less row only renders for
+// Columns whose text actually overflows the clamp (measured, not guessed)
 const expandedDesc = ref(new Set<string>());
 const descOverflow = ref<Record<string, boolean>>({});
 const descEls = new Map<string, HTMLElement>();
 
 const drag = ref<{ placement: CoreEventBoardEvent; from: string } | undefined>();
-const dropTarget = ref<{ board: string; index: number; precise: boolean } | undefined>();
+const dropTarget = ref<{ column: string; index: number; precise: boolean } | undefined>();
 
-// Dragging a column by its grip handle repositions the Board itself -
+// Dragging a column by its grip handle repositions the Column itself -
 // kept apart from `drag`/`dropTarget` so card and column drags can't mix
-const columnDrag = ref<{ board: string } | undefined>();
+const columnDrag = ref<{ column: string } | undefined>();
 const columnDropIndex = ref<number | undefined>();
 
 const scroller = ref<HTMLElement | undefined>();
@@ -433,18 +508,22 @@ const headerLogo = computed(() => {
     return '/CloudTAKLogo.svg';
 });
 
+const selectedBoard = computed<CoreEventBoard | undefined>(() => {
+    return boards.value.find((b) => b.id === board.value);
+});
+
 const placedEvents = computed<Set<string>>(() => {
     const placed = new Set<string>();
-    for (const board of boards.value) {
-        for (const placement of board.events) {
+    for (const column of columns.value) {
+        for (const placement of column.events) {
             placed.add(placement.event.id);
         }
     }
     return placed;
 });
 
-const nominatedBoard = computed<CoreEventBoard | undefined>(() => {
-    return boards.value.find((board) => board.type === 'nominated');
+const nominatedColumn = computed<BoardColumn | undefined>(() => {
+    return columns.value.find((column) => column.type === 'nominated');
 });
 
 onMounted(async () => {
@@ -504,24 +583,44 @@ function toggleDesc(id: string): void {
     }
 }
 
-watch(boards, async () => {
+watch(columns, async () => {
     await nextTick();
     measureDescs();
 });
 
 watch(channel, async () => {
-    void router.replace({
-        query: channel.value === undefined ? {} : { channel: String(channel.value) },
-    });
-
     await refresh();
 });
+
+/** The Board selector is explicit rather than watched so listBoards can
+ *  resolve a selection without triggering a second Column fetch */
+async function onBoardChange(): Promise<void> {
+    syncQuery();
+
+    loading.value = true;
+
+    await listColumns();
+}
+
+function syncQuery(): void {
+    const query: Record<string, string> = {};
+
+    if (channel.value !== undefined) query.channel = String(channel.value);
+    if (board.value !== undefined) query.board = board.value;
+
+    void router.replace({ query });
+}
 
 async function refresh(): Promise<void> {
     if (channel.value === undefined) return;
 
     loading.value = true;
+
     await listBoards();
+
+    syncQuery();
+
+    await listColumns();
 }
 
 async function listChannels(): Promise<void> {
@@ -549,7 +648,58 @@ async function listBoards(): Promise<void> {
 
         if (res.error) throw new Error(res.error.message);
 
-        boards.value = res.data.items as Array<CoreEventBoard>;
+        boards.value = res.data.items;
+
+        // The board watcher would re-list the Columns - assign silently when
+        // the current selection is still valid for the new Channel
+        const query = String(route.query.board || '');
+
+        if (board.value && boards.value.some((b) => b.id === board.value)) {
+            return;
+        } else if (boards.value.some((b) => b.id === query)) {
+            board.value = query;
+        } else {
+            board.value = boards.value.length ? boards.value[0].id : undefined;
+        }
+    } catch (err) {
+        loading.value = false;
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
+
+/** Columns of the selected Board, each with the Events placed in it */
+async function listColumns(): Promise<void> {
+    if (!board.value) {
+        columns.value = [];
+        loading.value = false;
+        return;
+    }
+
+    try {
+        error.value = undefined;
+
+        const [cols, placements] = await Promise.all([
+            server.GET('/api/board/column', {
+                params: { query: { board: board.value } }
+            }),
+            server.GET('/api/board/event', {
+                params: { query: { board: board.value } }
+            }),
+        ]);
+
+        if (cols.error) throw new Error(cols.error.message);
+        if (placements.error) throw new Error(placements.error.message);
+
+        const byColumn = new Map<string, Array<CoreEventBoardEvent>>();
+        for (const placement of placements.data.items as Array<CoreEventBoardEvent>) {
+            const arr = byColumn.get(placement.column) || [];
+            arr.push(placement);
+            byColumn.set(placement.column, arr);
+        }
+
+        columns.value = cols.data.items.map((column) => {
+            return { ...column, events: byColumn.get(column.id) || [] };
+        });
 
         loading.value = false;
     } catch (err) {
@@ -558,10 +708,76 @@ async function listBoards(): Promise<void> {
     }
 }
 
-async function createBoard(): Promise<void> {
+async function createBoard(update: { name: string; description: string }): Promise<void> {
+    addBoard.value = false;
+
+    if (channel.value === undefined) return;
+
+    try {
+        const res = await server.POST('/api/board', {
+            body: {
+                channel: channel.value,
+                ...update,
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        boards.value.push(res.data);
+
+        board.value = res.data.id;
+
+        await onBoardChange();
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
+
+async function saveBoard(update: { name: string; description: string }): Promise<void> {
+    const existing = editBoard.value;
+    editBoard.value = undefined;
+
+    if (!existing) return;
+
+    try {
+        const res = await server.PATCH('/api/board/{:board}', {
+            params: { path: { ':board': existing.id } },
+            body: update
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        existing.name = res.data.name;
+        existing.description = res.data.description;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
+
+async function deleteBoard(existing?: CoreEventBoard): Promise<void> {
+    if (!existing) return;
+
+    try {
+        const res = await server.DELETE('/api/board/{:board}', {
+            params: { path: { ':board': existing.id } }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        boards.value = boards.value.filter((b) => b.id !== existing.id);
+
+        board.value = boards.value.length ? boards.value[0].id : undefined;
+
+        await onBoardChange();
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
+
+async function createColumn(): Promise<void> {
     const name = (adding.value || '').trim();
 
-    if (!name || channel.value === undefined) {
+    if (!name || !board.value) {
         adding.value = undefined;
         return;
     }
@@ -569,38 +785,38 @@ async function createBoard(): Promise<void> {
     adding.value = undefined;
 
     try {
-        const res = await server.POST('/api/board', {
+        const res = await server.POST('/api/board/column', {
             body: {
-                channel: channel.value,
+                board: board.value,
                 name,
             }
         });
 
         if (res.error) throw new Error(res.error.message);
 
-        boards.value.push(res.data as CoreEventBoard);
+        columns.value.push({ ...res.data, events: [] });
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
 
-async function saveBoard(update: { name: string; description: string; color: string }): Promise<void> {
-    const board = editBoard.value;
-    editBoard.value = undefined;
+async function saveColumn(update: { name: string; description: string; color: string }): Promise<void> {
+    const column = editColumn.value;
+    editColumn.value = undefined;
 
-    if (!board) return;
+    if (!column) return;
 
     try {
-        const res = await server.PATCH('/api/board/{:board}', {
-            params: { path: { ':board': board.id } },
+        const res = await server.PATCH('/api/board/column/{:column}', {
+            params: { path: { ':column': column.id } },
             body: update
         });
 
         if (res.error) throw new Error(res.error.message);
 
-        board.name = res.data.name;
-        board.description = res.data.description;
-        board.color = res.data.color;
+        column.name = res.data.name;
+        column.description = res.data.description;
+        column.color = res.data.color;
 
         await nextTick();
         measureDescs();
@@ -609,70 +825,73 @@ async function saveBoard(update: { name: string; description: string; color: str
     }
 }
 
-async function deleteBoard(board: CoreEventBoard): Promise<void> {
+async function deleteColumn(column: BoardColumn): Promise<void> {
     try {
-        const res = await server.DELETE('/api/board/{:board}', {
-            params: { path: { ':board': board.id } }
+        const res = await server.DELETE('/api/board/column/{:column}', {
+            params: { path: { ':column': column.id } }
         });
 
         if (res.error) throw new Error(res.error.message);
 
-        // Events placed on the deleted Board are dropped from the Board
+        // Events placed in the deleted Column are dropped from the Board
         // entirely - surface them again by re-nominating from the modal
-        boards.value = boards.value.filter((b) => b.id !== board.id);
+        columns.value = columns.value.filter((c) => c.id !== column.id);
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
 
 async function nominateEvent(event: CoreEvent): Promise<void> {
-    const board = nominatedBoard.value;
+    const column = nominatedColumn.value;
 
-    if (!board) return;
+    if (!column) return;
 
     try {
-        const res = await server.PUT('/api/board/{:board}/event/{:event}', {
-            params: { path: { ':board': board.id, ':event': event.id } },
-            body: { position: board.events.length }
+        const res = await server.PUT('/api/board/event', {
+            body: {
+                column: column.id,
+                event: event.id,
+                position: column.events.length,
+            }
         });
 
         if (res.error) throw new Error(res.error.message);
 
-        board.events.push(res.data as CoreEventBoardEvent);
+        column.events.push(res.data as CoreEventBoardEvent);
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
 
-async function removeEvent(board: CoreEventBoard, placement: CoreEventBoardEvent): Promise<void> {
+async function removeEvent(column: BoardColumn, placement: CoreEventBoardEvent): Promise<void> {
     try {
-        const res = await server.DELETE('/api/board/{:board}/event/{:event}', {
-            params: { path: { ':board': board.id, ':event': placement.event.id } }
+        const res = await server.DELETE('/api/board/event/{:placement}', {
+            params: { path: { ':placement': placement.id } }
         });
 
         if (res.error) throw new Error(res.error.message);
 
-        board.events = board.events.filter((p) => p.event.id !== placement.event.id);
+        column.events = column.events.filter((p) => p.id !== placement.id);
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
 
-/** Remove every Event placement from the given Board */
-async function clearBoard(board: CoreEventBoard): Promise<void> {
+/** Remove every Event placement from the given Column */
+async function clearColumn(column: BoardColumn): Promise<void> {
     try {
-        for (const placement of [...board.events]) {
-            const res = await server.DELETE('/api/board/{:board}/event/{:event}', {
-                params: { path: { ':board': board.id, ':event': placement.event.id } }
+        for (const placement of [...column.events]) {
+            const res = await server.DELETE('/api/board/event/{:placement}', {
+                params: { path: { ':placement': placement.id } }
             });
 
             if (res.error) throw new Error(res.error.message);
 
-            board.events = board.events.filter((p) => p.event.id !== placement.event.id);
+            column.events = column.events.filter((p) => p.id !== placement.id);
         }
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
-        await listBoards();
+        await listColumns();
     }
 }
 
@@ -680,34 +899,34 @@ function openEvent(id: string): void {
     viewEvent.value = id;
 }
 
-/** Changes made in the Event modal should reflect on the Boards behind it */
+/** Changes made in the Event modal should reflect on the Board behind it */
 async function closeEvent(): Promise<void> {
     viewEvent.value = undefined;
 
-    await listBoards();
+    await listColumns();
 }
 
-/** Persist board positions for any placement whose Board or index changed */
-async function persistPositions(board: CoreEventBoard): Promise<void> {
-    for (let i = 0; i < board.events.length; i++) {
-        const placement = board.events[i];
+/** Persist positions for any placement whose Column or index changed */
+async function persistPositions(column: BoardColumn): Promise<void> {
+    for (let i = 0; i < column.events.length; i++) {
+        const placement = column.events[i];
 
-        if (placement.board === board.id && placement.position === i) continue;
+        if (placement.column === column.id && placement.position === i) continue;
 
-        const res = await server.PUT('/api/board/{:board}/event/{:event}', {
-            params: { path: { ':board': board.id, ':event': placement.event.id } },
-            body: { position: i }
+        const res = await server.PATCH('/api/board/event/{:placement}', {
+            params: { path: { ':placement': placement.id } },
+            body: { column: column.id, position: i }
         });
 
         if (res.error) throw new Error(res.error.message);
 
-        placement.board = board.id;
+        placement.column = column.id;
         placement.position = i;
     }
 }
 
-function onDragStart(event: DragEvent, board: CoreEventBoard, placement: CoreEventBoardEvent): void {
-    drag.value = { placement, from: board.id };
+function onDragStart(event: DragEvent, column: BoardColumn, placement: CoreEventBoardEvent): void {
+    drag.value = { placement, from: column.id };
 
     if (event.dataTransfer) {
         event.dataTransfer.effectAllowed = 'move';
@@ -720,7 +939,7 @@ function onDragEnd(): void {
     dropTarget.value = undefined;
 }
 
-function onCardDragOver(event: DragEvent, board: CoreEventBoard, index: number): void {
+function onCardDragOver(event: DragEvent, column: BoardColumn, index: number): void {
     if (!drag.value) return;
 
     event.preventDefault();
@@ -732,10 +951,10 @@ function onCardDragOver(event: DragEvent, board: CoreEventBoard, index: number):
     const rect = el.getBoundingClientRect();
     const after = event.clientY > rect.top + rect.height / 2;
 
-    dropTarget.value = { board: board.id, index: index + (after ? 1 : 0), precise: true };
+    dropTarget.value = { column: column.id, index: index + (after ? 1 : 0), precise: true };
 }
 
-function onColumnDragOver(event: DragEvent, board: CoreEventBoard, idx: number): void {
+function onColumnDragOver(event: DragEvent, column: BoardColumn, idx: number): void {
     if (columnDrag.value) {
         event.preventDefault();
 
@@ -754,23 +973,23 @@ function onColumnDragOver(event: DragEvent, board: CoreEventBoard, idx: number):
 
     if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
 
-    if (!dropTarget.value || dropTarget.value.board !== board.id) {
-        dropTarget.value = { board: board.id, index: board.events.length, precise: false };
+    if (!dropTarget.value || dropTarget.value.column !== column.id) {
+        dropTarget.value = { column: column.id, index: column.events.length, precise: false };
     }
 }
 
-function onColumnDragStart(event: DragEvent, board: CoreEventBoard): void {
-    columnDrag.value = { board: board.id };
+function onColumnDragStart(event: DragEvent, column: BoardColumn): void {
+    columnDrag.value = { column: column.id };
 
     if (event.dataTransfer) {
         event.dataTransfer.effectAllowed = 'move';
-        event.dataTransfer.setData('text/plain', board.id);
+        event.dataTransfer.setData('text/plain', column.id);
 
         // Drag the whole column as the ghost rather than just the grip icon
-        const column = (event.currentTarget as HTMLElement).closest<HTMLElement>('.event-board-column');
-        if (column) {
-            const rect = column.getBoundingClientRect();
-            event.dataTransfer.setDragImage(column, event.clientX - rect.left, event.clientY - rect.top);
+        const el = (event.currentTarget as HTMLElement).closest<HTMLElement>('.event-board-column');
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            event.dataTransfer.setDragImage(el, event.clientX - rect.left, event.clientY - rect.top);
         }
     }
 }
@@ -788,49 +1007,49 @@ async function onColumnDrop(): Promise<void> {
 
     if (!dragging || to === undefined) return;
 
-    const from = boards.value.findIndex((b) => b.id === dragging.board);
+    const from = columns.value.findIndex((c) => c.id === dragging.column);
     if (from === -1) return;
 
     let index = to;
     if (index > from) index -= 1;
     if (index === from) return;
 
-    const [moved] = boards.value.splice(from, 1);
-    boards.value.splice(index, 0, moved);
+    const [moved] = columns.value.splice(from, 1);
+    columns.value.splice(index, 0, moved);
 
     try {
         await persistColumnPositions();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
-        await listBoards();
+        await listColumns();
     }
 }
 
-/** Persist the horizontal position of any Board whose index changed */
+/** Persist the horizontal position of any Column whose index changed */
 async function persistColumnPositions(): Promise<void> {
-    for (let i = 0; i < boards.value.length; i++) {
-        const board = boards.value[i];
+    for (let i = 0; i < columns.value.length; i++) {
+        const column = columns.value[i];
 
-        if (board.position === i) continue;
+        if (column.position === i) continue;
 
-        const res = await server.PATCH('/api/board/{:board}', {
-            params: { path: { ':board': board.id } },
+        const res = await server.PATCH('/api/board/column/{:column}', {
+            params: { path: { ':column': column.id } },
             body: { position: i }
         });
 
         if (res.error) throw new Error(res.error.message);
 
-        board.position = i;
+        column.position = i;
     }
 }
 
-function onColumnDragLeave(event: DragEvent, board: CoreEventBoard): void {
+function onColumnDragLeave(event: DragEvent, column: BoardColumn): void {
     const related = event.relatedTarget as HTMLElement | null;
-    const column = event.currentTarget as HTMLElement;
+    const el = event.currentTarget as HTMLElement;
 
-    if (related && column.contains(related)) return;
+    if (related && el.contains(related)) return;
 
-    if (dropTarget.value && dropTarget.value.board === board.id) {
+    if (dropTarget.value && dropTarget.value.column === column.id) {
         dropTarget.value = undefined;
     }
 }
@@ -840,7 +1059,7 @@ function onColumnDragLeave(event: DragEvent, board: CoreEventBoard): void {
  * it into the same drag/dropTarget state the mouse path uses, with a fixed
  * position ghost following the finger and elementFromPoint hit-testing
  */
-function onTouchStart(event: TouchEvent, board: CoreEventBoard, placement: CoreEventBoardEvent): void {
+function onTouchStart(event: TouchEvent, column: BoardColumn, placement: CoreEventBoardEvent): void {
     if (event.touches.length !== 1) return;
 
     cancelTouchDrag();
@@ -867,7 +1086,7 @@ function onTouchStart(event: TouchEvent, board: CoreEventBoard, placement: CoreE
         if (!touch || touch.started) return;
 
         touch.started = true;
-        drag.value = { placement, from: board.id };
+        drag.value = { placement, from: column.id };
         createTouchGhost();
         touch.raf = requestAnimationFrame(touchAutoScroll);
     }, 200);
@@ -911,7 +1130,7 @@ function onTouchEnd(event: TouchEvent): void {
     event.preventDefault();
 
     const target = dropTarget.value
-        ? boards.value.find((b) => b.id === dropTarget.value?.board)
+        ? columns.value.find((c) => c.id === dropTarget.value?.column)
         : undefined;
 
     cleanupTouch();
@@ -968,10 +1187,10 @@ function createTouchGhost(): void {
 function updateTouchTarget(x: number, y: number): void {
     const el = document.elementFromPoint(x, y);
     const cardEl = el ? el.closest<HTMLElement>('.event-board-card[data-index]') : null;
-    const columnEl = el ? el.closest<HTMLElement>('.event-board-column[data-board]') : null;
-    const boardId = columnEl ? columnEl.dataset.board : undefined;
+    const columnEl = el ? el.closest<HTMLElement>('.event-board-column[data-column]') : null;
+    const columnId = columnEl ? columnEl.dataset.column : undefined;
 
-    if (!boardId) {
+    if (!columnId) {
         dropTarget.value = undefined;
         return;
     }
@@ -981,10 +1200,10 @@ function updateTouchTarget(x: number, y: number): void {
         const index = Number(cardEl.dataset.index);
         const after = y > rect.top + rect.height / 2;
 
-        dropTarget.value = { board: boardId, index: index + (after ? 1 : 0), precise: true };
+        dropTarget.value = { column: columnId, index: index + (after ? 1 : 0), precise: true };
     } else {
-        const board = boards.value.find((b) => b.id === boardId);
-        if (board) dropTarget.value = { board: board.id, index: board.events.length, precise: false };
+        const column = columns.value.find((c) => c.id === columnId);
+        if (column) dropTarget.value = { column: column.id, index: column.events.length, precise: false };
     }
 }
 
@@ -1033,20 +1252,20 @@ function touchAutoScroll(): void {
  * the position was chosen by hovering a specific card; column-level hover
  * highlights via the column border alone
  */
-function showIndicator(board: CoreEventBoard, index: number): boolean {
+function showIndicator(column: BoardColumn, index: number): boolean {
     if (!drag.value || !dropTarget.value) return false;
-    if (dropTarget.value.board !== board.id || !dropTarget.value.precise) return false;
+    if (dropTarget.value.column !== column.id || !dropTarget.value.precise) return false;
 
     return dropTarget.value.index === index;
 }
 
-async function onDrop(target: CoreEventBoard): Promise<void> {
+async function onDrop(target: BoardColumn): Promise<void> {
     if (columnDrag.value) {
         await onColumnDrop();
         return;
     }
 
-    if (!drag.value || !dropTarget.value || dropTarget.value.board !== target.id) {
+    if (!drag.value || !dropTarget.value || dropTarget.value.column !== target.id) {
         onDragEnd();
         return;
     }
@@ -1056,7 +1275,7 @@ async function onDrop(target: CoreEventBoard): Promise<void> {
 
     onDragEnd();
 
-    const source = boards.value.find((b) => b.id === from);
+    const source = columns.value.find((c) => c.id === from);
     if (!source) return;
 
     const current = source.events.findIndex((p) => p.event.id === placement.event.id);
@@ -1075,7 +1294,7 @@ async function onDrop(target: CoreEventBoard): Promise<void> {
         if (source.id !== target.id) await persistPositions(source);
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
-        await listBoards();
+        await listColumns();
     }
 }
 </script>
@@ -1086,8 +1305,8 @@ async function onDrop(target: CoreEventBoard): Promise<void> {
     width: 32px;
 }
 
-.event-board .event-board-channel {
-    width: 250px;
+.event-board .event-board-select {
+    width: 200px;
 }
 
 .event-board .event-board-column {

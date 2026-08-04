@@ -439,22 +439,57 @@
         "query": false,
         "res": true
     },
+    "GET /board/column": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /board/column": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /board/column/:column": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /board/column/:column": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /board/event": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "PUT /board/event": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /board/event/:placement": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /board/event/:placement": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /board/:board": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "PATCH /board/:board": {
         "body": true,
         "query": false,
         "res": true
     },
     "DELETE /board/:board": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PUT /board/:board/event/:event": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /board/:board/event/:event": {
         "body": false,
         "query": false,
         "res": true
@@ -614,6 +649,21 @@
         "query": false,
         "res": true
     },
+    "GET /layer": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /data/:dataid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /layer/:layerid": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -678,21 +728,6 @@
         "body": false,
         "query": true,
         "res": false
-    },
-    "GET /layer": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /data/:dataid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /layer/:layerid": {
-        "body": false,
-        "query": true,
-        "res": true
     },
     "GET /template": {
         "body": false,

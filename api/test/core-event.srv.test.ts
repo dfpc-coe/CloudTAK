@@ -103,6 +103,7 @@ test('POST: api/core/event', async () => {
                 coordinates: [-105.2705, 40.015],
             },
             channels: [7, 42],
+            boards: [],
         });
     } catch (err) {
         assert.ifError(err);

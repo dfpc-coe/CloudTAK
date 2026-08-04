@@ -62,17 +62,53 @@
                     </template>
                     <template v-else>
                         <div
-                            v-if='!names.length'
+                            v-if='!shared.length'
                             class='px-1 py-1 text-muted'
                         >
                             Not shared with any Channels
                         </div>
                         <div
-                            v-for='name of names'
-                            :key='name'
-                            class='px-1 py-1 rounded text-truncate cloudtak-hover-fill'
-                            v-text='name'
-                        />
+                            v-for='channel of shared'
+                            :key='channel.bitpos'
+                            class='px-1 py-1 rounded'
+                        >
+                            <div
+                                class='text-truncate cloudtak-hover-fill rounded px-1'
+                                v-text='channel.name'
+                            />
+
+                            <!-- Boards the Channel carries & where this Event sits on each -->
+                            <div
+                                v-for='board of channel.boards'
+                                :key='board.id'
+                                class='d-flex align-items-center gap-2 ps-3 pe-1 py-1'
+                            >
+                                <IconLayoutKanban
+                                    :size='16'
+                                    stroke='1'
+                                    color='#6b7990'
+                                    class='flex-shrink-0'
+                                />
+                                <span
+                                    class='text-truncate'
+                                    v-text='board.name'
+                                />
+                                <div class='ms-auto flex-shrink-0'>
+                                    <TablerBadge
+                                        v-if='columnOf(board)'
+                                        :background-color='badge(columnOf(board)).background'
+                                        :border-color='badge(columnOf(board)).border'
+                                        :text-color='badge(columnOf(board)).text'
+                                    >
+                                        {{ columnOf(board)?.name }}
+                                    </TablerBadge>
+                                    <span
+                                        v-else
+                                        class='text-muted'
+                                    >Not Nominated</span>
+                                </div>
+                            </div>
+                        </div>
                     </template>
                 </div>
             </div>
@@ -85,13 +121,15 @@ import { ref, computed, onMounted, watch } from 'vue';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
 import GroupSelect from '../../util/GroupSelect.vue';
 import GroupManager from '../../../base/group.ts';
-import type { GroupChannel } from '../../../types.ts';
+import type { GroupChannel, CoreEventBoardSummary, CoreEventBoardColumnSummary } from '../../../types.ts';
 import { TablerBadge, TablerLoading, TablerIconButton } from '@tak-ps/vue-tabler';
-import { IconAffiliate, IconPencil, IconCheck } from '@tabler/icons-vue';
+import { IconAffiliate, IconPencil, IconCheck, IconLayoutKanban } from '@tabler/icons-vue';
 
 const props = defineProps<{
     /** TAK Server Channel bitpositions the Event is shared with */
     modelValue: Array<number>;
+    /** Boards of the Event's Channels & the Column the Event sits in on each */
+    boards?: Array<CoreEventBoardSummary>;
     edit?: boolean;
 }>();
 
@@ -99,7 +137,7 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<number>): void
 }>();
 
-const expanded = ref(false);
+const expanded = ref(true);
 const editing = ref(false);
 const loading = ref(true);
 const channels = ref<Array<GroupChannel>>([]);
@@ -107,10 +145,15 @@ const selected = ref<Array<string>>([]);
 
 // A Channel the user can't see resolves to no name - the bitpos is shown so
 // the Event doesn't appear to be shared with fewer Channels than it is
-const names = computed(() => {
+const shared = computed(() => {
     return props.modelValue.map((bitpos) => {
         const channel = channels.value.find((c) => c.bitpos === bitpos);
-        return channel ? channel.name : `Channel ${bitpos}`;
+
+        return {
+            bitpos,
+            name: channel ? channel.name : `Channel ${bitpos}`,
+            boards: (props.boards || []).filter((board) => board.channel === bitpos),
+        };
     });
 });
 
@@ -122,6 +165,23 @@ onMounted(async () => {
 watch(() => props.modelValue, () => {
     editing.value = false;
 });
+
+/** The Column of the Board this Event is currently placed in, if any */
+function columnOf(board: CoreEventBoardSummary): CoreEventBoardColumnSummary | undefined {
+    if (!board.column) return undefined;
+
+    return board.columns.find((column) => column.id === board.column);
+}
+
+function badge(column?: CoreEventBoardColumnSummary): { background: string, border: string, text: string } {
+    const base = (column && column.color) || '#667382';
+
+    return {
+        background: base + '26',
+        border: base + '59',
+        text: base,
+    };
+}
 
 function startEditing(): void {
     selected.value = channels.value
