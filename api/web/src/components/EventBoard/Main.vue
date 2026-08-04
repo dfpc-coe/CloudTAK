@@ -134,7 +134,7 @@
                         />
 
                         <div class='ms-auto flex-shrink-0'>
-                            <TablerDropdown>
+                            <TablerDropdown :width='170'>
                                 <TablerIconButton title='Board Options'>
                                     <IconDotsVertical
                                         :size='18'
@@ -148,7 +148,7 @@
                                         @click='editBoard = board'
                                     >
                                         <IconPencil
-                                            :size='32'
+                                            :size='20'
                                             stroke='1'
                                         />
                                         <span class='mx-2'>Edit</span>
@@ -157,6 +157,8 @@
                                          the key remounts it once the clear empties the Board -->
                                     <TablerDelete
                                         :key='`clear-${board.events.length}`'
+                                        class='event-board-menu-delete'
+                                        :class='{ "cloudtak-hover": board.events.length > 0 }'
                                         displaytype='menu'
                                         label='Clear'
                                         title='Clear Board'
@@ -165,9 +167,10 @@
                                     />
                                     <TablerDelete
                                         v-if='board.type !== "nominated"'
+                                        class='cloudtak-hover event-board-menu-delete'
                                         displaytype='menu'
-                                        label='Delete'
-                                        title='Delete Board'
+                                        label='Delete Column'
+                                        title='Delete Column'
                                         @delete='deleteBoard(board)'
                                     />
                                 </template>
@@ -1151,6 +1154,14 @@ async function onDrop(target: CoreEventBoard): Promise<void> {
 .event-board-event-modal {
     height: calc(100dvh - 4rem);
     max-height: 800px;
+}
+
+/* The board options dropdown teleports to body so these can't nest under
+   .event-board - direct-child selectors keep the confirm modal's icon full
+   size while the menu row icon matches the Edit row's 20px */
+.event-board-menu-delete > .col-12 > svg {
+    width: 20px;
+    height: 20px;
 }
 
 .event-board .event-board-indicator {
