@@ -20,6 +20,10 @@ import { booleanWithin } from '@turf/boolean-within';
 import { isEqual } from '@ver0/deep-equal';
 import type { Polygon } from 'geojson';
 import type { InputFeature, Feature, APIList, Contact } from '../types.ts';
+import type {
+    Feature as GeoJSONFeature,
+    Geometry as GeoJSONGeometry,
+} from 'geojson';
 import ProfileConfig from '../base/profile.ts';
 import * as Comlink from 'comlink';
 import AtlasBreadcrumb from './atlas-breadcrumb.ts';
@@ -258,6 +262,72 @@ export default class AtlasDatabase {
         this.pendingDelete.clear();
 
         return diff;
+    }
+
+    /**
+     * Has a CoT's stale time exceeded the user's configured display window
+     */
+    static staleElapsed(display_stale: string, stale: number, now: number): boolean {
+        return !['Never'].includes(display_stale) && (
+            display_stale === 'Immediate'       && now > stale
+            || display_stale === '10 Minutes'   && now > stale + 600000
+            || display_stale === '30 Minutes'   && now > stale + 600000 * 3
+            || display_stale === '1 Hour'       && now > stale + 600000 * 6
+        );
+    }
+
+    /**
+     * Full-state render of every visible CoT, for replacing the map source
+     * contents wholesale via setData. diff() consumes its pending queues
+     * even when the main thread fails to apply the result, so a lost diff
+     * (or any doubt after an app resume) is recovered here; the queues are
+     * cleared as the snapshot supersedes them.
+     */
+    async snapshot(): Promise<Array<GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>>>> {
+        const now = +new Date();
+        const display_stale = String((await ProfileConfig.get('display_stale'))?.value || 'Immediate');
+
+        // Queue consumption and the cots iteration happen synchronously
+        // (no awaits) so a feature added mid-snapshot can never be dropped
+        // from both the snapshot and the next diff
+        const deleted = new Set<string>(this.pendingDelete);
+        const hidden = new Set<string>(this.pendingHidden);
+
+        this.pendingCreate.clear();
+        this.pendingUpdate.clear();
+        this.pendingHidden.clear();
+        this.pendingUnhide.clear();
+        this.pendingDelete.clear();
+
+        const features: Array<GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>>> = [];
+
+        for (const cot of this.cots.values()) {
+            // The user's own position is drawn by the GeolocateControl puck
+            // rather than as a CoT marker on the map.
+            if (cot.is_self || deleted.has(cot.id) || hidden.has(cot.id)) continue;
+
+            const stale = new Date(cot.properties.stale).getTime();
+
+            if (!cot.properties.archived) {
+                if (AtlasDatabase.staleElapsed(display_stale, stale, now)) {
+                    deleted.add(cot.id);
+                    continue;
+                }
+
+                const opacity = now < stale ? 1 : 0.5;
+                cot.properties['icon-opacity'] = opacity;
+                cot.properties['marker-opacity'] = opacity;
+            }
+
+            features.push(cot.as_rendered());
+        }
+
+        for (const id of deleted) {
+            this.cots.delete(id);
+            await withDbRetry(() => db.feature.delete(id));
+        }
+
+        return features;
     }
 
     /**

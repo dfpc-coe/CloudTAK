@@ -90,6 +90,7 @@ export const useMapStore = defineStore('cloudtak', {
 
         _removeOrientationListener?: () => Promise<void>;
         _resumeRecovery?: Promise<void>;
+        _cotResync?: Promise<void>;
         _removeBackgroundStateListener?: () => void;
         _removePushTokenListener?: () => void;
 
@@ -616,6 +617,17 @@ export const useMapStore = defineStore('cloudtak', {
         },
         updateCOT: async function(): Promise<void> {
             try {
+                // A resync replaces the source wholesale - a diff drained
+                // mid-resync would be silently lost to the setData behind it
+                if (this._cotResync) await this._cotResync;
+
+                // diff() drains the worker's pending queues even if we can't
+                // apply the result, so bail before computing it if there is
+                // no source to apply it to yet
+                if (!this._map) return;
+                const source = this._map.getSource('-1') as GeoJSONSource | undefined;
+                if (!source) return;
+
                 const diff = await this.worker.db.diff();
                 const addCount = diff.add?.length || 0;
                 const removeCount = diff.remove?.length || 0;
@@ -657,21 +669,6 @@ export const useMapStore = defineStore('cloudtak', {
                         sampleUpdateIds: updateIds.slice(0, 10)
                     };
 
-                    const source = this.map.getSource('-1') as GeoJSONSource | undefined;
-                    if (!source) {
-                        const signature = JSON.stringify({
-                            kind: 'missing-source',
-                            ...diffSummary
-                        });
-
-                        if (this.lastUpdateCOTErrorSignature !== signature) {
-                            this.lastUpdateCOTErrorSignature = signature;
-                            console.error('updateCOT could not find GeoJSON source', diffSummary);
-                        }
-
-                        return;
-                    }
-
                     if (
                         invalidRemoveIds.length
                         || invalidAddIds.length
@@ -687,6 +684,9 @@ export const useMapStore = defineStore('cloudtak', {
                             console.error('updateCOT generated an invalid GeoJSON diff', diffSummary);
                         }
 
+                        // The diff is already drained from the worker - a full
+                        // rebuild is the only way those features ever render
+                        await this.resyncCOT();
                         return;
                     }
 
@@ -705,6 +705,11 @@ export const useMapStore = defineStore('cloudtak', {
                                 error
                             });
                         }
+
+                        // The diff is already drained from the worker - a full
+                        // rebuild is the only way those features ever render
+                        await this.resyncCOT();
+                        return;
                     }
                 }
 
@@ -727,6 +732,32 @@ export const useMapStore = defineStore('cloudtak', {
             } catch (err) {
                 console.error('updateCOT failed before source update', err);
             }
+        },
+        /**
+         * Rebuild the CoT GeoJSON source wholesale from the worker's full
+         * feature state. Used on app resume and as recovery whenever an
+         * incremental diff was consumed from the worker but failed to apply -
+         * without this those features would never render again.
+         */
+        resyncCOT: async function(): Promise<void> {
+            if (this._cotResync) return this._cotResync;
+
+            this._cotResync = (async () => {
+                if (!this._map) return;
+                const source = this._map.getSource('-1') as GeoJSONSource | undefined;
+                if (!source) return;
+
+                const features = await this.worker.db.snapshot();
+
+                source.setData({
+                    type: 'FeatureCollection',
+                    features
+                });
+            })().finally(() => {
+                this._cotResync = undefined;
+            });
+
+            return this._cotResync;
         },
 
         /**
@@ -829,13 +860,19 @@ export const useMapStore = defineStore('cloudtak', {
 
                     await withTimeout(this.worker.recover(), 10000, 'Worker database recovery');
 
-                    const isOpen = await withTimeout(this.worker.conn.isOpen, 5000, 'Worker connection probe');
-                    if (!isOpen) {
-                        console.log('App resumed with closed connection, reconnecting...');
-                        await this.worker.conn.reconnect(await this.worker.username);
-                    }
+                    // iOS suspension can kill the TCP connection without a
+                    // close event ever firing, so the worker's isOpen flag
+                    // cannot be trusted - always rebuild the socket
+                    await withTimeout(
+                        this.worker.conn.resume(await this.worker.username),
+                        10000,
+                        'WebSocket resume'
+                    );
 
-                    await this.updateCOT();
+                    // Diff state may have been consumed while suspended -
+                    // rebuild the source wholesale rather than trusting the
+                    // increments
+                    await this.resyncCOT();
                 } catch (err) {
                     console.error('Resume recovery failed:', err);
                 }
