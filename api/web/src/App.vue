@@ -406,8 +406,8 @@ $cloudtak-blue: #07556D;
 }
 
 /*
- * Flat page surface shared by the standalone full-screen views (login, video
- * wall, event board) so they all sit on the same background. Kept a shade below
+ * Flat page surface shared by the standalone full-screen views (video wall,
+ * event board) so they all sit on the same background. Kept a shade below
  * the `.cloudtak-panel` surface in each theme so panels layered on top of a page
  * still read as raised.
  */
