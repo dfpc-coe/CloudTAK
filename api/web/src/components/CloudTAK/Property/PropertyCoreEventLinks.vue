@@ -35,18 +35,19 @@
             </template>
 
             <div class='overflow-hidden mb-2'>
-                <div class='cloudtak-accent rounded mx-2 mt-2 px-2 py-2'>
-                    <div
+                <div class='rounded mx-2 mt-2 px-2 py-2'>
+                    <TablerNone
                         v-if='!props.modelValue.length && !creating'
-                        class='px-1 py-1 text-muted'
-                    >
-                        No links
-                    </div>
+                        label='No Links'
+                        :compact='true'
+                        :create='false'
+                    />
 
                     <div
                         v-for='(link, index) of props.modelValue'
                         :key='index'
-                        class='rounded border-0 bg-default mb-2 px-2 py-2'
+                        class='rounded mb-2 px-2 py-2'
+                        :class='{ "cloudtak-hover-fill": editing !== index }'
                     >
                         <template v-if='editing === index'>
                             <div class='d-flex align-items-center mb-2'>
@@ -129,7 +130,7 @@
 
                     <div
                         v-if='creating'
-                        class='rounded border-0 bg-default mb-2 px-2 py-2'
+                        class='rounded mb-2 px-2 py-2'
                     >
                         <div class='d-flex align-items-center mb-2'>
                             <div class='subheader user-select-none'>
@@ -179,7 +180,7 @@
 <script setup lang='ts'>
 import { ref } from 'vue';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
-import { TablerBadge, TablerInput, TablerIconButton } from '@tak-ps/vue-tabler';
+import { TablerBadge, TablerInput, TablerIconButton, TablerNone } from '@tak-ps/vue-tabler';
 import { IconLink, IconExternalLink, IconPlus, IconTrash, IconPencil, IconCheck } from '@tabler/icons-vue';
 import type { CoreEventLink } from '../../../types.ts';
 

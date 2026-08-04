@@ -24,7 +24,7 @@
             </template>
 
             <div class='overflow-hidden mb-2'>
-                <div class='cloudtak-accent rounded mx-2 mt-2 px-2 py-2'>
+                <div class='rounded mx-2 mt-2 px-2 py-2'>
                     <TablerInlineAlert
                         v-if='error'
                         class='mb-2'

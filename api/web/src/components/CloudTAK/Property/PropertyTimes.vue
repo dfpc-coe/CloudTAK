@@ -1,5 +1,5 @@
 <template>
-    <div class='col-12 pt-2'>
+    <div class='col-12'>
         <SlideDownHeader
             v-model='expanded'
             label='Times'
@@ -32,19 +32,33 @@
                     >Relative</span>
                 </div>
             </div>
-            <div class='rounded cloudtak-accent mx-2 mb-2 px-2 py-2 d-flex flex-column gap-2'>
-                <div class='d-flex justify-content-between align-items-center'>
-                    <span class='text-white'>Time</span>
-                    <span class='text-white fw-semibold'>{{ timeProp }}</span>
-                </div>
-                <div class='d-flex justify-content-between align-items-center'>
-                    <span class='text-white'>Start</span>
-                    <span class='text-white fw-semibold'>{{ startProp }}</span>
-                </div>
-                <div class='d-flex justify-content-between align-items-center'>
-                    <span class='text-white'>Stale</span>
-                    <span class='text-white fw-semibold'>{{ staleProp }}</span>
-                </div>
+            <div class='table-responsive rounded mx-2 pb-2 px-2'>
+                <table class='table table-transparent card-table table-hover table-vcenter'>
+                    <thead>
+                        <tr>
+                            <th class='fw-bold'>
+                                Key
+                            </th>
+                            <th class='fw-bold'>
+                                Value
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Time</td>
+                            <td v-text='timeProp' />
+                        </tr>
+                        <tr>
+                            <td>Start</td>
+                            <td v-text='startProp' />
+                        </tr>
+                        <tr>
+                            <td>Stale</td>
+                            <td v-text='staleProp' />
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </SlideDownHeader>
     </div>

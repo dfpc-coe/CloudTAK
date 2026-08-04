@@ -194,6 +194,24 @@
                         <TablerLoading
                             v-if='loading'
                         />
+                        <div
+                            v-else-if='listError'
+                            class='d-flex align-items-center px-2 py-2 user-select-none'
+                        >
+                            <span class='text-truncate'>Loading Feature Types Failed</span>
+
+                            <div class='ms-auto'>
+                                <TablerIconButton
+                                    title='Retry'
+                                    @click.stop='fetchList'
+                                >
+                                    <IconRefresh
+                                        :size='16'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
+                            </div>
+                        </div>
                         <template v-else-if='standard === "2525B"'>
                             <TablerNone
                                 v-if='list.total === 0'
@@ -413,6 +431,7 @@ const loading = ref(true);
 
 const typeLoading = ref(false);
 const typeError = ref(false);
+const listError = ref(false);
 
 const paging = ref({
     filter: '',
@@ -659,6 +678,7 @@ async function fetchType() {
 
 async function fetchList() {
     loading.value = true;
+    listError.value = false;
 
     try {
         if (standard.value === '2525E') {
@@ -708,6 +728,12 @@ async function fetchList() {
             if (error) throw new Error(String(error));
             list.value = data;
         }
+    } catch (err) {
+        // Surfaced inline with a retry - a thrown error here escapes the
+        // watchers/onMounted as an unhandled rejection and pops the global
+        // error modal
+        console.error('Failed to load Feature Type List:', err);
+        listError.value = true;
     } finally {
         loading.value = false;
     }

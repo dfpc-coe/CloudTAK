@@ -1,5 +1,5 @@
 <template>
-    <div class='h-full w-full cloudtak-bg text-white d-flex flex-column video-wall'>
+    <div class='h-full w-full cloudtak-page d-flex flex-column video-wall'>
         <div class='d-flex align-items-center px-3 py-2 border-bottom video-wall-header'>
             <img
                 class='cloudtak-logo me-2'

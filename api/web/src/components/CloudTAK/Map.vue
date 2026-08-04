@@ -22,8 +22,11 @@
 
         <template v-if='mapStore.isMapLoaded && !loading'>
             <!-- Scrim tinting the transparent native status bar inset to match
-                 the top map controls - collapses to 0 height on web -->
+                 the top map controls - collapses to 0 height on web and is
+                 omitted on iOS, where the status bar sits fully transparent
+                 over the map -->
             <div
+                v-if='!isIOS'
                 class='position-absolute top-0 start-0 end-0'
                 style='
                     z-index: 5;
@@ -282,17 +285,13 @@
 
             <div
                 v-if='mapStore.isMapLoaded && mode === "Default"'
-                class='d-flex position-absolute text-white'
+                class='position-absolute cloudtak-panel d-flex align-items-center px-2'
                 style='
                     z-index: 5;
-                    top: var(--status-bar-height, 0px);
-                    width: 120px;
                     height: 60px;
-                    right: var(--map-compact-menu-size, 60px);
-                    padding-left: 10px;
-                    background-color: rgba(0, 0, 0, 0.5);
-                    border-radius: 0px 0px 0px 6px;
-                    padding-top: 8px;
+                    max-width: calc(100vw - 16px);
+                    top: calc(8px + var(--status-bar-height, 0px));
+                    right: 8px;
                 '
             >
                 <TablerDropdown>
@@ -330,24 +329,16 @@
                 />
 
                 <DrawTools />
-            </div>
 
-            <div
-                v-if='mode === "Default"'
-                class='position-absolute end-0 text-white'
-                style='
-                    z-index: 1;
-                    top: var(--status-bar-height, 0px);
-                    width: var(--map-compact-menu-size, 60px);
-                    height: 60px;
-                    background-color: rgba(0, 0, 0, 0.5);
-                    padding-top: 8px;
-                '
-            >
+                <div
+                    class='border-start mx-1'
+                    style='height: 32px;'
+                />
+
                 <TablerIconButton
                     v-if='noMenuShown'
                     title='Open Menu'
-                    class='mx-2 cloudtak-hover'
+                    class='ms-1 cloudtak-hover'
                     :hover='false'
                     @click='router.push("/menu")'
                 >
@@ -359,7 +350,8 @@
                 <TablerIconButton
                     v-else
                     title='Close Menu'
-                    class='mx-2 cursor-pointer'
+                    class='ms-1 cloudtak-hover'
+                    :hover='false'
                     @click='closeAllMenu'
                 >
                     <IconX
@@ -519,13 +511,15 @@ import { stdurl } from '../../std.ts';
 import ProfileConfig from '../../base/profile.ts';
 import Config from '../../base/config.ts';
 import { cutOverlayFeature } from './util/featureCut.ts';
-import { isNativePlatform, addBackgroundStateListener } from '../../base/capacitor.ts';
+import { isNativePlatform, isIOSPlatform, addBackgroundStateListener } from '../../base/capacitor.ts';
 import { copyFeatureToClipboard, readFeatureFromClipboard } from '../../stores/device/clipboard.ts';
 import MissionInviteModal from './Menu/Mission/MissionInviteModal.vue';
 
 const mapStore = useMapStore();
 const appStore = useAppStore();
 const floatStore = useFloatStore();
+
+const isIOS = isIOSPlatform();
 
 const hasTerrain = ref<boolean>(false);
 Config.list(['map::terrain'], { defaults: { 'map::terrain': null } }).then((cfg) => {

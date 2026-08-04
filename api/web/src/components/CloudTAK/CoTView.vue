@@ -494,7 +494,7 @@
 
                     <div
                         v-if='lineGeometry && terrainBasemapId'
-                        class='col-12 pt-2'
+                        class='col-12'
                     >
                         <PropertyProfile
                             :key='`${route.params.uid}-${terrainBasemapId}`'
@@ -560,10 +560,7 @@
                         />
                     </div>
 
-                    <div
-                        v-if='cot.properties.contact && cot.properties.contact.phone'
-                        class='pt-2'
-                    >
+                    <div v-if='cot.properties.contact && cot.properties.contact.phone'>
                         <PropertyPhone
                             :key='cot.properties.id'
                             :phone='cot.properties.contact.phone'
@@ -571,21 +568,17 @@
                     </div>
                 </div>
 
-                <div
+                <PropertyEmail
                     v-if='username'
-                    class='col-12 pt-2'
-                >
-                    <PropertyEmail
-                        :key='cot.properties.id'
-                        :email='username'
-                    />
-                </div>
+                    :key='cot.properties.id'
+                    :email='username'
+                />
 
 
 
                 <div
                     v-if='cot.properties.remarks !== undefined'
-                    class='col-12 pt-2'
+                    class='col-12'
                 >
                     <SlideDownHeader
                         v-model='remarksExpanded'
@@ -1193,12 +1186,6 @@ async function deleteCOT() {
 </script>
 
 <style scoped>
-:global(html[data-bs-theme='dark'] .cot-view-properties .cloudtak-accent) {
-    background-color: #192f45 !important;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
-
 .grid-transition {
     display: grid;
     grid-template-rows: 0fr;
