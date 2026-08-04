@@ -51,6 +51,11 @@
                                 :error='item.key === "tak_callsign" ? validateTextNotEmpty(profile.tak_callsign) : ""'
                                 :required='item.key === "tak_callsign"'
                             />
+                            <TablerInput
+                                v-else-if='item.type === "seconds"'
+                                type='number'
+                                v-model='locFreqSeconds'
+                            />
                             <TablerEnum
                                 v-else-if='item.type === "enum"'
                                 v-model='(profile as any)[item.key]'
@@ -63,7 +68,7 @@
                             />
                         </div>
                         <div
-                            v-if='item.type === "input" && hasChanged(item.key)'
+                            v-if='(item.type === "input" || item.type === "seconds") && hasChanged(item.key)'
                             class='d-flex justify-content-end'
                         >
                             <button
@@ -133,7 +138,7 @@ type SettingItem = {
     key: string;
     label: string;
     icon: Component;
-    type: 'input' | 'enum' | 'coordinate';
+    type: 'input' | 'enum' | 'coordinate' | 'seconds';
     options?: string[];
     routerOnly?: boolean;
 };
@@ -192,9 +197,9 @@ const settings = computed<SettingItem[]>(() => {
         },
         {
             key: 'tak_loc_freq',
-            label: 'Location Reporting Frequency (ms)',
+            label: 'Location Reporting Frequency (sec)',
             icon: IconClock,
-            type: 'input',
+            type: 'seconds',
             routerOnly: true,
         },
         {
@@ -214,6 +219,17 @@ const filteredSettings = computed(() => {
     return settings.value.filter((item) =>
         item.label.toLowerCase().includes(query)
     );
+});
+
+const locFreqSeconds = computed<number>({
+    get: () => {
+        const ms = profile.value?.tak_loc_freq;
+        return typeof ms === 'number' ? Math.round(ms / 1000) : 0;
+    },
+    set: (seconds: number) => {
+        if (!profile.value) return;
+        profile.value.tak_loc_freq = Math.round((Number(seconds) || 0) * 1000);
+    }
 });
 
 function hasChanged(key: string): boolean {
@@ -314,7 +330,7 @@ watch(
         for (const item of settings.value) {
             const current = (newProfile as Profile)[item.key as keyof Profile];
             if (current !== previousValues[item.key]) {
-                if (item.type === 'input') {
+                if (item.type === 'input' || item.type === 'seconds') {
                     // Track changed state for input fields (manual save)
                     changedFields.value.add(item.key);
                 } else {
