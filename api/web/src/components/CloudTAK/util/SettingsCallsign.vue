@@ -53,8 +53,8 @@
                             />
                             <TablerInput
                                 v-else-if='item.type === "seconds"'
-                                type='number'
                                 v-model='locFreqSeconds'
+                                type='number'
                             />
                             <TablerEnum
                                 v-else-if='item.type === "enum"'
