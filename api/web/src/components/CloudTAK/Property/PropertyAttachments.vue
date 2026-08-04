@@ -1,5 +1,5 @@
 <template>
-    <div class='col-12 pt-2'>
+    <div class='col-12'>
         <SlideDownHeader
             v-model='expanded'
             label='Attachments'
@@ -35,7 +35,10 @@
             </template>
             <div class='col-12'>
                 <div class='mx-2 py-2'>
-                    <div class='rounded cloudtak-accent px-2 py-2'>
+                    <div
+                        class='rounded px-2 py-2'
+                        :class='{ "cloudtak-accent": !isEmpty }'
+                    >
                         <TablerLoading
                             v-if='loading'
                             :inline='true'
@@ -135,7 +138,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import { server, std, stdurl } from '../../../std.ts';
 import { useFloatStore } from '../../../stores/float.ts';
@@ -178,6 +181,12 @@ const loading = ref(true);
 const error = ref<Error | undefined>(undefined);
 const files = ref<Attachment[]>([]);
 const token = ref<string | null>(null);
+
+// The "No Items" state drops the inset surface so it reads as part of the
+// slide-down body instead of an empty raised block
+const isEmpty = computed(() => {
+    return !loading.value && !error.value && !upload.value && !files.value.length;
+});
 
 watch(() => props.modelValue, async (newVal, oldVal) => {
     if (newVal.length === oldVal.length && newVal.every((h, i) => h === oldVal[i])) return;

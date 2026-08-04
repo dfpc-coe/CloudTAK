@@ -1,5 +1,5 @@
 <template>
-    <div class='col-12 pt-2'>
+    <div class='col-12'>
         <SlideDownHeader
             v-model='expanded'
             label='Metadata'
@@ -14,14 +14,18 @@
             </template>
 
             <div class='table-responsive rounded mx-2 py-2 px-2'>
-                <table class='table card-table table-hover table-vcenter datatable'>
+                <table class='table table-transparent card-table table-hover table-vcenter'>
                     <thead>
                         <tr>
-                            <th>Key</th>
-                            <th>Value</th>
+                            <th class='fw-bold'>
+                                Key
+                            </th>
+                            <th class='fw-bold'>
+                                Value
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class='cloudtak-accent'>
+                    <tbody>
                         <tr
                             v-for='prop of Object.keys(cot.properties.takv || {})'
                             :key='prop'

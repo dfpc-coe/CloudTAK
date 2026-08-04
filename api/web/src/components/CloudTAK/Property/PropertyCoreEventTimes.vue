@@ -1,5 +1,5 @@
 <template>
-    <div class='col-12 pt-2'>
+    <div class='col-12'>
         <SlideDownHeader
             v-model='expanded'
             label='Times'
@@ -32,19 +32,33 @@
                     >Relative</span>
                 </div>
             </div>
-            <div class='rounded cloudtak-accent mx-2 mb-2 px-2 py-2 d-flex flex-column gap-2'>
-                <div class='d-flex justify-content-between align-items-center'>
-                    <span class='text-white'>Created</span>
-                    <span class='text-white fw-semibold'>{{ format(props.created) }}</span>
-                </div>
-                <div class='d-flex justify-content-between align-items-center'>
-                    <span class='text-white'>Updated</span>
-                    <span class='text-white fw-semibold'>{{ format(props.updated) }}</span>
-                </div>
-                <div class='d-flex justify-content-between align-items-center'>
-                    <span class='text-white'>Ended</span>
-                    <span class='text-white fw-semibold'>{{ props.ended ? format(props.ended) : 'None' }}</span>
-                </div>
+            <div class='table-responsive rounded mx-2 pb-2 px-2'>
+                <table class='table table-transparent card-table table-hover table-vcenter'>
+                    <thead>
+                        <tr>
+                            <th class='fw-bold'>
+                                Key
+                            </th>
+                            <th class='fw-bold'>
+                                Value
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Created</td>
+                            <td v-text='format(props.created)' />
+                        </tr>
+                        <tr>
+                            <td>Updated</td>
+                            <td v-text='format(props.updated)' />
+                        </tr>
+                        <tr>
+                            <td>Ended</td>
+                            <td v-text='props.ended ? format(props.ended) : "None"' />
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </SlideDownHeader>
     </div>

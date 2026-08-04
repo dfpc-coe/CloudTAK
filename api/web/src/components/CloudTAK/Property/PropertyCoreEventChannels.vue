@@ -46,7 +46,7 @@
             </template>
 
             <div class='overflow-hidden mb-2'>
-                <div class='cloudtak-accent rounded mx-2 mt-2 px-2 py-2'>
+                <div class='rounded mx-2 mt-2 px-2 py-2'>
                     <TablerLoading
                         v-if='loading'
                         :compact='true'
@@ -70,7 +70,7 @@
                         <div
                             v-for='name of names'
                             :key='name'
-                            class='px-1 py-1 text-truncate'
+                            class='px-1 py-1 rounded text-truncate cloudtak-hover-fill'
                             v-text='name'
                         />
                     </template>

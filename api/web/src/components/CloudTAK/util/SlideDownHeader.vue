@@ -4,7 +4,7 @@
         :class='{ "slidedown--expanded": expanded }'
     >
         <div
-            class='slidedown__header d-flex align-items-center cursor-pointer user-select-none py-2 px-2'
+            class='slidedown__header cloudtak-hover-fill d-flex align-items-center cursor-pointer user-select-none py-2 px-2'
             @click='toggle'
         >
             <slot name='icon' />
@@ -89,9 +89,12 @@ function toggle() {
     --slidedown-radius: 8px;
     --slidedown-surface: rgba(255, 255, 255, 0.035);
     --slidedown-header-surface: rgba(255, 255, 255, 0.06);
-    --slidedown-hover-surface: color-mix(in srgb, var(--tblr-light) 12%, transparent);
 
+    /* Sections own the gap between themselves so stacked slide-downs are evenly
+     * spaced no matter which parent renders them - callers should not add their
+     * own vertical padding */
     margin-inline: 0.5rem;
+    margin-block: 0.25rem;
     border: 1px solid transparent;
     border-radius: var(--slidedown-radius);
     transition: background-color 0.15s ease, border-color 0.15s ease;
@@ -100,7 +103,6 @@ function toggle() {
 [data-bs-theme='light'] .slidedown {
     --slidedown-surface: rgba(15, 23, 42, 0.03);
     --slidedown-header-surface: rgba(15, 23, 42, 0.05);
-    --slidedown-hover-surface: color-mix(in srgb, var(--tblr-body-color) 8%, transparent);
 }
 
 .slidedown--expanded {
@@ -108,20 +110,16 @@ function toggle() {
     background-color: var(--slidedown-surface);
 }
 
-/* Inset by the container border so the header fill never overhangs the radius */
+/*
+ * Inset by the container border so the header fill never overhangs the radius.
+ * Hover comes from `.cloudtak-hover-fill` - a wash with no border or radius of
+ * its own - so the header stays part of the container on hover instead of
+ * becoming a second box inside it.
+ */
 .slidedown__header {
     border-radius: calc(var(--slidedown-radius) - 1px);
     border-bottom: 1px solid transparent;
     transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-
-/*
- * Hover is a fill only - no independent border or radius - so the header stays
- * part of the container instead of becoming a second box inside it.
- */
-.slidedown__header:hover,
-.slidedown__header:focus-within {
-    background-color: var(--slidedown-hover-surface);
 }
 
 .slidedown--expanded .slidedown__header {
@@ -129,11 +127,6 @@ function toggle() {
     border-bottom-color: var(--tblr-border-color);
     border-end-start-radius: 0;
     border-end-end-radius: 0;
-}
-
-.slidedown--expanded .slidedown__header:hover,
-.slidedown--expanded .slidedown__header:focus-within {
-    background-color: var(--slidedown-hover-surface);
 }
 
 .slidedown__chevron {

@@ -35,18 +35,18 @@
             </template>
 
             <div class='overflow-hidden mb-2'>
-                <div class='cloudtak-accent rounded mx-2 mt-2 px-2 py-2'>
-                    <div
+                <div class='rounded mx-2 mt-2 px-2 py-2'>
+                    <TablerNone
                         v-if='!entries.length && !creating'
-                        class='px-1 py-1 text-muted'
-                    >
-                        No metadata
-                    </div>
+                        label='No Metadata'
+                        :compact='true'
+                        :create='false'
+                    />
 
                     <div
                         v-for='entry of entries'
                         :key='entry.key'
-                        class='d-flex align-items-center px-1 py-1'
+                        class='d-flex align-items-center rounded px-1 py-1 cloudtak-hover-fill'
                     >
                         <span
                             class='text-muted text-truncate'
@@ -71,7 +71,7 @@
 
                     <div
                         v-if='creating'
-                        class='rounded border-0 bg-default mt-2 px-2 py-2'
+                        class='rounded mt-2 px-2 py-2'
                     >
                         <div class='d-flex align-items-center mb-2'>
                             <div class='subheader user-select-none'>
@@ -119,7 +119,7 @@
 <script setup lang='ts'>
 import { ref, computed } from 'vue';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
-import { TablerBadge, TablerInput, TablerIconButton } from '@tak-ps/vue-tabler';
+import { TablerBadge, TablerInput, TablerIconButton, TablerNone } from '@tak-ps/vue-tabler';
 import { IconListDetails, IconPlus, IconTrash, IconCheck } from '@tabler/icons-vue';
 
 const props = defineProps<{

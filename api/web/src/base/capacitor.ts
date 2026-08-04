@@ -10,6 +10,10 @@ export function isAndroidPlatform(): boolean {
     return Capacitor.getPlatform() === 'android';
 }
 
+export function isIOSPlatform(): boolean {
+    return Capacitor.getPlatform() === 'ios';
+}
+
 export function supportsServiceWorker(): boolean {
     return typeof navigator !== 'undefined' && !isNativePlatform() && 'serviceWorker' in navigator;
 }

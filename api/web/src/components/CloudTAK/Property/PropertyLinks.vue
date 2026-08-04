@@ -36,18 +36,19 @@
                 </template>
 
                 <div class='overflow-hidden mb-2'>
-                    <div class='cloudtak-accent rounded mx-2 mt-2 px-2 py-2'>
-                        <div
-                            v-if='!external_links.length'
-                            class='px-1 py-1 text-muted'
-                        >
-                            No external links
-                        </div>
+                    <div class='rounded mx-2 mt-2 px-2 py-2'>
+                        <TablerNone
+                            v-if='!external_links.length && !isCreatingLink'
+                            label='No External Links'
+                            :compact='true'
+                            :create='false'
+                        />
 
                         <div
                             v-for='item of external_links'
                             :key='item.index'
-                            class='rounded border-0 bg-default mb-2 px-2 py-2'
+                            class='rounded mb-2 px-2 py-2'
+                            :class='{ "cloudtak-hover-fill": !isEditing(item.index) }'
                         >
                             <template v-if='isEditing(item.index)'>
                                 <div class='d-flex align-items-center mb-2'>
@@ -147,7 +148,7 @@
 
                         <div
                             v-if='isCreatingLink'
-                            class='rounded border-0 bg-default mb-2 px-2 py-2'
+                            class='rounded mb-2 px-2 py-2'
                         >
                             <div class='d-flex align-items-center mb-2'>
                                 <div class='subheader user-select-none'>
@@ -242,7 +243,7 @@
                             :key='link_it'
                             class='col-12'
                         >
-                            <div class='card cloudtak-accent border-0'>
+                            <div class='card bg-transparent border-0 rounded cloudtak-hover-fill'>
                                 <div class='card-body p-2'>
                                     <div class='d-flex align-items-center'>
                                         <span class='avatar me-2 rounded-circle bg-blue-lt'>
@@ -279,7 +280,7 @@
 <script setup lang='ts'>
 import { computed, ref } from 'vue';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
-import { TablerBadge, TablerInput, TablerIconButton } from '@tak-ps/vue-tabler';
+import { TablerBadge, TablerInput, TablerIconButton, TablerNone } from '@tak-ps/vue-tabler';
 import { IconUsers, IconLink, IconExternalLink, IconPlus, IconTrash, IconPencil, IconCheck } from '@tabler/icons-vue';
 import type COT from '../../../base/cot';
 import timediff from '../../../timediff';
@@ -431,10 +432,3 @@ function cancelNewLink(): void {
 }
 </script>
 
-<style scoped>
-
-
-.list-group-item-action:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
-}
-</style>

@@ -1,5 +1,5 @@
 <template>
-    <div class='col-12 pb-2'>
+    <div class='col-12'>
         <SlideDownHeader
             v-model='expanded'
             label='Email'

@@ -166,20 +166,15 @@
                             @update:model-value='patch({ external_id: $event })'
                         />
                     </div>
-
-                    <div
-                        v-if='event.username'
-                        class='col-12 pt-2'
-                    >
-                        <PropertyEmail
-                            :key='event.id'
-                            :email='event.username'
-                        />
-                    </div>
                 </div>
 
+                <PropertyEmail
+                    v-if='event.username'
+                    :key='event.id'
+                    :email='event.username'
+                />
+
                 <PropertyCoreEventMission
-                    class='pt-2'
                     :model-value='event.mission_guid'
                     :edit='is_editable'
                     :event-name='event.name'
@@ -188,7 +183,7 @@
                     @update:model-value='patch({ mission_guid: $event })'
                 />
 
-                <div class='col-12 pt-2'>
+                <div class='col-12'>
                     <SlideDownHeader
                         v-model='remarksExpanded'
                         label='Remarks'
@@ -215,7 +210,6 @@
                 </div>
 
                 <PropertyCoreEventLinks
-                    class='pt-2'
                     :model-value='event.links'
                     :edit='is_editable'
                     @update:model-value='patch({ links: $event })'
@@ -224,21 +218,18 @@
                 <!-- PropertyStyle has no read-only mode so hide it for non-editors -->
                 <PropertyStyle
                     v-if='is_editable'
-                    class='pt-2'
                     geometry='Point'
                     :model-value='styleProperties'
                     @update:model-value='updateStyle($event)'
                 />
 
                 <PropertyCoreEventChannels
-                    class='pt-2'
                     :model-value='event.channels'
                     :edit='is_creator'
                     @update:model-value='patch({ channels: $event })'
                 />
 
                 <PropertyCoreEventMetadata
-                    class='pt-2'
                     :model-value='event.metadata'
                     :edit='is_editable'
                     @update:model-value='patch({ metadata: $event })'
@@ -565,10 +556,3 @@ async function deleteEvent(): Promise<void> {
 }
 </script>
 
-<style scoped>
-:global(html[data-bs-theme='dark'] .core-event-properties .cloudtak-accent) {
-    background-color: #192f45 !important;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
-</style>
