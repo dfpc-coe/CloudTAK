@@ -339,24 +339,6 @@ export default class AtlasDatabase {
         }
     }
 
-    async filterDelete(
-        filter: string,
-        opts: {
-            mission?: boolean,
-        } = {}
-    ): Promise<void> {
-        const cots = await this.filter(filter, opts);
-
-        const all = [];
-        for (const cot of cots.values()) {
-            all.push(this.remove(cot.id, {
-                mission: opts.mission || false
-            }));
-        }
-
-        await Promise.allSettled(all);
-    }
-
     async paths(store?: Map<string, COT>): Promise<Array<NestedArray>> {
         if (!store) store = this.cots;
 
@@ -1012,17 +994,6 @@ export default class AtlasDatabase {
         return this.cots.has(id);
     }
 
-    groups(store?: Map<string, COT>): Array<string> {
-        if (!store) store = this.cots;
-
-        const groups: Set<string> = new Set();
-        for (const value of store.values()) {
-            if (value.properties.group) groups.add(value.properties.group.name);
-        }
-
-        return Array.from(groups);
-    }
-
     pathFeatures(path?: string, store?: Map<string, COT>): Set<COT> {
         if (!store) store = this.cots;
 
@@ -1039,55 +1010,5 @@ export default class AtlasDatabase {
         }
 
         return feats;
-    }
-
-    markers(store?: Map<string, COT>): Array<string> {
-        if (!store) store = this.cots;
-
-        const markers: Set<string> = new Set();
-        for (const value of store.values()) {
-            if (value.properties.group) continue;
-            if (value.properties.archived) continue;
-            markers.add(value.properties.type);
-        }
-
-        return Array.from(markers);
-    }
-
-    markerFeatures(marker: string, store?: Map<string, COT>): Set<COT> {
-        if (!store) store = this.cots;
-
-        const feats: Set<COT> = new Set();
-
-        for (const value of store.values()) {
-            if (value.properties.group) continue;
-            if (value.properties.archived) continue;
-
-            if (value.properties.type === marker) {
-                feats.add(value);
-            }
-        }
-
-        return feats;
-    }
-
-    contacts(group?: string, store?: Map<string, COT>): Set<COT> {
-        if (!store) store = this.cots;
-
-        const contacts: Set<COT> = new Set();
-        for (const value of store.values()) {
-            if (value.properties.group) contacts.add(value);
-        }
-
-        let list = Array.from(contacts);
-
-        if (group) {
-            list = list.filter((contact) => {
-                if (!contact.properties.group) return false;
-                return contact.properties.group.name === group;
-            })
-        }
-
-        return new Set(list);
     }
 }
