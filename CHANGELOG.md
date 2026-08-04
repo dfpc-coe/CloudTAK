@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.60.1 - 2026-08-04
+
+- :rocket: Sync Versions
+
 ### v13.60.0 - 2026-08-04
 
 - :rocket: Consistent Menu Styling
