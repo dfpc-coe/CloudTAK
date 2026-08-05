@@ -30,7 +30,7 @@
                     <FeatureIcon
                         v-else
                         :key='preset.type'
-                        :feature='{ properties: { icon: `2525E:${preset.type}` } }'
+                        :feature='{ properties: { type: preset.type } }'
                         :size='32'
                     />
                     <span

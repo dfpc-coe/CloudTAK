@@ -2,6 +2,8 @@
     <MenuTemplate
         :scroll='false'
         :loading='loading'
+        :standalone='!embedded'
+        :back='!embedded'
     >
         <template
             v-if='event'
@@ -28,6 +30,21 @@
             </div>
         </template>
 
+        <template
+            v-if='embedded'
+            #buttons
+        >
+            <TablerIconButton
+                title='Close'
+                @click='emit("close")'
+            >
+                <IconCircleX
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+        </template>
+
         <TablerAlert
             v-if='error'
             :err='error'
@@ -39,13 +56,14 @@
         />
         <div
             v-else-if='event'
-            :key='String(route.params.event)'
+            :key='eventKey'
             class='d-flex flex-column h-100'
             style='min-height: 0;'
         >
             <div class='col-12 border-bottom cloudtak-bg flex-shrink-0 d-flex align-items-center flex-nowrap gap-0 px-1 py-1'>
                 <div class='btn-list d-flex flex-nowrap align-items-center gap-0 mb-0'>
                     <TablerIconButton
+                        v-if='hasMap'
                         title='Zoom To'
                         @click='flyTo'
                     >
@@ -56,7 +74,7 @@
                     </TablerIconButton>
 
                     <TablerIconButton
-                        v-if='is_editable'
+                        v-if='is_editable && hasMap'
                         title='Edit'
                         @click='editGeometry'
                     >
@@ -131,7 +149,7 @@
 
                     <div class='col-12 pt-2'>
                         <Coordinate
-                            :key='String(route.params.event)'
+                            :key='eventKey'
                             label='Location'
                             :edit='is_editable'
                             :hover='is_editable'
@@ -225,6 +243,7 @@
 
                 <PropertyCoreEventChannels
                     :model-value='event.channels'
+                    :boards='event.boards'
                     :edit='is_creator'
                     @update:model-value='patch({ channels: $event })'
                 />
@@ -260,6 +279,7 @@ import {
     IconLockOpen,
     IconPencil,
     IconZoomPan,
+    IconCircleX,
     IconBlockquote,
     IconExternalLink,
 } from '@tabler/icons-vue';
@@ -285,9 +305,24 @@ import { server } from '../../std.ts';
 import { useMapStore } from '../../stores/map.ts';
 import ProfileConfig from '../../base/profile.ts';
 
+// When an eventId prop is provided the view runs embedded (the Event Board
+// modal) - the Event comes from the prop instead of the route and map
+// integrations are disabled since no MapLibre instance exists on that page
+const props = defineProps<{
+    eventId?: string;
+}>();
+
+const emit = defineEmits<{
+    (e: 'close'): void;
+}>();
+
 const route = useRoute();
 const router = useRouter();
 const mapStore = useMapStore();
+
+const embedded = computed(() => props.eventId !== undefined);
+const eventKey = computed(() => props.eventId ?? String(route.params.event || ''));
+const hasMap = computed(() => !!mapStore._map);
 
 const event = ref<CoreEvent | undefined>();
 const loading = ref(true);
@@ -315,18 +350,15 @@ const is_editable = computed(() => {
     return is_creator.value || event.value.editable;
 });
 
-// The header icon isn't a CoT so the 2525E icon the map would have generated
-// for the Event has to be derived from the type here
+// The header icon isn't a CoT - FeatureIcon derives the MIL-STD symbol from the
+// type the same way it does for one
 const iconFeature = computed(() => {
     if (!event.value) return { properties: {}, geometry: { type: 'Point' } };
-
-    const icon = event.value.style.icon
-        || (Type2525.isNumericSIDCConvertable(event.value.type) ? `2525E:${event.value.type}` : undefined);
 
     return {
         properties: {
             type: event.value.type,
-            icon,
+            icon: event.value.style.icon,
             'marker-color': event.value.style['marker-color'],
         },
         geometry: event.value.geometry,
@@ -351,15 +383,30 @@ onMounted(async () => {
         system_admin: systemAdmin?.value as boolean | undefined,
     };
 
+    // Standalone pages (Event Board) have no locally synced Profile - fall
+    // back to the API so creator/editable checks still work there
+    if (!profile.value.username) {
+        try {
+            const fetched = await ProfileConfig.fetch();
+
+            profile.value = {
+                username: fetched.username,
+                system_admin: fetched.system_admin,
+            };
+        } catch (err) {
+            console.error('Failed to fetch Profile', err);
+        }
+    }
+
     await fetchEvent();
 });
 
-watch(() => route.params.event, async () => {
+watch(eventKey, async () => {
     await fetchEvent();
 });
 
 async function fetchEvent(): Promise<void> {
-    if (!route.params.event) return;
+    if (!eventKey.value) return;
 
     loading.value = true;
     error.value = undefined;
@@ -368,7 +415,7 @@ async function fetchEvent(): Promise<void> {
         const res = await server.GET('/api/core/event/{:event}', {
             params: {
                 path: {
-                    ':event': String(route.params.event)
+                    ':event': eventKey.value
                 }
             }
         });
@@ -420,7 +467,7 @@ async function patch(body: Record<string, unknown>): Promise<void> {
  * immediately rather than on the next Event CoT broadcast
  */
 async function syncMapFeature(): Promise<void> {
-    if (!event.value) return;
+    if (!event.value || !mapStore._worker) return;
 
     try {
         const cot = await mapStore.worker.db.get(event.value.id);
@@ -543,13 +590,19 @@ async function deleteEvent(): Promise<void> {
 
         // The Event is gone server side - drop its marker locally rather than
         // waiting for it to go stale on the map
-        try {
-            await mapStore.worker.db.remove(event.value.id, { skipNetwork: true });
-        } catch (err) {
-            console.error(`Failed to remove deleted Event ${event.value.id} from the map:`, err);
+        if (mapStore._worker) {
+            try {
+                await mapStore.worker.db.remove(event.value.id, { skipNetwork: true });
+            } catch (err) {
+                console.error(`Failed to remove deleted Event ${event.value.id} from the map:`, err);
+            }
         }
 
-        router.push('/');
+        if (embedded.value) {
+            emit('close');
+        } else {
+            router.push('/');
+        }
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }

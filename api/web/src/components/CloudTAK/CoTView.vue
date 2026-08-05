@@ -1079,14 +1079,15 @@ function updatePropertyType(type: string): void {
 
     cot.value.properties.type = type;
 
-    if (isSIDC) {
-        cot.value.properties.icon = `2525E:${type}`;
-    } else if (cot.value.properties.icon && cot.value.properties.icon.startsWith('2525')) {
-        delete cot.value.properties.icon;
-    }
-
+    // An Iconset icon is the user's own pick and survives a type change - the
+    // type otherwise drives the icon, and a MIL-STD symbol needs none at all
+    // since renderedIcon derives its key from the type
     if (!cot.value.properties.icon || !cot.value.properties.icon.includes(':')) {
-        cot.value.properties.icon = type;
+        if (isSIDC) {
+            delete cot.value.properties.icon;
+        } else {
+            cot.value.properties.icon = type;
+        }
     }
 
     cot.value.update({});

@@ -429,6 +429,71 @@
         "query": false,
         "res": true
     },
+    "GET /board": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /board": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /board/column": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /board/column": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /board/column/:column": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /board/column/:column": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /board/event": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "PUT /board/event": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /board/event/:placement": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /board/event/:placement": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /board/:board": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /board/:board": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /board/:board": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /core/event": {
         "body": false,
         "query": true,
@@ -1344,6 +1409,11 @@
         "query": false,
         "res": true
     },
+    "POST /retention": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /search": {
         "body": false,
         "query": false,
@@ -1395,11 +1465,6 @@
         "res": true
     },
     "POST /server/tileset": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "POST /retention": {
         "body": true,
         "query": false,
         "res": true

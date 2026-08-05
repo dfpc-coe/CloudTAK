@@ -33,7 +33,7 @@
                 <template v-else>
                     <FeatureIcon
                         :key='config.type'
-                        :feature='{ properties: { icon: headerIcon } }'
+                        :feature='{ properties: { type: config.type } }'
                     />
 
                     <div
@@ -94,7 +94,7 @@
                     <template v-else>
                         <FeatureIcon
                             :key='config.type'
-                            :feature='{ properties: { icon: headerIcon } }'
+                            :feature='{ properties: { type: config.type } }'
                         />
 
                         <div
@@ -301,7 +301,7 @@
                                         >
                                             <FeatureIcon
                                                 :key='item.sidc'
-                                                :feature='{ properties: { icon: `2525E:${item.sidc}` } }'
+                                                :feature='{ properties: { type: item.sidc } }'
                                             />
 
                                             <div
@@ -342,7 +342,7 @@
                                         >
                                             <FeatureIcon
                                                 :key='item.sidc'
-                                                :feature='{ properties: { icon: `2525E:${item.sidc}` } }'
+                                                :feature='{ properties: { type: item.sidc } }'
                                             />
 
                                             <div
@@ -458,12 +458,6 @@ watch(availableStandards, () => {
 
 const affiliationLabel = computed<string>(() => {
     return StandardAffiliationInverse[config.value.affiliation] || 'Unknown';
-});
-
-const headerIcon = computed<string>(() => {
-    return Type2525.isNumericSIDCConvertable(config.value.type)
-        ? `2525E:${config.value.type}`
-        : config.value.type;
 });
 
 // 2525E Status/Operational Condition - digit index 6 of the numeric SIDC

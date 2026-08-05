@@ -49,6 +49,65 @@ export const RENDERED_PROPERTIES = [
     'circle-opacity'
 ]
 
+/**
+ * MIL-STD symbols render from an icon id of the form `2525<Variant>:<SIDC>` - a
+ * key into the Icon Manager's generated symbols
+ *
+ * It is a CloudTAK rendering detail, not TAK data: no client can resolve one as
+ * an Iconset path, and an unresolvable `usericon` detail takes precedence over
+ * (and so suppresses) the 2525 symbol the receiving client would otherwise
+ * render from the SIDC. It is therefore never stored on a Feature - see
+ * {@link renderedIcon}
+ */
+export const MILSYM_ICON = /^2525[bcde]:/i;
+
+/** CoT Types with no icon in the built-in spritesheet - these render as a plain marker */
+const TYPES_WITHOUT_ICON = ['u-d-p', 'b-m-p-s-m'];
+
+/**
+ * The SIDC a Feature's MIL-STD symbol should be generated from, if it has one
+ *
+ * `milicon` is authoritative - `type` only carries the SIDC on paths that ran
+ * node-cot's `normalize2525` (mission sync & CoT query deliver `a-f-G` instead)
+ */
+function milsymSIDC(properties: Feature["properties"]): string | undefined {
+    if (properties.milicon && Type2525.isNumericSIDCConvertable(properties.milicon.id)) {
+        return properties.milicon.id;
+    } else if (Type2525.isNumericSIDCConvertable(properties.type)) {
+        return properties.type;
+    } else {
+        return undefined;
+    }
+}
+
+/**
+ * The icon id a Feature renders with, on the map and in list views alike
+ *
+ * `properties.icon` holds only an icon the user picked or a TAK client sent, so
+ * it wins. Everything else is derived here rather than stored: a MIL-STD symbol
+ * is a pure function of the Feature's SIDC, and persisting the derived key both
+ * staled it against later type edits and leaked it onto the wire as a junk
+ * `usericon` iconsetpath
+ */
+export function renderedIcon(properties: Feature["properties"]): string | undefined {
+    if (properties.icon) return properties.icon;
+
+    // A Contact renders as its team coloured skittle. The skittle and icon map
+    // layers filter on `group` and `icon` independently and neither excludes the
+    // other, so deriving an icon here would draw a symbol on top of the skittle
+    if (properties.group) return undefined;
+
+    const sidc = milsymSIDC(properties);
+    if (sidc) return `2525E:${sidc}`;
+
+    // Everything else keys the built-in spritesheet off the CoT Type
+    if (properties.type && !TYPES_WITHOUT_ICON.includes(properties.type)) {
+        return properties.type;
+    }
+
+    return undefined;
+}
+
 const COT_MUTATIONS: COTMutation[] = [
     applyEllipseMutation
 ];
@@ -450,6 +509,11 @@ export default class COT {
             }
         }
 
+        // The style has no access to the SIDC - it keys `icon-image` off `icon`
+        // alone, so a MIL-STD symbol's generated key is supplied here
+        const icon = renderedIcon(input.properties);
+        if (icon !== undefined) feat.properties.icon = icon;
+
         return feat;
     }
 
@@ -581,6 +645,9 @@ export default class COT {
                 && (
                     properties.icon.startsWith('COT_MAPPING_2525C')
                     || properties.icon.startsWith('COT_MAPPING_2525B')
+                    // Features stored before the MIL-STD render key stopped being
+                    // persisted still carry one - drop it so it re-derives
+                    || MILSYM_ICON.test(properties.icon)
                 )
             ) {
                 delete properties.icon;
@@ -627,15 +694,12 @@ export default class COT {
                 if (properties.icon.endsWith('.png')) {
                     properties.icon = properties.icon.replace(/.png$/, '');
                 }
-            } else if (properties.milicon && Type2525.isNumericSIDCConvertable(properties.milicon.id)) {
-                // milicon is authoritative for the 2525 symbol - type only
-                // carries the SIDC on paths that ran node-cot's normalize2525
-                properties.icon = `2525E:${properties.milicon.id}`;
-            } else if (Type2525.isNumericSIDCConvertable(properties.type)) {
-                properties.icon = `2525E:${properties.type}`;
-            } else {
+            } else if (!milsymSIDC(properties)) {
+                // A MIL-STD symbol needs no icon - renderedIcon derives its key
+                // from the milicon/type at render time
+
                 // TODO Only add icon if one actually exists in the spritejson
-                if (!['u-d-p', 'b-m-p-s-m'].includes(properties.type)) {
+                if (!TYPES_WITHOUT_ICON.includes(properties.type)) {
                     properties.icon = `${properties.type}`;
                 }
             }
