@@ -62,6 +62,13 @@
                                 <h2 class='h2 text-center mb-4'>
                                     Login to your account
                                 </h2>
+                                <TablerInlineAlert
+                                    v-if='ssoError'
+                                    class='mb-3'
+                                    title='SSO Login Failed'
+                                    :description='ssoError'
+                                    severity='danger'
+                                />
                                 <TablerLoading
                                     v-if='loading'
                                     desc='Logging in'
@@ -164,7 +171,7 @@
                                     <a
                                         v-else
                                         class='btn btn-secondary w-100 d-flex align-items-center justify-content-center gap-2'
-                                        href='/api/login/oidc'
+                                        :href='oidcHref'
                                     >
                                         <img
                                             v-if='brandStore.oidc.logo'
@@ -492,7 +499,60 @@ watch(showSettings, (val) => {
 });
 
 const loading = ref(false);
+const ssoError = ref<string | null>(null);
 const storedUsername = ref<string | null>(null);
+
+const oidcHref = computed(() => {
+    const redirect = route.query.redirect && !String(route.query.redirect).includes('/login')
+        ? String(route.query.redirect)
+        : '';
+
+    return '/api/login/oidc' + (redirect ? `?redirect=${encodeURIComponent(redirect)}` : '');
+});
+
+// Consume the session handed back by the OIDC callback in the URL Fragment,
+// returning true if an SSO login was completed
+async function consumeSSOLogin(): Promise<boolean> {
+    if (route.query.sso_error) {
+        ssoError.value = String(route.query.sso_error);
+        router.replace({ query: { ...route.query, sso_error: undefined } });
+        return false;
+    }
+
+    if (!window.location.hash.startsWith('#sso=')) return false;
+
+    const fragment = window.location.hash.slice('#sso='.length);
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+
+    try {
+        const login: {
+            token: string;
+            email: string;
+            session: string;
+            redirect?: string;
+        } = JSON.parse(atob(
+            fragment.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(fragment.length / 4) * 4, '=')
+        ));
+
+        if (!login.token || !login.email || !login.session) throw new Error('Incomplete SSO Session');
+
+        await applySession({ token: login.token, email: login.email, session: login.session });
+
+        emit('login');
+
+        if (login.redirect && !login.redirect.includes('/login') && router.resolve(login.redirect).matched.length > 0) {
+            router.push(login.redirect);
+        } else {
+            router.push('/');
+        }
+
+        return true;
+    } catch (err) {
+        console.error('Failed to complete SSO Login', err);
+        ssoError.value = 'Failed to complete SSO Login';
+        return false;
+    }
+}
 const body = ref<Login_Create>({
     username: '',
     password: ''
@@ -508,6 +568,22 @@ const certRenewal = reactive<{
 });
 
 onMounted(async () => {
+    // The database is intentionally kept until an explicit sign-out or a
+    // different user logs in, avoiding a costly resync on token expiry.
+    try {
+        const existing = await appStore.getUsername();
+        if (existing) {
+            storedUsername.value = existing;
+            body.value.username = existing;
+        }
+    } catch (err) {
+        console.error('Failed to read existing session', err);
+    }
+
+    loading.value = true;
+    if (await consumeSSOLogin()) return;
+    loading.value = false;
+
     const config = await Config.list([
         'login::name',
         'login::logo',
@@ -551,18 +627,6 @@ onMounted(async () => {
 
     if (brandStore.passkey.enabled) {
         startConditionalPasskey();
-    }
-
-    // The database is intentionally kept until an explicit sign-out or a
-    // different user logs in, avoiding a costly resync on token expiry.
-    try {
-        const existing = await appStore.getUsername();
-        if (existing) {
-            storedUsername.value = existing;
-            body.value.username = existing;
-        }
-    } catch (err) {
-        console.error('Failed to read existing session', err);
     }
 });
 
