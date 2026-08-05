@@ -350,18 +350,15 @@ const is_editable = computed(() => {
     return is_creator.value || event.value.editable;
 });
 
-// The header icon isn't a CoT so the 2525E icon the map would have generated
-// for the Event has to be derived from the type here
+// The header icon isn't a CoT - FeatureIcon derives the MIL-STD symbol from the
+// type the same way it does for one
 const iconFeature = computed(() => {
     if (!event.value) return { properties: {}, geometry: { type: 'Point' } };
-
-    const icon = event.value.style.icon
-        || (Type2525.isNumericSIDCConvertable(event.value.type) ? `2525E:${event.value.type}` : undefined);
 
     return {
         properties: {
             type: event.value.type,
-            icon,
+            icon: event.value.style.icon,
             'marker-color': event.value.style['marker-color'],
         },
         geometry: event.value.geometry,

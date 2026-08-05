@@ -111,6 +111,7 @@ import {
     IconCone,
     IconPolygon,
 } from '@tabler/icons-vue';
+import { renderedIcon } from '../../../base/cot.ts';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
@@ -134,7 +135,7 @@ const resolveAttempted = new Set<string>();
 const supportedIcon = computed<string | null>(() => {
     void resolvedTick.value;
 
-    const iconId = props.feature.properties?.icon;
+    const iconId = renderedIcon(props.feature.properties ?? {});
     if (!iconId || !mapStore._map) return null;
 
     return mapStore.map.getImage(iconId) ? iconId : null;
@@ -143,7 +144,7 @@ const supportedIcon = computed<string | null>(() => {
 // Pages without a MapLibre instance (Event Board) can't use the map's image
 // registry - military symbols are generated directly instead
 const standaloneIcon = computed<string | null>(() => {
-    const iconId = props.feature.properties?.icon;
+    const iconId = renderedIcon(props.feature.properties ?? {});
     if (!iconId || mapStore._map || !/^2525[CDE]:/.test(iconId)) return null;
 
     return standaloneSymbol(iconId);
@@ -151,7 +152,7 @@ const standaloneIcon = computed<string | null>(() => {
 
 // Military symbols are generated on demand - they only exist in the map
 // once a map feature has requested them, so trigger resolution here
-watch(() => props.feature.properties?.icon, async (iconId) => {
+watch(() => renderedIcon(props.feature.properties ?? {}), async (iconId) => {
     if (
         !iconId
         || !mapStore._map
