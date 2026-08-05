@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.62.0 - 2026-08-05
+
+- :tada: Introduce Event Board
+
 ### v13.61.0 - 2026-08-04
 
 - :bug: Perform a full map re-render when app is foregrounded
