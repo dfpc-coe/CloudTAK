@@ -10,16 +10,16 @@ import { sql } from 'drizzle-orm';
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthUser } from '../../common/auth.js';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
-import { CoreEventBoard, CoreEventBoardColumn, CoreEventBoardEvent } from '../../common/schema.js';
+import Auth from '../../common/auth.js';
 import { CoreEventBoardColumn_Type } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
-import activeChannels from '../lib/tak-channels.js';
+import BoardControl, {
+    MAX_LIST,
+    boardResponse,
+    columnResponse,
+    placementResponse,
+} from '../lib/control/board.js';
 import * as Default from '../lib/limits.js';
-
-/** Upper bound on Boards, Columns & placed Events returned for a single request */
-const MAX_LIST = 1000;
 
 /**
  * Route order matters - the literal /board/column & /board/event paths have
@@ -27,118 +27,7 @@ const MAX_LIST = 1000;
  * parameterised Board routes
  */
 export default async function router(schema: Schema, config: ConfigStateless) {
-    async function userChannels(email: string): Promise<Set<number>> {
-        const profile = await config.models.Profile.from(email);
-        const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
-        return await activeChannels(api);
-    }
-
-    /**
-     * Boards are visible to System Admins and any user with the Board's
-     * Channel currently active
-     */
-    async function ensureChannelAccess(user: AuthUser, channel: number): Promise<void> {
-        if (user.is_admin()) return;
-
-        const channels = await userChannels(user.email);
-
-        if (!channels.has(channel)) {
-            throw new Err(403, null, 'You do not have permission to access Boards for this Channel');
-        }
-    }
-
-    /** Resolve a Board and check the caller may see the Channel it belongs to */
-    async function boardAccess(user: AuthUser, id: string): Promise<typeof CoreEventBoard.$inferSelect> {
-        const board = await config.models.CoreEventBoard.from(id);
-
-        await ensureChannelAccess(user, Number(board.channel));
-
-        return board;
-    }
-
-    /**
-     * Every Board has a single automatically managed Column of type nominated
-     * that newly nominated Events land in by default
-     */
-    async function ensureNominatedColumn(board: string): Promise<typeof CoreEventBoardColumn.$inferSelect> {
-        const existing = await config.models.CoreEventBoardColumn.list({
-            limit: 1,
-            where: sql`board = ${board} AND type = ${CoreEventBoardColumn_Type.NOMINATED}`,
-        });
-
-        if (existing.items.length) return existing.items[0];
-
-        return await config.models.CoreEventBoardColumn.generate({
-            board,
-            name: 'Nominated',
-            type: CoreEventBoardColumn_Type.NOMINATED,
-            position: 0,
-        });
-    }
-
-    /**
-     * Every Channel has a single automatically managed Board that nominations
-     * from the Event view land on
-     */
-    async function ensureChannelBoard(channel: number): Promise<void> {
-        const existing = await config.models.CoreEventBoard.list({
-            limit: 1,
-            where: sql`channel = ${channel}`,
-        });
-
-        const board = existing.items.length
-            ? existing.items[0]
-            : await config.models.CoreEventBoard.generate({
-                    channel: BigInt(channel),
-                    name: 'Events',
-                });
-
-        await ensureNominatedColumn(board.id);
-    }
-
-    function boardResponse(
-        board: typeof CoreEventBoard.$inferSelect,
-    ): Static<typeof CoreEventBoardResponse> {
-        return {
-            id: board.id,
-            created: board.created,
-            updated: board.updated,
-            channel: Number(board.channel),
-            name: board.name,
-            description: board.description,
-        };
-    }
-
-    function columnResponse(
-        column: typeof CoreEventBoardColumn.$inferSelect,
-    ): Static<typeof CoreEventBoardColumnResponse> {
-        return {
-            id: column.id,
-            created: column.created,
-            updated: column.updated,
-            board: column.board,
-            name: column.name,
-            description: column.description,
-            color: column.color,
-            type: column.type,
-            position: column.position,
-        };
-    }
-
-    function placementResponse(
-        placement: typeof CoreEventBoardEvent.$inferSelect,
-        event: Static<typeof CoreEventResponse>,
-    ): Static<typeof CoreEventBoardEventResponse> {
-        return {
-            id: placement.id,
-            created: placement.created,
-            updated: placement.updated,
-            board: placement.board,
-            column: placement.column,
-            position: placement.position,
-            event,
-        };
-    }
+    const boardControl = new BoardControl(config);
 
     await schema.get('/board', {
         name: 'List Boards',
@@ -158,9 +47,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            await ensureChannelAccess(user, req.query.channel);
+            await boardControl.ensureChannelAccess(user, req.query.channel);
 
-            await ensureChannelBoard(req.query.channel);
+            await boardControl.ensureChannelBoard(req.query.channel);
 
             const boards = await config.models.CoreEventBoard.list({
                 limit: MAX_LIST,
@@ -195,7 +84,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            await ensureChannelAccess(user, req.body.channel);
+            await boardControl.ensureChannelAccess(user, req.body.channel);
 
             const board = await config.models.CoreEventBoard.generate({
                 channel: BigInt(req.body.channel),
@@ -203,7 +92,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 description: req.body.description,
             });
 
-            await ensureNominatedColumn(board.id);
+            await boardControl.ensureNominatedColumn(board.id);
 
             res.json(boardResponse(board));
         } catch (err) {
@@ -229,9 +118,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const board = await boardAccess(user, req.query.board);
+            const board = await boardControl.boardAccess(user, req.query.board);
 
-            await ensureNominatedColumn(board.id);
+            await boardControl.ensureNominatedColumn(board.id);
 
             const columns = await config.models.CoreEventBoardColumn.list({
                 limit: MAX_LIST,
@@ -274,7 +163,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const board = await boardAccess(user, req.body.board);
+            const board = await boardControl.boardAccess(user, req.body.board);
 
             let position = req.body.position;
             if (position === undefined) {
@@ -326,9 +215,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            let column = await config.models.CoreEventBoardColumn.from(req.params.column);
-
-            await boardAccess(user, column.board);
+            let { column } = await boardControl.columnAccess(user, req.params.column);
 
             if (Object.keys(req.body).length > 0) {
                 column = await config.models.CoreEventBoardColumn.commit(req.params.column, {
@@ -357,9 +244,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const column = await config.models.CoreEventBoardColumn.from(req.params.column);
-
-            await boardAccess(user, column.board);
+            const { column } = await boardControl.columnAccess(user, req.params.column);
 
             if (column.type === CoreEventBoardColumn_Type.NOMINATED) {
                 throw new Err(400, null, 'The Nominated Column cannot be deleted');
@@ -395,7 +280,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const board = await boardAccess(user, req.query.board);
+            const board = await boardControl.boardAccess(user, req.query.board);
 
             const placements = await config.models.CoreEventBoardEvent.list({
                 limit: MAX_LIST,
@@ -465,9 +350,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const column = await config.models.CoreEventBoardColumn.from(req.body.column);
-
-            const board = await boardAccess(user, column.board);
+            const { column, board } = await boardControl.columnAccess(user, req.body.column);
 
             const event = await config.models.CoreEvent.augmented_from(req.body.event);
 
@@ -523,9 +406,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            let placement = await config.models.CoreEventBoardEvent.from(req.params.placement);
-
-            await boardAccess(user, placement.board);
+            let { placement } = await boardControl.placementAccess(user, req.params.placement);
 
             if (req.body.column !== undefined) {
                 const column = await config.models.CoreEventBoardColumn.from(req.body.column);
@@ -565,9 +446,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const placement = await config.models.CoreEventBoardEvent.from(req.params.placement);
-
-            await boardAccess(user, placement.board);
+            await boardControl.placementAccess(user, req.params.placement);
 
             await config.models.CoreEventBoardEvent.delete(req.params.placement);
 
@@ -591,7 +470,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const board = await boardAccess(user, req.params.board);
+            const board = await boardControl.boardAccess(user, req.params.board);
 
             res.json(boardResponse(board));
         } catch (err) {
@@ -617,7 +496,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            let board = await boardAccess(user, req.params.board);
+            let board = await boardControl.boardAccess(user, req.params.board);
 
             if (Object.keys(req.body).length > 0) {
                 board = await config.models.CoreEventBoard.commit(req.params.board, {
@@ -646,7 +525,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const board = await boardAccess(user, req.params.board);
+            const board = await boardControl.boardAccess(user, req.params.board);
 
             const boards = await config.models.CoreEventBoard.list({
                 limit: 2,

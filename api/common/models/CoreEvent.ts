@@ -86,7 +86,7 @@ export default class CoreEventModel extends Modeler<typeof CoreEvent> {
     }
 
     /** Iterating variant of augmented_list */
-    async* augmented_iter(query: GenericIterInput = {}): AsyncGenerator<Static<typeof CoreEventResponse>> {
+    async* augmented_iter(query: GenericIterInput & { boards?: boolean } = {}): AsyncGenerator<Static<typeof CoreEventResponse>> {
         const pagesize = query.pagesize || 100;
         let page = 0;
         let pgres;
@@ -97,6 +97,7 @@ export default class CoreEventModel extends Modeler<typeof CoreEvent> {
                 limit: pagesize,
                 order: query.order,
                 where: query.where,
+                boards: query.boards,
             });
 
             for (const row of pgres.items) {
@@ -107,7 +108,11 @@ export default class CoreEventModel extends Modeler<typeof CoreEvent> {
         } while (pgres.items.length === pagesize);
     }
 
-    async augmented_list(query: GenericListInput = {}): Promise<GenericList<Static<typeof CoreEventResponse>>> {
+    /**
+     * `boards` is a correlated subquery run once per returned row - callers
+     * that never surface it (ie the Event => CoT broadcast loop) opt out
+     */
+    async augmented_list(query: GenericListInput & { boards?: boolean } = {}): Promise<GenericList<Static<typeof CoreEventResponse>>> {
         const order = query.order && query.order === 'desc' ? desc : asc;
         const orderBy = order(query.sort ? this.key(query.sort) : this.requiredPrimaryKey());
 
@@ -125,7 +130,7 @@ export default class CoreEventModel extends Modeler<typeof CoreEvent> {
                 count: sql<string>`count(*) OVER()`.as('count'),
                 event: CoreEvent,
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
-                boards: BOARDS.as('boards'),
+                boards: (query.boards === false ? sql`'[]'::JSON` : BOARDS).as('boards'),
             })
             .from(CoreEvent)
             .leftJoin(SubTable, eq(CoreEvent.id, SubTable.event))

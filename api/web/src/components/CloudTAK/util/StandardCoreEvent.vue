@@ -73,23 +73,15 @@
     </StandardItem>
 </template>
 
-<script setup lang='ts'>
-import { computed, ref, watch } from 'vue';
+<script lang='ts'>
 import ms from 'milsymbol';
 import Type2525 from '@tak-ps/node-cot/2525';
 import { server } from '../../../std.ts';
-import StandardItem from './StandardItem.vue';
-import StatusDot from '../../util/StatusDot.vue';
-import {
-    IconClock,
-    IconMapPin,
-    IconCalendarEvent,
-} from '@tabler/icons-vue';
-import type { CoreEvent } from '../../../types.ts';
 
 /**
  * Preconfigured Event Types are shared by every card on a page - fetch the
- * config once and let all StandardCoreEvent instances await the same promise
+ * config once at module scope and let all StandardCoreEvent instances await
+ * the same promise
  */
 let typePresets: Promise<Array<{ name: string; type: string; icon?: string }>> | undefined;
 
@@ -115,6 +107,52 @@ function loadTypePresets(): Promise<Array<{ name: string; type: string; icon?: s
     return typePresets;
 }
 
+/**
+ * A custom icon on a matching preconfigured Event Type wins, otherwise
+ * a numeric SIDC type renders its 2525E military symbol
+ *
+ * A generated symbol only depends on the Type, so a Board full of cards sharing
+ * a Type renders its symbol once rather than once per card - the preset lookup
+ * itself stays uncached so a failed config fetch can still be retried
+ */
+const typeSymbols = new Map<string, string>();
+
+async function resolveTypeIcon(type: string): Promise<string | undefined> {
+    if (!type) return undefined;
+
+    const preset = (await loadTypePresets()).find((p) => p.type === type);
+    if (preset && preset.icon) return preset.icon;
+
+    if (Type2525.isNumericSIDCConvertable(type)) {
+        let symbol = typeSymbols.get(type);
+
+        if (!symbol) {
+            symbol = new ms.Symbol(type, { size: 24 }).toDataURL();
+            typeSymbols.set(type, symbol);
+        }
+
+        return symbol;
+    }
+
+    return undefined;
+}
+
+export default {
+    name: 'StandardCoreEvent'
+};
+</script>
+
+<script setup lang='ts'>
+import { computed, ref, watch } from 'vue';
+import StandardItem from './StandardItem.vue';
+import StatusDot from '../../util/StatusDot.vue';
+import {
+    IconClock,
+    IconMapPin,
+    IconCalendarEvent,
+} from '@tabler/icons-vue';
+import type { CoreEvent } from '../../../types.ts';
+
 const props = withDefaults(defineProps<{
     event: CoreEvent;
     icon?: boolean;
@@ -134,23 +172,6 @@ watch(() => props.event.type, async (type) => {
     // A card can be recycled onto another Event while the config loads
     if (props.event.type === type) typeIcon.value = icon;
 }, { immediate: true });
-
-/**
- * A custom icon on a matching preconfigured Event Type wins, otherwise
- * a numeric SIDC type renders its 2525E military symbol
- */
-async function resolveTypeIcon(type: string): Promise<string | undefined> {
-    if (!type) return undefined;
-
-    const preset = (await loadTypePresets()).find((p) => p.type === type);
-    if (preset && preset.icon) return preset.icon;
-
-    if (Type2525.isNumericSIDCConvertable(type)) {
-        return new ms.Symbol(type, { size: 24 }).toDataURL();
-    }
-
-    return undefined;
-}
 
 const creator = computed(() => {
     if (props.event.username) return props.event.username;

@@ -292,6 +292,8 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
             const cots: CoT[] = [];
 
             for await (const event of this.config.models.CoreEvent.augmented_iter({
+                // Broadcast CoTs carry Channels, never Board placements
+                boards: false,
                 where: opts && opts.event
                     ? and(eq(CoreEvent.active, true), eq(CoreEvent.id, opts.event))
                     : eq(CoreEvent.active, true),

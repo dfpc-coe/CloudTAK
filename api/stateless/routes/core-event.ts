@@ -4,20 +4,13 @@ import { sql, eq } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUser, AuthResource, AuthResourceAccess } from '../../common/auth.js';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { CoreEvent, CoreEventChannel } from '../../common/schema.js';
 import { CoreEvent_Priority } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
-import activeChannels from '../lib/tak-channels.js';
+import { userChannels } from '../lib/tak-channels.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
-    async function userChannels(email: string): Promise<Set<number>> {
-        const profile = await config.models.Profile.from(email);
-        const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
-        return await activeChannels(api);
-    }
-
     /**
      * Resolve the Connection a Connection or Layer resource token belongs to
      */
@@ -58,7 +51,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         if (auth instanceof AuthUser) {
             const shared = (event.channels || []).map(c => Number(c));
             if (shared.length) {
-                const active = await userChannels(auth.email);
+                const active = await userChannels(config, auth.email);
                 if (shared.some(c => active.has(c))) return;
             }
         }
@@ -128,7 +121,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 `;
             } else {
                 const user = auth;
-                const channels = [...await userChannels(user.email)];
+                const channels = [...await userChannels(config, user.email)];
 
                 where = channels.length
                     ? sql`

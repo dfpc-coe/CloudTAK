@@ -167,6 +167,7 @@ describe('sw.js', () => {
                 'connection.html': { file: 'connection.html', imports: [] },
                 'docs.html': { file: 'docs.html', imports: [] },
                 'video.html': { file: 'video.html', imports: [] },
+                'board.html': { file: 'board.html', imports: [] },
                 'unknown.html': { file: 'unknown.html', imports: [] },
                 'src/main.ts': { file: 'assets/main-h.js', imports: [] },
             });
@@ -181,6 +182,7 @@ describe('sw.js', () => {
             expect(urls).toContain('/connection');
             expect(urls).toContain('/docs');
             expect(urls).toContain('/video');
+            expect(urls).toContain('/board');
             expect(urls).toContain('assets/main-h.js');
 
             expect(urls).not.toContain('index.html');

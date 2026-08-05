@@ -31,6 +31,7 @@ const ENTRY_HTML_TO_PATH = {
     'connection.html': '/connection',
     'docs.html': '/docs',
     'video.html': '/video',
+    'board.html': '/board',
 };
 
 /**
