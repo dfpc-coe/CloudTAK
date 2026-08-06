@@ -1,4 +1,4 @@
-import { Type, Static } from '@sinclair/typebox';
+import { Type } from '@sinclair/typebox';
 import { StandardResponse, CoreDeviceResponse } from '../../common/types.js';
 import { sql, eq } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
@@ -7,68 +7,11 @@ import Auth, { AuthUser, AuthResource, AuthResourceAccess } from '../../common/a
 import { CoreDevice, CoreDeviceChannel } from '../../common/schema.js';
 import type ConfigStateless from '../config.js';
 import { userChannels } from '../lib/tak-channels.js';
+import DeviceControl from '../lib/control/device.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
-    /**
-     * Resolve the Connection a Connection or Layer resource token belongs to
-     */
-    async function resourceConnection(auth: AuthResource): Promise<number> {
-        if (auth.access === AuthResourceAccess.LAYER) {
-            if (auth.id === undefined) throw new Err(401, null, 'Layer Resource Token must contain a Layer ID');
-            const layer = await config.models.Layer.from(auth.id);
-            if (layer.connection === null) throw new Err(401, null, 'Layer is not associated with a Connection');
-            return layer.connection;
-        } else {
-            if (auth.id === undefined) throw new Err(401, null, 'Connection Resource Token must contain a Connection ID');
-            const connection = await config.models.Connection.from(auth.id);
-            return connection.id;
-        }
-    }
-
-    /**
-     * Is the requester the creator of the Device - the user that created it,
-     * a System Admin, or a Connection/Layer token belonging to the Connection
-     * that created it
-     */
-    function isDeviceCreator(auth: AuthUser | AuthResource, device: Static<typeof CoreDeviceResponse>, connection: number | null): boolean {
-        if (auth instanceof AuthUser) {
-            return auth.is_admin() || device.username === auth.email;
-        } else {
-            return connection !== null && device.connection === connection;
-        }
-    }
-
-    /**
-     * A Device is visible to its creator, System Admins, any user with an
-     * active channel the Device has been shared with, and Connection/Layer
-     * tokens belonging to the Connection that created it
-     */
-    async function ensureDeviceAccess(auth: AuthUser | AuthResource, device: Static<typeof CoreDeviceResponse>, connection: number | null): Promise<void> {
-        if (isDeviceCreator(auth, device, connection)) return;
-
-        if (auth instanceof AuthUser) {
-            const shared = (device.channels || []).map(c => Number(c));
-            if (shared.length) {
-                const active = await userChannels(config, auth.email);
-                if (shared.some(c => active.has(c))) return;
-            }
-        }
-
-        throw new Err(403, null, 'You do not have permission to access this Device');
-    }
-
-    /**
-     * Ensure a Core Event a Device is being assigned to exists
-     */
-    async function ensureEventExists(event: string): Promise<void> {
-        const list = await config.models.CoreEvent.list({
-            limit: 1,
-            where: sql`id = ${event}`,
-        });
-
-        if (list.total === 0) throw new Err(400, null, 'Assigned Core Event does not exist');
-    }
+    const deviceControl = new DeviceControl(config);
 
     await schema.get('/core/device', {
         name: 'List Devices',
@@ -126,7 +69,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             let where;
             if (auth instanceof AuthResource) {
-                const connection = await resourceConnection(auth);
+                const connection = await deviceControl.resourceConnection(auth);
 
                 where = sql`
                     name ~* ${req.query.filter}
@@ -200,11 +143,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ],
             });
 
-            const connection = auth instanceof AuthResource ? await resourceConnection(auth) : null;
+            const connection = auth instanceof AuthResource ? await deviceControl.resourceConnection(auth) : null;
 
             const device = await config.models.CoreDevice.augmented_from(req.params.device);
 
-            await ensureDeviceAccess(auth, device, connection);
+            await deviceControl.ensureDeviceAccess(auth, device, connection);
 
             res.json(device);
         } catch (err) {
@@ -285,12 +228,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const { channels, ...body } = req.body;
 
-            if (body.event) await ensureEventExists(body.event);
+            if (body.event) await deviceControl.ensureEventExists(body.event);
 
             const device = await config.models.CoreDevice.generate({
                 ...body,
                 username: auth instanceof AuthUser ? auth.email : null,
-                connection: auth instanceof AuthResource ? await resourceConnection(auth) : null,
+                connection: auth instanceof AuthResource ? await deviceControl.resourceConnection(auth) : null,
             });
 
             if (channels.length > 0) {
@@ -351,17 +294,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ],
             });
 
-            const connection = auth instanceof AuthResource ? await resourceConnection(auth) : null;
+            const connection = auth instanceof AuthResource ? await deviceControl.resourceConnection(auth) : null;
 
             const device = await config.models.CoreDevice.augmented_from(req.params.device);
 
-            if (!isDeviceCreator(auth, device, connection)) {
+            if (!deviceControl.isDeviceCreator(auth, device, connection)) {
                 throw new Err(403, null, 'Only the Device creator can modify this Device');
             }
 
             const { channels, ...body } = req.body;
 
-            if (body.event) await ensureEventExists(body.event);
+            if (body.event) await deviceControl.ensureEventExists(body.event);
 
             if (Object.keys(body).length > 0) {
                 await config.models.CoreDevice.commit(req.params.device, {
