@@ -106,6 +106,42 @@ export const CoreEventBoardEvent = pgTable('core_event_board_event', {
     board_event_idx: unique().on(table.board, table.event),
 }));
 
+/**
+ * A durable physical asset (sensor, drone, vehicle, radio, etc.) tracked independently
+ * of any single Core Event. Device identity fields (manufacturer, model, serial, etc.)
+ * are modelled on the CBRN (RadCoT/ChemCoT) sensor_data attributes but are intentionally
+ * generic so a device from any manufacturer can be described
+ */
+export const CoreDevice = pgTable('core_device', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    username: text().references(() => Profile.username),
+    connection: integer().references(() => Connection.id, { onDelete: 'set null' }),
+    event: uuid().references(() => CoreEvent.id, { onDelete: 'set null' }), // Event the Device is currently assigned to
+    type: text().notNull(), // MIL-STD-2525E Symbol ID
+    name: text().notNull(), // Human readable name/callsign of the Device
+    manufacturer: text().notNull().default(''), // ie: Ortec, Nucsafe, DJI
+    model: text().notNull().default(''), // ie: Micro Detective, IdentiFINDER 2
+    serial: text().notNull().default(''), // Manufacturer assigned Serial Number
+    firmware: text().notNull().default(''), // Firmware/Software revision reported by the Device
+    status: text().notNull().default(''), // General Device health status - ie: Full, Reduced, Unknown
+    battery: doublePrecision(), // Battery level as a percentage (0-100) at last report
+    simulated: boolean().notNull().default(false), // Is the Device a simulated data source
+    external_id: text().notNull().default(''),
+    remarks: text().notNull().default(''),
+    metadata: jsonb().$type<Record<string, unknown>>().notNull().default({}),
+});
+
+export const CoreDeviceChannel = pgTable('core_device_channel', {
+    device: uuid().notNull().references(() => CoreDevice.id, { onDelete: 'cascade' }),
+    channel: bigint({ mode: 'bigint' }).notNull(),
+}, table => ({
+    pk: primaryKey({
+        columns: [table.device, table.channel],
+    }),
+}));
+
 /** TAK Server Groups, periodically synced via the Admin Certificate */
 export const Channel = pgTable('channel', {
     bitpos: integer().primaryKey(),

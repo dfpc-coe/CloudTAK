@@ -24,18 +24,18 @@
                             role='menuitem'
                             class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                             :class='{
-                                "active": String(route.name) === "admin-coredata-features",
-                                "cursor-pointer": String(route.name) !== "admin-coredata-features"
+                                "active": String(route.name) === "admin-coredata-devices",
+                                "cursor-pointer": String(route.name) !== "admin-coredata-devices"
                             }'
-                            @click='router.push(`/admin/coredata/features`)'
+                            @click='router.push(`/admin/coredata/devices`)'
                         >
-                            <IconMapPin
+                            <IconDevices
                                 :size='32'
                                 stroke='1'
                             />
                             <span
                                 class='mx-3'
-                            >Core Features</span>
+                            >Core Devices</span>
                         </span>
                         <span
                             tabindex='0'
@@ -77,7 +77,7 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler'
 import {
-    IconMapPin,
+    IconDevices,
     IconCalendarEvent,
 } from '@tabler/icons-vue'
 

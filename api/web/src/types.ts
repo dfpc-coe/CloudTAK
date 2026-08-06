@@ -48,6 +48,8 @@ export type UserList = paths["/api/user"]["get"]["responses"]["200"]["content"][
 export type ErrorReport = paths["/api/error/{:errorid}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type ErrorReportList = paths["/api/error"]["get"]["responses"]["200"]["content"]["application/json"];
 
+export type CoreDevice = paths["/api/core/device/{:device}"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreDeviceList = paths["/api/core/device"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreEvent = paths["/api/core/event/{:event}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreEventList = paths["/api/core/event"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreEventLink = CoreEvent["links"][0];

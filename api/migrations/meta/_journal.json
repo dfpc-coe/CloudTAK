@@ -1352,6 +1352,13 @@
       "when": 1785866032268,
       "tag": "0193_core_event_board_column",
       "breakpoints": true
+    },
+    {
+      "idx": 194,
+      "version": "7",
+      "when": 1786025343613,
+      "tag": "0194_core_device",
+      "breakpoints": true
     }
   ]
 }
