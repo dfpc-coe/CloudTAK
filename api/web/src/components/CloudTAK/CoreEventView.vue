@@ -246,6 +246,7 @@
                     :boards='event.boards'
                     :edit='is_creator'
                     @update:model-value='patch({ channels: $event })'
+                    @nominate='nominate($event)'
                 />
 
                 <PropertyCoreEventMetadata
@@ -300,7 +301,7 @@ import PropertyCoreEventChannels from './Property/PropertyCoreEventChannels.vue'
 import PropertyCoreEventMetadata from './Property/PropertyCoreEventMetadata.vue';
 import PropertyCoreEventMission from './Property/PropertyCoreEventMission.vue';
 import PropertyCoreEventTimes from './Property/PropertyCoreEventTimes.vue';
-import type { CoreEvent, CoreEventStyle } from '../../types.ts';
+import type { CoreEvent, CoreEventStyle, CoreEventBoardSummary } from '../../types.ts';
 import { server } from '../../std.ts';
 import { useMapStore } from '../../stores/map.ts';
 import ProfileConfig from '../../base/profile.ts';
@@ -458,6 +459,39 @@ async function patch(body: Record<string, unknown>): Promise<void> {
         // Event is reloaded so the UI stops showing a value the server refused
         await fetchEvent();
 
+        saveError.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
+
+/**
+ * Nominate the Event onto a Board - it lands in the Board's automatically
+ * managed Nominated Column, then the Event is reloaded so the Channels
+ * section reflects the new placement
+ */
+async function nominate(board: CoreEventBoardSummary): Promise<void> {
+    if (!event.value) return;
+
+    const column = board.columns.find((c) => c.type === 'nominated');
+    if (!column) {
+        saveError.value = new Error(`${board.name} has no Nominated Column`);
+        return;
+    }
+
+    saveError.value = undefined;
+
+    try {
+        const res = await server.PUT('/api/board/event', {
+            body: {
+                column: column.id,
+                event: event.value.id,
+                position: 0,
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        await fetchEvent();
+    } catch (err) {
         saveError.value = err instanceof Error ? err : new Error(String(err));
     }
 }
