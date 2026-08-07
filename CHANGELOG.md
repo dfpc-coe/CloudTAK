@@ -16,6 +16,11 @@
 
 ### Pending Release
 
+### v13.63.0 - 2026-08-07
+
+- :tada: Introduce concept of CoreDevice to augment CoreEvent data structure 
+- :bug: Fix feature display with use of `maxzoom` limitation - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1642
+
 ### v13.62.0 - 2026-08-05
 
 - :tada: Introduce Event Board
