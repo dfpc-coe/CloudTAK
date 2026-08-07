@@ -1,4 +1,5 @@
 import Modeler, { Pool } from '@openaddresses/batch-generic';
+import CoreDevice from './models/CoreDevice.js';
 import CoreEvent from './models/CoreEvent.js';
 import Data from './models/Data.js';
 import Import from './models/Import.js';
@@ -23,6 +24,8 @@ export default class Models {
 
     Channel: Modeler<typeof pgtypes.Channel>;
 
+    CoreDevice: CoreDevice;
+    CoreDeviceChannel: Modeler<typeof pgtypes.CoreDeviceChannel>;
     CoreEvent: CoreEvent;
     CoreEventBoard: Modeler<typeof pgtypes.CoreEventBoard>;
     CoreEventBoardColumn: Modeler<typeof pgtypes.CoreEventBoardColumn>;
@@ -67,6 +70,8 @@ export default class Models {
 
     constructor(pg: Pool<typeof pgtypes>) {
         this.Channel = new Modeler(pg, pgtypes.Channel);
+        this.CoreDevice = new CoreDevice(pg);
+        this.CoreDeviceChannel = new Modeler(pg, pgtypes.CoreDeviceChannel);
         this.CoreEvent = new CoreEvent(pg);
         this.CoreEventBoard = new Modeler(pg, pgtypes.CoreEventBoard);
         this.CoreEventBoardColumn = new Modeler(pg, pgtypes.CoreEventBoardColumn);

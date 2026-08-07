@@ -81,12 +81,12 @@ const router = VueRouter.createRouter({
                     path: '',
                     name: 'admin-coredata-default',
                     redirect: () => {
-                        return { name: 'admin-coredata-features' };
+                        return { name: 'admin-coredata-devices' };
                     }
                 },{
-                    path: 'features',
-                    name: 'admin-coredata-features',
-                    component: () => import('../../components/Admin/CoreData/CoreDataFeatures.vue')
+                    path: 'devices',
+                    name: 'admin-coredata-devices',
+                    component: () => import('../../components/Admin/CoreData/CoreDataDevices.vue')
                 },{
                     path: 'events',
                     name: 'admin-coredata-events',

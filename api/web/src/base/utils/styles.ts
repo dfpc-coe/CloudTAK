@@ -10,7 +10,7 @@ import type {
 const MinMaxFilter: Array<mapgl.ExpressionSpecification> = [
     [ 'any',
         ["!", ['has', 'maxzoom']],
-        ['>=', ["zoom"], ['get', 'maxzoom']]
+        ['<=', ["zoom"], ['get', 'maxzoom']]
     ],
     ['any',
         ["!", ['has', 'minzoom']],

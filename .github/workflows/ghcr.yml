@@ -33,7 +33,7 @@ jobs:
             context: .
             file: ./tasks/retention/Dockerfile.compose
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Log in to GHCR
         uses: docker/login-action@v4
