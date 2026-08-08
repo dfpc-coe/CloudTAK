@@ -9,7 +9,7 @@
             "@capacitor-firebase/messaging",
             "@capacitor/app",
             "@capacitor/browser",
-            "@capacitor/network",
+            "@capawesome/capacitor-network",
             "@capacitor/camera",
             "@capacitor/clipboard",
             "@capacitor/geolocation",
@@ -17,8 +17,7 @@
             "@capacitor/keyboard",
             "@capacitor/preferences",
             "@capacitor/status-bar",
-            "@capgo/background-geolocation",
-            "@capacitor-firebase/messaging"
+            "@capgo/background-geolocation"
         ]
     },
     "android": {

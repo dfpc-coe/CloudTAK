@@ -16,7 +16,7 @@ let package = Package(
         .package(name: "CapacitorFirebaseMessaging", path: "../../../node_modules/@capacitor-firebase/messaging"),
         .package(name: "CapacitorApp", path: "../../../node_modules/@capacitor/app"),
         .package(name: "CapacitorBrowser", path: "../../../node_modules/@capacitor/browser"),
-        .package(name: "CapacitorNetwork", path: "../../../node_modules/@capacitor/network"),
+        .package(name: "CapawesomeCapacitorNetwork", path: "../../../node_modules/@capawesome/capacitor-network"),
         .package(name: "CapacitorCamera", path: "../../../node_modules/@capacitor/camera"),
         .package(name: "CapacitorClipboard", path: "../../../node_modules/@capacitor/clipboard"),
         .package(name: "CapacitorGeolocation", path: "../../../node_modules/@capacitor/geolocation"),
@@ -24,8 +24,7 @@ let package = Package(
         .package(name: "CapacitorKeyboard", path: "../../../node_modules/@capacitor/keyboard"),
         .package(name: "CapacitorPreferences", path: "../../../node_modules/@capacitor/preferences"),
         .package(name: "CapacitorStatusBar", path: "../../../node_modules/@capacitor/status-bar"),
-        .package(name: "CapgoBackgroundGeolocation", path: "../../../node_modules/@capgo/background-geolocation"),
-        .package(name: "CapacitorFirebaseMessaging", path: "../../../node_modules/@capacitor-firebase/messaging")
+        .package(name: "CapgoBackgroundGeolocation", path: "../../../node_modules/@capgo/background-geolocation")
     ],
     targets: [
         .target(
@@ -37,7 +36,7 @@ let package = Package(
                 .product(name: "CapacitorFirebaseMessaging", package: "CapacitorFirebaseMessaging"),
                 .product(name: "CapacitorApp", package: "CapacitorApp"),
                 .product(name: "CapacitorBrowser", package: "CapacitorBrowser"),
-                .product(name: "CapacitorNetwork", package: "CapacitorNetwork"),
+                .product(name: "CapawesomeCapacitorNetwork", package: "CapawesomeCapacitorNetwork"),
                 .product(name: "CapacitorCamera", package: "CapacitorCamera"),
                 .product(name: "CapacitorClipboard", package: "CapacitorClipboard"),
                 .product(name: "CapacitorGeolocation", package: "CapacitorGeolocation"),
@@ -45,8 +44,7 @@ let package = Package(
                 .product(name: "CapacitorKeyboard", package: "CapacitorKeyboard"),
                 .product(name: "CapacitorPreferences", package: "CapacitorPreferences"),
                 .product(name: "CapacitorStatusBar", package: "CapacitorStatusBar"),
-                .product(name: "CapgoBackgroundGeolocation", package: "CapgoBackgroundGeolocation"),
-                .product(name: "CapacitorFirebaseMessaging", package: "CapacitorFirebaseMessaging")
+                .product(name: "CapgoBackgroundGeolocation", package: "CapgoBackgroundGeolocation")
             ]
         )
     ]
