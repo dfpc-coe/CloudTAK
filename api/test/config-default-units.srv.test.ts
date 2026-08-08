@@ -172,7 +172,7 @@ test('GET api/profile', async () => {
         assert.deepEqual(res.body, {
             active: false,
             username: 'defaults@example.com',
-            phone: '',
+            tak_phone: '',
             tak_callsign: 'CloudTAK User',
             tak_remarks: 'CloudTAK User',
             tak_group: 'Orange',
@@ -192,6 +192,7 @@ test('GET api/profile', async () => {
             display_text: 'Medium',
             display_icon_rotation: true,
             display_radiation_dose: 'rems',
+            display_wakelock: 'Charging',
             geometry_point_type: 'u-d-p',
             geometry_point_color: '#ff0000',
             geometry_point_icon: '',

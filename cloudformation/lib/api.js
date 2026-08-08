@@ -11,6 +11,18 @@ export default {
             Description: 'The amount of memory (in MiB) used by the task',
             Type: 'Number',
             Default: 4096 * 2
+        },
+        ApiDesiredCount: {
+            Description: 'The desired number of stateless API service tasks',
+            Type: 'Number',
+            MinValue: 0,
+            MaxValue: 10,
+            Default: 2
+        },
+        ApiTargetCPUUtilization: {
+            Description: 'Target average CPU utilization percentage for the stateless API service',
+            Type: 'Number',
+            Default: 70
         }
     },
     Resources: {
@@ -452,6 +464,8 @@ export default {
                                 ':5432/tak_ps_etl?sslmode=require'
                             ])
                         },
+                        { Name: 'CLOUDTAK_Server_Mode', Value: 'api' },
+                        { Name: 'CLOUDTAK_Hub_URL', Value: cf.join(['http://', cf.getAtt('HubELB', 'DNSName')]) },
                         { Name: 'AWS_REGION', Value: cf.region },
                         { Name: 'ECR_TASKS_REPOSITORY_NAME', Value: cf.join(['tak-vpc-', cf.ref('Environment'), '-cloudtak-tasks']) },
                         { Name: 'CLOUDTAK_Mode', Value: 'AWS' },
@@ -491,7 +505,7 @@ export default {
                 PropagateTags: 'SERVICE',
                 EnableExecuteCommand: cf.ref('EnableExecute'),
                 HealthCheckGracePeriodSeconds: 300,
-                DesiredCount: 1,
+                DesiredCount: cf.ref('ApiDesiredCount'),
                 NetworkConfiguration: {
                     AwsvpcConfiguration: {
                         AssignPublicIp: 'ENABLED',
@@ -507,6 +521,39 @@ export default {
                     ContainerPort: 5000,
                     TargetGroupArn: cf.ref('TargetGroup')
                 }]
+            }
+        },
+        ApiScalableTarget: {
+            Type: 'AWS::ApplicationAutoScaling::ScalableTarget',
+            DependsOn: ['Service'],
+            Properties: {
+                MinCapacity: cf.ref('ApiDesiredCount'),
+                MaxCapacity: 10,
+                ResourceId: cf.join([
+                    'service/',
+                    cf.join(['tak-vpc-', cf.ref('Environment')]),
+                    '/',
+                    cf.stackName
+                ]),
+                RoleARN: cf.getAtt('EventsAutoScalingRole', 'Arn'),
+                ScalableDimension: 'ecs:service:DesiredCount',
+                ServiceNamespace: 'ecs'
+            }
+        },
+        ApiCPUScalingPolicy: {
+            Type: 'AWS::ApplicationAutoScaling::ScalingPolicy',
+            Properties: {
+                PolicyName: cf.join(['ApiCPUScalingPolicy-', cf.stackName]),
+                PolicyType: 'TargetTrackingScaling',
+                ScalingTargetId: cf.ref('ApiScalableTarget'),
+                TargetTrackingScalingPolicyConfiguration: {
+                    PredefinedMetricSpecification: {
+                        PredefinedMetricType: 'ECSServiceAverageCPUUtilization'
+                    },
+                    ScaleInCooldown: 300,
+                    ScaleOutCooldown: 60,
+                    TargetValue: cf.ref('ApiTargetCPUUtilization')
+                }
             }
         },
         ServiceSecurityGroup: {

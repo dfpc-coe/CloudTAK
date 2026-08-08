@@ -9,30 +9,27 @@
             }'
         />
         <div
-            class='position-absolute end-0 text-white d-flex'
+            class='position-absolute cloudtak-panel d-flex'
             role='menubar'
-            :class='{
-                "cloudtak-bg": !compact,
-            }'
             style='
                 z-index: 4;
-                top: 60px;
-                bottom: var(--map-bottom-bar-size, 50px);
+                right: 8px;
+                top: calc(76px + var(--status-bar-height, 0px));
+                bottom: calc(8px + var(--map-bottom-bar-size, 50px));
             '
             :style='`
                 width: ${compact ? "var(--map-compact-menu-size, 60px)" : `${menuWidth}px`};
                 min-width: ${compact ? "var(--map-compact-menu-size, 60px)" : `400px`};
-                ${compact ? "background-color: rgb(0, 0, 0, 0.5)" : ""}
             `'
         >
             <div
                 v-if='!compact'
                 ref='resize'
-                class='resize cloudtak-bg cloudtak-hover cursor-drag'
+                class='resize cloudtak-panel cloudtak-hover cursor-drag'
             />
             <div
                 ref='menu'
-                class='position-relative w-100 h-100 px-0'
+                class='position-relative w-100 h-100 px-0 main-menu-surface'
             >
                 <MainMenuContents
                     v-if='compact'
@@ -171,6 +168,22 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* Clip menu contents to the floating panel's rounded corners. The panel itself
+ * can't use overflow-hidden - it would clip the resize handle that hangs off
+ * the left edge. */
+.main-menu-surface {
+   border-radius: inherit;
+   overflow: hidden;
+}
+
+/* Menu chrome (page headers, sticky controls, the footer) paints its own opaque
+ * surface - it used to match because the sidebar itself was `cloudtak-bg`. Inside
+ * the floating panel those fills are repainted with the panel surface so the whole
+ * sidebar reads as one pane, while staying opaque enough for sticky headers. */
+.main-menu-surface :deep(.cloudtak-bg) {
+   background-color: var(--cloudtak-panel-bg) !important;
+}
+
 .resize {
    height: 60px;
    width: 14px;
@@ -182,7 +195,7 @@ onMounted(async () => {
    transform: translateY(-50%);
    z-index: 10;
    user-select: none;
-   border-radius: 4px 0 0 4px;
+   border-radius: 8px 0 0 8px;
 }
 .resize::before {
    content: "";

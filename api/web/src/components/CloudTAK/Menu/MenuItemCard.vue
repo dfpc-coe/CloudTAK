@@ -14,12 +14,13 @@
             <slot name='prefix' />
         </div>
 
-        <div class='menu-item-card__icon-wrapper'>
+        <div
+            class='menu-item-card__icon-wrapper'
+            :title='tooltip'
+        >
             <component
                 :is='icon'
                 v-if='icon'
-                v-tooltip='tooltipBinding'
-                :title='tooltip'
                 :size='iconSize'
                 :color='resolvedIconColor'
                 stroke='1'
@@ -93,7 +94,7 @@ type LayoutVariant = 'list' | 'tiles';
 
 const props = defineProps({
     icon: {
-        type: Function as unknown as PropType<Component>,
+        type: [Function, Object] as PropType<Component>,
         required: true
     },
     iconColor: {
@@ -137,8 +138,9 @@ const classes = computed(() => ({
 }));
 
 const iconSize = computed(() => props.layout === 'tiles' ? 36 : 32);
-const resolvedIconColor = computed(() => props.compact ? '#fff' : props.iconColor);
-const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, placement: 'left' } : undefined);
+// Icons inherit `currentColor` unless a caller pins one, so they follow the
+// theme-aware text color of the panel they're rendered in.
+const resolvedIconColor = computed(() => props.iconColor);
 </script>
 
 <style scoped>
@@ -169,9 +171,6 @@ const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, 
 }
 
 .menu-item-card--compact {
-    --menu-item-card-color: #fff;
-    --menu-item-card-muted-color: rgba(255, 255, 255, 0.78);
-    color: #fff;
     padding: 0.5rem 0.75rem;
 }
 
@@ -241,7 +240,7 @@ const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, 
 .menu-item-card__badge--admin {
     border: 1px solid rgba(99, 137, 255, 0.9);
     background-color: rgba(99, 137, 255, 0.25);
-    color: #fff;
+    color: inherit;
 }
 
 .menu-item-card__badge--compact {

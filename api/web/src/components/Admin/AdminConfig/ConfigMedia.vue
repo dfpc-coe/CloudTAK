@@ -49,6 +49,59 @@
                             label='CloudTAK Hosted MediaMTX Service URL'
                         />
                     </div>
+                    <div class='col-lg-12 mt-3'>
+                        <div class='d-flex align-items-center justify-content-between mb-2'>
+                            <label class='form-label mb-0'>Trusted Proxy Sources</label>
+
+                            <TablerIconButton
+                                v-if='edit'
+                                title='Add Source'
+                                @click='addProxyAllowEntry()'
+                            >
+                                <IconPlus
+                                    color='rgb(var(--tblr-primary-rgb))'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                        </div>
+                        <p class='text-secondary'>
+                            Hostnames or origins (scheme + host + optional port) of video proxy sources on private
+                            networks that should bypass SSRF protection when creating a video lease proxy.
+                        </p>
+
+                        <template v-if='config["media::proxy::allow"].length'>
+                            <div
+                                v-for='(host, index) in config["media::proxy::allow"]'
+                                :key='index'
+                                class='d-flex gap-2 align-items-center mb-2'
+                            >
+                                <div class='flex-grow-1'>
+                                    <TablerInput
+                                        v-model='config["media::proxy::allow"][index]'
+                                        :disabled='!edit'
+                                        placeholder='camera.internal or http://10.0.0.5:8554'
+                                    />
+                                </div>
+
+                                <TablerIconButton
+                                    v-if='edit'
+                                    title='Remove Source'
+                                    @click='removeProxyAllowEntry(index)'
+                                >
+                                    <IconTrash
+                                        color='rgb(var(--tblr-danger-rgb))'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
+                            </div>
+                        </template>
+
+                        <TablerNone
+                            v-else
+                            label='No trusted proxy sources configured'
+                            :create='false'
+                        />
+                    </div>
                 </div>
             </template>
         </div>
@@ -62,6 +115,7 @@ import { server } from '../../../std.ts';
 import { validateURL } from '../../../base/validators.ts';
 import {
     TablerLoading,
+    TablerNone,
     TablerInput,
     TablerIconButton,
     TablerAlert
@@ -69,11 +123,14 @@ import {
 import {
     IconPencil,
     IconDeviceFloppy,
+    IconPlus,
+    IconTrash,
     IconX
 } from '@tabler/icons-vue';
 
 interface MediaConfig {
     'media::url': string;
+    'media::proxy::allow': string[];
 }
 
 const isOpen = ref<boolean>(false);
@@ -83,7 +140,16 @@ const err = ref<Error | null>(null);
 
 const config = ref<MediaConfig>({
     'media::url': '',
+    'media::proxy::allow': [],
 });
+
+function addProxyAllowEntry(): void {
+    config.value['media::proxy::allow'].push('');
+}
+
+function removeProxyAllowEntry(index: number): void {
+    config.value['media::proxy::allow'].splice(index, 1);
+}
 
 onMounted(() => {
      if (isOpen.value) void fetch();
@@ -107,6 +173,7 @@ async function fetch(): Promise<void> {
         if (error) throw new Error(error.message);
         config.value = {
             'media::url': data['media::url'] ?? '',
+            'media::proxy::allow': data['media::proxy::allow'] ?? [],
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));

@@ -65,7 +65,10 @@
                     :create='false'
                 />
                 <slot v-else />
-                <div class='menu-scroll-spacer flex-shrink-0' />
+                <div
+                    v-if='scroll'
+                    class='menu-scroll-spacer flex-shrink-0'
+                />
             </div>
 
             <slot name='footer' />
@@ -142,7 +145,10 @@
                 :create='false'
             />
             <slot v-else />
-            <div class='menu-scroll-spacer flex-shrink-0' />
+            <div
+                v-if='scroll'
+                class='menu-scroll-spacer flex-shrink-0'
+            />
         </div>
 
         <slot name='footer' />
@@ -230,24 +236,17 @@ const isModal = computed(() => props.standalone && appStore.isMobileDetected);
 </script>
 
 <style scoped>
-/*
- * On mobile a standalone menu is presented as a near-fullscreen modal so the
- * title/buttons live in a single modal header instead of a stacked double
- * header. Mirrors the previous MainMenu modal frame sizing.
- */
+/* Mobile standalone menu is shown as a near-fullscreen modal with a single header.
+ * The status bar inset is subtracted twice to keep the centered modal's top edge
+ * clear of the transparent native status bar. */
 .main-menu-modal-frame {
-    height: calc(100dvh - 2rem);
-    max-height: calc(100dvh - 2rem);
+    height: calc(100dvh - 2rem - 2 * var(--status-bar-height, 0px));
+    max-height: calc(100dvh - 2rem - 2 * var(--status-bar-height, 0px));
 }
 
 /*
- * Ensure the final menu item is never flush against the bottom of the
- * display. env(safe-area-inset-bottom) accounts for device hardware that
- * intrudes on the viewport (notches, home indicators, curved screen edges)
- * while the additional buffer keeps the last item comfortably reachable.
- *
- * Note: padding-bottom on overflow-y:auto flex containers is ignored by many
- * browsers, so a spacer element is used instead to guarantee scroll clearance.
+ * Spacer (not padding-bottom, which is ignored on overflow-y:auto flex containers)
+ * keeps the last item clear of device intrusions via env(safe-area-inset-bottom).
  */
 .menu-scroll-spacer {
     height: calc(env(safe-area-inset-bottom, 0px) + 32px);

@@ -1,0 +1,58 @@
+{
+  "kml": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": null,
+        "properties": {}
+      },
+      {
+        "type": "Feature",
+        "geometry": null,
+        "properties": {
+          "name": "unextruded"
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": null,
+        "properties": {
+          "name": "hollow box"
+        }
+      }
+    ]
+  },
+  "kmlWithFolders": {
+    "type": "root",
+    "children": [
+      {
+        "type": "Feature",
+        "geometry": null,
+        "properties": {}
+      },
+      {
+        "type": "Feature",
+        "geometry": null,
+        "properties": {
+          "name": "unextruded"
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": null,
+        "properties": {
+          "name": "hollow box"
+        }
+      }
+    ]
+  },
+  "kmlWithFoldersSkipNull": {
+    "type": "root",
+    "children": []
+  },
+  "kmlSkipNull": {
+    "type": "FeatureCollection",
+    "features": []
+  }
+}

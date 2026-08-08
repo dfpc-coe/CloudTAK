@@ -1,0 +1,67 @@
+{
+  "gpx": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "_gpxType": "trk",
+          "name": "120' moderate and hard",
+          "desc": "Strava sample file based on: https://github.com/sports-alliance/sports-lib/blob/develop/samples/gpx/strava.gpx",
+          "time": "2018-05-14T14:54:21Z",
+          "gpxtpx_TrackPointExtension": "9\n            160\n            85\n            21",
+          "gpxtpx_hr": "160",
+          "gpxtpx_cad": "85",
+          "gpxtpx_atemp": "21",
+          "coordinateProperties": {
+            "times": [
+              "2018-05-14T14:54:21Z",
+              "2018-05-14T15:57:18Z",
+              "2018-05-14T17:03:04Z"
+            ],
+            "heart": [
+              117,
+              154,
+              160
+            ],
+            "cads": [
+              85,
+              79,
+              85
+            ],
+            "atemps": [
+              22,
+              20,
+              21
+            ],
+            "powers": [
+              75,
+              null,
+              null
+            ]
+          }
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              0.963041,
+              42.941059,
+              721.2
+            ],
+            [
+              0.945471,
+              42.907866,
+              1118.8
+            ],
+            [
+              0.962304,
+              42.936951,
+              592.2
+            ]
+          ]
+        }
+      }
+    ]
+  }
+}

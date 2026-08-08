@@ -6,7 +6,6 @@
                 @set-location='$emit("set-location")'
                 @to-location='$emit("to-location")'
             />
-            <!-- Plugin bottom-bar components (centred) -->
             <div
                 v-if='bottomBarItems.length'
                 class='d-flex align-items-center justify-content-center gap-2 flex-grow-1 px-2 overflow-visible'
@@ -23,7 +22,7 @@
                 v-else
                 class='flex-grow-1'
             />
-            <BottomBarCoordinates :coord='mouseCoord' />
+            <BottomBarCoordinates />
         </div>
     </div>
 </template>
@@ -36,7 +35,6 @@ import BottomBarCoordinates from './BottomBarCoordinates.vue';
 
 defineProps<{
     mode: string;
-    mouseCoord: { lat: number; lng: number } | null;
 }>();
 
 defineEmits(['set-location', 'to-location']);

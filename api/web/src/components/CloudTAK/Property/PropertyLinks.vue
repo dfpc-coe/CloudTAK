@@ -14,14 +14,17 @@
                     />
                 </template>
                 <template #right>
-                    <IconPlus
+                    <TablerIconButton
                         v-if='props.edit'
-                        v-tooltip='"Add External Link"'
-                        :size='20'
-                        stroke='1'
-                        class='cursor-pointer me-2'
+                        title='Add External Link'
+                        class='me-2'
                         @click.stop='addExternalLink'
-                    />
+                    >
+                        <IconPlus
+                            :size='20'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
                     <TablerBadge
                         class='me-2'
                         background-color='rgba(59, 130, 246, 0.15)'
@@ -33,18 +36,19 @@
                 </template>
 
                 <div class='overflow-hidden mb-2'>
-                    <div class='cloudtak-accent rounded mx-2 mt-2 px-2 py-2'>
-                        <div
-                            v-if='!external_links.length'
-                            class='px-1 py-1 text-muted'
-                        >
-                            No external links
-                        </div>
+                    <div class='rounded mx-2 mt-2 px-2 py-2'>
+                        <TablerNone
+                            v-if='!external_links.length && !isCreatingLink'
+                            label='No External Links'
+                            :compact='true'
+                            :create='false'
+                        />
 
                         <div
                             v-for='item of external_links'
                             :key='item.index'
-                            class='rounded border-0 bg-default mb-2 px-2 py-2'
+                            class='rounded mb-2 px-2 py-2'
+                            :class='{ "cloudtak-hover-fill": !isEditing(item.index) }'
                         >
                             <template v-if='isEditing(item.index)'>
                                 <div class='d-flex align-items-center mb-2'>
@@ -144,7 +148,7 @@
 
                         <div
                             v-if='isCreatingLink'
-                            class='rounded border-0 bg-default mb-2 px-2 py-2'
+                            class='rounded mb-2 px-2 py-2'
                         >
                             <div class='d-flex align-items-center mb-2'>
                                 <div class='subheader user-select-none'>
@@ -239,7 +243,7 @@
                             :key='link_it'
                             class='col-12'
                         >
-                            <div class='card cloudtak-accent border-0'>
+                            <div class='card bg-transparent border-0 rounded cloudtak-hover-fill'>
                                 <div class='card-body p-2'>
                                     <div class='d-flex align-items-center'>
                                         <span class='avatar me-2 rounded-circle bg-blue-lt'>
@@ -276,7 +280,7 @@
 <script setup lang='ts'>
 import { computed, ref } from 'vue';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
-import { TablerBadge, TablerInput, TablerIconButton } from '@tak-ps/vue-tabler';
+import { TablerBadge, TablerInput, TablerIconButton, TablerNone } from '@tak-ps/vue-tabler';
 import { IconUsers, IconLink, IconExternalLink, IconPlus, IconTrash, IconPencil, IconCheck } from '@tabler/icons-vue';
 import type COT from '../../../base/cot';
 import timediff from '../../../timediff';
@@ -299,6 +303,7 @@ interface LinkEntry {
     uid?: string;
     callsign?: string;
     production_time?: string;
+    event?: string;
 }
 
 const props = defineProps<{
@@ -313,8 +318,14 @@ const links = computed<LinkEntry[]>(() => {
 const external_links = computed(() => {
     return links.value
         .map((link, index) => ({ link, index }))
-        .filter((item) => item.link.relation !== 't-s');
+        .filter((item) => item.link.relation !== 't-s' && !isObjectMarker(item.link));
 });
+
+// A Link marking the CoT as the projection of a richer CloudTAK record -
+// for the client to resolve the record, not a user facing link
+function isObjectMarker(link: LinkEntry): boolean {
+    return link.event !== undefined;
+}
 
 const responder_links = computed(() => {
     return links.value.filter((link) => {
@@ -421,10 +432,3 @@ function cancelNewLink(): void {
 }
 </script>
 
-<style scoped>
-
-
-.list-group-item-action:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
-}
-</style>

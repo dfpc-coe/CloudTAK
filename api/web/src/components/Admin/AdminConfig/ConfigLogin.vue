@@ -253,7 +253,6 @@ const config = ref<LoginConfig>({
 });
 
 onMounted(() => {
-    // Optional: fetch on mount if we want to preload, or fetch on open
      if (isOpen.value) void fetch();
 });
 

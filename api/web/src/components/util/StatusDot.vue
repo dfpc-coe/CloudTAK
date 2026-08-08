@@ -1,6 +1,5 @@
 <template>
     <span
-        v-tooltip='props.title || props.status'
         class='status-indicator status-indicator-animated'
         :class='{
             "status-yellow": ["running", "pending"].includes(normalizeStatus),
@@ -10,6 +9,7 @@
             "status-dark": !props.dark && ["unknown", "empty"].includes(normalizeStatus),
             "status-light": props.dark && ["unknown", "empty"].includes(normalizeStatus),
         }'
+        :title='props.title || props.status'
     >
         <span class='status-indicator-circle' />
         <span class='status-indicator-circle' />

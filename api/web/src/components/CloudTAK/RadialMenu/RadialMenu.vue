@@ -152,6 +152,32 @@
             fill='none'
         /><path d='M6 7m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0' /><path d='M6 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0' /><path d='M8.5 8.5l7.5 7.5' /><path d='M8.5 15.5l7.5 -7.5' /></symbol>
         <symbol
+            id='radial-copy'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='#fff'
+            stroke-width='2'
+            stroke-linecap='round'
+            stroke-linejoin='round'
+        ><path
+            stroke='none'
+            d='M0 0h24v24H0z'
+            fill='none'
+        /><path d='M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z' /><path d='M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1' /></symbol>
+        <symbol
+            id='radial-clipboard'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='#fff'
+            stroke-width='2'
+            stroke-linecap='round'
+            stroke-linejoin='round'
+        ><path
+            stroke='none'
+            d='M0 0h24v24H0z'
+            fill='none'
+        /><path d='M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2' /><path d='M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z' /></symbol>
+        <symbol
             id='radial-buffer'
             viewBox='0 0 24 24'
             fill='none'
@@ -178,15 +204,15 @@
 
 <script setup lang="ts">
 import { ref, shallowRef, onMounted, onUnmounted, nextTick, useTemplateRef, watch } from 'vue';
-import { Preferences } from '@capacitor/preferences';
 import { OriginMode } from '../../../base/cot.ts';
 import Subscription from '../../../base/subscription.ts';
 // @ts-expect-error no declaration file for RadialMenu.js
 import RadialMenu from './RadialMenu.js';
 import './RadialMenu.css';
 import { useMapStore } from '../../../stores/map.ts';
-import mapgl from 'maplibre-gl';
+import * as mapgl from 'maplibre-gl';
 import { canCutOverlayFeature } from '../util/featureCut.ts';
+import { clipboardReadAccess, readFeatureFromClipboard } from '../../../stores/device/clipboard.ts';
 
 interface RadialMenuItem {
     id: string;
@@ -218,7 +244,13 @@ watch(() => cot.value?.geometry, (newGeometry) => {
 });
 
 let timer: ReturnType<typeof setInterval> | undefined;
+
+// Guards the async mount flow: a rapid follow-up click can unmount this component while
+// genMenuItems() is still awaiting worker data, otherwise leaving an orphaned popup on the map.
+let cancelled = false;
+
 onUnmounted(() => {
+    cancelled = true;
     if (timer) clearInterval(timer);
     if (menu.value) {
         menu.value.close();
@@ -229,84 +261,108 @@ onUnmounted(() => {
 });
 
 onMounted(async () => {
-    await genMenuItems();
+    // Snapshot the radial state at mount - the store can be cleared or
+    // repointed by another click while the awaits below are in flight
+    const mode = mapStore.radial.mode;
+    const radialCot = mapStore.radial.cot;
+    const lngLat = mapStore.radial.lngLat;
 
-    nextTick(() => {
-        const container = document.createElement('div');
-        container.style.width = `${props.size}px`;
-        container.style.height = `${props.size}px`;
+    if (!lngLat) {
+        emit('close');
+        return;
+    }
 
-        if (iconsRef.value) {
-            container.appendChild(iconsRef.value.cloneNode(true));
-        }
+    try {
+        await genMenuItems(mode, radialCot);
+    } catch (err) {
+        console.error('Failed to generate radial menu items', err);
+        emit('close');
+        return;
+    }
 
-        menu.value = new RadialMenu({
-            parent: container,
-            size: props.size,
-            closeOnClick: true,
-            menuItems: menuItems.value,
-            onClick: (item: RadialMenuItem) => {
-                emit('click', `${mapStore.radial.mode}:${item.id}`);
-            },
-            onClose: () => {
-                emit('close');
-            }
-        });
-        menu.value.open();
+    if (cancelled) return;
 
-        if (mapStore.radial.lngLat) {
-             popup.value = new mapgl.Popup({
-                closeButton: false,
-                closeOnClick: true,
-                maxWidth: 'none',
-                anchor: 'center',
-                className: 'radial-menu-popup'
-            })
-            .setLngLat(mapStore.radial.lngLat)
-            .setDOMContent(container)
-            .addTo(mapStore.map);
+    await nextTick();
+    if (cancelled) return;
 
-            popup.value.on('close', () => {
-                emit('close');
-            });
-        } else {
+    const container = document.createElement('div');
+    container.style.width = `${props.size}px`;
+    container.style.height = `${props.size}px`;
+
+    if (iconsRef.value) {
+        container.appendChild(iconsRef.value.cloneNode(true));
+    }
+
+    menu.value = new RadialMenu({
+        parent: container,
+        size: props.size,
+        closeOnClick: true,
+        menuItems: menuItems.value,
+        onClick: (item: RadialMenuItem) => {
+            emit('click', `${mode}:${item.id}`);
+        },
+        onClose: () => {
             emit('close');
         }
+    });
+    menu.value.open();
 
-        timer = setInterval(async () => {
-            if (cot.value) {
-                const updated = await mapStore.worker.db.get(cot.value.properties.id || cot.value.id, {
-                    mission: true
-                });
-                if (updated) cot.value = updated;
-            }
-        }, 500);
+    popup.value = new mapgl.Popup({
+        closeButton: false,
+        closeOnClick: true,
+        maxWidth: 'none',
+        anchor: 'center',
+        className: 'radial-menu-popup'
     })
+    .setLngLat(lngLat)
+    .setDOMContent(container)
+    .addTo(mapStore.map);
+
+    popup.value.on('close', () => {
+        emit('close');
+    });
+
+    timer = setInterval(async () => {
+        if (cot.value) {
+            const updated = await mapStore.worker.db.get(cot.value.properties.id || cot.value.id, {
+                mission: true
+            });
+            if (updated) cot.value = updated;
+        }
+    }, 500);
 });
 
-async function genMenuItems() {
+async function genMenuItems(
+    mode: typeof mapStore.radial.mode,
+    radialCot: typeof mapStore.radial.cot
+) {
     menuItems.value.splice(0, menuItems.value.length);
-    if (mapStore.radial.mode === 'cot') {
-        if (mapStore.radial.cot && mapStore.radial.cot.properties) {
-            cot.value = await mapStore.worker.db.get(mapStore.radial.cot.properties.id, {
+    if (mode === 'cot') {
+        if (radialCot && radialCot.properties) {
+            cot.value = await mapStore.worker.db.get(radialCot.properties.id, {
                 mission: true
             });
 
             if (!cot.value) throw new Error('Could not find marker');
 
             if (cot.value.origin.mode === OriginMode.CONNECTION) {
-                menuItems.value.push({ id: 'edit', icon: '#radial-pencil' })
+                // User pucks/skittles cannot be edited
+                if (!cot.value.is_skittle) {
+                    menuItems.value.push({ id: 'edit', icon: '#radial-pencil' })
+                }
                 menuItems.value.push({ id: 'delete', icon: '#radial-trash' })
 
                 if (cot.value.geometry.type === 'Point') {
                     menuItems.value.push({ id: 'lock', icon: '#radial-lock' })
                 }
             } else if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
-                const { value: token } = await Preferences.get({ key: 'token' });
-                const sub = await Subscription.from(cot.value.origin.mode_id, token || '');
+                const sub = await Subscription.from(cot.value.origin.mode_id);
 
                 if (sub && sub.role && sub.role.permissions.includes("MISSION_WRITE")) {
-                    menuItems.value.push({ id: 'edit', icon: '#radial-pencil' })
+                    // User pucks/skittles cannot be edited
+                    if (!cot.value.is_skittle) {
+                        menuItems.value.push({ id: 'edit', icon: '#radial-pencil' })
+                    }
                     menuItems.value.push({ id: 'delete', icon: '#radial-trash' })
                 }
             }
@@ -320,6 +376,7 @@ async function genMenuItems() {
                 geometryItems.push({ id: 'geometry-split', icon: '#radial-geometry-split' });
             }
             geometryItems.push({ id: 'geometry-buffer', icon: '#radial-buffer' });
+            geometryItems.push({ id: 'copy', icon: '#radial-copy' });
             menuItems.value.push({
                 id: 'geometry-change',
                 icon: '#radial-geometry-change',
@@ -328,13 +385,22 @@ async function genMenuItems() {
         }
 
         menuItems.value.push({ id: 'view', icon: '#radial-view' })
-    } else if (mapStore.radial.mode === 'feat') {
-        if (canCutOverlayFeature(mapStore.radial.cot)) {
+    } else if (mode === 'feat') {
+        if (canCutOverlayFeature(radialCot)) {
             menuItems.value.push({ id: 'cut', icon: '#radial-scissors' })
         }
         menuItems.value.push({ id: 'view', icon: '#radial-view' })
-    } else if (mapStore.radial.mode === 'context') {
+    } else if (mode === 'context') {
         menuItems.value.push({ id: 'new', icon: '#radial-pencil-plus' })
+
+        // Only inspect the clipboard when it can be read silently - with 'prompt'
+        // access the read itself fires browser UI (Firefox's paste popup) over the
+        // radial menu, so show the button and defer validation to the paste action
+        const access = await clipboardReadAccess();
+        if (access === 'granted' ? await readFeatureFromClipboard() : access === 'prompt') {
+            menuItems.value.push({ id: 'paste', icon: '#radial-clipboard' })
+        }
+
         menuItems.value.push({ id: 'info', icon: '#radial-question' })
     }
 }

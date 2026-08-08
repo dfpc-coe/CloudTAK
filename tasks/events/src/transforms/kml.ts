@@ -4,8 +4,7 @@ import path from 'node:path';
 import Sharp from 'sharp';
 import { glob } from 'glob';
 import StreamZip from 'node-stream-zip';
-import { kml } from '@tmcw/togeojson';
-import { DOMParser } from '@xmldom/xmldom';
+import { kml } from '../togeojson/index.ts';
 import { isSafeUrl } from '@tak-ps/node-safeurl';
 import { fetch } from '@tak-ps/node-safeurl';
 
@@ -38,13 +37,7 @@ export default class KML implements Transform {
         localDir: string | null = null,
         visited: Set<string> = new Set(),
     ): Promise<ReturnType<typeof kml>['features']> {
-        // Strip a leading UTF-8 BOM (U+FEFF)
-        if (kmlContent.charCodeAt(0) === 0xFEFF) {
-            kmlContent = kmlContent.slice(1);
-        }
-
-        const dom = new DOMParser().parseFromString(kmlContent, 'text/xml');
-        const allFeatures = kml(dom).features;
+        const allFeatures = kml(kmlContent).features;
 
         const features: ReturnType<typeof kml>['features'] = [];
 
@@ -277,26 +270,26 @@ export default class KML implements Transform {
                         console.warn(`icon ${feat.properties.icon} not retrievable (${err})`);
                     }
                 } else {
+                    // An unresolvable icon downgrades the feature to default
+                    // styling - it must not drop the feature itself (standalone
+                    // KML files routinely reference icon files that were never
+                    // bundled alongside them)
                     const iconName = feat.properties.icon as string;
                     if (iconName.includes('..') || path.isAbsolute(iconName)) {
                         console.warn(`icon ${iconName} rejected — invalid path`);
-                        continue;
-                    }
+                    } else {
+                        const search = await glob(path.resolve(this.local.tmpdir, '**/' + iconName));
+                        const resolvedIcon = search.length ? path.resolve(search[0]) : null;
+                        const tmpdirSafe = path.resolve(this.local.tmpdir);
 
-                    const search = await glob(path.resolve(this.local.tmpdir, '**/' + iconName));
-                    if (!search.length) {
-                        console.warn(`icon ${iconName} not found`);
-                        continue;
+                        if (!resolvedIcon) {
+                            console.warn(`icon ${iconName} not found`);
+                        } else if (!resolvedIcon.startsWith(tmpdirSafe + path.sep)) {
+                            console.warn(`icon ${iconName} resolved outside tmpdir, skipping`);
+                        } else {
+                            icons.set(iconName, await fs.readFile(resolvedIcon));
+                        }
                     }
-
-                    const resolvedIcon = path.resolve(search[0]);
-                    const tmpdirSafe = path.resolve(this.local.tmpdir);
-                    if (!resolvedIcon.startsWith(tmpdirSafe + path.sep)) {
-                        console.warn(`icon ${iconName} resolved outside tmpdir, skipping`);
-                        continue;
-                    }
-
-                    icons.set(iconName, await fs.readFile(resolvedIcon));
                 }
             }
 

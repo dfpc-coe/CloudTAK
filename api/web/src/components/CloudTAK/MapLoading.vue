@@ -16,6 +16,18 @@
                 >
             </div>
             <TablerLoading desc='Loading Map State' />
+            <Transition
+                name='stage-fade'
+                mode='out-in'
+            >
+                <div
+                    v-if='props.stage'
+                    :key='props.stage'
+                    class='text-center text-muted mt-1'
+                    style='font-size: 0.85rem;'
+                    v-text='props.stage'
+                />
+            </Transition>
             <Transition name='reset-fade'>
                 <div
                     v-if='showReset'
@@ -41,16 +53,23 @@
 
 <script setup lang='ts'>
 import Config from '../../base/config.ts';
-import { supportsServiceWorker } from '../../base/capacitor.ts';
+import { supportsServiceWorker, addBackgroundStateListener } from '../../base/capacitor.ts';
 import { ref, onMounted, onUnmounted } from 'vue';
 import {
     TablerModal,
     TablerLoading
 } from '@tak-ps/vue-tabler'
 
+const props = defineProps<{
+    stage?: string;
+}>();
+
+const RESET_PROMPT_MS = 20000;
+
 const logo = ref('/CloudTAKLogo.svg');
 const showReset = ref(false);
 let resetTimer: ReturnType<typeof setTimeout> | undefined;
+let removeBackgroundListener: (() => void) | undefined;
 
 async function hardReset(): Promise<void> {
     if (supportsServiceWorker()) {
@@ -62,24 +81,55 @@ async function hardReset(): Promise<void> {
     location.reload();
 }
 
-onMounted(async () => {
-    const config = await Config.list(['login::logo']);
-
-    if (config['login::logo']) {
-        logo.value = config['login::logo'];
-    }
-
+function startResetTimer(): void {
+    clearTimeout(resetTimer);
     resetTimer = setTimeout(() => {
         showReset.value = true;
-    }, 20000);
+    }, RESET_PROMPT_MS);
+}
+
+onMounted(async () => {
+    startResetTimer();
+
+    // Count only foreground time - a timer that expired during sleep would
+    // show "Hard Reset" the moment the app resumes
+    removeBackgroundListener = await addBackgroundStateListener((isBackgrounded) => {
+        if (showReset.value) return;
+
+        if (isBackgrounded) {
+            clearTimeout(resetTimer);
+        } else {
+            startResetTimer();
+        }
+    });
+
+    try {
+        const config = await Config.list(['login::logo']);
+
+        if (config['login::logo']) {
+            logo.value = config['login::logo'];
+        }
+    } catch (err) {
+        console.warn('Failed to load custom logo', err);
+    }
 });
 
 onUnmounted(() => {
     clearTimeout(resetTimer);
+    if (removeBackgroundListener) removeBackgroundListener();
 });
 </script>
 
 <style scoped>
+.stage-fade-enter-active,
+.stage-fade-leave-active {
+    transition: opacity 0.4s ease;
+}
+.stage-fade-enter-from,
+.stage-fade-leave-to {
+    opacity: 0;
+}
+
 .reset-fade-enter-active {
     transition: opacity 1s ease-in;
 }

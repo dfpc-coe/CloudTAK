@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
+import { withTimeout } from './base/async.ts';
 import type {
     Feature,
     GroupChannel,
@@ -48,6 +49,32 @@ export interface DBChatroom {
     last_read: string | null;
 }
 
+/**
+ * Delivery status of a chat message sent by the current user
+ * - sending: submitted locally but not yet confirmed by the CloudTAK Server
+ * - sent: received by the CloudTAK/TAK Server
+ * - pending/failed/delivered/read: reported by the recipient's client via
+ *   b-t-f-p/s/d/r Chat Receipt CoTs
+ */
+export enum ChatStatus {
+    Sending = 'sending',
+    Sent = 'sent',
+    Pending = 'pending',
+    Failed = 'failed',
+    Delivered = 'delivered',
+    Read = 'read',
+}
+
+// A chat status can only move forward - a late "delivered" receipt must not downgrade "read"
+export const ChatStatusRank: Record<ChatStatus, number> = {
+    [ChatStatus.Sending]: 0,
+    [ChatStatus.Sent]: 1,
+    [ChatStatus.Pending]: 2,
+    [ChatStatus.Failed]: 3,
+    [ChatStatus.Delivered]: 4,
+    [ChatStatus.Read]: 5
+};
+
 export interface DBChatroomChat {
     id: string;
     chatroom: string;
@@ -56,6 +83,7 @@ export interface DBChatroomChat {
     message: string;
     created: string;
     unread?: boolean;
+    status?: ChatStatus;
 }
 
 export interface DBIconset {
@@ -161,6 +189,7 @@ export interface DBSubscriptionChat {
     message: string;
     created: string;
     unread: boolean;
+    status?: ChatStatus;
 }
 
 export interface DBSubscription {
@@ -298,3 +327,135 @@ db.version(2).stores({
     mission_template: 'id, name',
     mission_template_log: 'id, template, [template+id]',
 });
+
+let reopenPromise: Promise<void> | null = null;
+
+// An IndexedDB open issued while a page is unloading leaves WKWebView's
+// database process holding an orphaned request that deadlocks the next
+// page's first IndexedDB operation until the app is fully restarted. Close
+// proactively on pagehide and suppress the auto-reopen; a pageshow (bfcache
+// restore) resumes.
+let shuttingDown = false;
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('pagehide', () => {
+        shuttingDown = true;
+
+        try {
+            db.close();
+        } catch (err) {
+            console.warn('Failed to close database on navigation', err);
+        }
+    });
+
+    window.addEventListener('pageshow', () => {
+        if (shuttingDown) {
+            shuttingDown = false;
+            void ensureDatabase();
+        }
+    });
+}
+
+export async function ensureDatabase(): Promise<void> {
+    if (shuttingDown || db.isOpen()) return;
+
+    if (!reopenPromise) {
+        reopenPromise = (async () => {
+            let lastError: unknown;
+            for (let attempt = 0; attempt < 5; attempt++) {
+                if (shuttingDown || db.isOpen()) return;
+
+                try {
+                    await db.open();
+                    return;
+                } catch (err) {
+                    if (db.isOpen()) return;
+                    lastError = err;
+                    console.warn(`Dexie reopen attempt ${attempt + 1} failed:`, err);
+                    await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
+                }
+            }
+            throw lastError;
+        })().finally(() => {
+            reopenPromise = null;
+        });
+    }
+
+    return reopenPromise;
+}
+
+/**
+ * Probe the IndexedDB connection with a real read and reopen it if needed.
+ * An iOS suspend can invalidate the connection without a close event -
+ * db.isOpen() still reports true while every request wedges - so a failed
+ * probe forces an explicit close before reopening.
+ */
+export async function recoverDatabase(probeTimeoutMs = 2000): Promise<void> {
+    if (!shuttingDown && db.isOpen()) {
+        try {
+            await withTimeout(db.kv.get('__connection_probe__'), probeTimeoutMs, 'IndexedDB probe');
+
+            return;
+        } catch (err) {
+            console.warn('IndexedDB connection probe failed, forcing reopen:', err);
+
+            try {
+                db.close();
+            } catch (closeErr) {
+                console.warn('Failed to close zombie IndexedDB connection:', closeErr);
+            }
+        }
+    }
+
+    await ensureDatabase();
+}
+
+const TRANSIENT_DB_ERROR_NAMES = new Set([
+    'AbortError',
+    'DatabaseClosedError',
+    'PrematureCommitError',
+    'TransactionInactiveError',
+    'InvalidStateError',
+    'UnknownError'
+]);
+
+const TRANSIENT_DB_ERROR_MESSAGES = [
+    'transaction finished',
+    'transaction is not active',
+    'transaction was aborted',
+    'transaction aborted',
+    'objectstore',
+    'connection is closing',
+    'premature commit'
+];
+
+db.on('close', () => {
+    if (!shuttingDown) void ensureDatabase();
+});
+
+export function isTransientDbError(err: unknown): boolean {
+    const e = err as { name?: string; message?: string } | null;
+    if (TRANSIENT_DB_ERROR_NAMES.has(e?.name ?? '')) return true;
+
+    const message = (e?.message ?? '').toLowerCase();
+    return TRANSIENT_DB_ERROR_MESSAGES.some((fragment) => message.includes(fragment));
+}
+
+export async function withDbRetry<T>(fn: () => Promise<T>, attempts = 4): Promise<T> {
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt < attempts; attempt++) {
+        try {
+            await ensureDatabase();
+            return await fn();
+        } catch (err) {
+            lastError = err;
+            if (!isTransientDbError(err)) throw err;
+
+            await ensureDatabase();
+            await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
+        }
+    }
+
+    throw lastError;
+}

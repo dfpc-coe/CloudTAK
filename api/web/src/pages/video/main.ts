@@ -1,15 +1,13 @@
 import { createApp } from 'vue'
 import * as VueRouter from 'vue-router'
 import { createPinia } from 'pinia'
-import { version } from '../../../package.json'
 import { initServiceWorker } from '../../base/service-worker.ts';
-
-import 'floating-vue/dist/style.css'
-import FloatingVue from 'floating-vue'
+import { initGlobalErrorReporting, vueErrorHandler } from '../../lib/reporting/index.ts';
 
 import App from '../../App.vue'
 
-initServiceWorker(version);
+initServiceWorker();
+initGlobalErrorReporting();
 
 const router = VueRouter.createRouter({
     history: VueRouter.createWebHistory(),
@@ -25,7 +23,7 @@ const router = VueRouter.createRouter({
 
 const app = createApp(App);
 const pinia = createPinia()
+app.config.errorHandler = vueErrorHandler;
 app.use(router);
 app.use(pinia);
-app.use(FloatingVue);
 app.mount('#app');

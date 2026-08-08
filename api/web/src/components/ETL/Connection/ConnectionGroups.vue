@@ -50,22 +50,26 @@
                         >
                             <td>
                                 <div class='d-flex align-items-center'>
-                                    <IconEye
+                                    <TablerIconButton
                                         v-if='group.active'
-                                        v-tooltip='"Disable"'
-                                        :size='32'
-                                        stroke='1'
-                                        class='cursor-pointer'
+                                        title='Disable'
                                         @click='setStatus(group, false)'
-                                    />
-                                    <IconEyeOff
+                                    >
+                                        <IconEye
+                                            :size='32'
+                                            stroke='1'
+                                        />
+                                    </TablerIconButton>
+                                    <TablerIconButton
                                         v-else
-                                        v-tooltip='"Enable"'
-                                        :size='32'
-                                        stroke='1'
-                                        class='cursor-pointer'
+                                        title='Enable'
                                         @click='setStatus(group, true)'
-                                    />
+                                    >
+                                        <IconEyeOff
+                                            :size='32'
+                                            stroke='1'
+                                        />
+                                    </TablerIconButton>
                                     <span
                                         class='mx-2'
                                         v-text='group.name'
@@ -74,24 +78,33 @@
                             </td>
                             <td v-text='group.description' />
                             <td>
-                                <IconLocation
+                                <span
                                     v-if='group.direction.length === 2'
-                                    v-tooltip='"Bi-Directional"'
-                                    :size='32'
-                                    stroke='1'
-                                />
-                                <IconLocation
+                                    title='Bi-Directional'
+                                >
+                                    <IconLocation
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </span>
+                                <span
                                     v-else-if='group.direction.includes("IN")'
-                                    v-tooltip='"Location Sharing"'
-                                    :size='32'
-                                    stroke='1'
-                                />
-                                <IconLocationOff
+                                    title='Location Sharing'
+                                >
+                                    <IconLocation
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </span>
+                                <span
                                     v-else-if='group.direction.includes("OUT")'
-                                    v-tooltip='"No Location Sharing"'
-                                    :size='32'
-                                    stroke='1'
-                                />
+                                    title='No Location Sharing'
+                                >
+                                    <IconLocationOff
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </span>
                             </td>
                         </tr>
                     </tbody>
@@ -118,6 +131,7 @@ import {
     TablerInput,
     TablerAlert,
     TablerLoading,
+    TablerIconButton,
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 

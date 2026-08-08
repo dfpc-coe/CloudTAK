@@ -48,18 +48,24 @@
                     ]'
                 >
                     <template #option='{ option }'>
-                        <IconAlbum
+                        <span
                             v-if='option.value === "iconsets"'
-                            v-tooltip='"Iconsets"'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <IconPhoto
+                            title='Iconsets'
+                        >
+                            <IconAlbum
+                                :size='32'
+                                stroke='1'
+                            />
+                        </span>
+                        <span
                             v-else
-                            v-tooltip='"Icons"'
-                            :size='32'
-                            stroke='1'
-                        />
+                            title='Icons'
+                        >
+                            <IconPhoto
+                                :size='32'
+                                stroke='1'
+                            />
+                        </span>
                     </template>
                 </TablerPillGroup>
 
@@ -306,7 +312,7 @@ async function refreshList(): Promise<void> {
     syncError.value = undefined;
 
     try {
-        await mapStore.icons.hydrate({ force: true });
+        await mapStore.worker.sync.syncIcons();
     } catch (err) {
         syncError.value = err instanceof Error ? err : new Error(String(err));
     }

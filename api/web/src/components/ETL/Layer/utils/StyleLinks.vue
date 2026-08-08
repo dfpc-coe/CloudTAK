@@ -7,13 +7,15 @@
                 v-if='!props.disabled'
                 class='ms-auto btn-list'
             >
-                <IconPlus
-                    v-tooltip='"Add Link"'
-                    :size='20'
-                    stroke='1'
-                    class='cursor-pointer'
+                <TablerIconButton
+                    title='Add Link'
                     @click='create = true'
-                />
+                >
+                    <IconPlus
+                        :size='20'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
 
@@ -78,7 +80,8 @@
 <script setup lang='ts'>
 import { ref, watch } from 'vue';
 import {
-    TablerNone
+    TablerNone,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,

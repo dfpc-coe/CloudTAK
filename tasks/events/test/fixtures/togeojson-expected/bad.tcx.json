@@ -1,0 +1,39 @@
+{
+  "tcx": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "totalTimeSeconds": 2283,
+          "distanceMeters": 6839.970000000001,
+          "coordinateProperties": {
+            "times": [
+              "2020-12-27T15:59:36.000+01:00",
+              "2020-12-27T15:59:37.000+01:00"
+            ],
+            "heart": [
+              121,
+              122
+            ]
+          }
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              0,
+              0,
+              483
+            ],
+            [
+              10,
+              0,
+              483
+            ]
+          ]
+        }
+      }
+    ]
+  }
+}

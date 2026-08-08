@@ -8,8 +8,8 @@
             <div class='ms-auto btn-list'>
                 <TablerDelete
                     v-if='!error && !loading && list.items.length'
-                    v-tooltip='"Delete All Features"'
                     displaytype='icon'
+                    title='Delete All Features'
                     @delete='deleteAll'
                 />
                 <TablerRefreshButton
@@ -70,8 +70,8 @@
                             <td class='d-flex align-items-center'>
                                 <div class='ms-auto btn-list'>
                                     <TablerDelete
-                                        v-tooltip='"Delete Feature"'
                                         displaytype='icon'
+                                        title='Delete Feature'
                                         @delete='deleteFeature(feature)'
                                     />
                                 </div>

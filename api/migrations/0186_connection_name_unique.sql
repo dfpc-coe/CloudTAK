@@ -1,0 +1,1 @@
+ALTER TABLE "connections" ADD CONSTRAINT "connections_name_unique" UNIQUE("name");

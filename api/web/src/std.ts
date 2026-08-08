@@ -7,6 +7,7 @@ import type { paths } from '@cloudtak/api-types'
 import type { APIError } from './types.js'
 import type { Router } from 'vue-router'
 import { isNativePlatform, openSecondaryView } from './base/capacitor.ts';
+import { reportError } from './lib/reporting/index.ts';
 import { db } from './database.ts';
 
 export const serverUrl = await getRuntimeServerUrl();
@@ -29,7 +30,31 @@ export async function getServer() {
         },
     };
 
-    server.use(authMiddleware);
+    const errorReportMiddleware: Middleware = {
+        async onResponse({ request, response }) {
+            const status = response.status;
+
+            const shouldReport =
+                status >= 500 ||
+                (status >= 400 && ![401, 403].includes(status));
+
+            if (!shouldReport) return;
+
+            // Avoid infinite loop - never report failures on the error endpoint itself.
+            if (request.url.includes('/api/error')) return;
+
+            let body: string;
+            try {
+                body = (await response.clone().text()) || '<empty>';
+            } catch {
+                body = '<unreadable>';
+            }
+
+            reportError(`HTTP ${status}: ${request.method} ${request.url}`, body);
+        },
+    };
+
+    server.use(authMiddleware, errorReportMiddleware);
 
     return server;
 }

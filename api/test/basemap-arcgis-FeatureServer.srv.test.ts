@@ -50,6 +50,7 @@ test('POST: api/basemap - ArcGIS Feature Server Source', async () => {
 
         assert.deepEqual(res.body, {
             id: 1,
+            parent: null,
             name: 'Emergency Facilities',
             actions: { feature: ['fetch', 'query'] },
             url: ARCGIS_FEATURE_URL,
@@ -128,7 +129,7 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server direct source', async () 
             minzoom: 0,
             maxzoom: 16,
             actions: { feature: ['fetch', 'query'] },
-            tiles: ['http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}'],
+            tiles: [`${flight.base}/api/basemap/1/tiles/{z}/{x}/{y}`],
             vector_layers: [{
                 id: 'out',
                 fields: {
@@ -189,7 +190,7 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server TileJSON', async () => {
             minzoom: 0,
             maxzoom: 16,
             actions: { feature: ['fetch', 'query'] },
-            tiles: ['http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}'],
+            tiles: [`${flight.base}/api/basemap/1/tiles/{z}/{x}/{y}`],
             vector_layers: [{
                 id: 'out',
                 fields: {

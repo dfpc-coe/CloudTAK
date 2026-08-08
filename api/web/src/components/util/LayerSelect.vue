@@ -14,14 +14,16 @@
                     <div class='col-12 d-flex align-items-center'>
                         <div v-text='selected.name' />
                         <div class='ms-auto'>
-                            <IconTrash
+                            <TablerIconButton
                                 v-if='selected.id && list.total > 1'
-                                v-tooltip='"Remove Layer"'
-                                :size='32'
-                                stroke='1'
-                                class='cursor-pointer'
+                                title='Remove Layer'
                                 @click='selected = {}'
-                            />
+                            >
+                                <IconTrash
+                                    :size='32'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
                         </div>
                     </div>
                 </template>
@@ -94,6 +96,7 @@ import {
     TablerInput,
     TablerPager,
     TablerNone,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
 const props = withDefaults(defineProps<{

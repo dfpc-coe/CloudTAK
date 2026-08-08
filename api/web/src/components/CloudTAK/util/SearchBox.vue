@@ -280,7 +280,6 @@ async function fetchSearch(
                 zoom: 15
             });
 
-            // Create a draw point on the map
             const now = new Date().toISOString();
             const featureId = randomUUID();
             const feature = {
@@ -350,7 +349,6 @@ async function fetchSearch(
                 }
             });
 
-            // Create a draw point on the map
             const pointName = items[0].address.split(',')[0].trim();
             const now = new Date().toISOString();
             const featureId = randomUUID();

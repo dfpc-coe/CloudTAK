@@ -44,11 +44,11 @@
                                                     "active": String(route.name).startsWith("admin-server"),
                                                     "cursor-pointer": !String(route.name).startsWith("admin-server")
                                                 }'
+                                                :title='nest ? "TAK Server Connection" : undefined'
                                                 @keyup.enter='router.push(`/admin/server`)'
                                                 @click='router.push(`/admin/server`)'
                                             >
                                                 <IconServer
-                                                    v-tooltip='nest ? "TAK Server Connection" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -65,11 +65,11 @@
                                                     "active": String(route.name) === "admin-config",
                                                     "cursor-pointer": String(route.name) !== "admin-config"
                                                 }'
+                                                :title='nest ? "CloudTAK Settings" : undefined'
                                                 @keyup.enter='router.push(`/admin/config`)'
                                                 @click='router.push(`/admin/config`)'
                                             >
                                                 <IconSettings
-                                                    v-tooltip='nest ? "CloudTAK Settings" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -77,6 +77,27 @@
                                                     v-if='!nest'
                                                     class='mx-3'
                                                 >CloudTAK Settings</span>
+                                            </span>
+                                            <span
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                :class='{
+                                                    "active": String(route.name).startsWith("admin-health"),
+                                                    "cursor-pointer": !String(route.name).startsWith("admin-health")
+                                                }'
+                                                :title='nest ? "Health" : undefined'
+                                                @keyup.enter='router.push(`/admin/health`)'
+                                                @click='router.push(`/admin/health`)'
+                                            >
+                                                <IconHeartbeat
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >Health</span>
                                             </span>
                                         </div>
                                         <h4
@@ -94,11 +115,11 @@
                                                     "active": String(route.name).startsWith("admin-user"),
                                                     "cursor-pointer": !String(route.name).startsWith("admin-user")
                                                 }'
+                                                :title='nest ? "Users" : undefined'
                                                 @keyup.enter='router.push(`/admin/user`)'
                                                 @click='router.push(`/admin/user`)'
                                             >
                                                 <IconUsers
-                                                    v-tooltip='nest ? "Users" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -115,11 +136,11 @@
                                                     "active": String(route.name).startsWith("admin-import"),
                                                     "cursor-pointer": !String(route.name).startsWith("admin-import")
                                                 }'
+                                                :title='nest ? "User Imports" : undefined'
                                                 @keyup.enter='router.push(`/admin/import`)'
                                                 @click='router.push(`/admin/import`)'
                                             >
                                                 <IconFileImport
-                                                    v-tooltip='nest ? "User Imports" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -136,11 +157,11 @@
                                                     "active": String(route.name).startsWith("admin-public"),
                                                     "cursor-pointer": !String(route.name).startsWith("admin-public")
                                                 }'
+                                                :title='nest ? "Hosted Tilesets" : undefined'
                                                 @keyup.enter='router.push(`/admin/public`)'
                                                 @click='router.push(`/admin/public`)'
                                             >
                                                 <IconCloud
-                                                    v-tooltip='nest ? "Hosted Tilesets" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -157,11 +178,11 @@
                                                     "active": String(route.name).includes("admin-overlays"),
                                                     "cursor-pointer": !String(route.name).includes("admin-overlays")
                                                 }'
+                                                :title='nest ? "Basemaps & Overlays" : undefined'
                                                 @keyup.enter='router.push(`/admin/overlay`)'
                                                 @click='router.push(`/admin/overlay`)'
                                             >
                                                 <IconMap
-                                                    v-tooltip='nest ? "Basemaps & Overlays" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -178,11 +199,11 @@
                                                     "active": String(route.name).startsWith("admin-mission-mission-template"),
                                                     "cursor-pointer": !String(route.name).startsWith("admin-mission-template")
                                                 }'
+                                                :title='nest ? "Mission Templates" : undefined'
                                                 @keyup.enter='router.push(`/admin/templates`)'
                                                 @click='router.push(`/admin/templates`)'
                                             >
                                                 <IconClipboardList
-                                                    v-tooltip='nest ? "Mission Templates" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -207,11 +228,11 @@
                                                     "active": String(route.name) === "admin-connection",
                                                     "cursor-pointer": String(route.name) !== "admin-connection"
                                                 }'
+                                                :title='nest ? "Connections" : undefined'
                                                 @keyup.enter='router.push(`/admin/connection`)'
                                                 @click='router.push(`/admin/connection`)'
                                             >
                                                 <IconNetwork
-                                                    v-tooltip='nest ? "Connections" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -225,14 +246,35 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
+                                                    "active": String(route.name).startsWith("admin-coredata"),
+                                                    "cursor-pointer": !String(route.name).startsWith("admin-coredata")
+                                                }'
+                                                :title='nest ? "Core Data" : undefined'
+                                                @keyup.enter='router.push(`/admin/coredata`)'
+                                                @click='router.push(`/admin/coredata`)'
+                                            >
+                                                <IconDatabaseCog
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >Core Data</span>
+                                            </span>
+                                            <span
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                :class='{
                                                     "active": String(route.name) === "admin-layers",
                                                     "cursor-pointer": String(route.name) !== "admin-layers"
                                                 }'
+                                                :title='nest ? "Layers" : undefined'
                                                 @keyup.enter='router.push(`/admin/layer`)'
                                                 @click='router.push(`/admin/layer`)'
                                             >
                                                 <IconBuildingBroadcastTower
-                                                    v-tooltip='nest ? "Layers" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -249,11 +291,11 @@
                                                     "active": String(route.name).startsWith("admin-tasks"),
                                                     "cursor-pointer": !String(route.name).startsWith("admin-tasks")
                                                 }'
+                                                :title='nest ? "Integrations" : undefined'
                                                 @keyup.enter='router.push(`/admin/tasks`)'
                                                 @click='router.push(`/admin/tasks`)'
                                             >
                                                 <IconBrandDocker
-                                                    v-tooltip='nest ? "Integrations" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -270,11 +312,11 @@
                                                     "active": String(route.name) === "admin-data",
                                                     "cursor-pointer": String(route.name) !== "admin-data"
                                                 }'
+                                                :title='nest ? "Data Syncs" : undefined'
                                                 @keyup.enter='router.push(`/admin/data`)'
                                                 @click='router.push(`/admin/data`)'
                                             >
                                                 <IconDatabase
-                                                    v-tooltip='nest ? "Data Syncs" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -299,11 +341,11 @@
                                                     "active": String(route.name).includes("admin-video"),
                                                     "cursor-pointer": !String(route.name).includes("admin-video")
                                                 }'
+                                                :title='nest ? "Video Services" : undefined'
                                                 @keyup.enter='router.push(`/admin/video`)'
                                                 @click='router.push(`/admin/video`)'
                                             >
                                                 <IconVideo
-                                                    v-tooltip='nest ? "Video Services" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -320,11 +362,11 @@
                                                     "active": String(route.name).includes("admin-geofence"),
                                                     "cursor-pointer": !String(route.name).includes("admin-geofence")
                                                 }'
+                                                :title='nest ? "Geofence Server" : undefined'
                                                 @keyup.enter='router.push(`/admin/geofence`)'
                                                 @click='router.push(`/admin/geofence`)'
                                             >
                                                 <IconMapPin
-                                                    v-tooltip='nest ? "Geofence Server" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -341,11 +383,11 @@
                                                     "active": String(route.name).includes("admin-export"),
                                                     "cursor-pointer": !String(route.name).includes("admin-export")
                                                 }'
+                                                :title='nest ? "Export" : undefined'
                                                 @keyup.enter='router.push(`/admin/export`)'
                                                 @click='router.push(`/admin/export`)'
                                             >
                                                 <IconDatabaseExport
-                                                    v-tooltip='nest ? "Export" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -403,7 +445,9 @@ import {
     IconMapPin,
     IconSettings,
     IconServer,
+    IconHeartbeat,
     IconDatabase,
+    IconDatabaseCog,
     IconDatabaseExport,
     IconBrandDocker,
     IconBuildingBroadcastTower,
@@ -416,7 +460,7 @@ const router = useRouter();
 const isAdmin = ref<boolean | undefined>(undefined)
 
 const nest = computed(() => {
-    if (String(route.name).startsWith('admin-server')) {
+    if (String(route.name).startsWith('admin-server') || String(route.name).startsWith('admin-coredata')) {
         return true;
     } else {
         return false;

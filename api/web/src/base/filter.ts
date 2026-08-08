@@ -8,13 +8,6 @@ import { v4 as randomUUID } from 'uuid';
  *
  * TODO: Once all COTs are in IndexDB, apply the filter on to a new field in the COT
  * called "filtered": [ <filterid>, ... ] so we don't have to re-evaluate the filter each time
- *
- * @property {string} id - The unique identifier for the filter
- * @property {string} external - The external ID of the filter
- * @property {string} name - The name of the filter
- * @property {string} source - The source of the filter
- * @property {boolean} internal - Whether the filter is internal
- * @property {string} query - The JSONata query string for the filter
  */
 export default class Filter {
     id: string;

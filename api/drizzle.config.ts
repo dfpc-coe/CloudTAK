@@ -2,7 +2,7 @@ import type { Config } from "drizzle-kit";
 
 export default {
     dialect: 'postgresql',
-    schema: './lib/schema.ts',
+    schema: './common/schema.ts',
     dbCredentials: {
         url: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl',
     },

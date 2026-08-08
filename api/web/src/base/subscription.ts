@@ -10,6 +10,7 @@ import MissionTemplate from './mission-template.ts';
 import type {
     Mission,
     MissionRole,
+    MissionRoleType,
     MissionList,
     MissionSubscriptions,
     MissionInvite
@@ -32,15 +33,6 @@ export type SubscriptionEvent = {
 
 /**
  * High Level Wrapper around the Data/Mission Sync API
- *
- * @property {string} guid - The unique identifier for the mission
- * @property {string} name - The name of the mission
- * @property {Mission} meta - The mission metadata
- * @property {MissionRole} role - The role of the user in the mission
- * @property {string} token - The CloudTAK Authentication token for API calls
- * @property {string} [missiontoken] - The mission token for authentication
- *
- * @property {boolean} subscribed - Whether the user is subscribed to the mission
  */
 export default class Subscription {
     guid: string;
@@ -56,7 +48,6 @@ export default class Subscription {
     layer: SubscriptionLayer;
     chat: SubscriptionChat;
 
-    token: string;
     missiontoken?: string;
 
     dirty: boolean;
@@ -71,7 +62,6 @@ export default class Subscription {
         role: MissionRole,
         opts: {
             subscribed: boolean,
-            token: string,
             missiontoken?: string,
         }
     ) {
@@ -84,28 +74,23 @@ export default class Subscription {
         };
 
         this.log = new SubscriptionLog(mission.guid, {
-            missiontoken: opts.missiontoken,
-            token: opts.token
+            missiontoken: opts.missiontoken
         });
 
         this.change = new SubscriptionChanges(mission.guid, {
-            missiontoken: opts.missiontoken,
-            token: opts.token
+            missiontoken: opts.missiontoken
         });
 
         this.contents = new SubscriptionContents(mission.guid, {
-            missiontoken: opts.missiontoken,
-            token: opts.token
+            missiontoken: opts.missiontoken
         });
 
         this.feature = new SubscriptionFeature(this, {
-            missiontoken: opts.missiontoken,
-            token: opts.token
+            missiontoken: opts.missiontoken
         });
 
         this.layer = new SubscriptionLayer(this, {
-            missiontoken: opts.missiontoken,
-            token: opts.token
+            missiontoken: opts.missiontoken
         });
 
         this.chat = new SubscriptionChat(mission.guid, mission.name);
@@ -127,8 +112,6 @@ export default class Subscription {
             }
         }
 
-        this.token = opts.token;
-
         if (opts?.missiontoken) this.missiontoken = opts.missiontoken;
 
         this.dirty = false;
@@ -139,7 +122,6 @@ export default class Subscription {
      */
     static async from(
         guid: string,
-        token: string,
         opts?: {
             subscribed?: boolean
         }
@@ -155,7 +137,6 @@ export default class Subscription {
             exists.meta,
             exists.role,
             {
-                token: token,
                 missiontoken: exists.token,
                 subscribed: opts?.subscribed !== undefined ? opts.subscribed : exists.subscribed,
             }
@@ -165,31 +146,24 @@ export default class Subscription {
     /**
      * Loads an existing Subscription from the local DB an refreshes it,
      * or creates a new Subscription from the server if it does not exist locally.
-     *
-     * @param guid - The unique identifier for the mission
-     * @param opts - Options for loading the subscription
-     * @param opts.token - The CloudTAK Authentication token for API calls
-     * @param opts.reload - Whether to reload the mission from the local DB
-     * @param opts.missiontoken - The mission token for authentication
-     * @param opts.subscribed - Whether the user is subscribed to the mission
      */
     static async load(
         guid: string,
         opts: {
-            token: string
             reload?: boolean,
             missiontoken?: string,
             subscribed?: boolean
-        }
+        } = {}
     ): Promise<Subscription> {
-        const exists = await this.from(guid, opts.token);
+        const exists = await this.from(guid);
 
         if (exists) {
             if (opts.subscribed !== undefined || opts.missiontoken !== undefined) {
-                await exists.update({
-                    subscribed: opts.subscribed ?? exists.subscribed,
-                    token: opts.missiontoken ?? exists.token
-                });
+                const update: { subscribed?: boolean, token?: string } = {};
+                if (opts.subscribed !== undefined) update.subscribed = opts.subscribed;
+                if (opts.missiontoken !== undefined) update.token = opts.missiontoken;
+
+                await exists.update(update);
             }
 
             if (opts.reload !== false) {
@@ -281,7 +255,7 @@ export default class Subscription {
         }
 
         if (body.token !== undefined) {
-            this.token = body.token;
+            this.setMissionToken(body.token);
         }
 
         if (body.description !== undefined) {
@@ -291,7 +265,7 @@ export default class Subscription {
         await db.subscription.update(this.guid, {
             dirty: this.dirty,
             subscribed: this.subscribed,
-            token: this.missiontoken
+            token: this.missiontoken || ''
         });
 
         if (body.description !== undefined || body.keywords !== undefined || body.groups !== undefined) {
@@ -354,6 +328,20 @@ export default class Subscription {
     }
 
     /**
+     * Update the Mission Token, propagating it to the sub-stores which
+     * each hold their own copy for generating MissionAuthorization headers
+     */
+    setMissionToken(token?: string): void {
+        this.missiontoken = token || undefined;
+
+        this.log.missiontoken = this.missiontoken;
+        this.change.missiontoken = this.missiontoken;
+        this.contents.missiontoken = this.missiontoken;
+        this.feature.missiontoken = this.missiontoken;
+        this.layer.missiontoken = this.missiontoken;
+    }
+
+    /**
      * Reload the Mission from the local Database
      */
     async reload(): Promise<void> {
@@ -363,7 +351,7 @@ export default class Subscription {
         if (exists) {
             Object.assign(this.meta, exists.meta);
             this.role = exists.role;
-            this.missiontoken = exists.token;
+            this.setMissionToken(exists.token);
             this.subscribed = exists.subscribed;
         }
     };
@@ -409,10 +397,7 @@ export default class Subscription {
     /**
      * List all locally stored missions, with optional filtering
      *
-     * @param filter - Filter options for the local mission list
      * @param filter.role - Filter by minimum role
-     * @param filter.subscribed - Filter by subscription status
-     * @param filter.dirty - Filter by dirty status
      */
     static async localList(
         filter?: {
@@ -511,6 +496,22 @@ export default class Subscription {
         if (error) throw new Error('Failed to invite user to mission');
     }
 
+    async changeRole(sub: { clientUid: string, username: string }, role: MissionRoleType): Promise<void> {
+        const { error } = await server.PUT('/api/marti/missions/{:name}/role', {
+            params: {
+                path: { ':name': this.guid }
+            },
+            headers: Subscription.headers(this.missiontoken),
+            body: {
+                clientUid: sub.clientUid,
+                username: sub.username,
+                role
+            }
+        });
+
+        if (error) throw new Error('Failed to change user role');
+    }
+
     async invites(): Promise<MissionInvite[]> {
         const { data, error } = await server.GET('/api/marti/missions/{:guid}/invite', {
             params: {
@@ -550,12 +551,14 @@ export default class Subscription {
     async subscriptions(): Promise<MissionSubscriptions> {
         if (!navigator.onLine) return [];
 
-        const { data } = await server.GET('/api/marti/missions/{:name}/subscriptions/roles', {
+        const { data, error } = await server.GET('/api/marti/missions/{:name}/subscriptions/roles', {
             params: {
                 path: { ':name': this.guid }
             },
             headers: Subscription.headers(this.missiontoken)
         });
+
+        if (error || !data) throw new Error('Failed to fetch mission subscriptions');
 
         return (data as unknown as { data: MissionSubscriptions }).data;
     }

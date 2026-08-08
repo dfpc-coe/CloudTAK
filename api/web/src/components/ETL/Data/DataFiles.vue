@@ -6,20 +6,24 @@
             </h3>
 
             <div class='ms-auto btn-list'>
-                <IconPlus
-                    v-tooltip='"Upload"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
+                <TablerIconButton
+                    title='Upload'
                     @click='upload = true'
-                />
-                <IconRefresh
-                    v-tooltip='"Refresh"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
+                >
+                    <IconPlus
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+                <TablerIconButton
+                    title='Refresh'
                     @click='fetchList'
-                />
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
 
@@ -43,18 +47,24 @@
                         <td>
                             <div class='d-flex align-items-center'>
                                 <div class='btn-list'>
-                                    <IconMap
+                                    <span
                                         v-if='asset.visualized'
-                                        v-tooltip='"Visualizable"'
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                    <IconMapOff
+                                        title='Visualizable'
+                                    >
+                                        <IconMap
+                                            :size='32'
+                                            stroke='1'
+                                        />
+                                    </span>
+                                    <span
                                         v-else
-                                        v-tooltip='"Not Cloud Optimized"'
-                                        size='32'
-                                        stroke='1'
-                                    />
+                                        title='Not Cloud Optimized'
+                                    >
+                                        <IconMapOff
+                                            size='32'
+                                            stroke='1'
+                                        />
+                                    </span>
                                 </div>
 
                                 <span
@@ -62,13 +72,16 @@
                                     v-text='asset.name'
                                 />
 
-                                <IconRefreshDot
+                                <span
                                     v-if='data.mission_sync && asset.sync'
-                                    v-tooltip='"Syncing"'
-                                    :size='32'
-                                    stroke='1'
-                                    class='text-green'
-                                />
+                                    title='Syncing'
+                                >
+                                    <IconRefreshDot
+                                        :size='32'
+                                        stroke='1'
+                                        class='text-green'
+                                    />
+                                </span>
                                 <IconRefreshOff
                                     v-else-if='data.mission_sync && !asset.sync'
                                     :size='32'
@@ -83,17 +96,19 @@
                             <TablerEpoch :date='asset.updated' />
                             <div class='ms-auto btn-list'>
                                 <TablerDelete
-                                    v-tooltip='"Delete Asset"'
+                                    title='Delete Asset'
                                     displaytype='icon'
                                     @delete='deleteAsset(asset)'
                                 />
-                                <IconDownload
-                                    v-tooltip='"Download Asset"'
-                                    :size='32'
-                                    stroke='1'
-                                    class='cursor-pointer'
+                                <TablerIconButton
+                                    title='Download Asset'
                                     @click='downloadAsset(asset)'
-                                />
+                                >
+                                    <IconDownload
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
                             </div>
                         </td>
                     </tr>
@@ -146,6 +161,7 @@ import {
     TablerAlert,
     TablerNone,
     TablerDelete,
+    TablerIconButton,
     TablerLoading,
     TablerBytes,
     TablerEpoch

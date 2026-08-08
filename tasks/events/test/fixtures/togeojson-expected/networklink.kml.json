@@ -1,0 +1,214 @@
+{
+  "kml": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                15.086756,
+                53.357038
+              ],
+              [
+                16.775049,
+                53.357038
+              ],
+              [
+                16.775049,
+                53.180102
+              ],
+              [
+                15.086756,
+                53.180102
+              ],
+              [
+                15.086756,
+                53.357038
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "@geometry-type": "networklink",
+          "timestamp": "2023",
+          "href": "https://tiny.url",
+          "viewRefreshMode": "onRequest",
+          "lod": [
+            128,
+            -1,
+            null,
+            null
+          ]
+        },
+        "bbox": [
+          15.086756,
+          53.180102,
+          16.775049,
+          53.357038
+        ]
+      }
+    ]
+  },
+  "kmlWithFolders": {
+    "type": "root",
+    "children": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                15.086756,
+                53.357038
+              ],
+              [
+                16.775049,
+                53.357038
+              ],
+              [
+                16.775049,
+                53.180102
+              ],
+              [
+                15.086756,
+                53.180102
+              ],
+              [
+                15.086756,
+                53.357038
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "@geometry-type": "networklink",
+          "timestamp": "2023",
+          "href": "https://tiny.url",
+          "viewRefreshMode": "onRequest",
+          "lod": [
+            128,
+            -1,
+            null,
+            null
+          ]
+        },
+        "bbox": [
+          15.086756,
+          53.180102,
+          16.775049,
+          53.357038
+        ]
+      }
+    ]
+  },
+  "kmlWithFoldersSkipNull": {
+    "type": "root",
+    "children": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                15.086756,
+                53.357038
+              ],
+              [
+                16.775049,
+                53.357038
+              ],
+              [
+                16.775049,
+                53.180102
+              ],
+              [
+                15.086756,
+                53.180102
+              ],
+              [
+                15.086756,
+                53.357038
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "@geometry-type": "networklink",
+          "timestamp": "2023",
+          "href": "https://tiny.url",
+          "viewRefreshMode": "onRequest",
+          "lod": [
+            128,
+            -1,
+            null,
+            null
+          ]
+        },
+        "bbox": [
+          15.086756,
+          53.180102,
+          16.775049,
+          53.357038
+        ]
+      }
+    ]
+  },
+  "kmlSkipNull": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                15.086756,
+                53.357038
+              ],
+              [
+                16.775049,
+                53.357038
+              ],
+              [
+                16.775049,
+                53.180102
+              ],
+              [
+                15.086756,
+                53.180102
+              ],
+              [
+                15.086756,
+                53.357038
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "@geometry-type": "networklink",
+          "timestamp": "2023",
+          "href": "https://tiny.url",
+          "viewRefreshMode": "onRequest",
+          "lod": [
+            128,
+            -1,
+            null,
+            null
+          ]
+        },
+        "bbox": [
+          15.086756,
+          53.180102,
+          16.775049,
+          53.357038
+        ]
+      }
+    ]
+  }
+}

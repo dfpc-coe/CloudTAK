@@ -89,7 +89,6 @@ function accept() {
 
 async function decline() {
     try {
-        // Fetch invites to find the invitee and type
         const res = await Subscription.list();
         const invite = res.invites.find(i => i.missionGuid === props.mission.guid);
 

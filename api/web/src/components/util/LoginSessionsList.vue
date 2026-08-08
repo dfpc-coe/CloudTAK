@@ -45,7 +45,7 @@ const props = defineProps<{
 }>();
 
 interface Session {
-    id: number;
+    id: string;
     username: string;
     created: string;
     ip: string;

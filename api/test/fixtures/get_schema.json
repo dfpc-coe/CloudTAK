@@ -251,7 +251,7 @@
     },
     "GET /connection/:connectionid/layer/:layerid/task/logs": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": true
     },
     "GET /connection/:connectionid/layer/:layerid/task/capabilities": {
@@ -429,14 +429,144 @@
         "query": false,
         "res": true
     },
+    "GET /core/device": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /core/device/:device": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /core/device": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /core/device/:device": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /core/device/:device": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /board": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /board": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /board/column": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /board/column": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /board/column/:column": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /board/column/:column": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /board/event": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "PUT /board/event": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /board/event/:placement": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /board/event/:placement": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /board/:board": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /board/:board": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /board/:board": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /core/event": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /core/event/:event": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /core/event": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /core/event/:event": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /core/event/:event": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /error": {
         "body": false,
         "query": true,
         "res": true
     },
+    "GET /error/:errorid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "POST /error": {
         "body": true,
         "query": false,
+        "res": true
+    },
+    "DELETE /error/:errorid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /error": {
+        "body": false,
+        "query": true,
         "res": true
     },
     "POST /esri": {
@@ -739,6 +869,16 @@
         "query": false,
         "res": true
     },
+    "PUT /marti/missions/:name/layer/:uid/cot": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /marti/missions/:name/layer/:uid/cot/:cotuid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "PATCH /marti/missions/:name/layer/:uid": {
         "body": true,
         "query": false,
@@ -831,6 +971,11 @@
     },
     "GET /marti/missions/:name/subscriptions/roles": {
         "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /marti/missions/:name/role": {
+        "body": true,
         "query": false,
         "res": true
     },
@@ -1019,7 +1164,7 @@
         "query": true,
         "res": true
     },
-    "GET /template/mission/:mission/palette/:palette": {
+    "GET /template/mission/:mission/palette/:feature": {
         "body": false,
         "query": false,
         "res": true
@@ -1029,37 +1174,12 @@
         "query": false,
         "res": true
     },
-    "PATCH /template/mission/:mission/palette/:palette": {
+    "PATCH /template/mission/:mission/palette/:feature": {
         "body": true,
         "query": false,
         "res": true
     },
-    "DELETE /template/mission/:mission/palette/:palette": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /template/mission/:mission/palette/:palette/feature": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /template/mission/:mission/palette/:palette/feature/:feature": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /template/mission/:mission/palette/:palette/feature": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /template/mission/:mission/palette/:palette/feature/:feature": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /template/mission/:mission/palette/:palette/feature/:feature": {
+    "DELETE /template/mission/:mission/palette/:feature": {
         "body": false,
         "query": false,
         "res": true
@@ -1259,6 +1379,11 @@
         "query": false,
         "res": true
     },
+    "PATCH /profile/video/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "DELETE /profile/video/:id": {
         "body": false,
         "query": false,
@@ -1297,11 +1422,6 @@
     "DELETE /server/injector": {
         "body": false,
         "query": true,
-        "res": true
-    },
-    "POST /retention": {
-        "body": true,
-        "query": false,
         "res": true
     },
     "GET /server/repeater": {
@@ -1365,6 +1485,11 @@
         "res": true
     },
     "POST /server/tileset": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "POST /retention": {
         "body": true,
         "query": false,
         "res": true
@@ -1434,6 +1559,26 @@
         "query": false,
         "res": true
     },
+    "GET /type/cot": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /type/2525e": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /type/2525e/:sidc": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /type/cot/:type": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /user": {
         "body": false,
         "query": true,
@@ -1452,16 +1597,6 @@
     "GET /user/:username/session": {
         "body": false,
         "query": true,
-        "res": true
-    },
-    "GET /type/cot": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /type/cot/:type": {
-        "body": false,
-        "query": false,
         "res": true
     },
     "POST /video/auth": {

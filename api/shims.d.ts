@@ -1,3 +1,19 @@
+declare module 'milstandard-e' {
+    export const ms2525e: Record<string, {
+        symbolset: string;
+        name: string;
+        mainIcon: Array<{
+            'Entity': string;
+            'Entity Type'?: string;
+            'Entity Subtype'?: string;
+            'Code': string;
+            'Remarks'?: string;
+        }>;
+        modifier1: Array<Record<string, string>>;
+        modifier2: Array<Record<string, string>>;
+    }>;
+}
+
 declare module 'tokml' {
     export default function(
         geojson: Static<typeof GeoJSONFeatureCollection>,

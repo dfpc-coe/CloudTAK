@@ -1,2 +1,25 @@
+flag_management:
+  default_rules:
+    carryforward: true
+
+flags:
+  api:
+    paths:
+      - api/
+  web:
+    paths:
+      - api/web/
+  events:
+    paths:
+      - tasks/events/
+  pmtiles:
+    paths:
+      - tasks/pmtiles/
+  retention:
+    paths:
+      - tasks/retention/
+
 ignore:
-  - "api/test/*"
+  - "**/test/**"
+  - "**/dist/**"
+  - "**/node_modules/**"

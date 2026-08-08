@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import AGOL from '../lib/search/agol.js';
-import ArcGISTokenManager from '../lib/search/arcgis-token-manager.js';
-import Config from '../lib/config.js';
+import AGOL from '../stateless/lib/search/agol.js';
+import ArcGISTokenManager from '../stateless/lib/search/arcgis-token-manager.js';
+import Config from '../common/config.js';
 
 test('AGOL - constructor with tokenManager', async () => {
     const mockConfig = {

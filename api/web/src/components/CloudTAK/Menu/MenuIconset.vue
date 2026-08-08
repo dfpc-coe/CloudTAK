@@ -159,7 +159,7 @@ async function syncIconset(): Promise<void> {
     syncError.value = undefined;
 
     try {
-        await mapStore.icons.addIconset(String(route.params.iconset), { force: true });
+        await mapStore.worker.sync.syncIconset(String(route.params.iconset));
         refreshKey.value += 1;
     } catch (err) {
         syncError.value = err instanceof Error ? err : new Error(String(err));

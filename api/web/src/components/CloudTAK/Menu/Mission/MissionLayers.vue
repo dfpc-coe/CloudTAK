@@ -1,6 +1,5 @@
 <template>
     <MenuTemplate
-        v-if='props.menu !== false'
         name='Mission Layers'
         :zindex='0'
         :back='false'
@@ -54,34 +53,19 @@
                     />
                 </div>
 
-                <div class='d-flex align-items-center gap-2 px-2 py-2'>
-                    <TablerIconButton
-                        title='Home'
-                        @click='navigateHome'
-                    >
-                        <IconFolder
-                            :size='20'
-                            stroke='1'
-                        />
-                    </TablerIconButton>
-                    <template
-                        v-for='(crumb, idx) in pathStack'
-                        :key='crumb.uid'
-                    >
-                        <IconChevronRight
-                            :size='20'
-                            stroke='1'
-                            class='text-white-50'
-                        />
-                        <span
-                            class='fw-semibold cursor-pointer'
-                            @click='navigateToCrumb(idx)'
-                        >{{ tree.layerMap.get(crumb.uid)?.name ?? '(deleted)' }}</span>
-                    </template>
-                    <span
-                        v-if='!pathStack.length'
-                        class='small text-white-50'
-                    >/</span>
+                <TablerAlert
+                    v-if='error'
+                    class='mx-2'
+                    :err='error'
+                />
+
+                <div class='px-2 py-2'>
+                    <PathBreadcrumb
+                        :segments='crumbNames'
+                        :droppable='writable'
+                        @navigate='navigateToDepth'
+                        @segment-drop='onBreadcrumbDrop'
+                    />
                 </div>
 
                 <TablerNone
@@ -101,13 +85,18 @@
                         @navigate='navigateToFolder'
                         @delete='deleteLayer'
                         @rename='openEdit'
+                        @folder-drop='onFolderDrop'
                         @toggle-visibility='toggleMissionFolderVisibility'
                     />
-                    <div class='mt-2'>
+                    <div
+                        ref='sortableItemsRef'
+                        class='mt-2'
+                    >
                         <FeatureRow
                             v-for='feat of currentItems'
                             :key='feat.id'
                             :delete-button='false'
+                            :grip-handle='writable'
                             :visibility-toggle='true'
                             :feature='feat'
                         />
@@ -116,103 +105,20 @@
             </template>
         </div>
     </MenuTemplate>
-    <div
-        v-else
-        class='col-12'
-    >
-        <TablerLoading
-            v-if='loading'
-            class='mx-2'
-            desc='Loading Layers...'
-        />
-        <template v-else>
-            <div
-                v-if='editLayer'
-                class='col-12 px-2 pb-4'
-            >
-                <MissionLayerEdit
-                    :subscription='props.subscription'
-                    :layer='editLayer'
-                    @layer='refresh'
-                    @cancel='editLayer = undefined'
-                />
-            </div>
-
-            <div class='d-flex align-items-center gap-2 px-2 py-2'>
-                <TablerIconButton
-                    title='Home'
-                    @click='navigateHome'
-                >
-                    <IconFolder
-                        :size='20'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-                <template
-                    v-for='(crumb, idx) in pathStack'
-                    :key='crumb.uid'
-                >
-                    <IconChevronRight
-                        :size='20'
-                        stroke='1'
-                        class='text-white-50'
-                    />
-                    <span
-                        class='fw-semibold cursor-pointer'
-                        @click='navigateToCrumb(idx)'
-                    >{{ tree.layerMap.get(crumb.uid)?.name ?? '(deleted)' }}</span>
-                </template>
-                <span
-                    v-if='!pathStack.length'
-                    class='small text-white-50'
-                >/</span>
-            </div>
-
-            <TablerNone
-                v-if='!currentFolders.length && !currentItems.length'
-                :create='false'
-                :compact='true'
-                :label='pathStack.length ? "Folder is empty" : "No Layers"'
-            />
-            <template v-else>
-                <PathBrowser
-                    v-if='currentFolders.length'
-                    :nodes='currentFolders'
-                    :renamable='writable'
-                    :deletable='writable'
-                    :visibility-toggle='true'
-                    :is-node-hidden='isMissionFolderHidden'
-                    @navigate='navigateToFolder'
-                    @delete='deleteLayer'
-                    @rename='openEdit'
-                    @toggle-visibility='toggleMissionFolderVisibility'
-                />
-                <div class='mt-2'>
-                    <FeatureRow
-                        v-for='feat of currentItems'
-                        :key='feat.id'
-                        :delete-button='false'
-                        :visibility-toggle='true'
-                        :feature='feat'
-                    />
-                </div>
-            </template>
-        </template>
-    </div>
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, useTemplateRef, onBeforeUnmount } from 'vue';
 import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
+import Sortable from 'sortablejs';
 import {
-    IconFolder,
     IconFolderPlus,
-    IconChevronRight,
 } from '@tabler/icons-vue';
 import {
     TablerNone,
+    TablerAlert,
     TablerLoading,
     TablerIconButton,
     TablerRefreshButton,
@@ -227,22 +133,24 @@ import { FeatureVisibility } from '../../../../stores/modules/feature-visibility
 import Subscription from '../../../../base/subscription.ts';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import PathBrowser from '../../util/PathBrowser.vue';
+import PathBreadcrumb from '../../util/PathBreadcrumb.vue';
 import FeatureRow from '../../util/FeatureRow.vue';
 import MissionLayerCreate from './MissionLayerCreate.vue';
 import MissionLayerEdit from './MissionLayerEdit.vue';
 
-const props = withDefaults(defineProps<{
-    menu?: boolean,
+const props = defineProps<{
     subscription: Subscription
-}>(), {
-    menu: true
-})
+}>()
 
 const createLayer = ref(false);
 const editLayer = ref<MissionLayer | undefined>();
+const error = ref<Error | undefined>();
 const refreshing = ref(false);
 const currentUid = ref<string | null>(null);
 const pathStack = ref<Array<{ uid: string, name: string }>>([]);
+
+const sortableItemsRef = useTemplateRef<HTMLElement>('sortableItemsRef');
+const draggedId = ref<string | undefined>();
 
 const writable = computed<boolean>(() => {
     return !!props.subscription.role
@@ -279,11 +187,7 @@ const feats = computed<Map<string, Feature>>(() => {
     return map;
 });
 
-/**
- * Adapt the recursive Mission Layer tree into the generic PathNode tree
- * consumed by PathBrowser. Only GROUP & UID layers are surfaced as folders;
- * a sidecar map preserves the original layer for mutation handlers.
- */
+/** Adapt the recursive Mission Layer tree into PathBrowser's PathNode tree; a sidecar map preserves the original layer for mutation handlers. */
 const tree = computed<{ nodes: PathNode<Feature>[], layerMap: Map<string, MissionLayer> }>(() => {
     const layerMap = new Map<string, MissionLayer>();
 
@@ -292,6 +196,7 @@ const tree = computed<{ nodes: PathNode<Feature>[], layerMap: Map<string, Missio
 
         for (const layer of mlayers) {
             if (layer.type !== 'GROUP' && layer.type !== 'UID') continue;
+            if (layer.name === undefined) continue;
 
             layerMap.set(layer.uid, layer);
 
@@ -370,11 +275,7 @@ const currentItems = computed<Feature[]>(() => {
     return node ? Array.from(node.items) : orphanedFeats.value;
 });
 
-/**
- * Collect every feature id contained within a mission folder node, recursing
- * into child folders. Mission "folders" are server-defined layer groups rather
- * than feature `path` values, so visibility is toggled by the contained ids.
- */
+/** Collect every feature id within a mission folder node (recursing into children). Mission folders are server-defined layer groups, so visibility is toggled by contained ids. */
 function collectNodeIds(node: PathNode<Feature>): string[] {
     const ids: string[] = [];
 
@@ -398,21 +299,109 @@ function toggleMissionFolderVisibility(node: PathNode<Feature>): void {
     FeatureVisibility.setFeaturesHidden(ids, !FeatureVisibility.areFeaturesHidden(ids));
 }
 
-function navigateHome(): void {
-    currentUid.value = null;
-    pathStack.value = [];
-}
+const crumbNames = computed<string[]>(() => {
+    return pathStack.value.map((crumb) => {
+        return tree.value.layerMap.get(crumb.uid)?.name ?? '(deleted)';
+    });
+});
 
 function navigateToFolder(node: PathNode<Feature>): void {
+    error.value = undefined;
     pathStack.value.push({ uid: node.id, name: node.name });
     currentUid.value = node.id;
 }
 
-function navigateToCrumb(idx: number): void {
-    const crumb = pathStack.value[idx];
-    pathStack.value = pathStack.value.slice(0, idx + 1);
-    currentUid.value = crumb.uid;
+/** Navigate to a breadcrumb depth - 0 is the mission root */
+function navigateToDepth(depth: number): void {
+    error.value = undefined;
+    pathStack.value = pathStack.value.slice(0, depth);
+    currentUid.value = depth === 0 ? null : pathStack.value[depth - 1].uid;
 }
+
+/**
+ * Ensure the target layer can hold features - TAK Server only returns filed
+ * UIDs for layers of type UID, so filing into other types would hide them
+ */
+function assertHoldsFeatures(layeruid: string): void {
+    const layer = tree.value.layerMap.get(layeruid);
+
+    if (!layer || layer.type !== 'UID') {
+        throw new Error('This folder cannot contain features');
+    }
+}
+
+async function onFolderDrop(node: PathNode<Feature>): Promise<void> {
+    if (!draggedId.value || !writable.value) return;
+    const id = draggedId.value;
+
+    try {
+        assertHoldsFeatures(node.id);
+
+        await props.subscription.layer.attachFeatures(node.id, [id]);
+
+        error.value = undefined;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
+
+async function onBreadcrumbDrop(depth: number): Promise<void> {
+    if (!draggedId.value || !writable.value) return;
+    const id = draggedId.value;
+
+    try {
+        if (depth === 0) {
+            // Already at the mission root - nothing to move
+            if (!currentUid.value) return;
+
+            await props.subscription.layer.detachFeature(currentUid.value, id);
+        } else {
+            const crumb = pathStack.value[depth - 1];
+
+            // Dropped on the folder currently being viewed - nothing to move
+            if (crumb.uid === currentUid.value) return;
+
+            assertHoldsFeatures(crumb.uid);
+
+            await props.subscription.layer.attachFeatures(crumb.uid, [id]);
+        }
+
+        error.value = undefined;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
+
+function initSortable(element: HTMLElement): void {
+    new Sortable(element, {
+        sort: false,
+        group: {
+            name: 'mission-features',
+            pull: false,
+            put: false
+        },
+        handle: '.drag-handle',
+        onStart: (evt) => {
+            // FeatureRow renders the feature id on its .drag-handle element
+            const handle = evt.item.querySelector<HTMLElement>('.drag-handle');
+            draggedId.value = handle?.id || undefined;
+        },
+        onEnd: () => {
+            draggedId.value = undefined;
+        }
+    });
+}
+
+// Sortable tracks the container's children dynamically, so it only needs to be
+// created when the container element itself enters the DOM
+watch(sortableItemsRef, (element, previous) => {
+    if (previous) Sortable.get(previous)?.destroy();
+    if (element) initSortable(element);
+}, { flush: 'post' });
+
+onBeforeUnmount(() => {
+    if (sortableItemsRef.value) Sortable.get(sortableItemsRef.value)?.destroy();
+});
 
 function openEdit(node: PathNode<Feature>): void {
     editLayer.value = tree.value.layerMap.get(node.id);
@@ -422,13 +411,10 @@ async function deleteLayer(node: PathNode<Feature>): Promise<void> {
     await props.subscription.layer.delete(node.id);
 }
 
-onMounted(async () => {
-    await refresh();
-});
-
 async function refresh() {
     createLayer.value = false;
     editLayer.value = undefined;
+    error.value = undefined;
     refreshing.value = true;
     try {
         await Promise.all([

@@ -136,10 +136,13 @@
                                 <TablerInput
                                     v-model='config["notification::push::firebase::private_key"]'
                                     :disabled='!edit'
-                                    type='password'
+                                    :rows='6'
                                     autocomplete='new-password'
                                     label='Firebase Private Key'
                                 />
+                                <label class='text-secondary user-select-none'>
+                                    Paste the <code>private_key</code> from the Firebase service account JSON (the full PEM block, including the BEGIN/END lines).
+                                </label>
                             </div>
                         </template>
                     </template>
@@ -170,11 +173,11 @@ import {
 interface NotificationConfig {
     'notification::enabled': boolean;
     'notification::sms::enabled': boolean;
-    'notification::sms::service': string;
+    'notification::sms::service': 'aws';
     'notification::email::enabled': boolean;
-    'notification::email::service': string;
+    'notification::email::service': 'aws';
     'notification::push::enabled': boolean;
-    'notification::push::service': string;
+    'notification::push::service': 'firebase';
     'notification::push::firebase::project_id': string;
     'notification::push::firebase::client_email': string;
     'notification::push::firebase::private_key': string;

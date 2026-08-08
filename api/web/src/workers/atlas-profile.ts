@@ -11,6 +11,9 @@ export type ProfileLocationState = {
     accuracy: number | undefined
     altitude: number | null | undefined
     coordinates: number[]
+    /** Battery level as a percentage (0-100) - null/undefined when unknown */
+    battery?: number | null
+    charging?: boolean | null
 }
 
 export default class AtlasProfile {
@@ -30,6 +33,7 @@ export default class AtlasProfile {
     profile_remarks? : ProfileConfig<'tak_remarks'>;
     profile_group? : ProfileConfig<'tak_group'>;
     profile_role? : ProfileConfig<'tak_role'>;
+    profile_phone? : ProfileConfig<'tak_phone'>;
     profile_loc?: ProfileConfig<'tak_loc'>;
     profile_loc_freq?: ProfileConfig<'tak_loc_freq'>;
     profile_created?: ProfileConfig<'created'>;
@@ -62,34 +66,65 @@ export default class AtlasProfile {
             this.loadChannels()
         ])
 
-        this.profile_type = await ProfileConfig.get('tak_type');
+        // Each ProfileConfig.get() is an independent IndexedDB read; fetch
+        // them concurrently instead of serially so worker init doesn't pay a
+        // round-trip per key on a warm-cache refresh.
+        const [
+            profile_type,
+            profile_callsign,
+            profile_remarks,
+            profile_group,
+            profile_role,
+            profile_phone,
+            profile_loc,
+            profile_loc_freq,
+            profile_created,
+            profile_updated,
+            usernameConfig
+        ] = await Promise.all([
+            ProfileConfig.get('tak_type'),
+            ProfileConfig.get('tak_callsign'),
+            ProfileConfig.get('tak_remarks'),
+            ProfileConfig.get('tak_group'),
+            ProfileConfig.get('tak_role'),
+            ProfileConfig.get('tak_phone'),
+            ProfileConfig.get('tak_loc'),
+            ProfileConfig.get('tak_loc_freq'),
+            ProfileConfig.get('created'),
+            ProfileConfig.get('updated'),
+            ProfileConfig.get('username')
+        ]);
+
+        this.profile_type = profile_type;
         if (this.profile_type) this.profile_type.subscribe();
 
-        this.profile_callsign = await ProfileConfig.get('tak_callsign');
+        this.profile_callsign = profile_callsign;
         if (this.profile_callsign) this.profile_callsign.subscribe();
 
-        this.profile_remarks = await ProfileConfig.get('tak_remarks');
+        this.profile_remarks = profile_remarks;
         if (this.profile_remarks) this.profile_remarks.subscribe();
 
-        this.profile_group = await ProfileConfig.get('tak_group');
+        this.profile_group = profile_group;
         if (this.profile_group) this.profile_group.subscribe();
 
-        this.profile_role = await ProfileConfig.get('tak_role');
+        this.profile_role = profile_role;
         if (this.profile_role) this.profile_role.subscribe();
 
-        this.profile_loc = await ProfileConfig.get('tak_loc');
+        this.profile_phone = profile_phone;
+        if (this.profile_phone) this.profile_phone.subscribe();
+
+        this.profile_loc = profile_loc;
         if (this.profile_loc) this.profile_loc.subscribe();
 
-        this.profile_loc_freq = await ProfileConfig.get('tak_loc_freq');
+        this.profile_loc_freq = profile_loc_freq;
         if (this.profile_loc_freq) this.profile_loc_freq.subscribe();
 
-        this.profile_created = await ProfileConfig.get('created');
+        this.profile_created = profile_created;
         if (this.profile_created) this.profile_created.subscribe();
 
-        this.profile_updated = await ProfileConfig.get('updated');
+        this.profile_updated = profile_updated;
         if (this.profile_updated) this.profile_updated.subscribe();
 
-        const usernameConfig = await ProfileConfig.get('username');
         if (usernameConfig) {
             this.username = usernameConfig.value;
         }
@@ -144,6 +179,9 @@ export default class AtlasProfile {
 
         this.profile_role?.destroy();
         this.profile_role = undefined;
+
+        this.profile_phone?.destroy();
+        this.profile_phone = undefined;
 
         this.profile_loc?.destroy();
         this.profile_loc = undefined;
@@ -241,11 +279,26 @@ export default class AtlasProfile {
             this.location.source = LocationState.Preset;
             this.location.accuracy = undefined;
             this.location.altitude = undefined;
+            // Manual locations receive no live GPS broadcasts, so any battery
+            // state from a previous Live fix would go permanently stale
+            this.location.battery = undefined;
+            this.location.charging = undefined;
             this.location.coordinates = (this.profile_loc.value as { coordinates: number[] }).coordinates;
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Profile_Location_Source,
                 body: { source: LocationState.Preset }
+            });
+
+            // Emit the manual coordinates so the map (and the geolocation
+            // control puck) renders the user at the location they set.
+            this.atlas.postMessage({
+                type: WorkerMessageType.Profile_Location_Coordinates,
+                body: {
+                    accuracy: undefined,
+                    altitude: undefined,
+                    coordinates: this.location.coordinates
+                }
             });
         } else if ((!this.profile_loc || !this.profile_loc.value) && this.location.source === LocationState.Preset) {
             // Reset to disabled when manual location is cleared
@@ -315,6 +368,28 @@ export default class AtlasProfile {
 
     async update(body: Profile_Update): Promise<void> {
         if (!this.username) throw new Error('Profile must be loaded before update');
+
+        // Eagerly push location messages before the HTTP call so the puck moves
+        // immediately rather than waiting for the network round-trip + CoT post.
+        if (body.tak_loc) {
+            const coords = (body.tak_loc as { coordinates: number[] }).coordinates;
+            this.location.source = LocationState.Preset;
+            this.location.coordinates = coords;
+            this.location.accuracy = undefined;
+            this.location.altitude = undefined;
+            this.location.battery = undefined;
+            this.location.charging = undefined;
+            if (this.profile_loc) this.profile_loc.value = body.tak_loc;
+
+            this.atlas.postMessage({
+                type: WorkerMessageType.Profile_Location_Source,
+                body: { source: LocationState.Preset }
+            });
+            this.atlas.postMessage({
+                type: WorkerMessageType.Profile_Location_Coordinates,
+                body: { accuracy: undefined, altitude: undefined, coordinates: coords }
+            });
+        }
 
         let freqChanged = false;
         if (body.tak_loc_freq && this.profile_loc_freq && this.profile_loc_freq.value !== body.tak_loc_freq) {
@@ -406,6 +481,7 @@ export default class AtlasProfile {
         const remarks = this.profile_remarks ? this.profile_remarks.value : undefined;
         const group = this.profile_group ? this.profile_group.value : undefined;
         const role = this.profile_role ? this.profile_role.value : undefined;
+        const phone = this.profile_phone ? this.profile_phone.value : undefined;
 
         const feat: Feature = {
             id: uid,
@@ -422,7 +498,11 @@ export default class AtlasProfile {
                 start: new Date().toISOString(),
                 stale: new Date(new Date().getTime() + (1000 * 60)).toISOString(),
                 center: coordinates,
-                contact: { endpoint: '*:-1:stcp', callsign: callsign as string },
+                contact: {
+                    endpoint: '*:-1:stcp',
+                    callsign: callsign as string,
+                    ...(phone ? { phone: phone as string } : {})
+                },
                 group: {
                     name: group as string,
                     role: role as string
@@ -434,7 +514,11 @@ export default class AtlasProfile {
                     version: this.server.version
                 },
                 hae,
-                ...(accuracy !== undefined && { ce: accuracy })
+                ...(accuracy !== undefined && { ce: accuracy }),
+                // TAK status battery is a stringified percentage
+                ...(typeof this.location.battery === 'number' && {
+                    status: { battery: String(this.location.battery) }
+                })
             } as Feature['properties'],
             geometry: { type: 'Point', coordinates: [...coordinates, hae] }
         }

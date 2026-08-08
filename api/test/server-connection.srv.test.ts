@@ -22,7 +22,7 @@ test('Admin connection is live by default on startup', async () => {
         // so status will be 'dead' rather than 'live' — but it must not be 'unknown'
         // (which would mean the connection is absent from the pool entirely).
         assert.notEqual(res.body.connection_status, 'unknown', 'admin connection should be present in pool on startup');
-        assert.ok(flight.config!.conns.has(0), 'admin connection should be present in pool');
+        assert.ok(flight.stateful!.conns.has(0), 'admin connection should be present in pool');
     } catch (err) {
         assert.ifError(err);
     }
@@ -46,7 +46,7 @@ test('PATCH: api/server - connection: false stops the admin connection', async (
 
         assert.equal(res.body.connection, false, 'connection flag should be false');
         assert.equal(res.body.connection_status, 'unknown', 'connection_status should be unknown when disabled');
-        assert.ok(!flight.config!.conns.has(0), 'admin connection should be removed from pool');
+        assert.ok(!flight.stateful!.conns.has(0), 'admin connection should be removed from pool');
     } catch (err) {
         assert.ifError(err);
     }
@@ -71,7 +71,7 @@ test('PATCH: api/server - connection: true restarts the admin connection', async
         assert.equal(res.body.connection, true, 'connection flag should be true');
         // Not 'unknown' means the connection is back in the pool.
         assert.notEqual(res.body.connection_status, 'unknown', 'admin connection should be present in pool after re-enabling');
-        assert.ok(flight.config!.conns.has(0), 'admin connection should be back in pool');
+        assert.ok(flight.stateful!.conns.has(0), 'admin connection should be back in pool');
     } catch (err) {
         assert.ifError(err);
     }
@@ -80,8 +80,8 @@ test('PATCH: api/server - connection: true restarts the admin connection', async
 // Remove the admin connection from the pool so the retry loop doesn't keep
 // the event loop alive after the mock TAK server is shut down during landing.
 test('Cleanup: remove admin connection from pool', async () => {
-    if (flight.config!.conns.has(0)) {
-        flight.config!.conns.delete(0);
+    if (flight.stateful!.conns.has(0)) {
+        flight.stateful!.conns.delete(0);
     }
 });
 

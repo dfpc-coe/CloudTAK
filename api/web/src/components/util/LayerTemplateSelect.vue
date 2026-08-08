@@ -14,14 +14,16 @@
                     <div class='col-12 d-flex align-items-center'>
                         <div v-text='selected.name' />
                         <div class='ms-auto'>
-                            <IconTrash
+                            <TablerIconButton
                                 v-if='selected.id'
-                                v-tooltip='"Remove Template"'
-                                :size='32'
-                                stroke='1'
-                                class='cursor-pointer'
+                                title='Remove Template'
                                 @click='selected = {}'
-                            />
+                            >
+                                <IconTrash
+                                    :size='32'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
                         </div>
                     </div>
                 </template>
@@ -93,6 +95,7 @@ import {
     TablerInput,
     TablerPager,
     TablerNone,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
 interface Template {

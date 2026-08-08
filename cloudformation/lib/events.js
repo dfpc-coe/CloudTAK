@@ -85,7 +85,7 @@ export default {
             Properties: {
                 Family: cf.join([cf.stackName, '-events']),
                 Cpu: 1024,
-                Memory: 2048,
+                Memory: 4096,
                 NetworkMode: 'awsvpc',
                 RequiresCompatibilities: ['FARGATE'],
                 Tags: [{

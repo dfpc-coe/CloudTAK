@@ -5,6 +5,15 @@
         :width='props.size'
         :height='props.size'
     />
+    <!-- Military symbols render without the map (Event Board) via milsymbol -->
+    <img
+        v-else-if='standaloneIcon'
+        :src='standaloneIcon'
+        alt='Feature Icon'
+        :width='props.size'
+        :height='props.size'
+        style='object-fit: contain;'
+    >
     <!-- Icons are in order of most preferred display => Least-->
     <IconPointFilled
         v-else-if='feature.properties && feature.properties.type === "u-d-p"'
@@ -64,8 +73,33 @@
     />
 </template>
 
+<script lang='ts'>
+import ms from 'milsymbol';
+
+/**
+ * Generated symbols are deterministic per SIDC - module scope so a list of
+ * Features sharing a symbol renders it once rather than once per instance
+ */
+const standaloneCache = new Map<string, string>();
+
+function standaloneSymbol(iconId: string): string {
+    let icon = standaloneCache.get(iconId);
+
+    if (!icon) {
+        icon = new ms.Symbol(iconId.replace(/^2525[CDE]:/, ''), { size: 24 }).toDataURL();
+        standaloneCache.set(iconId, icon);
+    }
+
+    return icon;
+}
+
+export default {
+    name: 'FeatureIcon'
+};
+</script>
+
 <script setup lang='ts'>
-import { useTemplateRef, watch, computed } from 'vue';
+import { ref, useTemplateRef, watch, computed } from 'vue';
 import ContactPuck from './ContactPuck.vue'
 import {
     IconVideo,
@@ -77,6 +111,7 @@ import {
     IconCone,
     IconPolygon,
 } from '@tabler/icons-vue';
+import { renderedIcon } from '../../../base/cot.ts';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
@@ -93,22 +128,57 @@ const props = defineProps({
 
 const canvas = useTemplateRef<HTMLCanvasElement>('imgCanvas');
 
-const supportedIcon = computed<string | null>(() => {
-    if (!props.feature.properties.icon) return null;
+// Bumped when an on-demand icon resolution completes so supportedIcon re-runs
+const resolvedTick = ref(0);
+const resolveAttempted = new Set<string>();
 
-    const icon = mapStore.map.getImage(props.feature.properties.icon)
-    if (icon) {
-        return props.feature.properties.icon;
-    } else {
-        return null;
-    }
+const supportedIcon = computed<string | null>(() => {
+    void resolvedTick.value;
+
+    const iconId = renderedIcon(props.feature.properties ?? {});
+    if (!iconId || !mapStore._map) return null;
+
+    return mapStore.map.getImage(iconId) ? iconId : null;
 });
 
-watch(canvas, async () => {
+// Pages without a MapLibre instance (Event Board) can't use the map's image
+// registry - military symbols are generated directly instead
+const standaloneIcon = computed<string | null>(() => {
+    const iconId = renderedIcon(props.feature.properties ?? {});
+    if (!iconId || mapStore._map || !/^2525[CDE]:/.test(iconId)) return null;
+
+    return standaloneSymbol(iconId);
+});
+
+// Military symbols are generated on demand - they only exist in the map
+// once a map feature has requested them, so trigger resolution here
+watch(() => renderedIcon(props.feature.properties ?? {}), async (iconId) => {
+    if (
+        !iconId
+        || !mapStore._map
+        || supportedIcon.value
+        || !/^2525[CDE]:/.test(iconId)
+        || resolveAttempted.has(iconId)
+    ) return;
+
+    resolveAttempted.add(iconId);
+
+    try {
+        await mapStore.icons.resolve(iconId);
+        resolvedTick.value += 1;
+    } catch {
+        // Icon Manager not yet initialized - allow a later icon change to retry
+        resolveAttempted.delete(iconId);
+    }
+}, { immediate: true });
+
+watch([canvas, supportedIcon, () => props.size], async () => {
     if (!canvas.value) return;
 
-    if (!supportedIcon.value) return;
-    const icon = mapStore.map.getImage(supportedIcon.value)
+    const iconName = supportedIcon.value;
+    if (!iconName) return;
+
+    const icon = mapStore.map.getImage(iconName);
     if (!icon) return;
 
     const context = canvas.value.getContext('2d');
@@ -118,13 +188,16 @@ watch(canvas, async () => {
 
     if (!context) return;
 
+    const bitmap = await createImageBitmap(new ImageData(
+        new Uint8ClampedArray(icon.data.data),
+        icon.data.width,
+        icon.data.height,
+    ));
+
+    if (!canvas.value || supportedIcon.value !== iconName) return;
+
     context.drawImage(
-        await createImageBitmap(new ImageData(
-            // @ts-expect-error icon.data.data issue
-            new Uint8ClampedArray(icon.data.data, icon.data.width, icon.data.height),
-            icon.data.width,
-            icon.data.height,
-        )),
+        bitmap,
         0, 0,
         icon.data.width,
         icon.data.height,

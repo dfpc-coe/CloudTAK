@@ -51,7 +51,7 @@
                     {{ dragHintCopy }}
                 </p>
 
-                <TablerLoading v-if='loading || !isLoaded' />
+                <TablerLoading v-if='loading' />
 
                 <template v-else>
                     <div
@@ -67,8 +67,8 @@
                             :class='{
                                 "border-primary": isDraggable
                             }'
-                            :hover='!isDraggable && card.overlay.id !== 0'
-                            @click='handleCardClick(card.overlay.id)'
+                            :hover='!isDraggable && card.overlay.id !== 0 && hasOverlayDetails(card.overlay)'
+                            @click='handleCardClick(card.overlay)'
                         >
                             <div
                                 class='d-flex justify-content-between gap-3'
@@ -77,43 +77,58 @@
                                     class='d-flex align-items-center gap-2 flex-grow-1 w-100 overflow-hidden'
                                     :aria-disabled='isDraggable || card.overlay.id === 0'
                                 >
-                                    <IconGripVertical
+                                    <span
                                         v-if='isDraggable'
-                                        v-tooltip='"Drag to reorder"'
-                                        class='drag-handle cursor-move text-white-50'
-                                        role='button'
-                                        tabindex='0'
-                                        :size='20'
-                                        stroke='1'
-                                    />
-                                    <IconMap
+                                        title='Drag to reorder'
+                                    >
+                                        <IconGripVertical
+                                            class='drag-handle cursor-move text-white-50'
+                                            role='button'
+                                            tabindex='0'
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                    </span>
+                                    <span
                                         v-if='card.overlay.type === "raster"'
-                                        v-tooltip='"Raster"'
-                                        :size='20'
-                                        stroke='1'
                                         class='flex-shrink-0 text-white-50'
-                                    />
-                                    <IconMap
+                                        title='Raster'
+                                    >
+                                        <IconMap
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                    </span>
+                                    <span
                                         v-else-if='card.overlay.type === "raster-dem"'
-                                        v-tooltip='"Terrain"'
-                                        :size='20'
-                                        stroke='1'
                                         class='flex-shrink-0 text-white-50'
-                                    />
-                                    <IconAmbulance
+                                        title='Terrain'
+                                    >
+                                        <IconMap
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                    </span>
+                                    <span
                                         v-else-if='card.overlay.type === "geojson" && card.overlay.mode === "mission"'
-                                        v-tooltip='"Data Sync"'
-                                        :size='20'
-                                        stroke='1'
                                         class='flex-shrink-0 text-white-50'
-                                    />
-                                    <IconVector
+                                        title='Data Sync'
+                                    >
+                                        <IconAmbulance
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                    </span>
+                                    <span
                                         v-else
-                                        v-tooltip='"Vector"'
-                                        :size='20'
-                                        stroke='1'
                                         class='flex-shrink-0 text-white-50'
-                                    />
+                                        title='Vector'
+                                    >
+                                        <IconVector
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                    </span>
 
                                     <div class='flex-grow-1 w-100 overflow-hidden'>
                                         <div class='d-flex align-items-center gap-2 w-100'>
@@ -196,7 +211,7 @@
                                         <TablerDelete
                                             v-if='["mission", "data", "profile", "overlay"].includes(card.overlay.mode)'
                                             :key='card.overlay.id'
-                                            v-tooltip='"Delete Overlay"'
+                                            title='Delete Overlay'
                                             :size='20'
                                             role='button'
                                             tabindex='0'
@@ -208,7 +223,7 @@
                             </div>
 
                             <div
-                                v-if='!isDraggable && opened.has(card.overlay.id)'
+                                v-if='!isDraggable && opened.has(card.overlay.id) && hasOverlayDetails(card.overlay)'
                                 class='mt-3 p-3 rounded-3 border border-white border-opacity-10 bg-black bg-opacity-25'
                                 @click.stop
                             >
@@ -234,22 +249,6 @@
                                         label='Terrain Encoding'
                                         :options='["mapbox", "terrarium"]'
                                         @update:model-value='void updateOverlay(card.overlay, { encoding: $event })'
-                                    />
-                                </div>
-                                <div
-                                    v-if='card.overlay.type === "geojson" && card.overlay.id === -1'
-                                    class='mb-3'
-                                >
-                                    <TreeCots
-                                        :element='card.overlay'
-                                    />
-                                </div>
-                                <div
-                                    v-if='card.overlay.mode === "mission"'
-                                    class='mb-3'
-                                >
-                                    <TreeMission
-                                        :overlay='card.overlay'
                                     />
                                 </div>
                                 <TreeVector
@@ -285,9 +284,7 @@ import {
     TablerNone,
     TablerRange
 } from '@tak-ps/vue-tabler';
-import TreeCots from './Overlays/TreeCots.vue';
 import TreeVector from './Overlays/TreeVector.vue';
-import TreeMission from './Overlays/TreeMission.vue';
 import {
     IconGripVertical,
     IconAmbulance,
@@ -303,7 +300,6 @@ import {
 import StandardItem from '../util/StandardItem.vue';
 import Sortable from 'sortablejs';
 import type { SortableEvent } from 'sortablejs';
-import { useMapStore } from '../../../../src/stores/map.ts';
 import type Overlay from '../../../../src/base/overlay-class.ts';
 import type { DBOverlay } from '../../../../src/database.ts';
 import OverlayManager from '../../../../src/base/overlay.ts';
@@ -313,7 +309,6 @@ type OverlayStatus = { label: string; variant: string; tooltip?: string };
 type OverlayUpdate = Parameters<Overlay['update']>[0];
 type OverlayCard = { overlay: Overlay; visible: boolean; status: OverlayStatus; badges: OverlayBadge[] };
 
-const mapStore = useMapStore();
 const router = useRouter();
 
 let sortable: Sortable | undefined;
@@ -324,7 +319,6 @@ const opened = ref<Set<number>>(new Set());
 const overlayFilter = ref('');
 const overlayRenderTick = ref(0);
 
-const isLoaded = mapStore.isLoaded;
 const dbOverlays = ref<DBOverlay[]>([]);
 
 let listSubscription: Subscription | undefined;
@@ -361,13 +355,11 @@ const overlayCards = computed<OverlayCard[]>(() => {
         });
     };
 
-    // Database-backed overlays drive membership and ordering (pos)
     for (const record of dbOverlays.value) {
         consider(OverlayManager.loadedFrom(record.id));
     }
 
-    // Internal / loaded-only overlays (e.g. the "Map Features" overlay) are
-    // never persisted to the database, so merge them in from the loaded set
+    // Internal overlays (e.g. "Map Features") are never persisted, so merge them from the loaded set
     for (const overlay of OverlayManager.loaded) {
         consider(overlay);
     }
@@ -476,10 +468,18 @@ function toggleOverlay(id: number) {
     }
 }
 
-function handleCardClick(id: number) {
+function handleCardClick(overlay: Overlay) {
     if (isDraggable.value) return;
-    if (id === 0) return;
-    toggleOverlay(id);
+    if (overlay.id === 0) return;
+    if (!hasOverlayDetails(overlay)) return;
+    toggleOverlay(overlay.id);
+}
+
+/** Whether an overlay has an expandable details panel. Mission overlays are managed from MenuMission and are not expandable here. */
+function hasOverlayDetails(overlay: Overlay): boolean {
+    return overlay.type === 'raster'
+        || overlay.type === 'raster-dem'
+        || overlay.type === 'vector';
 }
 
 function resolveOverlayStatus(overlay: Overlay): OverlayStatus {

@@ -256,8 +256,6 @@ const contents: Ref<Array<DBSubscriptionContent>> = useObservable(
 
 const filteredContents = computed(() => {
     return (contents.value || []).filter((c) => {
-        // If is Photo and not a tif or image/tiff
-
         const isPhoto = (
             /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(c.name)
             || (c.mimeType && c.mimeType.startsWith('image/'))
@@ -289,13 +287,9 @@ async function deleteFile(hash: string) {
 }
 
 const uploadHeaders = computed(() => {
-    const headers: Record<string, string> = {}
-
-    if (props.subscription.token) {
-        headers.MissionAuthorization = props.subscription.token;
-    };
-
-    return headers;
+    // The mission token, NOT the CloudTAK JWT - the server forwards this
+    // header verbatim to TAK Server as the Mission Token when present
+    return props.subscription.headers();
 });
 
 async function doneUpload() {

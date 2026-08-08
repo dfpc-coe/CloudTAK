@@ -1,7 +1,6 @@
 <template>
     <MenuTemplate
         name='Deleted Features'
-        :loading='!mapStore.isLoaded'
     >
         <template #buttons>
             <TablerDropdown>

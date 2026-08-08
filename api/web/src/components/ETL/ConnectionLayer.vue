@@ -125,13 +125,15 @@
                                     desc='Layer is updating'
                                 />
                                 <div class='ms-auto btn-list'>
-                                    <IconX
-                                        v-tooltip='"Cancel Stack Update"'
-                                        class='cursor-pointer'
-                                        :size='32'
-                                        stroke='1'
+                                    <TablerIconButton
+                                        title='Cancel Stack Update'
                                         @click='cancelUpdate'
-                                    />
+                                    >
+                                        <IconX
+                                            :size='32'
+                                            stroke='1'
+                                        />
+                                    </TablerIconButton>
                                 </div>
                             </div>
                             <div class='card-body'>
@@ -217,18 +219,24 @@
                                                 name='layer-direction'
                                             >
                                                 <template #option='{ option }'>
-                                                    <IconWorldDownload
+                                                    <span
                                                         v-if='option.value === "incoming"'
-                                                        v-tooltip='"Incoming"'
-                                                        :size='32'
-                                                        stroke='1'
-                                                    />
-                                                    <IconWorldUpload
+                                                        title='Incoming'
+                                                    >
+                                                        <IconWorldDownload
+                                                            :size='32'
+                                                            stroke='1'
+                                                        />
+                                                    </span>
+                                                    <span
                                                         v-if='option.value === "outgoing"'
-                                                        v-tooltip='"Outgoing"'
-                                                        :size='32'
-                                                        stroke='1'
-                                                    />
+                                                        title='Outgoing'
+                                                    >
+                                                        <IconWorldUpload
+                                                            :size='32'
+                                                            stroke='1'
+                                                        />
+                                                    </span>
                                                     {{ option.label }}
                                                 </template>
                                             </TablerPillGroup>

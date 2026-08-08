@@ -4,11 +4,9 @@ import { isNativePlatform } from './capacitor.ts';
 /**
  * Per-device push registration bookkeeping.
  *
- * FCM tokens are device-scoped and rotate over time (reinstall, expiry, etc).
- * To keep a single `push` paging source per device in sync we remember the
- * server-side paging record id (and the last token we registered) locally via
- * Capacitor Preferences. On startup and on every token rotation we upsert that
- * record so notifications continue to be delivered without user intervention.
+ * FCM tokens are device-scoped and rotate (reinstall, expiry, etc). We persist
+ * the server paging record id and last-registered token via Capacitor
+ * Preferences so the `push` source can be re-upserted on startup and rotation.
  */
 const PUSH_ID_KEY = 'cloudtak::push::paging_id';
 const PUSH_TOKEN_KEY = 'cloudtak::push::token';
@@ -48,11 +46,7 @@ async function setStored(id: number | null, token: string | null): Promise<void>
  * Register (or refresh) this device's FCM token as a `push` paging source.
  * Safe to call repeatedly — it only writes to the server when the token
  * changes. No-op on non-native platforms or when no token is available.
- *
- * Concurrent calls are serialized through an in-flight promise chain so that
- * each caller awaits a real sync attempt (rather than being dropped while
- * another sync is in progress). The stored-token comparison inside the sync
- * coalesces redundant server writes.
+ * Concurrent calls are serialized so each caller awaits a real sync attempt.
  */
 export async function syncPushToken(token: string | null): Promise<void> {
     if (!isNativePlatform() || !token) return;

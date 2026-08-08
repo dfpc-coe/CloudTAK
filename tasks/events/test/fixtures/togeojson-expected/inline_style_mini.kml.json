@@ -1,0 +1,142 @@
+{
+  "kml": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              2.3101624,
+              48.7301875
+            ],
+            [
+              2.3098714,
+              48.7300247
+            ],
+            [
+              2.3098051,
+              48.7299542
+            ]
+          ]
+        },
+        "properties": {
+          "name": "With all inline styles",
+          "stroke-opacity": 1,
+          "stroke": "#ff0000",
+          "stroke-width": 3
+        }
+      }
+    ]
+  },
+  "kmlWithFolders": {
+    "type": "root",
+    "children": [
+      {
+        "type": "folder",
+        "meta": {
+          "name": "Inline style test"
+        },
+        "children": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  2.3101624,
+                  48.7301875
+                ],
+                [
+                  2.3098714,
+                  48.7300247
+                ],
+                [
+                  2.3098051,
+                  48.7299542
+                ]
+              ]
+            },
+            "properties": {
+              "name": "With all inline styles",
+              "stroke-opacity": 1,
+              "stroke": "#ff0000",
+              "stroke-width": 3
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "kmlWithFoldersSkipNull": {
+    "type": "root",
+    "children": [
+      {
+        "type": "folder",
+        "meta": {
+          "name": "Inline style test"
+        },
+        "children": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  2.3101624,
+                  48.7301875
+                ],
+                [
+                  2.3098714,
+                  48.7300247
+                ],
+                [
+                  2.3098051,
+                  48.7299542
+                ]
+              ]
+            },
+            "properties": {
+              "name": "With all inline styles",
+              "stroke-opacity": 1,
+              "stroke": "#ff0000",
+              "stroke-width": 3
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "kmlSkipNull": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              2.3101624,
+              48.7301875
+            ],
+            [
+              2.3098714,
+              48.7300247
+            ],
+            [
+              2.3098051,
+              48.7299542
+            ]
+          ]
+        },
+        "properties": {
+          "name": "With all inline styles",
+          "stroke-opacity": 1,
+          "stroke": "#ff0000",
+          "stroke-width": 3
+        }
+      }
+    ]
+  }
+}

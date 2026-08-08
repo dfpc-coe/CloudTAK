@@ -1,0 +1,208 @@
+{
+  "kml": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                14.60190128636069,
+                37.92006947469352
+              ],
+              [
+                15.358941332345658,
+                37.91801270483731
+              ],
+              [
+                15.35770894852841,
+                37.464406338104496
+              ],
+              [
+                14.600668902543442,
+                37.466463107960706
+              ],
+              [
+                14.60190128636069,
+                37.92006947469352
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "@geometry-type": "groundoverlay",
+          "name": "Large-scale overlay on terrain",
+          "description": "Overlay shows Mount Etna erupting \n          on July 13th, 2001.",
+          "icon": "https://developers.google.com/kml/documentation/images/etna.jpg"
+        },
+        "bbox": [
+          14.60128369746704,
+          37.46543388598137,
+          15.35832653742206,
+          37.91904192681665
+        ]
+      }
+    ]
+  },
+  "kmlWithFolders": {
+    "type": "root",
+    "children": [
+      {
+        "type": "folder",
+        "meta": {
+          "name": "Ground Overlays",
+          "description": "Examples of ground overlays"
+        },
+        "children": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    14.60190128636069,
+                    37.92006947469352
+                  ],
+                  [
+                    15.358941332345658,
+                    37.91801270483731
+                  ],
+                  [
+                    15.35770894852841,
+                    37.464406338104496
+                  ],
+                  [
+                    14.600668902543442,
+                    37.466463107960706
+                  ],
+                  [
+                    14.60190128636069,
+                    37.92006947469352
+                  ]
+                ]
+              ]
+            },
+            "properties": {
+              "@geometry-type": "groundoverlay",
+              "name": "Large-scale overlay on terrain",
+              "description": "Overlay shows Mount Etna erupting \n          on July 13th, 2001.",
+              "icon": "https://developers.google.com/kml/documentation/images/etna.jpg"
+            },
+            "bbox": [
+              14.60128369746704,
+              37.46543388598137,
+              15.35832653742206,
+              37.91904192681665
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "kmlWithFoldersSkipNull": {
+    "type": "root",
+    "children": [
+      {
+        "type": "folder",
+        "meta": {
+          "name": "Ground Overlays",
+          "description": "Examples of ground overlays"
+        },
+        "children": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    14.60190128636069,
+                    37.92006947469352
+                  ],
+                  [
+                    15.358941332345658,
+                    37.91801270483731
+                  ],
+                  [
+                    15.35770894852841,
+                    37.464406338104496
+                  ],
+                  [
+                    14.600668902543442,
+                    37.466463107960706
+                  ],
+                  [
+                    14.60190128636069,
+                    37.92006947469352
+                  ]
+                ]
+              ]
+            },
+            "properties": {
+              "@geometry-type": "groundoverlay",
+              "name": "Large-scale overlay on terrain",
+              "description": "Overlay shows Mount Etna erupting \n          on July 13th, 2001.",
+              "icon": "https://developers.google.com/kml/documentation/images/etna.jpg"
+            },
+            "bbox": [
+              14.60128369746704,
+              37.46543388598137,
+              15.35832653742206,
+              37.91904192681665
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "kmlSkipNull": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                14.60190128636069,
+                37.92006947469352
+              ],
+              [
+                15.358941332345658,
+                37.91801270483731
+              ],
+              [
+                15.35770894852841,
+                37.464406338104496
+              ],
+              [
+                14.600668902543442,
+                37.466463107960706
+              ],
+              [
+                14.60190128636069,
+                37.92006947469352
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "@geometry-type": "groundoverlay",
+          "name": "Large-scale overlay on terrain",
+          "description": "Overlay shows Mount Etna erupting \n          on July 13th, 2001.",
+          "icon": "https://developers.google.com/kml/documentation/images/etna.jpg"
+        },
+        "bbox": [
+          14.60128369746704,
+          37.46543388598137,
+          15.35832653742206,
+          37.91904192681665
+        ]
+      }
+    ]
+  }
+}

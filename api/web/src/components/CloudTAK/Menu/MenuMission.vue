@@ -1,13 +1,13 @@
 <template>
     <MenuTemplate
         :name='subscription ? subscription.meta.name : "Data Sync"'
-        :error='error'
         :loading='(!subscription && !error) || loading'
+        :scroll='false'
     >
         <template #buttons>
             <TablerDelete
                 v-if='!loading && subscription && subscription.role.permissions.includes("MISSION_WRITE")'
-                v-tooltip='"Delete"'
+                title='Delete'
                 :label='"Delete " + (subscription.meta.name || "Data Sync")'
                 displaytype='icon'
                 match='Delete Data Sync'
@@ -93,12 +93,13 @@
                     @update:model-value='navigateMissionTab'
                 >
                     <template #option='{ option }'>
-                        <component
-                            :is='missionTabIcons[option.value]'
-                            v-tooltip='option.label'
-                            :size='32'
-                            stroke='1'
-                        />
+                        <span :title='option.label'>
+                            <component
+                                :is='missionTabIcons[option.value]'
+                                :size='32'
+                                stroke='1'
+                            />
+                        </span>
                     </template>
                 </TablerPillGroup>
 
@@ -127,7 +128,6 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
-import { Preferences } from '@capacitor/preferences';
 import { std } from '../../../std.ts';
 import type { Feature } from '../../../types.ts';
 import type { Component } from 'vue';
@@ -247,10 +247,8 @@ async function fetchMission(reload = false): Promise<void> {
     loading.value = true;
 
     try {
-        const { value: storedToken } = await Preferences.get({ key: 'token' });
         subscription.value = await Subscription.load(String(route.params.mission), {
             reload,
-            token: String(storedToken || ''),
             missiontoken: token.value,
         });
 

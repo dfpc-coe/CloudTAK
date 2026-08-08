@@ -1,12 +1,10 @@
 /**
- * FeatureManager provides methods for managing Features in both the API
- * and the dexie database. It is designed implement BaseInterface and 
- * provides additional methods specific to the Feature entity, such as counting,
- * listing with filters, downloading, and deleting features.
+ * FeatureManager manages Features in both the API and the dexie database,
+ * implementing BaseInterface with Feature-specific methods (counting, listing
+ * with filters, downloading, deleting).
  *
- * Note that it currently does not handle re-rendering calls in the map stack and therefore
- * must be used in conjunction with the cot.ts module or atlas-database.ts to ensure
- * that re-rendering is triggered.
+ * Note: it does not trigger re-rendering in the map stack, so it must be used
+ * alongside cot.ts or atlas-database.ts to ensure re-rendering happens.
  */
 
 import { liveQuery, type Observable } from 'dexie';

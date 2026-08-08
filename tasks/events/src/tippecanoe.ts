@@ -88,16 +88,23 @@ export default class Tippecanoe {
             if (options.quiet) base.push('--quiet');
 
             console.log(`tippecanoe ${base.join(' ')}`);
+            let stderr = '';
             const tippecanoe = CP.spawn('tippecanoe', base, {
                 env: process.env,
             })
                 .on('error', reject)
-                .on('close', (code) => {
+                .on('close', (code, signal) => {
                     if (code !== 0) {
-                        return reject(new Error(`tippecanoe exited with code ${code}`));
+                        const detail = signal ? `killed by signal ${signal}` : `exited with code ${code}`;
+                        return reject(new Error(`tippecanoe ${detail}${stderr ? `: ${stderr.trim()}` : ''}`));
                     }
                     resolve(code);
                 });
+
+            // Keep the tail of stderr so a failure surfaces the actual error
+            tippecanoe.stderr.on('data', (chunk) => {
+                stderr = (stderr + chunk).slice(-2000);
+            });
 
             if (options.std) {
                 tippecanoe.stdout.pipe(process.stdout);
@@ -150,14 +157,26 @@ export default class Tippecanoe {
             ].concat(inputs);
 
             if (options.force) base = base.concat(['-f']);
-            if (options.limit.features === false) base.concat(['--no-feature-limit']);
-            if (options.limit.size === false) base.concat(['--no-tile-size-limit']);
+            if (options.limit.features === false) base = base.concat(['--no-feature-limit']);
+            if (options.limit.size === false) base = base.concat(['--no-tile-size-limit']);
 
+            let stderr = '';
             const tilejoin = CP.spawn('tile-join', base, {
                 env: process.env,
             })
                 .on('error', reject)
-                .on('close', resolve);
+                .on('close', (code, signal) => {
+                    if (code !== 0) {
+                        const detail = signal ? `killed by signal ${signal}` : `exited with code ${code}`;
+                        return reject(new Error(`tile-join ${detail}${stderr ? `: ${stderr.trim()}` : ''}`));
+                    }
+                    resolve(code);
+                });
+
+            // Keep the tail of stderr so a failure surfaces the actual error
+            tilejoin.stderr.on('data', (chunk) => {
+                stderr = (stderr + chunk).slice(-2000);
+            });
 
             if (options.std) {
                 tilejoin.stdout.pipe(process.stdout);

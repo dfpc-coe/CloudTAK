@@ -1,0 +1,126 @@
+{
+  "kml": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              2.3101624,
+              48.7301875
+            ],
+            [
+              2.3098714,
+              48.7300247
+            ]
+          ]
+        },
+        "properties": {
+          "fill-opacity": 0.8,
+          "fill": "#1100ff",
+          "stroke-opacity": 0,
+          "stroke-width": 3
+        }
+      }
+    ]
+  },
+  "kmlWithFolders": {
+    "type": "root",
+    "children": [
+      {
+        "type": "folder",
+        "meta": {
+          "name": "Inline style test"
+        },
+        "children": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  2.3101624,
+                  48.7301875
+                ],
+                [
+                  2.3098714,
+                  48.7300247
+                ]
+              ]
+            },
+            "properties": {
+              "fill-opacity": 0.8,
+              "fill": "#1100ff",
+              "stroke-opacity": 0,
+              "stroke-width": 3
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "kmlWithFoldersSkipNull": {
+    "type": "root",
+    "children": [
+      {
+        "type": "folder",
+        "meta": {
+          "name": "Inline style test"
+        },
+        "children": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  2.3101624,
+                  48.7301875
+                ],
+                [
+                  2.3098714,
+                  48.7300247
+                ]
+              ]
+            },
+            "properties": {
+              "fill-opacity": 0.8,
+              "fill": "#1100ff",
+              "stroke-opacity": 0,
+              "stroke-width": 3
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "kmlSkipNull": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              2.3101624,
+              48.7301875
+            ],
+            [
+              2.3098714,
+              48.7300247
+            ]
+          ]
+        },
+        "properties": {
+          "fill-opacity": 0.8,
+          "fill": "#1100ff",
+          "stroke-opacity": 0,
+          "stroke-width": 3
+        }
+      }
+    ]
+  }
+}

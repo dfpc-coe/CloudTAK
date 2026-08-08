@@ -1,0 +1,262 @@
+{
+  "kml": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -122.0822035425683,
+            37.42228990140251,
+            0
+          ]
+        },
+        "properties": {
+          "name": "Google Earth - New Polygon",
+          "description": "Here is some descriptive text",
+          "styleUrl": "#a",
+          "icon-opacity": 0.6313725490196078,
+          "icon-color": "#ff00ff",
+          "icon-scale": 1.399999976158142,
+          "icon": "http://myserver.com/icon.jpg"
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -122.0822035425683,
+            37.42228990140251,
+            0
+          ]
+        },
+        "properties": {
+          "name": "Google Earth - New Path",
+          "styleUrl": "#b",
+          "icon-opacity": 0.6313725490196078,
+          "icon-color": "#ff00ff",
+          "icon-scale": 1.399999976158142,
+          "icon": "http://myserver.com/icon.jpg"
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -122.0822035425683,
+            37.42228990140251,
+            0
+          ]
+        },
+        "properties": {
+          "name": "Google Earth - New Label",
+          "styleUrl": "#c",
+          "label-opacity": 1,
+          "label-color": "#000000",
+          "icon-opacity": 0.6313725490196078,
+          "icon-color": "#ff00ff",
+          "icon-scale": 1.399999976158142,
+          "icon": "http://myserver.com/icon.jpg"
+        }
+      }
+    ]
+  },
+  "kmlWithFolders": {
+    "type": "root",
+    "children": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -122.0822035425683,
+            37.42228990140251,
+            0
+          ]
+        },
+        "properties": {
+          "name": "Google Earth - New Polygon",
+          "description": "Here is some descriptive text",
+          "styleUrl": "#a",
+          "icon-opacity": 0.6313725490196078,
+          "icon-color": "#ff00ff",
+          "icon-scale": 1.399999976158142,
+          "icon": "http://myserver.com/icon.jpg"
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -122.0822035425683,
+            37.42228990140251,
+            0
+          ]
+        },
+        "properties": {
+          "name": "Google Earth - New Path",
+          "styleUrl": "#b",
+          "icon-opacity": 0.6313725490196078,
+          "icon-color": "#ff00ff",
+          "icon-scale": 1.399999976158142,
+          "icon": "http://myserver.com/icon.jpg"
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -122.0822035425683,
+            37.42228990140251,
+            0
+          ]
+        },
+        "properties": {
+          "name": "Google Earth - New Label",
+          "styleUrl": "#c",
+          "label-opacity": 1,
+          "label-color": "#000000",
+          "icon-opacity": 0.6313725490196078,
+          "icon-color": "#ff00ff",
+          "icon-scale": 1.399999976158142,
+          "icon": "http://myserver.com/icon.jpg"
+        }
+      }
+    ]
+  },
+  "kmlWithFoldersSkipNull": {
+    "type": "root",
+    "children": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -122.0822035425683,
+            37.42228990140251,
+            0
+          ]
+        },
+        "properties": {
+          "name": "Google Earth - New Polygon",
+          "description": "Here is some descriptive text",
+          "styleUrl": "#a",
+          "icon-opacity": 0.6313725490196078,
+          "icon-color": "#ff00ff",
+          "icon-scale": 1.399999976158142,
+          "icon": "http://myserver.com/icon.jpg"
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -122.0822035425683,
+            37.42228990140251,
+            0
+          ]
+        },
+        "properties": {
+          "name": "Google Earth - New Path",
+          "styleUrl": "#b",
+          "icon-opacity": 0.6313725490196078,
+          "icon-color": "#ff00ff",
+          "icon-scale": 1.399999976158142,
+          "icon": "http://myserver.com/icon.jpg"
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -122.0822035425683,
+            37.42228990140251,
+            0
+          ]
+        },
+        "properties": {
+          "name": "Google Earth - New Label",
+          "styleUrl": "#c",
+          "label-opacity": 1,
+          "label-color": "#000000",
+          "icon-opacity": 0.6313725490196078,
+          "icon-color": "#ff00ff",
+          "icon-scale": 1.399999976158142,
+          "icon": "http://myserver.com/icon.jpg"
+        }
+      }
+    ]
+  },
+  "kmlSkipNull": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -122.0822035425683,
+            37.42228990140251,
+            0
+          ]
+        },
+        "properties": {
+          "name": "Google Earth - New Polygon",
+          "description": "Here is some descriptive text",
+          "styleUrl": "#a",
+          "icon-opacity": 0.6313725490196078,
+          "icon-color": "#ff00ff",
+          "icon-scale": 1.399999976158142,
+          "icon": "http://myserver.com/icon.jpg"
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -122.0822035425683,
+            37.42228990140251,
+            0
+          ]
+        },
+        "properties": {
+          "name": "Google Earth - New Path",
+          "styleUrl": "#b",
+          "icon-opacity": 0.6313725490196078,
+          "icon-color": "#ff00ff",
+          "icon-scale": 1.399999976158142,
+          "icon": "http://myserver.com/icon.jpg"
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -122.0822035425683,
+            37.42228990140251,
+            0
+          ]
+        },
+        "properties": {
+          "name": "Google Earth - New Label",
+          "styleUrl": "#c",
+          "label-opacity": 1,
+          "label-color": "#000000",
+          "icon-opacity": 0.6313725490196078,
+          "icon-color": "#ff00ff",
+          "icon-scale": 1.399999976158142,
+          "icon": "http://myserver.com/icon.jpg"
+        }
+      }
+    ]
+  }
+}

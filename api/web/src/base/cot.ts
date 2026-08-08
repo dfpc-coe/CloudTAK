@@ -1,6 +1,7 @@
 import { v4 as randomUUID } from 'uuid';
+import Type2525 from '@tak-ps/node-cot/2525';
 import { std } from '../std.ts';
-import { db } from '../database.ts';
+import { db, withDbRetry } from '../database.ts';
 import { liveQuery } from 'dexie';
 import { bbox } from '@turf/bbox'
 import { length } from '@turf/length'
@@ -47,6 +48,65 @@ export const RENDERED_PROPERTIES = [
     'circle-radius',
     'circle-opacity'
 ]
+
+/**
+ * MIL-STD symbols render from an icon id of the form `2525<Variant>:<SIDC>` - a
+ * key into the Icon Manager's generated symbols
+ *
+ * It is a CloudTAK rendering detail, not TAK data: no client can resolve one as
+ * an Iconset path, and an unresolvable `usericon` detail takes precedence over
+ * (and so suppresses) the 2525 symbol the receiving client would otherwise
+ * render from the SIDC. It is therefore never stored on a Feature - see
+ * {@link renderedIcon}
+ */
+export const MILSYM_ICON = /^2525[bcde]:/i;
+
+/** CoT Types with no icon in the built-in spritesheet - these render as a plain marker */
+const TYPES_WITHOUT_ICON = ['u-d-p', 'b-m-p-s-m'];
+
+/**
+ * The SIDC a Feature's MIL-STD symbol should be generated from, if it has one
+ *
+ * `milicon` is authoritative - `type` only carries the SIDC on paths that ran
+ * node-cot's `normalize2525` (mission sync & CoT query deliver `a-f-G` instead)
+ */
+function milsymSIDC(properties: Feature["properties"]): string | undefined {
+    if (properties.milicon && Type2525.isNumericSIDCConvertable(properties.milicon.id)) {
+        return properties.milicon.id;
+    } else if (Type2525.isNumericSIDCConvertable(properties.type)) {
+        return properties.type;
+    } else {
+        return undefined;
+    }
+}
+
+/**
+ * The icon id a Feature renders with, on the map and in list views alike
+ *
+ * `properties.icon` holds only an icon the user picked or a TAK client sent, so
+ * it wins. Everything else is derived here rather than stored: a MIL-STD symbol
+ * is a pure function of the Feature's SIDC, and persisting the derived key both
+ * staled it against later type edits and leaked it onto the wire as a junk
+ * `usericon` iconsetpath
+ */
+export function renderedIcon(properties: Feature["properties"]): string | undefined {
+    if (properties.icon) return properties.icon;
+
+    // A Contact renders as its team coloured skittle. The skittle and icon map
+    // layers filter on `group` and `icon` independently and neither excludes the
+    // other, so deriving an icon here would draw a symbol on top of the skittle
+    if (properties.group) return undefined;
+
+    const sidc = milsymSIDC(properties);
+    if (sidc) return `2525E:${sidc}`;
+
+    // Everything else keys the built-in spritesheet off the CoT Type
+    if (properties.type && !TYPES_WITHOUT_ICON.includes(properties.type)) {
+        return properties.type;
+    }
+
+    return undefined;
+}
 
 const COT_MUTATIONS: COTMutation[] = [
     applyEllipseMutation
@@ -246,15 +306,19 @@ export default class COT {
             }
 
             if (this.origin.mode === OriginMode.CONNECTION) {
-                await db.feature.put({
+                await withDbRetry(() => db.feature.put({
                     id: this.id,
                     path: this._path,
                     properties: this._properties,
                     geometry: this._geometry
-                });
+                }));
             }
 
-            if (!this.is_self && (!opts || (opts && opts.skipSave !== false))) {
+            // skipSave: true is passed when applying server state locally
+            // (archive loads, sync events) - saving here would PUT the feature
+            // back to the API, which re-broadcasts a sync event to the user's
+            // other clients and creates a circular sync loop between them
+            if (!this.is_self && (!opts || opts.skipSave !== true)) {
                 await this.save();
             }
 
@@ -291,8 +355,23 @@ export default class COT {
         return COT.selfUid === this.id;
     }
 
+    get is_route(): boolean {
+        return this._geometry.type === 'LineString' && this._properties.type === 'b-m-r';
+    }
+
     get is_archivable(): boolean {
         return !this.is_skittle;
+    }
+
+    /**
+     * A machine generated feature this client didn't author (eg a Core Event
+     * CoT, reposted every cycle so local edits are silently overwritten).
+     * Excludes locally created features (creator entry) and Routes
+     */
+    get is_machine_generated(): boolean {
+        return this._properties.how === 'm-g'
+            && !this._properties.creator
+            && !this.is_route;
     }
 
     /**
@@ -300,7 +379,27 @@ export default class COT {
      * But does not determine if a COT is part of a Misison Sync, if the mission allows editing
      */
     get is_editable(): boolean {
-        return this.properties.archived || this.is_self || false;
+        if (this.is_self) return true;
+        if (this.is_machine_generated) return false;
+
+        return this.properties.archived || false;
+    }
+
+    /**
+     * Convert this LineString feature into a TAK Route (`b-m-r`).
+     * Throws if the geometry is not a LineString or the feature is already a route.
+     */
+    async toRoute(): Promise<void> {
+        if (this._geometry.type !== 'LineString') {
+            throw new Error('toRoute() is only supported for LineString features');
+        }
+        if (this.is_route) return;
+
+        this._properties.type = 'b-m-r';
+        this._properties.how = 'm-g';
+        this._properties.archived = true;
+
+        await this.update({});
     }
 
     async subscription(): Promise<Subscription> {
@@ -409,6 +508,11 @@ export default class COT {
                 feat.properties[prop] = input.properties[prop];
             }
         }
+
+        // The style has no access to the SIDC - it keys `icon-image` off `icon`
+        // alone, so a MIL-STD symbol's generated key is supplied here
+        const icon = renderedIcon(input.properties);
+        if (icon !== undefined) feat.properties.icon = icon;
 
         return feat;
     }
@@ -541,6 +645,9 @@ export default class COT {
                 && (
                     properties.icon.startsWith('COT_MAPPING_2525C')
                     || properties.icon.startsWith('COT_MAPPING_2525B')
+                    // Features stored before the MIL-STD render key stopped being
+                    // persisted still carry one - drop it so it re-derives
+                    || MILSYM_ICON.test(properties.icon)
                 )
             ) {
                 delete properties.icon;
@@ -587,16 +694,12 @@ export default class COT {
                 if (properties.icon.endsWith('.png')) {
                     properties.icon = properties.icon.replace(/.png$/, '');
                 }
+            } else if (!milsymSIDC(properties)) {
+                // A MIL-STD symbol needs no icon - renderedIcon derives its key
+                // from the milicon/type at render time
 
-                // Resolution happens via MapLibre's `styleimagemissing` handler
-                // (see IconManager.onStyleImageMissing). Iconset icons are
-                // loaded from Dexie on demand and unknown ids fall back to a
-                // generic point bitmap, so no preflight check is required.
-            } else if (properties.milsym && !isNaN(Number(properties.milsym.id))) {
-                properties.icon = `2525D:${properties.milsym.id}`;
-            } else {
                 // TODO Only add icon if one actually exists in the spritejson
-                if (!['u-d-p', 'b-m-p-s-m'].includes(properties.type)) {
+                if (!TYPES_WITHOUT_ICON.includes(properties.type)) {
                     properties.icon = `${properties.type}`;
                 }
             }

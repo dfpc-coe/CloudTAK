@@ -13,6 +13,8 @@ svg.menu {
     overflow: visible;
     transition: 0.2s;
     transition-timing-function: ease-out;
+    user-select: none;
+    -moz-user-select: none;
 }
 
 svg.menu.inner {

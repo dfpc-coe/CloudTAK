@@ -1,0 +1,58 @@
+{
+  "kml": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": null,
+        "properties": {
+          "name": "With all inline styles",
+          "fill": "#ff0011",
+          "stroke-opacity": 0,
+          "stroke": "#ff0",
+          "stroke-width": 3
+        }
+      }
+    ]
+  },
+  "kmlWithFolders": {
+    "type": "root",
+    "children": [
+      {
+        "type": "folder",
+        "meta": {
+          "name": "Inline style test"
+        },
+        "children": [
+          {
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+              "name": "With all inline styles",
+              "fill": "#ff0011",
+              "stroke-opacity": 0,
+              "stroke": "#ff0",
+              "stroke-width": 3
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "kmlWithFoldersSkipNull": {
+    "type": "root",
+    "children": [
+      {
+        "type": "folder",
+        "meta": {
+          "name": "Inline style test"
+        },
+        "children": []
+      }
+    ]
+  },
+  "kmlSkipNull": {
+    "type": "FeatureCollection",
+    "features": []
+  }
+}

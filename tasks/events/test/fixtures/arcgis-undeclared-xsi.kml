@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document id="CellularTowers_Clip" xsi:schemaLocation="http://www.opengis.net/kml/2.2 http://schemas.opengis.net/kml/2.2.0/ogckml22.xsd http://www.google.com/kml/ext/2.2 http://code.google.com/apis/kml/schema/kml22gx.xsd">
+	<name>CO FCC Reportable Cell Towers</name>
+	<snippet></snippet>
+	<Style id="IconStyle00">
+		<IconStyle>
+			<Icon><href>Layer0_Symbol_74ad4c34_0.png</href></Icon>
+			<scale>0.31250</scale>
+		</IconStyle>
+		<LabelStyle>
+			<color>00000000</color>
+			<scale>0.00000</scale>
+		</LabelStyle>
+		<PolyStyle>
+			<color>ff000000</color>
+			<outline>0</outline>
+		</PolyStyle>
+	</Style>
+	<Folder id="FeatureLayer0">
+		<name>CellularTowers_Clip</name>
+		<snippet></snippet>
+		<Placemark id="ID_00000">
+			<name>AT&amp;T Mobility LLC</name>
+			<snippet></snippet>
+			<styleUrl>#IconStyle00</styleUrl>
+			<Point>
+				<coordinates>-105.3696111113433,38.12761110994916,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark id="ID_00001">
+			<name>Verizon Wireless</name>
+			<snippet></snippet>
+			<styleUrl>#IconStyle00</styleUrl>
+			<Point>
+				<coordinates>-104.8231389069443,38.84149444174643,0</coordinates>
+			</Point>
+		</Placemark>
+	</Folder>
+</Document>
+</kml>

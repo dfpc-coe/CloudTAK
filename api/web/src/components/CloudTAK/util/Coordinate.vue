@@ -28,7 +28,7 @@
                     <span
                         v-for='mode in availableModes'
                         :key='mode.value'
-                        v-tooltip='mode.title'
+                        :title='mode.title'
                         role='menuitem'
                         tabindex='0'
                         class='my-1 px-2 user-select-none'

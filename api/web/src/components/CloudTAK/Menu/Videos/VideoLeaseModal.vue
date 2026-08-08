@@ -149,9 +149,9 @@
                             <div
                                 v-else-if='!secure'
                                 class='d-flex align-items-center user-select-none'
+                                title='Read/Write User'
                             >
                                 <IconArrowsLeftRight
-                                    v-tooltip='"Read/Write User"'
                                     :size='24'
                                     stroke='1'
                                 />
@@ -170,18 +170,24 @@
                                     padding='p-1'
                                 >
                                     <template #option='{ option }'>
-                                        <IconBook2
+                                        <span
                                             v-if='option.value === "read"'
-                                            v-tooltip='"Read User"'
-                                            :size='24'
-                                            stroke='1'
-                                        />
-                                        <IconPencil
+                                            title='Read User'
+                                        >
+                                            <IconBook2
+                                                :size='24'
+                                                stroke='1'
+                                            />
+                                        </span>
+                                        <span
                                             v-else
-                                            v-tooltip='"Write User"'
-                                            :size='24'
-                                            stroke='1'
-                                        />
+                                            title='Write User'
+                                        >
+                                            <IconPencil
+                                                :size='24'
+                                                stroke='1'
+                                            />
+                                        </span>
                                         <span class='mx-2'>{{ option.label }}</span>
                                     </template>
                                 </TablerPillGroup>
@@ -337,18 +343,24 @@
                         @update:model-value='(v: string) => editLease.proxy = v === "proxy" ? "" : null'
                     >
                         <template #option='{ option }'>
-                            <IconDrone
+                            <span
                                 v-if='option.value === "host"'
-                                v-tooltip='"Provide a stream URL to push data to"'
-                                :size='24'
-                                stroke='1'
-                            />
-                            <IconServer
+                                title='Provide a stream URL to push data to'
+                            >
+                                <IconDrone
+                                    :size='24'
+                                    stroke='1'
+                                />
+                            </span>
+                            <span
                                 v-else
-                                v-tooltip='"Pull from existing external Stream URL"'
-                                :size='24'
-                                stroke='1'
-                            />
+                                title='Pull from existing external Stream URL'
+                            >
+                                <IconServer
+                                    :size='24'
+                                    stroke='1'
+                                />
+                            </span>
                             <span class='ms-2'>{{ option.label }}</span>
                         </template>
                     </TablerPillGroup>

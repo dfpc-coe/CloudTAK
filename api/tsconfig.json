@@ -19,8 +19,9 @@
     "exclude": [],
     "include": [
         "*.ts",
-        "routes/",
-        "test/",
-        "lib/"
+        "common/",
+        "stateful/",
+        "stateless/",
+        "test/"
     ]
 }

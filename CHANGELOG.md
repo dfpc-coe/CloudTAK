@@ -16,6 +16,400 @@
 
 ### Pending Release
 
+### v13.63.0 - 2026-08-07
+
+- :tada: Introduce concept of CoreDevice to augment CoreEvent data structure 
+- :bug: Fix feature display with use of `maxzoom` limitation - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1642
+
+### v13.62.0 - 2026-08-05
+
+- :tada: Introduce Event Board
+
+### v13.61.0 - 2026-08-04
+
+- :bug: Perform a full map re-render when app is foregrounded
+
+### v13.60.1 - 2026-08-04
+
+- :rocket: Sync Versions
+
+### v13.60.0 - 2026-08-04
+
+- :rocket: Consistent Menu Styling
+
+### v13.59.2 - 2026-08-03
+
+- :rocket: Consistent Menu Styling
+
+### v13.59.1 - 2026-08-02
+
+- :bug: Reintroduce schedule based Mission rendering checks as a fallback
+
+### v13.59.0 - 2026-08-02
+
+- :tada: Introduce Core Event data types
+
+### v13.58.0 - 2026-08-01
+
+- :rocket: Use the Admin Cert to sync upstream group/channel information into new Group/Channels
+
+### v13.57.4 - 2026-08-01
+
+- :arrow_up: Update all Capacitor Dependencies
+
+### v13.57.3 - 2026-07-31
+
+- :bug: Fix WebSocket Disconnection Bug
+
+### v13.57.2 - 2026-07-29
+
+- :bug: Replenish the `VideoPlayer` retry budget after sustained playback, so a long running Video Wall tile is no longer permanently retired by a few unrelated stream errors spread across a session
+
+### v13.57.1 - 2026-07-29
+
+- :arrow_up: Update DockerCompose MediaInfra image
+
+### v13.57.0 - 2026-07-28
+
+- :tada: Introduce Admin support for Core Events
+- :rocket: Remove unused `core_incident` table
+- :rocket: Fix bug where large number of feature insertions would cause postgres to reject insert by inserting in batches
+
+### v13.56.2 - 2026-07-27
+
+- :bug: Fix Mission Token handling in `Subscription.update` - tokens were written to the user JWT field instead of `missiontoken`, never persisted, and never propagated to the Log/Change/Contents/Feature/Layer sub-stores, causing persistent 401s on password-protected Data Syncs
+- :bug: Fix Active Mission hijacking feature filing - updates to features belonging to other subscribed missions were refiled (and re-published to the TAK Server if authored) into the Active Mission; the feature's own mission now takes precedence
+- :bug: Fix Mission file uploads sending the CloudTAK JWT as the `MissionAuthorization` header instead of the Mission Token, breaking uploads to protected missions
+
+### v13.56.1 - 2026-07-27
+
+- :bug: Fix Mission Contents schema for API
+
+### v13.56.0 - 2026-07-25
+
+- :tada: Introduce Mission/Data-Sync layer editing
+- :rocket: Add Routing persistence so reloads don't stop routing
+- :bug: Allow Routing on Mission/Data Sync routes
+- :rocket: Include Battery Info in Self-SA Message
+
+### v13.55.0 - 2026-07-25
+
+- :arrow_up: Update MediaInfra@9.8
+
+### v13.54.3 - 2026-07-25
+
+- :rocket: Migrate the feature sidebar from a custom div to MenuTemplate for consistent mobile UI
+
+### v13.54.2 - 2026-07-24
+
+- :bug: Fix lints and checks
+
+### v13.54.1 - 2026-07-24
+
+- :bug: Fix bug in nginx tests
+
+### v13.54.0 - 2026-07-24
+
+- :rocket: Allow changing CSP behavior in nginx via `NGINX_CSP_<directive>` environment variables
+- :bug: Improved iOS resume behavior
+
+### v13.53.2 - 2026-07-24
+
+= :bug: TileJSON@3 supports a 3rd zoom value in the `center` field
+
+### v13.53.1 - 2026-07-24
+
+- :arrow_up: Update Alpine to 3.24
+
+### v13.53.0 - 2026-07-24
+
+- :tada: Introduce Battery Charging State
+- :rocket: Introduce Profile Config option for Wake Lock - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1600
+- :tada: Add support for copying features to the clipboard in GeoJSON format
+- :tada: Add support for pasting features from clipboard onto the map in GeoJSON format
+- :rocket: Allow changing Min/Max Desired count for Stateless API Service
+- :rocket: Merge Unit Status into 2525E PropertyType for better visibility and filtering of Unit Status in the Feature Type Editor
+
+### v13.52.1 - 2026-07-23
+
+- :bug: Ensure draw modes are reactive for consistent Draw Tools popup
+- :rocket: Update iOS XCode version on new CloudTAK release
+
+### v13.52.0 - 2026-07-23
+
+- :tada: Add `GET /api/type/2525e` endpoint exposing the MIL-STD-2525E Symbol Sets & Symbols via the `milstandard-e` package
+- :tada: Add `GET /api/type/2525e/:sidc` endpoint returning metadata (name, remarks, symbolset) for a given numeric SIDC
+- :tada: Add a 2525B/2525E standard toggle to the Feature Type editor - 2525E symbols are selected by numeric SIDC & rendered via `milsymbol`
+- :tada: 2525E symbols are browsed as a drill-down tree (Symbol Set => Entity => Entity Type => Entity Subtype) with breadcrumb navigation - typing a filter switches to a flat search across all Symbol Sets
+- :rocket: `GET /api/type/2525e` is hierarchy-aware - a `parent` Entity Code query param lists children & items carry `children` counts and a leaf `title`
+- :rocket: Hide the 2525B tab in the Feature Type editor once a Feature carries a 2525E type
+- :tada: Treat 2525D/2525E numeric SIDCs on the Feature `type` property as first-class - `node-cot@14.47` maps them to a basic CoT type + `__milicon` detail at the CoT boundary
+- :tada: Surface the `milicon` SIDC of augmented CoTs as the Feature `type` in the Profile WebSocket feed & the Web Map
+- :tada: Render SIDC-typed Features as military symbols on the map & show Unit Information for them (replaces the previous numeric `milsym` rendering path)
+- :tada: Default point creation (Draw Point, Coordinate Entry, Default Point Type setting) to 2525E Land Unit SIDCs where possible - `u-d-p` Custom Points & Spotted Map Items retain their traditional CoT types
+- :rocket: Augment CoTs flowing through TAK Connections with a 2525D `__milicon` detail derived from their CoT type
+- :bug: Fix the Feature Type editor panel rendering with its top cut off under the type label - an autofocused filter input scrolled the collapsed slidedown content
+- :bug: Keep the Feature Type editor open when a type is selected - it was remounting (and collapsing) on every type change as it was keyed on the type property
+- :arrow_up: Update `@tak-ps/node-cot` to `^14.47.0`
+- :arrow_up: Update `@tak-ps/vue-tabler` to `^5.1.0` - the Feature Type editor slidedown now only collapses explicitly; other `clickAnywhereExpand` slidedowns opt into `clickAnywhereCollapse` to retain their previous toggle behavior
+
+### v13.51.0 - 2026-07-18
+
+- :tada: Implement the Video Wall - a full-page grid of a user's saved video streams with drag & drop re-ordering, dynamic resizing & removal
+- :tada: Add a "Push to Video Wall" button to the Floating Video Pane which saves the stream to the wall & opens (or notifies) the Video Wall tab
+- :tada: Persist Video Wall placement in the `profile_videos` table via a new `position` column & `PATCH /api/profile/video/:id` endpoint
+- :tada: `POST /api/profile/video` now accepts a raw stream `url` - resolving it to an existing Video Lease or creating a user-owned proxy lease
+- :rocket: Extract a unified `VideoPlayer` component (hls.js) shared by the Floating Video Pane & the Video Wall
+- :white_check_mark: Add tests covering Profile Video creation from leases & URLs, placement updates & deletion
+
+### v13.50.0 - 2026-07-17
+
+- :bug: Delete Connection Features related to a layer if the layer is deleted - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1594
+- :bug: Increase event worker memory to handle PDF imports reliably
+- :bug: Surface OOM errors in shell calls more reliably
+- :bug: Fix other instances of DELETE endpoints throwing 5xx errors due to database relations
+
+### v13.49.0 - 2026-07-16
+
+- :rocket: Switch to using Filter Logs endpoint which allows displaying logs across log streams
+
+### v13.48.0 - 2026-07-16
+
+- :rocket: Avoid calling features API on every reload
+- :rocket: Immediatey render all local data on reload
+
+### v13.47.2 - 2026-07-16
+
+- :rocket: Ensure floating pane position doesn't overlap other UI components by default
+
+### v13.47.1 - 2026-07-15
+
+- :bug: Fix password protected Data Sync password input
+
+### v13.47.0 - 2026-07-15
+
+- :tada: Ability to change Mission Sync role
+- :tada: Allow Connection/Layers to create Core Events
+- :rocket: Rename `--no-<type>` flags for consistently
+- :tada: Add `--no-connections` dev flag to disable connecting TAK with ETL connections
+- :rocket: Throw human readable name on unique constraint in connection name - Closes: https://github.com/dfpc-coe/CloudTAK/issues/619
+- :rocket: Custom Task Type dropdown that supports search
+
+### v13.46.0 - 2026-07-14
+
+- :rocket: Remove Mission Feature listing from overlay menu in favour of a single source of truth in the mission features menu
+- :rocket: Improve speed of adding large number of features by skipping rendering until all features have been added
+- :rocket: Use white text on incoming chat messages regardless of theme
+- :rocket: Add Search Input to Draw Tools dropdown menu and migrate it to be programatically scaffolded from an array of values to support search
+- :tada: Introduce new CoreEvent table and assoc.
+- :bug: Fix vertical line in TablerInput when using a pre or post icon which was visually intrusive
+- :rocket: Add ability to Filter by Active or Inactive channel in MenuChannels
+- :arrow_up: Update to Pinia v4
+
+### v13.45.1 - 2026-07-14
+
+- :rocket: Add loading states to the Map Loading screen
+
+### v13.45.0 - 2026-07-13
+
+- :tada: Split server into `stateful` (hub) and `stateless` (api) modes to support independent ECS service deployment
+- :tada: Route all stateful interactions through a `HubClient` interface, decoupling stateless routes from direct connection state
+- :rocket: Split `Config` into separate `ConfigStateful` and `ConfigStateless` classes
+- :rocket: Wire up stateful RPC endpoints to `batch-schema` framework
+- :rocket: Harden stateful service CloudFormation stack
+- :rocket: Replace internal `sleep` utility with native `node:timers/promises` `setTimeout`
+
+### v13.44.0 - 2026-07-13
+
+- :rocket: Migrate away from async style missinge event and to icon missing callback with async support
+
+### v13.43.0 - 2026-07-13
+
+- :tada: Introduce MapLibre global state so that styles can react to Application State
+- :rocket: Make shared panel class for more visually appealing FloatingPanes
+
+### v13.42.0 - 2026-07-10
+
+- :rocket: Reduce stateful internals in favour of using stateless or cloudTAK database backed calls
+
+### v13.41.1 - 2026-07-10
+
+- :bug: Fix map loading regression which would prevent plugin loading
+- :bug: Fix broken HTML in remarks/description content - Fixes: https://github.com/dfpc-coe/CloudTAK/issues/1565
+
+### v13.41.0 - 2026-07-10
+
+- :rocket: Send Phone Number in CoT message if set - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1568
+
+### v13.40.0 - 2026-07-10
+
+- :bug: Tie loading state to end on `load` event instead of `idle` as immediate features can prevent `idle` state
+- :rocket: Immediately show local Data Sync features (and then request a refresh) if they are available locally
+- :rocket: Remove "Your Features" tree from the overlay menu now that it is surfaced via MenuFeatures
+
+### v13.39.0 - 2026-07-08
+
+- :rocket: Replace the `@openaddresses/batch-alarms` dependency with in-repo `cloudformation/lib/alarms.ts` & `cloudformation/lib/dashboard.ts`
+- :tada: Show a red threshold line on the CPU & Memory dashboard widgets indicating the value the utilization alarms are set to
+
+### v13.38.0 - 2026-07-08
+
+- :bug: Ensure Icons change is CoTView uid changes
+- :rocket: Consolidate Palettes into a single feature list on the Mission Template for future introduction as "suggested features" when in a data sync context with an assigned mission template
+- :rocket: Continue to extend FCM support
+
+### v13.37.0 - 2026-07-07
+
+- :bug: Reject the WebSocket upgrade with an HTTP 401 during the handshake when the connection token is invalid or expired, instead of accepting then closing - the client previously fired its `open` handler (and a full data resync) against a dead session
+- :bug: Fix `AtlasConnection.reconnect()` racing its own `close` handler into opening two concurrent WebSockets
+- :bug: Apply linear backoff (5s increments, capped at 30s) to Atlas WebSocket reconnect attempts instead of reconnecting immediately in a tight loop
+- :bug: Stop reconnecting the Atlas WebSocket once the server rejects the client's auth token, and propagate the failure to the main thread so the user's dead session is cleared and they are routed to `/login` (local database is preserved)
+- :tada: Warn the user ~30 minutes before their session token expires, with a banner to sign back in before it lapses
+- :white_check_mark: Add `websocket-auth.srv.test.ts` covering WebSocket upgrade rejection/acceptance based on token validity
+
+### v13.36.2 - 2026-07-07
+
+- :white_check_mark: Use non-standard ports for API server when running tests so they can run when alongside a dev server
+- :white_check_mark: Use non-standard ports for Mock TAK Server when running tests so they can run when alongside a dev server
+- :white_check_mark: Cache PKI certs to avoid OpenSSL overhead when running tests
+- :white_check_mark: TRUNCATE instead of DROP postgres tables in test runner
+
+### v13.36.1 - 2026-07-07
+
+- :bug: Fix TS enum compilation in Events Task
+
+### v13.36.0 - 2026-07-07
+
+- :bug: detect and throw an error if the user attempts to download a file and the tak server 404's
+- :bug: Detect invalid Zip files within a Data Package in the events task
+- :bug: Create new togeojson library using @tak-ps/xml-js for more lenient XML parsing
+
+### v13.35.0 - 2026-07-06
+
+- :rocket: Introduce `parent` field on basemap
+
+### v13.34.2 - 2026-07-06
+
+- :white_check_mark: Update Batch Schema and Batch Generic for 1.6x API perf increase
+
+### v13.34.1 - 2026-07-06
+
+- :white_check_mark: Add complete CodeCov coverage upload
+
+### v13.34.0 - 2026-07-05
+
+- :rocket: Move initial default basemap creation from the frontend map load to backend user provisioning - new users get a Basemap ProfileOverlay (from `map::basemap` config if set and existing, otherwise the first visible server raster basemap) before login succeeds
+- :rocket: `PUT /api/config` now rejects a `map::basemap` value that references a non-existent Basemap or one that is not a visible, non-overlay Server Basemap
+- :white_check_mark: Add `profile-default-basemap.srv.test.ts` covering configured, fallback, and validation flows
+
+### v13.33.1 - 2026-07-05
+
+- :rocket: update internal type defs
+- :arrow_up: Update Maplibre to 6.0-rel20
+- :arrow_up: Update CapGo Background Geolocation
+
+### v13.33.0 - 2026-07-05
+
+- :tada: Add support for Chat Receipt CoTs (`b-t-f-d` Delivery, `b-t-f-r` Read, `b-t-f-p` Pending, `b-t-f-s` Delivery Failure) received via the Connection Pool - receipts now update the delivery status of the original message
+- :bug: Chat Receipts no longer overwrite the original message with an empty string
+- :tada: Chat UI now shows message delivery status (Sending, Sent to Server, Delivered, Read, Pending, Failed) on sent messages in both Direct Chat & Data Sync Chat
+- :bug: Chat messages are now reliably ordered oldest to most recent - mixed Postgres/ISO 8601 timestamp formats previously caused out-of-order messages
+- :bug: Data Sync Chat messages sent from CloudTAK are no longer duplicated when they are re-fetched from the Mission
+- :white_check_mark: Add Chat Receipt E2E tests
+
+### v13.32.0 - 2026-07-02
+
+- :rocket: Improve Server Selection resilience on first boot which would sometimes hang
+- :rocket: Fix Chat Message UI to ensure input is locked to bottom of pane
+
+### v13.31.0 - 2026-07-02
+
+- :tada: Introduce internal client synchronization
+- :rocket: Introduce Multi Select -> radial Clicks - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1498
+
+### v13.30.1 - 2026-07-02
+
+- :rocket: Enable additional debug information when node-cot receives an unparsable XML document
+- :rocket: Loading improvements to Admin Layer Management
+
+### v13.30.0 - 2026-07-02
+
+- :rocket: Simplify the Service Worker Handling
+- :bug: Ensure service worker is still loaded if the window#load event has already fired
+
+### v13.29.0 - 2026-07-01
+
+- :rocket: Migrate Menu & Admin to use StandardItem Import
+- :tada: Allow admins to view import failure reasons & outputs
+- :rocket: Create StandardItem Error for more compact error viewing in the new Admin Health Tab
+
+### v13.28.2 - 2026-07-01
+
+- :bug: A bug in a critical `xml-js` library used for serializing and deserializing XML did not encode attribute values other than `"`
+
+### v13.28.1 - 2026-07-01
+
+- :bug: Output Worker Assets to vite manifest to ensure they are cached by the ServiceWorker
+
+### v13.28.0 - 2026-07-01
+
+- :bug: Fix video lease `POST` failing with `403 Unsafe URL: hostname resolves to blocked IP` when proxying a video source on a private network. Added a `media::proxy::allow` admin config of trusted proxy source hostnames/origins that are concatenated into the SSRF allow-list, editable from the Media Server admin config
+- :tada: Add turn-by-route navigation: a new `lib/routing` MapLibre control snaps the user's location to a TAK Route (`b-m-r`) with Turf `nearestPointOnLine`, drawing a connector to the line and highlighting the remaining segment to the destination
+- :tada: Add a `Navigate` button to Route features in `CoTView` and a `Navigating` banner showing current speed, distance/ETA and the ability to reverse the navigation direction
+- :tada: Add a `Convert to Route` transform to `CoTView` that converts a LineString feature into a TAK Route (`b-m-r`)
+
+### v13.27.0 - 2026-06-30
+
+- :rocket: Move Web Plugin installation logic into `api/bin/plugin.ts`, run within the self-contained Docker build
+- :rocket: Sync `<plugin>/public/` static assets into the CloudTAK Vite `public/` directory without allowing core assets to be overwritten
+
+### v13.26.2 - 2026-06-30
+
+- :bug: Video Property wasn't in use in the CoTView component
+- :bug: Don't allow the user to accidently submit mutiple basemaps (as basemaps can't be deleted)
+- :bug: Automatically remove extra basemaps via a database migration
+- :bug: Ensure the notification panel doesn't overflow the browser
+- :bug: Ensure user's connections can't connect twice
+
+### v13.26.1 - 2026-06-30
+
+- :bug: Ensure changing servers resets the current branding/app store
+- :bug: Ensure the Passkey button is hidden on mobile as it is not yet supported
+
+### v13.26.0 - 2026-06-30
+
+- :tada: Internal Error reporting API and UI for administrators to view and manage user device error reports
+- :rocket: Associate error reports with the originating login session and support deleting errors by individual log, session, username, or all
+- :rocket: Convert login session identifiers to UUIDs
+
+### v13.25.5 - 2026-06-30
+
+- :rocket: Introduce CapGo Live Update support on mobile
+
+### v13.25.4 - 2026-06-29
+
+- :rocket: Improve internal DexieDB database transaction handling
+
+### v13.25.3 - 2026-06-29
+
+- :rocket: Improve internal DexieDB database transaction handling
+
+### v13.25.2 - 2026-06-29
+
+- :rocket: Hide the accuracy ring if the user is using Preset Location mode
+- :rocket: Ensure the user can't select the user menu
+
+### v13.25.1 - 2026-06-28
+
+- :bug: Fix release actions
+
+### v13.25.0 - 2026-06-28
+
+- :bug: Allow configured VideoURL in SafeURL exception list
+- :tada: Redesigned geolocate control with real-time compass readings
+- :rocket: Migrate Session IDs to UUIDs for use as deviceIDs
+- :rocket visual changes to map controls
+
 ### v13.24.0 - 2026-06-26
 
 - :tada: Permissions prompt for Firebase Notifications

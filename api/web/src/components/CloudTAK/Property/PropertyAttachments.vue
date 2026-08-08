@@ -1,5 +1,5 @@
 <template>
-    <div class='col-12 pt-2'>
+    <div class='col-12'>
         <SlideDownHeader
             v-model='expanded'
             label='Attachments'
@@ -13,14 +13,17 @@
                 />
             </template>
             <template #right>
-                <IconFileUpload
+                <TablerIconButton
                     v-if='!upload'
-                    v-tooltip='"Add Attachment"'
-                    :size='20'
-                    stroke='1'
-                    class='cursor-pointer me-2'
+                    title='Add Attachment'
+                    class='me-2'
                     @click.stop='upload = true; expanded = true'
-                />
+                >
+                    <IconFileUpload
+                        :size='20'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <TablerBadge
                     class='me-2'
                     background-color='rgba(59, 130, 246, 0.15)'
@@ -32,11 +35,19 @@
             </template>
             <div class='col-12'>
                 <div class='mx-2 py-2'>
-                    <div class='rounded cloudtak-accent px-2 py-2'>
+                    <div
+                        class='rounded px-2 py-2'
+                        :class='{ "cloudtak-accent": !isEmpty }'
+                    >
                         <TablerLoading
                             v-if='loading'
                             :inline='true'
                             class='my-2'
+                        />
+                        <TablerError
+                            v-else-if='error'
+                            :err='error'
+                            @close='refresh'
                         />
                         <div
                             v-else-if='upload'
@@ -127,7 +138,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import { server, std, stdurl } from '../../../std.ts';
 import { useFloatStore } from '../../../stores/float.ts';
@@ -144,6 +155,7 @@ import {
 
 import {
     TablerBadge,
+    TablerError,
     TablerIconButton,
     TablerLoading,
     TablerNone,
@@ -166,8 +178,15 @@ const floatStore = useFloatStore();
 const expanded = ref(false);
 const upload = ref(false);
 const loading = ref(true);
+const error = ref<Error | undefined>(undefined);
 const files = ref<Attachment[]>([]);
 const token = ref<string | null>(null);
+
+// The "No Items" state drops the inset surface so it reads as part of the
+// slide-down body instead of an empty raised block
+const isEmpty = computed(() => {
+    return !loading.value && !error.value && !upload.value && !files.value.length;
+});
 
 watch(() => props.modelValue, async (newVal, oldVal) => {
     if (newVal.length === oldVal.length && newVal.every((h, i) => h === oldVal[i])) return;
@@ -203,8 +222,14 @@ async function deleteAttachment(file: Attachment): Promise<void> {
 
 async function refresh(): Promise<void> {
     loading.value = true;
+    error.value = undefined;
+
     if (props.modelValue.length) {
-        await fetchMetadata();
+        try {
+            await fetchMetadata();
+        } catch (err) {
+            error.value = err instanceof Error ? err : new Error(String(err));
+        }
     } else {
         files.value = [];
     }
@@ -235,7 +260,7 @@ async function uploadComplete(event: unknown): Promise<void> {
         }
     });
 
-    if (res.error) throw new Error(String(res.error));
+    if (res.error) throw new Error(res.error.message);
     if (res.data) files.value.push(...res.data.items);
 
     loading.value = false;
@@ -270,7 +295,7 @@ async function fetchMetadata(): Promise<void> {
         }
     });
 
-    if (res.error) throw new Error(String(res.error));
+    if (res.error) throw new Error(res.error.message);
     if (res.data) files.value = res.data.items;
 }
 </script>

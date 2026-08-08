@@ -107,6 +107,7 @@ test('POST: api/basemap', async () => {
 
         assert.deepEqual(res.body, {
             id: 1,
+            parent: null,
             name: 'Test Basemap',
             hidden: false,
             actions: { feature: [] },
@@ -153,12 +154,12 @@ test('GET: api/basemap/1/tiles', async () => {
             name: 'Test Basemap',
             type: 'raster',
             bounds: [-180, -90, 180, 90],
-            center: [0, 0],
+            center: [0, 0, 8],
             tileSize: 256,
             minzoom: 0,
             maxzoom: 16,
             actions: { feature: [] },
-            tiles: ['http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}'],
+            tiles: [`${flight.base}/api/basemap/1/tiles/{z}/{x}/{y}`],
         });
     } catch (err) {
         assert.ifError(err);
@@ -182,6 +183,7 @@ test('PATCH: api/basemap/1', async () => {
 
         assert.deepEqual(res.body, {
             id: 1,
+            parent: null,
             name: 'Test Basemap2',
             hidden: false,
             actions: { feature: [] },

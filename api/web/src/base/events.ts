@@ -23,6 +23,7 @@ export enum WorkerMessageType {
 
     Connection_Open = 'connection:open',
     Connection_Close = 'connection:close',
+    Connection_AuthFailure = 'connection:authfailure',
 
     Mission_Change_Feature = 'mission:change:feature',
     Mission_Invite = 'mission:invite',
@@ -31,6 +32,16 @@ export enum WorkerMessageType {
 
     Feature_Update = 'cloudtak:feature:update',
     Profile_Update = 'cloudtak:profile:update',
+
+    Sync_Start = 'cloudtak:sync:start',
+    Sync_Complete = 'cloudtak:sync:complete',
+    Sync_Update = 'cloudtak:sync:update',
+
+    Iconset_Change = 'cloudtak:iconset:change',
+
+    VideoWall_Ping = 'cloudtak:videowall:ping',
+    VideoWall_Pong = 'cloudtak:videowall:pong',
+    VideoWall_Refresh = 'cloudtak:videowall:refresh',
 }
 
 export type WorkerMessage = {

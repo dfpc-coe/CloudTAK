@@ -9,13 +9,11 @@ import Events from './lib/events.js';
 import PMTiles from './lib/pmtiles.js';
 import Retention from './lib/retention.js';
 import Alarms from './lib/alarms.js';
-import {
-    ELB as ELBAlarms,
-    RDS as RDSAlarms
-} from '@openaddresses/batch-alarms';
+import Dashboard from './lib/dashboard.js';
+import Stateful from './lib/stateful.js';
 
 export default cf.merge(
-    S3, DB, API, KMS, Signing, Alarms, PMTiles, Events, Retention, Media,
+    S3, DB, API, KMS, Signing, Alarms, Dashboard, PMTiles, Events, Retention, Media, Stateful,
     {
         Description: 'Template for @tak-ps/etl',
         Parameters: {
@@ -35,20 +33,5 @@ export default cf.merge(
                 Default: 'false'
             }
         }
-    },
-    ELBAlarms({
-        prefix: 'BatchELB',
-        topic: cf.ref('HighUrgencyAlarmTopic'),
-        apache: cf.stackName,
-        cluster: cf.join(['tak-vpc-', cf.ref('Environment')]),
-        service: cf.getAtt('Service', 'Name'),
-        loadbalancer: cf.getAtt('ELB', 'LoadBalancerFullName'),
-        targetgroup: cf.getAtt('TargetGroup', 'TargetGroupFullName')
-    }),
-    RDSAlarms({
-        prefix: 'Batch',
-        topic: cf.ref('HighUrgencyAlarmTopic'),
-        instance: cf.ref('DBClusterInstanceA')
-
-    })
+    }
 );

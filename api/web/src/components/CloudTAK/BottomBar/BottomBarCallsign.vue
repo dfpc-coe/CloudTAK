@@ -44,7 +44,7 @@
         </TablerIconButton>
     </div>
     <div
-        v-tooltip='"Zoom To Location"'
+        title='Zoom To Location'
         class='rounded text-truncate px-2 py-2 d-flex flex-column justify-content-center text-white user-select-none cursor-pointer cloudtak-hover h-100 flex-shrink-1'
         style='min-width: 0; max-width: fit-content;'
         @click='$emit("to-location")'

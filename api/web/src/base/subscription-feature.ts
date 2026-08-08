@@ -1,4 +1,4 @@
-import { db } from '../database.ts';
+import { db, ChatStatus } from '../database.ts';
 import Filter from './filter.ts';
 import COT from './cot.ts';
 import Subscription from './subscription.ts';
@@ -15,19 +15,16 @@ import { WorkerMessageType } from './events.ts';
 export default class SubscriptionFeature {
     parent: Subscription;
 
-    token: string;
     missiontoken?: string;
 
     constructor(
         parent: Subscription,
         opts: {
-            token: string,
             missiontoken?: string,
         }
     ) {
         this.parent = parent;
 
-        this.token = opts.token;
         this.missiontoken = opts.missiontoken;
     }
 
@@ -91,17 +88,25 @@ export default class SubscriptionFeature {
                         id: string;
                         senderCallsign: string;
                         messageId?: string;
+                        chatgrp?: { _attributes?: { uid0?: string } };
                     } | undefined;
                     if (!chat) continue;
+
+                    // Key on the messageId so a message sent locally (stored under its
+                    // messageId) is replaced by the server copy rather than duplicated
+                    const id = chat.messageId || feature.id;
+
                     await db.subscription_chat.put({
-                        id: feature.id,
+                        id,
                         mission: this.parent.guid,
                         chatroom: chat.chatroom,
                         sender: chat.senderCallsign || String(feature.properties.callsign || ''),
-                        sender_uid: chat.id,
+                        sender_uid: chat.chatgrp?._attributes?.uid0 || chat.id,
                         message: String(feature.properties.remarks || ''),
                         created: String(feature.properties.start || feature.properties.time || new Date().toISOString()),
-                        unread: unreadChats.has(feature.id),
+                        unread: unreadChats.has(id),
+                        // The message came back from the Mission so it has reached the server
+                        status: ChatStatus.Sent,
                     });
                 }
             });
@@ -209,9 +214,6 @@ export default class SubscriptionFeature {
      * This will udpate the feature in the local DB, submit it to the TAK Server and
      * mark the subscription as dirty for a re-render
      *
-     * @param atlas - The Atlas instance
-     * @param cot - The COT object to upsert
-     * @param opts - Options for updating the feature
      * @param opts.skipNetwork - If true, the feature will not be updated on the server - IE in response to a Mission Change event
      */
     async update(
@@ -227,18 +229,21 @@ export default class SubscriptionFeature {
                 id: string;
                 senderCallsign: string;
                 messageId?: string;
+                chatgrp?: { _attributes?: { uid0?: string } };
             } | undefined;
 
             if (chat) {
                 await db.subscription_chat.put({
-                    id: cot.id,
+                    id: chat.messageId || cot.id,
                     mission: this.parent.guid,
                     chatroom: chat.chatroom,
                     sender: chat.senderCallsign || String(cot.properties.callsign || ''),
-                    sender_uid: chat.id,
+                    sender_uid: chat.chatgrp?._attributes?.uid0 || chat.id,
                     message: String(cot.properties.remarks || ''),
                     created: String(cot.properties.start || cot.properties.time || new Date().toISOString()),
                     unread: !!opts.skipNetwork,
+                    // The message arrived via the Mission so it has reached the server
+                    status: ChatStatus.Sent,
                 });
             }
         } else {

@@ -1,7 +1,6 @@
 <template>
     <MenuTemplate
         name='Saved Features'
-        :loading='!mapStore.isLoaded'
     >
         <template #buttons>
             <TablerDropdown>
@@ -496,7 +495,6 @@ async function renameFolder() {
         return;
     }
 
-    // Collect all descendant paths that need updating
     const allPaths = PathManager.flatPaths([node]);
 
     for (const oldP of allPaths) {
@@ -642,7 +640,6 @@ async function refresh(load = false): Promise<void> {
 
     paths.value = PathManager.buildTree<COT>(flatPaths);
 
-    // Reload items for the current folder if navigated into one
     if (currentPath.value !== '/') {
         const node = PathManager.findNode(paths.value, currentPath.value);
         if (node) {
@@ -720,7 +717,6 @@ async function deleteFeatures(): Promise<void> {
 }
 
 async function deletePath(node: PathNode<COT>): Promise<void> {
-    // Destroy sortable instances for this node and all descendants
     const destroySortables = (n: PathNode<COT>) => {
         const sortable = sortables.get(n.id);
         if (sortable) {
@@ -733,7 +729,6 @@ async function deletePath(node: PathNode<COT>): Promise<void> {
     };
     destroySortables(node);
 
-    // Delete COTs for this path and all descendant paths
     const allPaths = PathManager.flatPaths([node]);
     for (const p of allPaths) {
         await FeatureManager.delete({ path: p, permanent: true });

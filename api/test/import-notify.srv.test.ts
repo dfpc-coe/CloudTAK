@@ -50,7 +50,7 @@ test('POST: api/import', async () => {
 });
 
 test(`PATCH: api/import/<id> - Success`, async () => {
-    const url = new URL(`ws://localhost:5001`);
+    const url = new URL(flight.base.replace(/^http/, 'ws'));
     url.searchParams.append('format', 'geojson');
     url.searchParams.append('connection', 'admin@example.com');
     url.searchParams.append('token', flight.token.admin);

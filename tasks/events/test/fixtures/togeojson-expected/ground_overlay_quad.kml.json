@@ -1,0 +1,162 @@
+{
+  "kml": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                81.601884,
+                44.160723
+              ],
+              [
+                83.529902,
+                43.665148
+              ],
+              [
+                82.947737,
+                44.248831
+              ],
+              [
+                81.509322,
+                44.321015
+              ],
+              [
+                81.601884,
+                44.160723
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "@geometry-type": "groundoverlay",
+          "name": "gx:LatLonQuad Example",
+          "icon": "http://developers.google.com/kml/documentation/images/rectangle.gif"
+        }
+      }
+    ]
+  },
+  "kmlWithFolders": {
+    "type": "root",
+    "children": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                81.601884,
+                44.160723
+              ],
+              [
+                83.529902,
+                43.665148
+              ],
+              [
+                82.947737,
+                44.248831
+              ],
+              [
+                81.509322,
+                44.321015
+              ],
+              [
+                81.601884,
+                44.160723
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "@geometry-type": "groundoverlay",
+          "name": "gx:LatLonQuad Example",
+          "icon": "http://developers.google.com/kml/documentation/images/rectangle.gif"
+        }
+      }
+    ]
+  },
+  "kmlWithFoldersSkipNull": {
+    "type": "root",
+    "children": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                81.601884,
+                44.160723
+              ],
+              [
+                83.529902,
+                43.665148
+              ],
+              [
+                82.947737,
+                44.248831
+              ],
+              [
+                81.509322,
+                44.321015
+              ],
+              [
+                81.601884,
+                44.160723
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "@geometry-type": "groundoverlay",
+          "name": "gx:LatLonQuad Example",
+          "icon": "http://developers.google.com/kml/documentation/images/rectangle.gif"
+        }
+      }
+    ]
+  },
+  "kmlSkipNull": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                81.601884,
+                44.160723
+              ],
+              [
+                83.529902,
+                43.665148
+              ],
+              [
+                82.947737,
+                44.248831
+              ],
+              [
+                81.509322,
+                44.321015
+              ],
+              [
+                81.601884,
+                44.160723
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "@geometry-type": "groundoverlay",
+          "name": "gx:LatLonQuad Example",
+          "icon": "http://developers.google.com/kml/documentation/images/rectangle.gif"
+        }
+      }
+    ]
+  }
+}

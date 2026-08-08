@@ -107,14 +107,21 @@ export class GeolocationPermission {
         };
 
         try {
-            // Foreground watcher delivers an immediate, reliable fix (incl. iOS
-            // simulator) and clears the initial "Acquiring GPS" state.
+            // Resolve the foreground (When In Use) prompt before starting the
+            // background watcher: iOS ignores the watcher's escalation to
+            // "Always" while that first prompt is still pending, which used to
+            // defer the Always prompt to the second app launch.
+            if (isNativePlatform()) {
+                await this.refreshStatus();
+                if (this.context.permissions.location === 'prompt') {
+                    await this.request();
+                }
+            }
+
             await this.startForegroundWatch(handler);
 
-            // Background watcher keeps location flowing once iOS suspends the
-            // foreground watcher. Started fire-and-forget so a slow addWatcher
-            // (e.g. resolving "Always" permission) can never block foreground
-            // acquisition.
+            // Fire-and-forget so a slow addWatcher can't block foreground
+            // acquisition; its permission request now escalates to "Always".
             if (isNativePlatform()) {
                 void this.startBackgroundWatch(handler).catch((err: unknown) => {
                     console.warn('Failed to start background location watch', err);

@@ -1,22 +1,17 @@
-import { std, stdurl } from '../std.ts';
+import { std, stdurl, getRuntimeToken } from '../std.ts';
 import { db, type DBIcon, type DBIconset } from '../database.ts';
-import type { Iconset, IconList } from '../types.ts';
+import type { Icon as IconType, Iconset, IconList } from '../types.ts';
 import IconsetCache from './iconset.ts';
-
-const HYDRATE_CACHE_KEY = 'iconsets:hydrated';
-/** Skip a fresh hydrate if the local cache was last refreshed within this many ms. */
-const HYDRATE_FRESH_MS = 60_000;
 
 /** Built-in sprite ids that ship with the API and are mirrored to Dexie. */
 const BUILTIN_SPRITES = ['default'] as const;
 
 export interface IconHydrateResult {
-    /** Iconsets that were added or refreshed during the diff. */
-    changed: string[];
+    added: string[];
+    /** Iconsets refetched because the remote `version`/`updated` differs. */
+    updated: string[];
     /** Iconsets that were removed locally because they no longer exist remotely. */
     removed: string[];
-    /** True when the diff was skipped because the local cache was fresh. */
-    skipped: boolean;
 }
 
 let inflight: Promise<IconHydrateResult> | null = null;
@@ -49,48 +44,25 @@ export default class Icon {
 
     /**
      * Diff the server iconset list against Dexie and refetch icons for any
-     * iconsets that are new or whose `version`/`updated` differs.
-     *
-     * Behaviour:
-     *  - When Dexie already has data and was refreshed recently the call
-     *    returns immediately (`skipped: true`) and the diff runs in the
-     *    background; the next call will see the updated cache marker.
-     *  - When `force` is true the diff always runs inline.
+     * iconsets that are new or whose `version`/`updated` differs. Concurrent
+     * calls coalesce onto the in-flight diff.
      */
-    static async hydrate(opts: { token: string; force?: boolean }): Promise<IconHydrateResult> {
-        const force = !!opts.force;
+    static async hydrate(): Promise<IconHydrateResult> {
+        if (inflight) return inflight;
 
-        if (!force) {
-            const marker = await db.cache.get(HYDRATE_CACHE_KEY);
-            const iconsetCount = await db.iconset.count();
-            const spriteCount = await db.sprite.count();
-            const fresh = !!marker && (Date.now() - marker.updated) < HYDRATE_FRESH_MS;
+        inflight = runDiff().finally(() => {
+            inflight = null;
+        });
 
-            if (iconsetCount > 0 && spriteCount >= BUILTIN_SPRITES.length && fresh) {
-                return { changed: [], removed: [], skipped: true };
-            }
-
-            if (iconsetCount > 0 && spriteCount >= BUILTIN_SPRITES.length && marker) {
-                // Local cache exists but is stale -- run the diff in the
-                // background so callers don't block on icon hydration.
-                void runDiffOnce(opts.token).catch((err: unknown) => {
-                    console.error('Background icon hydrate failed', err);
-                });
-                return { changed: [], removed: [], skipped: true };
-            }
-        }
-
-        return await runDiffOnce(opts.token);
+        return inflight;
     }
 
     /**
      * Ensure a single iconset is present in Dexie. Returns true if Dexie was
      * actually updated so the caller can purge stale map images.
      */
-    static async addIconset(uid: string, opts: { token: string; force?: boolean }): Promise<boolean> {
-        const iconset = await std(`/api/iconset/${uid}`, {
-            token: opts.token
-        }) as Iconset;
+    static async addIconset(uid: string, opts: { force?: boolean } = {}): Promise<boolean> {
+        const iconset = await std(`/api/iconset/${uid}`) as Iconset;
 
         const cached = await db.iconset.get(uid);
         if (
@@ -103,27 +75,36 @@ export default class Icon {
             return false;
         }
 
-        await syncIconset(iconset, opts.token);
+        await syncIconset(iconset);
         return true;
     }
 
-}
+    /**
+     * Fetch a single `<iconsetUid>:<path>` icon directly from the API.
+     * Used as the network fallback when an icon isn't cached in Dexie yet
+     * (e.g. an overlay referencing an iconset that hasn't synced). Returns
+     * undefined when the icon can't be retrieved.
+     */
+    static async fetchRemote(id: string): Promise<Blob | undefined> {
+        const separator = id.indexOf(':');
+        if (separator <= 0 || separator === id.length - 1) return undefined;
 
-function runDiffOnce(token: string): Promise<IconHydrateResult> {
-    if (inflight) return inflight;
+        const iconset = id.slice(0, separator);
+        const path = id.slice(separator + 1);
 
-    inflight = (async () => {
         try {
-            return await runDiff(token);
-        } finally {
-            inflight = null;
-        }
-    })();
+            const icon = await std(
+                `/api/iconset/${encodeURIComponent(iconset)}/icon/${encodeURIComponent(path)}`
+            ) as IconType;
 
-    return inflight;
+            return dataUrlToBlob(icon.data);
+        } catch {
+            return undefined;
+        }
+    }
 }
 
-async function runDiff(token: string): Promise<IconHydrateResult> {
+async function runDiff(): Promise<IconHydrateResult> {
     const local = await db.iconset.toArray();
     const remote = await IconsetCache.list({ sync: true }) as Iconset[];
 
@@ -138,14 +119,19 @@ async function runDiff(token: string): Promise<IconHydrateResult> {
     }
 
     const toSync: Iconset[] = [];
+    const added: string[] = [];
+    const updated: string[] = [];
     for (const [uid, iconset] of remoteByUid) {
         const cached = localByUid.get(uid);
-        if (
-            !cached
-            || cached.version !== iconset.version
+        if (!cached) {
+            toSync.push(iconset);
+            added.push(uid);
+        } else if (
+            cached.version !== iconset.version
             || cached.updated !== iconset.updated
         ) {
             toSync.push(iconset);
+            updated.push(uid);
         }
     }
 
@@ -155,15 +141,13 @@ async function runDiff(token: string): Promise<IconHydrateResult> {
     }
 
     await Promise.all(removed.map((uid) => IconsetCache.delete(uid, { localOnly: true })));
-    await Promise.all(toSync.map((iconset) => syncIconset(iconset, token)));
-    await Promise.all(BUILTIN_SPRITES.map((id) => syncBuiltinSprite(id, token)));
-
-    await db.cache.put({ key: HYDRATE_CACHE_KEY, updated: Date.now() });
+    await Promise.all(toSync.map((iconset) => syncIconset(iconset)));
+    await Promise.all(BUILTIN_SPRITES.map((id) => syncBuiltinSprite(id)));
 
     return {
-        changed: toSync.map((i) => i.uid),
-        removed,
-        skipped: false
+        added,
+        updated,
+        removed
     };
 }
 
@@ -172,11 +156,12 @@ async function runDiff(token: string): Promise<IconHydrateResult> {
  * thread can serve it via the `cloudtak-sprite://` MapLibre protocol
  * without re-hitting the network on every page load.
  */
-async function syncBuiltinSprite(id: string, token: string): Promise<void> {
+async function syncBuiltinSprite(id: string): Promise<void> {
     try {
+        const token = await getRuntimeToken();
         const jsonUrl = stdurl(`/api/iconset/${id}/sprite.json`);
         const pngUrl = stdurl(`/api/iconset/${id}/sprite.png`);
-        const headers = { Authorization: `Bearer ${token}` };
+        const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
 
         const [jsonRes, pngRes] = await Promise.all([
             fetch(jsonUrl, { headers }),
@@ -200,10 +185,9 @@ async function syncBuiltinSprite(id: string, token: string): Promise<void> {
     }
 }
 
-async function syncIconset(iconset: Iconset, token: string): Promise<void> {
+async function syncIconset(iconset: Iconset): Promise<void> {
     const list = await std(
-        `/api/icon?iconset=${encodeURIComponent(iconset.uid)}&limit=0`,
-        { token }
+        `/api/icon?iconset=${encodeURIComponent(iconset.uid)}&limit=0`
     ) as IconList;
 
     const rows: DBIcon[] = [];

@@ -21,6 +21,8 @@ export type APIList<T> = {
 
 export type COTTypeList = paths["/api/type/cot"]["get"]["responses"]["200"]["content"]["application/json"];
 export type COTType = paths["/api/type/cot/{:type}"]["get"]["responses"]["200"]["content"]["application/json"];
+export type COT2525EList = paths["/api/type/2525e"]["get"]["responses"]["200"]["content"]["application/json"];
+export type COT2525EType = COT2525EList["items"][number];
 
 export type Search = paths["/api/search"]["get"]["responses"]["200"]["content"]["application/json"];
 export type SearchSuggest = paths["/api/search/suggest"]["get"]["responses"]["200"]["content"]["application/json"];
@@ -43,6 +45,25 @@ export type GroupChannel = Omit<Group, 'direction'> & {
 export type User = paths["/api/user/{:username}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type UserList = paths["/api/user"]["get"]["responses"]["200"]["content"]["application/json"];
 
+export type ErrorReport = paths["/api/error/{:errorid}"]["get"]["responses"]["200"]["content"]["application/json"];
+export type ErrorReportList = paths["/api/error"]["get"]["responses"]["200"]["content"]["application/json"];
+
+export type CoreDevice = paths["/api/core/device/{:device}"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreDeviceList = paths["/api/core/device"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEvent = paths["/api/core/event/{:event}"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEventList = paths["/api/core/event"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEventLink = CoreEvent["links"][0];
+export type CoreEventStyle = CoreEvent["style"];
+export type CoreEventBoardSummary = CoreEvent["boards"][0];
+export type CoreEventBoardColumnSummary = CoreEventBoardSummary["columns"][0];
+
+export type CoreEventBoardList = paths["/api/board"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEventBoard = CoreEventBoardList["items"][0];
+export type CoreEventBoardColumnList = paths["/api/board/column"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEventBoardColumn = CoreEventBoardColumnList["items"][0];
+export type CoreEventBoardEventList = paths["/api/board/event"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEventBoardEvent = CoreEventBoardEventList["items"][0];
+
 export type Contact = paths["/api/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"][0];
 export type ContactList = paths["/api/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"];
 
@@ -59,6 +80,7 @@ export type MissionList = paths["/api/marti/mission"]["get"]["responses"]["200"]
 export type MissionInvite = paths["/api/marti/mission"]["get"]["responses"]["200"]["content"]["application/json"]["invites"][0];
 
 export type MissionRole = paths["/api/marti/missions/{:name}/role"]["get"]["responses"]["200"]["content"]["application/json"];
+export type MissionRoleType = MissionRole["type"];
 
 export type MissionLog = paths["/api/marti/missions/{:name}/log/{:logid}"]["patch"]["responses"]["200"]["content"]["application/json"]["data"];
 export type MissionLogList = paths["/api/marti/missions/{:name}/log"]["get"]["responses"]["200"]["content"]["application/json"];
@@ -106,23 +128,14 @@ export type PaletteFeature = {
     created: string;
     updated: string;
     name: string;
-    palette: string;
+    template: string;
     type: string;
     style: Record<string, unknown>;
 }
 
-export type Palette = {
-    uuid: string;
-    created: string;
-    updated: string;
-    name: string;
-    template: string;
-    features: Array<PaletteFeature>;
-}
-
-export type PaletteList = {
+export type PaletteFeatureList = {
     total: number;
-    items: Array<Palette>;
+    items: Array<PaletteFeature>;
 }
 
 export type Chat = {
@@ -147,6 +160,7 @@ export type APIProfileChat = {
     updated: string;
     message_id: string;
     message: string;
+    status?: string | null;
 }
 
 export type MissionTemplate = paths["/api/template/mission/{:mission}"]["get"]["responses"]["200"]["content"]["application/json"]

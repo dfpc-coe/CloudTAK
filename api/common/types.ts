@@ -1,0 +1,741 @@
+import { createSelectSchema } from 'drizzle-typebox';
+import { Type, Static } from '@sinclair/typebox';
+import * as schemas from './schema.js';
+import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
+import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text, Profile_Radiation_Dose, Profile_Wake_Lock } from './enums.js';
+import { VideoLease_SourceType, CoreEvent_Priority, CoreEventBoardColumn_Type } from './enums.js';
+import { AugmentedData } from './models/Data.js';
+import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
+import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, BasemapTerrain_Encoding } from './enums.js';
+import { Feature } from '@tak-ps/node-cot';
+
+export const LayerResponse = AugmentedLayer;
+export const LayerIncomingResponse = AugmentedLayerIncoming;
+export const LayerOutgoingResponse = AugmentedLayerOutgoing;
+export const DataResponse = AugmentedData;
+
+export const LayerUpdateManagementItemResponse = Type.Object({
+    id: Type.Integer(),
+    name: Type.String(),
+    task_prefix: Type.String(),
+    current_version: Type.String(),
+    latest_version: Type.Union([Type.Null(), Type.String()]),
+    has_update: Type.Boolean(),
+    has_stack: Type.Boolean(),
+    template: Type.Boolean(),
+    connection: Type.Union([Type.Null(), Type.Integer()]),
+    parent_name: Type.Union([Type.Null(), Type.String()]),
+});
+
+export const LayerUpdateManagementListResponse = Type.Object({
+    total: Type.Integer(),
+    items: Type.Array(LayerUpdateManagementItemResponse),
+});
+
+export const GeoJSONFeatureGeometryPoint = Type.Object({
+    type: Type.Literal('Point'),
+    coordinates: Type.Tuple([Type.Number(), Type.Number()]),
+});
+
+export const GeoJSONFeatureGeometryMultiPoint = Type.Object({
+    type: Type.Literal('MultiPoint'),
+    coordinates: Type.Array(Type.Tuple([Type.Number(), Type.Number()])),
+});
+
+export const GeoJSONFeatureGeometryLineString = Type.Object({
+    type: Type.Literal('LineString'),
+    coordinates: Type.Array(Type.Tuple([Type.Number(), Type.Number()])),
+});
+
+export const GeoJSONFeatureGeometryMultiLineString = Type.Object({
+    type: Type.Literal('MultiLineString'),
+    coordinates: Type.Array(Type.Array(Type.Tuple([Type.Number(), Type.Number()]))),
+});
+
+export const GeoJSONFeatureGeometryPolygon = Type.Object({
+    type: Type.Literal('Polygon'),
+    coordinates: Type.Array(Type.Array(Type.Tuple([Type.Number(), Type.Number()]))),
+});
+
+export const GeoJSONFeatureGeometryMultiPolygon = Type.Object({
+    type: Type.Literal('MultiPolygon'),
+    coordinates: Type.Array(Type.Array(Type.Array(Type.Tuple([Type.Number(), Type.Number()])))),
+});
+
+export const MultiGeoJSONFeature = Type.Object({
+    id: Type.Optional(Type.Union([Type.Number(), Type.String()])),
+    type: Type.Literal('Feature'),
+    properties: Type.Record(Type.String(), Type.Unknown()),
+    geometry: Type.Union([
+        GeoJSONFeatureGeometryPoint,
+        GeoJSONFeatureGeometryMultiPoint,
+        GeoJSONFeatureGeometryLineString,
+        GeoJSONFeatureGeometryMultiLineString,
+        GeoJSONFeatureGeometryPolygon,
+        GeoJSONFeatureGeometryMultiPolygon,
+    ]),
+});
+
+export const MultiGeoJSONFeatureCollection = Type.Object({
+    type: Type.Literal('FeatureCollection'),
+    features: Type.Array(MultiGeoJSONFeature),
+});
+
+export const GeoJSONFeature = Type.Object({
+    id: Type.Optional(Type.Union([Type.Number(), Type.String()])),
+    type: Type.Literal('Feature'),
+    properties: Type.Record(Type.String(), Type.Unknown()),
+    geometry: Feature.Geometry,
+});
+
+export const GeoJSONFeatureCollection = Type.Object({
+    type: Type.Literal('FeatureCollection'),
+    features: Type.Array(GeoJSONFeature),
+});
+
+export const TileJSON_VectorLayer = Type.Object({
+    id: Type.String(),
+    fields: Type.Record(Type.String(), Type.String()),
+    minzoom: Type.Optional(Type.Integer()),
+    maxzoom: Type.Optional(Type.Integer()),
+    description: Type.Optional(Type.String()),
+});
+
+export const TileJSON = Type.Object({
+    tilejson: Type.Literal('3.0.0'),
+    version: Type.String(),
+    scheme: Type.Literal('xyz'),
+    name: Type.String(),
+    description: Type.String(),
+    attribution: Type.Optional(Type.String()),
+    // This is a custom attribute and not in the original TileJSON spec
+    tileSize: Type.Optional(Type.Integer()),
+    minzoom: Type.Integer(),
+    maxzoom: Type.Integer(),
+    tiles: Type.Array(Type.String()),
+    bounds: Type.Tuple([Type.Number(), Type.Number(), Type.Number(), Type.Number()]),
+    encoding: Type.Optional(Type.String({
+        enum: ['mapbox', 'terrarium'],
+    })),
+    center: Type.Array(Type.Number()),
+    type: Type.String(),
+    format: Type.Optional(Type.String()),
+    vector_layers: Type.Optional(Type.Array(TileJSON_VectorLayer)),
+});
+
+export const LayerError = Type.Object({
+    error: Type.String(),
+    feature: Feature.InputFeature,
+});
+
+export const StandardLayerResponse = Type.Object({
+    status: Type.Integer(),
+    message: Type.String(),
+    errors: Type.Array(LayerError),
+});
+
+export const StandardResponse = Type.Object({
+    status: Type.Integer(),
+    message: Type.String(),
+});
+
+export const PaletteFeatureResponse = createSelectSchema(schemas.PaletteFeature, {
+    uuid: Type.String(),
+});
+
+/** A named URL on a Core Event - submitted as a CoT `r-u` (refinement url) link */
+export const CoreEventLink = Type.Object({
+    name: Type.String({
+        description: 'Human readable name of the Link',
+    }),
+    url: Type.String({
+        description: 'URL the Link points at',
+        pattern: '^(https?:\\/\\/.+|)$',
+    }),
+});
+
+/** Point styling overrides - property names match node-cot's CoT GeoJSON representation */
+export const CoreEventStyle = Type.Object({
+    'icon': Type.Optional(Type.String({
+        description: 'Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>',
+    })),
+    'marker-color': Type.Optional(Type.String({
+        description: 'Hex colour of the Event marker - ie: #00ff00',
+    })),
+    'marker-opacity': Type.Optional(Type.Number({
+        minimum: 0,
+        maximum: 1,
+        description: 'Opacity of the Event marker',
+    })),
+});
+
+/** Enough of a Column to render its name & badge styling inline */
+export const CoreEventBoardColumnSummary = Type.Object({
+    id: Type.String(),
+    name: Type.String(),
+    color: Type.String({ description: 'Hex colour the Column is rendered with - ie: #ff0000' }),
+    type: Type.Enum(CoreEventBoardColumn_Type),
+    position: Type.Integer(),
+});
+
+/** A Board of one of the Event's Channels & where the Event sits on it */
+export const CoreEventBoardSummary = Type.Object({
+    id: Type.String(),
+    name: Type.String(),
+    channel: Type.Integer({ description: 'TAK Server Channel bitpos the Board belongs to' }),
+    column: Type.Union([Type.Null(), Type.String()], {
+        description: 'Column of the Board the Event is placed in - null when the Event has not been nominated to this Board',
+    }),
+    columns: Type.Array(CoreEventBoardColumnSummary, { description: 'Columns of the Board' }),
+});
+
+export const CoreEventResponse = Type.Object({
+    id: Type.String(),
+    mission_guid: Type.Union([Type.Null(), Type.String()], { description: 'GUID of the TAK Server Mission associated with the Event' }),
+    created: Type.String(),
+    updated: Type.String(),
+    active: Type.Boolean({ description: 'Is the Event currently active' }),
+    ended: Type.Union([Type.Null(), Type.String()], { description: 'Time at which the Event ended' }),
+    username: Type.Union([Type.Null(), Type.String()]),
+    connection: Type.Union([Type.Null(), Type.Integer()], { description: 'Connection that created the Event if created by a Connection or Layer token' }),
+    priority: Type.Enum(CoreEvent_Priority),
+    type: Type.String({ description: 'MIL-STD-2525E Symbol ID' }),
+    name: Type.String(),
+    external_id: Type.String({ description: 'ID of the Event in an external system' }),
+    editable: Type.Boolean({ description: 'Can users other than the creator edit the Event' }),
+    location: Type.String({ description: 'Human readable location - ie: an address' }),
+    remarks: Type.String(),
+    metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Event metadata' }),
+    links: Type.Array(CoreEventLink, { description: 'Named URLs associated with the Event' }),
+    style: CoreEventStyle,
+    geometry: GeoJSONFeatureGeometryPoint,
+    channels: Type.Array(Type.Integer(), { description: 'TAK Server Channels the Event is shared with' }),
+    boards: Type.Array(CoreEventBoardSummary, {
+        description: 'Boards of every Channel the Event is shared with, along with the Column the Event is placed in on each',
+    }),
+});
+
+export const CoreEventBoardResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    channel: Type.Integer({ description: 'TAK Server Channel bitpos the Board belongs to' }),
+    name: Type.String(),
+    description: Type.String(),
+});
+
+export const CoreEventBoardColumnResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    board: Type.String({ description: 'Board the Column belongs to' }),
+    name: Type.String(),
+    description: Type.String(),
+    color: Type.String({ description: 'Hex colour the Column is rendered with - ie: #ff0000' }),
+    type: Type.Enum(CoreEventBoardColumn_Type, { description: 'Columns of type nominated are created automatically and cannot be removed' }),
+    position: Type.Integer({ description: 'Horizontal position of the Column relative to the other Columns of the Board' }),
+});
+
+export const CoreEventBoardEventResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    board: Type.String({ description: 'Board the Event is placed on' }),
+    column: Type.String({ description: 'Column of the Board the Event is placed in' }),
+    position: Type.Integer({ description: 'Vertical position of the Event within the Column' }),
+    event: CoreEventResponse,
+});
+
+export const CoreDeviceResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    username: Type.Union([Type.Null(), Type.String()]),
+    connection: Type.Union([Type.Null(), Type.Integer()], { description: 'Connection that created the Device if created by a Connection or Layer token' }),
+    event: Type.Union([Type.Null(), Type.String()], { description: 'Core Event the Device is currently assigned to' }),
+    type: Type.String({ description: 'MIL-STD-2525E Symbol ID' }),
+    name: Type.String({ description: 'Human readable name/callsign of the Device' }),
+    manufacturer: Type.String({ description: 'Manufacturer of the Device - ie: Ortec, Nucsafe, DJI' }),
+    model: Type.String({ description: 'Model of the Device - ie: Micro Detective, IdentiFINDER 2' }),
+    serial: Type.String({ description: 'Manufacturer assigned Serial Number' }),
+    firmware: Type.String({ description: 'Firmware/Software revision reported by the Device' }),
+    status: Type.String({ description: 'General Device health status - ie: Full, Reduced, Unknown' }),
+    battery: Type.Union([Type.Null(), Type.Number()], { description: 'Battery level as a percentage (0-100) at last report' }),
+    simulated: Type.Boolean({ description: 'Is the Device a simulated data source' }),
+    external_id: Type.String({ description: 'ID of the Device in an external system' }),
+    remarks: Type.String(),
+    metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Device metadata' }),
+    channels: Type.Array(Type.Integer(), { description: 'TAK Server Channels the Device is shared with' }),
+});
+
+export const MissionTemplateResponse = Type.Object({
+    id: Type.String(),
+    name: Type.String(),
+    icon: Type.String(),
+    keywords: Type.Array(Type.String()),
+    description: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+});
+
+export const MissionTemplateLogResponse = Type.Object({
+    id: Type.String(),
+    name: Type.String(),
+    icon: Type.Union([Type.Null(), Type.String()]),
+    keywords: Type.Array(Type.String()),
+    description: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    template: Type.String(),
+    schema: Type.Unknown(),
+});
+
+export const PaletteFeatureStyle = Type.Object({
+    'marker-color': Type.Optional(Type.String()),
+    'marker-opacity': Type.Optional(Type.String()),
+
+    'icon': Type.Optional(Type.String()),
+
+    'stroke': Type.Optional(Type.String()),
+    'stroke-style': Type.Optional(Type.String()),
+    'stroke-opacity': Type.Optional(Type.String()),
+    'stroke-width': Type.Optional(Type.String()),
+    'fill': Type.Optional(Type.String()),
+    'fill-opacity': Type.Optional(Type.String()),
+});
+
+export const IconsetResponse = Type.Object({
+    uid: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    version: Type.Integer(),
+    name: Type.String(),
+    username: Type.Union([Type.Null(), Type.String()]),
+    username_internal: Type.Boolean(),
+    default_group: Type.Union([Type.Null(), Type.String()]),
+    default_friendly: Type.Union([Type.Null(), Type.String()]),
+    default_hostile: Type.Union([Type.Null(), Type.String()]),
+    default_neutral: Type.Union([Type.Null(), Type.String()]),
+    default_unknown: Type.Union([Type.Null(), Type.String()]),
+    skip_resize: Type.Boolean(),
+});
+
+export const ServerResponse = Type.Object({
+    id: Type.Integer(),
+    status: Type.String(),
+    connection_status: Type.Union([
+        Type.Literal('live'),
+        Type.Literal('dead'),
+        Type.Literal('unknown'),
+    ], { default: 'unknown', description: 'The connected status of the Admin Connection (connection 0)' }),
+    connection: Type.Boolean({ default: true, description: 'Whether the Admin Connection (connection 0) is enabled in the connection pool' }),
+    created: Type.String(),
+    updated: Type.String(),
+    version: Type.String(),
+    name: Type.String(),
+    url: Type.String(),
+    api: Type.String(),
+    webtak: Type.String(),
+    auth: Type.Boolean({ description: 'Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded' }),
+    certificate: Type.Optional(Type.Object({
+        subject: Type.String(),
+        validFrom: Type.String(),
+        validTo: Type.String(),
+    })),
+});
+
+export const ProfileListResponse = Type.Object({
+    username: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    last_login: Type.String(),
+    active: Type.Boolean({
+        description: 'Does the user have an active CloudTAK Session',
+    }),
+    system_admin: Type.Boolean(),
+    agency_admin: Type.Array(Type.Integer()),
+});
+
+export const Profile = Type.Object({
+    tak_callsign: Type.String(),
+    tak_remarks: Type.String(),
+    tak_phone: Type.String(),
+    tak_group: Type.Enum(TAKGroup),
+    tak_role: Type.Enum(TAKRole),
+    tak_type: Type.String(),
+    tak_loc: Type.Union([Type.Object({
+        type: Type.Literal('Point'),
+        coordinates: Type.Array(Type.Number()),
+    }), Type.Null()]),
+    tak_loc_freq: Type.Integer(),
+
+    menu_order: Type.Array(Type.Object({
+        key: Type.String({
+            description: 'Menu Key',
+        }),
+        visibility: Type.Enum(Profile_Menu_Visibility, {
+            description: 'Menu Visibility',
+            default: Profile_Menu_Visibility.FULL,
+        }),
+    })),
+
+    display_projection: Type.Enum(Profile_Projection),
+    display_zoom: Type.Enum(Profile_Zoom),
+    display_style: Type.Enum(Profile_Style),
+    display_coordinate: Type.Enum(Profile_Coordinate),
+    display_icon_rotation: Type.Boolean(),
+    display_stale: Type.Enum(Profile_Stale),
+    display_text: Type.Enum(Profile_Text),
+    display_distance: Type.Enum(Profile_Distance),
+    display_elevation: Type.Enum(Profile_Elevation),
+    display_speed: Type.Enum(Profile_Speed),
+    display_radiation_dose: Type.Enum(Profile_Radiation_Dose),
+    display_wakelock: Type.Enum(Profile_Wake_Lock),
+
+    geometry_point_type: Type.Optional(Type.String()),
+    geometry_point_color: Type.Optional(Type.String()),
+    geometry_point_icon: Type.Optional(Type.String()),
+});
+
+export const ProfilePatchBody = Type.Partial(Profile);
+
+export const ProfileResponse = Type.Composite([
+    Type.Object({
+        username: Type.String(),
+        created: Type.String(),
+        updated: Type.String(),
+        last_login: Type.String(),
+        active: Type.Boolean({
+            description: 'Does the user have an active CloudTAK Session',
+        }),
+        system_admin: Type.Boolean(),
+        agency_admin: Type.Array(Type.Integer()),
+    }),
+    Profile,
+]);
+
+export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
+    id: Type.Integer(),
+    ephemeral: Type.Boolean(),
+    expiration: Type.Union([Type.Null(), Type.String()]),
+    channel: Type.Union([Type.Null(), Type.String()]),
+    proxy: Type.Union([Type.Null(), Type.String()]),
+    source_type: Type.Enum(VideoLease_SourceType),
+});
+
+export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {
+    id: Type.Integer(),
+    pos: Type.Integer(),
+    frequency: Type.Union([Type.Null(), Type.Integer()]),
+    iconset: Type.Union([Type.Null(), Type.String()]),
+    opacity: Type.Number(),
+    visible: Type.Boolean(),
+    styles: Type.Array(Type.Unknown()),
+});
+
+export const ProfileInterestResponse = createSelectSchema(schemas.ProfileInterest, {
+    id: Type.Integer(),
+    bounds: Feature.Geometry,
+});
+
+/** seed is intentionally excluded — it must never be returned to the client */
+export const ProfilePagingResponse = Type.Object({
+    id: Type.Integer(),
+    username: Type.String(),
+    verified: Type.Boolean(),
+    enabled: Type.Boolean(),
+    type: Type.String(),
+    value: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+});
+
+export const ProfileVideoPosition = Type.Object({
+    x: Type.Integer({ minimum: 0, description: 'Column position on a 12 column grid' }),
+    y: Type.Integer({ minimum: 0, description: 'Row position in grid units' }),
+    w: Type.Integer({ minimum: 1, maximum: 12, description: 'Width in grid columns' }),
+    h: Type.Integer({ minimum: 1, description: 'Height in grid rows' }),
+});
+
+export const ProfileVideoResponse = createSelectSchema(schemas.ProfileVideo, {
+    lease: Type.Integer(),
+    position: ProfileVideoPosition,
+});
+
+export const FeatureResponse = Type.Composite([Feature.Feature, Type.Object({
+    path: Type.String({ default: '/' }),
+})]);
+
+export const ImportResult = createSelectSchema(schemas.ImportResult);
+
+const BaseImport = createSelectSchema(schemas.Import, {
+    config: Type.Unknown(),
+    error: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+    source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+});
+
+export const ImportResponse = Type.Composite([
+    BaseImport,
+    Type.Object({
+        results: Type.Array(ImportResult),
+    }),
+]);
+
+export const ErrorResponse = createSelectSchema(schemas.Errors, {
+    id: Type.Integer(),
+    created: Type.String(),
+    updated: Type.String(),
+});
+
+export const TaskResponse = createSelectSchema(schemas.Task, {
+    id: Type.Integer(),
+    created: Type.String(),
+    updated: Type.String(),
+});
+
+export const IconResponse = createSelectSchema(schemas.Icon, {
+    id: Type.Integer(),
+});
+
+export const DataListResponse = createSelectSchema(schemas.Data, {
+    id: Type.Integer(),
+    connection: Type.Integer(),
+    assets: Type.Array(Type.String()),
+    mission_groups: Type.Array(Type.String()),
+    mission_sync: Type.Boolean({ description: 'Is the mission syncing with TAK Server' }),
+    mission_diff: Type.Boolean({ description: 'Allow a single layer to diff sync with TAK' }),
+});
+
+export const JobLogResponse = Type.Object({
+    message: Type.String(),
+    timestamp: Type.Integer(),
+});
+
+export const JobResponse = Type.Object({
+    id: Type.String(),
+    asset: Type.String(),
+    status: Type.String(),
+    created: Type.Integer(),
+    updated: Type.Optional(Type.Integer()),
+});
+
+export const ProfileFileResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    username: Type.String(),
+    path: Type.String(),
+    name: Type.String(),
+    iconset: Type.Union([Type.Null(), Type.String()]),
+    size: Type.Integer(),
+    channels: Type.Array(Type.Integer()),
+    artifacts: Type.Array(Type.Object({
+        ext: Type.String(),
+        size: Type.Integer(),
+    })),
+});
+
+export const AssetResponse = Type.Object({
+    name: Type.String({ description: 'The filename of the asset' }),
+    visualized: Type.Optional(Type.String()),
+    vectorized: Type.Optional(Type.String()),
+    updated: Type.Integer(),
+    sync: Type.Boolean({ description: 'Does this file meet the glob rules to sync with the server' }),
+    etag: Type.String({ description: 'AWS S3 generated ETag of the asset' }),
+    size: Type.Integer({ description: 'Size in bytes of the asset' }),
+});
+
+export const GenericMartiResponse = Type.Object({
+    version: Type.String(),
+    type: Type.String(),
+    data: Type.Any(),
+    messages: Type.Optional(Type.Array(Type.String())),
+    nodeId: Type.Optional(Type.String()),
+});
+
+/** Includes Token itself */
+export const CreateConnectionTokenResponse = createSelectSchema(schemas.ConnectionToken, {
+    id: Type.Integer(),
+    connection: Type.Integer(),
+});
+
+export const ConnectionTokenResponse = Type.Object({
+    id: Type.Integer(),
+    connection: Type.Integer(),
+    name: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+});
+
+/** Includes Token itself */
+export const CreateProfileTokenResponse = createSelectSchema(schemas.ProfileToken, {
+    id: Type.Integer(),
+});
+
+export const ProfileTokenResponse = Type.Object({
+    id: Type.Integer(),
+    name: Type.String(),
+    username: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+});
+
+export const ConnectionResponse = Type.Object({
+    id: Type.Integer(),
+    status: Type.String(),
+    agency: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
+    certificate: Type.Object({
+        subject: Type.String(),
+        validFrom: Type.String(),
+        validTo: Type.String(),
+    }),
+    created: Type.String(),
+    updated: Type.String(),
+    readonly: Type.Boolean(),
+    username: Type.Union([Type.Null(), Type.String()]),
+    name: Type.String(),
+    description: Type.String(),
+    enabled: Type.Boolean(),
+});
+
+export const BasemapResponse = Type.Object({
+    id: Type.Integer(),
+    created: Type.String(),
+    updated: Type.String(),
+    parent: Type.Union([Type.Null(), Type.Integer()], {
+        description: 'If set, this Basemap/Overlay is a child of the given parent Basemap/Overlay',
+    }),
+    name: Type.String(),
+    url: Type.String(),
+    protocol: Type.Enum(Basemap_Protocol),
+    bounds: Type.Any(),
+    center: Type.Union([Type.Null(), Type.Array(Type.Number(), {
+        minItems: 2,
+        maxItems: 3,
+        description: 'TileJSON 3.0.0 center as [longitude, latitude, zoom] - the zoom element is optional',
+    })]),
+    minzoom: Type.Integer(),
+    maxzoom: Type.Integer(),
+    format: Type.Enum(Basemap_Format),
+    type: Type.Enum(Basemap_Type),
+    username: Type.Union([Type.Null(), Type.String()]),
+    sharing_enabled: Type.Boolean(),
+    sharing_token: Type.Union([Type.Null(), Type.String()]), // Explicitly Nullable
+    hidden: Type.Boolean(),
+    tilesize: Type.Integer(),
+    attribution: Type.Union([Type.Null(), Type.String()]),
+    collection: Type.Union([Type.Null(), Type.String()]),
+    frequency: Type.Union([Type.Null(), Type.Integer()]),
+    scheme: Type.Enum(Basemap_Scheme),
+    overlay: Type.Boolean(),
+
+    // Terrain
+    encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),
+
+    // Vector
+    styles: Type.Optional(Type.Array(Type.Unknown())),
+    iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+    title: Type.Optional(Type.String()),
+    snapping_enabled: Type.Optional(Type.Boolean()),
+    snapping_layer: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+});
+
+export const FullConfig = Type.Object({
+    'geofence::enabled': Type.Boolean({ description: 'Enable Geofence Server Integration' }),
+    'geofence::url': Type.String({ description: 'Geofence Server URL' }),
+    'geofence::password': Type.String({ description: 'Geofence Server Password' }),
+    'retention::enabled': Type.Boolean({ description: 'Enable scheduled retention processing' }),
+    'retention::connection-feature::enabled': Type.Boolean({ description: 'Enable retention processing for connection features' }),
+    'retention::chat::enabled': Type.Boolean({ description: 'Enable retention processing for chat messages' }),
+    'retention::chat::days': Type.Integer({ description: 'Number of days to retain chat messages', minimum: 1 }),
+    'retention::import::enabled': Type.Boolean({ description: 'Enable retention processing for imports' }),
+    'retention::import::days': Type.Integer({ description: 'Number of days to retain imports', minimum: 1 }),
+    'retention::feature::enabled': Type.Boolean({ description: 'Enable retention processing for recently deleted features' }),
+    'retention::feature::days': Type.Integer({ description: 'Number of days to retain recently deleted features', minimum: 1 }),
+    'notification::enabled': Type.Boolean({ description: 'Enable notification delivery' }),
+    'notification::email::enabled': Type.Boolean({ description: 'Enable email notifications' }),
+    'notification::email::service': Type.String({ description: 'Email notification delivery service', enum: ['aws'] }),
+    'notification::sms::enabled': Type.Boolean({ description: 'Enable SMS notifications' }),
+    'notification::sms::service': Type.String({ description: 'SMS notification delivery service', enum: ['aws'] }),
+    'notification::push::enabled': Type.Boolean({ description: 'Enable push notifications' }),
+    'notification::push::service': Type.String({ description: 'Push notification delivery service', enum: ['firebase'] }),
+    'notification::push::firebase::project_id': Type.String({ description: 'Firebase service account project ID' }),
+    'notification::push::firebase::client_email': Type.String({ description: 'Firebase service account client email' }),
+    'notification::push::firebase::private_key': Type.String({ description: 'Firebase service account private key' }),
+    'agol::enabled': Type.Boolean({ description: 'Enable ArcGIS Online Integration' }),
+    'agol::auth_method': Type.String({ description: 'AGOL Auth Type', enum: ['oauth2', 'legacy'] }),
+    'agol::token': Type.String({ description: 'AGOL Legacy Token' }),
+    'agol::client_id': Type.String({ description: 'AGOL OAuth2 Client ID' }),
+    'agol::client_secret': Type.String({ description: 'AGOL OAuth2 Client Secret' }),
+    'media::url': Type.String({ description: 'Base URL for Media Service' }),
+    'media::proxy::allow': Type.Array(Type.String({ description: 'Trusted video proxy source hostname or origin (scheme + host + optional port) that is added to the SSRF allow-list' })),
+    'coturn::url': Type.String({ description: 'COTURN Server URL' }),
+    'coturn::secret': Type.String({ description: 'COTURN Server Secret' }),
+    'map::center': Type.String({ description: 'Map Center Coordinates (lng,lat)' }),
+    'map::pitch': Type.Integer({ description: 'Default Map Pitch Angle', minimum: 0, maximum: 90 }),
+    'map::bearing': Type.Integer({ description: 'Default Map Bearing', minimum: 0, maximum: 360 }),
+    'map::zoom': Type.Number({ description: 'Default Map Zoom Level', minimum: 0, maximum: 20 }),
+    'map::basemap': Type.Union([Type.Null(), Type.Integer()], { description: 'Default Basemap for New Users' }),
+    'map::terrain': Type.Union([Type.Null(), Type.Integer()], { description: 'Default Terrain (raster-dem) Basemap for New Users' }),
+    'display::stale': Type.Enum(Profile_Stale),
+    'display::distance': Type.Enum(Profile_Distance),
+    'display::elevation': Type.Enum(Profile_Elevation),
+    'display::speed': Type.Enum(Profile_Speed),
+    'display::projection': Type.Enum(Profile_Projection),
+    'display::zoom': Type.Enum(Profile_Zoom),
+    'display::style': Type.Enum(Profile_Style),
+    'display::coordinate': Type.Enum(Profile_Coordinate),
+    'display::text': Type.Enum(Profile_Text),
+    'display::icon_rotation': Type.Boolean(),
+    'display::radiation_dose': Type.Enum(Profile_Radiation_Dose),
+    'group::Yellow': Type.String(),
+    'group::Cyan': Type.String(),
+    'group::Green': Type.String(),
+    'group::Red': Type.String(),
+    'group::Purple': Type.String(),
+    'group::Orange': Type.String(),
+    'group::Blue': Type.String(),
+    'group::Magenta': Type.String(),
+    'group::White': Type.String(),
+    'group::Maroon': Type.String(),
+    'group::Dark Blue': Type.String(),
+    'group::Teal': Type.String(),
+    'group::Dark Green': Type.String(),
+    'group::Brown': Type.String(),
+    'oidc::enabled': Type.Boolean({ description: 'Enable OIDC Authentication' }),
+    'oidc::enforced': Type.Boolean({ description: 'Disable Username/Password Login' }),
+    'oidc::name': Type.String({ description: 'OIDC Provider Name' }),
+    'oidc::discovery': Type.String({ description: 'OIDC Discovery URL' }),
+    'oidc::client': Type.String({ description: 'OIDC Client ID' }),
+    'oidc::secret': Type.String({ description: 'OIDC Client Secret' }),
+    'oidc::redirect': Type.String({ description: 'OIDC App Redirect URL' }),
+    'oidc::scopes': Type.String({ description: 'OIDC Scopes' }),
+    'oidc::logo': Type.String({ description: 'Base64 encoded PNG for OIDC Logo' }),
+    'passkey::enabled': Type.Boolean({ description: 'Enable Passkey Authentication' }),
+    'provider::url': Type.String(),
+    'provider::secret': Type.String(),
+    'provider::client': Type.String(),
+    'proxy::enabled': Type.Boolean({ description: 'Enable plugin proxy requests to admin-allowed origins' }),
+    'proxy::whitelist': Type.Array(Type.String({ description: 'Allowed proxy origin (scheme + host + optional port)' })),
+    'login::signup': Type.String({ description: 'URL for Signup Page' }),
+    'login::forgot': Type.String({ description: 'URL for Forgot Password Page' }),
+    'login::name': Type.String({ description: 'Login Page Title' }),
+    'login::username': Type.String({ description: 'Custom Label for Username Field' }),
+    'login::brand::enabled': Type.String({ description: 'Enable Custom Branding on Login Page', enum: ['default', 'enabled', 'disabled'] }),
+    'login::brand::logo': Type.String({ description: 'Show or Hide the CloudTAK Branding' }),
+    'login::background::enabled': Type.Boolean({ description: 'Enable or Disable Custom Background on Login Page' }),
+    'login::background::color': Type.String({ description: 'Hex Color Code for Login Background' }),
+    'login::logo': Type.String({ description: 'Base64 encoded PNG for Logo' }),
+    'external::applications': Type.Array(Type.Object({
+        name: Type.String({ description: 'Application Name' }),
+        icon: Type.String({ description: 'Base64 encoded icon' }),
+        url: Type.String({ description: 'Application URL' }),
+    }), { description: 'External application links' }),
+    'core::event::types': Type.Array(Type.Object({
+        name: Type.String({ description: 'Preconfigured Event Type Name' }),
+        type: Type.String({ description: 'MIL-STD-2525E Symbol ID' }),
+        icon: Type.Optional(Type.String({ description: 'Base64 encoded custom icon' })),
+    }), { description: 'Preconfigured Core Event Types' }),
+});
+
+export type FullConfigType = Static<typeof FullConfig>;

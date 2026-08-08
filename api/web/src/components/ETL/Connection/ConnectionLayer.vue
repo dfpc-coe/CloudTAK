@@ -68,13 +68,16 @@
                                     />
 
                                     <div class='ms-auto btn-list'>
-                                        <IconDatabase
+                                        <TablerIconButton
                                             v-if='layer.incoming && layer.incoming.data'
-                                            v-tooltip='`Pushing to Data Sync`'
-                                            :size='32'
-                                            stroke='1'
+                                            title='Pushing to Data Sync'
                                             @click.stop.prevent='router.push(`/connection/${route.params.connectionid}/data/${layer.incoming.data}`)'
-                                        />
+                                        >
+                                            <IconDatabase
+                                                :size='32'
+                                                stroke='1'
+                                            />
+                                        </TablerIconButton>
 
                                         <IconExchange
                                             v-if='layer.incoming && layer.outgoing'

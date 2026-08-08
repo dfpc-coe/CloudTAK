@@ -58,7 +58,7 @@
 
                 <div
                     v-if='chat.sender_uid !== myUID'
-                    class='bg-blue px-2 py-2 rounded'
+                    class='bg-blue text-white px-2 py-2 rounded'
                     style='max-width: 80%;'
                 >
                     <div class='fw-bold small mb-1'>
@@ -78,10 +78,45 @@
                 >
                     <div v-text='chat.message' />
                     <div
-                        class='text-end'
+                        class='d-flex align-items-center justify-content-end'
                         style='font-size: 0.75rem; opacity: 0.75;'
-                        v-text='formatTime(chat.created)'
-                    />
+                    >
+                        <span v-text='formatTime(chat.created)' />
+                        <span
+                            v-if='chat.status'
+                            :title='statusLabel(chat.status)'
+                            class='ms-1 d-flex align-items-center'
+                            :aria-label='statusLabel(chat.status)'
+                        >
+                            <IconClock
+                                v-if='chat.status === ChatStatus.Sending || chat.status === ChatStatus.Pending'
+                                :size='14'
+                                stroke='2'
+                            />
+                            <IconAlertTriangle
+                                v-else-if='chat.status === ChatStatus.Failed'
+                                :size='14'
+                                stroke='2'
+                                class='text-red'
+                            />
+                            <IconCheck
+                                v-else-if='chat.status === ChatStatus.Sent'
+                                :size='14'
+                                stroke='2'
+                            />
+                            <IconChecks
+                                v-else-if='chat.status === ChatStatus.Delivered'
+                                :size='14'
+                                stroke='2'
+                            />
+                            <IconChecks
+                                v-else-if='chat.status === ChatStatus.Read'
+                                :size='14'
+                                stroke='2'
+                                class='text-azure'
+                            />
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -129,7 +164,12 @@ import { ref, watch, onMounted, nextTick } from 'vue';
 import {
     IconSend,
     IconArrowDown,
+    IconClock,
+    IconCheck,
+    IconChecks,
+    IconAlertTriangle,
 } from '@tabler/icons-vue';
+import { ChatStatus } from '../../../database.ts';
 import {
     TablerAlert,
     TablerDelete,
@@ -146,6 +186,7 @@ export type ChatMessage = {
     sender?: string;
     message: string;
     created: string;
+    status?: ChatStatus;
 };
 
 const props = withDefaults(defineProps<{
@@ -223,6 +264,18 @@ function sendMessage() {
 function emitDelete() {
     emit('delete', Array.from(selected.value));
     selected.value = new Set();
+}
+
+function statusLabel(status: ChatStatus): string {
+    switch (status) {
+        case ChatStatus.Sending: return 'Sending';
+        case ChatStatus.Sent: return 'Sent to Server';
+        case ChatStatus.Pending: return 'Pending Delivery';
+        case ChatStatus.Failed: return 'Failed to Deliver';
+        case ChatStatus.Delivered: return 'Delivered';
+        case ChatStatus.Read: return 'Read';
+        default: return '';
+    }
 }
 
 function formatTime(iso: string | undefined): string {

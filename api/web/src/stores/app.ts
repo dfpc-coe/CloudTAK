@@ -1,19 +1,38 @@
 import { defineStore } from 'pinia';
 import { liveQuery, type Subscription } from 'dexie';
 import { Preferences } from '@capacitor/preferences';
-import { StatusBar } from '@capacitor/status-bar';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import KV from '../base/kv.ts';
-import { db } from '../database.ts';
+import { db, withDbRetry } from '../database.ts';
+import { withTimeout } from '../base/async.ts';
 import Config from '../base/config.ts';
 import ServerManager from '../base/server.ts';
 import router from '../router.ts';
-import { isNativePlatform } from '../base/capacitor.ts';
+import { isNativePlatform, isAndroidPlatform } from '../base/capacitor.ts';
 
 export type DisplayStyleMode = 'System Default' | 'Light' | 'Dark';
 export type ResolvedThemeMode = 'light' | 'dark';
 
+// IndexedDB and network steps during bootstrap are bounded so a hung
+// operation can never strand the user on the loading splash.
+const BOOT_LOCAL_TIMEOUT_MS = 2000;
+const BOOT_NETWORK_TIMEOUT_MS = 10000;
+
 // Kept outside Pinia state so Vue does not attempt to proxy them.
 let displayStyleSub: Subscription | undefined;
+let brandingSub: Subscription | undefined;
+
+const BRANDING_CONFIG_KEYS = [
+    'login::name',
+    'login::logo',
+    'login::brand::enabled',
+    'login::brand::logo',
+    'login::background::enabled',
+    'login::background::color',
+    'login::signup',
+    'login::forgot',
+    'login::username'
+] as const;
 const systemThemeQuery = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-color-scheme: dark)')
     : undefined;
@@ -55,29 +74,60 @@ export const useAppStore = defineStore('cloudtak-app', {
     }),
     actions: {
         async setServerUrl(serverUrl: string): Promise<void> {
-            await KV.generate('serverUrl', serverUrl);
             await Preferences.set({ key: 'serverUrl', value: serverUrl });
+            await this.mirrorServerUrl(serverUrl);
         },
 
-        async persistSession(opts: { token: string; username: string }): Promise<void> {
+        // Best-effort KV copy for web workers; must not block boot.
+        async mirrorServerUrl(serverUrl: string): Promise<void> {
+            try {
+                await withTimeout(
+                    withDbRetry(() => KV.generate('serverUrl', serverUrl)),
+                    BOOT_LOCAL_TIMEOUT_MS,
+                    'serverUrl KV mirror'
+                );
+            } catch (err) {
+                console.warn('Failed to mirror serverUrl into KV store', err);
+            }
+        },
+
+        async persistSession(opts: { token: string; username: string; session: string }): Promise<void> {
             await Preferences.set({ key: 'token', value: opts.token });
             await KV.generate('token', opts.token);
             await KV.generate('username', opts.username);
+
+            await Preferences.set({
+                key: 'sessionId',
+                value: opts.session
+            });
+
+            await KV.generate('sessionId', opts.session);
+        },
+
+        async getSessionId(): Promise<string | undefined> {
+            const { value } = await Preferences.get({ key: 'sessionId' });
+            return value ?? undefined;
         },
 
         async getUsername(): Promise<string | undefined> {
             return await KV.value('username');
         },
 
-        // Removes the token but leaves the database intact so a quick re-login
-        // after token expiry does not need to resynchronize all data.
+        // Best-effort — the server enforces token expiry, so a stalled
+        // cleanup is abandoned rather than allowed to hang logout or boot.
         async clearSession(): Promise<void> {
-            await Preferences.remove({ key: 'token' });
-            await KV.delete('token');
+            try {
+                await withTimeout(Promise.all([
+                    Preferences.remove({ key: 'token' }),
+                    Preferences.remove({ key: 'sessionId' }),
+                    KV.delete('token'),
+                    KV.delete('sessionId')
+                ]), BOOT_LOCAL_TIMEOUT_MS, 'Session cleanup');
+            } catch (err) {
+                console.warn('Session cleanup did not complete', err);
+            }
         },
 
-        // Clears the token AND wipes the database. Used on explicit sign-out or
-        // when a different user logs in.
         async destroySession(): Promise<void> {
             await this.clearSession();
             await db.delete();
@@ -93,10 +143,13 @@ export const useAppStore = defineStore('cloudtak-app', {
             document.documentElement.setAttribute('data-bs-theme-primary', 'blue');
         },
 
-        routeLogin(): void {
+        // Boot paths must await this: if bootstrap settles before the login
+        // navigation lands, the router view mounts the map — and the Atlas
+        // worker — without a session.
+        async routeLogin(): Promise<void> {
             const redirect = encodeURIComponent(window.location.pathname);
             if (router.hasRoute('login')) {
-                void router.push(`/login?redirect=${redirect}`);
+                await router.push(`/login?redirect=${redirect}`);
             } else {
                 window.location.href = `/login?redirect=${redirect}`;
             }
@@ -120,13 +173,21 @@ export const useAppStore = defineStore('cloudtak-app', {
             } catch (err) {
                 console.error(err);
                 this.tokenExpiry = null;
-                // Do NOT wipe the database — only clear the token so cached data
-                // is preserved for re-login.
+
                 await this.clearSession();
-                this.routeLogin();
+                await this.routeLogin();
             } finally {
                 this.loading = false;
             }
+        },
+
+        // The token expired or was rejected by the server. Unlike logout()
+        // this keeps the local database so cached data survives the re-login.
+        async sessionExpired(): Promise<void> {
+            this.user = false;
+            this.tokenExpiry = null;
+            await this.clearSession();
+            await this.routeLogin();
         },
 
         async logout(): Promise<void> {
@@ -136,8 +197,6 @@ export const useAppStore = defineStore('cloudtak-app', {
             window.location.href = '/login';
         },
 
-        // Returns true when bootstrap completed normally, false when it
-        // short-circuited with a redirect so callers can skip follow-up work.
         async bootstrap(): Promise<boolean> {
             this.loadingStage = 'Connecting to server…';
 
@@ -150,16 +209,30 @@ export const useAppStore = defineStore('cloudtak-app', {
                 if (!serverUrl) {
                     window.location.href = '/setup.html';
                     return false;
-                } else {
-                    await this.setServerUrl(serverUrl);
                 }
+
+                await this.mirrorServerUrl(serverUrl);
             }
 
             this.loadingStage = 'Setting up styles…';
 
             if (isNativePlatform()) {
                 try {
-                    await StatusBar.setOverlaysWebView({ overlay: false });
+                    // Transparent status bar drawn over the map; a scrim in
+                    // Map.vue tints the inset area to match the top controls
+                    await StatusBar.setOverlaysWebView({ overlay: true });
+                    await StatusBar.setStyle({ style: Style.Dark });
+
+                    // Android WebViews don't reliably report env(safe-area-inset-top),
+                    // so publish the native height as a fallback for --status-bar-height.
+                    // iOS relies on env() alone - this measurement would go stale
+                    // when its status bar hides in landscape.
+                    if (isAndroidPlatform()) {
+                        const { height } = await StatusBar.getInfo();
+                        if (height > 0) {
+                            document.documentElement.style.setProperty('--status-bar-native-height', `${height}px`);
+                        }
+                    }
                 } catch (err) {
                     console.warn('Failed to configure native status bar overlay', err);
                 }
@@ -175,21 +248,29 @@ export const useAppStore = defineStore('cloudtak-app', {
 
             systemThemeQuery?.addEventListener('change', handleSystemThemeChange);
 
+            // Branding is cosmetic and must never block boot: paint cached or
+            // default values now, refresh in the background.
+            brandingSub = liveQuery(() => db.config.bulkGet(['login::logo', 'login::name'])).subscribe(([logo, name]) => {
+                this.loginLogo = logo?.value as string | undefined;
+                this.loginName = name?.value as string | undefined;
+            });
+
+            void Config.refresh([...BRANDING_CONFIG_KEYS]).catch((err) => {
+                console.warn('Failed to refresh login branding', err);
+            });
+
             this.loadingStage = 'Checking your account…';
 
             let status;
-            const username = await db.profile.get('username');
+            try {
+                const username = await withTimeout(db.profile.get('username'), BOOT_LOCAL_TIMEOUT_MS, 'Profile lookup');
 
-            if (username) {
+                status = username
+                    ? 'configured'
+                    : (await withTimeout(ServerManager.get(), BOOT_NETWORK_TIMEOUT_MS, 'Server status check')).status;
+            } catch (err) {
+                console.warn('Server Error (Likely the server is in a configured state)', err);
                 status = 'configured';
-            } else {
-                try {
-                    const server = await ServerManager.get();
-                    status = server.status;
-                } catch (err) {
-                    console.warn('Server Error (Likely the server is in a configured state)', err);
-                    status = 'configured';
-                }
             }
 
             if (status === 'unconfigured') {
@@ -204,25 +285,8 @@ export const useAppStore = defineStore('cloudtak-app', {
                 this.loadingStage = 'Signing you in…';
                 await this.refreshLogin();
             } else if (router.currentRoute.value.name !== 'login') {
-                this.routeLogin();
+                await this.routeLogin();
             }
-
-            this.loadingStage = 'Loading app settings…';
-
-            const config = await Config.list([
-                'login::name',
-                'login::logo',
-                'login::brand::enabled',
-                'login::brand::logo',
-                'login::background::enabled',
-                'login::background::color',
-                'login::signup',
-                'login::forgot',
-                'login::username'
-            ]);
-
-            this.loginLogo = config['login::logo'];
-            this.loginName = config['login::name'];
 
             return true;
         },
@@ -233,6 +297,11 @@ export const useAppStore = defineStore('cloudtak-app', {
             if (displayStyleSub) {
                 displayStyleSub.unsubscribe();
                 displayStyleSub = undefined;
+            }
+
+            if (brandingSub) {
+                brandingSub.unsubscribe();
+                brandingSub = undefined;
             }
         },
     },

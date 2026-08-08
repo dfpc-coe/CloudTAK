@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import Style from '../lib/style.js';
+import Style from '../common/style.js';
 
 test('Style: Basic Point', async () => {
     const style = new Style({

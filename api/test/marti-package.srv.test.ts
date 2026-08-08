@@ -10,7 +10,7 @@ import Flight from './flight.js';
 import { DataPackage } from '@tak-ps/node-cot';
 import FileCommands from '@tak-ps/node-tak/lib/api/files';
 import Sinon from 'sinon';
-import stream2buffer from '../lib/stream.js';
+import stream2buffer from '../stateless/lib/stream.js';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 const flight = new Flight();
@@ -459,11 +459,6 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
     let uploadHit = false;
 
     try {
-        flight.config?.conns.set('pkgowner@example.com', {
-            channels: new Set([1]),
-            destroy: () => {},
-        } as any);
-
         flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
@@ -523,7 +518,7 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
                         created: new Date().toISOString(),
                         type: 'SYSTEM',
                         bitpos: 1,
-                        active: false,
+                        active: true,
                     }, {
                         name: 'Red',
                         direction: 'IN',
@@ -602,7 +597,7 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
     } catch (err) {
         assert.ifError(err);
     } finally {
-        flight.config?.conns.delete('pkgowner@example.com');
+        flight.stateful?.conns.delete('pkgowner@example.com');
     }
 
     flight.tak.reset();
@@ -682,11 +677,6 @@ test('PATCH api/marti/package/:uid - User without overlapping active channel can
     let attemptedUpdate = false;
 
     try {
-        flight.config?.conns.set('pkgviewer@example.com', {
-            channels: new Set([1]),
-            destroy: () => {},
-        } as any);
-
         flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
@@ -723,7 +713,7 @@ test('PATCH api/marti/package/:uid - User without overlapping active channel can
                         created: new Date().toISOString(),
                         type: 'SYSTEM',
                         bitpos: 1,
-                        active: false,
+                        active: true,
                     }, {
                         name: 'Red',
                         direction: 'IN',
@@ -776,7 +766,7 @@ test('PATCH api/marti/package/:uid - User without overlapping active channel can
     } catch (err) {
         assert.ifError(err);
     } finally {
-        flight.config?.conns.delete('pkgviewer@example.com');
+        flight.stateful?.conns.delete('pkgviewer@example.com');
     }
 
     flight.tak.reset();

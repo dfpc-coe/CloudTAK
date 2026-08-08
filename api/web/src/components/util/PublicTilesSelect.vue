@@ -19,13 +19,15 @@
                     <div class='col-12 d-flex align-items-center user-select-none'>
                         <div v-text='selected.name' />
                         <div class='ms-auto btn-list'>
-                            <IconX
-                                v-tooltip='"Remove Tile"'
-                                :size='32'
-                                stroke='1'
-                                class='cursor-pointer'
+                            <TablerIconButton
+                                title='Remove Tile'
                                 @click='selected = undefined'
-                            />
+                            >
+                                <IconX
+                                    :size='32'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
                         </div>
                     </div>
                 </template>
@@ -91,6 +93,7 @@ import {
     TablerInput,
     TablerPager,
     TablerNone,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
 interface TileDetail {
@@ -168,8 +171,7 @@ async function ensureConfig() {
 async function fetchSelected() {
     if (props.url && !selected.value) {
         try {
-            // If the URL contains tiles.map.cotak.gov we can assume it is a public tile
-            // and we can extract the name from the path
+            // Extract the public tile name from the URL path
             const u = new URL(props.url);
             const match = u.pathname.match(/\/tiles\/public\/([a-zA-Z0-9._-]+)/);
 

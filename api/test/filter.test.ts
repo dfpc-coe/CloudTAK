@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import Filter from '../lib/filter.js';
+import Filter from '../common/filter.js';
 import { CoTParser } from '@tak-ps/node-cot';
 
 test('Filter: Basic Point', async () => {

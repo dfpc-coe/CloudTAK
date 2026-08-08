@@ -171,12 +171,18 @@ export default class Worker extends EventEmitter {
                 if (base === 'MANIFEST.xml') continue;
                 if (['.png', '.xml'].includes(extLower)) continue;
 
+                const raw = path.resolve(pkg.path, './raw/', file);
+
+                if (['.zip', '.kmz'].includes(extLower) && !(await isZipFile(raw))) {
+                    throw new Error(`Package content '${base}' is not a valid ZIP archive`);
+                }
+
                 await this.processFile({
                     id: randomUUID(),
                     tmpdir: pkg.path,
                     ext: extLower,
                     name: base,
-                    raw: path.resolve(pkg.path, './raw/', file),
+                    raw,
                 });
             }
         }
