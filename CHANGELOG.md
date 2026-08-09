@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.65.0 - 2026-08-09
+
+- :tada: Introduce spreadsheet view in Event Board
+
 ### v13.64.0 - 2026-08-09
 
 - :rocket: Introduce concept of constrained network environments via CapAwesome plugin
