@@ -8,7 +8,7 @@ import { withTimeout } from '../base/async.ts';
 import Config from '../base/config.ts';
 import ServerManager from '../base/server.ts';
 import router from '../router.ts';
-import { isNativePlatform, isAndroidPlatform } from '../base/capacitor.ts';
+import { isNativePlatform, isAndroidPlatform, initKeyboardTracking } from '../base/capacitor.ts';
 
 export type DisplayStyleMode = 'System Default' | 'Light' | 'Dark';
 export type ResolvedThemeMode = 'light' | 'dark';
@@ -217,6 +217,9 @@ export const useAppStore = defineStore('cloudtak-app', {
             this.loadingStage = 'Setting up styles…';
 
             if (isNativePlatform()) {
+                // Must be listening before the first field is focused
+                initKeyboardTracking();
+
                 try {
                     // Transparent status bar drawn over the map; a scrim in
                     // Map.vue tints the inset area to match the top controls

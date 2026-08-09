@@ -1,5 +1,6 @@
 import { Browser } from '@capacitor/browser';
 import { App } from '@capacitor/app';
+import { Keyboard } from '@capacitor/keyboard';
 import { Capacitor } from '@capacitor/core';
 
 export function isNativePlatform(): boolean {
@@ -16,6 +17,74 @@ export function isIOSPlatform(): boolean {
 
 export function supportsServiceWorker(): boolean {
     return typeof navigator !== 'undefined' && !isNativePlatform() && 'serviceWorker' in navigator;
+}
+
+/*
+ * Capacitor's iOS keyboard plugin defaults to `resize: native`, which shrinks
+ * the WKWebView frame by the keyboard height and leaves the vacated strip
+ * showing the black native background behind the WebView. iOS only posts
+ * UIKeyboardWillHide - the notification that restores the frame - when the
+ * first responder resigns cleanly. Tearing the focused input out of the DOM
+ * instead, which is what a route change away from a form does, dismisses the
+ * keyboard but delays that notification by seconds. Meanwhile anything that
+ * mounts sizes itself against the short viewport, so the map comes up half
+ * height over black and only snaps out once the frame is finally restored.
+ *
+ * Dismissing the keyboard explicitly, while its input still exists, keeps the
+ * notification and the frame restore on time.
+ */
+
+// Longest we'll block a navigation waiting on the hide animation. The plugin
+// restores the frame 10ms after `keyboardWillHide`, well inside this.
+const KEYBOARD_HIDE_TIMEOUT_MS = 1000;
+
+let keyboardShown = false;
+let keyboardTracked = false;
+
+/**
+ * Start tracking native keyboard visibility so `dismissKeyboard` knows whether
+ * there is anything to wait for. Safe to call more than once; no-op on web.
+ */
+export function initKeyboardTracking(): void {
+    if (keyboardTracked || !isNativePlatform() || typeof window === 'undefined') return;
+    keyboardTracked = true;
+
+    window.addEventListener('keyboardWillShow', () => { keyboardShown = true; });
+    window.addEventListener('keyboardDidHide', () => { keyboardShown = false; });
+}
+
+/**
+ * Blur the focused element and, on native, resolve once the keyboard has
+ * finished hiding and the WebView is back to full height. Resolves immediately
+ * on web, and when no keyboard is up. Call before navigating away from a form.
+ */
+export async function dismissKeyboard(): Promise<void> {
+    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+    }
+
+    if (!isNativePlatform() || !keyboardShown) return;
+
+    const settled = new Promise<void>((resolve) => {
+        const onHidden = (): void => {
+            clearTimeout(timer);
+            window.removeEventListener('keyboardDidHide', onHidden);
+            resolve();
+        };
+
+        const timer = setTimeout(onHidden, KEYBOARD_HIDE_TIMEOUT_MS);
+        window.addEventListener('keyboardDidHide', onHidden);
+    });
+
+    try {
+        await Keyboard.hide();
+    } catch (err) {
+        // Nothing left to wait on if the request itself failed
+        console.warn('Failed to dismiss the native keyboard', err);
+        return;
+    }
+
+    await settled;
 }
 
 /**
