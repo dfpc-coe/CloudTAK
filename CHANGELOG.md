@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.64.0 - 2026-08-09
+
+- :rocket: Introduce concept of constrained network environments via CapAwesome plugin
+
 ### v13.63.0 - 2026-08-07
 
 - :tada: Introduce concept of CoreDevice to augment CoreEvent data structure 
