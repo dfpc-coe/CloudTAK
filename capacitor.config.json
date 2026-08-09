@@ -10,7 +10,7 @@
             "@capacitor-firebase/messaging",
             "@capacitor/app",
             "@capacitor/browser",
-            "@capacitor/network",
+            "@capawesome/capacitor-network",
             "@capacitor/camera",
             "@capacitor/clipboard",
             "@capacitor/device",
