@@ -3,7 +3,7 @@ import type { PluginListenerHandle } from '@capacitor/core';
 import type { GetStatusResult } from '@capawesome/capacitor-network';
 
 /**
- * Network status exposed by `@capawesome/capacitor-network` 0.1.2.
+ * Network status exposed by `@capawesome/capacitor-network` 0.1.3.
  *
  * A connection, including validated public internet access, does not guarantee
  * that the configured TAK server is reachable.
@@ -46,10 +46,9 @@ export class NetworkStatus {
 
     /**
      * Conservative minimize-data signal, not proof of a satellite connection.
-     * Android: satellite on 15+, or bandwidth-constrained on 16+.
+     * Android: satellite on 15+, or bandwidth-constrained when API 36 or
+     * U Extensions 16 is available.
      * iOS: `NWPath.isUltraConstrained` on 26+. Unsupported on Web.
-     * Android 14/15 SDK Extensions support is tracked in
-     * capawesome-team/capacitor-plugins#964.
      */
     get isUltraConstrained(): boolean | null {
         return this.ultraConstrained;
