@@ -96,6 +96,11 @@ POSTGRES=$(echo "$StackInfo" | jq .Outputs.DB)
 ApiUrl=$(echo "$StackInfo" | jq -r '.Outputs.APIURL // empty')
 PmtilesUrl=$(echo "$StackInfo" | jq -r '.Outputs.PMTilesAPI // empty')
 
+# The deployed ECS container receives ECR_TASKS_REPOSITORY_NAME from CloudFormation
+# as tak-vpc-<Environment>-cloudtak-tasks - derive the same value from the stack's
+# Environment parameter so ECR-backed routes (Task versions/capabilities) work locally.
+EcsEnvironment=$(echo "$StackInfo" | jq -r '.Parameters.Environment // empty')
+
 echo "Pulling secrets for ${FullStack} from AWS Secrets Manager"
 
 SigningSecret=$(aws secretsmanager get-secret-value \
@@ -126,6 +131,9 @@ if [[ -n "$PmtilesUrl" ]]; then
 fi
 if [[ -n "$GeofenceSecret" ]]; then
     EnvJson=$(echo "$EnvJson" | jq --arg geofence "$GeofenceSecret" '. + { "CLOUDTAK_Config_geofence_password": $geofence }')
+fi
+if [[ -n "$EcsEnvironment" ]]; then
+    EnvJson=$(echo "$EnvJson" | jq --arg repo "tak-vpc-${EcsEnvironment}-cloudtak-tasks" '. + { "ECR_TASKS_REPOSITORY_NAME": $repo }')
 fi
 
 echo "$EnvJson" > "api/.env-${Stack}"

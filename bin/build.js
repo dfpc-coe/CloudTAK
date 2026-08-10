@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import CP from 'child_process';
+import Capabilities, { CAPABILITIES_ANNOTATION } from '../api/common/capabilities.ts';
 
 /**
  * Build and push docker containers to AWS ECR
@@ -80,7 +81,29 @@ function login() {
 
 }
 
-function cloudtak_etl() {
+/**
+ * AWS Lambda accepts OCI Image Manifests (spec v1.0.0 and up) as long as the image
+ * is a single-platform image manifest and not an OCI Image Index (multi-platform or
+ * provenance-wrapped builds). Manifest annotations are part of that supported surface,
+ * so a capabilities.json document located alongside the source code is embedded in
+ * the image manifest as an OCI annotation and later retrieved via ECR BatchGetImage.
+ *
+ * Note: the annotated path must push directly from buildx (--push) - a --load
+ * into the classic Docker image store followed by `docker push` drops annotations.
+ */
+async function capabilities(path) {
+    let doc;
+    try {
+        doc = await Capabilities.read(path);
+    } catch (err) {
+        console.error(`not ok - ${path}: ${err.message}`);
+        process.exit(1);
+    }
+
+    return doc ? JSON.stringify(doc) : null;
+}
+
+async function cloudtak_etl() {
     // Get Git Repo Name
     const basename = (CP.execSync(`
         basename $(git rev-parse --show-toplevel)
@@ -90,12 +113,26 @@ function cloudtak_etl() {
         jq .version ./package.json | tr -d '"'
     `)).toString().trim();
 
+    const caps = await capabilities('./capabilities.json');
+
+    if (!caps) {
+        console.error('not ok - ETL builds require a capabilities.json alongside the source code');
+        process.exit(1);
+    }
+
+    console.error('ok - found capabilities.json - annotating manifest');
+
     return new Promise((resolve, reject) => {
         const $ = CP.exec(`
-            docker build -t ${basename}:${version} . \
-            && docker tag ${basename}:${version} "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-tasks:${basename}-v${version}" \
-            && docker push "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-tasks:${basename}-v${version}"
-        `, (err) => {
+            docker buildx build . \
+                --platform linux/amd64 \
+                --provenance=false \
+                --annotation "${CAPABILITIES_ANNOTATION}=$\{CLOUDTAK_CAPABILITIES}" \
+                --output type=image,oci-mediatypes=true,push=true \
+                -t "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-tasks:${basename}-v${version}"
+        `, {
+            env: { ...process.env, CLOUDTAK_CAPABILITIES: caps },
+        }, (err) => {
             if (err) return reject(err);
             return resolve();
         });
@@ -126,12 +163,24 @@ function cloudtak_api(plugins = []) {
 async function cloudtak_task(task) {
     process.env.TASK = task;
 
+    const caps = await capabilities(new URL(`../tasks/${task}/capabilities.json`, import.meta.url));
+    if (caps) console.error(`ok - found tasks/${task}/capabilities.json - annotating manifest`);
+
     return new Promise((resolve, reject) => {
-        const $ = CP.exec(`
+        const cmd = caps ? `
+            docker buildx build --platform linux/amd64 --provenance=false -f ./tasks/$\{TASK}/Dockerfile . \
+                --annotation "${CAPABILITIES_ANNOTATION}=$\{CLOUDTAK_CAPABILITIES}" \
+                --output type=image,oci-mediatypes=true,push=true \
+                -t "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{TASK}-$\{GITSHA}"
+        ` : `
             docker buildx build --platform linux/amd64 --provenance=false --load -f ./tasks/$\{TASK}/Dockerfile . -t cloudtak-$\{TASK} \
             && docker tag cloudtak-$\{TASK}:latest "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{TASK}-$\{GITSHA}" \
             && docker push "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{TASK}-$\{GITSHA}"
-        `, (err) => {
+        `;
+
+        const $ = CP.exec(cmd, {
+            env: caps ? { ...process.env, CLOUDTAK_CAPABILITIES: caps } : process.env,
+        }, (err) => {
             if (err) return reject(err);
             return resolve();
         });

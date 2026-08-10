@@ -202,29 +202,65 @@
             >
                 <table class='table card-table table-hover table-vcenter datatable'>
                     <tbody>
-                        <tr
+                        <template
                             v-for='version in versions'
                             :key='version.version'
                         >
-                            <td>
-                                <div class='d-flex align-items-center'>
-                                    <span v-text='version.version' />
-                                    <div class='ms-auto d-flex align-items-center'>
-                                        <TablerBadge
-                                            v-if='version.deployed'
-                                            class='mx-2'
-                                        >
-                                            Deployed
-                                        </TablerBadge>
-                                        <TablerDelete
-                                            v-if='!version.deployed'
-                                            displaytype='icon'
-                                            @delete='deleteVersion(version.version)'
+                            <tr
+                                class='cursor-pointer'
+                                @click='toggleVersion(version.version)'
+                            >
+                                <td>
+                                    <div class='d-flex align-items-center'>
+                                        <IconChevronDown
+                                            v-if='expandedVersion === version.version'
+                                            :size='20'
+                                            stroke='1'
                                         />
+                                        <IconChevronRight
+                                            v-else
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                        <span
+                                            class='ms-2'
+                                            v-text='version.version'
+                                        />
+                                        <div class='ms-auto d-flex align-items-center'>
+                                            <TablerBadge
+                                                v-if='version.deployed'
+                                                class='mx-2'
+                                            >
+                                                Deployed
+                                            </TablerBadge>
+                                            <div
+                                                v-if='!version.deployed'
+                                                @click.stop
+                                            >
+                                                <TablerDelete
+                                                    displaytype='icon'
+                                                    @delete='deleteVersion(version.version)'
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
+                            <tr v-if='expandedVersion === version.version'>
+                                <td class='py-3'>
+                                    <TablerLoading v-if='loadingCapabilities' />
+                                    <TablerNone
+                                        v-else-if='!capabilities'
+                                        label='No Capabilities Document for this Version'
+                                        :create='false'
+                                    />
+                                    <LayerStaticCapabilities
+                                        v-else
+                                        :capabilities='capabilities'
+                                    />
+                                </td>
+                            </tr>
+                        </template>
                     </tbody>
                 </table>
             </div>
@@ -236,7 +272,8 @@
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { server } from '../../../std.ts';
-import type { ETLTaskVersions } from '../../../types.ts';
+import type { ETLTaskVersions, ETLTaskCapabilities } from '../../../types.ts';
+import LayerStaticCapabilities from '../../ETL/Layer/LayerStaticCapabilities.vue';
 import {
     TablerNone,
     TablerBadge,
@@ -253,6 +290,8 @@ import {
     IconStar,
     IconPencil,
     IconDownload,
+    IconChevronDown,
+    IconChevronRight,
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
 
@@ -276,6 +315,9 @@ const error = ref<Error>();
 const task = ref<Task | null>(null);
 const edit = ref<Task | null>(null);
 const versions = ref<Array<{ version: string; deployed: boolean }>>([]);
+const expandedVersion = ref<string | null>(null);
+const loadingCapabilities = ref<boolean>(false);
+const capabilities = ref<ETLTaskCapabilities | null>(null);
 
 onMounted(async () => {
     await fetch();
@@ -307,6 +349,8 @@ async function fetch(): Promise<void> {
 async function fetchVersions(): Promise<void> {
     if (!task.value) return;
     loadingVersions.value = true;
+    expandedVersion.value = null;
+    capabilities.value = null;
     try {
         const res = await server.GET('/api/task/raw/{:task}', {
             params: {
@@ -415,6 +459,39 @@ async function downloadTask(): Promise<void> {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+}
+
+async function toggleVersion(version: string): Promise<void> {
+    if (!task.value) return;
+
+    if (expandedVersion.value === version) {
+        expandedVersion.value = null;
+        capabilities.value = null;
+        return;
+    }
+
+    expandedVersion.value = version;
+    capabilities.value = null;
+    loadingCapabilities.value = true;
+    try {
+        const res = await server.GET('/api/task/raw/{:task}/version/{:version}', {
+            params: {
+                path: {
+                    ':task': task.value.prefix,
+                    ':version': version
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        // Ignore the response if the user has already expanded a different version
+        if (expandedVersion.value === version) {
+            capabilities.value = res.data.capabilities;
+        }
+    } finally {
+        loadingCapabilities.value = false;
+    }
 }
 
 async function deleteVersion(version: string): Promise<void> {

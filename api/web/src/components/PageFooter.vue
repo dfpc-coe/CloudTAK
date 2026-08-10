@@ -26,7 +26,7 @@
                 <div class='col-12 col-lg-auto mt-3 mt-lg-0'>
                     <ul class='list-inline list-inline-dots mb-0'>
                         <li class='list-inline-item'>
-                            Copyright © 2025
+                            Copyright © 2026
                             <a
                                 href='https://www.colorado.gov/'
                                 class='link-secondary'

@@ -10,6 +10,7 @@ import { Layer as LayerSchema } from '../../common/schema.js';
 import { StandardResponse, TaskResponse } from '../../common/types.js';
 import * as Default from '../lib/limits.js';
 import { isSafeUrl } from '@tak-ps/node-safeurl';
+import { CapabilitiesSchema } from '../../common/capabilities.js';
 
 export enum TaskSchemaEnum {
     OUTPUT = 'schema:output',
@@ -174,6 +175,49 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     version,
                     deployed: deployedVersions.has(version),
                 })),
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/task/raw/:task/version/:version', {
+        name: 'Get Version',
+        group: 'RawTask',
+        params: Type.Object({
+            task: Type.String(),
+            version: Type.String(),
+        }),
+        description: 'Get a single Task Version, including the Capabilities document embedded in the OCI Image Manifest at build time',
+        res: Type.Object({
+            version: Type.String(),
+            deployed: Type.Boolean(),
+            capabilities: Type.Union([CapabilitiesSchema, Type.Null()]),
+        }),
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            const { tasks } = await ECR.versions();
+
+            const versions = tasks.get(req.params.task);
+            if (!versions) throw new Err(404, null, 'Task does not exist');
+            if (!versions.includes(req.params.version)) throw new Err(404, null, 'Task Version does not exist');
+
+            const task = `${req.params.task}-v${req.params.version}`;
+            const layers = await config.models.Layer.list({
+                limit: 1,
+                where: sql`
+                    task = ${task}::TEXT
+                `,
+            });
+
+            const capabilities = await ECR.capabilities(req.params.task, req.params.version);
+
+            res.json({
+                version: req.params.version,
+                deployed: layers.total !== 0,
+                capabilities,
             });
         } catch (err) {
             Err.respond(err, res);
