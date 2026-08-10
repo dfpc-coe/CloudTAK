@@ -10,7 +10,7 @@
             "@capacitor-firebase/messaging",
             "@capacitor/app",
             "@capacitor/browser",
-            "@capacitor/network",
+            "@capawesome/capacitor-network",
             "@capacitor/camera",
             "@capacitor/clipboard",
             "@capacitor/device",
@@ -41,7 +41,7 @@
         },
         "CapacitorUpdater": {
             "appId": "io.cloudtak.app",
-            "version": "13.63.0",
+            "version": "13.65.3",
             "autoUpdate": "atBackground"
         }
     }

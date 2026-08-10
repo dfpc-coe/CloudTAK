@@ -93,6 +93,7 @@ export const useMapStore = defineStore('cloudtak', {
         _cotResync?: Promise<void>;
         _removeBackgroundStateListener?: () => void;
         _removePushTokenListener?: () => void;
+        _lastLocationHttpSubmit?: number;
 
         channel: BroadcastChannel;
 
@@ -1229,6 +1230,16 @@ export const useMapStore = defineStore('cloudtak', {
         },
 
         submitLocationHttp: async function(position: Position): Promise<void> {
+            // Throttle to the user's location reporting frequency
+            // (tak_loc_freq) - the background watcher can deliver fixes far
+            // faster than the profile asks the server to be updated
+            const freq = Number((await ProfileConfig.get('tak_loc_freq'))?.value) || 5000;
+            const now = Date.now();
+            if (this._lastLocationHttpSubmit !== undefined && now - this._lastLocationHttpSubmit < freq) {
+                return;
+            }
+            this._lastLocationHttpSubmit = now;
+
             try {
                 const body = {
                     longitude: position.coords.longitude,
