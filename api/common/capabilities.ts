@@ -76,7 +76,7 @@ export const CapabilitiesSchema = Type.Object({
         outgoing: Type.Optional(Type.Object({
             types: Type.Array(CapabilitiesOutgoingTypeSchema),
         })),
-    })
+    }),
 });
 
 export type CapabilitiesDocument = Static<typeof CapabilitiesSchema>;
