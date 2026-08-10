@@ -1,5 +1,5 @@
 import { Geolocation } from '@capacitor/geolocation';
-import type { CallbackID, Position } from '@capacitor/geolocation';
+import type { Position } from '@capacitor/geolocation';
 import { BackgroundGeolocation } from '@capgo/background-geolocation';
 import type {
     CallbackError as BackgroundGeolocationError,
@@ -12,8 +12,7 @@ import type { DevicePermissionContext } from './types.ts';
 export class GeolocationPermission {
     constructor(private readonly context: DevicePermissionContext) {}
 
-    private watchId: CallbackID | null = null;
-    private backgroundWatchActive = false;
+    private watchActive = false;
     private locationCallback: ((position: Position) => void) | null = null;
 
     static supportsLocationRequests(): boolean {
@@ -108,9 +107,9 @@ export class GeolocationPermission {
 
         try {
             // Resolve the foreground (When In Use) prompt before starting the
-            // background watcher: iOS ignores the watcher's escalation to
-            // "Always" while that first prompt is still pending, which used to
-            // defer the Always prompt to the second app launch.
+            // watcher: iOS ignores the watcher's escalation to "Always" while
+            // that first prompt is still pending, which used to defer the
+            // Always prompt to the second app launch.
             if (isNativePlatform()) {
                 await this.refreshStatus();
                 if (this.context.permissions.location === 'prompt') {
@@ -118,49 +117,26 @@ export class GeolocationPermission {
                 }
             }
 
-            await this.startForegroundWatch(handler);
-
-            // Fire-and-forget so a slow addWatcher can't block foreground
-            // acquisition; its permission request now escalates to "Always".
-            if (isNativePlatform()) {
-                void this.startBackgroundWatch(handler).catch((err: unknown) => {
-                    console.warn('Failed to start background location watch', err);
-                });
-            }
+            // Single watcher on every platform: on native the plugin delivers
+            // foreground fixes too, and on web it falls back to
+            // navigator.geolocation.watchPosition.
+            await this.startBackgroundWatch(handler);
         } catch (err) {
             console.error('Failed to start location watch', err);
         }
     }
 
     async stopWatch(): Promise<void> {
-        if (this.watchId !== null) {
-            const id = this.watchId;
-            this.watchId = null;
+        if (this.watchActive) {
+            this.watchActive = false;
             try {
-                await Geolocation.clearWatch({ id });
+                await BackgroundGeolocation.stop();
             } catch (err) {
                 console.warn('Failed to clear location watch', err);
             }
         }
 
-        if (this.backgroundWatchActive) {
-            this.backgroundWatchActive = false;
-            try {
-                await BackgroundGeolocation.stop();
-            } catch (err) {
-                console.warn('Failed to clear background location watch', err);
-            }
-        }
-
         this.locationCallback = null;
-    }
-
-    private async startForegroundWatch(handler: (position: Position | null, err?: unknown) => void): Promise<void> {
-        this.watchId = await Geolocation.watchPosition({
-            maximumAge: 0,
-            timeout: 10000,
-            enableHighAccuracy: true
-        }, handler);
     }
 
     private async startBackgroundWatch(handler: (position: Position | null, err?: unknown) => void): Promise<void> {
@@ -169,11 +145,15 @@ export class GeolocationPermission {
             backgroundMessage: 'CloudTAK is sharing your location.',
             requestPermissions: true,
             stale: false,
-            distanceFilter: 0
+            // Metres of movement before a new fix is delivered. 0 disables
+            // filtering (kCLDistanceFilterNone on iOS) and streams fixes
+            // continuously, keeping the GPS radio hot even when stationary.
+            // Ignored by the web fallback.
+            distanceFilter: 10
         }, (location?: BackgroundLocation, err?: BackgroundGeolocationError) => {
             handler(location ? GeolocationPermission.backgroundLocationToPosition(location) : null, err);
         });
-        this.backgroundWatchActive = true;
+        this.watchActive = true;
     }
 
     private static backgroundLocationToPosition(location: BackgroundLocation): Position {
