@@ -365,7 +365,7 @@ import { startAuthentication } from '@simplewebauthn/browser';
 import type { PublicKeyCredentialRequestOptionsJSON, AuthenticationResponseJSON } from '@simplewebauthn/browser';
 import Config from '../base/config.ts';
 import type { FullConfig } from '../base/config.ts';
-import { isNativePlatform, supportsServiceWorker } from '../base/capacitor.ts';
+import { isNativePlatform, supportsServiceWorker, blurActiveInput } from '../base/capacitor.ts';
 import { getCurrentEntryBuildId } from '../base/service-worker.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { server } from '../std.ts';
@@ -591,6 +591,10 @@ async function applySession(login: { token: string; email: string; session: stri
 }
 
 async function createLogin() {
+    // `loading` swaps the credential fields out on the next tick - resign while
+    // they still exist, or iOS strands the WebView at keyboard height
+    blurActiveInput();
+
     loading.value = true;
 
     try {
@@ -636,6 +640,8 @@ async function startConditionalPasskey() {
 }
 
 async function authenticatePasskey() {
+    blurActiveInput();
+
     loading.value = true;
 
     try {
@@ -654,6 +660,10 @@ async function authenticatePasskey() {
 }
 
 async function completePasskeyLogin(credential: AuthenticationResponseJSON) {
+    // Also reached from conditional mediation, where the autofill prompt can
+    // have raised the keyboard over the username field with no user gesture
+    blurActiveInput();
+
     loading.value = true;
 
     try {
@@ -725,6 +735,8 @@ function navigateAfterLogin() {
 }
 
 async function renewCertificate() {
+    blurActiveInput();
+
     loading.value = true;
 
     try {
