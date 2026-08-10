@@ -146,7 +146,7 @@ export const Configuration = Type.Object({
  * many networks/NAT setups can't route. Rewriting to an internal alias that
  * resolves directly avoids that, but which alias (if any) is valid is
  * deployment-specific, so this only rewrites when an operator has opted in
- * via media::ingest_internal_host; otherwise it's a no-op.
+ * via media::ingest::internal::host; otherwise it's a no-op.
  */
 export function ingestSource(proxy: string | null | undefined, ownHostname?: string, internalHost?: string): string | null | undefined {
     if (!proxy || !ownHostname || !internalHost) return proxy;
@@ -211,8 +211,8 @@ export default class VideoServiceControl {
             }
         }
 
-        const playbackValue = (await this.config.models.Setting.typed('media::playback_url', '')).value;
-        const ingestInternalHostValue = (await this.config.models.Setting.typed('media::ingest_internal_host', '')).value;
+        const playbackValue = (await this.config.models.Setting.typed('media::playback::url', '')).value;
+        const ingestInternalHostValue = (await this.config.models.Setting.typed('media::ingest::internal::host', '')).value;
 
         if (playbackValue) new URL(playbackValue);
 
@@ -383,7 +383,7 @@ export default class VideoServiceControl {
 
         if (c.config && c.config.hls) {
             // Format: http://localhost:9997/mystream/index.m3u8 - Proxied
-            // media::playback_url overrides the browser-facing host/port for HLS
+            // media::playback::url overrides the browser-facing host/port for HLS
             // playback (e.g. a standard-port reverse proxy for networks that block
             // the media server's dedicated port), while every other protocol keeps
             // using c.external as-is.
