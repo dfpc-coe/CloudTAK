@@ -7,7 +7,7 @@ ENV HOME=/home/etl
 WORKDIR $HOME
 
 # Data source configuration
-ARG DATA_SOURCE_URL=https://github.com/dfpc-coe/CloudTAK-Data/archive/refs/tags/v1.1.0.zip
+ARG DATA_SOURCE_URL=https://github.com/dfpc-coe/CloudTAK-Data/archive/refs/tags/v1.2.0.zip
 ARG API_URL
 ARG USE_LOCAL_ZIP=false
 ARG WEB_PLUGINS
