@@ -131,7 +131,7 @@ async function cloudtak_etl() {
                 --output type=image,oci-mediatypes=true,push=true \
                 -t "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-tasks:${basename}-v${version}"
         `, {
-            env: { ...process.env, CLOUDTAK_CAPABILITIES: caps },
+            env: { ...process.env, CLOUDTAK_CAPABILITIES: caps }
         }, (err) => {
             if (err) return reject(err);
             return resolve();
@@ -179,7 +179,7 @@ async function cloudtak_task(task) {
         `;
 
         const $ = CP.exec(cmd, {
-            env: caps ? { ...process.env, CLOUDTAK_CAPABILITIES: caps } : process.env,
+            env: caps ? { ...process.env, CLOUDTAK_CAPABILITIES: caps } : process.env
         }, (err) => {
             if (err) return reject(err);
             return resolve();
