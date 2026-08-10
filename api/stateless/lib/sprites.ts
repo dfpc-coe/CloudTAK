@@ -103,22 +103,28 @@ export default class SpriteBuilder {
     static async from_icons(icons: Array<Static<typeof IconResponse>>, spriteConfig: SpriteConfig = {}) {
         const src = [];
         for (const icon of icons) {
-            const buff = Buffer.from(icon.data.split(',')[1], 'base64');
+            let contents: Buffer;
+            try {
+                const buff = Buffer.from(icon.data.split(',')[1], 'base64');
 
-            const contents = await Sharp(buff)
-                .resize({
-                    width: 32,
-                    height: 48,
-                    fit: 'contain',
-                    background: {
-                        r: 0,
-                        g: 0,
-                        b: 0,
-                        alpha: 0,
-                    },
-                })
-                .png()
-                .toBuffer();
+                contents = await Sharp(buff)
+                    .resize({
+                        width: 32,
+                        height: 48,
+                        fit: 'contain',
+                        background: {
+                            r: 0,
+                            g: 0,
+                            b: 0,
+                            alpha: 0,
+                        },
+                    })
+                    .png()
+                    .toBuffer();
+            } catch (err) {
+                console.error(`not ok - failed to process icon ${icon.path} for spritesheet, skipping`, err);
+                continue;
+            }
 
             let iconPath = spriteConfig.name ? String(icon[spriteConfig.name]) : icon.path.replace(/.*?\//, '');
 
