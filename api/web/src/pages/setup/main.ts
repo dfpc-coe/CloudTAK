@@ -2,14 +2,12 @@ import { createApp } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { CapacitorUpdater } from '@capgo/capacitor-updater'
 import { initGlobalErrorReporting, vueErrorHandler } from '../../lib/reporting/index.ts';
-import { initKeyboardTracking } from '../../base/capacitor.ts';
 
 import '@tabler/core/dist/css/tabler.min.css'
 
 import App from '../../components/Setup/App.vue'
 
 initGlobalErrorReporting();
-initKeyboardTracking();
 
 // Capgo rolls back the bundle on next launch if this is never called.
 if (Capacitor.isNativePlatform()) {

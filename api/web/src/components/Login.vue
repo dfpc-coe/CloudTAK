@@ -365,7 +365,7 @@ import { startAuthentication } from '@simplewebauthn/browser';
 import type { PublicKeyCredentialRequestOptionsJSON, AuthenticationResponseJSON } from '@simplewebauthn/browser';
 import Config from '../base/config.ts';
 import type { FullConfig } from '../base/config.ts';
-import { isNativePlatform, supportsServiceWorker, dismissKeyboard } from '../base/capacitor.ts';
+import { isNativePlatform, supportsServiceWorker } from '../base/capacitor.ts';
 import { getCurrentEntryBuildId } from '../base/service-worker.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { server } from '../std.ts';
@@ -605,7 +605,7 @@ async function createLogin() {
 
         await applySession({ token: login.token, email: login.email, session: login.session });
 
-        await navigateAfterLogin();
+        navigateAfterLogin();
     } catch (err) {
         loading.value = false;
         throw err;
@@ -687,18 +687,14 @@ async function completePasskeyLogin(credential: AuthenticationResponseJSON) {
             return;
         }
 
-        await navigateAfterLogin();
+        navigateAfterLogin();
     } catch (err) {
         loading.value = false;
         throw err;
     }
 }
 
-async function navigateAfterLogin() {
-    // The credential fields are about to be unmounted - let the keyboard go
-    // down first so the map isn't built against a keyboard-shrunk WebView
-    await dismissKeyboard();
-
+function navigateAfterLogin() {
     emit('login');
 
     if (route.query.redirect && !String(route.query.redirect).includes('/login')) {
@@ -745,17 +741,17 @@ async function renewCertificate() {
         certRenewal.required = false;
         certRenewal.password = '';
 
-        await navigateAfterLogin();
+        navigateAfterLogin();
     } catch (err) {
         loading.value = false;
         throw err;
     }
 }
 
-async function skipCertRenewal() {
+function skipCertRenewal() {
     certRenewal.required = false;
     certRenewal.password = '';
-    await navigateAfterLogin();
+    navigateAfterLogin();
 }
 </script>
 

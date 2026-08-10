@@ -183,7 +183,6 @@ import { computed, onMounted, ref } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
 import { fetchWithTimeout, normalizeServerUrl, validateServer } from './connect.ts'
-import { dismissKeyboard } from '../../base/capacitor.ts'
 import { TablerAlert, TablerInput, TablerLoading, TablerNone } from '@tak-ps/vue-tabler'
 
 type ProviderLogo = {
@@ -277,11 +276,6 @@ async function connect(rawUrl: string): Promise<void> {
             // Preferences only — an IndexedDB write followed by an immediate
             // navigation wedges the database for the next page in WKWebView.
             await Preferences.set({ key: 'serverUrl', value: url })
-
-            // Let the keyboard go down before tearing down the page, or iOS
-            // leaves the WebView frame short well into the next one.
-            await dismissKeyboard()
-
             window.location.href = '/login'
         } else if (window.electronAPI?.saveUrl) {
             window.electronAPI.saveUrl(url)

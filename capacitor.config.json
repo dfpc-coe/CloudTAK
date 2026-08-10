@@ -32,6 +32,9 @@
             "overlaysWebView": true,
             "style": "DARK"
         },
+        "Keyboard": {
+            "resize": "none"
+        },
         "FirebaseMessaging": {
             "presentationOptions": [
                 "alert",
