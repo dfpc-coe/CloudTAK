@@ -5,6 +5,16 @@ import type { Feature, GroupChannel, Server, Profile, Profile_Update, FeaturePro
 import ProfileConfig from '../base/profile.ts';
 import ServerManager from '../base/server.ts';
 import GroupManager from '../base/group.ts';
+import COT from '../base/cot.ts';
+
+/**
+ * Marker/icon styling the user's own position must never put on the wire:
+ * `styleProperties()` styles self as a contact skittle locally, but sending
+ * `marker-color` makes node-cot's `from_geojson` emit a synthetic
+ * semi-transparent `<color>` detail native clients never produce for a team
+ * member - they rely solely on `<__group>`
+ */
+const SELF_STYLE_PROPERTIES = ['marker-color', 'marker-opacity', 'icon-opacity', 'icon'] as const;
 
 export type ProfileLocationState = {
     source: LocationState
@@ -129,6 +139,14 @@ export default class AtlasProfile {
             this.username = usernameConfig.value;
         }
 
+        // Earliest point the self uid is knowable - AtlasDatabase#init() also
+        // sets this but resolves after conn.connect(), so the first location
+        // send or an echoed-back self CoT would otherwise evaluate is_self
+        // as false and get rendered/styled as a regular contact
+        if (this.username) {
+            COT.selfUid = this.uid();
+        }
+
         this.updateLocation();
 
         if (this.username) return this.username;
@@ -224,8 +242,16 @@ export default class AtlasProfile {
             const me = await this.atlas.db.get(this.uid());
 
             if (me) {
-                const feat = me.as_feature();
+                // Clone - as_feature() hands out live references and the
+                // local copy must keep its skittle styling
+                const feat = me.as_feature({ clone: true });
+
                 feat.properties.archived = false;
+
+                for (const prop of SELF_STYLE_PROPERTIES) {
+                    delete feat.properties[prop];
+                }
+
                 this.atlas.conn.sendCOT(feat)
             }
         }, (this.profile_loc_freq && this.profile_loc_freq.value) ? Number(this.profile_loc_freq.value) : 5000);
