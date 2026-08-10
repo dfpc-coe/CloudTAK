@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.65.3 - 2026-08-10
+
+- :bug: Avoid duplicate location watcher to prevent overheating on mobile devices
+
 ### v13.65.2 - 2026-08-10
 
 - :bug: Ensure a single poisoned icon can't break server launch - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1623
