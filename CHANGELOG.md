@@ -16,6 +16,11 @@
 
 ### Pending Release
 
+### v13.65.2 - 2026-08-10
+
+- :bug: Ensure a single poisoned icon can't break server launch - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1623
+- :bug: Fix underlying non-conformant PNG files in CloudTAK-Data
+
 ### v13.65.1 - 2026-08-09
 
 - :bug: Ensure style properties aren't submitted for self CoT - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1643
