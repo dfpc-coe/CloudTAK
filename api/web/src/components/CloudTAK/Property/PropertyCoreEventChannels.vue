@@ -125,10 +125,16 @@
                                     >
                                         {{ columnOf(board)?.name }}
                                     </TablerBadge>
-                                    <span
+                                    <button
                                         v-else
-                                        class='small text-secondary user-select-none'
-                                    >Not Nominated</span>
+                                        type='button'
+                                        class='btn btn-success btn-sm py-0'
+                                        :title='`Nominate this Event to ${board.name}`'
+                                        @click.stop='emit("nominate", board)'
+                                        @keydown.enter.stop
+                                    >
+                                        Nominate
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -166,6 +172,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<number>): void
+    (e: 'nominate', board: CoreEventBoardSummary): void
 }>();
 
 const expanded = ref(true);

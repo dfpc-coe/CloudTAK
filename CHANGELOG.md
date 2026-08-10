@@ -16,6 +16,24 @@
 
 ### Pending Release
 
+### v13.65.1 - 2026-08-09
+
+- :bug: Ensure style properties aren't submitted for self CoT - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1643
+- :Rocket: Migrate to FMP4 & surface error messages - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1641
+
+### v13.65.0 - 2026-08-09
+
+- :tada: Introduce spreadsheet view in Event Board
+
+### v13.64.0 - 2026-08-09
+
+- :rocket: Introduce concept of constrained network environments via CapAwesome plugin
+
+### v13.63.0 - 2026-08-07
+
+- :tada: Introduce concept of CoreDevice to augment CoreEvent data structure 
+- :bug: Fix feature display with use of `maxzoom` limitation - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1642
+
 ### v13.62.0 - 2026-08-05
 
 - :tada: Introduce Event Board
