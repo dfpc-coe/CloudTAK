@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.66.0 - 2026-08-10
+
+- :tada: Allow ECR layers to register a static capabilites document as part of the OCI manifest
+
 ### v13.65.3 - 2026-08-10
 
 - :bug: Avoid duplicate location watcher to prevent overheating on mobile devices
