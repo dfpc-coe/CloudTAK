@@ -1434,6 +1434,11 @@
         "query": false,
         "res": true
     },
+    "POST /retention": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /search": {
         "body": false,
         "query": false,
@@ -1489,11 +1494,6 @@
         "query": false,
         "res": true
     },
-    "POST /retention": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "GET /server/video": {
         "body": false,
         "query": true,
@@ -1535,6 +1535,11 @@
         "res": true
     },
     "GET /task/raw/:task": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /task/raw/:task/version/:version": {
         "body": false,
         "query": false,
         "res": true

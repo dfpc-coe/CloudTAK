@@ -273,6 +273,12 @@ export type ETLRawTaskList = {
 
 export type ETLTaskVersions = paths["/api/task/raw/{:task}"]["get"]["responses"]["200"]["content"]["application/json"]
 
+export type ETLTaskVersion = paths["/api/task/raw/{:task}/version/{:version}"]["get"]["responses"]["200"]["content"]["application/json"]
+
+export type ETLTaskCapabilities = Exclude<ETLTaskVersion["capabilities"], null>
+
+
+
 export type AdminLayerUpdate = {
     id: number;
     name: string;
