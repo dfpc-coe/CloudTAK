@@ -2,8 +2,8 @@ import AWSECR, { ImageIdentifier, ListImagesCommandInput } from '@aws-sdk/client
 import Err from '@openaddresses/batch-error';
 import process from 'node:process';
 import semver from 'semver-sort';
-import Capabilities, { CAPABILITIES_ANNOTATION } from '../../../common/capabilities.js';
-import type { CapabilitiesDocument } from '../../../common/capabilities.js';
+import { StaticCapabilities, CAPABILITIES_ANNOTATION } from '@tak-ps/etl';
+import type { StaticCapabilitiesDocument } from '@tak-ps/etl';
 
 function repositoryName(): string {
     return String(process.env.ECR_TASKS_REPOSITORY_NAME);
@@ -119,7 +119,7 @@ export default class ECR {
      * in the OCI Image Manifest at build time - or null if the annotation is
      * absent, unreadable, or invalid
      */
-    static async capabilities(task: string, version: string): Promise<CapabilitiesDocument | null> {
+    static async capabilities(task: string, version: string): Promise<StaticCapabilitiesDocument | null> {
         const ecr = new AWSECR.ECRClient({ region: process.env.AWS_REGION });
 
         let doc: unknown;
@@ -161,7 +161,7 @@ export default class ECR {
             return null;
         }
 
-        return Capabilities.is(doc) ? doc : null;
+        return StaticCapabilities.is(doc) ? doc : null;
     }
 
     static async delete(task: string, version: string): Promise<void> {

@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import CP from 'child_process';
-import Capabilities, { CAPABILITIES_ANNOTATION } from '../api/common/capabilities.ts';
+import StaticCapabilities, { CAPABILITIES_ANNOTATION } from '../api/node_modules/@tak-ps/etl/dist/src/capabilities.js';
 
 /**
  * Build and push docker containers to AWS ECR
@@ -8,7 +8,9 @@ import Capabilities, { CAPABILITIES_ANNOTATION } from '../api/common/capabilitie
  *    node build.js            # builds and pushes all containers
  *    node build.js api        # builds and pushes only the API container
  *    node build.js <taskname> # builds and pushes only the specified task container
- *    node build.js .          # Build an ETL task in the current directory
+ *
+ * Note: ETL task containers are built from their own repositories with the
+ * cloudtak-etl CLI published by @tak-ps/etl - `npx cloudtak-etl`
  */
 
 process.env.GITSHA = sha();
@@ -55,7 +57,8 @@ if (!target) {
     if (target === 'api') {
         await cloudtak_api(plugins);
     } else if (target === '.') {
-        await cloudtak_etl();
+        console.error('not ok - ETL builds have moved to the cloudtak-etl CLI - run `npx cloudtak-etl` from the ETL repo');
+        process.exit(1);
     } else {
         await cloudtak_task(target);
     }
@@ -94,7 +97,7 @@ function login() {
 async function capabilities(path) {
     let doc;
     try {
-        doc = await Capabilities.read(path);
+        doc = await StaticCapabilities.read(path);
     } catch (err) {
         console.error(`not ok - ${path}: ${err.message}`);
         process.exit(1);

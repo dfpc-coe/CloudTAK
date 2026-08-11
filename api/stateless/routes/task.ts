@@ -10,7 +10,7 @@ import { Layer as LayerSchema } from '../../common/schema.js';
 import { StandardResponse, TaskResponse } from '../../common/types.js';
 import * as Default from '../lib/limits.js';
 import { isSafeUrl } from '@tak-ps/node-safeurl';
-import { CapabilitiesSchema } from '../../common/capabilities.js';
+import { StaticCapabilitiesSchema } from '@tak-ps/etl';
 
 export enum TaskSchemaEnum {
     OUTPUT = 'schema:output',
@@ -192,7 +192,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: Type.Object({
             version: Type.String(),
             deployed: Type.Boolean(),
-            capabilities: Type.Union([CapabilitiesSchema, Type.Null()]),
+            capabilities: Type.Union([StaticCapabilitiesSchema, Type.Null()]),
         }),
     }, async (req, res) => {
         try {
