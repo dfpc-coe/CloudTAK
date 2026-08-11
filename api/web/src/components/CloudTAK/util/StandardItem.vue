@@ -38,7 +38,7 @@ const interactive = computed(() => {
     --standard-item-icon-bg: rgba(0, 0, 0, 0.25);
     color: var(--standard-item-color);
     border: 1px solid var(--standard-item-border);
-    border-radius: 14px;
+    border-radius: 6px;
     background-color: var(--standard-item-bg);
     transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }

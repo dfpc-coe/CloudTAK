@@ -86,7 +86,7 @@ function toggle() {
  * it's rendered over - a `cloudtak-panel` sidebar, a modal, or a page.
  */
 .slidedown {
-    --slidedown-radius: 8px;
+    --slidedown-radius: 6px;
     --slidedown-surface: rgba(255, 255, 255, 0.035);
     --slidedown-header-surface: rgba(255, 255, 255, 0.06);
 

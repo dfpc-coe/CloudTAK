@@ -346,7 +346,7 @@ async function deleteSource() {
 .paging-status-row,
 .paging-toggle {
     border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 12px;
+    border-radius: 6px;
     background-color: rgba(0, 0, 0, 0.18);
     cursor: pointer;
 }

@@ -195,7 +195,7 @@ onMounted(async () => {
    transform: translateY(-50%);
    z-index: 10;
    user-select: none;
-   border-radius: 8px 0 0 8px;
+   border-radius: 6px 0 0 6px;
 }
 .resize::before {
    content: "";
