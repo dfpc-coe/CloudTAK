@@ -1,6 +1,6 @@
 import { db, ChatStatus } from '../database.ts';
 import Filter from './filter.ts';
-import COT from './cot.ts';
+import COT, { renderedIcon } from './cot.ts';
 import Subscription from './subscription.ts';
 import type Atlas from '../workers/atlas.ts';
 import { server } from '../std.ts';
@@ -169,11 +169,14 @@ export default class SubscriptionFeature {
                 }
 
                 if (!blocked) {
+                    const icon = renderedIcon(feat.properties);
+
                     filtered.push({
                         ...feat,
                         properties: {
                             ...feat.properties,
                             path: feat.path || '/',
+                            ...(icon !== undefined ? { icon } : {})
                         }
                     });
                 }
