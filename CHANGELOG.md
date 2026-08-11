@@ -16,6 +16,13 @@
 
 ### Pending Release
 
+### v13.67.0 - 2026-08-11
+
+- :tada: Introduce basic PlayWright tests
+- :tada: Introduce Permissions storage on layer table
+- :rocket: Consistent `6px` border radius on UI components
+- :rocket: Update MultiSelect component to use new floating pane style
+
 ### v13.66.1 - 2026-08-10
 
 - :bug: Fix 2525E display in Data Sync Missions
