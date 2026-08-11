@@ -16,6 +16,12 @@
 
 ### Pending Release
 
+### v13.66.1 - 2026-08-10
+
+- :bug: Fix 2525E display in Data Sync Missions
+- :rocket: Allow deleting features from the Mission Layers Menu
+- :rocket: Allow viewing info from the Mission Layers Menu
+
 ### v13.66.0 - 2026-08-10
 
 - :tada: Allow ECR layers to register a static capabilites document as part of the OCI manifest
