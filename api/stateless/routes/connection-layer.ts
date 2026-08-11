@@ -12,6 +12,7 @@ import Alarm from '../lib/aws/alarm.js';
 import type ConfigStateless from '../config.js';
 import Schedule from '../../common/schedule.js';
 import LayerControl from '../lib/control/layer.js';
+import CommonLayerControl from '../../common/control/layer.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
 import type { InferInsertModel } from 'drizzle-orm';
@@ -220,6 +221,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             alarm_evals: Type.Optional(Type.Integer()),
             alarm_points: Type.Optional(Type.Integer()),
             protected: Type.Boolean({ default: false }),
+            permissions: Type.Optional(Type.Union([Type.Null(), Type.Array(Type.String())], {
+                description: 'Permissions granted to the Layer as <permission>:<level> pairs - ie video:read or video:*',
+            })),
         }),
         res: LayerResponse,
     }, async (req, res) => {
@@ -229,6 +233,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+
+            CommonLayerControl.validatePermissions(req.body.permissions);
 
             const layer = await layerControl.generate({
                 ...req.body,
@@ -721,10 +727,16 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             alarm_period: Type.Optional(Type.Integer()),
             alarm_evals: Type.Optional(Type.Integer()),
             alarm_points: Type.Optional(Type.Integer()),
+
+            permissions: Type.Optional(Type.Union([Type.Null(), Type.Array(Type.String())], {
+                description: 'Permissions granted to the Layer as <permission>:<level> pairs - ie video:read or video:*',
+            })),
         }),
         res: LayerResponse,
     }, async (req, res) => {
         try {
+            CommonLayerControl.validatePermissions(req.body.permissions);
+
             const resources = [
                 { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                 { access: AuthResourceAccess.LAYER, id: req.params.layerid },

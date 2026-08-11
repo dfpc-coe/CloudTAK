@@ -56,6 +56,7 @@ export const AugmentedLayer = Type.Object({
     memory: Type.Integer(),
     timeout: Type.Integer(),
     priority: Type.Enum(Layer_Priority),
+    permissions: Type.Union([Type.Null(), Type.Array(Type.String())]),
 
     alarm_period: Type.Integer(),
     alarm_evals: Type.Integer(),
@@ -158,6 +159,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 connection: Layer.connection,
                 memory: Layer.memory,
                 timeout: Layer.timeout,
+                permissions: Layer.permissions,
 
                 alarm_period: Layer.alarm_period,
                 alarm_evals: Layer.alarm_evals,
@@ -240,6 +242,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 connection: Layer.connection,
                 memory: Layer.memory,
                 timeout: Layer.timeout,
+                permissions: Layer.permissions,
 
                 alarm_period: Layer.alarm_period,
                 alarm_evals: Layer.alarm_evals,
