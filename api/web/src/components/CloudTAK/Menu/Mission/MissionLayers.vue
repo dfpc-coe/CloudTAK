@@ -95,7 +95,8 @@
                         <FeatureRow
                             v-for='feat of currentItems'
                             :key='feat.id'
-                            :delete-button='false'
+                            :delete-button='writable'
+                            :info-button='true'
                             :grip-handle='writable'
                             :visibility-toggle='true'
                             :feature='feat'

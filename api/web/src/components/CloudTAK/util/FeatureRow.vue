@@ -203,7 +203,9 @@ async function deleteCOT() {
     if (props.deleteAction === 'delete') {
         isDeleting.value = true;
 
-        await mapStore.worker.db.remove(props.feature.id);
+        await mapStore.worker.db.remove(props.feature.id, {
+            mission: true
+        });
 
         isDeleting.value = false;
         isDeleted.value = true;
