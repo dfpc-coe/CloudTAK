@@ -1069,7 +1069,7 @@ async function handleRadial(event: string): Promise<void> {
 .cloudtak-navigating {
     z-index: 2;
     width: min(640px, calc(100vw - 16px));
-    border-radius: 0px 0px 8px 8px;
+    border-radius: 0px 0px 6px 6px;
 }
 
 /*
@@ -1079,7 +1079,7 @@ async function handleRadial(event: string): Promise<void> {
 @media (max-width: 767.98px) {
     .cloudtak-navigating {
         margin-top: 74px;
-        border-radius: 8px;
+        border-radius: 6px;
     }
 
     .cloudtak-left-controls--nav {

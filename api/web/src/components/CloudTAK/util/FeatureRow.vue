@@ -24,7 +24,7 @@
             :class='{
                 "cursor-pointer": isZoomable && props.hover,
                 "cursor-default": !isZoomable || props.hover === false,
-                "cloudtak-hover": hover
+                "cloudtak-hover-fill": hover
             }'
             :hover='hover'
             @click='(e: MouseEvent) => { if (e.ctrlKey) selectClick(); else flyToClick(); }'

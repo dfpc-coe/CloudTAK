@@ -506,7 +506,7 @@ html[data-bs-theme='light'] .cloudtak-accent .text-white-50:not(.badge):not(.btn
  */
 .cloudtak-panel {
     --tblr-card-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
-    border-radius: 8px;
+    border-radius: 6px;
     box-shadow: var(--tblr-card-box-shadow);
 }
 

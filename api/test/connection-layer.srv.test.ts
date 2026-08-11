@@ -126,6 +126,7 @@ test('POST: api/connection/1/layer', async () => {
             id: 1,
             uuid: '123',
             priority: 'off',
+            permissions: null,
             created: '2025-06-26',
             updated: '2025-06-26',
             username: 'admin@example.com',
@@ -178,6 +179,7 @@ test('GET: api/connection/1/layer/1', async () => {
             id: 1,
             uuid: '123',
             priority: 'off',
+            permissions: null,
             created: '2025-06-26',
             updated: '2025-06-26',
             username: 'admin@example.com',
@@ -233,6 +235,7 @@ test('PATCH: api/connection/1/layer/1 - set protected', async () => {
             id: 1,
             uuid: '123',
             priority: 'off',
+            permissions: null,
             created: '2025-06-26',
             updated: '2025-06-26',
             username: 'admin@example.com',
@@ -302,6 +305,7 @@ test('PATCH: api/connection/1/layer/1 - unset protected', async () => {
             id: 1,
             uuid: '123',
             priority: 'off',
+            permissions: null,
             created: '2025-06-26',
             updated: '2025-06-26',
             username: 'admin@example.com',
@@ -324,6 +328,55 @@ test('PATCH: api/connection/1/layer/1 - unset protected', async () => {
                 enabled: true,
             },
         });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/connection/1/layer/1 - set permissions', async () => {
+    try {
+        const res = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                permissions: ['feature:submit', 'video:*'],
+            },
+        }, true);
+
+        assert.deepEqual(res.body.permissions, ['feature:submit', 'video:*']);
+
+        const unset = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                permissions: null,
+            },
+        }, true);
+
+        assert.equal(unset.body.permissions, null);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/connection/1/layer/1 - invalid permissions', async () => {
+    try {
+        const res = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                permissions: ['feature:read'],
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.ok(String(res.body.message).startsWith('Unknown Layer Permission: feature:read'));
     } catch (err) {
         assert.ifError(err);
     }

@@ -1359,6 +1359,13 @@
       "when": 1786025343613,
       "tag": "0194_core_device",
       "breakpoints": true
+    },
+    {
+      "idx": 195,
+      "version": "7",
+      "when": 1786426527015,
+      "tag": "0195_layer_permissions",
+      "breakpoints": true
     }
   ]
 }

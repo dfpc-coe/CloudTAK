@@ -1,7 +1,7 @@
 <template>
     <div
         ref='selectMenu'
-        class='cloudtak-bg rounded p-2'
+        class='cloudtak-panel p-2'
         style='
             width: 200px;
         '
@@ -86,19 +86,29 @@ onUnmounted(() => {
     pointer-events: auto;
 }
 
+/* Tip color mirrors the .cloudtak-panel background; the tip is a sibling of
+ * the popup content, so the panel's own --cloudtak-panel-bg is out of scope here. */
+html[data-bs-theme='dark'] .multiple-select-popup {
+    --multiple-select-tip: rgba(20, 20, 25, 0.96);
+}
+
+html[data-bs-theme='light'] .multiple-select-popup {
+    --multiple-select-tip: rgba(255, 255, 255, 0.96);
+}
+
 .multiple-select-popup.maplibregl-popup-anchor-top .maplibregl-popup-tip {
-    border-bottom-color: #1f2937;
+    border-bottom-color: var(--multiple-select-tip);
 }
 
 .multiple-select-popup.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
-    border-top-color: #1f2937;
+    border-top-color: var(--multiple-select-tip);
 }
 
 .multiple-select-popup.maplibregl-popup-anchor-left .maplibregl-popup-tip {
-    border-right-color: #1f2937;
+    border-right-color: var(--multiple-select-tip);
 }
 
 .multiple-select-popup.maplibregl-popup-anchor-right .maplibregl-popup-tip {
-    border-left-color: #1f2937;
+    border-left-color: var(--multiple-select-tip);
 }
 </style>

@@ -1,0 +1,24 @@
+{
+    "name": "@tak-ps/cloudtak-qa",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "description": "Playwright end-to-end tests for CloudTAK",
+    "scripts": {
+        "test": "playwright test",
+        "test:headed": "playwright test --headed",
+        "test:ui": "playwright test --ui",
+        "test:debug": "playwright test --debug",
+        "report": "playwright show-report",
+        "lint": "eslint .",
+        "check": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.61.1",
+        "@types/node": "^26.1.1",
+        "dotenv": "^17.4.2",
+        "eslint": "^10.7.0",
+        "typescript": "^5.9.3",
+        "typescript-eslint": "^8.64.0"
+    }
+}
