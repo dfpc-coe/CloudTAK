@@ -1,0 +1,2 @@
+[console_scripts]
+generate-test-data = generate_test_data.cli:main

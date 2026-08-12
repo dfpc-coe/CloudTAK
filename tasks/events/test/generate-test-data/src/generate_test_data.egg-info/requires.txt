@@ -1,0 +1,2 @@
+GDAL>=3.10
+argcomplete>=3

@@ -16,10 +16,11 @@ import KML from './transforms/kml.ts';
 import Translate from './transforms/translate.ts';
 import GeoJSON from './transforms/geojson.ts';
 import MBTiles from './transforms/mbtiles.ts';
+import Shapefile from './transforms/shapefile.ts';
 import { createImportResult } from './api.ts';
 import { fetch } from '@tak-ps/node-safeurl';
 
-const FORMATS = [KML, Translate, GeoJSON, MBTiles];
+const FORMATS = [KML, Translate, GeoJSON, MBTiles, Shapefile];
 const formats = new Map();
 
 // TODO load all conversion files from a directory
