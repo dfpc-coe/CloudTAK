@@ -6,6 +6,7 @@
     "scripts": {
         "lint": "eslint bin/ cloudformation/",
         "build": "node bin/build.js",
+        "postinstall": "patch-package",
         "app": "npm install && cd api/web && npm install && npm run build && cd ../.. && npx cap sync",
         "test": "echo \"Error: no test specified\" && exit 1",
         "version": "node bin/version.js --stage",
@@ -57,6 +58,7 @@
         "@types/mapbox__tilebelt": "^1.0.4",
         "@types/xml2js": "^0.4.11",
         "eslint": "^10.0.0",
-        "eslint-plugin-n": "^18.0.0"
+        "eslint-plugin-n": "^18.0.0",
+        "patch-package": "^8.0.1"
     }
 }

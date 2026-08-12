@@ -357,15 +357,15 @@
 
 <script setup lang='ts'>
 import type { Login_Create, ConfigLogin } from '../types.ts'
-import { ref, computed, onMounted, reactive, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, reactive, watch } from 'vue';
 import { version } from '../../package.json';
 import { IconSettings, IconTrash, IconLock, IconFingerprint, IconUser } from '@tabler/icons-vue';
 import { Preferences } from '@capacitor/preferences';
-import { startAuthentication } from '@simplewebauthn/browser';
+import { startAuthentication, WebAuthnAbortService } from '@simplewebauthn/browser';
 import type { PublicKeyCredentialRequestOptionsJSON, AuthenticationResponseJSON } from '@simplewebauthn/browser';
 import Config from '../base/config.ts';
 import type { FullConfig } from '../base/config.ts';
-import { isNativePlatform, supportsServiceWorker } from '../base/capacitor.ts';
+import { isNativePlatform, supportsServiceWorker, blurActiveInput } from '../base/capacitor.ts';
 import { getCurrentEntryBuildId } from '../base/service-worker.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { server } from '../std.ts';
@@ -549,7 +549,12 @@ onMounted(async () => {
     brandStore.passkey.enabled = (config as Record<string, unknown>)['passkey::enabled'] !== false;
     brandStore.loaded = true;
 
-    if (brandStore.passkey.enabled) {
+    // Native is deliberately excluded, matching the passkey button's own
+    // `!isNativePlatform()` gate. Conditional mediation hands the field to the
+    // system AutoFill UI, and iOS reports that UI to the Keyboard plugin as a
+    // keyboard - a WillShow with no matching WillHide when it goes away, which
+    // strands the WebView at keyboard height under `resize: native`.
+    if (brandStore.passkey.enabled && !isNativePlatform()) {
         startConditionalPasskey();
     }
 
@@ -591,6 +596,10 @@ async function applySession(login: { token: string; email: string; session: stri
 }
 
 async function createLogin() {
+    // `loading` swaps the credential fields out on the next tick - resign while
+    // they still exist, or iOS strands the WebView at keyboard height
+    blurActiveInput();
+
     loading.value = true;
 
     try {
@@ -611,6 +620,13 @@ async function createLogin() {
         throw err;
     }
 }
+
+// A conditional-mediation request stays pending until the user picks a
+// credential, so without this it outlives the component that started it and
+// the browser keeps its AutoFill affordance alive across the navigation.
+onUnmounted(() => {
+    WebAuthnAbortService.cancelCeremony();
+});
 
 async function startConditionalPasskey() {
     try {
@@ -636,6 +652,8 @@ async function startConditionalPasskey() {
 }
 
 async function authenticatePasskey() {
+    blurActiveInput();
+
     loading.value = true;
 
     try {
@@ -654,6 +672,10 @@ async function authenticatePasskey() {
 }
 
 async function completePasskeyLogin(credential: AuthenticationResponseJSON) {
+    // Also reached from conditional mediation, where the autofill prompt can
+    // have raised the keyboard over the username field with no user gesture
+    blurActiveInput();
+
     loading.value = true;
 
     try {
@@ -725,6 +747,8 @@ function navigateAfterLogin() {
 }
 
 async function renewCertificate() {
+    blurActiveInput();
+
     loading.value = true;
 
     try {

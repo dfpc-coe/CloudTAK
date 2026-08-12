@@ -1,0 +1,123 @@
+diff --git a/node_modules/@capacitor/keyboard/ios/Sources/KeyboardPlugin/Keyboard.m b/node_modules/@capacitor/keyboard/ios/Sources/KeyboardPlugin/Keyboard.m
+index 54a6694..5ac68de 100644
+--- a/node_modules/@capacitor/keyboard/ios/Sources/KeyboardPlugin/Keyboard.m
++++ b/node_modules/@capacitor/keyboard/ios/Sources/KeyboardPlugin/Keyboard.m
+@@ -54,6 +54,12 @@ NSString* UIClassString;
+ NSString* WKClassString;
+ NSString* UITraitsClassString;
+ double stageManagerOffset;
++// iOS 26 can dismiss the keyboard instantly and deliver DidHide before
++// WillHide (capacitor-keyboard#32). Track whether the current cycle's
++// WillHide has run so DidHide can synthesize it, and whether a late real
++// WillHide should then be swallowed.
++BOOL awaitingWillHide;
++BOOL hideHandledByDidHide;
+ 
+ #pragma mark - Helpers
+ 
+@@ -90,6 +96,33 @@ double stageManagerOffset;
+   return (height / screenHeight) < 0.20;
+ }
+ 
++- (BOOL)hasFirstResponderIn:(UIView *)view {
++  if (view.isFirstResponder) {
++    return YES;
++  }
++  for (UIView *subview in view.subviews) {
++    if ([self hasFirstResponderIn:subview]) {
++      return YES;
++    }
++  }
++  return NO;
++}
++
++/**
++ * A keyboard-show notification with no first responder inside the WebView is
++ * not the user typing - iOS posts these for AutoFill UI transitions (e.g. the
++ * password-manager input session tearing down after a login form is submitted
++ * and navigated away). Under `resize: native` such a notification schedules a
++ * deferred frame shrink that no WillHide will ever undo, stranding the WebView
++ * at keyboard height. A real keyboard show always has the focused
++ * WKContentView as first responder before the notification posts.
++ */
++- (BOOL)shouldIgnoreShowWithoutResponderForHeight:(double)height {
++  if (height <= 0.0) return NO;
++  if (self.webView == nil) return NO;
++  return ![self hasFirstResponderIn:self.webView];
++}
++
+ #pragma mark - Lifecycle
+ 
+ - (UIColor *)colorFromCssColorString:(NSString *)cssColor {
+@@ -211,6 +244,15 @@ double stageManagerOffset;
+ 
+ - (void)onKeyboardWillHide:(NSNotification *)notification
+ {
++  if (hideHandledByDidHide) {
++    // The reversed-order DidHide already ran the full hide sequence; this
++    // late WillHide is a duplicate. Swallowing it also keeps it from undoing
++    // a shrink that a newer WillShow may have scheduled in the meantime.
++    hideHandledByDidHide = NO;
++    return;
++  }
++  awaitingWillHide = NO;
++
+   [self setKeyboardHeight:0 delay:0.01];
+   [self resetScrollView];
+   hideTimer = [NSTimer scheduledTimerWithTimeInterval:0 repeats:NO block:^(NSTimer * _Nonnull timer) {
+@@ -226,6 +268,11 @@ double stageManagerOffset;
+     [hideTimer invalidate];
+   }
+ 
++  // A new cycle begins: expect a WillHide before DidHide, and forget any
++  // stale swallow-flag from a synthesized hide whose WillHide never arrived.
++  awaitingWillHide = YES;
++  hideHandledByDidHide = NO;
++
+   // Force DOM color whenever keyboard shows
+   [self updateBackdropColor];
+ 
+@@ -253,6 +300,11 @@ double stageManagerOffset;
+     height = 0.0;
+   }
+ 
++  if ([self shouldIgnoreShowWithoutResponderForHeight:height]) {
++    NSLog(@"KeyboardPlugin: Ignoring keyboard show with no first responder (%.1f) -> treat as 0.", height);
++    height = 0.0;
++  }
++
+   double duration = [[notification.userInfo valueForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue]+0.2;
+   [self setKeyboardHeight:(int)height delay:duration];
+   [self resetScrollView];
+@@ -286,6 +338,11 @@ double stageManagerOffset;
+     height = 0.0;
+   }
+ 
++  if ([self shouldIgnoreShowWithoutResponderForHeight:height]) {
++    NSLog(@"KeyboardPlugin: (didShow) Ignoring keyboard show with no first responder (%.1f) -> report 0.", height);
++    height = 0.0;
++  }
++
+   [self resetScrollView];
+ 
+   NSString * data = [NSString stringWithFormat:@"{ 'keyboardHeight': %d }", (int)height];
+@@ -296,6 +353,19 @@ double stageManagerOffset;
+ 
+ - (void)onKeyboardDidHide:(NSNotification *)notification
+ {
++  if (awaitingWillHide) {
++    // The keyboard is already gone but WillHide hasn't run - iOS 26 instant
++    // dismissal delivered the notifications in reverse. Run the hide sequence
++    // now so the frame is restored immediately and JS still sees
++    // keyboardWillHide before keyboardDidHide.
++    NSLog(@"KeyboardPlugin: DidHide arrived before WillHide -> synthesizing hide sequence.");
++    awaitingWillHide = NO;
++    hideHandledByDidHide = YES;
++    [self setKeyboardHeight:0 delay:0.01];
++    [self.bridge triggerWindowJSEventWithEventName:@"keyboardWillHide"];
++    [self notifyListeners:@"keyboardWillHide" data:nil];
++  }
++
+   [self.bridge triggerWindowJSEventWithEventName:@"keyboardDidHide"];
+   [self notifyListeners:@"keyboardDidHide" data:nil];
+   [self resetScrollView];
