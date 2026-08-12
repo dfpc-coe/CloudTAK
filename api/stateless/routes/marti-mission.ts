@@ -85,6 +85,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: Type.Object({
             type: Type.String(),
             features: Type.Array(Feature.Feature),
+            invalid: Type.Array(Type.Object({
+                id: Type.Optional(Type.String()),
+                callsign: Type.Optional(Type.String()),
+                error: Type.String(),
+            })),
         }),
     }, async (req, res) => {
         try {
@@ -96,9 +101,27 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ? { token: String(req.headers['missionauthorization']) }
                 : await profileControl.subscription(user.email, req.params.guid);
 
-            const features = await api.Mission.latestFeats(req.params.guid, opts);
+            const feats = await api.Mission.latestFeats(req.params.guid, opts);
 
-            res.json({ type: 'FeatureCollection', features });
+            res.json({
+                type: 'FeatureCollection',
+                features: feats.features,
+                invalid: feats.invalid.map((invalid) => {
+                    const event = invalid.feature as {
+                        _attributes?: { uid?: unknown };
+                        detail?: { contact?: { _attributes?: { callsign?: unknown } } };
+                    } | null | undefined;
+
+                    const uid = event?._attributes?.uid;
+                    const callsign = event?.detail?.contact?._attributes?.callsign;
+
+                    return {
+                        id: typeof uid === 'string' ? uid : undefined,
+                        callsign: typeof callsign === 'string' ? callsign : undefined,
+                        error: invalid.error,
+                    };
+                }),
+            });
         } catch (err) {
             Err.respond(err, res);
         }
@@ -417,7 +440,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 const fc = {
                     type: 'FeatureCollection',
-                    features: await api.Mission.latestFeats(req.params.name, opts),
+                    features: (await api.Mission.latestFeats(req.params.name, opts)).features,
                 };
 
                 if (req.query.format === 'geojson') {

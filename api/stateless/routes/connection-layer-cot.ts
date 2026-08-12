@@ -123,7 +123,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     // Once NodeJS supports Set.difference we can simplify this
                     const inputFeats = new Set(req.body.uids);
 
-                    const features = await api.MissionLayer.latestFeats(
+                    const { features } = await api.MissionLayer.latestFeats(
                         data.name,
                         `layer-${layer.id}`,
                         { token: data.mission_token || undefined },
