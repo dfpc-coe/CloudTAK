@@ -16,6 +16,10 @@
 
 ### Pending Release
 
+### v13.67.2 - 2026-08-12
+
+- :rocket: Cleanup Web Base Interfaces
+
 ### v13.67.1 - 2026-08-11
 
 - :bug: Introduce per-feature parsing when calling Mission Layers API to avoid a single malformed feature from preventing the entire layer from being returned
