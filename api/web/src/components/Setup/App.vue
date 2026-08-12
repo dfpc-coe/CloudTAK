@@ -183,7 +183,6 @@ import { computed, onMounted, ref } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
 import { fetchWithTimeout, normalizeServerUrl, validateServer } from './connect.ts'
-import { blurActiveInput } from '../../base/capacitor.ts'
 import { TablerAlert, TablerInput, TablerLoading, TablerNone } from '@tak-ps/vue-tabler'
 
 type ProviderLogo = {
@@ -259,10 +258,6 @@ async function loadProviders(): Promise<void> {
 // On success the page stays busy until the navigation away completes.
 async function connect(rawUrl: string): Promise<void> {
     if (connecting.value) return
-
-    // This page tears itself down with a document navigation, which no router
-    // guard covers - resign the URL field before that happens
-    blurActiveInput()
 
     const url = normalizeServerUrl(rawUrl)
     if (!url) {

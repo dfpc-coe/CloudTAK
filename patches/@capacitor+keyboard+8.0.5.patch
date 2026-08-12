@@ -1,5 +1,5 @@
 diff --git a/node_modules/@capacitor/keyboard/ios/Sources/KeyboardPlugin/Keyboard.m b/node_modules/@capacitor/keyboard/ios/Sources/KeyboardPlugin/Keyboard.m
-index 54a6694..5ac68de 100644
+index 54a6694..5f5f6e0 100644
 --- a/node_modules/@capacitor/keyboard/ios/Sources/KeyboardPlugin/Keyboard.m
 +++ b/node_modules/@capacitor/keyboard/ios/Sources/KeyboardPlugin/Keyboard.m
 @@ -54,6 +54,12 @@ NSString* UIClassString;
@@ -121,3 +121,22 @@ index 54a6694..5ac68de 100644
    [self.bridge triggerWindowJSEventWithEventName:@"keyboardDidHide"];
    [self notifyListeners:@"keyboardDidHide" data:nil];
    [self resetScrollView];
+@@ -333,6 +403,18 @@ double stageManagerOffset;
+ 
+ - (void)_updateFrame
+ {
++  if (self.paddingBottom > 0 && self.webView != nil && ![self hasFirstResponderIn:self.webView]) {
++    // Second checkpoint: the show notification passed the first-responder
++    // check, but the input session has since ended (WebKit resigns
++    // WKContentView shortly AFTER a focused element is destroyed, so a
++    // teardown-adjacent WillShow can slip past the check in
++    // onKeyboardWillShow). Applying the stale height now would strand the
++    // WebView at keyboard height with no keyboard on screen - fall through
++    // with no padding so the frame stays full-size instead.
++    NSLog(@"KeyboardPlugin: First responder gone before deferred resize (%d) -> treating as 0.", self.paddingBottom);
++    self.paddingBottom = 0;
++  }
++
+   CGRect f, wf = CGRectZero;
+   UIWindow *window = [self currentKeyWindow];
+ 

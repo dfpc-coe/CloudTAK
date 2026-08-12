@@ -1,7 +1,6 @@
 import * as VueRouter from 'vue-router'
 import MenuSettings from './components/CloudTAK/Menu/MenuSettings.vue'
 import Login from './components/Login.vue'
-import { blurActiveInput } from './base/capacitor.ts'
 
 const router = VueRouter.createRouter({
     history: VueRouter.createWebHistory(),
@@ -216,12 +215,6 @@ const router = VueRouter.createRouter({
 
         { path: '/:catchAll(.*)', redirect: '/' },
     ]
-});
-
-// A route change unmounts the outgoing view, focused field and all. Resign
-// first so iOS restores the WebView height instead of stranding it short.
-router.beforeEach(() => {
-    blurActiveInput();
 });
 
 router.onError((error, to) => {

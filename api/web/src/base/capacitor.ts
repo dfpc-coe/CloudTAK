@@ -18,36 +18,6 @@ export function supportsServiceWorker(): boolean {
     return typeof navigator !== 'undefined' && !isNativePlatform() && 'serviceWorker' in navigator;
 }
 
-/*
- * The iOS keyboard plugin runs in its default `resize: native` mode, shrinking
- * the WKWebView frame by the keyboard height. The shrink is deferred by the
- * keyboard animation duration + 0.2s, and the ONLY thing that both cancels a
- * pending shrink and clears the stored height is a UIKeyboardWillHide
- * notification - which iOS posts when a first responder resigns cleanly.
- *
- * Destroying the focused input instead never produces one. The deferred shrink
- * then lands ~450ms later on a screen that no longer has a keyboard, and there
- * is no path that ever undoes it: the WebView is the view controller's root
- * view, so the vacated strip is the bare black UIWindow.
- *
- * So resign the responder before the input can be unmounted. It must be a
- * synchronous blur() and NOT Keyboard.hide() - that call crosses the Capacitor
- * bridge asynchronously, and its `endEditing:` can easily land after the input
- * is already gone, which is the very case being defended against.
- *
- * Nothing needs to be awaited. Once the notification is posted the plugin
- * restores the frame on the native runloop, unaffected by anything JS does
- * next - including a full document navigation.
- */
-export function blurActiveInput(): void {
-    if (typeof document === 'undefined') return;
-
-    const active = document.activeElement;
-    if (active instanceof HTMLElement && active !== document.body) {
-        active.blur();
-    }
-}
-
 /**
  * Subscribe to foreground/background transitions. On native we use Capacitor's
  * `App.appStateChange` because the web `visibilitychange` API is unreliable
