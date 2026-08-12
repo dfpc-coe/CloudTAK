@@ -549,11 +549,6 @@ onMounted(async () => {
     brandStore.passkey.enabled = (config as Record<string, unknown>)['passkey::enabled'] !== false;
     brandStore.loaded = true;
 
-    // Native is deliberately excluded, matching the passkey button's own
-    // `!isNativePlatform()` gate. Conditional mediation hands the field to the
-    // system AutoFill UI, and iOS reports that UI to the Keyboard plugin as a
-    // keyboard - a WillShow with no matching WillHide when it goes away, which
-    // strands the WebView at keyboard height under `resize: native`.
     if (brandStore.passkey.enabled && !isNativePlatform()) {
         startConditionalPasskey();
     }
@@ -617,9 +612,6 @@ async function createLogin() {
     }
 }
 
-// A conditional-mediation request stays pending until the user picks a
-// credential, so without this it outlives the component that started it and
-// the browser keeps its AutoFill affordance alive across the navigation.
 onUnmounted(() => {
     WebAuthnAbortService.cancelCeremony();
 });
