@@ -4,8 +4,8 @@ import type { PluginStatic, PluginInstance } from '../plugin.ts'
 import router from './router.ts'
 import { createPinia } from 'pinia'
 import { useMapStore } from './stores/map.ts';
-import { isNativePlatform, supportsServiceWorker } from './base/capacitor.ts';
-import { initServiceWorker } from './base/service-worker.ts';
+import { isNativePlatform, supportsServiceWorker } from './utils/capacitor.ts';
+import { initServiceWorker } from './utils/service-worker.ts';
 import { initGlobalErrorReporting, vueErrorHandler } from './lib/reporting/index.ts';
 
 initServiceWorker();

@@ -185,7 +185,7 @@
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
 import { server } from '../../../std.ts';
-import { validateTextNotEmpty } from '../../../base/validators.ts';
+import { validateTextNotEmpty } from '../../../utils/validators.ts';
 import {
     TablerLoading,
     TablerNone,

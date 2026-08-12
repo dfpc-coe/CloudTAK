@@ -26,9 +26,9 @@ import GeolocateControl from '../lib/geolocate/main.ts';
 import RoutingControl from '../lib/routing/main.ts';
 import type { NavigationState, NavigationDirection } from '../lib/routing/main.ts';
 import { syncPushToken } from '../base/push.ts';
-import { normalizePointType } from '../base/utils/point-type.ts';
-import { WorkerMessageType, LocationState } from '../base/events.ts';
-import type { WorkerMessage } from '../base/events.ts';
+import { normalizePointType } from '../utils/point-type.ts';
+import { WorkerMessageType, LocationState } from '../utils/events.ts';
+import type { WorkerMessage } from '../utils/events.ts';
 import Overlay from '../base/overlay-class.ts';
 import OverlayManager from '../base/overlay.ts';
 import { FeatureVisibility } from './modules/feature-visibility.ts';
@@ -37,11 +37,11 @@ import { stdurl, server, getRuntimeToken, serverUrl } from '../std.js';
 import * as mapgl from 'maplibre-gl'
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import type Atlas from '../workers/atlas.ts';
-import { CloudTAKTransferHandler } from '../base/handler.ts';
+import { CloudTAKTransferHandler } from '../workers/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
-import { isNativePlatform, addBackgroundStateListener, whenForegrounded } from '../base/capacitor.ts';
-import { withTimeout } from '../base/async.ts';
+import { isNativePlatform, addBackgroundStateListener, whenForegrounded } from '../utils/capacitor.ts';
+import { withTimeout } from '../utils/async.ts';
 import { db, recoverDatabase } from '../database.ts';
 
 import type { ProfileOverlay, Basemap, Feature } from '../types.ts';

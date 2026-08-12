@@ -46,7 +46,7 @@
 
 <script setup lang='ts'>
 import CopyField from './CopyField.vue';
-import { COORD_MODES, formatCoordPair, parseCoordPair, validateCoordPair, type CoordMode } from '../../../base/utils/coordinateFormat.ts';
+import { COORD_MODES, formatCoordPair, parseCoordPair, validateCoordPair, type CoordMode } from '../../../utils/coordinateFormat.ts';
 import {
     IconLabel
 } from '@tabler/icons-vue';

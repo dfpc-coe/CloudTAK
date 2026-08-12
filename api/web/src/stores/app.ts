@@ -4,11 +4,11 @@ import { Preferences } from '@capacitor/preferences';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import KV from '../base/kv.ts';
 import { db, withDbRetry } from '../database.ts';
-import { withTimeout } from '../base/async.ts';
+import { withTimeout } from '../utils/async.ts';
 import Config from '../base/config.ts';
 import ServerManager from '../base/server.ts';
 import router from '../router.ts';
-import { isNativePlatform, isAndroidPlatform } from '../base/capacitor.ts';
+import { isNativePlatform, isAndroidPlatform } from '../utils/capacitor.ts';
 
 export type DisplayStyleMode = 'System Default' | 'Light' | 'Dark';
 export type ResolvedThemeMode = 'light' | 'dark';

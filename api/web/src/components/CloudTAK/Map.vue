@@ -490,8 +490,8 @@ import {
     TablerDropdown,
     TablerModal,
 } from '@tak-ps/vue-tabler';
-import { LocationState, WorkerMessageType } from '../../base/events.ts';
-import type { WorkerMessage } from '../../base/events.ts';
+import { LocationState, WorkerMessageType } from '../../utils/events.ts';
+import type { WorkerMessage } from '../../utils/events.ts';
 import TAKNotification, { NotificationType } from '../../base/notification.ts';
 import { v4 as randomUUID } from 'uuid';
 import { lineString as turfLineString, point as turfPoint } from '@turf/helpers';
@@ -511,7 +511,7 @@ import { stdurl } from '../../std.ts';
 import ProfileConfig from '../../base/profile.ts';
 import Config from '../../base/config.ts';
 import { cutOverlayFeature } from './util/featureCut.ts';
-import { isNativePlatform, isIOSPlatform, addBackgroundStateListener } from '../../base/capacitor.ts';
+import { isNativePlatform, isIOSPlatform, addBackgroundStateListener } from '../../utils/capacitor.ts';
 import { copyFeatureToClipboard, readFeatureFromClipboard } from '../../stores/device/clipboard.ts';
 import MissionInviteModal from './Menu/Mission/MissionInviteModal.vue';
 

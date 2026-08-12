@@ -1,6 +1,6 @@
 import type Atlas from './atlas.ts';
 import { std } from '../std.ts';
-import { WorkerMessageType, LocationState } from '../base/events.ts'
+import { WorkerMessageType, LocationState } from '../utils/events.ts'
 import type { Feature, GroupChannel, Server, Profile, Profile_Update, FeaturePropertyCreator } from '../types.ts';
 import ProfileConfig from '../base/profile.ts';
 import ServerManager from '../base/server.ts';
@@ -371,7 +371,7 @@ export default class AtlasProfile {
     async updateChannels(channels: Array<GroupChannel>): Promise<Array<GroupChannel>> {
         await this.postChannelStatus();
 
-        await GroupManager.update(channels);
+        await GroupManager.updateAll(channels);
 
         return channels;
     }

@@ -97,7 +97,7 @@
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
 import { server } from '../../../std.ts';
-import { validateLatLng } from '../../../base/validators.ts';
+import { validateLatLng } from '../../../utils/validators.ts';
 import BasemapSelect from '../../util/BasemapSelect.vue';
 import {
     TablerLoading,

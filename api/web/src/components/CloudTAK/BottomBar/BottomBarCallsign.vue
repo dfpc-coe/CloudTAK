@@ -62,7 +62,7 @@
 
 <script setup lang='ts'>
 import { computed } from 'vue';
-import { LocationState } from '../../../base/events.ts';
+import { LocationState } from '../../../utils/events.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { TablerIconButton } from '@tak-ps/vue-tabler';
 import {

@@ -365,8 +365,8 @@ import { startAuthentication, WebAuthnAbortService } from '@simplewebauthn/brows
 import type { PublicKeyCredentialRequestOptionsJSON, AuthenticationResponseJSON } from '@simplewebauthn/browser';
 import Config from '../base/config.ts';
 import type { FullConfig } from '../base/config.ts';
-import { isNativePlatform, supportsServiceWorker } from '../base/capacitor.ts';
-import { getCurrentEntryBuildId } from '../base/service-worker.ts';
+import { isNativePlatform, supportsServiceWorker } from '../utils/capacitor.ts';
+import { getCurrentEntryBuildId } from '../utils/service-worker.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { server } from '../std.ts';
 import { useAppStore } from '../stores/app.ts';

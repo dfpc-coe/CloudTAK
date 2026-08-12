@@ -213,10 +213,10 @@ import ChannelChangeModal from './components/CloudTAK/Menu/ChannelChangeModal.vu
 import NotificationToast from './components/CloudTAK/util/NotificationToast.vue';
 import TAKNotification_ from './base/notification.ts';
 const TAKNotification = TAKNotification_;
-import { supportsServiceWorker } from './base/capacitor.ts';
+import { supportsServiceWorker } from './utils/capacitor.ts';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
-import { applyServiceWorkerUpdate } from './base/service-worker.ts';
+import { applyServiceWorkerUpdate } from './utils/service-worker.ts';
 
 import { useAppStore } from './stores/app.ts';
 import { useMapStore } from './stores/map.ts';

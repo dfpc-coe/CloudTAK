@@ -1,5 +1,5 @@
 import { Camera } from '@capacitor/camera';
-import { isNativePlatform } from '../../base/capacitor.ts';
+import { isNativePlatform } from '../../utils/capacitor.ts';
 import { PermissionQuery, normalizePermissionState } from './shared.ts';
 import type { DevicePermissionContext } from './types.ts';
 

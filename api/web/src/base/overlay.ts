@@ -246,7 +246,7 @@ export default class OverlayManager extends BaseInterface {
         return res.data;
     }
 
-    static async create(
+    static async generate(
         body: paths['/api/profile/overlay']['post']['requestBody']['content']['application/json']
     ): Promise<ProfileOverlay> {
         const res = await server.POST('/api/profile/overlay', {

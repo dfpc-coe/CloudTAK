@@ -102,7 +102,7 @@ import {
 import { useMapStore } from '../../../stores/map.ts';
 import { useDeviceStore } from '../../../stores/device.ts';
 import ProfileConfig from '../../../base/profile.ts';
-import { COORD_MODES, type CoordMode } from '../../../base/utils/coordinateFormat.ts';
+import { COORD_MODES, type CoordMode } from '../../../utils/coordinateFormat.ts';
 const mapStore = useMapStore();
 const deviceStore = useDeviceStore();
 

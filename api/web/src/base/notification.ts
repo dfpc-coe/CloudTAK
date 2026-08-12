@@ -1,10 +1,15 @@
 import { db, NotificationType } from '../database.ts'
+import { liveQuery, type Observable } from 'dexie';
 import type { DBNotification } from '../database.ts';
 import { v4 as randomUUID } from 'uuid';
+import BaseInterface from './interface.ts';
+import type { BaseInterface_FromOptions } from './interface.ts';
 
 export { NotificationType };
 
-export default class TAKNotification {
+export default class TAKNotification extends BaseInterface {
+    static readonly listCacheKey = 'notification';
+
     id: string;
     type: NotificationType;
     name: string;
@@ -26,6 +31,8 @@ export default class TAKNotification {
             created?: string
         }
     ) {
+        super();
+
         this.id = id;
         this.type = type;
         this.name = name;
@@ -40,7 +47,9 @@ export default class TAKNotification {
      * Return a Notification instance if one already exists in the local DB,
      */
     static async from(
-        id: string
+        id: string,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        opts?: BaseInterface_FromOptions
     ): Promise<TAKNotification | null> {
         const exists = await db.notification
             .get(id)
@@ -61,6 +70,12 @@ export default class TAKNotification {
                 created: exists.created
             }
         );
+    }
+
+    static liveFrom(id: string): Observable<DBNotification | undefined> {
+        return liveQuery(async () => {
+            return await db.notification.get(id);
+        });
     }
 
     static async create(
@@ -163,10 +178,33 @@ export default class TAKNotification {
             .count();
     }
 
+    static liveCount(): Observable<number> {
+        return liveQuery(async () => {
+            return await this.count();
+        });
+    }
+
     static async list(): Promise<DBNotification[]> {
         const collection = await db.notification.toCollection();
 
         return await collection
             .sortBy('created');
+    }
+
+    static liveList(): Observable<DBNotification[]> {
+        return liveQuery(async () => {
+            return await this.list();
+        });
+    }
+
+    /**
+     * Notifications are generated locally and have no server-side collection to
+     * pull from - syncing only stamps the cache so hydrated() reports a value.
+     */
+    static async sync(): Promise<void> {
+        await db.cache.put({
+            key: this.listCacheKey,
+            updated: Date.now()
+        });
     }
 }

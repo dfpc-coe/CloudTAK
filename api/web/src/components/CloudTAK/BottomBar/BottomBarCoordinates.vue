@@ -104,10 +104,10 @@ import {
     IconCursorText,
     IconCurrentLocation
 } from '@tabler/icons-vue';
-import { formatCoordPair, COORD_MODES, type CoordMode } from '../../../base/utils/coordinateFormat.ts';
+import { formatCoordPair, COORD_MODES, type CoordMode } from '../../../utils/coordinateFormat.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useAppStore } from '../../../stores/app.ts';
-import { isNativePlatform } from '../../../base/capacitor.ts';
+import { isNativePlatform } from '../../../utils/capacitor.ts';
 import CopyButton from '../util/CopyButton.vue';
 
 const mapStore = useMapStore();

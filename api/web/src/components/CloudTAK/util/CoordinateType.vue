@@ -34,7 +34,7 @@ import {
     IconPoint
 } from '@tabler/icons-vue';
 import { TablerPillGroup } from '@tak-ps/vue-tabler';
-import { LegacyPointTypes, normalizePointType } from '../../../base/utils/point-type.ts';
+import { LegacyPointTypes, normalizePointType } from '../../../utils/point-type.ts';
 
 // Points are created as 2525E Land Unit SIDCs where possible - u-d-p (Custom
 // Point) has no 2525E equivalent and remains a traditional CoT type

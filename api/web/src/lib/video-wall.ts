@@ -6,8 +6,8 @@
  * can either notify it to refresh or open a new tab.
  */
 
-import { WorkerMessageType } from '../base/events.ts';
-import type { WorkerMessage } from '../base/events.ts';
+import { WorkerMessageType } from '../utils/events.ts';
+import type { WorkerMessage } from '../utils/events.ts';
 
 export const VIDEO_WALL_PATH = '/video';
 export const VIDEO_WALL_WINDOW = 'cloudtak-video-wall';

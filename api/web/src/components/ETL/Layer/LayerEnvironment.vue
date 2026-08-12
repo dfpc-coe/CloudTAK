@@ -156,7 +156,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { server } from '../../../std.ts';
 import type { ETLLayer, ETLLayerTaskCapabilities } from '../../../types.ts';
-import { validateJSON } from '../../../base/validators.ts';
+import { validateJSON } from '../../../utils/validators.ts';
 import {
     TablerNone,
     TablerAlert,

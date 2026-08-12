@@ -219,8 +219,8 @@ import { useRouter } from 'vue-router';
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import type { ProfileFile, ProfileFileList } from '../../../types.ts';
-import PathManager from '../../../base/path-manager.ts';
-import type { PathNode } from '../../../base/path-manager.ts';
+import PathManager from '../../../utils/path-manager.ts';
+import type { PathNode } from '../../../utils/path-manager.ts';
 import ProfileConfig from '../../../base/profile.ts';
 import { stdurl, server } from '../../../std.ts';
 import {

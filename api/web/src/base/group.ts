@@ -2,8 +2,20 @@ import { db } from '../database.ts';
 import { liveQuery, type Observable } from 'dexie';
 import { server } from '../std.ts';
 import type { Group, GroupChannel } from '../types.ts';
+import BaseInterface from './interface.ts';
+import type {
+    BaseInterface_ListOptions,
+    BaseInterface_FromOptions
+} from './interface.ts';
 
-export default class GroupManager {
+export type Group_ListOptions = BaseInterface_ListOptions & {
+    active?: boolean;
+    direction?: string;
+};
+
+export default class GroupManager extends BaseInterface {
+    static readonly listCacheKey = 'group';
+
     /**
      * Merge an array of API Group entries (each with a single direction string)
      * into GroupChannel entries keyed by name with direction as a string array
@@ -46,24 +58,99 @@ export default class GroupManager {
         return groups;
     }
 
-    static live(opts: {
-        active?: boolean;
-        direction?: string;
-    } = {}): Observable<GroupChannel[]> {
+    static async count(opts: Omit<Group_ListOptions, 'sync'> = {}): Promise<number> {
+        return (await this.query(opts)).length;
+    }
+
+    static liveCount(opts: Omit<Group_ListOptions, 'sync'> = {}): Observable<number> {
         return liveQuery(async () => {
-            return await GroupManager.list(opts);
+            return await this.count(opts);
         });
     }
 
-    static async list(opts: {
-        active?: boolean;
-        direction?: string;
-    } = {}): Promise<GroupChannel[]> {
-        const cache = await db.cache.get('group');
-        if (!cache) {
-            await GroupManager.sync();
+    static liveList(opts: Group_ListOptions = {}): Observable<GroupChannel[]> {
+        return liveQuery(async () => {
+            return await this.list(opts);
+        });
+    }
+
+    static async list(opts: Group_ListOptions = {}): Promise<GroupChannel[]> {
+        const cache = await this.hydrated();
+
+        if (!cache || opts.sync) {
+            await this.sync();
         }
 
+        return await this.query(opts);
+    }
+
+    /**
+     * Get a single GroupChannel by name.
+     */
+    static async from(
+        name: string,
+        opts?: BaseInterface_FromOptions
+    ): Promise<GroupChannel | undefined> {
+        if (opts?.sync) {
+            await this.sync();
+        }
+
+        return await db.group.get(name);
+    }
+
+    static liveFrom(name: string): Observable<GroupChannel | undefined> {
+        return liveQuery(async () => {
+            return await db.group.get(name);
+        });
+    }
+
+    /**
+     * Put one or more GroupChannels into the database.
+     */
+    static async put(channels: GroupChannel[] | GroupChannel): Promise<void> {
+        if (!Array.isArray(channels)) channels = [channels];
+        await db.group.bulkPut(channels);
+    }
+
+    static async sync(): Promise<void> {
+        const { data, error } = await server.GET('/api/marti/group', {
+            params: { query: { useCache: true } }
+        });
+
+        if (error || !data) throw new Error('Failed to sync groups');
+
+        await this.cache(GroupManager.merge(data.data as Group[]));
+    }
+
+    /**
+     * Replace the user's full channel set via the API.
+     *
+     * The Marti endpoint is a bulk PUT of every channel, so this cannot be
+     * expressed as BaseInterface.update(id, data) - it is a whole-collection
+     * write rather than a single-item update.
+     */
+    static async updateAll(channels: GroupChannel[]): Promise<GroupChannel[]> {
+        // Explode merged channels back to individual direction entries for the API
+        const apiGroups = GroupManager.explode(channels);
+
+        const { error } = await server.PUT('/api/marti/group', {
+            body: apiGroups
+        });
+
+        if (error) throw new Error('Failed to update groups');
+
+        await this.cache(channels);
+
+        return channels;
+    }
+
+    private static async cache(channels: GroupChannel[]): Promise<void> {
+        await db.group.clear();
+        await db.group.bulkPut(channels);
+        await db.cache.put({ key: this.listCacheKey, updated: Date.now() });
+    }
+
+    private static async query(opts: Omit<Group_ListOptions, 'sync'> = {}): Promise<GroupChannel[]> {
         let collection = db.group.toCollection();
 
         if (opts.active !== undefined) {
@@ -75,54 +162,6 @@ export default class GroupManager {
         }
 
         return await collection.toArray();
-    }
-
-    /**
-     * Get a single GroupChannel by name.
-     */
-    static async get(name: string): Promise<GroupChannel | undefined> {
-        return await db.group.get(name);
-    }
-
-    /**
-     * Put one or more GroupChannels into the database.
-     */
-    static async put(channels: GroupChannel[] | GroupChannel): Promise<void> {
-        if (!Array.isArray(channels)) channels = [channels];
-        await db.group.bulkPut(channels);
-    }
-
-    static async sync(): Promise<GroupChannel[]> {
-        const { data, error } = await server.GET('/api/marti/group', {
-            params: { query: { useCache: true } }
-        });
-
-        if (error || !data) throw new Error('Failed to sync groups');
-
-        const channels = GroupManager.merge(data.data as Group[]);
-
-        await db.group.clear();
-        await db.group.bulkPut(channels);
-        await db.cache.put({ key: 'group', updated: Date.now() });
-
-        return channels;
-    }
-
-    static async update(channels: GroupChannel[]): Promise<GroupChannel[]> {
-        // Explode merged channels back to individual direction entries for the API
-        const apiGroups = GroupManager.explode(channels);
-
-        const { error } = await server.PUT('/api/marti/group', {
-            body: apiGroups
-        });
-
-        if (error) throw new Error('Failed to update groups');
-
-        await db.group.clear();
-        await db.group.bulkPut(channels);
-        await db.cache.put({ key: 'group', updated: Date.now() });
-
-        return channels;
     }
 }
 

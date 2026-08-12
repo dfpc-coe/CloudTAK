@@ -213,7 +213,7 @@
 import { computed, ref } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import { useRouter } from 'vue-router';
-import { openExternalUrl } from '../../base/capacitor.ts';
+import { openExternalUrl } from '../../utils/capacitor.ts';
 import type { ETLConnection } from '../../types';
 import { server, stdurl } from '../../std';
 import timeDiff from '../../timediff.ts';

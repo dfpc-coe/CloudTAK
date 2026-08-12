@@ -82,7 +82,7 @@ export default {
 
 <script setup lang='ts'>
 import { ref } from 'vue';
-import type { PathNode } from '../../../base/path-manager.ts';
+import type { PathNode } from '../../../utils/path-manager.ts';
 import StandardItem from './StandardItem.vue';
 import {
     TablerBadge,

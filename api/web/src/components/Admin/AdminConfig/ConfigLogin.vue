@@ -186,7 +186,7 @@
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
 import { server } from '../../../std.ts';
-import { validateURL } from '../../../base/validators.ts';
+import { validateURL } from '../../../utils/validators.ts';
 import {
     TablerLoading,
     TablerInput,

@@ -2,7 +2,7 @@ import { db } from '../../database.ts'
 // eslint-disable-next-line vue/prefer-import-from-vue
 import { reactive } from '@vue/reactivity';
 import type { FilterSpecification, ExpressionSpecification } from 'maplibre-gl';
-import PathManager from '../../base/path-manager.ts';
+import PathManager from '../../utils/path-manager.ts';
 import type Overlay from '../../base/overlay-class.ts';
 
 let browserModulesPromise: Promise<{

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { TimeoutError, withTimeout } from '../base/async.ts'
+import { TimeoutError, withTimeout } from '../utils/async.ts'
 
 describe('withTimeout', () => {
     afterEach(() => {

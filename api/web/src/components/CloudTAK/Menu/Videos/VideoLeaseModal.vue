@@ -526,7 +526,7 @@
 
 <script setup lang='ts'>
 import { server } from '../../../../std.ts';
-import { validateURL } from '../../../../base/validators.ts';
+import { validateURL } from '../../../../utils/validators.ts';
 import CopyField from '../../util/CopyField.vue';
 import { ref, onMounted } from 'vue';
 import type { paths } from '@cloudtak/api-types';

@@ -178,7 +178,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
-import { openSecondaryView } from '../../base/capacitor.ts';
+import { openSecondaryView } from '../../utils/capacitor.ts';
 import { server } from '../../std.ts';
 import type { ETLLayerList, ETLLayer } from '../../types.ts';
 import TableHeader from '../util/TableHeader.vue'

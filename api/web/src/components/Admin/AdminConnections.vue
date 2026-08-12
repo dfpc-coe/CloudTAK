@@ -142,7 +142,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
-import { openSecondaryView } from '../../base/capacitor.ts';
+import { openSecondaryView } from '../../utils/capacitor.ts';
 import { server } from '../../std.ts';
 import type { paths } from '@cloudtak/api-types';
 import TableHeader from '../util/TableHeader.vue'

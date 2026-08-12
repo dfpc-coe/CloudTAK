@@ -14,7 +14,7 @@ import { coordEach } from '@turf/meta'
 import COT, { OriginMode } from '../base/cot.ts';
 import ContactManager from '../base/contact.ts';
 import TAKNotification, { NotificationType } from '../base/notification.ts';
-import { WorkerMessageType } from '../base/events.ts';
+import { WorkerMessageType } from '../utils/events.ts';
 import type { GeoJSONSourceDiff, LngLatLike } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
 import { isEqual } from '@ver0/deep-equal';

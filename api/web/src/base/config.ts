@@ -1,7 +1,7 @@
 import { db } from '../database.ts'
 import type { DBConfig } from '../database.ts';
 import { server } from '../std.ts';
-import { withTimeout } from './async.ts';
+import { withTimeout } from '../utils/async.ts';
 import { liveQuery, type Subscription } from 'dexie';
 import type { paths } from '@cloudtak/api-types';
 

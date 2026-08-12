@@ -8,7 +8,7 @@ import { DrawToolMode } from '../stores/modules/draw.ts';
 import type { FeatureCollection } from 'geojson';
 import { bbox } from '@turf/bbox'
 import type { LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl'
-import cotStyles from './utils/styles.ts'
+import cotStyles from '../utils/styles.ts'
 import { std, stdurl } from '../std.js';
 import { db, type DBOverlay } from '../database.ts';
 import { useMapStore } from '../stores/map.js';

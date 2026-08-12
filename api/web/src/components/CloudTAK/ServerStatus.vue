@@ -34,7 +34,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMapStore } from '../../stores/map.ts';
-import { supportsServiceWorker } from '../../base/capacitor.ts';
+import { supportsServiceWorker } from '../../utils/capacitor.ts';
 import Config from '../../base/config.ts';
 
 const props = defineProps<{

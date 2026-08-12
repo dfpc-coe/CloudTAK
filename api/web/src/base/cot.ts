@@ -6,7 +6,7 @@ import { liveQuery } from 'dexie';
 import { bbox } from '@turf/bbox'
 import { length } from '@turf/length'
 import { isEqual } from '@ver0/deep-equal';
-import { WorkerMessageType } from'./events.ts'
+import { WorkerMessageType } from '../utils/events.ts'
 import pointOnFeature from '@turf/point-on-feature';
 import { applyEllipseMutation } from './cot/ellipse.ts';
 import type { COTMutation, COTUpdate } from './cot/types.ts';

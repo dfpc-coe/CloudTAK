@@ -120,7 +120,7 @@
 
 import { ref, computed, onMounted } from 'vue';
 import GroupManager from '../../../base/group.ts';
-import { useTriggerWidth } from '../../../base/utils/trigger-width.ts';
+import { useTriggerWidth } from '../../../utils/trigger-width.ts';
 import {
     TablerNone,
     TablerAlert,
