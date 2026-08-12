@@ -357,11 +357,11 @@
 
 <script setup lang='ts'>
 import type { Login_Create, ConfigLogin } from '../types.ts'
-import { ref, computed, onMounted, reactive, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, reactive, watch } from 'vue';
 import { version } from '../../package.json';
 import { IconSettings, IconTrash, IconLock, IconFingerprint, IconUser } from '@tabler/icons-vue';
 import { Preferences } from '@capacitor/preferences';
-import { startAuthentication } from '@simplewebauthn/browser';
+import { startAuthentication, WebAuthnAbortService } from '@simplewebauthn/browser';
 import type { PublicKeyCredentialRequestOptionsJSON, AuthenticationResponseJSON } from '@simplewebauthn/browser';
 import Config from '../base/config.ts';
 import type { FullConfig } from '../base/config.ts';
@@ -549,7 +549,7 @@ onMounted(async () => {
     brandStore.passkey.enabled = (config as Record<string, unknown>)['passkey::enabled'] !== false;
     brandStore.loaded = true;
 
-    if (brandStore.passkey.enabled) {
+    if (brandStore.passkey.enabled && !isNativePlatform()) {
         startConditionalPasskey();
     }
 
@@ -611,6 +611,10 @@ async function createLogin() {
         throw err;
     }
 }
+
+onUnmounted(() => {
+    WebAuthnAbortService.cancelCeremony();
+});
 
 async function startConditionalPasskey() {
     try {
