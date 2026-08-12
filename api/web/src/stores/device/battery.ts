@@ -1,4 +1,4 @@
-import { isNativePlatform } from '../../base/capacitor.ts';
+import { isNativePlatform } from '../../utils/capacitor.ts';
 
 // The web Battery Status API is not in the standard DOM typings and is absent
 // in iOS WebKit - model just the bits we consume.

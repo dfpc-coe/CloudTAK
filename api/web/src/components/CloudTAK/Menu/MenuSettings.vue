@@ -111,7 +111,7 @@
 
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
-import { supportsServiceWorker } from '../../../base/capacitor.ts';
+import { supportsServiceWorker } from '../../../utils/capacitor.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import {

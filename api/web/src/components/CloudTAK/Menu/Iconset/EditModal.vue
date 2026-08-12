@@ -115,7 +115,7 @@ async function submit() {
             throw new Error('Iconset form is incomplete');
         }
 
-        await IconsetManager.create({
+        await IconsetManager.generate({
             uid: iconset.value.uid,
             version: iconset.value.version,
             name: iconset.value.name,

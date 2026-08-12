@@ -110,7 +110,7 @@
 import  { useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue';
 import { Preferences } from '@capacitor/preferences';
-import { openExternalUrl } from '../../../base/capacitor.ts';
+import { openExternalUrl } from '../../../utils/capacitor.ts';
 import { server, stdurl } from '../../../std.ts';
 import type { ETLConnectionAssetList } from '../../../types.ts';
 import {

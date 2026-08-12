@@ -1,5 +1,5 @@
 import { Preferences } from '@capacitor/preferences';
-import { isNativePlatform } from './capacitor.ts';
+import { isNativePlatform } from '../utils/capacitor.ts';
 
 /**
  * Per-device push registration bookkeeping.

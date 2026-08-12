@@ -101,7 +101,7 @@ import FloatingPane from './FloatingPane.vue';
 import VideoPlayer from '../../util/VideoPlayer.vue';
 import type { VideoPlayerMetadata } from '../../util/VideoPlayer.vue';
 import { notifyVideoWall } from '../../../lib/video-wall.ts';
-import { isNativePlatform } from '../../../base/capacitor.ts';
+import { isNativePlatform } from '../../../utils/capacitor.ts';
 import { useFloatStore } from '../../../stores/float.ts';
 import type { Pane, PaneVideoConfig } from '../../../stores/float.ts';
 import {

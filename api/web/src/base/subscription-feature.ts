@@ -7,7 +7,7 @@ import { server } from '../std.ts';
 import { bbox } from '@turf/bbox';
 import type { BBox, FeatureCollection as GeoJSONFeatureCollection } from 'geojson'
 import type { Feature, FeatureCollection } from '../types.ts';
-import { WorkerMessageType } from './events.ts';
+import { WorkerMessageType } from '../utils/events.ts';
 
 /**
  * High Level Wrapper around the Data/Mission Sync API

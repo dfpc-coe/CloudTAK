@@ -60,7 +60,7 @@
 
 <script setup lang='ts'>
 import Config from '../base/config.ts';
-import { supportsServiceWorker } from '../base/capacitor.ts';
+import { supportsServiceWorker } from '../utils/capacitor.ts';
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps<{

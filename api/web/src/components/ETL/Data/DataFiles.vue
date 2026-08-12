@@ -166,7 +166,7 @@ import {
     TablerBytes,
     TablerEpoch
 } from '@tak-ps/vue-tabler';
-import { openExternalUrl } from '../../../base/capacitor.ts';
+import { openExternalUrl } from '../../../utils/capacitor.ts';
 
 type Asset = {
     name: string;

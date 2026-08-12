@@ -93,7 +93,7 @@ import {
 import { TablerBadge, TablerIconButton } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
-import { isNativePlatform } from '../../../base/capacitor.ts';
+import { isNativePlatform } from '../../../utils/capacitor.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useDeviceStore } from '../../../stores/device.ts';
 import type { BrowserPermissionState } from '../../../stores/device.ts';

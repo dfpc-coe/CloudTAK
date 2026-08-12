@@ -181,7 +181,7 @@ import StandardItemBasemap from '../util/StandardItemBasemap.vue';
 import StandardItemFolder from '../util/StandardItemFolder.vue';
 import PathBreadcrumb from '../util/PathBreadcrumb.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
-import { openExternalUrl } from '../../../base/capacitor.ts';
+import { openExternalUrl } from '../../../utils/capacitor.ts';
 import ProfileConfig from '../../../base/profile.ts';
 import { server, stdurl } from '../../../std.ts';
 import OverlayManager from '../../../base/overlay.ts';

@@ -131,7 +131,7 @@ export default class IconsetManager extends BaseInterface {
         return res.data;
     }
 
-    static async create(
+    static async generate(
         body: paths['/api/iconset']['post']['requestBody']['content']['application/json']
     ): Promise<Iconset> {
         const token = await getRuntimeToken();

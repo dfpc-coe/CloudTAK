@@ -5,7 +5,7 @@ import type {
     CallbackError as BackgroundGeolocationError,
     Location as BackgroundLocation
 } from '@capgo/background-geolocation';
-import { isNativePlatform } from '../../base/capacitor.ts';
+import { isNativePlatform } from '../../utils/capacitor.ts';
 import { PermissionQuery, normalizePermissionState } from './shared.ts';
 import type { DevicePermissionContext } from './types.ts';
 

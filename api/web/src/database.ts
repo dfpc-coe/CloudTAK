@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
-import { withTimeout } from './base/async.ts';
+import { withTimeout } from './utils/async.ts';
 import type {
     Feature,
     GroupChannel,

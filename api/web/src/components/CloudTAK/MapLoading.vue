@@ -53,7 +53,7 @@
 
 <script setup lang='ts'>
 import Config from '../../base/config.ts';
-import { supportsServiceWorker, addBackgroundStateListener } from '../../base/capacitor.ts';
+import { supportsServiceWorker, addBackgroundStateListener } from '../../utils/capacitor.ts';
 import { ref, onMounted, onUnmounted } from 'vue';
 import {
     TablerModal,

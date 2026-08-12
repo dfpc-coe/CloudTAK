@@ -9,7 +9,7 @@ import Chatroom from '../base/chatroom.ts';
 import { db, ChatStatusRank, ChatStatus } from '../database.ts';
 import TAKNotification, { NotificationType } from '../base/notification.ts';
 import { OriginMode } from '../base/cot.ts';
-import { WorkerMessageType } from '../base/events.ts';
+import { WorkerMessageType } from '../utils/events.ts';
 import type { SyncEvent } from './atlas-sync.ts';
 import type { Feature, Import, Chat } from '../types.ts';
 

@@ -117,7 +117,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import StatusDot from '../util/StatusDot.vue';
 import { server } from '../../std.ts';
-import { validateURL } from '../../base/validators.ts';
+import { validateURL } from '../../utils/validators.ts';
 import {
     TablerLoading,
     TablerInput,

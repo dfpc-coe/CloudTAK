@@ -304,7 +304,7 @@ import {
     TablerInput,
     TablerNone,
 } from '@tak-ps/vue-tabler';
-import { openSecondaryView } from '../../base/capacitor.ts';
+import { openSecondaryView } from '../../utils/capacitor.ts';
 import { version } from '../../../package.json';
 import { useMapStore } from '../../stores/map.ts';
 import { useAppStore } from '../../stores/app.ts';

@@ -126,7 +126,7 @@
 import { ref, computed, watch } from 'vue';
 import { server } from '../../../std.ts';
 import type { CoreEventBoard } from '../../../types.ts';
-import { useTriggerWidth } from '../../../base/utils/trigger-width.ts';
+import { useTriggerWidth } from '../../../utils/trigger-width.ts';
 import {
     TablerNone,
     TablerAlert,

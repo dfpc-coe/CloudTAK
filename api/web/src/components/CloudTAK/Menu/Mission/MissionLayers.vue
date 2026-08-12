@@ -128,8 +128,8 @@ import type {
     Feature,
     MissionLayer
 } from '../../../../types.ts';
-import type { PathNode } from '../../../../base/path-manager.ts';
-import PathManager from '../../../../base/path-manager.ts';
+import type { PathNode } from '../../../../utils/path-manager.ts';
+import PathManager from '../../../../utils/path-manager.ts';
 import { FeatureVisibility } from '../../../../stores/modules/feature-visibility.ts';
 import Subscription from '../../../../base/subscription.ts';
 import MenuTemplate from '../../util/MenuTemplate.vue';

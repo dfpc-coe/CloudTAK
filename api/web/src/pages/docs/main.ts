@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { initServiceWorker } from '../../base/service-worker.ts';
+import { initServiceWorker } from '../../utils/service-worker.ts';
 import { initGlobalErrorReporting, vueErrorHandler } from '../../lib/reporting/index.ts';
 
 import App from './App.vue';

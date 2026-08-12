@@ -215,7 +215,7 @@ function clearFilters(): void {
 }
 
 const channels = useObservable(
-    from(GroupManager.live()),
+    from(GroupManager.liveList()),
     { initialValue: [] }
 ) as Ref<GroupChannel[]>;
 

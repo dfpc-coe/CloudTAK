@@ -150,7 +150,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
 import GroupSelect from '../../util/GroupSelect.vue';
 import GroupManager from '../../../base/group.ts';
-import { openSecondaryView } from '../../../base/capacitor.ts';
+import { openSecondaryView } from '../../../utils/capacitor.ts';
 import type { GroupChannel, CoreEventBoardSummary, CoreEventBoardColumnSummary } from '../../../types.ts';
 import { TablerNone, TablerBadge, TablerLoading, TablerIconButton } from '@tak-ps/vue-tabler';
 import {

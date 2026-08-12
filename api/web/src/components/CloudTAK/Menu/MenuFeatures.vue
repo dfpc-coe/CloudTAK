@@ -247,8 +247,8 @@ import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount, useTemplate
 import COT from '../../../base/cot.ts';
 import FeatureManager from '../../../base/feature.ts';
 import type { Feature_ExportFormat } from '../../../base/feature.ts';
-import PathManager from '../../../base/path-manager.ts';
-import type { PathNode } from '../../../base/path-manager.ts';
+import PathManager from '../../../utils/path-manager.ts';
+import type { PathNode } from '../../../utils/path-manager.ts';
 import { FeatureVisibility, GENERAL_SOURCE_ID } from '../../../stores/modules/feature-visibility.ts';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -268,8 +268,8 @@ import {
     TablerModal,
     TablerButton
 } from '@tak-ps/vue-tabler';
-import type { WorkerMessage } from '../../../base/events.ts';
-import { WorkerMessageType } from '../../../base/events.ts';
+import type { WorkerMessage } from '../../../utils/events.ts';
+import { WorkerMessageType } from '../../../utils/events.ts';
 import {
     IconFile,
     IconFolderPlus,

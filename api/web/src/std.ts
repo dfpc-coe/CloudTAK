@@ -6,7 +6,7 @@ import type { Middleware } from "openapi-fetch";
 import type { paths } from '@cloudtak/api-types'
 import type { APIError } from './types.js'
 import type { Router } from 'vue-router'
-import { isNativePlatform, openSecondaryView } from './base/capacitor.ts';
+import { isNativePlatform, openSecondaryView } from './utils/capacitor.ts';
 import { reportError } from './lib/reporting/index.ts';
 import { db } from './database.ts';
 

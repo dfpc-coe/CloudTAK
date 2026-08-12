@@ -1,5 +1,5 @@
 import { KeepAwake } from '@capacitor-community/keep-awake';
-import { isNativePlatform } from '../../base/capacitor.ts';
+import { isNativePlatform } from '../../utils/capacitor.ts';
 import { PermissionQuery } from './shared.ts';
 import { BatteryStatus } from './battery.ts';
 import type { DevicePermissionContext } from './types.ts';
