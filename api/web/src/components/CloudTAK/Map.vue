@@ -101,10 +101,10 @@
             />
             <div
                 v-if='mapStore.selected.size'
-                class='position-absolute begin-0 text-white cloudtak-bg'
+                class='position-absolute'
                 style='
-                    bottom: var(--map-bottom-bar-size, 50px);
-                    width: 250px;
+                    bottom: calc(var(--map-bottom-bar-size, 50px) + 8px);
+                    left: 8px;
                 '
             >
                 <SelectFeats :selected='mapStore.selected' />

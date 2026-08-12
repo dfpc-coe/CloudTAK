@@ -1,11 +1,12 @@
 <template>
     <div
-        class='col-12'
-        style='max-height: 400px'
+        v-if='share === ShareType.NONE'
+        class='cloudtak-panel d-flex flex-column overflow-hidden'
+        style='width: 250px; max-height: 400px;'
     >
         <TablerLoading v-if='loading' />
-        <template v-else-if='share === ShareType.NONE'>
-            <div class='sticky-top col-12 d-flex align-items-center user-select-none'>
+        <template v-else>
+            <div class='d-flex align-items-center user-select-none border-bottom'>
                 <div class='subheader mx-2 my-2'>
                     Selected Features
                 </div>
@@ -21,13 +22,7 @@
                     </TablerIconButton>
                 </div>
             </div>
-            <div
-                class='overflow-auto'
-                style='
-                    max-height: calc(400px - 36px);
-                    margin-bottom: 36px;
-                '
-            >
+            <div class='overflow-auto flex-grow-1'>
                 <div
                     v-for='select in selected.values()'
                     class='col-12 px-1'
@@ -39,100 +34,92 @@
                     />
                 </div>
             </div>
-            <div
-                style='height: 36px; z-index: 2000;'
-                class='position-absolute bottom-0 start-0 end-0 px-2 cloudtak-bg'
-            >
-                <div class='d-flex align-items-center'>
+            <div class='d-flex align-items-center border-top px-2 py-1'>
+                <TablerButton
+                    style='height: 30px;'
+                    class='me-1 btn-sm flex-grow-1'
+                    @click='share = ShareType.USERS'
+                >
+                    <IconPackageExport
+                        :size='20'
+                        stroke='1'
+                    />
+                    <span class='mx-2'>Share</span>
+                </TablerButton>
+                <TablerDropdown
+                    position='top'
+                >
                     <TablerButton
-                        style='height: 30px; width: 200px;'
-                        class='me-1 btn-sm'
-                        @click='share = ShareType.USERS'
+                        title='More Options'
+                        class='btn-sm'
+                        style='height: 30px'
                     >
-                        <IconPackageExport
+                        <IconDotsVertical
                             :size='20'
                             stroke='1'
                         />
-                        <span class='mx-2'>Share</span>
                     </TablerButton>
-                    <TablerDropdown
-                        position='top'
-                    >
-                        <TablerButton
-                            title='More Options'
-                            class='btn-sm'
-                            style='height: 30px'
-                        >
-                            <IconDotsVertical
-                                :size='20'
-                                stroke='1'
-                            />
-                        </TablerButton>
 
-                        <template #dropdown>
-                            <div class='py-1'>
-                                <div
-                                    class='cursor-pointer col-12 cloudtak-hover rounded d-flex align-items-center px-2'
-                                    @click.stop='share = ShareType.PACKAGE'
-                                >
-                                    <IconPackages
-                                        :size='32'
-                                        stroke='1'
-                                        class='me-2'
-                                    />
-                                    New Data Package
-                                </div>
-                                <div
-                                    class='cursor-pointer col-12 cloudtak-hover rounded d-flex align-items-center px-2'
-                                    @click.stop='share = ShareType.MISSION'
-                                >
-                                    <IconAmbulance
-                                        :size='32'
-                                        stroke='1'
-                                        class='me-2'
-                                    />
-                                    Move to Data Sync
-                                </div>
-                                <div
-                                    class='cursor-pointer col-12 cloudtak-hover rounded d-flex align-items-center px-2'
-                                    @click.stop='deleteFeatures'
-                                >
-                                    <IconTrash
-                                        :size='32'
-                                        stroke='1'
-                                        class='me-2'
-                                    />
-                                    Delete Features
-                                </div>
+                    <template #dropdown>
+                        <div class='py-1'>
+                            <div
+                                class='cursor-pointer col-12 cloudtak-hover rounded d-flex align-items-center px-2'
+                                @click.stop='share = ShareType.PACKAGE'
+                            >
+                                <IconPackages
+                                    :size='32'
+                                    stroke='1'
+                                    class='me-2'
+                                />
+                                New Data Package
                             </div>
-                        </template>
-                    </TablerDropdown>
-                </div>
+                            <div
+                                class='cursor-pointer col-12 cloudtak-hover rounded d-flex align-items-center px-2'
+                                @click.stop='share = ShareType.MISSION'
+                            >
+                                <IconAmbulance
+                                    :size='32'
+                                    stroke='1'
+                                    class='me-2'
+                                />
+                                Move to Data Sync
+                            </div>
+                            <div
+                                class='cursor-pointer col-12 cloudtak-hover rounded d-flex align-items-center px-2'
+                                @click.stop='deleteFeatures'
+                            >
+                                <IconTrash
+                                    :size='32'
+                                    stroke='1'
+                                    class='me-2'
+                                />
+                                Delete Features
+                            </div>
+                        </div>
+                    </template>
+                </TablerDropdown>
             </div>
         </template>
-        <template v-else-if='share === ShareType.USERS'>
-            <Share
-                :feats='Array.from(selected.values()).map((c) => c.as_feature())'
-                @done='selected.clear()'
-                @close='share = ShareType.NONE'
-            />
-        </template>
-        <template v-else-if='share === ShareType.MISSION'>
-            <ShareToMission
-                action='move'
-                :feats='Array.from(selected.values()).map((c) => c.as_feature())'
-                @done='selected.clear()'
-                @close='share = ShareType.NONE'
-            />
-        </template>
-        <template v-else-if='share === ShareType.PACKAGE'>
-            <ShareToPackage
-                :feats='Array.from(selected.values()).map((c) => c.as_feature())'
-                @done='selected.clear()'
-                @close='share = ShareType.NONE'
-            />
-        </template>
     </div>
+    <Share
+        v-else-if='share === ShareType.USERS'
+        :feats='Array.from(selected.values()).map((c) => c.as_feature())'
+        @done='selected.clear()'
+        @close='share = ShareType.NONE'
+    />
+    <ShareToMission
+        v-else-if='share === ShareType.MISSION'
+        action='move'
+        :feats='Array.from(selected.values()).map((c) => c.as_feature())'
+        @done='selected.clear()'
+        @close='share = ShareType.NONE'
+    />
+    <ShareToPackage
+        v-else-if='share === ShareType.PACKAGE'
+        :feats='Array.from(selected.values()).map((c) => c.as_feature())'
+        @done='selected.clear()'
+        @close='share = ShareType.NONE'
+    />
 </template>
 
 <script setup lang='ts'>
