@@ -135,14 +135,6 @@ function protocolIcon(protocol?: string) {
 </script>
 
 <style scoped>
-.icon-wrapper {
-    width: 3rem;
-    height: 3rem;
-    min-width: 3rem;
-    min-height: 3rem;
-    flex-shrink: 0;
-}
-
 .basemap-content {
     min-width: 0;
 }

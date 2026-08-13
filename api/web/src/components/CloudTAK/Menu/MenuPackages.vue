@@ -63,7 +63,7 @@
                         class='d-flex flex-row gap-3'
                         @click='router.push(`/menu/packages/${pkg.uid}`)'
                     >
-                        <div class='menu-packages__icon-wrapper ms-2 mt-2 d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'>
+                        <div class='icon-wrapper ms-2 mt-2 d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'>
                             <IconPackage
                                 :size='24'
                                 stroke='1'
@@ -180,13 +180,3 @@ async function fetchList() {
     }
 }
 </script>
-
-<style scoped>
-.menu-packages__icon-wrapper {
-    width: 3rem;
-    height: 3rem;
-    min-width: 3rem;
-    min-height: 3rem;
-    flex-shrink: 0;
-}
-</style>

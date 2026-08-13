@@ -628,29 +628,4 @@ async function fetchMissions() {
     background: var(--tabler-dropdown-bg, rgba(20, 20, 25, 0.96));
     border-bottom: 1px solid var(--tabler-dropdown-border-color, rgba(255, 255, 255, 0.1));
 }
-
-.icon-wrapper {
-    width: 3rem;
-    height: 3rem;
-    min-width: 3rem;
-    min-height: 3rem;
-    flex-shrink: 0;
-}
-
-.menu-overlays-fade-enter-active,
-.menu-overlays-fade-leave-active {
-    transition: all 0.2s ease-out;
-    max-height: 500px;
-    opacity: 1;
-    overflow: hidden;
-}
-
-.menu-overlays-fade-enter-from,
-.menu-overlays-fade-leave-to {
-    max-height: 0;
-    opacity: 0;
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-}
 </style>

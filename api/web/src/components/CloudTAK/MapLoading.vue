@@ -119,21 +119,3 @@ onUnmounted(() => {
     if (removeBackgroundListener) removeBackgroundListener();
 });
 </script>
-
-<style scoped>
-.stage-fade-enter-active,
-.stage-fade-leave-active {
-    transition: opacity 0.4s ease;
-}
-.stage-fade-enter-from,
-.stage-fade-leave-to {
-    opacity: 0;
-}
-
-.reset-fade-enter-active {
-    transition: opacity 1s ease-in;
-}
-.reset-fade-enter-from {
-    opacity: 0;
-}
-</style>

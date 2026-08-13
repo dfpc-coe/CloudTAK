@@ -363,29 +363,3 @@ watch(
     { deep: true }
 );
 </script>
-
-<style scoped>
-.saved-indicator {
-    top: 10px;
-    right: 12px;
-    z-index: 1;
-}
-
-.saved-fade-enter-active {
-    transition: opacity 0.2s ease-in;
-}
-
-.saved-fade-leave-active {
-    transition: opacity 1.4s ease-out;
-}
-
-.saved-fade-enter-from,
-.saved-fade-leave-to {
-    opacity: 0;
-}
-
-.saved-fade-enter-to,
-.saved-fade-leave-from {
-    opacity: 1;
-}
-</style>

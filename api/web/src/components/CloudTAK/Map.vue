@@ -1066,22 +1066,12 @@ async function handleRadial(event: string): Promise<void> {
     animation: alert-pulse 1.2s ease-in-out infinite;
 }
 
-.cloudtak-navigating {
-    z-index: 2;
-    width: min(640px, calc(100vw - 16px));
-    border-radius: 0px 0px 6px 6px;
-}
-
 /*
- * On small screens the banner would overlap the top controls (Active Mission, tools and menu);
- * drop it below them so they stay usable and round all four corners.
+ * Drops the left controls below the navigation banner once it wraps to its own
+ * row on small screens - `.cloudtak-navigating` itself is styled in style.scss
+ * because it is rendered by `Navigating.vue`.
  */
 @media (max-width: 767.98px) {
-    .cloudtak-navigating {
-        margin-top: 74px;
-        border-radius: 6px;
-    }
-
     .cloudtak-left-controls--nav {
         top: 134px !important;
     }

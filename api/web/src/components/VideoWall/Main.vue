@@ -251,10 +251,6 @@ async function removeVideo(id: string): Promise<void> {
 
 <style>
 
-.video-wall .cursor-move {
-    cursor: move;
-}
-
 .video-wall .vgl-item--placeholder {
     background: rgba(0, 132, 255, 0.3);
     border-radius: 4px;

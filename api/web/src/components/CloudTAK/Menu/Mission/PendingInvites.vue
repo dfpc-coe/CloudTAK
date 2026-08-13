@@ -121,22 +121,3 @@ async function deleteInvite(invite: MissionInvite) {
     emit('update:invites', newInvites);
 }
 </script>
-
-<style scoped>
-.menu-overlays-fade-enter-active,
-.menu-overlays-fade-leave-active {
-    transition: all 0.2s ease-out;
-    max-height: 500px;
-    opacity: 1;
-    overflow: hidden;
-}
-
-.menu-overlays-fade-enter-from,
-.menu-overlays-fade-leave-to {
-    max-height: 0;
-    opacity: 0;
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-}
-</style>

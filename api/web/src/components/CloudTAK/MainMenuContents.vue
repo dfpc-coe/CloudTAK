@@ -506,10 +506,6 @@ function normalizeApplications(applications: unknown): AppSwitcherApplication[] 
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 }
 
-.cursor-move {
-    cursor: move !important;
-}
-
 .app-switcher-logo {
     width: 32px;
     height: 32px;

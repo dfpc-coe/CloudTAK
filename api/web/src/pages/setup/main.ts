@@ -3,8 +3,6 @@ import { Capacitor } from '@capacitor/core'
 import { CapacitorUpdater } from '@capgo/capacitor-updater'
 import { initGlobalErrorReporting, vueErrorHandler } from '../../lib/reporting/index.ts';
 
-import '@tabler/core/dist/css/tabler.min.css'
-
 import App from '../../components/Setup/App.vue'
 
 initGlobalErrorReporting();
