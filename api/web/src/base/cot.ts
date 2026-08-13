@@ -70,10 +70,21 @@ const TYPES_WITHOUT_ICON = ['u-d-p', 'b-m-p-s-m'];
  * `milicon` is authoritative - `type` only carries the SIDC on paths that ran
  * node-cot's `normalize2525` (mission sync & CoT query deliver `a-f-G` instead)
  */
+// Features from vector overlays (KML, imported files) carry arbitrary
+// properties - `type` may be absent entirely and nested objects like `milicon`
+// arrive flattened to JSON strings, so validate shapes before conversion
 function milsymSIDC(properties: Feature["properties"]): string | undefined {
-    if (properties.milicon && Type2525.isNumericSIDCConvertable(properties.milicon.id)) {
+    if (
+        properties.milicon
+        && typeof properties.milicon === 'object'
+        && typeof properties.milicon.id === 'string'
+        && Type2525.isNumericSIDCConvertable(properties.milicon.id)
+    ) {
         return properties.milicon.id;
-    } else if (Type2525.isNumericSIDCConvertable(properties.type)) {
+    } else if (
+        typeof properties.type === 'string'
+        && Type2525.isNumericSIDCConvertable(properties.type)
+    ) {
         return properties.type;
     } else {
         return undefined;

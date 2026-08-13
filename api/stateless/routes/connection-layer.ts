@@ -184,7 +184,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.post('/connection/:connectionid/layer', {
         name: 'Create Layer',
         group: 'Layer',
-        description: 'Register a new layer',
+        description: 'Register a new layer - a Connection ID of 0 creates a server-wide Admin Layer',
         query: Type.Object({
             alarms: Type.Boolean({
                 default: false,
@@ -192,7 +192,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
         }),
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
         }),
         body: Type.Object({
             name: Default.NameField,
@@ -224,25 +224,54 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             permissions: Type.Optional(Type.Union([Type.Null(), Type.Array(Type.String())], {
                 description: 'Permissions granted to the Layer as <permission>:<level> pairs - ie video:read or video:*',
             })),
+            incoming: Type.Optional(Type.Object({
+                cron: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+                webhooks: Type.Optional(Type.Boolean()),
+            }, {
+                description: 'Create an Incoming Config alongside the Layer',
+            })),
+            outgoing: Type.Optional(Type.Object({}, {
+                description: 'Create an Outgoing Config alongside the Layer',
+            })),
         }),
         res: LayerResponse,
     }, async (req, res) => {
         try {
-            const { connection, auth } = await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
-            }, req.params.connectionid);
+            let username: string | null = null;
+            if (req.params.connectionid === 0) {
+                const user = await Auth.as_user(config, req, { admin: true });
+                username = user.email;
+            } else {
+                const { connection, auth } = await Auth.is_connection(config, req, {
+                    resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
+                }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+                if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+
+                username = auth instanceof AuthUser ? auth.email : null;
+            }
 
             CommonLayerControl.validatePermissions(req.body.permissions);
 
+            if (req.body.incoming && req.body.incoming.cron) {
+                Schedule.is_valid(req.body.incoming.cron);
+            }
+
+            const { incoming, outgoing, ...body } = req.body;
+
             const layer = await layerControl.generate({
-                ...req.body,
-                connection: req.params.connectionid,
-                username: auth instanceof AuthUser ? auth.email : null,
+                ...body,
+                connection: req.params.connectionid || null,
+                username,
             }, {
                 alarms: req.query.alarms,
+                incoming,
+                outgoing,
             });
+
+            if (layer.incoming) {
+                await config.hub.eventSet(layer.id, layer.incoming.cron && !Schedule.is_aws(layer.incoming.cron) && layer.enabled ? layer.incoming.cron : null);
+            }
 
             res.json(layer);
         } catch (err) {

@@ -1,27 +1,16 @@
 <template>
-    <div style='overflow: auto;'>
-        <div class='page-wrapper'>
-            <div class='page-header d-print-none'>
-                <div class='container-xl'>
-                    <div class='row g-2 align-items-center'>
-                        <div class='col d-flex text-white'>
-                            <TablerBreadCrumb />
-
-                            <div class='ms-auto'>
-                                <div class='btn-list'>
-                                    <a
-                                        class='cursor-pointer btn btn-primary'
-                                        @click='router.push("/connection/new")'
-                                    >
-                                        New Connection
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div
+        class='h-full w-full cloudtak-page'
+        style='overflow: auto;'
+    >
+        <NavHeader title='Connections'>
+            <a
+                class='cursor-pointer btn btn-primary'
+                @click='router.push("/connection/new")'
+            >
+                New Connection
+            </a>
+        </NavHeader>
 
         <div class='page-body'>
             <div class='container-xl'>
@@ -98,10 +87,10 @@ import { useRouter } from 'vue-router';
 import type { ETLConnectionList } from '../../types.ts'
 import { server } from '../../std.ts';
 import PageFooter from '../PageFooter.vue';
+import NavHeader from '../util/NavHeader.vue';
 import ConnectionCard from './ConnectionCard.vue';
 import {
     TablerPager,
-    TablerBreadCrumb,
     TablerLoading,
     TablerNone,
 } from '@tak-ps/vue-tabler';

@@ -43,7 +43,6 @@ export const AugmentedLayer = Type.Object({
     status: Type.Optional(Type.String()),
     created: Type.String(),
     updated: Type.String(),
-    template: Type.Boolean(),
     connection: Type.Union([Type.Null(), Type.Integer()]),
     username: Type.Union([Type.Null(), Type.String()]),
     uuid: Type.String(),
@@ -99,6 +98,10 @@ export default class LayerModel extends Modeler<typeof Layer> {
     }
 
     parse(l: Static<typeof AugmentedLayer>): Static<typeof AugmentedLayer> {
+        if (!l.parent || !l.parent.id) {
+            delete l.parent;
+        }
+
         if (l.incoming && l.incoming.layer) {
             if (typeof l.incoming.config === 'string') l.incoming.config = JSON.parse(l.incoming.config);
             if (typeof l.incoming.styles === 'string') l.incoming.styles = JSON.parse(l.incoming.styles);
@@ -155,7 +158,6 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 protected: Layer.protected,
                 logging: Layer.logging,
                 task: Layer.task,
-                template: Layer.template,
                 connection: Layer.connection,
                 memory: Layer.memory,
                 timeout: Layer.timeout,
@@ -238,7 +240,6 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 protected: Layer.protected,
                 logging: Layer.logging,
                 task: Layer.task,
-                template: Layer.template,
                 connection: Layer.connection,
                 memory: Layer.memory,
                 timeout: Layer.timeout,

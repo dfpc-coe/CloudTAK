@@ -16,6 +16,16 @@
 
 ### Pending Release
 
+- :tada: Add shared `ScheduleInput` component with Rate/Cron modes, presets, live human-readable descriptions & inline validation - used by Layer Creation & Layer Incoming Config in place of free-text cron inputs
+- :rocket: Merge the Layer Creation capabilities form into the `LayerStaticCapabilities` component behind a `disabled` prop - Layer Creation & the Admin Integrations version view now share one component
+- :bug: Layer Incoming Config no longer seeds a bare cron expression (`0/15 * * * ? *`) that the API's schedule validation rejects - toggling Scheduled Runs on now seeds `rate(5 minutes)`
+- :bug: Fix render error in the Multiple Feature Map Popup when clicking overlapping KML/imported overlay features - icon derivation no longer assumes a CoT `type` property is present
+- :tada: Layer Creation UI now surfaces the Task Capabilities document, allowing Compute, Permissions, Schedule, Webhook & Outgoing settings to be applied at creation time
+- :tada: `POST /connection/:connectionid/layer` now accepts optional `incoming` & `outgoing` config so the initial deploy includes them
+- :tada: Admin Layers can now be created directly via `POST /connection/0/layer` & the `/connection/0/layer/new` UI
+- :rocket: Remove the ETL Layer Template concept from the UI & API - `GET/POST /api/template` endpoints, the `layers.template` column & Templated Creation UI are removed
+- :white_check_mark: Add Layer creation tests covering incoming/outgoing config, invalid cron rejection & Admin Layer creation
+
 ### v13.67.2 - 2026-08-12
 
 - :rocket: Cleanup Web Base Interfaces

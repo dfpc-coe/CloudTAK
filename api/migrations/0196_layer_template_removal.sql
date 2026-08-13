@@ -1,0 +1,1 @@
+ALTER TABLE "layers" DROP COLUMN IF EXISTS "template";

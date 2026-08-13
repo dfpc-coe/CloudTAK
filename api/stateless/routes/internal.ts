@@ -33,7 +33,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             filter: Default.Filter,
             task: Type.Optional(Type.String()),
             data: Type.Optional(Type.Integer({ minimum: 1 })),
-            template: Type.Optional(Type.Boolean()),
             connection: Type.Optional(Type.Integer({ minimum: 1 })),
         }),
         res: Type.Object({
@@ -58,7 +57,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 where: sql`
                     layers.name ~* ${req.query.filter}
                     AND (${Param(req.query.connection)}::BIGINT IS NULL OR ${Param(req.query.connection)}::BIGINT = layers.connection)
-                    AND (${Param(req.query.template)}::BOOLEAN IS NULL OR ${Param(req.query.template)}::BOOLEAN = layers.template)
                     AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers_incoming.data)
                     AND (${Param(req.query.task)}::TEXT IS NULL OR Starts_With(layers.task, ${Param(req.query.task)}::TEXT))
                 `,

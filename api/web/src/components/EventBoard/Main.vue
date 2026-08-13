@@ -1,132 +1,120 @@
 <template>
     <div class='h-full w-full cloudtak-page d-flex flex-column event-board'>
-        <div class='d-flex align-items-center px-3 py-2 border-bottom event-board-header'>
-            <img
-                class='cloudtak-logo me-2'
-                :src='headerLogo'
-                alt='CloudTAK Logo'
-                draggable='false'
+        <NavHeader title='Event Board'>
+            <GroupSelectDropdown
+                v-model='channel'
+                class='event-board-select'
+                :active='true'
+                @channels='onChannels'
+            />
+
+            <BoardSelectDropdown
+                v-if='channel !== undefined'
+                ref='boardSelect'
+                v-model='board'
+                class='event-board-select'
+                :channel='channel'
+                @boards='onBoards'
+                @error='error = $event'
+                @update:model-value='onBoardChange'
+            />
+
+            <TablerDropdown
+                v-if='selectedBoard'
+                :width='170'
             >
-            <div class='fs-3 fw-bold user-select-none'>
-                Event Board
-            </div>
-
-            <div class='d-flex align-items-center gap-2 ms-auto'>
-                <GroupSelectDropdown
-                    v-model='channel'
-                    class='event-board-select'
-                    :active='true'
-                    @channels='onChannels'
-                />
-
-                <BoardSelectDropdown
-                    v-if='channel !== undefined'
-                    ref='boardSelect'
-                    v-model='board'
-                    class='event-board-select'
-                    :channel='channel'
-                    @boards='onBoards'
-                    @error='error = $event'
-                    @update:model-value='onBoardChange'
-                />
-
-                <TablerDropdown
-                    v-if='selectedBoard'
-                    :width='170'
-                >
-                    <TablerIconButton title='Board Options'>
-                        <IconDotsVertical
-                            :size='24'
-                            stroke='1'
-                        />
-                    </TablerIconButton>
-
-                    <template #dropdown>
-                        <div
-                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
-                            @click='editBoard = selectedBoard'
-                        >
-                            <IconPencil
-                                :size='20'
-                                stroke='1'
-                            />
-                            <span class='mx-2'>Edit Board</span>
-                        </div>
-                        <div
-                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
-                            @click='addBoard = true'
-                        >
-                            <IconPlus
-                                :size='20'
-                                stroke='1'
-                            />
-                            <span class='mx-2'>New Board</span>
-                        </div>
-                        <TablerDelete
-                            v-if='boards.length > 1'
-                            class='cloudtak-hover event-board-menu-delete'
-                            displaytype='menu'
-                            label='Delete Board'
-                            title='Delete Board'
-                            @delete='deleteBoard(selectedBoard)'
-                        />
-                    </template>
-                </TablerDropdown>
-
-                <button
-                    class='btn btn-primary flex-shrink-0'
-                    :disabled='!nominatedColumn || loading'
-                    @click='nominate = true'
-                >
-                    <IconPlus
-                        :size='20'
-                        stroke='2'
-                        class='me-1'
-                    />Nominate
-                </button>
-
-                <TablerIconButton
-                    title='Refresh Board'
-                    @click='refresh'
-                >
-                    <IconRefresh
-                        :size='24'
+                <TablerIconButton title='Board Options'>
+                    <IconDotsVertical
+                        :size='32'
                         stroke='1'
                     />
                 </TablerIconButton>
 
-                <div
-                    class='btn-group flex-shrink-0'
-                    role='group'
-                    aria-label='View Mode'
+                <template #dropdown>
+                    <div
+                        class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
+                        @click='editBoard = selectedBoard'
+                    >
+                        <IconPencil
+                            :size='20'
+                            stroke='1'
+                        />
+                        <span class='mx-2'>Edit Board</span>
+                    </div>
+                    <div
+                        class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
+                        @click='addBoard = true'
+                    >
+                        <IconPlus
+                            :size='20'
+                            stroke='1'
+                        />
+                        <span class='mx-2'>New Board</span>
+                    </div>
+                    <TablerDelete
+                        v-if='boards.length > 1'
+                        class='cloudtak-hover event-board-menu-delete'
+                        displaytype='menu'
+                        label='Delete Board'
+                        title='Delete Board'
+                        @delete='deleteBoard(selectedBoard)'
+                    />
+                </template>
+            </TablerDropdown>
+
+            <button
+                class='btn btn-primary flex-shrink-0'
+                :disabled='!nominatedColumn || loading'
+                @click='nominate = true'
+            >
+                <IconPlus
+                    :size='20'
+                    stroke='2'
+                    class='me-1'
+                />Nominate
+            </button>
+
+            <TablerIconButton
+                title='Refresh Board'
+                @click='refresh'
+            >
+                <IconRefresh
+                    :size='24'
+                    stroke='1'
+                />
+            </TablerIconButton>
+
+            <div
+                class='btn-group flex-shrink-0'
+                role='group'
+                aria-label='View Mode'
+            >
+                <button
+                    type='button'
+                    class='btn btn-icon'
+                    :class='mode === "board" ? "btn-secondary" : "btn-outline-secondary"'
+                    title='Board View'
+                    @click='setMode("board")'
                 >
-                    <button
-                        type='button'
-                        class='btn btn-icon'
-                        :class='mode === "board" ? "btn-secondary" : "btn-outline-secondary"'
-                        title='Board View'
-                        @click='setMode("board")'
-                    >
-                        <IconLayoutKanban
-                            :size='20'
-                            stroke='1'
-                        />
-                    </button>
-                    <button
-                        type='button'
-                        class='btn btn-icon'
-                        :class='mode === "list" ? "btn-secondary" : "btn-outline-secondary"'
-                        title='List View'
-                        @click='setMode("list")'
-                    >
-                        <IconList
-                            :size='20'
-                            stroke='1'
-                        />
-                    </button>
-                </div>
+                    <IconLayoutKanban
+                        :size='20'
+                        stroke='1'
+                    />
+                </button>
+                <button
+                    type='button'
+                    class='btn btn-icon'
+                    :class='mode === "list" ? "btn-secondary" : "btn-outline-secondary"'
+                    title='List View'
+                    @click='setMode("list")'
+                >
+                    <IconList
+                        :size='20'
+                        stroke='1'
+                    />
+                </button>
             </div>
-        </div>
+        </NavHeader>
 
         <div class='flex-grow-1 overflow-hidden'>
             <div
@@ -212,12 +200,12 @@
  * switcher in the header.
  */
 
-import { ref, computed, reactive, watch, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import Config from '../../base/config.ts';
 import { server } from '../../std.ts';
 import type { CoreEvent, CoreEventBoard, CoreEventBoardEvent } from '../../types.ts';
 import type { BoardColumn } from './types.ts';
+import NavHeader from '../util/NavHeader.vue';
 import GroupSelectDropdown from '../CloudTAK/util/GroupSelectDropdown.vue';
 import type { GroupSelectChannel } from '../CloudTAK/util/GroupSelectDropdown.vue';
 import BoardSelectDropdown from '../CloudTAK/util/BoardSelectDropdown.vue';
@@ -264,21 +252,6 @@ const addBoard = ref(false);
 const editBoard = ref<CoreEventBoard | undefined>();
 const viewEvent = ref<string | undefined>();
 
-const brandStore = reactive<{
-    login: {
-        logo?: string;
-    } | undefined;
-}>({
-    login: undefined,
-});
-
-const headerLogo = computed(() => {
-    if (brandStore.login && brandStore.login.logo) {
-        return brandStore.login.logo;
-    }
-    return '/CloudTAKLogo.svg';
-});
-
 const selectedBoard = computed<CoreEventBoard | undefined>(() => {
     return boards.value.find((b) => b.id === board.value);
 });
@@ -295,21 +268,6 @@ const placedEvents = computed<Set<string>>(() => {
 
 const nominatedColumn = computed<BoardColumn | undefined>(() => {
     return columns.value.find((column) => column.type === 'nominated');
-});
-
-onMounted(async () => {
-    try {
-        const config = await Config.list([
-            'login::logo',
-        ]);
-
-        brandStore.login = {
-            logo: config['login::logo'],
-        };
-    } catch (err) {
-        // Non-fatal - fall through to the default logo so the board still loads
-        console.error('Failed to load login logo', err);
-    }
 });
 
 /**
@@ -534,11 +492,6 @@ async function closeEvent(): Promise<void> {
 </script>
 
 <style>
-.event-board .cloudtak-logo {
-    height: 32px;
-    width: 32px;
-}
-
 /* Both header selectors size their dropdown panel to their own width - wide
    enough that neither panel spills under its neighbour */
 .event-board .event-board-select {

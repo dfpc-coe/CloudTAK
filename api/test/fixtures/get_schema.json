@@ -109,6 +109,11 @@
         "query": false,
         "res": true
     },
+    "GET /config/webhooks": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid/asset": {
         "body": false,
         "query": false,
@@ -752,16 +757,6 @@
     "GET /layer/:layerid": {
         "body": false,
         "query": true,
-        "res": true
-    },
-    "GET /template": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /template": {
-        "body": true,
-        "query": false,
         "res": true
     },
     "GET /ldap/channel": {
@@ -1424,6 +1419,11 @@
         "query": true,
         "res": true
     },
+    "POST /retention": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /server/repeater": {
         "body": false,
         "query": false,
@@ -1431,11 +1431,6 @@
     },
     "DELETE /server/repeater/:uid": {
         "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /retention": {
-        "body": true,
         "query": false,
         "res": true
     },

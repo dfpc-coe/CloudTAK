@@ -70,7 +70,7 @@
                                     <div class='d-flex flex-wrap align-items-center gap-2'>
                                         <span
                                             class='subheader'
-                                            v-text='layer.parent_name || "Template Layer"'
+                                            v-text='layer.parent_name || "Admin Layer"'
                                         />
                                         <TablerBadge
                                             v-if='!layer.has_stack'

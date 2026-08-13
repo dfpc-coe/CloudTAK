@@ -46,7 +46,7 @@
     <IconLine
         v-else-if='feature.geometry && feature.geometry.type === "LineString"'
         :size='props.size'
-        :color='feature.properties.stroke || "currentColor"'
+        :color='(feature.properties && feature.properties.stroke) || "currentColor"'
         stroke='1'
     />
     <IconCone
@@ -58,7 +58,7 @@
     <IconPolygon
         v-else-if='feature.geometry && feature.geometry.type === "Polygon"'
         :size='props.size'
-        :color='feature.properties.fill || "currentColor"'
+        :color='(feature.properties && feature.properties.fill) || "currentColor"'
         stroke='1'
     />
     <ContactPuck

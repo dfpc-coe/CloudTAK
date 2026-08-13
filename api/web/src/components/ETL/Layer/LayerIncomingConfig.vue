@@ -64,58 +64,9 @@
                         v-if='cronEnabled'
                         class='col-12 border rounded px-2 py-2'
                     >
-                        <TablerInput
+                        <ScheduleInput
                             v-model='incoming.cron'
-                            label='Cron Expression'
                             :disabled='disabled'
-                            placeholder='Cron Expression'
-                        >
-                            <TablerDropdown v-if='!disabled'>
-                                <template #default>
-                                    <TablerIconButton
-                                        title='Samples'
-                                    >
-                                        <IconSettings
-                                            :size='16'
-                                            stroke='1'
-                                        />
-                                    </TablerIconButton>
-                                </template>
-                                <template #dropdown>
-                                    <ul
-                                        class='px-1 py-1'
-                                    >
-                                        <li
-                                            class='py-1 px-1 cursor-pointer cloudtak-hover'
-                                            @click.stop='incoming.cron = "rate(1 minute)"'
-                                        >
-                                            rate(1 minute)
-                                        </li>
-                                        <li
-                                            class='py-1 px-1 cursor-pointer cloudtak-hover'
-                                            @click.stop='incoming.cron = "rate(5 minutes)"'
-                                        >
-                                            rate(5 minutes)
-                                        </li>
-                                        <li
-                                            class='py-1 px-1 cursor-pointer cloudtak-hover'
-                                            @click.stop='incoming.cron = "cron(15 10 * * ? *)"'
-                                        >
-                                            cron(15 10 * * ? *)
-                                        </li>
-                                        <li
-                                            class='py-1 px-1 cursor-pointer cloudtak-hover'
-                                            @click.stop='incoming.cron = "cron(0/5 8-17 ? * MON-FRI *)"'
-                                        >
-                                            cron(0/5 8-17 ? * MON-FRI *)
-                                        </li>
-                                    </ul>
-                                </template>
-                            </TablerDropdown>
-                        </TablerInput>
-                        <label
-                            v-if='incoming.cron'
-                            v-text='cronstr(incoming.cron)'
                         />
                     </div>
                 </div>
@@ -143,7 +94,7 @@
                     >
                         <label>Webhook URL</label>
                         <CopyField
-                            :model-value='props.layer.uuid'
+                            :model-value='webhookUrl'
                         />
                     </div>
                 </div>
@@ -191,17 +142,16 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { server } from '../../../std.ts';
 import type { ETLLayerIncoming } from '../../../types.ts';
-import cronstrue from 'cronstrue';
+import { validateSchedule } from '../../../utils/schedule.ts';
 import DataSelect from '../../util/DataSelect.vue';
+import ScheduleInput from '../../util/ScheduleInput.vue';
 import CopyField from '../../CloudTAK/util/CopyField.vue';
 import {
     TablerIconButton,
-    TablerDropdown,
-    TablerInput,
     TablerToggle,
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -210,7 +160,6 @@ import {
     IconPlayerPlay,
     IconWebhook,
     IconPencil,
-    IconSettings,
     IconDatabase,
 } from '@tabler/icons-vue'
 
@@ -242,17 +191,29 @@ const loading = ref({
 
 const incoming = ref<ETLLayerIncoming>(props.layer.incoming);
 
-watch(incoming, () => {
-    if (cronEnabled.value) {
-        incoming.value.cron = '0/15 * * * ? *';
-    } else {
+const webhookBase = ref<string | undefined>();
+
+const webhookUrl = computed(() => {
+    // Until the base resolves, fall back to the Layer UUID so the field is never empty
+    if (!webhookBase.value) return props.layer.uuid;
+    return `${webhookBase.value.replace(/\/$/, '')}/${props.layer.uuid}`;
+});
+
+watch(cronEnabled, () => {
+    if (cronEnabled.value && !incoming.value.cron) {
+        incoming.value.cron = 'rate(5 minutes)';
+    } else if (!cronEnabled.value) {
         incoming.value.cron = null;
     }
 });
 
-onMounted(() => {
+onMounted(async () => {
     reload();
     loading.value.init = false;
+
+    const { data, error } = await server.GET('/api/config/webhooks');
+    if (error) throw new Error(String(error));
+    webhookBase.value = data.url;
 })
 
 function reload() {
@@ -281,24 +242,17 @@ async function invoke() {
 }
 
 
-function cronstr(cron?: string) {
-    if (!cron) return;
-
-    if (cron.includes('cron(')) {
-        return cronstrue.toString(cron.replace('cron(', '').replace(')', ''));
-    } else {
-        const rate = cron.replace('rate(', '').replace(')', '');
-        return `Once every ${rate}`;
-    }
-}
-
 async function saveIncoming() {
+    if (!cronEnabled.value) {
+        incoming.value.cron = null;
+    } else if (validateSchedule(incoming.value.cron)) {
+        // The ScheduleInput displays the validation error inline
+        return;
+    }
+
     loading.value.save = true;
 
     try {
-        if (!cronEnabled.value) {
-            incoming.value.cron = null;
-        }
 
         const res = await server.PATCH(`/api/connection/{:connectionid}/layer/{:layerid}/incoming`, {
             params: {

@@ -322,7 +322,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 readonly: false,
                 username: null,
                 name: 'Admin Connection',
-                description: 'Server-level admin connection. Layers here are available to all connections as templates.',
+                description: 'Server-level admin connection. Layers here are managed by server administrators.',
                 enabled: config.server.connection,
             });
         } catch (err) {
