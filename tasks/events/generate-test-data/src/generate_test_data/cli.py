@@ -13,9 +13,9 @@ DEFAULT_BOUNDARY_PATH = os.path.normpath(os.path.join(
 # Colorado-wide fallback when --region is omitted
 _COLORADO_BBOX = [-109.06, -102.05, 37.00, 41.00]
 
-# outputs land under test/fixtures/<subfolder>/
+# outputs land under tasks/events/test/fixtures/<subfolder>/
 DEFAULT_FIXTURES_DIR = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "..", "fixtures")
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "test", "fixtures")
 )
 
 
@@ -26,6 +26,80 @@ def random_point_features(num_points, bbox):
         point = ogr.Geometry(ogr.wkbPoint)
         point.AddPoint(x, y)
         yield (point, {"id": i})
+
+
+def random_polygon_features(num_polygons, bbox, size_fraction=0.02):
+    # each polygon is a small rectangle around a random center
+    dx = (bbox[1] - bbox[0]) * size_fraction
+    dy = (bbox[3] - bbox[2]) * size_fraction
+    for i in range(1, num_polygons + 1):
+        cx = random.uniform(bbox[0] + dx, bbox[1] - dx)
+        cy = random.uniform(bbox[2] + dy, bbox[3] - dy)
+        w = random.uniform(dx * 0.3, dx)
+        h = random.uniform(dy * 0.3, dy)
+        ring = ogr.Geometry(ogr.wkbLinearRing)
+        ring.AddPoint(cx - w, cy - h)
+        ring.AddPoint(cx + w, cy - h)
+        ring.AddPoint(cx + w, cy + h)
+        ring.AddPoint(cx - w, cy + h)
+        ring.AddPoint(cx - w, cy - h)
+        poly = ogr.Geometry(ogr.wkbPolygon)
+        poly.AddGeometry(ring)
+        yield (poly, {"id": i})
+
+
+def _make_point_generator(count, bbox):
+    return lambda: random_point_features(count, bbox)
+
+
+def _make_polygon_generator(count, bbox):
+    return lambda: random_polygon_features(count, bbox)
+
+
+def random_linestring_features(num_lines, bbox, num_vertices=4, step_fraction=0.03):
+    # each vertex is a short random walk from the previous one
+    extent_x = (bbox[1] - bbox[0]) * step_fraction
+    extent_y = (bbox[3] - bbox[2]) * step_fraction
+    for i in range(1, num_lines + 1):
+        line = ogr.Geometry(ogr.wkbLineString)
+        x = random.uniform(bbox[0] + extent_x, bbox[1] - extent_x)
+        y = random.uniform(bbox[2] + extent_y, bbox[3] - extent_y)
+        line.AddPoint(x, y)
+        for _ in range(num_vertices - 1):
+            x = max(bbox[0], min(bbox[1], x + random.uniform(-extent_x, extent_x)))
+            y = max(bbox[2], min(bbox[3], y + random.uniform(-extent_y, extent_y)))
+            line.AddPoint(x, y)
+        yield (line, {"id": i})
+
+
+def random_linestring_features_in_polygon(num_lines, polygon, num_vertices=4, step_fraction=0.03):
+    envelope = polygon.GetEnvelope()
+    min_x, max_x = envelope[0], envelope[1]
+    min_y, max_y = envelope[2], envelope[3]
+    extent_x = (max_x - min_x) * step_fraction
+    extent_y = (max_y - min_y) * step_fraction
+
+    generated = 0
+    while generated < num_lines:
+        start_x = random.uniform(min_x + extent_x, max_x - extent_x)
+        start_y = random.uniform(min_y + extent_y, max_y - extent_y)
+        start = ogr.Geometry(ogr.wkbPoint)
+        start.AddPoint(start_x, start_y)
+        if not start.Within(polygon):
+            continue
+        line = ogr.Geometry(ogr.wkbLineString)
+        x, y = start_x, start_y
+        line.AddPoint(x, y)
+        for _ in range(num_vertices - 1):
+            x = max(min_x, min(max_x, x + random.uniform(-extent_x, extent_x)))
+            y = max(min_y, min(max_y, y + random.uniform(-extent_y, extent_y)))
+            line.AddPoint(x, y)
+        yield (line, {"id": generated + 1})
+        generated += 1
+
+
+def _make_linestring_generator(count, bbox):
+    return lambda: random_linestring_features(count, bbox)
 
 
 def random_point_features_in_polygon(num_points, polygon):
@@ -43,6 +117,35 @@ def random_point_features_in_polygon(num_points, polygon):
         if point.Within(polygon):
             yield (point, {"id": generated + 1})
             generated += 1
+
+
+def random_polygon_features_in_polygon(num_polygons, polygon, size_fraction=0.02):
+    envelope = polygon.GetEnvelope()
+    min_x, max_x = envelope[0], envelope[1]
+    min_y, max_y = envelope[2], envelope[3]
+    dx = (max_x - min_x) * size_fraction
+    dy = (max_y - min_y) * size_fraction
+
+    generated = 0
+    while generated < num_polygons:
+        cx = random.uniform(min_x + dx, max_x - dx)
+        cy = random.uniform(min_y + dy, max_y - dy)
+        center = ogr.Geometry(ogr.wkbPoint)
+        center.AddPoint(cx, cy)
+        if not center.Within(polygon):
+            continue
+        w = random.uniform(dx * 0.3, dx)
+        h = random.uniform(dy * 0.3, dy)
+        ring = ogr.Geometry(ogr.wkbLinearRing)
+        ring.AddPoint(cx - w, cy - h)
+        ring.AddPoint(cx + w, cy - h)
+        ring.AddPoint(cx + w, cy + h)
+        ring.AddPoint(cx - w, cy + h)
+        ring.AddPoint(cx - w, cy - h)
+        poly = ogr.Geometry(ogr.wkbPolygon)
+        poly.AddGeometry(ring)
+        yield (poly, {"id": generated + 1})
+        generated += 1
 
 
 def load_polygon_by_name(boundary_path, name):
@@ -120,17 +223,32 @@ def main():
         spatial_path = out_path
         compress = args.compress
 
+    _GEOM_BBOX_GENERATORS = {
+        "POINT": _make_point_generator,
+        "POLYGON": _make_polygon_generator,
+        "LINESTRING": _make_linestring_generator,
+        "LINE": _make_linestring_generator,
+    }
+    geom_key = args.geometry_type.upper()
+    if geom_key not in _GEOM_BBOX_GENERATORS:
+        parser.error(f"--geom_type must be one of: {', '.join(_GEOM_BBOX_GENERATORS)}")
+
     if args.region is None:
-        feature_generator = lambda: random_point_features(args.count, _COLORADO_BBOX)
+        feature_generator = _GEOM_BBOX_GENERATORS[geom_key](args.count, _COLORADO_BBOX)
     elif len(args.region) == 4:
         try:
             bbox = [float(v) for v in args.region]
         except ValueError:
             parser.error("--region with 4 values must be numeric: min_lon max_lon min_lat max_lat")
-        feature_generator = lambda: random_point_features(args.count, bbox)
+        feature_generator = _GEOM_BBOX_GENERATORS[geom_key](args.count, bbox)
     elif len(args.region) == 1:
-        polygon = load_polygon_by_name(DEFAULT_BOUNDARY_PATH, args.region[0])
-        feature_generator = lambda: random_point_features_in_polygon(args.count, polygon)
+        boundary_polygon = load_polygon_by_name(DEFAULT_BOUNDARY_PATH, args.region[0])
+        if geom_key == "POLYGON":
+            feature_generator = lambda: random_polygon_features_in_polygon(args.count, boundary_polygon)
+        elif geom_key in ("LINESTRING", "LINE"):
+            feature_generator = lambda: random_linestring_features_in_polygon(args.count, boundary_polygon)
+        else:
+            feature_generator = lambda: random_point_features_in_polygon(args.count, boundary_polygon)
     else:
         parser.error("--region expects either a single name or 4 bbox coordinates")
 

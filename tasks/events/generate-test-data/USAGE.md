@@ -11,7 +11,7 @@ Run once from the repo root. Activate the venv in every new shell session.
 
 ```bash
 source .venv/bin/activate
-pip install -e tasks/events/test/generate-test-data
+pip install -e tasks/events/generate-test-data
 ```
 
 If you recreate the venv or move the package, re-run the `pip install` line above.
@@ -58,6 +58,29 @@ generate-test-data \
   --region -105.15 -104.75 39.60 39.85 \
   --compress
 ```
+
+## Generate polygons or lines
+
+Use `--geom_type` to change the geometry type:
+
+```bash
+generate-test-data --out shapefile/larimer_polygons.zip --geom_type POLYGON --region Larimer
+generate-test-data --out shapefile/larimer_lines.zip   --geom_type LINESTRING --region Larimer
+```
+
+## All options
+
+| Flag | Required | Default | Description |
+|---|---|---|---|
+| `--out` | **yes** | — | Output path relative to `fixtures/`. Use `.zip` or `.kmz` to auto-compress. |
+| `--geom_type` | no | `POINT` | Geometry type: `POINT`, `LINESTRING` (or `LINE`), `POLYGON` |
+| `--driver` | no | auto | GDAL driver: `ESRI Shapefile`, `GeoJSON`, `GPKG`, `KML` |
+| `--layer` | no | `layer` | Layer name written into the output file |
+| `--epsg` | no | `4326` | Output spatial reference (EPSG code) |
+| `--count` | no | `100` | Number of features to generate |
+| `--region` | no | all of Colorado | Named boundary (e.g. `Denver`) **or** bbox as `min_lon max_lon min_lat max_lat` |
+| `--compress` | no | false | Compress output: `.zip` for shapefiles, `.kmz` for KML. Implied when `--out` ends in `.zip`/`.kmz`. |
+
 
 ## All options
 
