@@ -16,6 +16,8 @@
 
 ### Pending Release
 
+### v13.68.0 - 2026-08-13
+
 - :tada: Add shared `ScheduleInput` component with Rate/Cron modes, presets, live human-readable descriptions & inline validation - used by Layer Creation & Layer Incoming Config in place of free-text cron inputs
 - :rocket: Merge the Layer Creation capabilities form into the `LayerStaticCapabilities` component behind a `disabled` prop - Layer Creation & the Admin Integrations version view now share one component
 - :bug: Layer Incoming Config no longer seeds a bare cron expression (`0/15 * * * ? *`) that the API's schedule validation rejects - toggling Scheduled Runs on now seeds `rate(5 minutes)`
