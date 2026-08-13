@@ -7,8 +7,8 @@
 
             <div class='ms-auto btn-list'>
                 <TablerIconButton
-                    title='Create Layer Template'
-                    @click='router.push("/admin/layer/new")'
+                    title='Create Admin Layer'
+                    @click='navTo("/connection/0/layer/new", $event)'
                 >
                     <IconPlus
                         :size='32'
@@ -44,7 +44,7 @@
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
             <div class='row g-0 py-2'>
-                <div class='col-md-6 px-2'>
+                <div class='col-md-9 px-2'>
                     <TablerInput
                         v-model='paging.filter'
                         icon='search'
@@ -55,13 +55,6 @@
                     <TaskSelect
                         v-model='paging.task'
                         :tasks='list.tasks'
-                    />
-                </div>
-                <div class='col-md-3 px-2'>
-                    <TablerEnum
-                        v-model='paging.template'
-                        default='All Types'
-                        :options='["All Types", "Connection", "Template"]'
                     />
                 </div>
             </div>
@@ -109,7 +102,7 @@
                                             <div class='mx-2 row'>
                                                 <div
                                                     class='subheader'
-                                                    v-text='layer.parent ? layer.parent.name : "Template Layer"'
+                                                    v-text='layer.parent ? layer.parent.name : "Admin Layer"'
                                                 />
                                                 <div v-text='layer[h.name]' />
                                             </div>
@@ -188,7 +181,6 @@ import TaskSelect from './TaskSelect.vue';
 import {
     TablerNone,
     TablerInput,
-    TablerEnum,
     TablerLoading,
     TablerAlert,
     TablerIconButton,
@@ -213,7 +205,6 @@ const header = ref<Array<Header>>([]);
 const paging = ref({
     filter: '',
     task: 'All Tasks',
-    template: 'All Types',
     sort: 'name',
     order: 'asc',
     limit: 100,
@@ -321,12 +312,6 @@ async function fetchList() {
 
         if (paging.value.task !== 'All Tasks') {
             query.task = paging.value.task;
-        }
-
-        if (paging.value.template === 'Connection') {
-            query.template = false;
-        } else if (paging.value.template === 'Template') {
-            query.template = true;
         }
 
         const res = await server.GET('/api/layer', {

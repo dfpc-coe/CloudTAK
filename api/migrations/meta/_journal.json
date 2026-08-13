@@ -1366,6 +1366,13 @@
       "when": 1786426527015,
       "tag": "0195_layer_permissions",
       "breakpoints": true
+    },
+    {
+      "idx": 196,
+      "version": "7",
+      "when": 1786634132181,
+      "tag": "0196_layer_template_removal",
+      "breakpoints": true
     }
   ]
 }

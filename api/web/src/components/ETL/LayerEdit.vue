@@ -1,5 +1,10 @@
 <template>
-    <div style='overflow: auto;'>
+    <div
+        class='h-full w-full cloudtak-page'
+        style='overflow: auto;'
+    >
+        <NavHeader title='Connections' />
+
         <div class='page-wrapper'>
             <div class='page-header d-print-none'>
                 <div class='container-xl'>
@@ -85,42 +90,35 @@
                                         />
                                     </div>
                                     <template v-if='!route.params.layerid'>
-                                        <div class='col-12'>
-                                            <TablerPillGroup
-                                                v-model='type'
-                                                :options='[
-                                                    { value: "template", label: "Templated Creation" },
-                                                    { value: "manual", label: "Manual Creation" }
-                                                ]'
-                                                :rounded='false'
-                                                size='default'
-                                                padding=''
-                                                name='creation-type'
-                                            >
-                                                <template #option='{ option }'>
-                                                    <IconTemplate
-                                                        v-if='option.value === "template"'
-                                                        class='me-2'
-                                                        :size='20'
-                                                        stroke='1'
-                                                    />
-                                                    <IconPencil
-                                                        v-if='option.value === "manual"'
-                                                        class='me-2'
-                                                        :size='20'
-                                                        stroke='1'
-                                                    />
-                                                    {{ option.label }}
-                                                </template>
-                                            </TablerPillGroup>
-                                        </div>
+                                        <LayerTaskSelect v-model='layer.task' />
 
-                                        <template v-if='type === "template"'>
-                                            <LayerTemplateSelect v-model='template' />
-                                        </template>
-                                        <template v-else-if='type === "manual"'>
-                                            <LayerTaskSelect v-model='layer.task' />
-                                        </template>
+                                        <div
+                                            v-if='loading.capabilities'
+                                            class='col-12'
+                                        >
+                                            <TablerLoading
+                                                :inline='true'
+                                                desc='Loading Task Capabilities'
+                                            />
+                                        </div>
+                                        <div
+                                            v-else-if='capabilities'
+                                            class='col-12'
+                                        >
+                                            <LayerStaticCapabilities
+                                                v-model='settings'
+                                                :capabilities='capabilities'
+                                                :disabled='false'
+                                            />
+                                        </div>
+                                        <div
+                                            v-else-if='layer.task'
+                                            class='col-12'
+                                        >
+                                            <div class='small text-secondary'>
+                                                This task version does not publish a Capabilities document - deployment and invocation settings can be configured after the Layer is created.
+                                            </div>
+                                        </div>
                                     </template>
                                     <div class='col-lg-12 d-flex'>
                                         <div v-if='route.params.layerid'>
@@ -155,24 +153,23 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { server } from '../../std.ts';
-import type { ETLLayer } from '../../types.ts';
+import { validateSchedule } from '../../utils/schedule.ts';
+import type { CapabilitySettings } from '../../base/capabilities.ts';
+import { defaultCapabilitySettings } from '../../base/capabilities.ts';
+import type { ETLLayer, ETLTaskCapabilities } from '../../types.ts';
 import PageFooter from '../PageFooter.vue';
-import LayerTemplateSelect from '../util/LayerTemplateSelect.vue';
+import NavHeader from '../util/NavHeader.vue';
 import LayerTaskSelect from '../util/LayerTaskSelect.vue';
+import LayerStaticCapabilities from './Layer/LayerStaticCapabilities.vue';
 import {
     TablerBreadCrumb,
     TablerDelete,
     TablerInput,
-    TablerLoading,
-    TablerPillGroup
+    TablerLoading
 } from '@tak-ps/vue-tabler';
-import {
-    IconTemplate,
-    IconPencil,
-} from '@tabler/icons-vue';
 
 interface LayerForm {
     name: string;
@@ -187,18 +184,21 @@ interface LayerForm {
 const route = useRoute();
 const router = useRouter();
 
-const type = ref('template');
 const loading = ref({
-    layer: true
+    layer: true,
+    capabilities: false
 });
 
 const errors = ref<Record<string, string>>({
     name: '',
     task: '',
     description: '',
+    cron: '',
 })
 
-const template = ref<{ id?: number; [key: string]: unknown } | undefined>();
+const capabilities = ref<ETLTaskCapabilities | null>(null);
+
+const settings = ref<CapabilitySettings>(defaultCapabilitySettings());
 
 const layer = ref<LayerForm>({
     name: '',
@@ -208,6 +208,41 @@ const layer = ref<LayerForm>({
     logging: false,
     protected: false,
 })
+
+watch(() => layer.value.task, async (task) => {
+    if (route.params.layerid) return;
+
+    capabilities.value = null;
+    settings.value = defaultCapabilitySettings();
+
+    if (!task) return;
+
+    const match = task.match(/^(.+)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
+    if (!match) return;
+
+    loading.value.capabilities = true;
+
+    try {
+        const res = await server.GET('/api/task/raw/{:task}/version/{:version}', {
+            params: {
+                path: {
+                    ':task': match[1],
+                    ':version': match[2]
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        // Ignore the response if the user has since selected a different task or version
+        if (layer.value.task !== task) return;
+
+        // LayerStaticCapabilities seeds the settings from the document's defaults
+        capabilities.value = res.data.capabilities;
+    } finally {
+        loading.value.capabilities = false;
+    }
+});
 
 onMounted(async () => {
     if (route.params.layerid) {
@@ -253,11 +288,19 @@ async function deleteLayer() {
 async function create() {
     const fields = ['name', 'description'];
 
-    if (type.value === "manual") fields.push('task');
+    if (!route.params.layerid) fields.push('task');
 
     for (const field of fields) {
         errors.value[field] = !layer.value[field] ? 'Cannot be empty' : '';
     }
+
+    errors.value.cron = (
+        !route.params.layerid
+        && capabilities.value
+        && settings.value.incoming
+        && settings.value.schedule
+    ) ? (validateSchedule(settings.value.cron) || '') : '';
+
     for (const e in errors.value) if (errors.value[e]) return;
 
     loading.value.layer = true;
@@ -285,11 +328,25 @@ async function create() {
             if (res.error) throw new Error(res.error.message);
             savedLayer = res.data as ETLLayer;
         } else {
-            let body = JSON.parse(JSON.stringify(layer.value));
-            if (type.value === "template" && template.value) {
-                // These should be overwritten
-                delete body.task;
-                body = { ...template.value, ...body };
+            const body = JSON.parse(JSON.stringify(layer.value));
+            body.memory = Number(settings.value.memory);
+            body.timeout = Number(settings.value.timeout);
+
+            if (capabilities.value) {
+                const granted = Object.keys(settings.value.permissions)
+                    .filter((resource) => settings.value.permissions[resource]);
+                if (granted.length) body.permissions = granted;
+
+                if (settings.value.incoming && capabilities.value.invocations.incoming) {
+                    body.incoming = {
+                        cron: settings.value.schedule ? settings.value.cron : null,
+                        webhooks: settings.value.webhooks
+                    };
+                }
+
+                if (settings.value.outgoing && capabilities.value.invocations.outgoing) {
+                    body.outgoing = {};
+                }
             }
 
             const res = await server.POST('/api/connection/{:connectionid}/layer', {

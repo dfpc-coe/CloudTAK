@@ -287,7 +287,6 @@ export type AdminLayerUpdate = {
     latest_version: string | null;
     has_update: boolean;
     has_stack: boolean;
-    template: boolean;
     connection: number | null;
     parent_name: string | null;
 }

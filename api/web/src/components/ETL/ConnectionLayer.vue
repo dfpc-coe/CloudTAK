@@ -1,5 +1,10 @@
 <template>
-    <div style='overflow: auto;'>
+    <div
+        class='h-full w-full cloudtak-page'
+        style='overflow: auto;'
+    >
+        <NavHeader title='Connections' />
+
         <div class='page-wrapper'>
             <div class='page-header d-print-none'>
                 <div class='container-xl'>
@@ -402,6 +407,7 @@ import type { ETLLayer, ETLLayerTask, ETLLayerTaskCapabilities } from '../../typ
 import { server, downloadUrl } from '../../std.ts';
 import { useRoute, useRouter } from 'vue-router';
 import PageFooter from '../PageFooter.vue';
+import NavHeader from '../util/NavHeader.vue';
 import LayerStatus from './Layer/utils/StatusDot.vue';
 import InitialAuthor from '../util/InitialAuthor.vue';
 import timeDiff from '../../timediff.ts';

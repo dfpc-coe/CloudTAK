@@ -1,28 +1,16 @@
 <template>
     <div class='h-full w-full cloudtak-page d-flex flex-column video-wall'>
-        <div class='d-flex align-items-center px-3 py-2 border-bottom video-wall-header'>
-            <img
-                class='cloudtak-logo me-2'
-                :src='headerLogo'
-                alt='CloudTAK Logo'
-                draggable='false'
+        <NavHeader title='Video Wall'>
+            <TablerIconButton
+                title='Refresh Videos'
+                @click='refresh'
             >
-            <div class='fs-3 fw-bold user-select-none'>
-                Video Wall
-            </div>
-
-            <div class='btn-list ms-auto'>
-                <TablerIconButton
-                    title='Refresh Videos'
-                    @click='refresh'
-                >
-                    <IconRefresh
-                        :size='24'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-            </div>
-        </div>
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+        </NavHeader>
 
         <div class='flex-grow-1 overflow-auto'>
             <div
@@ -115,13 +103,13 @@
  * the wall from the Map View and placement is persisted per-user.
  */
 
-import { ref, computed, reactive, onMounted, onUnmounted } from 'vue';
+import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { GridLayout, GridItem } from 'grid-layout-plus';
 import type { Layout } from 'grid-layout-plus';
-import Config from '../../base/config.ts';
 import { std, stdurl } from '../../std.ts';
 import { registerVideoWall } from '../../lib/video-wall.ts';
 import type { ProfileVideoList } from '../../types.ts';
+import NavHeader from '../util/NavHeader.vue';
 import VideoPlayer from '../util/VideoPlayer.vue';
 import {
     IconX,
@@ -137,23 +125,6 @@ import {
 
 const loading = ref(true);
 const error = ref<Error | undefined>();
-
-const brandStore = reactive<{
-    loaded: boolean;
-    login: {
-        logo?: string;
-    } | undefined;
-}>({
-    loaded: false,
-    login: undefined,
-});
-
-const headerLogo = computed(() => {
-    if (brandStore.login && brandStore.login.logo) {
-        return brandStore.login.logo;
-    }
-    return '/CloudTAKLogo.svg';
-});
 
 const layout = ref<Layout>([]);
 
@@ -172,21 +143,6 @@ onMounted(async () => {
     deregister = registerVideoWall(() => {
         refresh();
     });
-
-    try {
-        const config = await Config.list([
-            'login::logo',
-        ]);
-
-        brandStore.login = {
-            logo: config['login::logo'],
-        };
-    } catch (err) {
-        // Non-fatal - fall through to the default logo so the wall still loads
-        console.error('Failed to load login logo', err);
-    } finally {
-        brandStore.loaded = true;
-    }
 
     await listVideos();
 });
@@ -294,10 +250,6 @@ async function removeVideo(id: string): Promise<void> {
 </script>
 
 <style>
-.video-wall .cloudtak-logo {
-    height: 32px;
-    width: 32px;
-}
 
 .video-wall .cursor-move {
     cursor: move;

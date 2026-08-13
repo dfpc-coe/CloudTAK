@@ -754,16 +754,6 @@
         "query": true,
         "res": true
     },
-    "GET /template": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /template": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "GET /ldap/channel": {
         "body": false,
         "query": true,

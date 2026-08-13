@@ -552,7 +552,6 @@ export const Layer = pgTable('layers', {
     protected: boolean().notNull().default(false),
     description: text().notNull().default(''),
     priority: text().$type<Layer_Priority>().notNull().default(Layer_Priority.OFF),
-    template: boolean().notNull().default(false),
     connection: integer().references(() => Connection.id),
     logging: boolean().notNull().default(true),
     task: text().notNull(),

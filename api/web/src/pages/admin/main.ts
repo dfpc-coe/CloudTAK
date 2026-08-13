@@ -31,10 +31,6 @@ const router = VueRouter.createRouter({
                 name: 'admin-layer-updates',
                 component: () => import('../../components/Admin/AdminLayerUpdates.vue')
             },{
-                path: 'layer/new',
-                name: 'admin-layer-new',
-                component: () => import('../../components/Admin/AdminLayerTemplate.vue')
-            },{
                 path: 'video',
                 name: 'admin-videos',
                 component: () => import('../../components/Admin/AdminVideos.vue'),

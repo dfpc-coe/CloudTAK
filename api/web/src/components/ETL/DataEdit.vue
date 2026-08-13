@@ -1,5 +1,10 @@
 <template>
-    <div style='overflow: auto;'>
+    <div
+        class='h-full w-full cloudtak-page'
+        style='overflow: auto;'
+    >
+        <NavHeader title='Connections' />
+
         <div class='page-wrapper'>
             <div class='page-header d-print-none'>
                 <div class='container-xl'>
@@ -120,6 +125,7 @@ import { ref, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { server } from '../../std.ts';
 import PageFooter from '../PageFooter.vue';
+import NavHeader from '../util/NavHeader.vue';
 import {
     TablerBreadCrumb,
     TablerInput,

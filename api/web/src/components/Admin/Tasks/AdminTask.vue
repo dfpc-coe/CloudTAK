@@ -257,6 +257,7 @@
                                     <LayerStaticCapabilities
                                         v-else
                                         :capabilities='capabilities'
+                                        :disabled='true'
                                     />
                                 </td>
                             </tr>

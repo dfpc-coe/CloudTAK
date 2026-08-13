@@ -60,7 +60,6 @@ export default class LayerControl {
                 latest_version: latestVersion,
                 has_update: Boolean(latestVersion && latestVersion !== currentVersion),
                 has_stack: deployed.has(layer.id),
-                template: layer.template,
                 connection: layer.connection,
                 parent_name: layer.parent?.name || null,
             });

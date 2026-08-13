@@ -1,5 +1,10 @@
 <template>
-    <div style='overflow: auto;'>
+    <div
+        class='h-full w-full cloudtak-page'
+        style='overflow: auto;'
+    >
+        <NavHeader title='Admin' />
+
         <div class='page-body'>
             <div class='container-xl'>
                 <div class='row row-deck row-cards'>
@@ -432,6 +437,7 @@ import { useRoute, useRouter } from 'vue-router';
 import type { Profile } from '../types.ts';
 import { server } from '../std.ts';
 import PageFooter from './PageFooter.vue';
+import NavHeader from './util/NavHeader.vue';
 import {
     TablerAlert,
     TablerLoading,
