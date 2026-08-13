@@ -15,7 +15,7 @@
             <div
                 class='col-12 d-flex py-2 btn-list border-bottom'
                 :class='{
-                    "sticky-top cloudtak-bg": props.stickyControls
+                    "sticky-top cloudtak-header": props.stickyControls
                 }'
                 :style='props.stickyControls ? "z-index: 1;" : undefined'
             >

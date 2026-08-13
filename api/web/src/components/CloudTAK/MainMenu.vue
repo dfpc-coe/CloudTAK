@@ -176,10 +176,14 @@ onMounted(async () => {
    overflow: hidden;
 }
 
-/* Menu chrome (page headers, sticky controls, the footer) paints its own opaque
- * surface - it used to match because the sidebar itself was `cloudtak-bg`. Inside
- * the floating panel those fills are repainted with the panel surface so the whole
- * sidebar reads as one pane, while staying opaque enough for sticky headers. */
+/* Content surfaces inside the sidebar (`cloudtak-bg` blocks in the menu panes)
+ * paint their own fill - it used to match because the sidebar itself was
+ * `cloudtak-bg`. Inside the floating panel they are repainted with the panel
+ * surface so the whole sidebar reads as one pane.
+ *
+ * The chrome bands themselves - page headers, sticky controls, the footer - no
+ * longer need this: they use `.cloudtak-header`, which takes the panel surface
+ * globally. See style.scss. */
 .main-menu-surface :deep(.cloudtak-bg) {
    background-color: var(--cloudtak-panel-bg) !important;
 }

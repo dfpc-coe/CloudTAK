@@ -60,7 +60,7 @@
             class='d-flex flex-column h-100'
             style='min-height: 0;'
         >
-            <div class='col-12 border-bottom cloudtak-bg flex-shrink-0 d-flex align-items-center flex-nowrap gap-0 px-1 py-1'>
+            <div class='col-12 border-bottom cloudtak-header flex-shrink-0 d-flex align-items-center flex-nowrap gap-0 px-1 py-1'>
                 <div class='btn-list d-flex flex-nowrap align-items-center gap-0 mb-0'>
                     <TablerIconButton
                         v-if='hasMap'

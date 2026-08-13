@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class='card-header sticky-top cloudtak-bg'>
+        <div class='card-header sticky-top cloudtak-header'>
             <h3 class='card-title'>
                 Style Overrides
             </h3>

@@ -81,7 +81,7 @@
         :style='standalone ? "height: calc(100vh - 64px - var(--map-bottom-bar-size, 0px)); max-height: 100%;" : "min-height: 0"'
     >
         <div
-            class='col-12 cloudtak-bg flex-shrink-0'
+            class='col-12 cloudtak-header flex-shrink-0'
             :style='`z-index: ${zindex};`'
             style='
                 border-radius: 0px;

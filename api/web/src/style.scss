@@ -55,6 +55,11 @@ html[data-bs-theme='dark'] {
      * slide-down section headers */
     --cloudtak-hover-bg: color-mix(in srgb, var(--tblr-light) 12%, transparent);
     --cloudtak-hover-border: color-mix(in srgb, var(--tblr-light) 30%, transparent);
+
+    /* Selected state. Deliberately a touch stronger than --cloudtak-hover-bg so
+     * the current row still reads as selected while a neighbour is hovered. */
+    --cloudtak-active-bg: rgba(255, 255, 255, 0.14);
+    --cloudtak-active-color: #ffffff;
 }
 
 html[data-bs-theme='light'] {
@@ -66,6 +71,9 @@ html[data-bs-theme='light'] {
 
     --cloudtak-hover-bg: color-mix(in srgb, var(--tblr-body-color) 8%, transparent);
     --cloudtak-hover-border: color-mix(in srgb, var(--tblr-body-color) 18%, transparent);
+
+    --cloudtak-active-bg: rgba(15, 23, 42, 0.1);
+    --cloudtak-active-color: var(--tblr-body-color);
 }
 
 /* -------------------------------------------------------------------------
@@ -215,17 +223,53 @@ html[data-bs-theme='light'] .cloudtak-bg.text-white {
 }
 
 html[data-bs-theme='light'] .cloudtak-bg .text-white:not(.badge):not(.btn):not([class*='bg-']),
+html[data-bs-theme='light'] .cloudtak-header .text-white:not(.badge):not(.btn):not([class*='bg-']),
 html[data-bs-theme='light'] .cloudtak-accent .text-white:not(.badge):not(.btn):not([class*='bg-']) {
     color: var(--tblr-body-color) !important;
 }
 
 html[data-bs-theme='light'] .cloudtak-bg .text-white-50:not(.badge):not(.btn):not([class*='bg-']),
+html[data-bs-theme='light'] .cloudtak-header .text-white-50:not(.badge):not(.btn):not([class*='bg-']),
 html[data-bs-theme='light'] .cloudtak-accent .text-white-50:not(.badge):not(.btn):not([class*='bg-']) {
     color: var(--tblr-secondary-color) !important;
 }
 
 .bg-child {
     background-color: $cloudtak-child !important;
+}
+
+/* -------------------------------------------------------------------------
+ * Chrome bands
+ *
+ * The header (and footer) strips that frame a scrolling pane: menu page
+ * headers, sticky filter/selection controls, the sidebar footer, and the
+ * sticky card headers on the connection & admin pages.
+ *
+ * A band has to paint an opaque fill so content scrolls underneath it rather
+ * than showing through. Rather than a fixed color of its own, it takes the
+ * surrounding panel's surface, so the band reads as part of the pane instead
+ * of a separate tinted bar - which is what `.cloudtak-bg` (a fixed #283547
+ * blue-slate) made it look like.
+ *
+ * The fallbacks cover chrome rendered outside a `.cloudtak-panel` or
+ * `.cloudtak-page .card`, where --cloudtak-panel-bg is not defined.
+ *
+ * `!important` matches the other surface classes here, and is required to beat
+ * `.cloudtak-page .card > .card-header`, which is more specific.
+ * ------------------------------------------------------------------------- */
+
+html[data-bs-theme='dark'] .cloudtak-header {
+    background-color: var(--cloudtak-panel-bg, rgba(20, 20, 25, 0.96)) !important;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+html[data-bs-theme='light'] .cloudtak-header {
+    background-color: var(--cloudtak-panel-bg, rgba(255, 255, 255, 0.96)) !important;
+    color: var(--tblr-body-color);
+}
+
+html[data-bs-theme='light'] .cloudtak-header.text-white {
+    color: var(--tblr-body-color) !important;
 }
 
 /* -------------------------------------------------------------------------
@@ -271,6 +315,39 @@ html[data-bs-theme='light'] .cloudtak-accent .text-white-50:not(.badge):not(.btn
 .cloudtak-hover:hover .cloudtak-hover-hidden,
 .cloudtak-hover:focus-within .cloudtak-hover-hidden {
     visibility: visible;
+}
+
+/* -------------------------------------------------------------------------
+ * List-group navigation
+ *
+ * The sidebar navigation in the connection & admin sections (and the task
+ * picker) is a Tabler `.list-group` whose current row carries `.active`.
+ * Stock Tabler paints that row with `--tblr-active-bg`, a blue-slate
+ * (`rgb(35, 46, 62)` in dark mode) tuned for its own card surface - against
+ * the neutral near-black `.cloudtak-panel` it reads as an out-of-place blue
+ * block. Selection is repainted here as a neutral wash drawn from the same
+ * tokens as the hover and inset surfaces, so the whole theme stays greyscale
+ * and the row is distinguished by weight and contrast rather than hue.
+ *
+ * Both the token definitions and the rules live in this file so there is one
+ * source of truth - components only ever toggle the `.active` class.
+ * ------------------------------------------------------------------------- */
+
+.list-group {
+    /* Tabler resolves these per-list-group, so setting them here covers every
+     * variant that goes through its own custom properties. */
+    --tblr-list-group-active-bg: var(--cloudtak-active-bg);
+    --tblr-list-group-active-color: var(--cloudtak-active-color);
+    --tblr-list-group-action-hover-bg: var(--cloudtak-hover-bg);
+}
+
+/* `.list-group-transparent` hardcodes `var(--tblr-active-bg)` rather than
+ * reading the custom properties above, so it needs repainting directly. */
+.list-group .list-group-item.active,
+.list-group-transparent .list-group-item.active {
+    background: var(--cloudtak-active-bg);
+    color: var(--cloudtak-active-color);
+    font-weight: var(--tblr-font-weight-bold);
 }
 
 /* -------------------------------------------------------------------------
