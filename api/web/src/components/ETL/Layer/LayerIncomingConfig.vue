@@ -94,7 +94,7 @@
                     >
                         <label>Webhook URL</label>
                         <CopyField
-                            :model-value='props.layer.uuid'
+                            :model-value='webhookUrl'
                         />
                     </div>
                 </div>
@@ -142,7 +142,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { server } from '../../../std.ts';
 import type { ETLLayerIncoming } from '../../../types.ts';
@@ -191,6 +191,14 @@ const loading = ref({
 
 const incoming = ref<ETLLayerIncoming>(props.layer.incoming);
 
+const webhookBase = ref<string | undefined>();
+
+const webhookUrl = computed(() => {
+    // Until the base resolves, fall back to the Layer UUID so the field is never empty
+    if (!webhookBase.value) return props.layer.uuid;
+    return `${webhookBase.value.replace(/\/$/, '')}/${props.layer.uuid}`;
+});
+
 watch(cronEnabled, () => {
     if (cronEnabled.value && !incoming.value.cron) {
         incoming.value.cron = 'rate(5 minutes)';
@@ -199,9 +207,13 @@ watch(cronEnabled, () => {
     }
 });
 
-onMounted(() => {
+onMounted(async () => {
     reload();
     loading.value.init = false;
+
+    const { data, error } = await server.GET('/api/config/webhooks');
+    if (error) throw new Error(String(error));
+    webhookBase.value = data.url;
 })
 
 function reload() {

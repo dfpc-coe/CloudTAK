@@ -273,4 +273,23 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             Err.respond(err, res);
         }
     });
+
+    await schema.get('/config/webhooks', {
+        name: 'Webhook Config',
+        group: 'Config',
+        description: 'Return the base URL that incoming Layer Webhooks are served from',
+        res: Type.Object({
+            url: Type.String(),
+        }),
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            res.json({
+                url: config.WEBHOOKS_URL,
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
 }

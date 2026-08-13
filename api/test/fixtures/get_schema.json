@@ -109,6 +109,11 @@
         "query": false,
         "res": true
     },
+    "GET /config/webhooks": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid/asset": {
         "body": false,
         "query": false,
