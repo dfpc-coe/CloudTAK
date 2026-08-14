@@ -170,9 +170,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
-            // A Layer token is already scoped to this Layer by is_auth but a User token is
-            // not - the response carries the Layer's environment (IE upstream API keys) so
-            // the requester has to be able to access the Layer's parent Connection
+            // is_auth scopes Layer tokens to this Layer but leaves User tokens unbounded
             if (auth instanceof AuthUser) {
                 if (layer.connection === null) {
                     await Auth.as_user(config, req, { admin: true });

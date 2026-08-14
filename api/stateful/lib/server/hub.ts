@@ -41,10 +41,7 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
             if (!isNaN(Number(parsedParams.connection)) && Number.isInteger(Number(parsedParams.connection))) {
                 const connectionid = Number(parsedParams.connection);
 
-                // tokenParser only proves the token is valid - it doesn't scope it to a
-                // resource the way Auth.is_auth does for HTTP routes, so gate which
-                // resource tokens may subscribe to a Connection's CoT stream before
-                // handing off to the shared Connection authorization check
+                // tokenParser doesn't scope resource tokens the way Auth.is_auth does
                 if (auth instanceof AuthResource) {
                     if (auth.access === AuthResourceAccess.CONNECTION) {
                         if (Number(auth.id) !== connectionid) throw new Error('Unauthorized');

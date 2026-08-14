@@ -170,10 +170,8 @@ export default class Auth {
     /**
      * Authorize an already parsed Auth object against a given Connection
      *
-     * Callers that don't go through is_auth (IE the WebSocket handler, which has no
-     * Express Request) are responsible for gating which resource token types are
-     * allowed before calling this - the resource branch below only knows how to scope
-     * Layer tokens to their parent Connection
+     * Only Layer tokens are scoped here - callers that bypass is_auth must gate
+     * which other resource token types are allowed before calling this
      */
     static async is_connection_auth(
         config: Config,
@@ -353,8 +351,6 @@ export async function tokenParser(
         if (!access) throw new Err(400, null, 'Invalid Resource Access Value');
 
         if (access == AuthResourceAccess.PROFILE) {
-            // Profile tokens are user revocable - the JWT itself never expires so the
-            // backing row is the only thing that keeps it alive
             if (!decoded.internal) {
                 try {
                     await config.models.ProfileToken.from(`etl.${token}`);
@@ -386,9 +382,7 @@ export async function tokenParser(
 
         const session = typeof decoded.s === 'string' ? decoded.s : undefined;
 
-        // Session bound tokens (IE those minted by /login) die with their session row so
-        // an admin deleting a session actually terminates it. Tokens without an `s` claim
-        // are server minted (IE Task => API calls) and have no session to validate against
+        // Tokens without an `s` claim are server minted and have no session to check
         if (session) {
             try {
                 await config.models.ProfileSession.from(session);
