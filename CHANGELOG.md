@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v13.68.2 - 2026-08-14
+
+- :bug: Ensure connection permissions are checked when accessing mari endpoints with `?connectmartiion` param
+- :bug: Ensure deleted Profile API Tokens can't be used after deletion
+
 ### v13.68.1 - 2026-08-13
 
 - :bug: Lock layer.template to false
