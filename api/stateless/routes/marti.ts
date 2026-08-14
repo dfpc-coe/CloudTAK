@@ -23,11 +23,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: TAKList(Group),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
-
             let api;
             if (req.query.connection) {
-                const connection = await config.models.Connection.from(parseInt(String(req.query.connection)));
+                const { connection } = await Auth.is_connection(config, req, {}, Number(req.query.connection));
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
             } else {
                 const user = await Auth.as_user(config, req);
@@ -65,11 +63,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: GenericMartiResponse,
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
-
             let api;
             if (req.query.connection) {
-                const connection = await config.models.Connection.from(parseInt(String(req.query.connection)));
+                const { connection } = await Auth.is_connection(config, req, {}, Number(req.query.connection));
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
             } else {
                 const user = await Auth.as_user(config, req);
@@ -102,11 +98,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: TAKList(ClientEndpoint),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
-
             let api;
             if (req.query.connection) {
-                const connection = await config.models.Connection.from(parseInt(String(req.query.connection)));
+                const { connection } = await Auth.is_connection(config, req, {}, Number(req.query.connection));
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
             } else {
                 const user = await Auth.as_user(config, req);

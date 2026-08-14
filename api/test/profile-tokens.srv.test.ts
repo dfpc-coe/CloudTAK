@@ -10,6 +10,8 @@ flight.takeoff();
 flight.user({ username: 'first' });
 flight.user({ username: 'second' });
 
+let token: string;
+
 test('GET: api/profile/token', async () => {
     try {
         const res = await flight.fetch('/api/profile/token', {
@@ -40,7 +42,7 @@ test('POST: api/profile/token', async () => {
             },
         }, true);
 
-        const token = res.body.token;
+        token = res.body.token;
         assert.ok(res.body.token);
         delete res.body.token;
 
@@ -193,6 +195,25 @@ test('DELETE: api/profile/token/1', async () => {
         assert.deepEqual(res.body, {
             status: 200,
             message: 'Token Deleted',
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: api/profile/feature - Deleted Token no longer authenticates', async () => {
+    try {
+        const res = await flight.fetch('/api/profile/feature', {
+            method: 'GET',
+            auth: {
+                bearer: token,
+            },
+        }, false);
+
+        assert.deepEqual(res.body, {
+            status: 401,
+            message: 'Token does not exist',
+            messages: [],
         });
     } catch (err) {
         assert.ifError(err);
