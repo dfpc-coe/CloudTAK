@@ -10,7 +10,7 @@ import { ProfileConnConfig, AdminConnConfig } from '../../../common/connection-c
 import { ConnectionClient } from '../connection-pool.js';
 import { ConnectionWebSocket } from '../connection-web.js';
 import { setTimeout } from 'node:timers/promises';
-import { tokenParser, AuthUser } from '../../../common/auth.js';
+import Auth, { tokenParser, AuthUser, AuthResource, AuthResourceAccess } from '../../../common/auth.js';
 import type ConfigStateful from '../../config.js';
 
 export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSocketServer {
@@ -39,6 +39,23 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
             if (!config.conns) throw new Error('Server not configured with Connection Pool');
 
             if (!isNaN(Number(parsedParams.connection)) && Number.isInteger(Number(parsedParams.connection))) {
+                const connectionid = Number(parsedParams.connection);
+
+                // tokenParser doesn't scope resource tokens the way Auth.is_auth does
+                if (auth instanceof AuthResource) {
+                    if (auth.access === AuthResourceAccess.CONNECTION) {
+                        if (Number(auth.id) !== connectionid) throw new Error('Unauthorized');
+                    } else if (auth.access !== AuthResourceAccess.LAYER) {
+                        throw new Error('Unauthorized');
+                    }
+
+                    if (!auth.internal) {
+                        await config.models.ConnectionToken.from(auth.token);
+                    }
+                }
+
+                await Auth.is_connection_auth(config, auth, connectionid);
+
                 let webClients = config.wsClients.get(parsedParams.connection);
                 if (!webClients) webClients = [];
                 webClients.push(new ConnectionWebSocket(ws, parsedParams.format));

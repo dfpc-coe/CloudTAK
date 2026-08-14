@@ -162,13 +162,22 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: LayerResponse,
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const auth = await Auth.is_auth(config, req, {
                 resources: [
                     { access: AuthResourceAccess.LAYER, id: req.params.layerid },
                 ],
             });
 
             const layer = await config.models.Layer.augmented_from(req.params.layerid);
+
+            // is_auth scopes Layer tokens to this Layer but leaves User tokens unbounded
+            if (auth instanceof AuthUser) {
+                if (layer.connection === null) {
+                    await Auth.as_user(config, req, { admin: true });
+                } else {
+                    await Auth.is_connection_auth(config, auth, layer.connection);
+                }
+            }
 
             let status = 'unknown';
             if (config.StackName !== 'test' && req.query.alarms) {

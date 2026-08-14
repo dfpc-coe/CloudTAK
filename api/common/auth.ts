@@ -164,6 +164,25 @@ export default class Auth {
     }> {
         const auth = await this.is_auth(config, req, opts);
 
+        return await this.is_connection_auth(config, auth, connectionid);
+    }
+
+    /**
+     * Authorize an already parsed Auth object against a given Connection
+     *
+     * Only Layer tokens are scoped here - callers that bypass is_auth must gate
+     * which other resource token types are allowed before calling this
+     */
+    static async is_connection_auth(
+        config: Config,
+        auth: AuthResource | AuthUser,
+        connectionid: number,
+    ): Promise<{
+        auth: AuthResource | AuthUser;
+        connection: InferSelectModel<typeof Connection>;
+        layer?: InferSelectModel<typeof Layer>;
+        profile?: InferSelectModel<typeof Profile>;
+    }> {
         const connection = await config.models.Connection.from(connectionid);
 
         if (this.#is_user(auth)) {
@@ -332,6 +351,14 @@ export async function tokenParser(
         if (!access) throw new Err(400, null, 'Invalid Resource Access Value');
 
         if (access == AuthResourceAccess.PROFILE) {
+            if (!decoded.internal) {
+                try {
+                    await config.models.ProfileToken.from(`etl.${token}`);
+                } catch (err) {
+                    throw new Err(401, err instanceof Error && err.name === 'PublicError' ? err : new Error(String(err)), 'Token does not exist');
+                }
+            }
+
             const profile = await config.models.Profile.from(decoded.id);
 
             if (profile.system_admin) {
@@ -354,6 +381,15 @@ export async function tokenParser(
         if (!access) throw new Err(400, null, 'Invalid User Access Value');
 
         const session = typeof decoded.s === 'string' ? decoded.s : undefined;
+
+        // Tokens without an `s` claim are server minted and have no session to check
+        if (session) {
+            try {
+                await config.models.ProfileSession.from(session);
+            } catch (err) {
+                throw new Err(401, err instanceof Error && err.name === 'PublicError' ? err : new Error(String(err)), 'Session does not exist');
+            }
+        }
 
         return new AuthUser(access, decoded.email, token, session);
     }

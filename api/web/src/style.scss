@@ -1,25 +1,13 @@
 /**
  * CloudTAK Global Stylesheet
  *
- * Loaded via `<link rel='stylesheet'>` from the `<head>` of every HTML entry
- * point, so it applies to all of the Vite entries (map, admin, connection,
- * board, video, setup) rather than only the ones that happen to mount
- * `src/App.vue`.
+ * Loaded via `<link rel='stylesheet'>` from every HTML entry point (map, admin,
+ * connection, board, video, setup). Holds design tokens, `.cloudtak-*` surface
+ * and utility classes, and app-wide Tabler overrides. Anything a single
+ * component uses belongs in that component's `<style scoped>` block.
  *
- * What belongs here:
- *   - Design tokens (CSS custom properties) consumed across the app
- *   - Surface/utility classes (`.cloudtak-*`) used by more than one component
- *   - Bootstrap/Tabler overrides that have to apply app-wide
- *   - Shared primitives that were otherwise copy-pasted into several
- *     components' scoped blocks
- *
- * What does NOT belong here: anything only one component uses. Keep that in
- * that component's `<style scoped>` block.
- *
- * Tabler is pulled in from here rather than imported from JS so that the
- * overrides below reliably land after it in the cascade. Loading it from a
- * component would leave the order dependent on chunking, and a JS-injected
- * stylesheet always lands after a `<link>` in `<head>`.
+ * Tabler is imported here rather than from JS so the overrides below reliably
+ * land after it in the cascade.
  */
 
 @use '@tabler/core/dist/css/tabler.min.css';
@@ -35,29 +23,26 @@ $cloudtak-blue: #07556d;
 :root {
     --cloudtak-light: rgba(var(--tblr-primary-rgb), 0.08);
 
-    /* Native status bar height overlaying the webview - 0 on web. The Android
-     * StatusBar plugin sets --status-bar-native-height as env() is unreliable there. */
+    /* Native status bar height overlaying the webview - 0 on web. Android sets
+     * --status-bar-native-height from the StatusBar plugin as env() is unreliable there. */
     --status-bar-height: max(env(safe-area-inset-top, 0px), var(--status-bar-native-height, 0px));
 }
 
 html[data-bs-theme='dark'] {
     --tabler-input-bg: var(--tblr-bg-forms, var(--tblr-bg-surface, var(--tblr-body-bg)));
 
-    /* Inset surfaces (`.cloudtak-accent`): blocks nested inside a panel, page or
-     * slide-down section. Translucent overlays rather than fixed colors, so they
-     * lift off whatever surface they're rendered over and stack predictably when
-     * nested. */
+    /* Inset surfaces (`.cloudtak-accent`). Translucent so they lift off whatever
+     * surface they're over and stack predictably when nested. */
     --cloudtak-inset-bg: rgba(255, 255, 255, 0.05);
     --cloudtak-inset-border: rgba(255, 255, 255, 0.12);
     --cloudtak-inset-hover-bg: rgba(255, 255, 255, 0.09);
 
-    /* Hover wash shared by `.cloudtak-hover`, `.cloudtak-hover-fill` and the
-     * slide-down section headers */
+    /* Hover wash */
     --cloudtak-hover-bg: color-mix(in srgb, var(--tblr-light) 12%, transparent);
     --cloudtak-hover-border: color-mix(in srgb, var(--tblr-light) 30%, transparent);
 
-    /* Selected state. Deliberately a touch stronger than --cloudtak-hover-bg so
-     * the current row still reads as selected while a neighbour is hovered. */
+    /* Selected state - stronger than the hover wash so a selected row still
+     * reads as selected while a neighbour is hovered. */
     --cloudtak-active-bg: rgba(255, 255, 255, 0.14);
     --cloudtak-active-color: #ffffff;
 }
@@ -88,12 +73,8 @@ html[data-bs-theme='light'] {
     background: radial-gradient(at left top, #f7fbff, #dde8f4);
 }
 
-/*
- * Flat page surface shared by the standalone full-screen views (video wall,
- * event board) so they all sit on the same background. Kept a shade below
- * the `.cloudtak-panel` surface in each theme so panels layered on top of a page
- * still read as raised.
- */
+/* Flat page surface for the standalone full-screen views (video wall, event
+ * board). A shade below `.cloudtak-panel` so panels layered on top read as raised. */
 html[data-bs-theme='dark'] .cloudtak-page {
     background: #000000;
     color: rgba(255, 255, 255, 0.92);
@@ -112,13 +93,11 @@ html[data-bs-theme='light'] .cloudtak-page .text-white-50:not(.badge):not(.btn):
     color: var(--tblr-secondary-color) !important;
 }
 
-/*
- * Shared surface for panels floating above the map (navigation banner,
- * map controls, draggable floating panes, bottom panes). Sets --tblr-border-color so
- * Bootstrap border utilities inside the panel pick up the same subtle
- * separator color, and --tblr-card-box-shadow so panels built on a Tabler
- * card get the panel shadow instead of the flat card one.
- */
+/* Shared surface for panels floating above the map (navigation banner, map
+ * controls, draggable and bottom panes), and for Tabler cards on a
+ * `.cloudtak-page`. Sets --tblr-border-color so border utilities inside a panel
+ * pick up the same separator color, and --tblr-card-box-shadow so panels built
+ * on a Tabler card get the panel shadow instead of the flat card one. */
 .cloudtak-panel,
 .cloudtak-page .card {
     --tblr-card-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
@@ -127,11 +106,7 @@ html[data-bs-theme='light'] .cloudtak-page .text-white-50:not(.badge):not(.btn):
 }
 
 /* Backgrounds mirror TablerDropdown's --tabler-dropdown-bg so floating panels
- * read as the same surface as the notification dropdown.
- *
- * Tabler `.card`s inside a `.cloudtak-page` (connection & admin pages) adopt
- * the same surface so every page shares one theme rather than the stock
- * Tabler card look. */
+ * read as the same surface as the notification dropdown. */
 html[data-bs-theme='dark'] .cloudtak-panel,
 html[data-bs-theme='dark'] .cloudtak-page .card {
     --tblr-border-color: rgba(255, 255, 255, 0.14);
@@ -150,15 +125,16 @@ html[data-bs-theme='light'] .cloudtak-page .card {
     border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-/* Card sections read as one panel surface separated by borders rather than
- * Tabler's tinted header/footer bands. */
-.cloudtak-page .card > .card-header,
-.cloudtak-page .card > .card-footer {
+/* Drop Tabler's tinted header/footer bands so card sections read as one panel
+ * surface separated by their borders. Global rather than scoped to
+ * `.cloudtak-page .card`, because footers are often nested several levels deep
+ * or live inside modals that sit under no page at all. */
+.card-header,
+.card-footer {
     background-color: transparent;
 }
 
-/* Tabler tints table headers & striped/hover rows with surface colors tuned
- * for its own card background - repaint them for the panel surface. */
+/* Repaint Tabler's table header and hover-row tints for the panel surface. */
 .cloudtak-page .card .table thead th,
 .cloudtak-page .card .table thead td {
     background-color: transparent;
@@ -178,17 +154,15 @@ html[data-bs-theme='light'] .cloudtak-panel .text-white-50:not(.badge):not(.btn)
 }
 
 /* Navigation banner. Rendered by `Navigating.vue` but positioned relative to
- * the map controls in `Map.vue`, so it is owned by neither component. */
+ * the map controls in `Map.vue`, so neither component owns it. */
 .cloudtak-navigating {
     z-index: 2;
     width: min(640px, calc(100vw - 16px));
     border-radius: 0px 0px 6px 6px;
 }
 
-/*
- * On small screens the banner would overlap the top controls (Active Mission, tools and menu);
- * drop it below them so they stay usable and round all four corners.
- */
+/* On small screens the banner would overlap the top controls (Active Mission,
+ * tools, menu) - drop it below them and round all four corners. */
 @media (max-width: 767.98px) {
     .cloudtak-navigating {
         margin-top: 74px;
@@ -241,21 +215,13 @@ html[data-bs-theme='light'] .cloudtak-accent .text-white-50:not(.badge):not(.btn
 /* -------------------------------------------------------------------------
  * Chrome bands
  *
- * The header (and footer) strips that frame a scrolling pane: menu page
- * headers, sticky filter/selection controls, the sidebar footer, and the
- * sticky card headers on the connection & admin pages.
+ * Header/footer strips framing a scrolling pane: menu page headers, sticky
+ * filter controls, the sidebar footer, sticky card headers.
  *
- * A band has to paint an opaque fill so content scrolls underneath it rather
- * than showing through. Rather than a fixed color of its own, it takes the
- * surrounding panel's surface, so the band reads as part of the pane instead
- * of a separate tinted bar - which is what `.cloudtak-bg` (a fixed #283547
- * blue-slate) made it look like.
- *
- * The fallbacks cover chrome rendered outside a `.cloudtak-panel` or
- * `.cloudtak-page .card`, where --cloudtak-panel-bg is not defined.
- *
- * `!important` matches the other surface classes here, and is required to beat
- * `.cloudtak-page .card > .card-header`, which is more specific.
+ * A band paints an opaque fill so content scrolls underneath it, and takes the
+ * surrounding panel's surface so it reads as part of the pane. The fallbacks
+ * cover chrome rendered outside a panel, where --cloudtak-panel-bg is unset.
+ * `!important` is needed to beat the transparent `.card-header` rule above.
  * ------------------------------------------------------------------------- */
 
 html[data-bs-theme='dark'] .cloudtak-header {
@@ -289,9 +255,8 @@ html[data-bs-theme='light'] .cloudtak-header.text-white {
     background: var(--cloudtak-hover-bg);
 }
 
-/* Fill-only variant of `.cloudtak-hover` - same wash, no border or radius of its
- * own - for rows that live inside an already bordered container and shouldn't
- * turn into a second box on hover. */
+/* Fill-only variant of `.cloudtak-hover` - same wash, no border or radius - for
+ * rows inside an already bordered container. */
 .cloudtak-hover-fill {
     transition: background-color 0.15s ease;
 }
@@ -320,29 +285,22 @@ html[data-bs-theme='light'] .cloudtak-header.text-white {
 /* -------------------------------------------------------------------------
  * List-group navigation
  *
- * The sidebar navigation in the connection & admin sections (and the task
- * picker) is a Tabler `.list-group` whose current row carries `.active`.
- * Stock Tabler paints that row with `--tblr-active-bg`, a blue-slate
- * (`rgb(35, 46, 62)` in dark mode) tuned for its own card surface - against
- * the neutral near-black `.cloudtak-panel` it reads as an out-of-place blue
- * block. Selection is repainted here as a neutral wash drawn from the same
- * tokens as the hover and inset surfaces, so the whole theme stays greyscale
- * and the row is distinguished by weight and contrast rather than hue.
- *
- * Both the token definitions and the rules live in this file so there is one
- * source of truth - components only ever toggle the `.active` class.
+ * Sidebar navigation is a Tabler `.list-group` whose current row carries
+ * `.active`. Repaint Tabler's blue-slate selection as a neutral wash from the
+ * hover/inset tokens, so the row is distinguished by weight and contrast
+ * rather than hue. Components only toggle the `.active` class.
  * ------------------------------------------------------------------------- */
 
 .list-group {
     /* Tabler resolves these per-list-group, so setting them here covers every
-     * variant that goes through its own custom properties. */
+     * variant that reads its custom properties. */
     --tblr-list-group-active-bg: var(--cloudtak-active-bg);
     --tblr-list-group-active-color: var(--cloudtak-active-color);
     --tblr-list-group-action-hover-bg: var(--cloudtak-hover-bg);
 }
 
-/* `.list-group-transparent` hardcodes `var(--tblr-active-bg)` rather than
- * reading the custom properties above, so it needs repainting directly. */
+/* `.list-group-transparent` hardcodes `var(--tblr-active-bg)` instead of reading
+ * the properties above, so it needs repainting directly. */
 .list-group .list-group-item.active,
 .list-group-transparent .list-group-item.active {
     background: var(--cloudtak-active-bg);
@@ -352,13 +310,10 @@ html[data-bs-theme='light'] .cloudtak-header.text-white {
 
 /* -------------------------------------------------------------------------
  * Shared primitives
- *
- * Small building blocks that several components lay out against. They live
- * here rather than being re-declared in each component's scoped block.
  * ------------------------------------------------------------------------- */
 
-/* Fixed-size square that holds a list row's leading icon or thumbnail, so
- * rows in a list stay aligned regardless of what the icon renders as. */
+/* Fixed-size square holding a list row's leading icon or thumbnail, so rows
+ * stay aligned regardless of what the icon renders as. */
 .icon-wrapper {
     width: 3rem;
     height: 3rem;
@@ -387,8 +342,8 @@ html[data-bs-theme='light'] .cloudtak-header.text-white {
 /* -------------------------------------------------------------------------
  * Shared <Transition> names
  *
- * Vue resolves transition classes globally, so a single definition per
- * transition name serves every component that uses it.
+ * Vue resolves transition classes globally, so one definition per name serves
+ * every component using it.
  * ------------------------------------------------------------------------- */
 
 /* `saved-fade` - quick fade in, slow fade out, for save confirmations */
