@@ -13,8 +13,13 @@
 ### Deprecation Notices
 
 - `GET /api/search/reverse/:long/:lat` endpoint is deprecated and will be removed in v14, use `GET /api/search/reverse/:long/:lat/<type>` instead
+- `Layer.template` is deprecated and will be removed
 
 ### Pending Release
+
+### v13.68.1 - 2026-08-13
+
+- :bug: Lock layer.template to false
 
 ### v13.68.0 - 2026-08-13
 
