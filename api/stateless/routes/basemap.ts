@@ -1121,6 +1121,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 throw new Err(400, null, 'Cannot delete default terrain basemap');
             }
 
+            const basemapFavs = await config.models.Setting.typed('map::basemap::favs', null);
+
+            if ((basemapFavs.value || []).some((fav) => fav.id === basemap.id)) {
+                throw new Err(400, null, 'Cannot delete favourite basemap');
+            }
+
             await config.models.Basemap.delete(req.params.basemapid);
 
             res.json({

@@ -1059,6 +1059,7 @@ export const useMapStore = defineStore('cloudtak', {
                     'map::pitch',
                     'map::bearing',
                     'map::basemap',
+                    'map::basemap::favs',
                     'map::terrain'
                 ], {
                     defaults: {
@@ -1067,6 +1068,7 @@ export const useMapStore = defineStore('cloudtak', {
                         'map::pitch': 0,
                         'map::bearing': 0,
                         'map::basemap': null,
+                        'map::basemap::favs': null,
                         'map::terrain': null
                     }
                 });

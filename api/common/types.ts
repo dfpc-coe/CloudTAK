@@ -676,6 +676,14 @@ export const FullConfig = Type.Object({
     'map::zoom': Type.Number({ description: 'Default Map Zoom Level', minimum: 0, maximum: 20 }),
     'map::basemap': Type.Union([Type.Null(), Type.Integer()], { description: 'Default Basemap for New Users' }),
     'map::terrain': Type.Union([Type.Null(), Type.Integer()], { description: 'Default Terrain (raster-dem) Basemap for New Users' }),
+    'map::basemap::favs': Type.Union([Type.Null(), Type.Array(Type.Object({
+        id: Type.Integer({ description: 'Basemap ID' }),
+        name: Type.String({ description: 'Basemap Name' }),
+        image: Type.String({ description: 'Base64 encoded Preview Image' }),
+    }), {
+        minItems: 1,
+        maxItems: 3,
+    })], { description: 'Favourite Basemaps (1-3) shown at the top of the Basemap Menu' }),
     'display::stale': Type.Enum(Profile_Stale),
     'display::distance': Type.Enum(Profile_Distance),
     'display::elevation': Type.Enum(Profile_Elevation),
