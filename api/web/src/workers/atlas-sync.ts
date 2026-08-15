@@ -36,6 +36,7 @@ import Chatroom from '../base/chatroom.ts';
 import MissionTemplate from '../base/mission-template.ts';
 import ProfileConfig from '../base/profile.ts';
 import ServerManager from '../base/server.ts';
+import Config from '../base/config.ts';
 
 export enum SyncDataType {
     Overlay = 'overlay',
@@ -49,6 +50,7 @@ export enum SyncDataType {
     Group = 'group',
     MissionTemplate = 'mission-template',
     Server = 'server',
+    Config = 'config',
 }
 
 export enum SyncEventAction {
@@ -177,6 +179,7 @@ export default class AtlasSync {
             [SyncDataType.MissionTemplate, () => MissionTemplate.sync()],
             [SyncDataType.Profile, () => ProfileConfig.sync({ refresh: true })],
             [SyncDataType.Server, () => ServerManager.sync()],
+            [SyncDataType.Config, () => Config.sync()],
         ];
 
         const results = await Promise.allSettled(tasks.map(([, task]) => task()));
