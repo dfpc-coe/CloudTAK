@@ -286,7 +286,7 @@ test('Style: Line Type - Route (b-m-r)', async () => {
         enabled_styles: true,
         styles: {
             line: {
-                type: 'b-m-r'
+                type: 'b-m-r',
             },
         },
     });
@@ -313,7 +313,7 @@ test('Style: Line Type - User Drawn (u-d-f)', async () => {
         enabled_styles: true,
         styles: {
             line: {
-                type: 'u-d-f'
+                type: 'u-d-f',
             },
         },
     });
@@ -321,7 +321,7 @@ test('Style: Line Type - User Drawn (u-d-f)', async () => {
     const feat = await style.feat({
         type: 'Feature',
         properties: {
-            type: 'b-m-r'
+            type: 'b-m-r',
         },
         geometry: {
             type: 'LineString',
@@ -342,7 +342,7 @@ test('Style: Line Type - not applied to Point Features', async () => {
         enabled_styles: true,
         styles: {
             line: {
-                type: 'b-m-r'
+                type: 'b-m-r',
             },
         },
     });

@@ -126,9 +126,9 @@ export const StylePoint = Type.Object({
 export const StyleLine = Type.Object({
     'type': Type.Optional(Type.Union([
         Type.Literal('u-d-f'),
-        Type.Literal('b-m-r')
+        Type.Literal('b-m-r'),
     ], {
-        description: 'CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route'
+        description: 'CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route',
     })),
     'stroke': Type.Optional(Type.String()),
     'stroke-style': Type.Optional(Type.String()),

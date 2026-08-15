@@ -1123,7 +1123,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const basemapFavs = await config.models.Setting.typed('map::basemap::favs', null);
 
-            if ((basemapFavs.value || []).some((fav) => fav.id === basemap.id)) {
+            if ((basemapFavs.value || []).some(fav => fav.id === basemap.id)) {
                 throw new Err(400, null, 'Cannot delete favourite basemap');
             }
 
