@@ -281,6 +281,88 @@ test('Style: Global Remarks & Callsign & Phone - Override by Line', async () => 
     });
 });
 
+test('Style: Line Type - Route (b-m-r)', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            line: {
+                type: 'b-m-r',
+            },
+        },
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+            type: 'LineString',
+            coordinates: [[0, 0], [1, 1]],
+        },
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+
+    assert.deepEqual(feat.properties, {
+        type: 'b-m-r',
+        metadata: {},
+    });
+});
+
+test('Style: Line Type - User Drawn (u-d-f)', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            line: {
+                type: 'u-d-f',
+            },
+        },
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {
+            type: 'b-m-r',
+        },
+        geometry: {
+            type: 'LineString',
+            coordinates: [[0, 0], [1, 1]],
+        },
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+
+    assert.deepEqual(feat.properties, {
+        type: 'u-d-f',
+        metadata: {},
+    });
+});
+
+test('Style: Line Type - not applied to Point Features', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            line: {
+                type: 'b-m-r',
+            },
+        },
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0],
+        },
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+
+    assert.deepEqual(feat.properties, {
+        metadata: {},
+    });
+});
+
 test('Style: Global Remarks & Callsign & Phone - Override by Polygon', async () => {
     const style = new Style({
         enabled_styles: true,

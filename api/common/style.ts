@@ -124,6 +124,12 @@ export const StylePoint = Type.Object({
 });
 
 export const StyleLine = Type.Object({
+    'type': Type.Optional(Type.Union([
+        Type.Literal('u-d-f'),
+        Type.Literal('b-m-r'),
+    ], {
+        description: 'CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route',
+    })),
     'stroke': Type.Optional(Type.String()),
     'stroke-style': Type.Optional(Type.String()),
     'stroke-opacity': Type.Optional(Type.String()),
@@ -590,6 +596,7 @@ export default class Style {
             if (style.point.marti) this.#applyMarti(style.point.marti, feature);
         } else if (feature.geometry.type === 'LineString' && style.line) {
             if (style.line.id) feature.id = this.compile(style.line.id, feature.properties.metadata);
+            if (style.line.type) feature.properties.type = style.line.type;
             if (style.line.remarks) feature.properties.remarks = this.compile(style.line.remarks, feature.properties.metadata);
             if (style.line.phone) {
                 feature.properties.contact = feature.properties.contact || {};

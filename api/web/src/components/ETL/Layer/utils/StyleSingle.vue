@@ -699,6 +699,32 @@
             </div>
         </template>
 
+        <template v-if='mode === "line"'>
+            <div class='col-12 style-item px-2 py-2'>
+                <div class='d-flex align-items-center'>
+                    <label class='user-select-none subheader'>
+                        <IconRoute
+                            :size='20'
+                            stroke='1'
+                        /> Line Type
+                    </label>
+                    <div class='ms-auto'>
+                        <TablerToggle
+                            v-model='filters[mode].enabled.type'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
+                    </div>
+                </div>
+                <TablerEnum
+                    v-if='filters[mode].enabled.type'
+                    v-model='lineType'
+                    :disabled='disabled || !filters[mode].enabled.type'
+                    :options='Object.keys(lineTypes)'
+                />
+            </div>
+        </template>
+
         <template v-if='mode === "polygon"'>
             <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
@@ -759,7 +785,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { humanSeconds } from '../../../../std.js';
 import HandleForm from '../../../util/HandleForm.vue';
 import StyleMarti from './StyleMarti.vue';
@@ -774,6 +800,7 @@ import {
     IconClock,
     IconEye,
     IconPolygon,
+    IconRoute,
     IconCategory,
     IconBorderStyle2,
     IconBlockquote,
@@ -917,6 +944,7 @@ const filters = ref<StyleFilters>({
     line: {
         enabled: {
             id: false,
+            type: false,
             stroke: false,
             'stroke-style': false,
             'stroke-opacity': false,
@@ -931,6 +959,7 @@ const filters = ref<StyleFilters>({
         },
         properties: {
             id: '',
+            type: 'u-d-f',
             stroke: '#d63939',
             'stroke-style': 'solid',
             'stroke-opacity': 1,
@@ -977,6 +1006,24 @@ const filters = ref<StyleFilters>({
             callsign: '',
             links: []
         }
+    }
+});
+
+const lineTypes: Record<string, string> = {
+    'User Drawn Line': 'u-d-f',
+    'Route': 'b-m-r'
+};
+
+const lineType = computed<string>({
+    get() {
+        const label = Object.keys(lineTypes).find((label) => {
+            return lineTypes[label] === filters.value.line.properties.type;
+        });
+
+        return label || 'User Drawn Line';
+    },
+    set(label: string) {
+        filters.value.line.properties.type = lineTypes[label] || 'u-d-f';
     }
 });
 
