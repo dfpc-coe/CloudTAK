@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.69.0 - 2026-08-15
+
+- :tada: Allow specifying a feature as a line vs a route on ETL layers - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1666
+
 ### v13.68.2 - 2026-08-14
 
 - :bug: Ensure connection permissions are checked when accessing mari endpoints with `?connectmartiion` param
