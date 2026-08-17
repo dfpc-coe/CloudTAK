@@ -50,6 +50,7 @@ import type { Position } from '@capacitor/geolocation';
 
 // Missions the dirty sweep has already warned about having no overlay
 const sweepWarned = new Set<string>();
+const COT_SOURCE_RESYNC_TIMEOUT_MS = 10000;
 
 function waitForAtlasWorkerReady(worker: Worker): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -750,10 +751,18 @@ export const useMapStore = defineStore('cloudtak', {
 
                 const features = await this.worker.db.snapshot();
 
-                source.setData({
-                    type: 'FeatureCollection',
-                    features
-                });
+                try {
+                    await withTimeout(source.setData({
+                        type: 'FeatureCollection',
+                        features
+                    }), COT_SOURCE_RESYNC_TIMEOUT_MS, 'MapLibre CoT source resync');
+                } catch (err) {
+                    if (!isNativePlatform()) throw err;
+
+                    // The map uses hash:true, so reloading retains its camera.
+                    console.error('MapLibre could not complete the CoT source resync - reloading the WebView', err);
+                    window.location.reload();
+                }
             })().finally(() => {
                 this._cotResync = undefined;
             });
