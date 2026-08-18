@@ -17,6 +17,12 @@
 
 ### Pending Release
 
+### v13.69.1 - 2026-08-18
+
+- :rocket: Consistent Modal Colours
+- :bug: Consistent GPS fix
+- :rocket: Consistent Dropdown Colours
+
 ### v13.69.0 - 2026-08-15
 
 - :tada: Allow specifying a feature as a line vs a route on ETL layers - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1666
