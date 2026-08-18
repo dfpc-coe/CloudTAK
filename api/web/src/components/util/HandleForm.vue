@@ -29,7 +29,7 @@
         />
         <ul 
             v-if='showSuggestions && filteredVariables.length' 
-            class='hb-suggestions' 
+            class='hb-suggestions cloudtak-panel' 
             :style='{ top: `${suggestionPos.y}px`, left: `${suggestionPos.x}px` }'
         >
             <li 
@@ -505,12 +505,12 @@ watch(() => props.disabled, async () => {
 .hb-input :deep(.form-control:disabled) { background-color: transparent !important; }
 .hb-input :deep(.form-control::placeholder) { color: var(--tblr-secondary, #667382); }
 .hb-suggestions {
-    position: absolute; z-index: 100; background: var(--tblr-bg-surface, #fff); border: 1px solid var(--tblr-border-color, #dce1e7);
-    list-style: none; padding: 4px 0; margin: 0; box-shadow: var(--tblr-box-shadow-dropdown, 0 0.5rem 1rem rgba(0, 0, 0, 0.15));
-    border-radius: var(--tblr-border-radius, 4px); min-width: 180px;
+    position: absolute; z-index: 100;
+    list-style: none; padding: 4px 0; margin: 0; min-width: 180px;
 }
 .hb-suggestions li { padding: 6px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-.hb-suggestions li.active { background: var(--tblr-primary, #206bc4); color: var(--tblr-bg-surface, #fff); }
+.hb-suggestions li:hover { background: var(--cloudtak-hover-bg); }
+.hb-suggestions li.active { background: var(--cloudtak-active-bg); color: var(--cloudtak-active-color); }
 .hb-helper { display: flex; align-items: center; gap: 0.375rem; margin-top: 0.375rem; }
 .hb-helper-token {
     display: inline-flex;

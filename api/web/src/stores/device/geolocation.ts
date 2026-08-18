@@ -13,7 +13,16 @@ export class GeolocationPermission {
     constructor(private readonly context: DevicePermissionContext) {}
 
     private watchActive = false;
+    private watchGeneration = 0;
+    private lastLocationTimestamp = 0;
     private locationCallback: ((position: Position) => void) | null = null;
+
+    // The background watcher only emits fixes newer than its own start time and
+    // only after `DISTANCE_FILTER_M` of movement, so a stationary device can go
+    // indefinitely without one. A one-shot fix seeds the first position instead.
+    private static readonly DISTANCE_FILTER_M = 10;
+    private static readonly SEED_TIMEOUT_MS = 10000;
+    private static readonly SEED_MAX_AGE_MS = 30000;
 
     static supportsLocationRequests(): boolean {
         return isNativePlatform() || (typeof navigator !== 'undefined' && 'geolocation' in navigator);
@@ -96,13 +105,19 @@ export class GeolocationPermission {
         await this.stopWatch();
 
         this.locationCallback = onLocation;
+        this.lastLocationTimestamp = 0;
+        const generation = ++this.watchGeneration;
 
         const handler = (position: Position | null, err?: unknown) => {
             if (err) {
                 console.error('Location Error', err);
                 return;
             }
-            if (position && this.locationCallback) this.locationCallback(position);
+            if (!position || generation !== this.watchGeneration || !this.locationCallback) return;
+            // The seeded fix can resolve after a watcher fix has landed
+            if (position.timestamp < this.lastLocationTimestamp) return;
+            this.lastLocationTimestamp = position.timestamp;
+            this.locationCallback(position);
         };
 
         try {
@@ -121,12 +136,38 @@ export class GeolocationPermission {
             // foreground fixes too, and on web it falls back to
             // navigator.geolocation.watchPosition.
             await this.startBackgroundWatch(handler);
+
+            void this.seedImmediateFix(handler, generation);
         } catch (err) {
             console.error('Failed to start location watch', err);
         }
     }
 
+    // Started alongside the watcher, not awaited: the watcher must not wait on a
+    // fix that can take seconds or never arrive.
+    private async seedImmediateFix(
+        handler: (position: Position | null, err?: unknown) => void,
+        generation: number
+    ): Promise<void> {
+        if (['denied', 'unsupported'].includes(this.context.permissions.location)) return;
+
+        try {
+            const position = await Geolocation.getCurrentPosition({
+                enableHighAccuracy: true,
+                timeout: GeolocationPermission.SEED_TIMEOUT_MS,
+                maximumAge: GeolocationPermission.SEED_MAX_AGE_MS
+            });
+
+            if (generation !== this.watchGeneration) return;
+            handler(position);
+        } catch (err) {
+            console.warn('No immediate GPS fix available, waiting on location watch', err);
+        }
+    }
+
     async stopWatch(): Promise<void> {
+        this.watchGeneration++;
+
         if (this.watchActive) {
             this.watchActive = false;
             try {
@@ -144,12 +185,13 @@ export class GeolocationPermission {
             backgroundTitle: 'CloudTAK GPS active',
             backgroundMessage: 'CloudTAK is sharing your location.',
             requestPermissions: true,
+            // Reject fixes cached from before the watcher started - stale
+            // positions are seeded explicitly by seedImmediateFix() instead,
+            // which bounds their age.
             stale: false,
-            // Metres of movement before a new fix is delivered. 0 disables
-            // filtering (kCLDistanceFilterNone on iOS) and streams fixes
-            // continuously, keeping the GPS radio hot even when stationary.
-            // Ignored by the web fallback.
-            distanceFilter: 10
+            // Metres of movement before a new fix is delivered. Ignored by the
+            // web fallback.
+            distanceFilter: GeolocationPermission.DISTANCE_FILTER_M
         }, (location?: BackgroundLocation, err?: BackgroundGeolocationError) => {
             handler(location ? GeolocationPermission.backgroundLocationToPosition(location) : null, err);
         });

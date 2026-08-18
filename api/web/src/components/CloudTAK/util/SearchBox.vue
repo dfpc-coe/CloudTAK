@@ -1,7 +1,5 @@
 <template>
-    <div
-        class='text-white cloudtak-bg rounded position-relative'
-    >
+    <div class='position-relative'>
         <div class='d-flex align-items-end gap-1'>
             <TablerInput
                 ref='searchBoxRef'
@@ -34,7 +32,7 @@
         </div>
 
         <div
-            class='dropdown-menu w-100 mt-2 p-2'
+            class='dropdown-menu cloudtak-panel w-100 mt-2 p-2'
             :class='{
                 "show": shown,
             }'
