@@ -51,6 +51,7 @@ import type { Position } from '@capacitor/geolocation';
 // Missions the dirty sweep has already warned about having no overlay
 const sweepWarned = new Set<string>();
 const COT_SOURCE_RESYNC_TIMEOUT_MS = 10000;
+const COT_SOURCE_RELOAD_KEY = 'cloudtak::cot-source-reloaded';
 
 function waitForAtlasWorkerReady(worker: Worker): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -759,6 +760,18 @@ export const useMapStore = defineStore('cloudtak', {
                 } catch (err) {
                     if (!isNativePlatform()) throw err;
 
+                    try {
+                        if (sessionStorage.getItem(COT_SOURCE_RELOAD_KEY)) {
+                            console.error('MapLibre CoT source resync still failing after automatic reload', err);
+                            return;
+                        }
+
+                        sessionStorage.setItem(COT_SOURCE_RELOAD_KEY, '1');
+                    } catch (guardErr) {
+                        console.warn('MapLibre reload guard unavailable, skipping automatic reload', guardErr);
+                        return;
+                    }
+
                     // The map uses hash:true, so reloading retains its camera.
                     console.error('MapLibre could not complete the CoT source resync - reloading the WebView', err);
                     window.location.reload();
@@ -904,6 +917,15 @@ export const useMapStore = defineStore('cloudtak', {
             let initialFire = true;
             this._removeBackgroundStateListener = await addBackgroundStateListener((isBackgrounded) => {
                 this.isBackgrounded = isBackgrounded;
+
+                // A new suspension gets its own recovery attempt.
+                if (isBackgrounded && isNativePlatform()) {
+                    try {
+                        sessionStorage.removeItem(COT_SOURCE_RELOAD_KEY);
+                    } catch (err) {
+                        console.warn('Failed to reset MapLibre reload guard', err);
+                    }
+                }
 
                 // The initial fire only syncs state - running recovery there
                 // would race boot's own database open
