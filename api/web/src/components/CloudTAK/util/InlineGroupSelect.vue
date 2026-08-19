@@ -1,7 +1,7 @@
 <template>
     <div :class='containerClass'>
         <TablerBorder
-            :class='borderClass'
+            :class='["cloudtak-accent", borderClass]'
             :background='background'
             :shadow='shadow'
             :fill-height='fillHeight'
@@ -125,8 +125,8 @@ const props = withDefaults(defineProps<{
     editTitle: 'Edit channels',
     containerClass: 'col-12',
     borderClass: undefined,
-    labelClass: 'text-uppercase text-white-50 d-block mb-0',
-    background: 'rgba(0, 0, 0, 0.1)',
+    labelClass: 'text-uppercase text-secondary d-block mb-0',
+    background: '',
     shadow: false,
     fillHeight: false,
     gap: 'sm',
@@ -137,11 +137,11 @@ const props = withDefaults(defineProps<{
     saveLabel: 'Save',
     savingLabel: 'Saving...',
     emptyLabel: 'None',
-    emptyClass: 'text-white-50 mb-0',
+    emptyClass: 'text-secondary mb-0',
     badgeClass: 'rounded-pill text-uppercase fw-semibold',
-    badgeBackgroundColor: 'rgba(107, 114, 128, 0.2)',
-    badgeBorderColor: 'rgba(107, 114, 128, 0.5)',
-    badgeTextColor: '#d1d5db'
+    badgeBackgroundColor: 'var(--tblr-secondary-lt)',
+    badgeBorderColor: 'var(--tblr-border-color)',
+    badgeTextColor: 'var(--tblr-secondary-color)'
 });
 
 const emit = defineEmits<{

@@ -1,7 +1,7 @@
 <template>
     <div :class='containerClass'>
         <TablerBorder
-            :class='borderClass'
+            :class='["cloudtak-accent", borderClass]'
             :background='background'
             :shadow='shadow'
             :fill-height='fillHeight'
@@ -125,16 +125,16 @@ const props = withDefaults(defineProps<{
     editTitle: 'Edit expiry',
     containerClass: 'col-12',
     borderClass: undefined,
-    labelClass: 'text-uppercase text-white-50 d-block mb-0',
-    background: 'rgba(0, 0, 0, 0.1)',
+    labelClass: 'text-uppercase text-secondary d-block mb-0',
+    background: '',
     shadow: false,
     fillHeight: false,
     gap: 'sm',
     saving: false,
     inputLabel: 'Expiration Time',
     emptyLabel: 'None',
-    emptyClass: 'text-start text-white fw-semibold p-0 mb-0 text-decoration-none',
-    displayClass: 'text-start text-white fw-semibold p-0 mb-0 text-decoration-none',
+    emptyClass: 'text-start fw-semibold p-0 mb-0 text-decoration-none',
+    displayClass: 'text-start fw-semibold p-0 mb-0 text-decoration-none',
     interactive: false,
     showClear: true,
     clearLabel: 'Clear',

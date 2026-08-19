@@ -10,7 +10,7 @@
             <div class='row gy-3 gx-0 gx-lg-3'>
                 <div class='col-12'>
                     <TablerBorder
-                        class='cloudtak-bg text-white'
+                        class='cloudtak-accent'
                         gap='lg'
                     >
                         <div class='d-flex align-items-center gap-3'>
@@ -29,7 +29,7 @@
                                 />
                             </div>
                             <div class='flex-grow-1'>
-                                <p class='text-uppercase text-white-50 small mb-1'>
+                                <p class='text-uppercase text-secondary small mb-1'>
                                     Mission
                                 </p>
                                 <h2
@@ -42,33 +42,33 @@
 
                         <div class='row gy-3 gx-0 gx-sm-3'>
                             <div class='col-12 col-lg-6'>
-                                <small class='text-uppercase text-white-50 d-block'>Created</small>
-                                <p class='text-white fw-semibold p-0 mb-0'>
+                                <small class='text-uppercase text-secondary d-block'>Created</small>
+                                <p class='fw-semibold p-0 mb-0'>
                                     {{ props.subscription.meta.createTime.replace(/T/, " ").replace(/:[0-9]+\..*/, "") + " UTC" }}
                                 </p>
                             </div>
                             <div class='col-12 col-lg-6'>
-                                <small class='text-uppercase text-white-50 d-block'>Subscribers</small>
+                                <small class='text-uppercase text-secondary d-block'>Subscribers</small>
                                 <TablerLoading
                                     v-if='loading.users'
                                     :inline='true'
                                 />
                                 <p
                                     v-else-if='isOffline'
-                                    class='text-white fw-semibold p-0 mb-0'
+                                    class='fw-semibold p-0 mb-0'
                                 >
                                     —
                                 </p>
                                 <p
                                     v-else
-                                    class='text-white fw-semibold p-0 mb-0'
+                                    class='fw-semibold p-0 mb-0'
                                     v-text='subscriptions.length + " Users"'
                                 />
                             </div>
                             <div class='col-12'>
-                                <small class='text-uppercase text-white-50 d-block mb-1'>Contents</small>
+                                <small class='text-uppercase text-secondary d-block mb-1'>Contents</small>
                                 <p
-                                    class='text-white fw-semibold mb-0'
+                                    class='fw-semibold mb-0'
                                     v-text='(Array.isArray(props.subscription.meta.contents) ? props.subscription.meta.contents.length : 0) + " Files"'
                                 />
                             </div>
@@ -80,7 +80,6 @@
                                 :saving='savingGroups'
                                 border-class='mission-editable-border'
                                 label='Groups (Channels)'
-                                badge-text-color='#6b7280'
                                 @edit='startEditingGroups'
                                 @cancel='cancelEditingGroups'
                                 @save='saveGroups'
@@ -101,7 +100,7 @@
                                 @save='saveKeywords'
                             />
                             <div class='col-12'>
-                                <small class='text-uppercase text-white-50 d-block mb-1'>Description</small>
+                                <small class='text-uppercase text-secondary d-block mb-1'>Description</small>
                                 <CopyField
                                     :model-value='props.subscription.meta.description'
                                     :edit='props.subscription.subscribed && props.subscription.role.permissions.includes("MISSION_WRITE")'
@@ -110,7 +109,7 @@
                                 >
                                     <span
                                         v-if='!props.subscription.meta.description'
-                                        class='text-white-50 fst-italic'
+                                        class='text-secondary fst-italic'
                                     >No Feed Description</span>
                                 </CopyField>
                             </div>
@@ -119,9 +118,9 @@
                 </div>
 
                 <div class='col-12'>
-                    <TablerBorder class='cloudtak-bg text-white'>
+                    <TablerBorder class='cloudtak-accent'>
                         <template #label>
-                            <p class='text-uppercase text-white-50 small mb-0'>
+                            <p class='text-uppercase text-secondary small mb-0'>
                                 Quick Actions
                             </p>
                         </template>
@@ -196,9 +195,9 @@
                 </div>
 
                 <div class='col-12'>
-                    <TablerBorder class='cloudtak-bg text-white'>
+                    <TablerBorder class='cloudtak-accent'>
                         <template #label>
-                            <p class='text-uppercase text-white-50 small mb-0'>
+                            <p class='text-uppercase text-secondary small mb-0'>
                                 Child Missions
                             </p>
                         </template>

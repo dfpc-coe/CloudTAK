@@ -183,6 +183,12 @@ html[data-bs-theme='light'] .cloudtak-accent.text-white {
     color: var(--tblr-body-color) !important;
 }
 
+/* Loading scrim covering a pane while it works. Takes the surrounding panel or
+ * modal surface so what's underneath is masked in either theme. */
+.cloudtak-scrim {
+    background-color: var(--cloudtak-panel-bg, rgba(20, 20, 25, 0.96));
+}
+
 html[data-bs-theme='dark'] .cloudtak-bg {
     background-color: #283547 !important;
 }
