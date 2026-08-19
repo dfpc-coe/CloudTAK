@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.69.2 - 2026-08-19
+
+- :bug: Reduce time to which maplibre would be refreshed
+
 ### v13.69.1 - 2026-08-18
 
 - :rocket: Consistent Modal Colours
