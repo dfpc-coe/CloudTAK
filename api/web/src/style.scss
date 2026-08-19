@@ -239,6 +239,44 @@ html[data-bs-theme='light'] .cloudtak-header.text-white {
 }
 
 /* -------------------------------------------------------------------------
+ * Modal surface
+ *
+ * Modals teleport to <body>, outside every `.cloudtak-*` surface, so they miss
+ * both the panel fill and the light-theme `text-white` remaps below. Retint the
+ * Tabler modal tokens to the panel surface, and publish --cloudtak-panel-bg so
+ * chrome bands inside a modal take the modal's own surface rather than the
+ * standalone fallback. Header/footer separators follow from --tblr-border-color.
+ * ------------------------------------------------------------------------- */
+
+.modal-content {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+html[data-bs-theme='dark'] .modal-content {
+    --tblr-border-color: rgba(255, 255, 255, 0.14);
+    --cloudtak-panel-bg: rgba(20, 20, 25, 0.96);
+    --tblr-modal-bg: var(--cloudtak-panel-bg);
+    --tblr-modal-color: rgba(255, 255, 255, 0.92);
+    --tblr-modal-border-color: rgba(255, 255, 255, 0.14);
+}
+
+html[data-bs-theme='light'] .modal-content {
+    --tblr-border-color: rgba(0, 0, 0, 0.12);
+    --cloudtak-panel-bg: rgba(255, 255, 255, 0.96);
+    --tblr-modal-bg: var(--cloudtak-panel-bg);
+    --tblr-modal-color: var(--tblr-body-color);
+    --tblr-modal-border-color: rgba(0, 0, 0, 0.12);
+}
+
+html[data-bs-theme='light'] .modal-content .text-white:not(.badge):not(.btn):not([class*='bg-']) {
+    color: var(--tblr-body-color) !important;
+}
+
+html[data-bs-theme='light'] .modal-content .text-white-50:not(.badge):not(.btn):not([class*='bg-']) {
+    color: var(--tblr-secondary-color) !important;
+}
+
+/* -------------------------------------------------------------------------
  * Hover affordances
  * ------------------------------------------------------------------------- */
 

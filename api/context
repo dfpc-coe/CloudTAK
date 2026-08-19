@@ -3,6 +3,9 @@ set -euo pipefail
 Stack=""
 AwsProfileOverride=""
 AwsRegionOverride=""
+ApiUrlOverride=""
+
+DefaultApiUrl="http://localhost:8080"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -30,8 +33,24 @@ while [[ $# -gt 0 ]]; do
             AwsRegionOverride="${1#*=}"
             shift
             ;;
+        --api-url)
+            ApiUrlOverride="${2:-}"
+            if [[ -z "$ApiUrlOverride" ]]; then
+                echo "not ok - --api-url requires a value" >&2
+                exit 1
+            fi
+            shift 2
+            ;;
+        --api-url=*)
+            ApiUrlOverride="${1#*=}"
+            shift
+            ;;
         -h|--help)
-            echo "Usage: ./context [stack] [--profile <aws-profile>] [--region <aws-region>]"
+            echo "Usage: ./context [stack] [--profile <aws-profile>] [--region <aws-region>] [--api-url <url|stack>]"
+            echo ""
+            echo "  --api-url  API_URL written to api/.env-<stack>. Defaults to ${DefaultApiUrl}"
+            echo "             so locally generated URLs (basemap TileJSON, ESRI proxy) point at"
+            echo "             the dev server. Pass 'stack' to use the deployed APIURL output."
             exit 0
             ;;
         -*)
@@ -96,6 +115,28 @@ POSTGRES=$(echo "$StackInfo" | jq .Outputs.DB)
 ApiUrl=$(echo "$StackInfo" | jq -r '.Outputs.APIURL // empty')
 PmtilesUrl=$(echo "$StackInfo" | jq -r '.Outputs.PMTilesAPI // empty')
 
+# Config.envInit() derives WEBHOOKS_URL from API_URL - pin it to the hosted value
+# before API_URL is pointed at localhost so it survives the override.
+WebhooksUrl=""
+if [[ -n "$ApiUrl" ]]; then
+    ApiHost="${ApiUrl#*://}"
+    ApiHost="${ApiHost%%/*}"
+    WebhooksUrl="https://webhooks.${ApiHost#map.}"
+fi
+
+# API_URL is what the API embeds in generated URLs (basemap TileJSON tiles[],
+# ESRI proxy, passkey origin) - default it to the local dev server so those don't
+# point back at the deployed stack.
+if [[ "$ApiUrlOverride" == "stack" ]]; then
+    :
+elif [[ -n "$ApiUrlOverride" ]]; then
+    ApiUrl="$ApiUrlOverride"
+else
+    ApiUrl="$DefaultApiUrl"
+fi
+
+echo "API_URL: $ApiUrl"
+
 # The deployed ECS container receives ECR_TASKS_REPOSITORY_NAME from CloudFormation
 # as tak-vpc-<Environment>-cloudtak-tasks - derive the same value from the stack's
 # Environment parameter so ECR-backed routes (Task versions/capabilities) work locally.
@@ -128,6 +169,9 @@ if [[ -n "$ApiUrl" ]]; then
 fi
 if [[ -n "$PmtilesUrl" ]]; then
     EnvJson=$(echo "$EnvJson" | jq --arg url "$PmtilesUrl" '. + { "PMTILES_URL": $url }')
+fi
+if [[ -n "$WebhooksUrl" ]]; then
+    EnvJson=$(echo "$EnvJson" | jq --arg url "$WebhooksUrl" '. + { "WEBHOOKS_URL": $url }')
 fi
 if [[ -n "$GeofenceSecret" ]]; then
     EnvJson=$(echo "$EnvJson" | jq --arg geofence "$GeofenceSecret" '. + { "CLOUDTAK_Config_geofence_password": $geofence }')
