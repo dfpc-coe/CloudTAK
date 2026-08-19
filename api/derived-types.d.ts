@@ -2266,6 +2266,15 @@ export interface paths {
                             "map::basemap"?: null | number;
                             /** @description Default Terrain (raster-dem) Basemap for New Users */
                             "map::terrain"?: null | number;
+                            /** @description Favourite Basemaps (1-3) shown at the top of the Basemap Menu */
+                            "map::basemap::favs"?: null | {
+                                /** @description Basemap ID */
+                                id: number;
+                                /** @description Basemap Name */
+                                name: string;
+                                /** @description Base64 encoded Preview Image */
+                                image: string;
+                            }[];
                             "display::stale"?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             "display::distance"?: "meter" | "kilometer" | "mile";
                             "display::elevation"?: "meter" | "feet";
@@ -2515,6 +2524,15 @@ export interface paths {
                         "map::basemap"?: null | number;
                         /** @description Default Terrain (raster-dem) Basemap for New Users */
                         "map::terrain"?: null | number;
+                        /** @description Favourite Basemaps (1-3) shown at the top of the Basemap Menu */
+                        "map::basemap::favs"?: null | {
+                            /** @description Basemap ID */
+                            id: number;
+                            /** @description Basemap Name */
+                            name: string;
+                            /** @description Base64 encoded Preview Image */
+                            image: string;
+                        }[];
                         "display::stale"?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                         "display::distance"?: "meter" | "kilometer" | "mile";
                         "display::elevation"?: "meter" | "feet";
@@ -2699,6 +2717,15 @@ export interface paths {
                             "map::basemap"?: null | number;
                             /** @description Default Terrain (raster-dem) Basemap for New Users */
                             "map::terrain"?: null | number;
+                            /** @description Favourite Basemaps (1-3) shown at the top of the Basemap Menu */
+                            "map::basemap::favs"?: null | {
+                                /** @description Basemap ID */
+                                id: number;
+                                /** @description Basemap Name */
+                                name: string;
+                                /** @description Base64 encoded Preview Image */
+                                image: string;
+                            }[];
                             "display::stale"?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             "display::distance"?: "meter" | "kilometer" | "mile";
                             "display::elevation"?: "meter" | "feet";

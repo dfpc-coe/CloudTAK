@@ -67,6 +67,38 @@
                 @create='editModal = {}'
             />
             <template v-else>
+                <div
+                    v-if='favs.length && !paging.collection'
+                    class='col-12 px-2 pt-3'
+                >
+                    <div class='row g-2'>
+                        <div
+                            v-for='fav in favs'
+                            :key='fav.id'
+                            class='col-4'
+                        >
+                            <div
+                                class='basemap-fav cursor-pointer rounded overflow-hidden position-relative'
+                                :class='{ "basemap-fav--active": isCurrentBasemap(fav.id) }'
+                                role='button'
+                                tabindex='0'
+                                :title='fav.name'
+                                @click='setFavBasemap(fav)'
+                                @keyup.enter='setFavBasemap(fav)'
+                            >
+                                <img
+                                    :src='favImage(fav.image)'
+                                    :alt='fav.name'
+                                    class='basemap-fav-image'
+                                >
+                                <div class='basemap-fav-name px-1 text-truncate'>
+                                    {{ fav.name }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class='col-12 d-flex flex-column gap-2 py-3'>
                     <StandardItemFolder
                         v-for='collection in list.collections'
@@ -183,6 +215,8 @@ import PathBreadcrumb from '../util/PathBreadcrumb.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
 import { openExternalUrl } from '../../../utils/capacitor.ts';
 import ProfileConfig from '../../../base/profile.ts';
+import Config from '../../../base/config.ts';
+import type { FullConfig } from '../../../base/config.ts';
 import { server, stdurl } from '../../../std.ts';
 import OverlayManager from '../../../base/overlay.ts';
 import type { Subscription } from 'dexie';
@@ -267,8 +301,13 @@ const list = ref<BasemapList>({
     items: []
 });
 
+type BasemapFav = NonNullable<FullConfig['map::basemap::favs']>[number];
+
+const favs = ref<Array<BasemapFav>>([]);
+
 onMounted(async () => {
     await fetchList();
+    await fetchFavs();
     const isSysAdmin = await ProfileConfig.get('system_admin');
     isSystemAdmin.value = isSysAdmin?.value ?? false;
 });
@@ -339,6 +378,34 @@ async function setBasemap(basemap: Basemap) {
             mode_id: String(basemap.id),
             styles: basemap.styles
         }, { before, position: 'prepend' });
+    }
+}
+
+async function fetchFavs() {
+    try {
+        const cfg = await Config.get('map::basemap::favs');
+        favs.value = (cfg?.value ?? []).slice(0, 3);
+    } catch (err) {
+        console.error('Failed to load favourite basemaps', err);
+    }
+}
+
+function favImage(image: string): string {
+    return image.startsWith('data:') ? image : `data:image/png;base64,${image}`;
+}
+
+async function setFavBasemap(fav: BasemapFav) {
+    try {
+        const res = await server.GET('/api/basemap/{:basemapid}', {
+            params: { path: { ':basemapid': fav.id } }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+        if (typeof res.data === 'string') throw new Error('Unexpected Basemap Response');
+
+        await setBasemap(res.data);
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
 
@@ -413,5 +480,32 @@ async function fetchList() {
 <style scoped>
 .text-decoration-underline-hover:hover {
     text-decoration: underline;
+}
+
+.basemap-fav {
+    border: 1px solid var(--tblr-border-color);
+}
+
+.basemap-fav--active {
+    border-color: var(--tblr-primary);
+    box-shadow: 0 0 0 1px var(--tblr-primary);
+}
+
+.basemap-fav-image {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+}
+
+.basemap-fav-name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    font-size: 12px;
+    text-align: center;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.6);
 }
 </style>

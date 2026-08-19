@@ -87,6 +87,92 @@
                             :disabled='!edit'
                         />
                     </div>
+                    <div class='col-lg-12 mt-3'>
+                        <label class='form-label'>Favourite Basemaps</label>
+
+                        <TablerNone
+                            v-if='!favs.length'
+                            :compact='true'
+                            :create='false'
+                            label='No Favourite Basemaps'
+                        />
+
+                        <div class='d-flex flex-column gap-2'>
+                            <template
+                                v-for='(fav, i) in favs'
+                                :key='i'
+                            >
+                                <StandardItem
+                                    v-if='!edit'
+                                    class='d-flex align-items-center'
+                                >
+                                    <div class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ms-2 my-2 overflow-hidden'>
+                                        <img
+                                            v-if='fav.image'
+                                            :src='fav.image'
+                                            :alt='fav.name'
+                                            class='fav-preview'
+                                        >
+                                        <IconPhoto
+                                            v-else
+                                            :size='24'
+                                            stroke='1'
+                                        />
+                                    </div>
+
+                                    <div class='ms-3 flex-grow-1 fav-content'>
+                                        <span class='fw-semibold'>{{ fav.name }}</span>
+                                    </div>
+                                </StandardItem>
+
+                                <StandardItem
+                                    v-else
+                                    class='px-3 py-2'
+                                >
+                                    <div class='d-flex align-items-center mb-2'>
+                                        <div class='fw-semibold'>
+                                            Favourite {{ i + 1 }}
+                                        </div>
+                                        <div class='ms-auto'>
+                                            <TablerIconButton
+                                                title='Remove Favourite'
+                                                @click='favs.splice(i, 1)'
+                                            >
+                                                <IconTrash
+                                                    :size='20'
+                                                    stroke='1'
+                                                />
+                                            </TablerIconButton>
+                                        </div>
+                                    </div>
+
+                                    <BasemapSelect
+                                        v-model='fav.id'
+                                        :disabled='!edit'
+                                    />
+
+                                    <TablerUploadLogo
+                                        v-model='fav.image'
+                                        :input-id='`basemap-fav-image-${i}`'
+                                        label='Preview Image (PNG)'
+                                        :disabled='!edit'
+                                    />
+                                </StandardItem>
+                            </template>
+
+                            <button
+                                v-if='edit && favs.length < 3'
+                                class='btn btn-secondary w-100'
+                                @click='favs.push({ id: null, name: "", image: "" })'
+                            >
+                                <IconPlus
+                                    :size='20'
+                                    stroke='1'
+                                />
+                                <span class='mx-2'>Add Favourite</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </template>
         </div>
@@ -95,6 +181,7 @@
 
 <script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
+import StandardItem from '../../CloudTAK/util/StandardItem.vue';
 import { ref, watch, onMounted } from 'vue';
 import { server } from '../../../std.ts';
 import { validateLatLng } from '../../../utils/validators.ts';
@@ -103,11 +190,16 @@ import {
     TablerLoading,
     TablerInput,
     TablerIconButton,
-    TablerAlert
+    TablerAlert,
+    TablerNone,
+    TablerUploadLogo
 } from '@tak-ps/vue-tabler';
 import {
     IconPencil,
     IconDeviceFloppy,
+    IconPhoto,
+    IconPlus,
+    IconTrash,
     IconX
 } from '@tabler/icons-vue';
 
@@ -132,6 +224,14 @@ const config = ref<{
     'map::terrain': null
 });
 
+type BasemapFavDraft = {
+    id: number | null;
+    name: string;
+    image: string;
+};
+
+const favs = ref<Array<BasemapFavDraft>>([]);
+
 onMounted(() => {
      if (isOpen.value) fetch();
 });
@@ -147,11 +247,13 @@ async function fetch() {
         const res = await server.GET('/api/config', {
             params: {
                 query: {
-                    keys: Object.keys(config.value).join(',')
+                    keys: [...Object.keys(config.value), 'map::basemap::favs'].join(',')
                 }
             }
         });
         if (res.error) throw new Error(res.error.message);
+
+        favs.value = (res.data['map::basemap::favs'] ?? []).map((fav) => ({ ...fav }));
 
         config.value = {
             // DB is Lng,Lat. UI is Lat,Lng
@@ -178,10 +280,40 @@ async function save() {
         // Save as Lng,Lat
         payload['map::center'] = payload['map::center'].split(',').reverse().join(',');
 
+        const favsPayload: Array<{ id: number; name: string; image: string }> = [];
+        for (const fav of favs.value) {
+            if (fav.id === null) {
+                throw new Error('Each Favourite Basemap must have a Basemap selected');
+            } else if (!fav.image) {
+                throw new Error('Each Favourite Basemap must have a Preview Image');
+            } else if (favsPayload.some((existing) => existing.id === fav.id)) {
+                throw new Error('Favourite Basemaps must be unique');
+            }
+
+            const basemapRes = await server.GET('/api/basemap/{:basemapid}', {
+                params: { path: { ':basemapid': fav.id } }
+            });
+
+            if (basemapRes.error) throw new Error(basemapRes.error.message);
+            if (typeof basemapRes.data === 'string' || !basemapRes.data) throw new Error('Unexpected Basemap Response');
+
+            favsPayload.push({
+                id: fav.id,
+                name: basemapRes.data.name,
+                image: fav.image
+            });
+        }
+
         const res = await server.PUT('/api/config', {
-            body: payload
+            body: {
+                ...payload,
+                'map::basemap::favs': favsPayload.length ? favsPayload : null
+            }
         });
         if (res.error) throw new Error(res.error.message);
+
+        favs.value = favsPayload.map((fav) => ({ ...fav }));
+
         edit.value = false;
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
@@ -190,3 +322,15 @@ async function save() {
     loading.value = false;
 }
 </script>
+
+<style scoped>
+.fav-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.fav-content {
+    min-width: 0;
+}
+</style>
