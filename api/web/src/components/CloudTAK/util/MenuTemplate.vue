@@ -87,7 +87,7 @@
                 border-radius: 0px;
             '
             :class='{
-                "border-bottom border-light": border
+                "border-bottom": border
             }'
         >
             <div class='card-header d-flex align-items-center py-2 px-0 mx-2 flex-wrap row-gap-2'>

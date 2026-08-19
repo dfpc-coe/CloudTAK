@@ -70,9 +70,9 @@
                         <span class='fw-bold'>Pending Invites</span>
                         <TablerBadge
                             class='rounded-pill small ms-auto'
-                            background-color='rgba(239, 68, 68, 0.2)'
-                            border-color='rgba(239, 68, 68, 0.5)'
-                            text-color='#dc2626'
+                            background-color='var(--tblr-red-lt)'
+                            border-color='var(--tblr-red)'
+                            text-color='var(--tblr-red)'
                         >
                             {{ invites.length }}
                         </TablerBadge>
@@ -93,7 +93,7 @@
                     <transition name='menu-overlays-fade'>
                         <div
                             v-if='showInvites'
-                            class='mt-2 pt-2 px-3 rounded-3 border border-white border-opacity-10 bg-black bg-opacity-25'
+                            class='mt-2 pt-2 px-3 rounded-3 border cloudtak-accent'
                             @click.stop
                         >
                             <div

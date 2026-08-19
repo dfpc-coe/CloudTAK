@@ -11,7 +11,7 @@
             <div class='text-secondary'>
                 You have been invited to join the mission:
                 <br>
-                <strong class='text-white'>{{ props.mission.name }}</strong>
+                <strong>{{ props.mission.name }}</strong>
             </div>
         </div>
         <div class='modal-footer'>

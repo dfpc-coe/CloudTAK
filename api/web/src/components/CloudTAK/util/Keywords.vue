@@ -31,7 +31,7 @@
             class='d-flex flex-column gap-2'
         >
             <template v-if='unselectedRelevant.length > 0'>
-                <span class='text-white-50 small fst-italic'>Suggested</span>
+                <span class='text-secondary small fst-italic'>Suggested</span>
 
                 <div class='d-flex flex-wrap gap-2 align-items-center'>
                     <TablerBadge
@@ -85,7 +85,7 @@
     </div>
     <div
         v-else
-        class='text-white-50 small fst-italic'
+        class='text-secondary small fst-italic'
         v-text='placeholder'
     />
 </template>
@@ -114,9 +114,9 @@ const COLORS = {
         text: 'var(--tblr-success, #2fb387)',
     },
     muted: {
-        bg: 'rgba(107, 114, 128, 0.2)',
-        border: 'rgba(107, 114, 128, 0.55)',
-        text: '#6b7280',
+        bg: 'var(--tblr-secondary-lt)',
+        border: 'var(--tblr-border-color)',
+        text: 'var(--tblr-secondary-color)',
     },
 } as const;
 

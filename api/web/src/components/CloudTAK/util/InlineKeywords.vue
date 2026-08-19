@@ -1,7 +1,7 @@
 <template>
     <div :class='containerClass'>
         <TablerBorder
-            :class='borderClass'
+            :class='["cloudtak-accent", borderClass]'
             :background='background'
             :shadow='shadow'
             :fill-height='fillHeight'
@@ -93,8 +93,8 @@ const props = withDefaults(defineProps<{
     editTitle: 'Edit keywords',
     containerClass: 'col-12',
     borderClass: undefined,
-    labelClass: 'text-uppercase text-white-50 d-block mb-0',
-    background: 'rgba(0, 0, 0, 0.1)',
+    labelClass: 'text-uppercase text-secondary d-block mb-0',
+    background: '',
     shadow: false,
     fillHeight: false,
     gap: 'sm',

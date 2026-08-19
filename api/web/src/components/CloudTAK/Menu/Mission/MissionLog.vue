@@ -6,9 +6,9 @@
         />
         <template v-else>
             <div
-                class='mission-log-card cloudtak-bg bg-opacity-50 border rounded-3 text-white w-100 overflow-hidden'
+                class='mission-log-card cloudtak-accent border rounded-3 w-100 overflow-hidden'
                 :class='{
-                    "border-white border-opacity-10 shadow-sm": !editing && !!log.read,
+                    "shadow-sm": !editing && !!log.read,
                     "border-primary border-2 unread-pulse": !editing && !log.read,
                     "border-primary border-2 shadow": editing
                 }'
@@ -23,7 +23,7 @@
                         />
                         <span
                             v-if='!editing'
-                            class='text-white-50 small text-nowrap'
+                            class='text-secondary small text-nowrap'
                             :class='{ "cursor-pointer": !log.read }'
                             @click='markAsRead'
                         >{{ formatDtg(log.dtg) }}</span>
@@ -233,6 +233,12 @@ async function deleteLog() {
 <style scoped>
 .mission-log-card {
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* `.cloudtak-accent` forces the inset border color - unread and editing cards
+ * need their primary border back. */
+.mission-log-card.border-primary {
+    border-color: var(--tblr-primary) !important;
 }
 
 .unread-dot {

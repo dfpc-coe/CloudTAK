@@ -50,7 +50,7 @@
                     <template #filters>
                         <div class='d-flex flex-column'>
                             <div class='d-flex align-items-center justify-content-between px-3 py-2'>
-                                <strong class='small text-uppercase text-white-50'>Filters</strong>
+                                <strong class='small text-uppercase text-secondary'>Filters</strong>
                                 <button
                                     v-if='selectedKeywords.length'
                                     type='button'
@@ -62,7 +62,7 @@
                             </div>
                             <div class='px-3 pb-2 d-flex flex-column gap-2'>
                                 <div>
-                                    <div class='small text-uppercase text-white-50 mb-1'>
+                                    <div class='small text-uppercase text-secondary mb-1'>
                                         Keywords
                                     </div>
                                     <div
@@ -118,7 +118,7 @@
                 >
                     <div
                         v-if='loading.create'
-                        class='position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center cloudtak-bg bg-opacity-75 rounded-4 z-3'
+                        class='position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center cloudtak-scrim rounded-4 z-3'
                     >
                         <TablerLoading
                             desc='Creating Log'
