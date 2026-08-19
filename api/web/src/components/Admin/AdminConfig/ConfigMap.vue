@@ -311,6 +311,9 @@ async function save() {
             }
         });
         if (res.error) throw new Error(res.error.message);
+
+        favs.value = favsPayload.map((fav) => ({ ...fav }));
+
         edit.value = false;
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));

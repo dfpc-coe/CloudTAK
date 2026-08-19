@@ -96,7 +96,7 @@
         "terra-draw": "^1.22.0",
         "terra-draw-maplibre-gl-adapter": "^1.4.1",
         "terra-draw-route-snap-mode": "^0.4.1",
-        "terra-route": "^0.0.17",
+        "terra-route": "^0.0.18",
         "uuid": "^14.0.0",
         "vue": "^3.2.31",
         "vue-component-type-helpers": "^3.0.7",
