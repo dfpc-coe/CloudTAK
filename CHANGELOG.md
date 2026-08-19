@@ -17,6 +17,12 @@
 
 ### Pending Release
 
+### v13.70.0 - 2026-08-19
+
+- :tada: Allow a server admin to specify Basemap Favourites
+- :rocket: Attempt to refresh config keys once every 24 hours
+- :rocket: Additional styling improvements for dark/light modes on mobile
+
 ### v13.69.2 - 2026-08-19
 
 - :bug: Reduce time to which maplibre would be refreshed
