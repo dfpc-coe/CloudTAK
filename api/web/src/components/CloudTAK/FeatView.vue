@@ -5,7 +5,7 @@
         style='height: 100%;'
     >
         <div
-            class='col-12 border-light border-bottom flex-shrink-0'
+            class='col-12 cloudtak-header border-bottom flex-shrink-0'
             style='
                 height: 90px;
                 border-radius: 0px;

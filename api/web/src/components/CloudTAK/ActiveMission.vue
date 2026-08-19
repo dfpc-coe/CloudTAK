@@ -98,7 +98,7 @@
                     </TablerIconButton>
                     <span
                         v-if='unreadLogs && unreadLogs > 0'
-                        class='position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger text-white fw-bold shadow-sm border border-dark'
+                        class='position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger text-white fw-bold shadow-sm unread-badge'
                         style='font-size: 0.75rem; z-index: 10;'
                     >
                         {{ unreadLogs > 99 ? '99+' : unreadLogs }}
@@ -119,7 +119,7 @@
                     </TablerIconButton>
                     <span
                         v-if='unreadChats && unreadChats > 0'
-                        class='position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger text-white fw-bold shadow-sm border border-dark'
+                        class='position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger text-white fw-bold shadow-sm unread-badge'
                         style='font-size: 0.75rem; z-index: 10;'
                     >
                         {{ unreadChats > 99 ? '99+' : unreadChats }}
@@ -186,3 +186,10 @@ const unreadChats = useObservable(
     }))
 );
 </script>
+
+<style scoped>
+/* Ring in the panel fill so the count lifts off the icon it overlaps. */
+.unread-badge {
+    border: 2px solid var(--cloudtak-panel-bg, transparent);
+}
+</style>

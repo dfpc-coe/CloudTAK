@@ -12,7 +12,6 @@
 
 @use '@tabler/core/dist/css/tabler.min.css';
 
-$cloudtak-child: #192f45;
 $cloudtak-navy: #023047;
 $cloudtak-blue: #07556d;
 
@@ -29,7 +28,12 @@ $cloudtak-blue: #07556d;
 }
 
 html[data-bs-theme='dark'] {
-    --tabler-input-bg: var(--tblr-bg-forms, var(--tblr-bg-surface, var(--tblr-body-bg)));
+    /* Floating surface shared by `.cloudtak-panel`, `.cloudtak-header`, modals
+     * and cards on a `.cloudtak-page`. One definition so every raised surface
+     * in the app resolves to the same fill, text and separator color. */
+    --cloudtak-surface-bg: rgba(20, 20, 25, 0.96);
+    --cloudtak-surface-color: rgba(255, 255, 255, 0.92);
+    --cloudtak-surface-border: rgba(255, 255, 255, 0.14);
 
     /* Inset surfaces (`.cloudtak-accent`). Translucent so they lift off whatever
      * surface they're over and stack predictably when nested. */
@@ -49,6 +53,10 @@ html[data-bs-theme='dark'] {
 
 html[data-bs-theme='light'] {
     --tabler-input-bg: var(--cloudtak-light);
+
+    --cloudtak-surface-bg: rgba(255, 255, 255, 0.96);
+    --cloudtak-surface-color: var(--tblr-body-color);
+    --cloudtak-surface-border: rgba(0, 0, 0, 0.12);
 
     --cloudtak-inset-bg: rgba(15, 23, 42, 0.04);
     --cloudtak-inset-border: rgba(15, 23, 42, 0.1);
@@ -85,44 +93,25 @@ html[data-bs-theme='light'] .cloudtak-page {
     color: var(--tblr-body-color);
 }
 
-html[data-bs-theme='light'] .cloudtak-page .text-white:not(.badge):not(.btn):not([class*='bg-']) {
-    color: var(--tblr-body-color) !important;
-}
-
-html[data-bs-theme='light'] .cloudtak-page .text-white-50:not(.badge):not(.btn):not([class*='bg-']) {
-    color: var(--tblr-secondary-color) !important;
-}
-
 /* Shared surface for panels floating above the map (navigation banner, map
  * controls, draggable and bottom panes), and for Tabler cards on a
- * `.cloudtak-page`. Sets --tblr-border-color so border utilities inside a panel
- * pick up the same separator color, and --tblr-card-box-shadow so panels built
- * on a Tabler card get the panel shadow instead of the flat card one. */
+ * `.cloudtak-page`. Backgrounds mirror TablerDropdown's --tabler-dropdown-bg so
+ * floating panels read as the same surface as the notification dropdown.
+ *
+ * Sets --tblr-border-color so border utilities inside a panel pick up the same
+ * separator color, --tblr-card-box-shadow so panels built on a Tabler card get
+ * the panel shadow instead of the flat card one, and --cloudtak-panel-bg so
+ * chrome bands and scrims inside the panel can take its fill. */
 .cloudtak-panel,
 .cloudtak-page .card {
     --tblr-card-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+    --tblr-border-color: var(--cloudtak-surface-border);
+    --cloudtak-panel-bg: var(--cloudtak-surface-bg);
+    border: 1px solid var(--cloudtak-surface-border);
     border-radius: 6px;
     box-shadow: var(--tblr-card-box-shadow);
-}
-
-/* Backgrounds mirror TablerDropdown's --tabler-dropdown-bg so floating panels
- * read as the same surface as the notification dropdown. */
-html[data-bs-theme='dark'] .cloudtak-panel,
-html[data-bs-theme='dark'] .cloudtak-page .card {
-    --tblr-border-color: rgba(255, 255, 255, 0.14);
-    --cloudtak-panel-bg: rgba(20, 20, 25, 0.96);
     background-color: var(--cloudtak-panel-bg);
-    color: rgba(255, 255, 255, 0.92);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-}
-
-html[data-bs-theme='light'] .cloudtak-panel,
-html[data-bs-theme='light'] .cloudtak-page .card {
-    --tblr-border-color: rgba(0, 0, 0, 0.12);
-    --cloudtak-panel-bg: rgba(255, 255, 255, 0.96);
-    background-color: var(--cloudtak-panel-bg);
-    color: var(--tblr-body-color);
-    border: 1px solid rgba(0, 0, 0, 0.12);
+    color: var(--cloudtak-surface-color);
 }
 
 /* Drop Tabler's tinted header/footer bands so card sections read as one panel
@@ -143,14 +132,6 @@ html[data-bs-theme='light'] .cloudtak-page .card {
 
 .cloudtak-page .card .table {
     --tblr-table-hover-bg: var(--cloudtak-hover-bg, rgba(255, 255, 255, 0.06));
-}
-
-html[data-bs-theme='light'] .cloudtak-panel .text-white:not(.badge):not(.btn):not([class*='bg-']) {
-    color: var(--tblr-body-color) !important;
-}
-
-html[data-bs-theme='light'] .cloudtak-panel .text-white-50:not(.badge):not(.btn):not([class*='bg-']) {
-    color: var(--tblr-secondary-color) !important;
 }
 
 /* Navigation banner. Rendered by `Navigating.vue` but positioned relative to
@@ -179,10 +160,6 @@ html[data-bs-theme='light'] .cloudtak-panel .text-white-50:not(.badge):not(.btn)
     border-color: var(--cloudtak-inset-border) !important;
 }
 
-html[data-bs-theme='light'] .cloudtak-accent.text-white {
-    color: var(--tblr-body-color) !important;
-}
-
 /* Loading scrim covering a pane while it works. Takes the surrounding panel or
  * modal surface so what's underneath is masked in either theme. */
 .cloudtak-scrim {
@@ -198,24 +175,31 @@ html[data-bs-theme='light'] .cloudtak-bg {
     color: var(--tblr-body-color);
 }
 
-html[data-bs-theme='light'] .cloudtak-bg.text-white {
+
+/* -------------------------------------------------------------------------
+ * Light-theme `text-white` remap
+ *
+ * A lot of markup predates the light theme and hardcodes `text-white` /
+ * `text-white-50`. Rather than fix every call site at once, any such text on a
+ * CloudTAK surface is remapped to the themed body/secondary color. Badges,
+ * buttons and anything carrying its own `bg-*` keep their white text, since
+ * those sit on a colored fill in both themes.
+ *
+ * New markup should use `text-secondary` (or inherit) instead of relying on
+ * this - it exists to keep legacy markup readable, not as the house style.
+ * ------------------------------------------------------------------------- */
+
+html[data-bs-theme='light'] :is(.cloudtak-page, .cloudtak-panel, .cloudtak-bg, .cloudtak-header, .cloudtak-accent, .modal-content) .text-white:not(.badge):not(.btn):not([class*='bg-']) {
     color: var(--tblr-body-color) !important;
 }
 
-html[data-bs-theme='light'] .cloudtak-bg .text-white:not(.badge):not(.btn):not([class*='bg-']),
-html[data-bs-theme='light'] .cloudtak-header .text-white:not(.badge):not(.btn):not([class*='bg-']),
-html[data-bs-theme='light'] .cloudtak-accent .text-white:not(.badge):not(.btn):not([class*='bg-']) {
-    color: var(--tblr-body-color) !important;
-}
-
-html[data-bs-theme='light'] .cloudtak-bg .text-white-50:not(.badge):not(.btn):not([class*='bg-']),
-html[data-bs-theme='light'] .cloudtak-header .text-white-50:not(.badge):not(.btn):not([class*='bg-']),
-html[data-bs-theme='light'] .cloudtak-accent .text-white-50:not(.badge):not(.btn):not([class*='bg-']) {
+html[data-bs-theme='light'] :is(.cloudtak-page, .cloudtak-panel, .cloudtak-bg, .cloudtak-header, .cloudtak-accent, .modal-content) .text-white-50:not(.badge):not(.btn):not([class*='bg-']) {
     color: var(--tblr-secondary-color) !important;
 }
 
-.bg-child {
-    background-color: $cloudtak-child !important;
+/* Surfaces that carry `text-white` on the surface element itself. */
+html[data-bs-theme='light'] :is(.cloudtak-bg, .cloudtak-header, .cloudtak-accent).text-white {
+    color: var(--tblr-body-color) !important;
 }
 
 /* -------------------------------------------------------------------------
@@ -230,18 +214,9 @@ html[data-bs-theme='light'] .cloudtak-accent .text-white-50:not(.badge):not(.btn
  * `!important` is needed to beat the transparent `.card-header` rule above.
  * ------------------------------------------------------------------------- */
 
-html[data-bs-theme='dark'] .cloudtak-header {
-    background-color: var(--cloudtak-panel-bg, rgba(20, 20, 25, 0.96)) !important;
-    color: rgba(255, 255, 255, 0.92);
-}
-
-html[data-bs-theme='light'] .cloudtak-header {
-    background-color: var(--cloudtak-panel-bg, rgba(255, 255, 255, 0.96)) !important;
-    color: var(--tblr-body-color);
-}
-
-html[data-bs-theme='light'] .cloudtak-header.text-white {
-    color: var(--tblr-body-color) !important;
+.cloudtak-header {
+    background-color: var(--cloudtak-panel-bg, var(--cloudtak-surface-bg)) !important;
+    color: var(--cloudtak-surface-color);
 }
 
 /* -------------------------------------------------------------------------
@@ -255,31 +230,22 @@ html[data-bs-theme='light'] .cloudtak-header.text-white {
  * ------------------------------------------------------------------------- */
 
 .modal-content {
+    --tblr-border-color: var(--cloudtak-surface-border);
+    --cloudtak-panel-bg: var(--cloudtak-surface-bg);
+    --tblr-modal-bg: var(--cloudtak-panel-bg);
+    --tblr-modal-color: var(--cloudtak-surface-color);
+    --tblr-modal-border-color: var(--cloudtak-surface-border);
+
+    /* Tabler declares these on `.modal`, above this element, so they resolve
+     * against Tabler's own tokens rather than the ones set here. Redeclaring
+     * them on the content keeps the footer flush with the modal surface
+     * instead of the stock tertiary band, and matches the header/footer
+     * separators to every other separator on the surface. */
+    --tblr-modal-footer-bg: transparent;
+    --tblr-modal-header-border-color: var(--cloudtak-surface-border);
+    --tblr-modal-footer-border-color: var(--cloudtak-surface-border);
+
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
-}
-
-html[data-bs-theme='dark'] .modal-content {
-    --tblr-border-color: rgba(255, 255, 255, 0.14);
-    --cloudtak-panel-bg: rgba(20, 20, 25, 0.96);
-    --tblr-modal-bg: var(--cloudtak-panel-bg);
-    --tblr-modal-color: rgba(255, 255, 255, 0.92);
-    --tblr-modal-border-color: rgba(255, 255, 255, 0.14);
-}
-
-html[data-bs-theme='light'] .modal-content {
-    --tblr-border-color: rgba(0, 0, 0, 0.12);
-    --cloudtak-panel-bg: rgba(255, 255, 255, 0.96);
-    --tblr-modal-bg: var(--cloudtak-panel-bg);
-    --tblr-modal-color: var(--tblr-body-color);
-    --tblr-modal-border-color: rgba(0, 0, 0, 0.12);
-}
-
-html[data-bs-theme='light'] .modal-content .text-white:not(.badge):not(.btn):not([class*='bg-']) {
-    color: var(--tblr-body-color) !important;
-}
-
-html[data-bs-theme='light'] .modal-content .text-white-50:not(.badge):not(.btn):not([class*='bg-']) {
-    color: var(--tblr-secondary-color) !important;
 }
 
 /* -------------------------------------------------------------------------
@@ -450,21 +416,33 @@ html[data-bs-theme='light'] .modal-content .text-white-50:not(.badge):not(.btn):
  * Bootstrap / Tabler overrides
  * ------------------------------------------------------------------------- */
 
+/* Solid primary buttons use the CloudTAK brand blue rather than Tabler's
+ * lighter --tblr-primary, which stays in place for outline/ghost/link
+ * treatments and focus rings. Set the button's own tokens rather than a flat
+ * `background-color` - overriding the paint directly freezes the hover, active
+ * and disabled states, which all resolve through these variables. */
 .btn-primary {
-    background-color: $cloudtak-blue !important;
+    --tblr-btn-bg: #{$cloudtak-blue};
+    --tblr-btn-hover-bg: #{color-mix(in srgb, $cloudtak-blue 88%, #000)};
+    --tblr-btn-active-bg: #{color-mix(in srgb, $cloudtak-blue 80%, #000)};
+    --tblr-btn-disabled-bg: #{$cloudtak-blue};
 }
 
+/* Tabler's dark theme pairs a light grey `--tblr-secondary` fill with a near
+ * white label, which lands at 2.4:1. Secondary buttons are mostly Cancel and
+ * dismiss actions, so flip the label dark to keep them readable. */
+html[data-bs-theme='dark'] .btn-secondary {
+    --tblr-btn-color: var(--tblr-dark);
+    --tblr-btn-hover-color: var(--tblr-dark);
+    --tblr-btn-active-color: var(--tblr-dark);
+    --tblr-btn-disabled-color: var(--tblr-dark);
+}
+
+/* Tabler's `.btn-check + .btn:hover` resets a checked toggle to the unchecked
+ * surface, so hovering the selected pill makes it look deselected. Hold the
+ * checked state instead of repainting it. */
 .btn-check:checked + .btn:hover {
-    background-color: var(--tblr-primary) !important;
-    border-color: var(--tblr-primary) !important;
-    color: white !important;
-}
-
-.border-light {
-    border-radius: 6px;
-    background-color: rgba(0, 0, 0, 0.2);
-}
-
-.border-dark {
-    background: #0f172a;
+    color: var(--tblr-btn-active-color);
+    background-color: var(--tblr-btn-active-bg);
+    border-color: var(--tblr-btn-active-border-color);
 }
