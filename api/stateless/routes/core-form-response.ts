@@ -35,10 +35,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         throw new Err(403, null, 'You do not have permission to access this Event');
     }
 
-    /** Refuse Event links pointing at Events that don't exist */
-    async function ensureEvents(events: string[]): Promise<void> {
+    /**
+     * Refuse Event links pointing at Events that don't exist or that the
+     * caller cannot access - linking surfaces the Response to the Event's
+     * viewers, so it requires the same access as reading the Event
+     */
+    async function ensureEvents(user: AuthUser, events: string[]): Promise<void> {
         for (const event of events) {
-            await config.models.CoreEvent.from(event);
+            const augmented = await config.models.CoreEvent.augmented_from(event);
+            await ensureEventAccess(user, augmented);
         }
     }
 
@@ -221,7 +226,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             formControl.validateResponse(form, req.body.response);
 
-            await ensureEvents(req.body.events);
+            await ensureEvents(user, req.body.events);
 
             const response = await config.models.CoreFormResponse.generate({
                 form: form.id,
@@ -295,7 +300,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (req.body.events !== undefined) {
-                await ensureEvents(req.body.events);
+                await ensureEvents(user, req.body.events);
             }
 
             if (req.body.response !== undefined) {

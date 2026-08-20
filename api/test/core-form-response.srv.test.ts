@@ -573,4 +573,73 @@ test('GET: api/core/event/:event/response - 403 for user without Event access', 
     }
 });
 
+test('POST: api/core/form/:form/response - 403 for linking an Event without access', async () => {
+    try {
+        const form = await flight.fetch('/api/core/form', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.user,
+            },
+            body: {
+                name: 'User Authored Form',
+                schema: { type: 'object' },
+            },
+        }, true);
+
+        const res = await flight.fetch(`/api/core/form/${form.body.id}/response`, {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.user,
+            },
+            body: {
+                response: {},
+                events: [linkedEventId],
+            },
+        }, false);
+
+        assert.equal(res.status, 403);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/core/form/:form/response/:response - 403 for linking an Event without access', async () => {
+    try {
+        const form = await flight.fetch('/api/core/form', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.user,
+            },
+            body: {
+                name: 'User Authored Patch Form',
+                schema: { type: 'object' },
+            },
+        }, true);
+
+        const created = await flight.fetch(`/api/core/form/${form.body.id}/response`, {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.user,
+            },
+            body: {
+                response: {},
+            },
+        }, true);
+
+        const res = await flight.fetch(`/api/core/form/${form.body.id}/response/${created.body.id}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.user,
+            },
+            body: {
+                events: [linkedEventId],
+            },
+        }, false);
+
+        assert.equal(res.status, 403);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 flight.landing();
