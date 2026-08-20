@@ -1373,6 +1373,13 @@
       "when": 1786634132181,
       "tag": "0196_layer_template_removal",
       "breakpoints": true
+    },
+    {
+      "idx": 197,
+      "version": "7",
+      "when": 1787197302733,
+      "tag": "0197_core_form",
+      "breakpoints": true
     }
   ]
 }

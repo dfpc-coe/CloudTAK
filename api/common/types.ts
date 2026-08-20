@@ -245,6 +245,17 @@ export const CoreEventBoardEventResponse = Type.Object({
     event: CoreEventResponse,
 });
 
+export const CoreFormResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    username: Type.Union([Type.Null(), Type.String()], { description: 'Author of the Form' }),
+    name: Type.String(),
+    description: Type.String(),
+    schema: Type.Record(Type.String(), Type.Unknown(), { description: 'JSON Schema the Form input is generated & validated from' }),
+    channels: Type.Array(Type.Integer(), { description: 'TAK Server Channels the Form is shared with' }),
+});
+
 export const CoreDeviceResponse = Type.Object({
     id: Type.String(),
     created: Type.String(),

@@ -106,6 +106,26 @@ export const CoreEventBoardEvent = pgTable('core_event_board_event', {
     board_event_idx: unique().on(table.board, table.event),
 }));
 
+/** A user defined Form - schema holds the JSON Schema the Form input is generated & validated from */
+export const CoreForm = pgTable('core_form', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    username: text().references(() => Profile.username), // Author of the Form
+    name: text().notNull(),
+    description: text().notNull().default(''),
+    schema: jsonb().$type<Record<string, unknown>>().notNull(),
+});
+
+export const CoreFormChannel = pgTable('core_form_channel', {
+    form: uuid().notNull().references(() => CoreForm.id, { onDelete: 'cascade' }),
+    channel: bigint({ mode: 'bigint' }).notNull(),
+}, table => ({
+    pk: primaryKey({
+        columns: [table.form, table.channel],
+    }),
+}));
+
 /**
  * A durable physical asset (sensor, drone, vehicle, radio, etc.) tracked independently
  * of any single Core Event. Device identity fields (manufacturer, model, serial, etc.)
