@@ -3,7 +3,7 @@ import Modeler, { GenericList, GenericListInput } from '@openaddresses/batch-gen
 import { Static } from '@sinclair/typebox';
 import { CoreFormResponse } from '../types.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { CoreForm, CoreFormBoard } from '../schema.js';
+import { CoreForm, CoreFormChannel } from '../schema.js';
 import { SQL, is, sql, eq, asc, desc } from 'drizzle-orm';
 
 export default class CoreFormModel extends Modeler<typeof CoreForm> {
@@ -16,17 +16,17 @@ export default class CoreFormModel extends Modeler<typeof CoreForm> {
     async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof CoreFormResponse>> {
         const SubTable = this.pool
             .select({
-                form: CoreFormBoard.form,
-                boards: sql`JSON_AGG(core_form_board.board ORDER BY core_form_board.board)`.as('boards'),
+                form: CoreFormChannel.form,
+                channels: sql`JSON_AGG(core_form_channel.channel::BIGINT ORDER BY core_form_channel.channel::BIGINT)`.as('channels'),
             })
-            .from(CoreFormBoard)
-            .groupBy(CoreFormBoard.form)
-            .as('boards');
+            .from(CoreFormChannel)
+            .groupBy(CoreFormChannel.form)
+            .as('channels');
 
         const pgres = await this.pool
             .select({
                 form: CoreForm,
-                boards: sql`COALESCE(${SubTable.boards}, '[]'::JSON)`.as('boards'),
+                channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
             })
             .from(CoreForm)
             .leftJoin(SubTable, eq(CoreForm.id, SubTable.form))
@@ -37,7 +37,7 @@ export default class CoreFormModel extends Modeler<typeof CoreForm> {
 
         return {
             ...pgres[0].form,
-            boards: pgres[0].boards as string[],
+            channels: pgres[0].channels as number[],
         };
     }
 
@@ -47,18 +47,18 @@ export default class CoreFormModel extends Modeler<typeof CoreForm> {
 
         const SubTable = this.pool
             .select({
-                form: CoreFormBoard.form,
-                boards: sql`JSON_AGG(core_form_board.board ORDER BY core_form_board.board)`.as('boards'),
+                form: CoreFormChannel.form,
+                channels: sql`JSON_AGG(core_form_channel.channel::BIGINT ORDER BY core_form_channel.channel::BIGINT)`.as('channels'),
             })
-            .from(CoreFormBoard)
-            .groupBy(CoreFormBoard.form)
-            .as('boards');
+            .from(CoreFormChannel)
+            .groupBy(CoreFormChannel.form)
+            .as('channels');
 
         const pgres = await this.pool
             .select({
                 count: sql<string>`count(*) OVER()`.as('count'),
                 form: CoreForm,
-                boards: sql`COALESCE(${SubTable.boards}, '[]'::JSON)`.as('boards'),
+                channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
             })
             .from(CoreForm)
             .leftJoin(SubTable, eq(CoreForm.id, SubTable.form))
@@ -75,7 +75,7 @@ export default class CoreFormModel extends Modeler<typeof CoreForm> {
                 items: pgres.map((t) => {
                     return {
                         ...t.form,
-                        boards: t.boards as string[],
+                        channels: t.channels as number[],
                     };
                 }),
             };

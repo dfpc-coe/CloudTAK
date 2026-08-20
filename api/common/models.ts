@@ -2,6 +2,7 @@ import Modeler, { Pool } from '@openaddresses/batch-generic';
 import CoreDevice from './models/CoreDevice.js';
 import CoreEvent from './models/CoreEvent.js';
 import CoreForm from './models/CoreForm.js';
+import CoreFormResponse from './models/CoreFormResponse.js';
 import Data from './models/Data.js';
 import Import from './models/Import.js';
 import Layer from './models/Layer.js';
@@ -32,7 +33,10 @@ export default class Models {
     CoreEventBoardColumn: Modeler<typeof pgtypes.CoreEventBoardColumn>;
     CoreEventBoardEvent: Modeler<typeof pgtypes.CoreEventBoardEvent>;
     CoreForm: CoreForm;
-    CoreFormBoard: Modeler<typeof pgtypes.CoreFormBoard>;
+    CoreFormChannel: Modeler<typeof pgtypes.CoreFormChannel>;
+    CoreFormColumn: Modeler<typeof pgtypes.CoreFormColumn>;
+    CoreFormResponse: CoreFormResponse;
+    CoreEventResponse: Modeler<typeof pgtypes.CoreEventResponse>;
 
     Connection: Modeler<typeof pgtypes.Connection>;
     ConnectionToken: Modeler<typeof pgtypes.ConnectionToken>;
@@ -80,7 +84,10 @@ export default class Models {
         this.CoreEventBoardColumn = new Modeler(pg, pgtypes.CoreEventBoardColumn);
         this.CoreEventBoardEvent = new Modeler(pg, pgtypes.CoreEventBoardEvent);
         this.CoreForm = new CoreForm(pg);
-        this.CoreFormBoard = new Modeler(pg, pgtypes.CoreFormBoard);
+        this.CoreFormChannel = new Modeler(pg, pgtypes.CoreFormChannel);
+        this.CoreFormColumn = new Modeler(pg, pgtypes.CoreFormColumn);
+        this.CoreFormResponse = new CoreFormResponse(pg);
+        this.CoreEventResponse = new Modeler(pg, pgtypes.CoreEventResponse);
         this.ProfileChat = new ProfileChat(pg);
         this.Icon = new Icon(pg);
 

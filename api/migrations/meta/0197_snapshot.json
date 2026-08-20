@@ -1,5 +1,5 @@
 {
-  "id": "645b16d0-6b5e-44ec-9dad-22980c79f5d9",
+  "id": "03eefed1-86a9-48b1-8391-2e3bb0dd3457",
   "prevId": "9bc13ce6-0e2e-4699-8c49-4a90e759ea30",
   "version": "7",
   "dialect": "postgresql",
@@ -1524,6 +1524,66 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.core_event_response": {
+      "name": "core_event_response",
+      "schema": "",
+      "columns": {
+        "event": {
+          "name": "event",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "response": {
+          "name": "response",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "core_event_response_event_core_event_id_fk": {
+          "name": "core_event_response_event_core_event_id_fk",
+          "tableFrom": "core_event_response",
+          "tableTo": "core_event",
+          "columnsFrom": [
+            "event"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "core_event_response_response_core_form_response_id_fk": {
+          "name": "core_event_response_response_core_form_response_id_fk",
+          "tableFrom": "core_event_response",
+          "tableTo": "core_form_response",
+          "columnsFrom": [
+            "response"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "core_event_response_event_response_pk": {
+          "name": "core_event_response_event_response_pk",
+          "columns": [
+            "event",
+            "response"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.core_form": {
       "name": "core_form",
       "schema": "",
@@ -1597,8 +1657,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.core_form_board": {
-      "name": "core_form_board",
+    "public.core_form_channel": {
+      "name": "core_form_channel",
       "schema": "",
       "columns": {
         "form": {
@@ -1607,18 +1667,109 @@
           "primaryKey": false,
           "notNull": true
         },
-        "board": {
-          "name": "board",
-          "type": "uuid",
+        "channel": {
+          "name": "channel",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "core_form_board_form_core_form_id_fk": {
-          "name": "core_form_board_form_core_form_id_fk",
-          "tableFrom": "core_form_board",
+        "core_form_channel_form_core_form_id_fk": {
+          "name": "core_form_channel_form_core_form_id_fk",
+          "tableFrom": "core_form_channel",
+          "tableTo": "core_form",
+          "columnsFrom": [
+            "form"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "core_form_channel_form_channel_pk": {
+          "name": "core_form_channel_form_channel_pk",
+          "columns": [
+            "form",
+            "channel"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.core_form_response": {
+      "name": "core_form_response",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created": {
+          "name": "created",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "Now()"
+        },
+        "updated": {
+          "name": "updated",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "Now()"
+        },
+        "form": {
+          "name": "form",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "username": {
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "response": {
+          "name": "response",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        }
+      },
+      "indexes": {
+        "core_form_response_form_idx": {
+          "name": "core_form_response_form_idx",
+          "columns": [
+            {
+              "expression": "form",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "core_form_response_form_core_form_id_fk": {
+          "name": "core_form_response_form_core_form_id_fk",
+          "tableFrom": "core_form_response",
           "tableTo": "core_form",
           "columnsFrom": [
             "form"
@@ -1629,29 +1780,21 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "core_form_board_board_core_event_board_id_fk": {
-          "name": "core_form_board_board_core_event_board_id_fk",
-          "tableFrom": "core_form_board",
-          "tableTo": "core_event_board",
+        "core_form_response_username_profile_username_fk": {
+          "name": "core_form_response_username_profile_username_fk",
+          "tableFrom": "core_form_response",
+          "tableTo": "profile",
           "columnsFrom": [
-            "board"
+            "username"
           ],
           "columnsTo": [
-            "id"
+            "username"
           ],
-          "onDelete": "cascade",
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "core_form_board_form_board_pk": {
-          "name": "core_form_board_form_board_pk",
-          "columns": [
-            "form",
-            "board"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},

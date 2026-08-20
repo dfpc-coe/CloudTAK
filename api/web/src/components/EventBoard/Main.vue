@@ -157,6 +157,7 @@
                 v-else-if='mode === "board"'
                 v-model:columns='columns'
                 :board='board'
+                :channel='channel'
                 @error='error = $event'
                 @refresh='listColumns'
                 @open-event='openEvent'
@@ -183,6 +184,15 @@
             :navigate='false'
             @create='onEventCreated($event)'
             @close='createEvent = false'
+        />
+
+        <FormWizard
+            v-if='formWizard'
+            :event-id='formWizard.event.id'
+            :event-name='formWizard.event.name'
+            :forms='formWizard.forms'
+            @complete='completeFormWizard'
+            @close='formWizard = undefined'
         />
 
         <EditBoardModal
@@ -223,8 +233,10 @@
 import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { server } from '../../std.ts';
-import type { CoreEvent, CoreEventBoard, CoreEventBoardEvent } from '../../types.ts';
+import type { CoreForm, CoreEvent, CoreEventBoard, CoreEventBoardEvent } from '../../types.ts';
 import type { BoardColumn } from './types.ts';
+import { missingRequiredForms } from '../../utils/column-forms.ts';
+import FormWizard from '../CloudTAK/util/FormWizard.vue';
 import NavHeader from '../util/NavHeader.vue';
 import GroupSelectDropdown from '../CloudTAK/util/GroupSelectDropdown.vue';
 import type { GroupSelectChannel } from '../CloudTAK/util/GroupSelectDropdown.vue';
@@ -271,6 +283,12 @@ const mode = ref<'board' | 'list'>(route.query.view === 'list' ? 'list' : 'board
 
 const nominate = ref(false);
 const createEvent = ref(false);
+
+/** A nomination held back by required Forms - completed by the FormWizard */
+const formWizard = ref<{
+    forms: Array<CoreForm>;
+    event: CoreEvent;
+} | undefined>();
 const addBoard = ref(false);
 const editBoard = ref<CoreEventBoard | undefined>();
 const viewEvent = ref<string | undefined>();
@@ -507,17 +525,47 @@ async function nominateEvent(event: CoreEvent): Promise<void> {
     if (!column) return;
 
     try {
-        const res = await server.PUT('/api/board/event', {
-            body: {
-                column: column.id,
-                event: event.id,
-                position: column.events.length,
-            }
-        });
+        // Nomination is blocked until the Nominated Column's required Forms
+        // have a Response for the Event - the wizard collects them first
+        const missing = await missingRequiredForms(column.id, event.id);
 
-        if (res.error) throw new Error(res.error.message);
+        if (missing.length) {
+            formWizard.value = { forms: missing, event };
+            return;
+        }
 
-        column.events.push(res.data as CoreEventBoardEvent);
+        await placeEvent(event);
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
+
+async function placeEvent(event: CoreEvent): Promise<void> {
+    const column = nominatedColumn.value;
+
+    if (!column) return;
+
+    const res = await server.PUT('/api/board/event', {
+        body: {
+            column: column.id,
+            event: event.id,
+            position: column.events.length,
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    column.events.push(res.data as CoreEventBoardEvent);
+}
+
+async function completeFormWizard(): Promise<void> {
+    const pending = formWizard.value;
+    formWizard.value = undefined;
+
+    if (!pending) return;
+
+    try {
+        await placeEvent(pending.event);
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }

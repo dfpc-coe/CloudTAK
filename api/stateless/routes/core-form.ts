@@ -1,63 +1,17 @@
-import { Type, Static } from '@sinclair/typebox';
+import { Type } from '@sinclair/typebox';
 import { StandardResponse, CoreFormResponse } from '../../common/types.js';
 import { sql, eq } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthUser } from '../../common/auth.js';
-import { CoreForm, CoreFormBoard } from '../../common/schema.js';
+import Auth from '../../common/auth.js';
+import { CoreForm, CoreFormChannel } from '../../common/schema.js';
 import type ConfigStateless from '../config.js';
-import BoardControl from '../lib/control/board.js';
+import FormControl from '../lib/control/form.js';
 import { userChannels } from '../lib/tak-channels.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
-    const boardControl = new BoardControl(config);
-
-    /** Is the requester the author of the Form - the user that created it or a System Admin */
-    function isFormAuthor(user: AuthUser, form: Static<typeof CoreFormResponse>): boolean {
-        return user.is_admin() || form.username === user.email;
-    }
-
-    /**
-     * A Form is visible to its author, System Admins, and any user with an
-     * active channel a Board the Form is related to belongs to
-     */
-    async function ensureFormAccess(user: AuthUser, form: Static<typeof CoreFormResponse>): Promise<void> {
-        if (isFormAuthor(user, form)) return;
-
-        if (form.boards.length) {
-            const channels = [...await userChannels(config, user.email)];
-
-            if (channels.length) {
-                const boards = await config.models.CoreEventBoard.list({
-                    limit: 1,
-                    where: sql`id IN ${form.boards} AND channel IN ${channels}`,
-                });
-
-                if (boards.total > 0) return;
-            }
-        }
-
-        throw new Err(403, null, 'You do not have permission to access this Form');
-    }
-
-    /**
-     * Replace the Boards a Form is related to - the caller must have access
-     * to each of the given Boards
-     */
-    async function commitBoards(user: AuthUser, form: string, boards: string[]): Promise<void> {
-        for (const board of boards) {
-            await boardControl.boardAccess(user, board);
-        }
-
-        await config.pg.delete(CoreFormBoard)
-            .where(eq(CoreFormBoard.form, form));
-
-        if (boards.length > 0) {
-            await config.pg.insert(CoreFormBoard)
-                .values(boards.map(board => ({ form, board })));
-        }
-    }
+    const formControl = new FormControl(config);
 
     await schema.get('/core/form', {
         name: 'List Forms',
@@ -72,9 +26,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 enum: Object.keys(CoreForm),
             }),
             filter: Default.Filter,
-            board: Type.Optional(Type.String({
-                format: 'uuid',
-                description: 'Only return Forms related to the given Board',
+            channel: Type.Optional(Type.Union([
+                Type.Integer({ minimum: 0 }),
+                Type.Array(Type.Integer({ minimum: 0 })),
+            ], {
+                description: 'Only return Forms shared with the given TAK Channel bitpos - can be provided multiple times to match any of the given Channels',
             })),
         }),
         res: Type.Object({
@@ -85,20 +41,24 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const board = req.query.board === undefined
+            const filterChannels = req.query.channel === undefined
+                ? []
+                : Array.isArray(req.query.channel) ? req.query.channel : [req.query.channel];
+
+            const channel = filterChannels.length === 0
                 ? sql`True`
                 : sql`EXISTS (
                     SELECT 1
-                    FROM core_form_board
-                    WHERE core_form_board.form = core_form.id
-                    AND core_form_board.board = ${req.query.board}
+                    FROM core_form_channel
+                    WHERE core_form_channel.form = core_form.id
+                    AND core_form_channel.channel IN ${filterChannels}
                 )`;
 
             let where;
             if (user.is_admin()) {
                 where = sql`
                     name ~* ${req.query.filter}
-                    AND ${board}
+                    AND ${channel}
                 `;
             } else {
                 const channels = [...await userChannels(config, user.email)];
@@ -110,18 +70,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                             username = ${user.email}
                             OR EXISTS (
                                 SELECT 1
-                                FROM core_form_board
-                                JOIN core_event_board ON core_event_board.id = core_form_board.board
-                                WHERE core_form_board.form = core_form.id
-                                AND core_event_board.channel IN ${channels}
+                                FROM core_form_channel
+                                WHERE core_form_channel.form = core_form.id
+                                AND core_form_channel.channel IN ${channels}
                             )
                         )
-                        AND ${board}
+                        AND ${channel}
                     `
                     : sql`
                         name ~* ${req.query.filter}
                         AND username = ${user.email}
-                        AND ${board}
+                        AND ${channel}
                     `;
             }
 
@@ -153,9 +112,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const form = await config.models.CoreForm.augmented_from(req.params.form);
-
-            await ensureFormAccess(user, form);
+            const form = await formControl.formAccess(user, req.params.form);
 
             res.json(form);
         } catch (err) {
@@ -173,10 +130,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             schema: Type.Record(Type.String(), Type.Unknown(), {
                 description: 'JSON Schema the Form input is generated & validated from',
             }),
-            boards: Type.Array(Type.String({ format: 'uuid' }), {
+            channels: Type.Array(Type.Integer({ minimum: 0 }), {
                 uniqueItems: true,
                 default: [],
-                description: 'KanBan Boards the Form can be used on',
+                description: 'TAK Server Channels to share the Form with',
             }),
         }),
         res: CoreFormResponse,
@@ -184,14 +141,22 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const { boards, ...body } = req.body;
+            const { channels, ...body } = req.body;
+
+            formControl.ensureValidSchema(body.schema);
 
             const form = await config.models.CoreForm.generate({
                 ...body,
                 username: user.email,
             });
 
-            await commitBoards(user, form.id, boards);
+            if (channels.length > 0) {
+                await config.pg.insert(CoreFormChannel)
+                    .values(channels.map(ch => ({
+                        form: form.id,
+                        channel: BigInt(ch),
+                    })));
+            }
 
             res.json(await config.models.CoreForm.augmented_from(form.id));
         } catch (err) {
@@ -214,9 +179,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             schema: Type.Optional(Type.Record(Type.String(), Type.Unknown(), {
                 description: 'JSON Schema the Form input is generated & validated from - replaces the existing schema',
             })),
-            boards: Type.Optional(Type.Array(Type.String({ format: 'uuid' }), {
+            channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), {
                 uniqueItems: true,
-                description: 'KanBan Boards the Form can be used on - replaces the existing Board relations',
+                description: 'TAK Server Channels to share the Form with - replaces the existing sharing',
             })),
         }),
         res: CoreFormResponse,
@@ -226,11 +191,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const form = await config.models.CoreForm.augmented_from(req.params.form);
 
-            if (!isFormAuthor(user, form)) {
+            if (!formControl.isFormAuthor(user, form)) {
                 throw new Err(403, null, 'Only the Form author can update this Form');
             }
 
-            const { boards, ...body } = req.body;
+            const { channels, ...body } = req.body;
+
+            if (body.schema !== undefined) {
+                formControl.ensureValidSchema(body.schema);
+            }
 
             if (Object.keys(body).length > 0) {
                 await config.models.CoreForm.commit(req.params.form, {
@@ -239,8 +208,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 });
             }
 
-            if (boards !== undefined) {
-                await commitBoards(user, req.params.form, boards);
+            if (channels !== undefined) {
+                await config.pg.delete(CoreFormChannel)
+                    .where(eq(CoreFormChannel.form, req.params.form));
+
+                if (channels.length > 0) {
+                    await config.pg.insert(CoreFormChannel)
+                        .values(channels.map(ch => ({
+                            form: req.params.form,
+                            channel: BigInt(ch),
+                        })));
+                }
             }
 
             res.json(await config.models.CoreForm.augmented_from(req.params.form));
@@ -265,7 +243,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const form = await config.models.CoreForm.augmented_from(req.params.form);
 
-            if (!isFormAuthor(user, form)) {
+            if (!formControl.isFormAuthor(user, form)) {
                 throw new Err(403, null, 'Only the Form author can delete this Form');
             }
 

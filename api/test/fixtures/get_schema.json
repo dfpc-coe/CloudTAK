@@ -549,6 +549,76 @@
         "query": false,
         "res": true
     },
+    "GET /board/column/:column/form": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /board/column/:column/form": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /board/column/:column/form/:form": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /core/event/:event/response": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /core/form/:form/response": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /core/form/:form/response": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /core/form/:form/response/:response": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /core/form/:form/response/:response": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /core/form/:form/response/:response": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /core/form": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /core/form/:form": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /core/form": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /core/form/:form": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /core/form/:form": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /error": {
         "body": false,
         "query": true,
@@ -1419,11 +1489,6 @@
         "query": true,
         "res": true
     },
-    "POST /retention": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "GET /server/repeater": {
         "body": false,
         "query": false,
@@ -1431,6 +1496,11 @@
     },
     "DELETE /server/repeater/:uid": {
         "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /retention": {
+        "body": true,
         "query": false,
         "res": true
     },

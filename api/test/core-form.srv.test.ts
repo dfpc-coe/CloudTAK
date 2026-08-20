@@ -9,8 +9,6 @@ flight.takeoff();
 flight.user();
 flight.user({ username: 'user', admin: false });
 
-let boardId: string;
-let secondBoardId: string;
 let formId: string;
 let userFormId: string;
 
@@ -27,22 +25,6 @@ test('GET: api/core/form - empty', async () => {
             total: 0,
             items: [],
         });
-    } catch (err) {
-        assert.ifError(err);
-    }
-});
-
-test('GET: api/board - auto-creates the Channel Board', async () => {
-    try {
-        const res = await flight.fetch('/api/board?channel=7', {
-            method: 'GET',
-            auth: {
-                bearer: flight.token.admin,
-            },
-        }, true);
-
-        assert.equal(res.body.total, 1);
-        boardId = res.body.items[0].id;
     } catch (err) {
         assert.ifError(err);
     }
@@ -71,7 +53,7 @@ test('POST: api/core/form', async () => {
                         },
                     },
                 },
-                boards: [boardId],
+                channels: [7, 42],
             },
         }, true);
 
@@ -100,28 +82,8 @@ test('POST: api/core/form', async () => {
                     },
                 },
             },
-            boards: [boardId],
+            channels: [7, 42],
         });
-    } catch (err) {
-        assert.ifError(err);
-    }
-});
-
-test('POST: api/core/form - 404 for nonexistent board', async () => {
-    try {
-        const res = await flight.fetch('/api/core/form', {
-            method: 'POST',
-            auth: {
-                bearer: flight.token.admin,
-            },
-            body: {
-                name: 'Orphan Form',
-                schema: { type: 'object' },
-                boards: ['00000000-0000-0000-0000-000000000000'],
-            },
-        }, false);
-
-        assert.equal(res.status, 404);
     } catch (err) {
         assert.ifError(err);
     }
@@ -138,15 +100,15 @@ test('GET: api/core/form/:form', async () => {
 
         assert.equal(res.body.id, formId);
         assert.equal(res.body.name, 'Damage Assessment');
-        assert.deepEqual(res.body.boards, [boardId]);
+        assert.deepEqual(res.body.channels, [7, 42]);
     } catch (err) {
         assert.ifError(err);
     }
 });
 
-test('GET: api/core/form - filter by board', async () => {
+test('GET: api/core/form - filter by shared channel', async () => {
     try {
-        const res = await flight.fetch(`/api/core/form?board=${boardId}`, {
+        const res = await flight.fetch('/api/core/form?channel=7', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -155,6 +117,24 @@ test('GET: api/core/form - filter by board', async () => {
 
         assert.equal(res.body.total, 1);
         assert.equal(res.body.items[0].id, formId);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: api/core/form - filter by unshared channel', async () => {
+    try {
+        const res = await flight.fetch('/api/core/form?channel=13', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.deepEqual(res.body, {
+            total: 0,
+            items: [],
+        });
     } catch (err) {
         assert.ifError(err);
     }
@@ -208,7 +188,8 @@ test('POST: api/core/form - author sees their own Form', async () => {
 
         userFormId = res.body.id;
         assert.equal(res.body.username, 'user@example.com');
-        assert.deepEqual(res.body.boards, []);
+        assert.equal(res.body.description, '', 'description defaults to an empty string');
+        assert.deepEqual(res.body.channels, []);
 
         const list = await flight.fetch('/api/core/form', {
             method: 'GET',
@@ -225,25 +206,6 @@ test('POST: api/core/form - author sees their own Form', async () => {
 });
 
 test('PATCH: api/core/form/:form - 403 for non-author', async () => {
-    try {
-        const res = await flight.fetch(`/api/core/form/${userFormId}`, {
-            method: 'PATCH',
-            auth: {
-                bearer: flight.token.user,
-            },
-            body: {
-                boards: [boardId],
-            },
-        }, false);
-
-        // The author may edit but attaching a Board they cannot access is refused
-        assert.equal(res.status, 403);
-    } catch (err) {
-        assert.ifError(err);
-    }
-});
-
-test('PATCH: api/core/form/:form - 403 for non-author edit', async () => {
     try {
         const res = await flight.fetch(`/api/core/form/${formId}`, {
             method: 'PATCH',
@@ -286,60 +248,43 @@ test('PATCH: api/core/form/:form', async () => {
                 severity: { type: 'string' },
             },
         }, 'schema object is replaced, not merged');
-        assert.deepEqual(res.body.boards, [boardId], 'board relations are preserved');
+        assert.deepEqual(res.body.channels, [7, 42], 'sharing is preserved');
     } catch (err) {
         assert.ifError(err);
     }
 });
 
-test('PATCH: api/core/form/:form - replace boards', async () => {
+test('PATCH: api/core/form/:form - replace channels', async () => {
     try {
-        const board = await flight.fetch('/api/board', {
-            method: 'POST',
-            auth: {
-                bearer: flight.token.admin,
-            },
-            body: {
-                channel: 7,
-                name: 'Second Board',
-            },
-        }, true);
-
-        secondBoardId = board.body.id;
-
         const res = await flight.fetch(`/api/core/form/${formId}`, {
             method: 'PATCH',
             auth: {
                 bearer: flight.token.admin,
             },
             body: {
-                boards: [secondBoardId],
+                channels: [1],
             },
         }, true);
 
-        assert.deepEqual(res.body.boards, [secondBoardId]);
+        assert.deepEqual(res.body.channels, [1]);
     } catch (err) {
         assert.ifError(err);
     }
 });
 
-test('DELETE: api/board/:board - related Form survives board delete', async () => {
+test('PATCH: api/core/form/:form - clear channels', async () => {
     try {
-        await flight.fetch(`/api/board/${secondBoardId}`, {
-            method: 'DELETE',
-            auth: {
-                bearer: flight.token.admin,
-            },
-        }, true);
-
         const res = await flight.fetch(`/api/core/form/${formId}`, {
-            method: 'GET',
+            method: 'PATCH',
             auth: {
                 bearer: flight.token.admin,
             },
+            body: {
+                channels: [],
+            },
         }, true);
 
-        assert.deepEqual(res.body.boards, [], 'board relation removed by cascade');
+        assert.deepEqual(res.body.channels, []);
     } catch (err) {
         assert.ifError(err);
     }
