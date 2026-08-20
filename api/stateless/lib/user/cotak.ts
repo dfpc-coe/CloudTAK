@@ -74,7 +74,7 @@ export default class CoTAKUser implements UserInterface {
                 body: JSON.stringify({
                     scope: 'admin-system',
                     grant_type: 'client_credentials',
-                    client_id: parseInt(this.provider.client),
+                    client_id: this.provider.client,
                     client_secret: this.provider.secret,
                 }),
             });
