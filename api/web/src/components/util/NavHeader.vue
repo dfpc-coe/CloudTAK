@@ -9,9 +9,16 @@
             @click='home'
         >
         <div
+            v-if='!$slots.left'
             class='fs-3 fw-bold user-select-none'
             v-text='title'
         />
+        <div
+            v-else
+            class='d-flex align-items-center gap-2'
+        >
+            <slot name='left' />
+        </div>
 
         <div class='d-flex align-items-center gap-2 ms-auto'>
             <slot />
@@ -101,9 +108,11 @@ import {
     IconSettings,
 } from '@tabler/icons-vue';
 
-defineProps<{
-    title: string;
-}>();
+withDefaults(defineProps<{
+    title?: string;
+}>(), {
+    title: undefined
+});
 
 const appStore = useAppStore();
 

@@ -10950,7 +10950,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "connection" | "logging" | "task" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
+                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "connection" | "logging" | "task" | "memory" | "timeout" | "permissions" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -10996,6 +10996,9 @@ export interface paths {
                                 memory: number;
                                 timeout: number;
                                 priority: "high" | "low" | "off";
+                                permissions: null | string[];
+                                /** @description Deprecated: Layer Templates have been removed - this value is always false */
+                                template: boolean;
                                 alarm_period: number;
                                 alarm_evals: number;
                                 alarm_points: number;
@@ -11018,6 +11021,8 @@ export interface paths {
                                     enabled_styles: boolean;
                                     styles: {
                                         line?: {
+                                            /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                            type?: "u-d-f" | "b-m-r";
                                             stroke?: string;
                                             "stroke-style"?: string;
                                             "stroke-opacity"?: string;
@@ -11174,6 +11179,8 @@ export interface paths {
                                                     }[];
                                                 };
                                                 line?: {
+                                                    /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                    type?: "u-d-f" | "b-m-r";
                                                     stroke?: string;
                                                     "stroke-style"?: string;
                                                     "stroke-opacity"?: string;
@@ -11364,7 +11371,7 @@ export interface paths {
             };
         };
         put?: never;
-        /** Register a new layer */
+        /** Register a new layer - a Connection ID of 0 creates a server-wide Admin Layer */
         post: {
             parameters: {
                 query: {
@@ -11444,6 +11451,9 @@ export interface paths {
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
+                            permissions: null | string[];
+                            /** @description Deprecated: Layer Templates have been removed - this value is always false */
+                            template: boolean;
                             alarm_period: number;
                             alarm_evals: number;
                             alarm_points: number;
@@ -11466,6 +11476,8 @@ export interface paths {
                                 enabled_styles: boolean;
                                 styles: {
                                     line?: {
+                                        /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                        type?: "u-d-f" | "b-m-r";
                                         stroke?: string;
                                         "stroke-style"?: string;
                                         "stroke-opacity"?: string;
@@ -11622,6 +11634,8 @@ export interface paths {
                                                 }[];
                                             };
                                             line?: {
+                                                /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                type?: "u-d-f" | "b-m-r";
                                                 stroke?: string;
                                                 "stroke-style"?: string;
                                                 "stroke-opacity"?: string;
@@ -11848,6 +11862,8 @@ export interface paths {
                         enabled_styles?: boolean;
                         styles?: {
                             line?: {
+                                /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                type?: "u-d-f" | "b-m-r";
                                 stroke?: string;
                                 "stroke-style"?: string;
                                 "stroke-opacity"?: string;
@@ -12004,6 +12020,8 @@ export interface paths {
                                         }[];
                                     };
                                     line?: {
+                                        /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                        type?: "u-d-f" | "b-m-r";
                                         stroke?: string;
                                         "stroke-style"?: string;
                                         "stroke-opacity"?: string;
@@ -12135,6 +12153,8 @@ export interface paths {
                             enabled_styles: boolean;
                             styles: {
                                 line?: {
+                                    /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                    type?: "u-d-f" | "b-m-r";
                                     stroke?: string;
                                     "stroke-style"?: string;
                                     "stroke-opacity"?: string;
@@ -12291,6 +12311,8 @@ export interface paths {
                                             }[];
                                         };
                                         line?: {
+                                            /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                            type?: "u-d-f" | "b-m-r";
                                             stroke?: string;
                                             "stroke-style"?: string;
                                             "stroke-opacity"?: string;
@@ -12575,6 +12597,8 @@ export interface paths {
                         enabled_styles?: boolean;
                         styles?: {
                             line?: {
+                                /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                type?: "u-d-f" | "b-m-r";
                                 stroke?: string;
                                 "stroke-style"?: string;
                                 "stroke-opacity"?: string;
@@ -12731,6 +12755,8 @@ export interface paths {
                                         }[];
                                     };
                                     line?: {
+                                        /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                        type?: "u-d-f" | "b-m-r";
                                         stroke?: string;
                                         "stroke-style"?: string;
                                         "stroke-opacity"?: string;
@@ -12865,6 +12891,8 @@ export interface paths {
                             enabled_styles: boolean;
                             styles: {
                                 line?: {
+                                    /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                    type?: "u-d-f" | "b-m-r";
                                     stroke?: string;
                                     "stroke-style"?: string;
                                     "stroke-opacity"?: string;
@@ -13021,6 +13049,8 @@ export interface paths {
                                             }[];
                                         };
                                         line?: {
+                                            /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                            type?: "u-d-f" | "b-m-r";
                                             stroke?: string;
                                             "stroke-style"?: string;
                                             "stroke-opacity"?: string;
@@ -13572,6 +13602,9 @@ export interface paths {
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
+                            permissions: null | string[];
+                            /** @description Deprecated: Layer Templates have been removed - this value is always false */
+                            template: boolean;
                             alarm_period: number;
                             alarm_evals: number;
                             alarm_points: number;
@@ -13594,6 +13627,8 @@ export interface paths {
                                 enabled_styles: boolean;
                                 styles: {
                                     line?: {
+                                        /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                        type?: "u-d-f" | "b-m-r";
                                         stroke?: string;
                                         "stroke-style"?: string;
                                         "stroke-opacity"?: string;
@@ -13750,6 +13785,8 @@ export interface paths {
                                                 }[];
                                             };
                                             line?: {
+                                                /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                type?: "u-d-f" | "b-m-r";
                                                 stroke?: string;
                                                 "stroke-style"?: string;
                                                 "stroke-opacity"?: string;
@@ -14066,6 +14103,8 @@ export interface paths {
                         alarm_period?: number;
                         alarm_evals?: number;
                         alarm_points?: number;
+                        /** @description Permissions granted to the Layer as <permission>:<level> pairs - ie video:read or video:* */
+                        permissions?: null | string[];
                     };
                 };
             };
@@ -14093,6 +14132,9 @@ export interface paths {
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
+                            permissions: null | string[];
+                            /** @description Deprecated: Layer Templates have been removed - this value is always false */
+                            template: boolean;
                             alarm_period: number;
                             alarm_evals: number;
                             alarm_points: number;
@@ -14115,6 +14157,8 @@ export interface paths {
                                 enabled_styles: boolean;
                                 styles: {
                                     line?: {
+                                        /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                        type?: "u-d-f" | "b-m-r";
                                         stroke?: string;
                                         "stroke-style"?: string;
                                         "stroke-opacity"?: string;
@@ -14271,6 +14315,8 @@ export interface paths {
                                                 }[];
                                             };
                                             line?: {
+                                                /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                type?: "u-d-f" | "b-m-r";
                                                 stroke?: string;
                                                 "stroke-style"?: string;
                                                 "stroke-opacity"?: string;
@@ -19915,6 +19961,1595 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/board/column/{:column}/form": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Forms attached to a Board Column */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":column": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                created: string;
+                                updated: string;
+                                /** @description Board Column the Form is attached to */
+                                column: string;
+                                /** @description Must the Form be completed for Events in the Column */
+                                required: boolean;
+                                form: {
+                                    id: string;
+                                    created: string;
+                                    updated: string;
+                                    /** @description Author of the Form */
+                                    username: null | string;
+                                    name: string;
+                                    description: string;
+                                    /** @description JSON Schema the Form input is generated & validated from */
+                                    schema: {
+                                        [key: string]: unknown;
+                                    };
+                                    /** @description TAK Server Channels the Form is shared with */
+                                    channels: number[];
+                                };
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        /**
+         * Attach a Form to a Board Column or update whether an attached Form
+         *                 is required - the Form must be shared with the Board's Channel
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":column": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: uuid
+                         * @description Form to attach to the Column
+                         */
+                        form: string;
+                        /**
+                         * @description Must the Form be completed for Events in the Column
+                         * @default false
+                         */
+                        required: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            /** @description Board Column the Form is attached to */
+                            column: string;
+                            /** @description Must the Form be completed for Events in the Column */
+                            required: boolean;
+                            form: {
+                                id: string;
+                                created: string;
+                                updated: string;
+                                /** @description Author of the Form */
+                                username: null | string;
+                                name: string;
+                                description: string;
+                                /** @description JSON Schema the Form input is generated & validated from */
+                                schema: {
+                                    [key: string]: unknown;
+                                };
+                                /** @description TAK Server Channels the Form is shared with */
+                                channels: number[];
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/board/column/{:column}/form/{:form}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Detach a Form from a Board Column - the Form itself is not deleted */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":column": string;
+                    /** @description No Description */
+                    ":form": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/core/event/{:event}/response": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Form Responses linked to a Core Event, along with the Form each was submitted against */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort: "id" | "created" | "updated" | "form" | "username" | "response" | "enableRLS";
+                };
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":event": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                created: string;
+                                updated: string;
+                                /** @description User that submitted the Response */
+                                username: null | string;
+                                /** @description Submitted data validated against the Form schema */
+                                response: {
+                                    [key: string]: unknown;
+                                };
+                                form: {
+                                    id: string;
+                                    created: string;
+                                    updated: string;
+                                    /** @description Author of the Form */
+                                    username: null | string;
+                                    name: string;
+                                    description: string;
+                                    /** @description JSON Schema the Form input is generated & validated from */
+                                    schema: {
+                                        [key: string]: unknown;
+                                    };
+                                    /** @description TAK Server Channels the Form is shared with */
+                                    channels: number[];
+                                };
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/core/form/{:form}/response": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Responses submitted against a Core Form */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort: "id" | "created" | "updated" | "form" | "username" | "response" | "enableRLS";
+                    /** @description Only return Responses linked to the given Core Event */
+                    event?: string;
+                };
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":form": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                created: string;
+                                updated: string;
+                                /** @description Form the Response was submitted against */
+                                form: string;
+                                /** @description User that submitted the Response */
+                                username: null | string;
+                                /** @description Submitted data validated against the Form schema */
+                                response: {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Core Events the Response is linked to */
+                                events: string[];
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Submit a Response against a Core Form - the Response data is validated against the Form schema */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":form": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Submitted data - validated against the Form schema */
+                        response: {
+                            [key: string]: unknown;
+                        };
+                        /**
+                         * @description Core Events to link the Response to
+                         * @default []
+                         */
+                        events: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            /** @description Form the Response was submitted against */
+                            form: string;
+                            /** @description User that submitted the Response */
+                            username: null | string;
+                            /** @description Submitted data validated against the Form schema */
+                            response: {
+                                [key: string]: unknown;
+                            };
+                            /** @description Core Events the Response is linked to */
+                            events: string[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/core/form/{:form}/response/{:response}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single Response submitted against a Core Form */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":form": string;
+                    /** @description No Description */
+                    ":response": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            /** @description Form the Response was submitted against */
+                            form: string;
+                            /** @description User that submitted the Response */
+                            username: null | string;
+                            /** @description Submitted data validated against the Form schema */
+                            response: {
+                                [key: string]: unknown;
+                            };
+                            /** @description Core Events the Response is linked to */
+                            events: string[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a Response submitted against a Core Form */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":form": string;
+                    /** @description No Description */
+                    ":response": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a Response submitted against a Core Form - updated Response data is validated against the Form schema */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":form": string;
+                    /** @description No Description */
+                    ":response": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Submitted data - validated against the Form schema and replaces the existing Response data */
+                        response?: {
+                            [key: string]: unknown;
+                        };
+                        /** @description Core Events to link the Response to - replaces the existing links */
+                        events?: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            /** @description Form the Response was submitted against */
+                            form: string;
+                            /** @description User that submitted the Response */
+                            username: null | string;
+                            /** @description Submitted data validated against the Form schema */
+                            response: {
+                                [key: string]: unknown;
+                            };
+                            /** @description Core Events the Response is linked to */
+                            events: string[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/core/form": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Core Forms */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort: "id" | "created" | "updated" | "username" | "name" | "description" | "schema" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                    /** @description Only return Forms shared with the given TAK Channel bitpos - can be provided multiple times to match any of the given Channels */
+                    channel?: number | number[];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                created: string;
+                                updated: string;
+                                /** @description Author of the Form */
+                                username: null | string;
+                                name: string;
+                                description: string;
+                                /** @description JSON Schema the Form input is generated & validated from */
+                                schema: {
+                                    [key: string]: unknown;
+                                };
+                                /** @description TAK Server Channels the Form is shared with */
+                                channels: number[];
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new Core Form */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        /** @description Human readable description */
+                        description?: string;
+                        /** @description JSON Schema the Form input is generated & validated from */
+                        schema: {
+                            [key: string]: unknown;
+                        };
+                        /**
+                         * @description TAK Server Channels to share the Form with
+                         * @default []
+                         */
+                        channels: number[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            /** @description Author of the Form */
+                            username: null | string;
+                            name: string;
+                            description: string;
+                            /** @description JSON Schema the Form input is generated & validated from */
+                            schema: {
+                                [key: string]: unknown;
+                            };
+                            /** @description TAK Server Channels the Form is shared with */
+                            channels: number[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/core/form/{:form}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a Core Form */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":form": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            /** @description Author of the Form */
+                            username: null | string;
+                            name: string;
+                            description: string;
+                            /** @description JSON Schema the Form input is generated & validated from */
+                            schema: {
+                                [key: string]: unknown;
+                            };
+                            /** @description TAK Server Channels the Form is shared with */
+                            channels: number[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a Core Form */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":form": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update properties of a Core Form */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":form": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name?: string;
+                        /** @description Human readable description */
+                        description?: string;
+                        /** @description JSON Schema the Form input is generated & validated from - replaces the existing schema */
+                        schema?: {
+                            [key: string]: unknown;
+                        };
+                        /** @description TAK Server Channels to share the Form with - replaces the existing sharing */
+                        channels?: number[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            /** @description Author of the Form */
+                            username: null | string;
+                            name: string;
+                            description: string;
+                            /** @description JSON Schema the Form input is generated & validated from */
+                            schema: {
+                                [key: string]: unknown;
+                            };
+                            /** @description TAK Server Channels the Form is shared with */
+                            channels: number[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/api/error": {
         parameters: {
             query?: never;
@@ -24065,7 +25700,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "connection" | "logging" | "task" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
+                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "connection" | "logging" | "task" | "memory" | "timeout" | "permissions" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -24112,6 +25747,9 @@ export interface paths {
                                 memory: number;
                                 timeout: number;
                                 priority: "high" | "low" | "off";
+                                permissions: null | string[];
+                                /** @description Deprecated: Layer Templates have been removed - this value is always false */
+                                template: boolean;
                                 alarm_period: number;
                                 alarm_evals: number;
                                 alarm_points: number;
@@ -24134,6 +25772,8 @@ export interface paths {
                                     enabled_styles: boolean;
                                     styles: {
                                         line?: {
+                                            /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                            type?: "u-d-f" | "b-m-r";
                                             stroke?: string;
                                             "stroke-style"?: string;
                                             "stroke-opacity"?: string;
@@ -24290,6 +25930,8 @@ export interface paths {
                                                     }[];
                                                 };
                                                 line?: {
+                                                    /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                    type?: "u-d-f" | "b-m-r";
                                                     stroke?: string;
                                                     "stroke-style"?: string;
                                                     "stroke-opacity"?: string;
@@ -24537,6 +26179,9 @@ export interface paths {
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
+                            permissions: null | string[];
+                            /** @description Deprecated: Layer Templates have been removed - this value is always false */
+                            template: boolean;
                             alarm_period: number;
                             alarm_evals: number;
                             alarm_points: number;
@@ -24559,6 +26204,8 @@ export interface paths {
                                 enabled_styles: boolean;
                                 styles: {
                                     line?: {
+                                        /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                        type?: "u-d-f" | "b-m-r";
                                         stroke?: string;
                                         "stroke-style"?: string;
                                         "stroke-opacity"?: string;
@@ -24715,6 +26362,8 @@ export interface paths {
                                                 }[];
                                             };
                                             line?: {
+                                                /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                type?: "u-d-f" | "b-m-r";
                                                 stroke?: string;
                                                 "stroke-style"?: string;
                                                 "stroke-opacity"?: string;
@@ -30197,6 +31846,11 @@ export interface paths {
                                     type: "Polygon";
                                     coordinates: number[][][];
                                 };
+                            }[];
+                            invalid: {
+                                id?: string;
+                                callsign?: string;
+                                error: string;
                             }[];
                         };
                     };

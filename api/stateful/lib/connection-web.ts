@@ -4,17 +4,25 @@ import { DirectChat, MissionChat, CoTParser } from '@tak-ps/node-cot';
 import type { Feature } from '@tak-ps/node-cot';
 import WebSocket from 'ws';
 import { ConnectionClient } from './connection-pool.js';
-import { ProfileChatStatus } from '../../common/enums.js';
+import { ProfileChatStatus, WebSocket_Event } from '../../common/enums.js';
 
 export class ConnectionWebSocket {
     ws: WebSocket;
     format: string;
+    events: WebSocket_Event[];
     session?: string;
     client?: ConnectionClient;
 
-    constructor(ws: WebSocket, format = 'raw', client?: ConnectionClient, session?: string) {
+    constructor(
+        ws: WebSocket,
+        format = 'raw',
+        events: WebSocket_Event[] = [WebSocket_Event.MAP],
+        client?: ConnectionClient,
+        session?: string,
+    ) {
         this.ws = ws;
         this.format = format;
+        this.events = events.length ? [...new Set(events)] : [WebSocket_Event.MAP];
         this.session = session;
 
         if (client) {
@@ -76,6 +84,8 @@ export class ConnectionWebSocket {
                         // Includes the server-assigned created (normalized to ISO 8601) so clients can
                         // replace their optimistic local-clock timestamp with the authoritative one
                         for (const wsClient of (client.config.config.wsClients.get(String(client.config.id)) || [])) {
+                            if (!wsClient.events.includes(WebSocket_Event.MAP)) continue;
+
                             if (wsClient.format === 'geojson') {
                                 wsClient.ws.send(JSON.stringify({
                                     type: 'chat:receipt',

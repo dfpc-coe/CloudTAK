@@ -249,6 +249,11 @@
                     @nominate='nominate($event)'
                 />
 
+                <PropertyCoreEventForms
+                    :event='event.id'
+                    :refresh='formsRefresh'
+                />
+
                 <PropertyCoreEventMetadata
                     :model-value='event.metadata'
                     :edit='is_editable'
@@ -262,6 +267,15 @@
                 />
             </div>
         </div>
+
+        <FormWizard
+            v-if='formWizard && event'
+            :event-id='event.id'
+            :event-name='event.name'
+            :forms='formWizard.forms'
+            @complete='completeFormWizard'
+            @close='formWizard = undefined; formsRefresh += 1'
+        />
     </MenuTemplate>
 </template>
 
@@ -298,11 +312,14 @@ import PropertyCoreEventLocation from './Property/PropertyCoreEventLocation.vue'
 import PropertyCoreEventExternalId from './Property/PropertyCoreEventExternalId.vue';
 import PropertyCoreEventLinks from './Property/PropertyCoreEventLinks.vue';
 import PropertyCoreEventChannels from './Property/PropertyCoreEventChannels.vue';
+import PropertyCoreEventForms from './Property/PropertyCoreEventForms.vue';
 import PropertyCoreEventMetadata from './Property/PropertyCoreEventMetadata.vue';
 import PropertyCoreEventMission from './Property/PropertyCoreEventMission.vue';
 import PropertyCoreEventTimes from './Property/PropertyCoreEventTimes.vue';
-import type { CoreEvent, CoreEventStyle, CoreEventBoardSummary } from '../../types.ts';
+import FormWizard from './util/FormWizard.vue';
+import type { CoreForm, CoreEvent, CoreEventStyle, CoreEventBoardSummary } from '../../types.ts';
 import { server } from '../../std.ts';
+import { missingRequiredForms } from '../../utils/column-forms.ts';
 import { useMapStore } from '../../stores/map.ts';
 import ProfileConfig from '../../base/profile.ts';
 
@@ -332,6 +349,15 @@ const error = ref<Error | undefined>();
 // A change the server rejected - kept apart from `error` so a failed save
 // doesn't replace the Event with an error page
 const saveError = ref<Error | undefined>();
+
+/** A nomination held back by required Forms - completed by the FormWizard */
+const formWizard = ref<{
+    forms: Array<CoreForm>;
+    column: string;
+} | undefined>();
+
+/** Bumped when the wizard submits Responses so the Forms section re-fetches */
+const formsRefresh = ref(0);
 
 const remarksExpanded = ref(true);
 const actionIconSize = 28;
@@ -466,7 +492,8 @@ async function patch(body: Record<string, unknown>): Promise<void> {
 /**
  * Nominate the Event onto a Board - it lands in the Board's automatically
  * managed Nominated Column, then the Event is reloaded so the Channels
- * section reflects the new placement
+ * section reflects the new placement. A Nominated Column with required
+ * Forms surfaces the FormWizard first and the nomination completes with it
  */
 async function nominate(board: CoreEventBoardSummary): Promise<void> {
     if (!event.value) return;
@@ -480,17 +507,45 @@ async function nominate(board: CoreEventBoardSummary): Promise<void> {
     saveError.value = undefined;
 
     try {
-        const res = await server.PUT('/api/board/event', {
-            body: {
-                column: column.id,
-                event: event.value.id,
-                position: 0,
-            }
-        });
+        const missing = await missingRequiredForms(column.id, event.value.id);
 
-        if (res.error) throw new Error(res.error.message);
+        if (missing.length) {
+            formWizard.value = { forms: missing, column: column.id };
+            return;
+        }
 
-        await fetchEvent();
+        await placeNomination(column.id);
+    } catch (err) {
+        saveError.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
+
+async function placeNomination(column: string): Promise<void> {
+    if (!event.value) return;
+
+    const res = await server.PUT('/api/board/event', {
+        body: {
+            column,
+            event: event.value.id,
+            position: 0,
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    await fetchEvent();
+}
+
+async function completeFormWizard(): Promise<void> {
+    const pending = formWizard.value;
+    formWizard.value = undefined;
+
+    if (!pending) return;
+
+    formsRefresh.value += 1;
+
+    try {
+        await placeNomination(pending.column);
     } catch (err) {
         saveError.value = err instanceof Error ? err : new Error(String(err));
     }

@@ -18,6 +18,12 @@ export class toEnum {
     }
 }
 
+export enum WebSocket_Event {
+    MAP = 'map',
+    VIDEO = 'video',
+    BOARD = 'board',
+}
+
 export enum Import_Status {
     EMPTY = 'Empty',
     PENDING = 'Pending',

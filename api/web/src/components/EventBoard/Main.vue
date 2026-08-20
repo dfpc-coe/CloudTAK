@@ -1,78 +1,90 @@
 <template>
     <div class='h-full w-full cloudtak-page d-flex flex-column event-board'>
-        <NavHeader title='Event Board'>
-            <GroupSelectDropdown
-                v-model='channel'
-                class='event-board-select'
-                :active='true'
-                @channels='onChannels'
-            />
-
-            <BoardSelectDropdown
-                v-if='channel !== undefined'
-                ref='boardSelect'
-                v-model='board'
-                class='event-board-select'
-                :channel='channel'
-                @boards='onBoards'
-                @error='error = $event'
-                @update:model-value='onBoardChange'
-            />
-
-            <TablerDropdown
-                v-if='selectedBoard'
-                :width='170'
-            >
-                <TablerIconButton title='Board Options'>
-                    <IconDotsVertical
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-
-                <template #dropdown>
-                    <div
-                        class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
-                        @click='editBoard = selectedBoard'
-                    >
-                        <IconPencil
-                            :size='20'
+        <NavHeader>
+            <template #left>
+                <TablerDropdown
+                    v-if='selectedBoard'
+                    :width='170'
+                >
+                    <TablerIconButton title='Board Options'>
+                        <IconDotsVertical
+                            :size='32'
                             stroke='1'
                         />
-                        <span class='mx-2'>Edit Board</span>
-                    </div>
-                    <div
-                        class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
-                        @click='addBoard = true'
-                    >
-                        <IconPlus
-                            :size='20'
-                            stroke='1'
-                        />
-                        <span class='mx-2'>New Board</span>
-                    </div>
-                    <TablerDelete
-                        v-if='boards.length > 1'
-                        class='cloudtak-hover event-board-menu-delete'
-                        displaytype='menu'
-                        label='Delete Board'
-                        title='Delete Board'
-                        @delete='deleteBoard(selectedBoard)'
-                    />
-                </template>
-            </TablerDropdown>
+                    </TablerIconButton>
 
-            <button
-                class='btn btn-primary flex-shrink-0'
-                :disabled='!nominatedColumn || loading'
-                @click='nominate = true'
+                    <template #dropdown>
+                        <div
+                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
+                            @click='editBoard = selectedBoard'
+                        >
+                            <IconPencil
+                                :size='20'
+                                stroke='1'
+                            />
+                            <span class='mx-2'>Edit Board</span>
+                        </div>
+                        <div
+                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
+                            @click='addBoard = true'
+                        >
+                            <IconPlus
+                                :size='20'
+                                stroke='1'
+                            />
+                            <span class='mx-2'>New Board</span>
+                        </div>
+                        <TablerDelete
+                            v-if='boards.length > 1'
+                            class='cloudtak-hover event-board-menu-delete'
+                            displaytype='menu'
+                            label='Delete Board'
+                            title='Delete Board'
+                            @delete='deleteBoard(selectedBoard)'
+                        />
+                    </template>
+                </TablerDropdown>
+
+                <GroupSelectDropdown
+                    v-model='channel'
+                    class='event-board-select'
+                    :active='true'
+                    @channels='onChannels'
+                />
+
+                <BoardSelectDropdown
+                    v-if='channel !== undefined'
+                    ref='boardSelect'
+                    v-model='board'
+                    class='event-board-select'
+                    :channel='channel'
+                    @boards='onBoards'
+                    @error='error = $event'
+                    @update:model-value='onBoardChange'
+                />
+            </template>
+
+            <TablerIconButton
+                title='Create Event'
+                :disabled='channel === undefined || loading'
+                @click='openCreate'
             >
                 <IconPlus
-                    :size='20'
-                    stroke='2'
-                    class='me-1'
-                />Nominate
-            </button>
+                    :size='24'
+                    stroke='1'
+                />
+            </TablerIconButton>
+
+            <TablerIconButton
+                title='Nominate Event'
+                :disabled='!nominatedColumn || loading'
+                @click='openNominate'
+            >
+                <IconStackPush
+                    :size='24'
+                    stroke='1'
+                />
+            </TablerIconButton>
 
             <TablerIconButton
                 title='Refresh Board'
@@ -145,6 +157,7 @@
                 v-else-if='mode === "board"'
                 v-model:columns='columns'
                 :board='board'
+                :channel='channel'
                 @error='error = $event'
                 @refresh='listColumns'
                 @open-event='openEvent'
@@ -163,6 +176,23 @@
             :placed='placedEvents'
             @nominate='nominateEvent($event)'
             @close='nominate = false'
+        />
+
+        <CreateCoreEvent
+            v-if='createEvent && channel !== undefined'
+            :channel='channel'
+            :navigate='false'
+            @create='onEventCreated($event)'
+            @close='createEvent = false'
+        />
+
+        <FormWizard
+            v-if='formWizard'
+            :event-id='formWizard.event.id'
+            :event-name='formWizard.event.name'
+            :forms='formWizard.forms'
+            @complete='completeFormWizard'
+            @close='formWizard = undefined'
         />
 
         <EditBoardModal
@@ -203,13 +233,16 @@
 import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { server } from '../../std.ts';
-import type { CoreEvent, CoreEventBoard, CoreEventBoardEvent } from '../../types.ts';
+import type { CoreForm, CoreEvent, CoreEventBoard, CoreEventBoardEvent } from '../../types.ts';
 import type { BoardColumn } from './types.ts';
+import { missingRequiredForms } from '../../utils/column-forms.ts';
+import FormWizard from '../CloudTAK/util/FormWizard.vue';
 import NavHeader from '../util/NavHeader.vue';
 import GroupSelectDropdown from '../CloudTAK/util/GroupSelectDropdown.vue';
 import type { GroupSelectChannel } from '../CloudTAK/util/GroupSelectDropdown.vue';
 import BoardSelectDropdown from '../CloudTAK/util/BoardSelectDropdown.vue';
 import CoreEventView from '../CloudTAK/CoreEventView.vue';
+import CreateCoreEvent from '../CloudTAK/util/CreateCoreEvent.vue';
 import NominateModal from './NominateModal.vue';
 import EditBoardModal from './EditBoardModal.vue';
 import ViewBoard from './ViewBoard.vue';
@@ -219,6 +252,7 @@ import {
     IconList,
     IconPencil,
     IconRefresh,
+    IconStackPush,
     IconDotsVertical,
     IconLayoutKanban,
 } from '@tabler/icons-vue';
@@ -248,6 +282,13 @@ const columns = ref<Array<BoardColumn>>([]);
 const mode = ref<'board' | 'list'>(route.query.view === 'list' ? 'list' : 'board');
 
 const nominate = ref(false);
+const createEvent = ref(false);
+
+/** A nomination held back by required Forms - completed by the FormWizard */
+const formWizard = ref<{
+    forms: Array<CoreForm>;
+    event: CoreEvent;
+} | undefined>();
 const addBoard = ref(false);
 const editBoard = ref<CoreEventBoard | undefined>();
 const viewEvent = ref<string | undefined>();
@@ -457,23 +498,74 @@ async function deleteBoard(existing?: CoreEventBoard): Promise<void> {
     }
 }
 
+// TablerIconButton doesn't block clicks while disabled - guard here
+function openNominate(): void {
+    if (!nominatedColumn.value || loading.value) return;
+    nominate.value = true;
+}
+
+function openCreate(): void {
+    if (channel.value === undefined || loading.value) return;
+    createEvent.value = true;
+}
+
+/**
+ * Events created from the Board are nominated straight onto it - unless the
+ * user unshared the Board's Channel in the create modal
+ */
+async function onEventCreated(event: CoreEvent): Promise<void> {
+    if (channel.value === undefined || !event.channels.includes(channel.value)) return;
+
+    await nominateEvent(event);
+}
+
 async function nominateEvent(event: CoreEvent): Promise<void> {
     const column = nominatedColumn.value;
 
     if (!column) return;
 
     try {
-        const res = await server.PUT('/api/board/event', {
-            body: {
-                column: column.id,
-                event: event.id,
-                position: column.events.length,
-            }
-        });
+        // Nomination is blocked until the Nominated Column's required Forms
+        // have a Response for the Event - the wizard collects them first
+        const missing = await missingRequiredForms(column.id, event.id);
 
-        if (res.error) throw new Error(res.error.message);
+        if (missing.length) {
+            formWizard.value = { forms: missing, event };
+            return;
+        }
 
-        column.events.push(res.data as CoreEventBoardEvent);
+        await placeEvent(event);
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
+
+async function placeEvent(event: CoreEvent): Promise<void> {
+    const column = nominatedColumn.value;
+
+    if (!column) return;
+
+    const res = await server.PUT('/api/board/event', {
+        body: {
+            column: column.id,
+            event: event.id,
+            position: column.events.length,
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    column.events.push(res.data as CoreEventBoardEvent);
+}
+
+async function completeFormWizard(): Promise<void> {
+    const pending = formWizard.value;
+    formWizard.value = undefined;
+
+    if (!pending) return;
+
+    try {
+        await placeEvent(pending.event);
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }

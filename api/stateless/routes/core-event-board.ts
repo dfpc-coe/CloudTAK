@@ -19,6 +19,7 @@ import BoardControl, {
     columnResponse,
     placementResponse,
 } from '../lib/control/board.js';
+import FormControl from '../lib/control/form.js';
 import * as Default from '../lib/limits.js';
 
 /**
@@ -28,6 +29,16 @@ import * as Default from '../lib/limits.js';
  */
 export default async function router(schema: Schema, config: ConfigStateless) {
     const boardControl = new BoardControl(config);
+    const formControl = new FormControl(config);
+
+    /** Refuse placing an Event into a Column whose required Forms it has not completed */
+    async function ensureRequiredForms(column: string, event: string): Promise<void> {
+        const missing = await formControl.missingRequiredForms(column, event);
+
+        if (missing.length) {
+            throw new Err(400, null, `Required Forms must be completed before the Event can be placed in this Column: ${missing.map(f => f.name).join(', ')}`);
+        }
+    }
 
     await schema.get('/board', {
         name: 'List Boards',
@@ -363,6 +374,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 where: sql`board = ${board.id} AND event = ${req.body.event}`,
             });
 
+            // Reordering within the Column an Event already sits in stays
+            // possible even if required Forms were attached after placement
+            if (!existing.items.length || existing.items[0].column !== column.id) {
+                await ensureRequiredForms(column.id, req.body.event);
+            }
+
             let placement;
             if (existing.items.length) {
                 placement = await config.models.CoreEventBoardEvent.commit(existing.items[0].id, {
@@ -413,6 +430,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 if (column.board !== placement.board) {
                     throw new Err(400, null, 'The Column belongs to a different Board');
+                }
+
+                if (column.id !== placement.column) {
+                    await ensureRequiredForms(column.id, placement.event);
                 }
             }
 

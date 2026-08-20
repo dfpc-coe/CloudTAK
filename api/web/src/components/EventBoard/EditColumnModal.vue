@@ -63,6 +63,41 @@
                         :rows='3'
                     />
                 </div>
+
+                <div class='col-12'>
+                    <label class='form-label'>Forms</label>
+                    <TablerLoading
+                        v-if='formsLoading'
+                        :compact='true'
+                        desc='Loading Forms'
+                    />
+                    <TablerAlert
+                        v-else-if='formsError'
+                        :err='formsError'
+                    />
+                    <template v-else>
+                        <div class='d-flex align-items-end gap-2'>
+                            <FormSelect
+                                ref='formSelect'
+                                v-model='forms'
+                                :channel='props.channel'
+                                class='flex-grow-1'
+                            />
+                            <TablerIconButton
+                                title='Manage Forms'
+                                @click='manageForms = true'
+                            >
+                                <IconSettings
+                                    :size='24'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                        </div>
+                        <div class='form-hint mt-1'>
+                            Required Forms must be completed for Events placed in this Column
+                        </div>
+                    </template>
+                </div>
             </div>
 
             <div class='d-flex mt-3'>
@@ -81,25 +116,48 @@
                 </button>
             </div>
         </div>
+
+        <FormManager
+            v-if='manageForms'
+            :channel='props.channel'
+            @close='closeManager'
+            @saved='onFormSaved'
+            @deleted='onFormDeleted'
+        />
     </TablerModal>
 </template>
 
 <script setup lang='ts'>
-import { ref, computed } from 'vue';
-import type { CoreEventBoardColumn } from '../../types.ts';
-import { IconCheck } from '@tabler/icons-vue';
+import { ref, computed, onMounted } from 'vue';
+import { server } from '../../std.ts';
+import type { CoreForm, CoreEventBoardColumn } from '../../types.ts';
+import FormSelect from '../CloudTAK/util/FormSelect.vue';
+import type { FormAttachment } from '../CloudTAK/util/FormSelect.vue';
+import FormManager from '../Forms/FormManager.vue';
+import { IconCheck, IconSettings } from '@tabler/icons-vue';
 import {
+    TablerAlert,
     TablerBadge,
     TablerInput,
     TablerModal,
+    TablerLoading,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
 const props = defineProps<{
     column: CoreEventBoardColumn;
+    /** TAK Channel bitpos of the Column's Board - scopes the attachable Forms */
+    channel?: number;
 }>();
 
 const emit = defineEmits<{
-    (e: 'save', update: { name: string; description: string; color: string }): void;
+    (e: 'save', update: {
+        name: string;
+        description: string;
+        color: string;
+        /** Omitted when the attached Forms could not be loaded - the existing attachments are then left untouched */
+        forms?: Array<{ form: string; required: boolean }>;
+    }): void;
     (e: 'close'): void;
 }>();
 
@@ -120,6 +178,51 @@ const config = ref({
     name: props.column.name,
     description: props.column.description,
     color: props.column.color,
+});
+
+const forms = ref<Array<FormAttachment>>([]);
+const formsLoading = ref(true);
+const formsError = ref<Error | undefined>();
+
+const manageForms = ref(false);
+const formSelect = ref<InstanceType<typeof FormSelect> | null>(null);
+
+/** An edit in the manager reflects onto the already staged attachment rows */
+function onFormSaved(form: CoreForm): void {
+    forms.value = forms.value.map((attachment) => {
+        return attachment.form.id === form.id
+            ? { ...attachment, form }
+            : attachment;
+    });
+}
+
+/** A deleted Form can no longer be attached - drop it from the staged rows */
+function onFormDeleted(id: string): void {
+    forms.value = forms.value.filter((attachment) => attachment.form.id !== id);
+}
+
+async function closeManager(): Promise<void> {
+    manageForms.value = false;
+
+    await formSelect.value?.refresh();
+}
+
+onMounted(async () => {
+    try {
+        const res = await server.GET('/api/board/column/{:column}/form', {
+            params: { path: { ':column': props.column.id } }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        forms.value = res.data.items.map((attachment) => {
+            return { form: attachment.form, required: attachment.required };
+        });
+    } catch (err) {
+        formsError.value = err instanceof Error ? err : new Error(String(err));
+    }
+
+    formsLoading.value = false;
 });
 
 const previewBase = computed(() => {
@@ -151,6 +254,11 @@ function save(): void {
         name: config.value.name.trim(),
         description: config.value.description,
         color: config.value.color,
+        ...(formsLoading.value || formsError.value ? {} : {
+            forms: forms.value.map((attachment) => {
+                return { form: attachment.form.id, required: attachment.required };
+            }),
+        }),
     });
 }
 </script>

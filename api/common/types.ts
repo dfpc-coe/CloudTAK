@@ -245,6 +245,46 @@ export const CoreEventBoardEventResponse = Type.Object({
     event: CoreEventResponse,
 });
 
+export const CoreFormResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    username: Type.Union([Type.Null(), Type.String()], { description: 'Author of the Form' }),
+    name: Type.String(),
+    description: Type.String(),
+    schema: Type.Record(Type.String(), Type.Unknown(), { description: 'JSON Schema the Form input is generated & validated from' }),
+    channels: Type.Array(Type.Integer(), { description: 'TAK Server Channels the Form is shared with' }),
+});
+
+export const CoreFormResponseResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    form: Type.String({ description: 'Form the Response was submitted against' }),
+    username: Type.Union([Type.Null(), Type.String()], { description: 'User that submitted the Response' }),
+    response: Type.Record(Type.String(), Type.Unknown(), { description: 'Submitted data validated against the Form schema' }),
+    events: Type.Array(Type.String(), { description: 'Core Events the Response is linked to' }),
+});
+
+/** A Response linked to a Core Event, with the Form it was submitted against embedded */
+export const CoreEventFormResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    username: Type.Union([Type.Null(), Type.String()], { description: 'User that submitted the Response' }),
+    response: Type.Record(Type.String(), Type.Unknown(), { description: 'Submitted data validated against the Form schema' }),
+    form: CoreFormResponse,
+});
+
+export const CoreFormColumnResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    column: Type.String({ description: 'Board Column the Form is attached to' }),
+    required: Type.Boolean({ description: 'Must the Form be completed for Events in the Column' }),
+    form: CoreFormResponse,
+});
+
 export const CoreDeviceResponse = Type.Object({
     id: Type.String(),
     created: Type.String(),

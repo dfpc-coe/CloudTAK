@@ -12,7 +12,7 @@ import TAK, { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
 import type ConnectionConfig from '../../common/connection-config.js';
 import { MachineConnConfig, ProfileConnConfig, AdminConnConfig, isCoreEventSubmitter } from '../../common/connection-config.js';
-import { ProfileChatStatus } from '../../common/enums.js';
+import { ProfileChatStatus, WebSocket_Event } from '../../common/enums.js';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')) as {
     version: string;
@@ -359,6 +359,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                     }
 
                     for (const client of (this.config.wsClients.get(String(conn.id)) || [])) {
+                        if (!client.events.includes(WebSocket_Event.MAP)) continue;
+
                         if (client.format == 'geojson') {
                             if (feat.properties && feat.properties.chat && feat.properties.chat.parent === 'DataSyncMissionsList') {
                                 console.log(JSON.stringify(feat));

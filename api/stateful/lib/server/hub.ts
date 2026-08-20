@@ -11,6 +11,7 @@ import { ConnectionClient } from '../connection-pool.js';
 import { ConnectionWebSocket } from '../connection-web.js';
 import { setTimeout } from 'node:timers/promises';
 import Auth, { tokenParser, AuthUser, AuthResource, AuthResourceAccess } from '../../../common/auth.js';
+import { WebSocket_Event } from '../../../common/enums.js';
 import type ConfigStateful from '../../config.js';
 
 export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSocketServer {
@@ -26,10 +27,24 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
 
             if (!params.get('connection')) throw new Error('Connection Parameter Required');
             if (!params.get('token')) throw new Error('Token Parameter Required');
+
+            const events: WebSocket_Event[] = [];
+            for (const value of params.getAll('events').flatMap(v => v.split(','))) {
+                if (!Object.values(WebSocket_Event).includes(value as WebSocket_Event)) {
+                    throw new Error(`Unknown Event: ${value}`);
+                }
+
+                if (!events.includes(value as WebSocket_Event)) {
+                    events.push(value as WebSocket_Event);
+                }
+            }
+            if (!events.length) events.push(WebSocket_Event.MAP);
+
             const parsedParams = {
                 connection: String(params.get('connection')),
                 token: String(params.get('token')),
                 format: String(params.get('format') || 'raw'),
+                events,
             };
 
             const auth = await tokenParser(config, parsedParams.token, config.SigningSecret);
@@ -58,7 +73,7 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
 
                 let webClients = config.wsClients.get(parsedParams.connection);
                 if (!webClients) webClients = [];
-                webClients.push(new ConnectionWebSocket(ws, parsedParams.format));
+                webClients.push(new ConnectionWebSocket(ws, parsedParams.format, parsedParams.events));
                 config.wsClients.set(parsedParams.connection, webClients);
                 ws.send(JSON.stringify({ type: 'connected' }));
             } else if (parsedParams.connection === 'admin') {
@@ -82,7 +97,7 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
                     client = config.conns.get(0) as ConnectionClient;
                 }
 
-                const connClient = new ConnectionWebSocket(ws, parsedParams.format, client, auth.session);
+                const connClient = new ConnectionWebSocket(ws, parsedParams.format, parsedParams.events, client, auth.session);
 
                 let webClients = config.wsClients.get('admin');
                 if (!webClients) webClients = [];
@@ -125,7 +140,7 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
                     client = config.conns.get(parsedParams.connection) as ConnectionClient;
                 }
 
-                const connClient = new ConnectionWebSocket(ws, parsedParams.format, client, auth.session);
+                const connClient = new ConnectionWebSocket(ws, parsedParams.format, parsedParams.events, client, auth.session);
 
                 let webClients = config.wsClients.get(parsedParams.connection);
                 if (!webClients) webClients = [];

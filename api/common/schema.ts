@@ -106,6 +106,62 @@ export const CoreEventBoardEvent = pgTable('core_event_board_event', {
     board_event_idx: unique().on(table.board, table.event),
 }));
 
+/** A user defined Form - schema holds the JSON Schema the Form input is generated & validated from */
+export const CoreForm = pgTable('core_form', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    username: text().references(() => Profile.username), // Author of the Form
+    name: text().notNull(),
+    description: text().notNull().default(''),
+    schema: jsonb().$type<Record<string, unknown>>().notNull(),
+});
+
+export const CoreFormChannel = pgTable('core_form_channel', {
+    form: uuid().notNull().references(() => CoreForm.id, { onDelete: 'cascade' }),
+    channel: bigint({ mode: 'bigint' }).notNull(),
+}, table => ({
+    pk: primaryKey({
+        columns: [table.form, table.channel],
+    }),
+}));
+
+/** Forms attached to a KanBan Board Column - a Form can be attached to a Column once */
+export const CoreFormColumn = pgTable('core_form_column', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    form: uuid().notNull().references(() => CoreForm.id, { onDelete: 'cascade' }),
+    column: uuid().notNull().references(() => CoreEventBoardColumn.id, { onDelete: 'cascade' }),
+    required: boolean().notNull().default(false), // Must the Form be completed for Events in the Column
+}, table => ({
+    column_form_idx: unique().on(table.column, table.form),
+}));
+
+/** A submitted response to a Core Form - response holds the data validated against the Form's schema */
+export const CoreFormResponse = pgTable('core_form_response', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    form: uuid().notNull().references(() => CoreForm.id, { onDelete: 'cascade' }),
+    username: text().references(() => Profile.username), // User that submitted the Response
+    response: jsonb().$type<Record<string, unknown>>().notNull().default({}),
+}, (table) => {
+    return {
+        form_idx: index('core_form_response_form_idx').on(table.form),
+    };
+});
+
+/** Links a Core Event to a given Form Response */
+export const CoreEventResponse = pgTable('core_event_response', {
+    event: uuid().notNull().references(() => CoreEvent.id, { onDelete: 'cascade' }),
+    response: uuid().notNull().references(() => CoreFormResponse.id, { onDelete: 'cascade' }),
+}, table => ({
+    pk: primaryKey({
+        columns: [table.event, table.response],
+    }),
+}));
+
 /**
  * A durable physical asset (sensor, drone, vehicle, radio, etc.) tracked independently
  * of any single Core Event. Device identity fields (manufacturer, model, serial, etc.)

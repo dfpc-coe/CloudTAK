@@ -219,8 +219,18 @@
     <EditColumnModal
         v-if='editColumn'
         :column='editColumn'
+        :channel='channel'
         @save='saveColumn($event)'
         @close='editColumn = undefined'
+    />
+
+    <FormWizard
+        v-if='formWizard'
+        :event-id='formWizard.eventId'
+        :event-name='formWizard.eventName'
+        :forms='formWizard.forms'
+        @complete='completeFormWizard'
+        @close='formWizard = undefined'
     />
 </template>
 
@@ -234,9 +244,11 @@
 
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { server } from '../../std.ts';
-import type { CoreEventBoardEvent } from '../../types.ts';
+import type { CoreForm, CoreEventBoardEvent } from '../../types.ts';
 import type { BoardColumn } from './types.ts';
+import { missingRequiredForms } from '../../utils/column-forms.ts';
 import StandardCoreEvent from '../CloudTAK/util/StandardCoreEvent.vue';
+import FormWizard from '../CloudTAK/util/FormWizard.vue';
 import EditColumnModal from './EditColumnModal.vue';
 import {
     IconPlus,
@@ -259,6 +271,8 @@ const vFocus = {
 
 const props = defineProps<{
     board?: string;
+    /** TAK Channel bitpos of the Board - scopes the Forms attachable to a Column */
+    channel?: number;
 }>();
 
 const columns = defineModel<Array<BoardColumn>>('columns', { required: true });
@@ -271,6 +285,14 @@ const emit = defineEmits<{
 
 const adding = ref<string | undefined>();
 const editColumn = ref<BoardColumn | undefined>();
+
+/** A drop held back by required Forms - `apply` finishes the move once the wizard completes */
+const formWizard = ref<{
+    forms: Array<CoreForm>;
+    eventId: string;
+    eventName: string;
+    apply: () => Promise<void>;
+} | undefined>();
 
 // Column descriptions clamp to 2 lines - the More/Less row only renders for
 // Columns whose text actually overflows the clamp (measured, not guessed)
@@ -370,16 +392,23 @@ async function createColumn(): Promise<void> {
     }
 }
 
-async function saveColumn(update: { name: string; description: string; color: string }): Promise<void> {
+async function saveColumn(update: {
+    name: string;
+    description: string;
+    color: string;
+    forms?: Array<{ form: string; required: boolean }>;
+}): Promise<void> {
     const column = editColumn.value;
     editColumn.value = undefined;
 
     if (!column) return;
 
     try {
+        const { forms, ...body } = update;
+
         const res = await server.PATCH('/api/board/column/{:column}', {
             params: { path: { ':column': column.id } },
-            body: update
+            body
         });
 
         if (res.error) throw new Error(res.error.message);
@@ -388,10 +417,52 @@ async function saveColumn(update: { name: string; description: string; color: st
         column.description = res.data.description;
         column.color = res.data.color;
 
+        if (forms) await syncColumnForms(column.id, forms);
+
         await nextTick();
         measureDescs();
     } catch (err) {
         fail(err);
+    }
+}
+
+/**
+ * Bring the Column's Form attachments in line with the staged list from the
+ * edit modal - the attach endpoint upserts so only removals need a diff
+ */
+async function syncColumnForms(column: string, forms: Array<{ form: string; required: boolean }>): Promise<void> {
+    const existing = await server.GET('/api/board/column/{:column}/form', {
+        params: { path: { ':column': column } }
+    });
+
+    if (existing.error) throw new Error(existing.error.message);
+
+    const staged = new Map(forms.map((attachment) => [attachment.form, attachment.required]));
+
+    for (const attachment of existing.data.items) {
+        if (staged.has(attachment.form.id)) continue;
+
+        const res = await server.DELETE('/api/board/column/{:column}/form/{:form}', {
+            params: { path: { ':column': column, ':form': attachment.form.id } }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+    }
+
+    for (const attachment of existing.data.items) {
+        if (staged.get(attachment.form.id) === attachment.required) {
+            // Attached with the right flag already - nothing to upsert
+            staged.delete(attachment.form.id);
+        }
+    }
+
+    for (const [form, required] of staged) {
+        const res = await server.PUT('/api/board/column/{:column}/form', {
+            params: { path: { ':column': column } },
+            body: { form, required }
+        });
+
+        if (res.error) throw new Error(res.error.message);
     }
 }
 
@@ -805,23 +876,49 @@ async function onDrop(target: BoardColumn): Promise<void> {
     }
 
     const { placement, from } = drag.value;
-    let index = dropTarget.value.index;
+    const index = dropTarget.value.index;
 
     onDragEnd();
 
     const source = columns.value.find((c) => c.id === from);
     if (!source) return;
 
+    // A cross-column move is blocked until the target's required Forms have
+    // a Response for the Event - the wizard collects them, then re-applies
+    if (source.id !== target.id) {
+        try {
+            const missing = await missingRequiredForms(target.id, placement.event.id);
+
+            if (missing.length) {
+                formWizard.value = {
+                    forms: missing,
+                    eventId: placement.event.id,
+                    eventName: placement.event.name,
+                    apply: () => applyDrop(placement, source, target, index),
+                };
+                return;
+            }
+        } catch (err) {
+            fail(err);
+            return;
+        }
+    }
+
+    await applyDrop(placement, source, target, index);
+}
+
+async function applyDrop(placement: CoreEventBoardEvent, source: BoardColumn, target: BoardColumn, index: number): Promise<void> {
     const current = source.events.findIndex((p) => p.event.id === placement.event.id);
     if (current === -1) return;
 
+    let insert = index;
     if (source.id === target.id) {
-        if (index > current) index -= 1;
-        if (index === current) return;
+        if (insert > current) insert -= 1;
+        if (insert === current) return;
     }
 
     source.events.splice(current, 1);
-    target.events.splice(Math.min(index, target.events.length), 0, placement);
+    target.events.splice(Math.min(insert, target.events.length), 0, placement);
 
     try {
         await persistPositions(target);
@@ -830,6 +927,13 @@ async function onDrop(target: BoardColumn): Promise<void> {
         fail(err);
         emit('refresh');
     }
+}
+
+async function completeFormWizard(): Promise<void> {
+    const pending = formWizard.value;
+    formWizard.value = undefined;
+
+    if (pending) await pending.apply();
 }
 </script>
 
