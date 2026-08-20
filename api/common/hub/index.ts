@@ -1,5 +1,6 @@
 import { Type } from '@sinclair/typebox';
 import type CoT from '@tak-ps/node-cot';
+import type { WebSocket_Event } from '../enums.js';
 import type { GeofenceStatus } from '../../stateful/lib/connection-geofence.js';
 
 export type ConnStatus = 'live' | 'dead' | 'unknown';
@@ -65,7 +66,7 @@ export interface HubClient {
 
     submitCots(req: SubmitCotsRequest): Promise<void>;
 
-    wsNotify(key: string, payload: unknown, excludeSession?: string): Promise<void>;
+    wsNotify(key: string, payload: unknown, excludeSession?: string, event?: WebSocket_Event): Promise<void>;
 
     wsPresence(keys: string[]): Promise<PresenceMap>;
 
