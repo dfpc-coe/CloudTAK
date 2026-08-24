@@ -3,12 +3,20 @@ import { sql, eq } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
-import { ProfileResponse, ProfileListResponse } from '../../common/types.js';
+import { ProfileResponse, ProfileListResponse, CertificateResponse } from '../../common/types.js';
 import type ConfigStateless from '../config.js';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types';
 import { Profile, ProfileSession } from '../../common/schema.js';
 import * as Default from '../lib/limits.js';
 import ProfileControl from '../lib/control/profile.js';
+import Provider from '../lib/provider.js';
+
+const UserResponse = Type.Composite([
+    ProfileResponse,
+    Type.Object({
+        certificate: Type.Optional(CertificateResponse),
+    }),
+]);
 
 const UserPatchBody = Type.Object({
     tak_callsign: Type.Optional(Type.String()),
@@ -63,6 +71,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             list.items = list.items.map((user) => {
                 return {
                     active: presence[user.username].active,
+                    certificate: Provider.certificate(user.auth.cert),
                     ...user,
                 };
             });
@@ -82,7 +91,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             username: Type.String(),
         }),
         body: UserPatchBody,
-        res: ProfileResponse,
+        res: UserResponse,
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
@@ -109,7 +118,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const profile = await profileControl.from(req.params.username);
 
-            res.json(profile);
+            res.json({
+                ...profile,
+                certificate: Provider.certificate((await config.models.Profile.from(req.params.username)).auth.cert),
+            });
         } catch (err) {
             Err.respond(err, res);
         }
@@ -122,14 +134,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         params: Type.Object({
             username: Type.String(),
         }),
-        res: ProfileResponse,
+        res: UserResponse,
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
 
             const profile = await profileControl.from(req.params.username);
 
-            res.json(profile);
+            res.json({
+                ...profile,
+                certificate: Provider.certificate((await config.models.Profile.from(req.params.username)).auth.cert),
+            });
         } catch (err) {
             Err.respond(err, res);
         }

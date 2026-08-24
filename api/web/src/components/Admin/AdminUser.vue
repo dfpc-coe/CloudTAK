@@ -20,6 +20,11 @@
                     class='mx-2'
                     v-text='route.params.user'
                 />
+                <CertificateBadge
+                    class='ms-2'
+                    :certificate='user.certificate'
+                    expired-label='Expired Certificate'
+                />
             </div>
 
             <div class='ms-auto btn-list'>
@@ -102,6 +107,38 @@
                             </template>
                         </div>
                     </template>
+                </div>
+
+                <div
+                    class='col-lg-12 cloudtak-hover py-2 mt-2 cursor-pointer'
+                    @click='opened.has("certificate") ? opened.delete("certificate") : opened.add("certificate")'
+                >
+                    <IconChevronDown v-if='opened.has("certificate")' />
+                    <IconChevronRight v-else />
+
+                    <span class='mx-2 user-select-none'>TAK Certificate</span>
+                    <CertificateBadge
+                        :certificate='user.certificate'
+                        expired-label='Expired Certificate'
+                    />
+                </div>
+
+                <div
+                    v-if='opened.has("certificate")'
+                    class='col-lg-12 card-body border rounded'
+                >
+                    <div
+                        v-if='!user.certificate'
+                        class='text-muted text-center py-2'
+                    >
+                        No valid certificate is stored for this user - one will be issued on their next password login
+                    </div>
+                    <div
+                        v-else
+                        class='datagrid'
+                    >
+                        <CertificateInfo :certificate='user.certificate' />
+                    </div>
                 </div>
 
                 <div
@@ -206,6 +243,8 @@ import { server } from '../../std.ts';
 import type { User } from '../../types.ts';
 import CopyField from '../CloudTAK/util/CopyField.vue';
 import StatusDot from '../util/StatusDot.vue';
+import CertificateBadge from '../util/CertificateBadge.vue';
+import CertificateInfo from '../util/CertificateInfo.vue';
 import AdminUserSession from './AdminUserSession.vue';
 import {
     TablerLoading,
@@ -249,7 +288,7 @@ const edit = ref(false);
 const user = ref<User>(await fetchUser());
 
 const getRemainingKeys = <T extends object>(obj: T) => Object.keys(obj).filter((key) => {
-    return !key.startsWith('display') && !key.startsWith('tak');
+    return !key.startsWith('display') && !key.startsWith('tak') && key !== 'certificate';
 }) as Array<keyof T>
 
 const getDisplayKeys = <T extends object>(obj: T) => Object.keys(obj).filter((key) => {

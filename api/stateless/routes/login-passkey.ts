@@ -5,7 +5,7 @@ import type ConfigStateless from '../config.js';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox';
 import { UAParser } from 'ua-parser-js';
-import { X509Certificate } from 'crypto';
+import Provider from '../lib/provider.js';
 import {
     generateRegistrationOptions,
     verifyRegistrationResponse,
@@ -288,7 +288,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             access: Type.Enum(AuthUserAccess),
             email: Type.String(),
             session: Type.String(),
-            certRenewalRequired: Type.Optional(Type.Boolean()),
+            certRenewalRequired: Type.Optional(Type.Boolean({
+                description: 'The stored TAK certificate is missing, revoked, expired or about to expire - the client should collect a password and call POST /login to regenerate it',
+            })),
+            certExpired: Type.Optional(Type.Boolean({
+                description: 'The stored TAK certificate is unusable (missing, revoked or expired) - renewal cannot be skipped',
+            })),
         }),
     }, async (req, res) => {
         try {
@@ -376,15 +381,24 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 last_login: new Date().toISOString(),
             });
 
-            let certRenewalRequired = false;
-            try {
-                const cert = new X509Certificate(profile.auth.cert);
-                const certExpiry = new Date(cert.validTo);
-                if (Number.isNaN(certExpiry.getTime()) || certExpiry.getTime() < Date.now() + (7 * 24 * 60 * 60 * 1000)) {
-                    certRenewalRequired = true;
+            // A passkey login has no password so the certificate cannot be regenerated here,
+            // instead the client is told to collect a password and call POST /login
+            let certRenewalRequired = Provider.certificateRenewalRequired(profile.auth.cert);
+            let certExpired = Provider.certificateExpired(profile.auth.cert);
+
+            if (!certRenewalRequired && config.server.auth.key && config.server.auth.cert) {
+                try {
+                    // Certificate is within its validity period - ensure TAK Server hasn't revoked it
+                    await new Provider(config).valid(profile);
+                } catch (err) {
+                    if (err instanceof Err && err.status === 401) {
+                        certRenewalRequired = true;
+                        certExpired = true;
+                    } else {
+                        // TAK Server is unreachable - don't block login on a check we can't perform
+                        console.error(err);
+                    }
                 }
-            } catch {
-                certRenewalRequired = true;
             }
 
             res.json({
@@ -397,6 +411,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     { expiresIn: '16h' },
                 ),
                 ...(certRenewalRequired ? { certRenewalRequired: true } : {}),
+                ...(certExpired ? { certExpired: true } : {}),
             });
         } catch (err) {
             Err.respond(err, res);

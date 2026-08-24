@@ -96,22 +96,7 @@
                                                 v-text='connection[h.name]'
                                             />
                                             <div class='ms-auto d-flex align-items-center gap-2'>
-                                                <TablerBadge
-                                                    v-if='certificateStatus(connection) === "expired"'
-                                                    background-color='rgba(220, 38, 38, 0.15)'
-                                                    border-color='rgba(220, 38, 38, 0.35)'
-                                                    text-color='#b91c1c'
-                                                >
-                                                    Expired
-                                                </TablerBadge>
-                                                <TablerBadge
-                                                    v-else-if='certificateStatus(connection) === "near-expiry"'
-                                                    background-color='rgba(249, 115, 22, 0.15)'
-                                                    border-color='rgba(249, 115, 22, 0.35)'
-                                                    text-color='#c2410c'
-                                                >
-                                                    Near Expiry
-                                                </TablerBadge>
+                                                <CertificateBadge :certificate='connection.certificate' />
                                             </div>
                                         </div>
                                     </td>
@@ -148,10 +133,10 @@ import type { paths } from '@cloudtak/api-types';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import Status from '../ETL/Connection/StatusDot.vue';
+import CertificateBadge from '../util/CertificateBadge.vue';
 import {
     TablerNone,
     TablerAlert,
-    TablerBadge,
     TablerInput,
     TablerLoading,
     TablerIconButton,
@@ -171,11 +156,6 @@ type ConnectionQuery = paths['/api/connection']['get']['parameters']['query'];
 type ConnectionResponse = paths['/api/connection']['get']['responses']['200']['content']['application/json'];
 type ConnectionItem = ConnectionResponse['items'][number];
 type ConnectionItemKey = keyof ConnectionItem;
-type ConnectionCertificate = {
-    validTo?: string | null;
-};
-
-const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
 
 const paging = ref<{
     filter: string;
@@ -266,24 +246,6 @@ function navTo(path: string, event?: MouseEvent | KeyboardEvent) {
     } else {
         window.location.href = path;
     }
-}
-
-function certificateExpiryState(validTo?: string | null): 'expired' | 'near-expiry' | null {
-    if (!validTo) return null;
-
-    const expiry = Date.parse(validTo);
-    if (Number.isNaN(expiry)) return null;
-
-    const remaining = expiry - Date.now();
-    if (remaining < 0) return 'expired';
-    if (remaining <= TWO_WEEKS_MS) return 'near-expiry';
-
-    return null;
-}
-
-function certificateStatus(connection: ConnectionItem) {
-    const certificate = (connection as ConnectionItem & { certificate?: ConnectionCertificate }).certificate;
-    return certificateExpiryState(certificate?.validTo);
 }
 
 async function fetchList() {

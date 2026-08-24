@@ -3,8 +3,15 @@ import { InferSelectModel } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import type { Profile } from '../../common/schema.js';
 import { X509Certificate } from 'crypto';
+import type { Static } from '@sinclair/typebox';
+import type { CertificateResponse } from '../../common/types.js';
 import { TAKAPI, APIAuthPassword, APIAuthCertificate } from '@tak-ps/node-tak';
 import UserControl from './control/user.js';
+
+/**
+ * Certificates expiring within this window are treated as requiring renewal
+ */
+export const CERT_RENEWAL_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
 export enum AuthProviderAccess {
     ADMIN = 'admin',
@@ -19,6 +26,38 @@ export default class AuthProvider {
     constructor(config: Config) {
         this.config = config;
         this.userControl = new UserControl(config);
+    }
+
+    /**
+     * Public metadata for a PEM certificate or undefined if the certificate cannot be parsed
+     */
+    static certificate(cert: unknown): Static<typeof CertificateResponse> | undefined {
+        if (typeof cert !== 'string' || !cert.length) return undefined;
+
+        try {
+            const { subject, validFrom, validTo } = new X509Certificate(cert);
+            return { subject, validFrom, validTo };
+        } catch {
+            return undefined;
+        }
+    }
+
+    /**
+     * True if the certificate cannot be parsed or has already expired
+     */
+    static certificateExpired(cert: unknown, now = Date.now()): boolean {
+        const info = AuthProvider.certificate(cert);
+        if (!info) return true;
+
+        const expiry = Date.parse(info.validTo);
+        return Number.isNaN(expiry) || expiry < now;
+    }
+
+    /**
+     * True if the certificate cannot be parsed, has expired, or expires within CERT_RENEWAL_WINDOW_MS
+     */
+    static certificateRenewalRequired(cert: unknown, now = Date.now()): boolean {
+        return AuthProvider.certificateExpired(cert, now + CERT_RENEWAL_WINDOW_MS);
     }
 
     async login(username: string, password: string): Promise<string> {
@@ -50,18 +89,8 @@ export default class AuthProvider {
         profile: InferSelectModel<typeof Profile>,
         password?: string,
     ): Promise<InferSelectModel<typeof Profile>> {
-        let validTo;
-
-        try {
-            const cert = new X509Certificate(profile.auth.cert);
-
-            validTo = cert.validTo;
-            const certExpiry = new Date(validTo);
-            if (Number.isNaN(certExpiry.getTime()) || certExpiry.getTime() < Date.now() + (7 * 24 * 60 * 60 * 1000)) {
-                throw new Error('Expired Certificate has expired or is about to');
-            }
-        } catch (err) {
-            console.error(`Error: CertificateExpiration: ${validTo}: ${err}`);
+        if (AuthProvider.certificateRenewalRequired(profile.auth.cert)) {
+            console.error(`Error: CertificateExpiration: ${profile.username}: ${AuthProvider.certificate(profile.auth.cert)?.validTo ?? 'unparseable'}: Certificate has expired or is about to`);
 
             if (password) {
                 const api = await TAKAPI.init(new URL(this.config.server.webtak), new APIAuthPassword(profile.username, password));
