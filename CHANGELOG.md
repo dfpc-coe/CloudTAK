@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.72.0 - 2026-08-24
+
+- :tada: Add certificate information to User APIs
+
 ### v13.71.0 - 2026-08-24
 
 - :tada: Introduce concept of Forms & requirements on an Event Board column
