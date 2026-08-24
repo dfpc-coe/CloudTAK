@@ -383,6 +383,14 @@ export const ServerResponse = Type.Object({
     })),
 });
 
+export const CertificateResponse = Type.Object({
+    subject: Type.String(),
+    validFrom: Type.String(),
+    validTo: Type.String(),
+}, {
+    description: 'Public metadata of an X509 certificate - clients derive expiry state from validTo',
+});
+
 export const ProfileListResponse = Type.Object({
     username: Type.String(),
     created: Type.String(),
@@ -393,6 +401,7 @@ export const ProfileListResponse = Type.Object({
     }),
     system_admin: Type.Boolean(),
     agency_admin: Type.Array(Type.Integer()),
+    certificate: Type.Optional(CertificateResponse),
 });
 
 export const Profile = Type.Object({
@@ -623,11 +632,7 @@ export const ConnectionResponse = Type.Object({
     id: Type.Integer(),
     status: Type.String(),
     agency: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
-    certificate: Type.Object({
-        subject: Type.String(),
-        validFrom: Type.String(),
-        validTo: Type.String(),
-    }),
+    certificate: CertificateResponse,
     created: Type.String(),
     updated: Type.String(),
     readonly: Type.Boolean(),

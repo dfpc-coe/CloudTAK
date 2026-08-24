@@ -52,52 +52,7 @@
         <TablerMarkdown :markdown='connection.description' />
 
         <div class='datagrid mt-3'>
-            <div class='datagrid-item'>
-                <div class='datagrid-title'>
-                    Certificate Valid From
-                </div>
-                <div
-                    class='datagrid-content'
-                    v-text='connection.certificate.validFrom'
-                />
-            </div>
-            <div class='datagrid-item'>
-                <div class='datagrid-title'>
-                    Certificate Valid To
-                </div>
-                <div
-                    class='datagrid-content d-flex align-items-center gap-2'
-                >
-                    <div v-text='connection.certificate.validTo' />
-                    <TablerBadge
-                        v-if='certificateStatus === "expired"'
-                        class='ms-auto'
-                        background-color='rgba(220, 38, 38, 0.15)'
-                        border-color='rgba(220, 38, 38, 0.35)'
-                        text-color='#b91c1c'
-                    >
-                        Expired Certificate
-                    </TablerBadge>
-                    <TablerBadge
-                        v-else-if='certificateStatus'
-                        class='ms-auto'
-                        background-color='rgba(249, 115, 22, 0.15)'
-                        border-color='rgba(249, 115, 22, 0.35)'
-                        text-color='#c2410c'
-                    >
-                        Near Expiry
-                    </TablerBadge>
-                </div>
-            </div>
-            <div class='datagrid-item'>
-                <div class='datagrid-title'>
-                    Certificate Subject
-                </div>
-                <div
-                    class='datagrid-content'
-                    v-text='connection.certificate.subject'
-                />
-            </div>
+            <CertificateInfo :certificate='connection.certificate' />
         </div>
 
         <div
@@ -210,7 +165,7 @@
 </template>
 
 <script setup lang='ts'>
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import { useRouter } from 'vue-router';
 import { openExternalUrl } from '../../utils/capacitor.ts';
@@ -220,11 +175,11 @@ import timeDiff from '../../timediff.ts';
 import ConnectionStatus from './Connection/StatusDot.vue';
 import AgencyBadge from './Connection/AgencyBadge.vue';
 import InitialAuthor from '../util/InitialAuthor.vue';
+import CertificateInfo from '../util/CertificateInfo.vue';
 import {
     TablerIconButton,
     TablerRefreshButton,
     TablerMarkdown,
-    TablerBadge,
     TablerDropdown,
     TablerInput
 } from '@tak-ps/vue-tabler';
@@ -255,23 +210,6 @@ const certificate = ref({
     truststorePassword: '',
     clientPassword: ''
 });
-
-const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
-
-function certificateExpiryState(validTo?: string | null): 'expired' | 'near-expiry' | null {
-    if (!validTo) return null;
-
-    const expiry = Date.parse(validTo);
-    if (Number.isNaN(expiry)) return null;
-
-    const remaining = expiry - Date.now();
-    if (remaining < 0) return 'expired';
-    if (remaining <= TWO_WEEKS_MS) return 'near-expiry';
-
-    return null;
-}
-
-const certificateStatus = computed(() => certificateExpiryState(props.connection.certificate.validTo));
 
 async function cycle() {
     loading.value = true;

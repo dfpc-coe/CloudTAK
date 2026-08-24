@@ -67,6 +67,10 @@
                                                 class='mx-2'
                                                 v-text='user[h.name]'
                                             />
+                                            <CertificateBadge
+                                                class='ms-auto'
+                                                :certificate='user.certificate'
+                                            />
                                         </div>
                                         <div
                                             v-else-if='h.name === "last_login"'
@@ -111,6 +115,7 @@ import type { User, UserList } from '../../types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import StatusDot from '../util/StatusDot.vue';
+import CertificateBadge from '../util/CertificateBadge.vue';
 import {
     TablerNone,
     TablerAlert,
@@ -133,6 +138,11 @@ const paging = ref({
     order: 'desc' as 'asc' | 'desc',
     limit: 100,
     page: 0
+});
+
+watch(() => paging.value.filter, () => {
+    // A new filter invalidates the current page offset - the page watcher below refetches
+    if (paging.value.page !== 0) paging.value.page = 0;
 });
 
 watch(paging.value, async () => {

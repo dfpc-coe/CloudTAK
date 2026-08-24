@@ -23,10 +23,16 @@ test('GET: api/user', async () => {
             last_login: string;
             created: string;
             updated: string;
+            certificate?: { subject: string; validFrom: string; validTo: string };
         }) => {
             i.last_login = time;
             i.created = time;
             i.updated = time;
+
+            assert.ok(i.certificate, 'certificate metadata is returned');
+            assert.deepEqual(Object.keys(i.certificate).sort(), ['subject', 'validFrom', 'validTo']);
+            assert.ok(!Number.isNaN(Date.parse(i.certificate.validTo)));
+            delete i.certificate;
         });
 
         assert.deepEqual(res.body, {
@@ -61,6 +67,9 @@ test('PATCH: api/user/admin@example.com', async () => {
         res.body.last_login = time;
         res.body.created = time;
         res.body.updated = time;
+
+        assert.ok(res.body.certificate, 'certificate metadata is returned');
+        delete res.body.certificate;
 
         assert.deepEqual(res.body, {
             active: false,
@@ -112,6 +121,12 @@ test('GET: api/user/admin@example.com', async () => {
         res.body.last_login = time;
         res.body.created = time;
         res.body.updated = time;
+
+        assert.ok(res.body.certificate, 'certificate metadata is returned');
+        assert.deepEqual(Object.keys(res.body.certificate).sort(), ['subject', 'validFrom', 'validTo']);
+        assert.ok(!Number.isNaN(Date.parse(res.body.certificate.validTo)));
+        assert.ok(!('auth' in res.body), 'private key material is never returned');
+        delete res.body.certificate;
 
         assert.deepEqual(res.body, {
             active: false,

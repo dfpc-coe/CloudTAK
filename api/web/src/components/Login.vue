@@ -200,8 +200,10 @@
                                     <TablerInlineAlert
                                         class='mt-3 mb-2'
                                         title='Certificate Renewal Required'
-                                        description='Your TAK certificate is expiring soon. Please enter your password to renew it.'
-                                        severity='warning'
+                                        :description='certRenewal.expired
+                                            ? "Your TAK certificate is expired or no longer valid. Please enter your password to issue a new one."
+                                            : "Your TAK certificate is expiring soon. Please enter your password to renew it."'
+                                        :severity='certRenewal.expired ? "danger" : "warning"'
                                     />
                                     <div class='mb-3'>
                                         <TablerInput
@@ -222,6 +224,7 @@
                                             Renew Certificate
                                         </button>
                                         <button
+                                            v-if='!certRenewal.expired'
                                             type='button'
                                             class='btn btn-secondary'
                                             @click='skipCertRenewal'
@@ -499,10 +502,12 @@ const body = ref<Login_Create>({
 });
 const certRenewal = reactive<{
     required: boolean;
+    expired: boolean;
     email: string;
     password: string;
 }>({
     required: false,
+    expired: false,
     email: '',
     password: '',
 });
@@ -685,6 +690,7 @@ async function completePasskeyLogin(credential: AuthenticationResponseJSON) {
 
         if (login.certRenewalRequired) {
             certRenewal.required = true;
+            certRenewal.expired = Boolean(login.certExpired);
             certRenewal.email = login.email;
             certRenewal.password = '';
             loading.value = false;
@@ -743,6 +749,7 @@ async function renewCertificate() {
 
         await applySession({ token: login.token, email: login.email, session: login.session });
         certRenewal.required = false;
+        certRenewal.expired = false;
         certRenewal.password = '';
 
         navigateAfterLogin();
@@ -753,7 +760,9 @@ async function renewCertificate() {
 }
 
 function skipCertRenewal() {
+    // Only offered while the certificate is still valid (expiring soon, not expired)
     certRenewal.required = false;
+    certRenewal.expired = false;
     certRenewal.password = '';
     navigateAfterLogin();
 }

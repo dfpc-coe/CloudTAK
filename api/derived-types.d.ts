@@ -27413,6 +27413,7 @@ export interface paths {
                             email: string;
                             session: string;
                             certRenewalRequired?: boolean;
+                            certExpired?: boolean;
                         };
                     };
                 };
@@ -49414,6 +49415,11 @@ export interface paths {
                                 active: boolean;
                                 system_admin: boolean;
                                 agency_admin: number[];
+                                certificate?: {
+                                    subject: string;
+                                    validFrom: string;
+                                    validTo: string;
+                                };
                             }[];
                         };
                     };
@@ -49523,6 +49529,11 @@ export interface paths {
                             active: boolean;
                             system_admin: boolean;
                             agency_admin: number[];
+                            certificate?: {
+                                subject: string;
+                                validFrom: string;
+                                validTo: string;
+                            };
                             tak_callsign: string;
                             tak_remarks: string;
                             tak_phone: string;
@@ -49668,6 +49679,11 @@ export interface paths {
                             active: boolean;
                             system_admin: boolean;
                             agency_admin: number[];
+                            certificate?: {
+                                subject: string;
+                                validFrom: string;
+                                validTo: string;
+                            };
                             tak_callsign: string;
                             tak_remarks: string;
                             tak_phone: string;
