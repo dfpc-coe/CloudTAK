@@ -137,7 +137,7 @@ export const StandardResponse = Type.Object({
     status: Type.Integer(),
     message: Type.String(),
     details: Type.Optional(Type.String({
-        description: 'Extended plain-text error details (ie: an upstream TAK Server exception trace) suitable for an "Advanced" section',
+        description: 'Extended error details (ie: TAK Server exception trace)',
     })),
 });
 

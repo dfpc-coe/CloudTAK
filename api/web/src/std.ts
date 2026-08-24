@@ -173,8 +173,7 @@ export async function std(
 
         const errbody = bdy as APIError;
         const err = new Error(errbody.message || `Status Code: ${res.status}`);
-        // `body` is surfaced by TablerAlert's "Advanced" dropdown - prefer the
-        // plain-text `details` (ie: a TAK Server exception trace) when the API provides it
+        // Shown in TablerAlert's "Advanced" dropdown
         // @ts-expect-error TODO Fix this
         err.body = typeof errbody.details === 'string' && errbody.details.length ? errbody.details : bdy;
         throw err;
