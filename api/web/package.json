@@ -29,6 +29,7 @@
         "type": "git",
         "url": "git+https://github.com/dfpc-coe/CloudTAK.git"
     },
+    "license": "AGPL-3.0-only",
     "dependencies": {
         "@capacitor-community/keep-awake": "^8.0.1",
         "@capacitor-firebase/messaging": "^8.2.0",
