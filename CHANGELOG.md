@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.72.1 - 2026-08-24
+
+- :bug: Fix Injector Deletion - Closes dfpc-coe/CloudTAK#1687
+
 ### v13.72.0 - 2026-08-24
 
 - :tada: Add certificate information to User APIs
