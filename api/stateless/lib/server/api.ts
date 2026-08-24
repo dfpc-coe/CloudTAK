@@ -4,6 +4,7 @@ import cors from 'cors';
 import express from 'express';
 import history, { Context } from 'connect-history-api-fallback';
 import Schema from '@openaddresses/batch-schema';
+import '../../../common/error.js';
 import { StandardResponse } from '../../../common/types.js';
 import type Config from '../../../common/config.js';
 
