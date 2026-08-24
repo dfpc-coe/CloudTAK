@@ -19,7 +19,8 @@
                     class='flex-shrink-0 text-secondary'
                 />
                 <span
-                    class='text-truncate user-select-none'
+                    class='flex-grow-1 text-truncate user-select-none'
+                    style='min-width: 0;'
                     :class='{ "text-secondary": !selected }'
                     v-text='selected ? selected.name : props.placeholder'
                 />

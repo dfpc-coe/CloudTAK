@@ -46,7 +46,7 @@
                         <!-- TablerSelect only reads its model on mount - the key
                              remounts it when the Column changes under it -->
                         <TablerSelect
-                            :key='`${row.placement.event.id}-${row.column.id}`'
+                            :key='`${row.placement.event.id}-${row.column.id}-${selectEpoch}`'
                             :model-value='row.column.name'
                             :options='columnNames'
                             :title='row.column.description || undefined'
@@ -117,6 +117,15 @@
             </tbody>
         </table>
     </div>
+
+    <FormWizard
+        v-if='formWizard'
+        :event-id='formWizard.eventId'
+        :event-name='formWizard.eventName'
+        :forms='formWizard.forms'
+        @complete='completeFormWizard'
+        @close='closeFormWizard'
+    />
 </template>
 
 <script setup lang='ts'>
@@ -126,10 +135,12 @@
  * position within the Column), with the Board Column it sits in as a cell
  */
 
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { server } from '../../std.ts';
-import type { CoreEvent, CoreEventBoardEvent } from '../../types.ts';
+import type { CoreForm, CoreEvent, CoreEventBoardEvent } from '../../types.ts';
 import type { BoardColumn } from './types.ts';
+import { missingRequiredForms } from '../../utils/column-forms.ts';
+import FormWizard from '../CloudTAK/util/FormWizard.vue';
 import StatusDot from '../util/StatusDot.vue';
 import { IconMapPin } from '@tabler/icons-vue';
 import {
@@ -157,28 +168,73 @@ const columnNames = computed<Array<string>>(() => {
     return columns.value.map((column) => column.name);
 });
 
+/** A move held back by required Forms - `apply` finishes it once the wizard completes */
+const formWizard = ref<{
+    forms: Array<CoreForm>;
+    eventId: string;
+    eventName: string;
+    apply: () => Promise<void>;
+} | undefined>();
+
+/** Re-keying the Column selects snaps a cancelled move's select back to the real Column */
+const selectEpoch = ref(0);
+
 async function moveEvent(row: { column: BoardColumn; placement: CoreEventBoardEvent }, name: string): Promise<void> {
     const target = columns.value.find((column) => column.name === name);
 
     if (!target || target.id === row.column.id) return;
 
     try {
-        const position = target.events.length;
+        const missing = await missingRequiredForms(target.id, row.placement.event.id);
 
-        const res = await server.PATCH('/api/board/event/{:placement}', {
-            params: { path: { ':placement': row.placement.id } },
-            body: { column: target.id, position }
-        });
+        if (missing.length) {
+            formWizard.value = {
+                forms: missing,
+                eventId: row.placement.event.id,
+                eventName: row.placement.event.name,
+                apply: () => applyMove(row, target),
+            };
+            return;
+        }
 
-        if (res.error) throw new Error(res.error.message);
-
-        row.column.events = row.column.events.filter((p) => p.id !== row.placement.id);
-        row.placement.column = target.id;
-        row.placement.position = position;
-        target.events.push(row.placement);
+        await applyMove(row, target);
     } catch (err) {
         emit('error', err instanceof Error ? err : new Error(String(err)));
     }
+}
+
+async function applyMove(row: { column: BoardColumn; placement: CoreEventBoardEvent }, target: BoardColumn): Promise<void> {
+    const position = target.events.length;
+
+    const res = await server.PATCH('/api/board/event/{:placement}', {
+        params: { path: { ':placement': row.placement.id } },
+        body: { column: target.id, position }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    row.column.events = row.column.events.filter((p) => p.id !== row.placement.id);
+    row.placement.column = target.id;
+    row.placement.position = position;
+    target.events.push(row.placement);
+}
+
+async function completeFormWizard(): Promise<void> {
+    const pending = formWizard.value;
+    formWizard.value = undefined;
+
+    if (!pending) return;
+
+    try {
+        await pending.apply();
+    } catch (err) {
+        emit('error', err instanceof Error ? err : new Error(String(err)));
+    }
+}
+
+function closeFormWizard(): void {
+    formWizard.value = undefined;
+    selectEpoch.value += 1;
 }
 
 function creator(event: CoreEvent): string {

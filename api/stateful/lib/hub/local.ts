@@ -1,6 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import WebSocket from 'ws';
 import { MachineConnConfig, ProfileConnConfig, AdminConnConfig, isCoreEventSubmitter } from '../../../common/connection-config.js';
+import { WebSocket_Event } from '../../../common/enums.js';
 import type { Connection } from '../../../common/schema.js';
 import type { InferSelectModel } from 'drizzle-orm';
 import type { GeofenceStatus } from '../connection-geofence.js';
@@ -123,13 +124,14 @@ export default class LocalHub implements HubClient {
         }
     }
 
-    async wsNotify(key: string, payload: unknown, excludeSession?: string): Promise<void> {
+    async wsNotify(key: string, payload: unknown, excludeSession?: string, event: WebSocket_Event = WebSocket_Event.MAP): Promise<void> {
         const clients = this.config.wsClients.get(key) || [];
         if (!clients.length) return;
 
         const raw = JSON.stringify(payload);
 
         for (const client of clients) {
+            if (!client.events.includes(event)) continue;
             if (excludeSession && client.session && client.session === excludeSession) continue;
             if (client.ws.readyState !== WebSocket.OPEN) continue;
 

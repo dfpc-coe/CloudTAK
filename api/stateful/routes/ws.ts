@@ -3,6 +3,7 @@ import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { PresenceMapSchema } from '../../common/hub/index.js';
 import { StandardResponse } from '../../common/types.js';
+import { WebSocket_Event } from '../../common/enums.js';
 import type ConfigStateful from '../config.js';
 
 export default async function router(schema: Schema, config: ConfigStateful) {
@@ -14,11 +15,12 @@ export default async function router(schema: Schema, config: ConfigStateful) {
             key: Type.String(),
             payload: Type.Unknown(),
             excludeSession: Type.Optional(Type.String()),
+            event: Type.Optional(Type.Enum(WebSocket_Event)),
         }),
         res: StandardResponse,
     }, async (req, res) => {
         try {
-            await config.hub.wsNotify(req.body.key, req.body.payload, req.body.excludeSession);
+            await config.hub.wsNotify(req.body.key, req.body.payload, req.body.excludeSession, req.body.event);
 
             res.json({ status: 200, message: 'Notified' });
         } catch (err) {

@@ -48,7 +48,7 @@
                 <TablerInlineAlert
                     severity='warning'
                     title='Event Details Unavailable'
-                    description='This marker is a CloudTAK Event - the Event it was generated from can only be loaded while online.'
+                    description='This marker is a CloudTAK Event - the Event it was generated from could not be loaded from the server.'
                 />
                 <TablerButton
                     class='w-100'
@@ -1000,6 +1000,25 @@ async function retryEvent(): Promise<void> {
     }
 }
 
+// Redirecting to the Event View is only safe if the API can actually serve
+// the Event - anything but a 200 falls back to the offline CoT rendering
+async function eventAvailable(event: string): Promise<boolean> {
+    try {
+        const res = await server.GET('/api/core/event/{:event}', {
+            params: {
+                path: {
+                    ':event': event
+                }
+            }
+        });
+
+        return res.response.status === 200;
+    } catch (err) {
+        console.error('Failed to load Core Event', err);
+        return false;
+    }
+}
+
 // UUID of the Core Event a CoT is the projection of, carried on its `p` Link
 function coreEvent(cot: COT): string | undefined {
     const marker = (cot.properties.links || []).find((link) => !!link.event);
@@ -1021,7 +1040,7 @@ async function load_cot() {
         // The Event View is the richer representation but is API-only -
         // offline, the CoT remains the best available view of the Event
         const event = coreEvent(baseCOT);
-        if (event && deviceStore.network.isOnline) {
+        if (event && deviceStore.network.isOnline && await eventAvailable(event)) {
             // replace() so back navigation doesn't immediately redirect again
             await router.replace(`/event/${event}`);
             return;

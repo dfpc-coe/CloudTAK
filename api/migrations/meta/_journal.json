@@ -1373,6 +1373,20 @@
       "when": 1786634132181,
       "tag": "0196_layer_template_removal",
       "breakpoints": true
+    },
+    {
+      "idx": 197,
+      "version": "7",
+      "when": 1787198069812,
+      "tag": "0197_core_form",
+      "breakpoints": true
+    },
+    {
+      "idx": 198,
+      "version": "7",
+      "when": 1787199462174,
+      "tag": "0198_core_form_column",
+      "breakpoints": true
     }
   ]
 }

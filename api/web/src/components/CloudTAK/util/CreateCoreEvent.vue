@@ -92,7 +92,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { server } from '../../../std.ts';
 import Coordinate from './Coordinate.vue';
@@ -101,7 +101,7 @@ import PropertyCoreEventLocation from '../Property/PropertyCoreEventLocation.vue
 import GroupSelect from '../../util/GroupSelect.vue';
 import GroupManager from '../../../base/group.ts';
 import { useMapStore } from '../../../stores/map.ts';
-import type { InputFeature } from '../../../types.ts';
+import type { CoreEvent, InputFeature } from '../../../types.ts';
 import {
     TablerAlert,
     TablerEnum,
@@ -110,12 +110,22 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     coordinates?: number[];
     location?: string;
-}>();
+    channel?: number;
+    navigate?: boolean;
+}>(), {
+    coordinates: undefined,
+    location: undefined,
+    channel: undefined,
+    navigate: true
+});
 
-const emit = defineEmits([ 'close' ]);
+const emit = defineEmits<{
+    (e: 'create', event: CoreEvent): void;
+    (e: 'close'): void;
+}>();
 
 const router = useRouter();
 const mapStore = useMapStore();
@@ -125,9 +135,13 @@ type CoreEventPriority = 'none' | 'low' | 'medium' | 'high' | 'critical';
 const error = ref<Error | undefined>(undefined);
 const loading = ref(false);
 
+// The modal is also used from pages without a map (Event Board) so the map
+// can only be consulted for a default center when it actually exists
 const center = props.coordinates && props.coordinates.length >= 2
     ? { lng: props.coordinates[0], lat: props.coordinates[1] }
-    : mapStore.map.getCenter();
+    : mapStore._map
+        ? mapStore.map.getCenter()
+        : { lng: 0, lat: 0 };
 
 const config = ref({
     name: '',
@@ -140,6 +154,18 @@ const config = ref({
         Math.round(center.lng * 1000000) / 1000000,
         Math.round(center.lat * 1000000) / 1000000,
     ]
+});
+
+onMounted(async () => {
+    if (props.channel === undefined) return;
+
+    try {
+        const groups = await GroupManager.list();
+        const match = groups.find((group) => group.bitpos === props.channel);
+        if (match) config.value.channels = [match.name];
+    } catch (err) {
+        console.error('Failed to preselect Channel:', err);
+    }
 });
 
 async function submit(): Promise<void> {
@@ -177,33 +203,38 @@ async function submit(): Promise<void> {
 
         // Provisional marker so the Event appears immediately - the CoT
         // broadcast replaces it under the same UID, or it goes stale
-        try {
-            await mapStore.worker.db.add({
-                id: res.data.id,
-                type: 'Feature',
-                properties: {
-                    ...res.data.style,
-                    type: res.data.type,
-                    how: 'm-g',
-                    callsign: res.data.name,
-                    remarks: res.data.remarks,
-                    stale: new Date(Date.now() + 30 * 1000).toISOString(),
-                    links: [{
-                        relation: 'p',
-                        type: 'core-event',
-                        event: res.data.id,
-                        remarks: res.data.name,
-                    }],
-                },
-                geometry: res.data.geometry,
-            } as InputFeature);
-        } catch (err) {
-            console.error('Failed to place provisional Event marker:', err);
+        if (mapStore._worker) {
+            try {
+                await mapStore.worker.db.add({
+                    id: res.data.id,
+                    type: 'Feature',
+                    properties: {
+                        ...res.data.style,
+                        type: res.data.type,
+                        how: 'm-g',
+                        callsign: res.data.name,
+                        remarks: res.data.remarks,
+                        stale: new Date(Date.now() + 30 * 1000).toISOString(),
+                        links: [{
+                            relation: 'p',
+                            type: 'core-event',
+                            event: res.data.id,
+                            remarks: res.data.name,
+                        }],
+                    },
+                    geometry: res.data.geometry,
+                } as InputFeature);
+            } catch (err) {
+                console.error('Failed to place provisional Event marker:', err);
+            }
         }
 
+        emit('create', res.data as CoreEvent);
         emit('close');
 
-        void router.push(`/event/${res.data.id}`);
+        if (props.navigate) {
+            void router.push(`/event/${res.data.id}`);
+        }
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
         loading.value = false;
