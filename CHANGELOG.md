@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.71.0 - 2026-08-24
+
+- :tada: Introduce concept of Forms & requirements on an Event Board column
+
 ### v13.70.0 - 2026-08-19
 
 - :tada: Allow a server admin to specify Basemap Favourites
