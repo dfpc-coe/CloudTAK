@@ -28,7 +28,7 @@
         "url": "git+https://github.com/dfpc-coe/CloudTAK.git"
     },
     "author": "Nick Ingalls <nick@ingalls.ca>",
-    "license": "ISC",
+    "license": "AGPL-3.0-only",
     "dependencies": {
         "@archiver/archiver": "^0.1.0",
         "@aws-sdk/client-cloudformation": "^3.279.0",
