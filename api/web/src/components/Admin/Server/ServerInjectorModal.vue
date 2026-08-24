@@ -16,7 +16,7 @@
                 <TablerDelete
                     v-if='typeof props.injector !== "boolean"'
                     displaytype='icon'
-                    @click='deleteInjector'
+                    @delete='deleteInjector'
                 />
             </div>
         </div>
