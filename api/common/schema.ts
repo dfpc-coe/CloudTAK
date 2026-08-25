@@ -614,7 +614,7 @@ export const Layer = pgTable('layers', {
     memory: integer().notNull().default(256),
     timeout: integer().notNull().default(120),
 
-    permissions: text().array(),
+    permissions: text().array().notNull().default([]),
 
     alarm_period: integer().notNull().default(30),
     alarm_evals: integer().notNull().default(5),

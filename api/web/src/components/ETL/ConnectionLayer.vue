@@ -76,6 +76,25 @@
                                 class='card-body'
                                 :markdown='layer.description'
                             />
+                            <div
+                                v-if='layer.permissions.length'
+                                class='card-body border-top d-flex align-items-center flex-wrap'
+                            >
+                                <IconLock
+                                    :size='18'
+                                    stroke='1'
+                                    color='#6b7990'
+                                    class='me-2'
+                                />
+                                <span class='text-secondary me-2'>Permissions</span>
+                                <TablerBadge
+                                    v-for='permission in layer.permissions'
+                                    :key='permission'
+                                    class='me-1'
+                                >
+                                    <code v-text='permission' />
+                                </TablerBadge>
+                            </div>
                             <div class='card-footer d-flex align-items-center'>
                                 <div>
                                     Last updated <span v-text='timeDiff(layer.updated)' />
@@ -433,6 +452,7 @@ import {
     IconBeach,
     IconSchema,
     IconPaint,
+    IconLock,
 } from '@tabler/icons-vue'
 
 const route = useRoute();

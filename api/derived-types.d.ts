@@ -10996,7 +10996,7 @@ export interface paths {
                                 memory: number;
                                 timeout: number;
                                 priority: "high" | "low" | "off";
-                                permissions: null | string[];
+                                permissions: string[];
                                 /** @description Deprecated: Layer Templates have been removed - this value is always false */
                                 template: boolean;
                                 alarm_period: number;
@@ -11416,7 +11416,7 @@ export interface paths {
                         /** @default false */
                         protected: boolean;
                         /** @description Permissions granted to the Layer as <permission>:<level> pairs - ie video:read or video:* */
-                        permissions?: null | string[];
+                        permissions?: string[];
                         /** @description Create an Incoming Config alongside the Layer */
                         incoming?: {
                             cron?: null | string;
@@ -11451,7 +11451,7 @@ export interface paths {
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
-                            permissions: null | string[];
+                            permissions: string[];
                             /** @description Deprecated: Layer Templates have been removed - this value is always false */
                             template: boolean;
                             alarm_period: number;
@@ -13602,7 +13602,7 @@ export interface paths {
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
-                            permissions: null | string[];
+                            permissions: string[];
                             /** @description Deprecated: Layer Templates have been removed - this value is always false */
                             template: boolean;
                             alarm_period: number;
@@ -14104,7 +14104,7 @@ export interface paths {
                         alarm_evals?: number;
                         alarm_points?: number;
                         /** @description Permissions granted to the Layer as <permission>:<level> pairs - ie video:read or video:* */
-                        permissions?: null | string[];
+                        permissions?: string[];
                     };
                 };
             };
@@ -14132,7 +14132,7 @@ export interface paths {
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
-                            permissions: null | string[];
+                            permissions: string[];
                             /** @description Deprecated: Layer Templates have been removed - this value is always false */
                             template: boolean;
                             alarm_period: number;
@@ -25747,7 +25747,7 @@ export interface paths {
                                 memory: number;
                                 timeout: number;
                                 priority: "high" | "low" | "off";
-                                permissions: null | string[];
+                                permissions: string[];
                                 /** @description Deprecated: Layer Templates have been removed - this value is always false */
                                 template: boolean;
                                 alarm_period: number;
@@ -26179,7 +26179,7 @@ export interface paths {
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
-                            permissions: null | string[];
+                            permissions: string[];
                             /** @description Deprecated: Layer Templates have been removed - this value is always false */
                             template: boolean;
                             alarm_period: number;

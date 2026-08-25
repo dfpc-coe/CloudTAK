@@ -127,7 +127,7 @@ test('POST: api/connection/1/layer', async () => {
             id: 1,
             uuid: '123',
             priority: 'off',
-            permissions: null,
+            permissions: [],
             template: false,
             created: '2025-06-26',
             updated: '2025-06-26',
@@ -180,7 +180,7 @@ test('GET: api/connection/1/layer/1', async () => {
             id: 1,
             uuid: '123',
             priority: 'off',
-            permissions: null,
+            permissions: [],
             template: false,
             created: '2025-06-26',
             updated: '2025-06-26',
@@ -236,7 +236,7 @@ test('PATCH: api/connection/1/layer/1 - set protected', async () => {
             id: 1,
             uuid: '123',
             priority: 'off',
-            permissions: null,
+            permissions: [],
             template: false,
             created: '2025-06-26',
             updated: '2025-06-26',
@@ -306,7 +306,7 @@ test('PATCH: api/connection/1/layer/1 - unset protected', async () => {
             id: 1,
             uuid: '123',
             priority: 'off',
-            permissions: null,
+            permissions: [],
             template: false,
             created: '2025-06-26',
             updated: '2025-06-26',
@@ -354,11 +354,11 @@ test('PATCH: api/connection/1/layer/1 - set permissions', async () => {
                 bearer: flight.token.admin,
             },
             body: {
-                permissions: null,
+                permissions: [],
             },
         }, true);
 
-        assert.equal(unset.body.permissions, null);
+        assert.deepEqual(unset.body.permissions, []);
     } catch (err) {
         assert.ifError(err);
     }
