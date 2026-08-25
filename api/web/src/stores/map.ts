@@ -12,6 +12,7 @@ import { Preferences } from '@capacitor/preferences';
 import { CapacitorHttp } from '@capacitor/core';
 import { defineStore } from 'pinia'
 import { markRaw } from 'vue';
+import { liveQuery } from 'dexie';
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import IconManager from './modules/icons.ts';
 import MenuManager from './modules/menu.ts';
@@ -115,6 +116,9 @@ export const useMapStore = defineStore('cloudtak', {
         _cotResync?: Promise<void>;
         _removeBackgroundStateListener?: () => void;
         _removePushTokenListener?: () => void;
+        _overlaySubscription?: { unsubscribe: () => void };
+        _overlayReconcile?: Promise<void>;
+        _overlayReconcileQueued?: boolean;
         _lastLocationHttpSubmit?: number;
 
         channel: BroadcastChannel;
@@ -498,6 +502,10 @@ export const useMapStore = defineStore('cloudtak', {
             if (this._removePushTokenListener) {
                 this._removePushTokenListener();
                 this._removePushTokenListener = undefined;
+            }
+            if (this._overlaySubscription) {
+                this._overlaySubscription.unsubscribe();
+                this._overlaySubscription = undefined;
             }
 
             if (this._map) {
@@ -1050,15 +1058,6 @@ export const useMapStore = defineStore('cloudtak', {
                     await this.loadMission(msg.body.guid).catch((err: unknown) => {
                         console.error(`Mission:${msg.body.guid} render failed after feature change:`, err);
                     });
-                } else if (msg.type === WorkerMessageType.Sync_Update) {
-                    const event = msg.body as { type: string; action: string; id?: string | number };
-
-                    // Another connected client mutated overlays - the Atlas
-                    // worker has already refreshed the local database, so
-                    // reconcile the loaded map overlays against it
-                    if (['overlay', 'mission', 'basemap'].includes(event.type)) {
-                        await this.reconcileOverlays();
-                    }
                 } else if (msg.type === WorkerMessageType.Iconset_Change) {
                     // `purge` iconsets changed content: drop their MapLibre images to
                     // re-resolve. `added` iconsets are newly cached: only retry fallbacks.
@@ -1588,6 +1587,21 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.isMapLoaded = true;
 
+            // The local overlay database is the source of truth - every
+            // write to it (AtlasSync from other clients, local update/save,
+            // create, delete) flows through here to the loaded map overlays
+            this._overlaySubscription?.unsubscribe();
+            this._overlaySubscription = liveQuery(() => db.overlay.toArray()).subscribe({
+                next: () => {
+                    this.reconcileOverlays().catch((err: unknown) => {
+                        console.error('Failed to reconcile overlays', err);
+                    });
+                },
+                error: (err: unknown) => {
+                    console.error('Overlay subscription failed', err);
+                }
+            });
+
             // Kick off a full data sync with the TAK Server in the Atlas worker
             this.worker.sync.start()
                 .catch((err: unknown) => {
@@ -1599,26 +1613,44 @@ export const useMapStore = defineStore('cloudtak', {
 
         /**
          * Reconcile the loaded map overlays against the local overlay
-         * database after a sync triggered by another of the user's connected
-         * clients. Adds newly created overlays, removes deleted ones and
-         * applies visibility/opacity changes. Changes are applied to the map
-         * directly (not via Overlay.update/save) so the reconcile does not
-         * PATCH the API and echo the event back to the originating client.
+         * database: add new overlays, remove deleted ones and apply field
+         * changes. Runs serially - a change landing mid-reconcile queues one
+         * follow-up pass. Applies to the map directly (never save()) so the
+         * originating client's change is not echoed back to the API.
          */
         reconcileOverlays: async function(): Promise<void> {
-            if (!this.isMapLoaded) return;
+            if (this._overlayReconcile) {
+                this._overlayReconcileQueued = true;
+                return this._overlayReconcile;
+            }
 
-            const desired = await OverlayManager.list({ localFirst: true });
+            this._overlayReconcile = (async () => {
+                do {
+                    this._overlayReconcileQueued = false;
+                    await this.reconcileOverlaysOnce();
+                } while (this._overlayReconcileQueued);
+            })().finally(() => {
+                this._overlayReconcile = undefined;
+            });
+
+            return this._overlayReconcile;
+        },
+        reconcileOverlaysOnce: async function(): Promise<void> {
+            if (!this._map) return;
+
+            const desired = (await db.overlay.toArray())
+                .sort((a, b) => a.pos - b.pos || a.name.localeCompare(b.name));
             const desiredIds = new Set(desired.map((item) => item.id));
 
-            // Remove overlays deleted by the other client - the API record is
-            // already gone so only tear down the local map layers
             for (const overlay of [...OverlayManager.loaded]) {
                 if (overlay._internal) continue;
                 if (desiredIds.has(overlay.id)) continue;
 
                 const pos = OverlayManager.loaded.indexOf(overlay);
                 if (pos !== -1) OverlayManager.loaded.splice(pos, 1);
+
+                // Already torn down by Overlay.delete() on this client
+                if (overlay._destroyed) continue;
 
                 if (overlay._timer) {
                     clearInterval(overlay._timer);
@@ -1633,43 +1665,31 @@ export const useMapStore = defineStore('cloudtak', {
                 const loaded = OverlayManager.loadedFrom(item.id);
 
                 if (loaded) {
-                    if (item.opacity !== loaded.opacity) {
-                        loaded.opacity = item.opacity;
-                        for (const l of loaded.styles) {
-                            if (loaded.type === 'raster') {
-                                this.map.setPaintProperty(l.id, 'raster-opacity', Number(loaded.opacity));
-                            }
-                        }
-                    }
+                    await loaded.applyRecord(item);
+                    continue;
+                }
 
-                    if (item.visible !== loaded.visible) {
-                        loaded.visible = item.visible;
-                        for (const l of loaded.styles) {
-                            if (l.type === 'background') continue;
-                            this.map.setLayoutProperty(l.id, 'visibility', loaded.visible ? 'visible' : 'none');
-                        }
-                    }
-                } else {
-                    try {
-                        const overlay = await Overlay.create(item as ProfileOverlay, { skipSave: true });
-                        OverlayManager.appendLoaded(overlay);
+                try {
+                    const overlay = await Overlay.create(item as ProfileOverlay, { skipSave: true });
+                    OverlayManager.appendLoaded(overlay);
 
-                        if (overlay.mode === 'mission' && overlay.mode_id) {
-                            overlay.loading = true;
-                            this.loadMission(overlay.mode_id, { reload: true })
-                                .catch((err) => {
-                                    console.error('Failed to load Mission after sync', err);
-                                    overlay._error = err instanceof Error ? err : new Error(String(err));
-                                })
-                                .finally(() => {
-                                    overlay.loading = false;
-                                });
-                        }
-                    } catch (err) {
-                        console.error(`Failed to load synced overlay ${item.id} (${item.name}):`, err);
+                    if (overlay.mode === 'mission' && overlay.mode_id) {
+                        overlay.loading = true;
+                        this.loadMission(overlay.mode_id, { reload: true })
+                            .catch((err) => {
+                                console.error('Failed to load Mission after sync', err);
+                                overlay._error = err instanceof Error ? err : new Error(String(err));
+                            })
+                            .finally(() => {
+                                overlay.loading = false;
+                            });
                     }
+                } catch (err) {
+                    console.error(`Failed to load synced overlay ${item.id} (${item.name}):`, err);
                 }
             }
+
+            OverlayManager.loaded.sort((a, b) => a.pos - b.pos);
 
             this.updateBackground();
             await this.updateAttribution();

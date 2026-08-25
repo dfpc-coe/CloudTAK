@@ -267,11 +267,6 @@ export default class AtlasSync {
         for (const event of deduped.values()) {
             try {
                 await this.syncEvent(event);
-
-                this.atlas.postMessage({
-                    type: WorkerMessageType.Sync_Update,
-                    body: event
-                });
             } catch (err) {
                 console.error(`AtlasSync: Failed to sync ${event.type}`, err);
             }

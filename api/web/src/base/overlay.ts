@@ -116,10 +116,6 @@ export default class OverlayManager extends BaseInterface {
                 pos: orderedIds.indexOf(current.id)
             });
         }
-
-        this.loaded.sort((a, b) => {
-            return a.pos - b.pos;
-        });
     }
 
     static async deleteLoaded(idOrOverlay: string | number | Overlay): Promise<void> {
