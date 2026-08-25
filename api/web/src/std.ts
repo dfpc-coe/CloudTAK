@@ -173,8 +173,9 @@ export async function std(
 
         const errbody = bdy as APIError;
         const err = new Error(errbody.message || `Status Code: ${res.status}`);
+        // Shown in TablerAlert's "Advanced" dropdown
         // @ts-expect-error TODO Fix this
-        err.body = bdy;
+        err.body = typeof errbody.details === 'string' && errbody.details.length ? errbody.details : bdy;
         throw err;
     } else if (res.status === 401) {
         // Verify the token is actually invalid before removing it.

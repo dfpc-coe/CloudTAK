@@ -136,6 +136,9 @@ export const StandardLayerResponse = Type.Object({
 export const StandardResponse = Type.Object({
     status: Type.Integer(),
     message: Type.String(),
+    details: Type.Optional(Type.String({
+        description: 'Extended error details (ie: TAK Server exception trace)',
+    })),
 });
 
 export const PaletteFeatureResponse = createSelectSchema(schemas.PaletteFeature, {

@@ -10,6 +10,7 @@ import type { Geometry } from 'geojson';
 export type APIError = {
     status: number;
     message: string;
+    details?: string;
 };
 
 export type APIList<T> = {
