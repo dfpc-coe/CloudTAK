@@ -16,6 +16,8 @@ import { CoTParser, DataPackage, Iconset, Basemap } from '@tak-ps/node-cot';
 import { createImportResult } from './api.ts';
 import { fetch } from '@tak-ps/node-safeurl';
 
+const SHAPEFILE_SIDECAR_EXTENSIONS = new Set(['.dbf', '.prj', '.qix', '.sbn', '.sbx', '.shx']);
+
 export default class Worker extends EventEmitter {
     msg: Message;
 
@@ -158,18 +160,28 @@ export default class Worker extends EventEmitter {
             }
         }
 
-        const files = await pkg.files();
+        const files = Array.from(await pkg.files());
         const indexes = [];
+        const shapefileBases = new Set(
+            files
+                .filter((file) => path.parse(file).ext.toLowerCase() === '.shp')
+                .map((file) => {
+                    const parsed = path.parse(file);
+                    return parsed.dir ? path.join(parsed.dir, parsed.name) : parsed.name;
+                }),
+        );
 
         for (const file of files) {
-            const { ext, base } = path.parse(file);
+            const { dir, ext, base, name } = path.parse(file);
             const extLower = ext.toLowerCase();
+            const fileBase = dir ? path.join(dir, name) : name;
 
             if (base !== 'MANIFEST.xml' && extLower === '.xml') {
                 indexes.push(file);
             } else {
                 if (base === 'MANIFEST.xml') continue;
                 if (['.png', '.xml'].includes(extLower)) continue;
+                if (SHAPEFILE_SIDECAR_EXTENSIONS.has(extLower) && shapefileBases.has(fileBase)) continue;
 
                 const raw = path.resolve(pkg.path, './raw/', file);
 
