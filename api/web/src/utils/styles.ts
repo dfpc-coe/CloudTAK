@@ -18,6 +18,31 @@ const MinMaxFilter: Array<mapgl.ExpressionSpecification> = [
     ],
 ]
 
+/**
+ * Symbols carrying an `elevation` (CoT HAE in meters) are rendered by a clone of the
+ * layer anchored at absolute height while terrain is on; everything else snaps to the ground.
+ */
+function withElevation(layer: SymbolLayerSpecification): Array<SymbolLayerSpecification> {
+    const ground: SymbolLayerSpecification = structuredClone(layer);
+    (ground.filter as Array<unknown>).push(['!', ['has', 'elevation']]);
+
+    const elevated: SymbolLayerSpecification = structuredClone(layer);
+    elevated.id = `${layer.id}-elevated`;
+    (elevated.filter as Array<unknown>).push(['has', 'elevation']);
+    elevated.layout = {
+        ...elevated.layout,
+        'symbol-height-offset': [
+            'case',
+            ['boolean', ['global-state', '3d'], false],
+            ['number', ['get', 'elevation'], 0],
+            0
+        ],
+        'symbol-height-anchor': 'absolute'
+    };
+
+    return [ground, elevated];
+}
+
 export default function styles(id: string, opts: {
     sourceLayer?: string;
     group?: boolean;
@@ -193,7 +218,7 @@ export default function styles(id: string, opts: {
             icon['source-layer'] = opts.sourceLayer;
         }
 
-        styles.push(icon);
+        styles.push(...withElevation(icon));
     }
 
     if (opts.course) {
@@ -252,7 +277,7 @@ export default function styles(id: string, opts: {
             course['source-layer'] = opts.sourceLayer;
         }
 
-        styles.push(course);
+        styles.push(...withElevation(course));
     }
 
     if (opts.group) {
@@ -337,7 +362,7 @@ export default function styles(id: string, opts: {
             labels['source-layer'] = opts.sourceLayer;
         }
 
-        styles.push(labels);
+        styles.push(...withElevation(labels));
 
         const labelsLine: SymbolLayerSpecification = {
             id: `${id}-text-line`,

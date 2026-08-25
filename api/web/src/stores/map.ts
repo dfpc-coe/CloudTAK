@@ -1678,33 +1678,31 @@ export const useMapStore = defineStore('cloudtak', {
         },
         updateIconRotation: function(enabled: boolean): void {
             for (const overlay of OverlayManager.loaded) {
-                if (overlay.type === 'geojson') {
-                    const iconLayerId = `${overlay.id}-icon`;
+                if (overlay.type !== 'geojson') continue;
+
+                for (const variant of ['', '-elevated']) {
+                    const elevationFilter: mapgl.ExpressionSpecification = variant
+                        ? ['has', 'elevation']
+                        : ['!', ['has', 'elevation']];
+
+                    const iconLayerId = `${overlay.id}-icon${variant}`;
                     if (this.map.getLayer(iconLayerId)) {
                         this.map.setLayoutProperty(iconLayerId, 'icon-rotate', enabled ? ['get', 'course'] : 0);
                     }
 
-                    const courseLayerId = `${overlay.id}-course`;
+                    const courseLayerId = `${overlay.id}-course${variant}`;
                     if (this.map.getLayer(courseLayerId)) {
-                        if (enabled) {
-                            // When rotation enabled, only show course arrows for grouped features
-                            this.map.setFilter(courseLayerId, [
-                                'all',
-                                ['==', ['geometry-type'], 'Point'],
-                                ['has', 'course'],
-                                ['has', 'group']
-                            ]);
-                        } else {
-                            // When rotation disabled, show course arrows for all features with course
-                            this.map.setFilter(courseLayerId, [
-                                'all',
-                                ['==', ['geometry-type'], 'Point'],
-                                ['has', 'course']
-                            ]);
-                        }
+                        // When rotation is enabled only grouped features show course arrows
+                        this.map.setFilter(courseLayerId, [
+                            'all',
+                            ['==', ['geometry-type'], 'Point'],
+                            ['has', 'course'],
+                            ...(enabled ? [['has', 'group'] as mapgl.ExpressionSpecification] : []),
+                            elevationFilter
+                        ]);
                     }
 
-                    const textLayerId = `${overlay.id}-text-point`;
+                    const textLayerId = `${overlay.id}-text-point${variant}`;
                     if (this.map.getLayer(textLayerId)) {
                         this.map.setLayoutProperty(textLayerId, 'text-offset', [0, enabled ? 2 : 2.5]);
                     }

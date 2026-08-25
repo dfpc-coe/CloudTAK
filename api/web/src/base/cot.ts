@@ -119,6 +119,19 @@ export function renderedIcon(properties: Feature["properties"]): string | undefi
     return undefined;
 }
 
+/**
+ * CoT `hae` is Height Above Ellipsoid in meters and arrives as the 3rd coordinate.
+ * TAK uses 9999999 (or 999999) for unknown and node-cot fills a missing value with 0,
+ * so those are treated as "no elevation" and the symbol snaps to the terrain instead.
+ */
+export function renderedElevation(geometry: GeoJSONGeometry): number | undefined {
+    if (geometry.type !== 'Point') return undefined;
+    const hae = geometry.coordinates[2];
+    if (typeof hae !== 'number' || !Number.isFinite(hae)) return undefined;
+    if (hae === 0 || hae >= 999999) return undefined;
+    return hae;
+}
+
 const COT_MUTATIONS: COTMutation[] = [
     applyEllipseMutation
 ];
@@ -524,6 +537,9 @@ export default class COT {
         // alone, so a MIL-STD symbol's generated key is supplied here
         const icon = renderedIcon(input.properties);
         if (icon !== undefined) feat.properties.icon = icon;
+
+        const elevation = renderedElevation(input.geometry);
+        if (elevation !== undefined) feat.properties.elevation = elevation;
 
         return feat;
     }
