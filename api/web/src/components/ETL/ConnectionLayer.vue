@@ -76,10 +76,7 @@
                                 class='card-body'
                                 :markdown='layer.description'
                             />
-                            <div
-                                v-if='layer.permissions.length'
-                                class='card-body border-top d-flex align-items-center flex-wrap'
-                            >
+                            <div class='card-body border-top d-flex align-items-center flex-wrap'>
                                 <IconLock
                                     :size='18'
                                     stroke='1'
@@ -94,6 +91,10 @@
                                 >
                                     <code v-text='permission' />
                                 </TablerBadge>
+                                <span
+                                    v-if='!layer.permissions.length'
+                                    class='text-secondary fst-italic'
+                                >None</span>
                             </div>
                             <div class='card-footer d-flex align-items-center'>
                                 <div>
