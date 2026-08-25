@@ -141,9 +141,26 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const profile = await profileControl.from(req.params.username);
 
+            const cert = (await config.models.Profile.from(req.params.username)).auth.cert;
+            const certificate = Provider.certificate(cert);
+
+            if (certificate) {
+                // Best effort - the TAK Server revocation record supplements the local metadata
+                try {
+                    const status = await new Provider(config).status(cert);
+                    if (status) {
+                        certificate.known = status.known;
+                        certificate.revoked = status.revoked;
+                        certificate.revocationDate = status.revocationDate;
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
             res.json({
                 ...profile,
-                certificate: Provider.certificate((await config.models.Profile.from(req.params.username)).auth.cert),
+                certificate,
             });
         } catch (err) {
             Err.respond(err, res);

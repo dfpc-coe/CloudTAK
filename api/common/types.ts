@@ -390,6 +390,15 @@ export const CertificateResponse = Type.Object({
     subject: Type.String(),
     validFrom: Type.String(),
     validTo: Type.String(),
+    known: Type.Optional(Type.Boolean({
+        description: 'The TAK Server has a record of this certificate - only populated where the server was consulted',
+    })),
+    revoked: Type.Optional(Type.Boolean({
+        description: 'The TAK Server has revoked this certificate - only populated where the server was consulted',
+    })),
+    revocationDate: Type.Optional(Type.String({
+        description: 'When the TAK Server revoked this certificate',
+    })),
 }, {
     description: 'Public metadata of an X509 certificate - clients derive expiry state from validTo',
 });
