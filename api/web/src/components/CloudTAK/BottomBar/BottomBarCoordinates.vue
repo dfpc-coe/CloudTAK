@@ -126,9 +126,11 @@ let pendingCoord: { lat: number; lng: number } | null = null;
 let rafId: number | null = null;
 
 function onMouseMove(e: MapMouseEvent): void {
+    const lngLat = e.lngLat.wrap();
+
     pendingCoord = {
-        lat: e.lngLat.lat,
-        lng: e.lngLat.lng,
+        lat: lngLat.lat,
+        lng: lngLat.lng,
     };
 
     if (rafId === null) {
