@@ -119,7 +119,9 @@ test('GET: api/login - certificate revoked on the TAK Server', async () => {
         flight.tak.mockMarti.shift();
     }
 
-    // Password login regenerates the certificate and the session is usable again
+    // The rejection only affects the probe - once the TAK Server accepts the certificate again
+    // (revocation mock removed above) the existing session token is still valid; no password
+    // was supplied so no certificate regeneration took place
     const res = await flight.fetch('/api/login', {
         method: 'GET',
         auth: { bearer: login.body.token },
