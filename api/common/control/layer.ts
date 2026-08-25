@@ -7,7 +7,7 @@ export default class LayerControl {
      * pair from the upstream PERMISSIONS object - `<permission>:*` is valid
      * for every permission
      */
-    static validatePermissions(permissions?: Array<string> | null): void {
+    static validatePermissions(permissions?: Array<string>): void {
         if (!permissions) return;
 
         for (const permission of permissions) {

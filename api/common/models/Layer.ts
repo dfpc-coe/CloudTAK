@@ -55,7 +55,7 @@ export const AugmentedLayer = Type.Object({
     memory: Type.Integer(),
     timeout: Type.Integer(),
     priority: Type.Enum(Layer_Priority),
-    permissions: Type.Union([Type.Null(), Type.Array(Type.String())]),
+    permissions: Type.Array(Type.String()),
 
     /** @deprecated Layer Templates were removed - always false, retained for ETL Task compatibility */
     template: Type.Boolean({

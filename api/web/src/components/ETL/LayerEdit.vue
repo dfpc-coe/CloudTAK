@@ -335,7 +335,7 @@ async function create() {
             if (capabilities.value) {
                 const granted = Object.keys(settings.value.permissions)
                     .filter((resource) => settings.value.permissions[resource]);
-                if (granted.length) body.permissions = granted;
+                body.permissions = granted;
 
                 if (settings.value.incoming && capabilities.value.invocations.incoming) {
                     body.incoming = {
