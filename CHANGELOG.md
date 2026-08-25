@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.72.5 - 2026-08-25
+
+- :rocket: Add database support for outgoing subscription types
+
 ### v13.72.4 - 2026-08-25
 
 - :bug: Call `.wrap()` on MapLibre coordinates to ensure +/-180 longitude values are handled correctly along the antimeridian
