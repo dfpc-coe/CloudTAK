@@ -19,6 +19,10 @@
 
 - :bug: TAK Server HTML error pages (Tomcat "Exception Report" documents) are no longer surfaced verbatim as the error message - the API now returns the human readable `Message` from the page and passes the full plain-text breakdown (status, description & exception trace) through as an optional `details` field on `StandardResponse` which the UI shows in the error modal's "Advanced" dropdown. Requires `@tak-ps/node-tak` with `TAKServerError` support
 
+### v13.72.1 - 2026-08-24
+
+- :bug: Fix Injector Deletion - Closes dfpc-coe/CloudTAK#1687
+
 ### v13.72.0 - 2026-08-24
 
 - :tada: Add certificate information to User APIs
