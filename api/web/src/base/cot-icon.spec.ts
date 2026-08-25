@@ -119,3 +119,23 @@ describe('COT.as_rendered', () => {
         expect(rendered.properties!.icon).toBeUndefined();
     });
 });
+
+describe('COT.as_rendered elevation', () => {
+    const render = (coordinates: number[]) => COT.as_rendered({
+        id: 'render-elevation',
+        type: 'Feature',
+        properties: properties({ type: SIDC, callsign: 'Test' }),
+        geometry: { type: 'Point', coordinates }
+    } as Feature);
+
+    it('passes a valid HAE through as elevation', () => {
+        expect(render([-104.99, 39.73, 1609.3]).properties!.elevation).toEqual(1609.3);
+    });
+
+    it('omits elevation when the HAE is missing, zero, or the TAK unknown sentinel', () => {
+        expect(render([-104.99, 39.73]).properties!.elevation).toBeUndefined();
+        expect(render([-104.99, 39.73, 0]).properties!.elevation).toBeUndefined();
+        expect(render([-104.99, 39.73, 9999999]).properties!.elevation).toBeUndefined();
+        expect(render([-104.99, 39.73, NaN]).properties!.elevation).toBeUndefined();
+    });
+});
