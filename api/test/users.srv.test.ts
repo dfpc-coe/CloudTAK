@@ -123,7 +123,7 @@ test('GET: api/user/admin@example.com', async () => {
         res.body.updated = time;
 
         assert.ok(res.body.certificate, 'certificate metadata is returned');
-        assert.deepEqual(Object.keys(res.body.certificate).sort(), ['subject', 'validFrom', 'validTo']);
+        assert.deepEqual(Object.keys(res.body.certificate).sort(), ['known', 'revoked', 'subject', 'validFrom', 'validTo']);
         assert.ok(!Number.isNaN(Date.parse(res.body.certificate.validTo)));
         assert.ok(!('auth' in res.body), 'private key material is never returned');
         delete res.body.certificate;

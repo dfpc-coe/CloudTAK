@@ -277,6 +277,36 @@ export default class MockTAKServer {
                 response.write(JSON.stringify({ uploadSizeLimit: 50 }));
                 response.end();
                 return true;
+            } else if (request.method === 'GET' && request.url === '/Marti/api/version') {
+                // Certificate.probe() - the X509 filter accepted the client certificate
+                response.setHeader('Content-Type', 'text/plain');
+                response.write('TAK Server 5.4-RELEASE-1');
+                response.end();
+                return true;
+            } else if (request.method === 'GET' && request.url.startsWith('/Marti/api/certadmin/cert/')) {
+                // Certificate.validate() via Admin cert - the certificate is known & not revoked
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    version: '3',
+                    type: 'TakCert',
+                    data: {
+                        id: 1,
+                        hash: decodeURIComponent(request.url.replace('/Marti/api/certadmin/cert/', '')),
+                        subjectDn: '',
+                        userDn: '',
+                        creatorDn: '',
+                        certificate: '',
+                        clientUid: '',
+                        issuanceDate: '2026-01-01T00:00:00.000Z',
+                        effectiveDate: '2026-01-01T00:00:00.000Z',
+                        expirationDate: '2027-01-01T00:00:00.000Z',
+                        token: '',
+                        serialNumber: '1',
+                    },
+                    nodeId: 'mock',
+                }));
+                response.end();
+                return true;
             } else if (request.method === 'GET' && request.url === '/Marti/api/contacts/all') {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify([]));
