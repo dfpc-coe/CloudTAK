@@ -781,6 +781,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
             } else {
                 const auth = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
+
+                if (req.body.permissions !== undefined && auth.layer) {
+                    throw new Err(403, null, 'Layer tokens cannot modify Layer permissions');
+                }
+
                 connection = auth.connection;
                 layer = await layerControl.from(connection, req.params.layerid);
             }

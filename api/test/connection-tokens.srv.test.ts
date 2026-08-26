@@ -73,7 +73,7 @@ test('POST: api/connection/1/token', async () => {
 test('POST: api/connection/1/token - with permissions', async () => {
     try {
         // Connection JWTs carry no unique claim so two minted in the same second collide
-        await new Promise((resolve) => setTimeout(resolve, 1100));
+        await new Promise(resolve => setTimeout(resolve, 1100));
 
         const res = await flight.fetch('/api/connection/1/token', {
             method: 'POST',
