@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.73.0 - 2026-08-26
+
+- :rocket: Introduce consistent puck colours with ATAK
+
 ### v13.72.7 - 2026-08-26
 
 - :tada: Introduce Shapefile support for the Events Task
