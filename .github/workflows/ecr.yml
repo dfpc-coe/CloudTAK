@@ -17,7 +17,10 @@ permissions:
 
 jobs:
   build:
-    if: github.event.pull_request.draft == false
+    # Skipped (not failed) for PRs from external forks, which have no access to the AWS secrets
+    if: >-
+      github.event.pull_request.draft == false &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
