@@ -14,6 +14,7 @@
 
 <script setup lang='ts'>
 import { computed } from 'vue';
+import { TEAM_COLORS } from '../../../utils/team-colors.ts';
 import {
     IconUserQuestion,
     IconCircleFilled,
@@ -24,26 +25,9 @@ const props = defineProps<{
     size?: number
 }>();
 
-const teamColors: Record<string, string> = {
-    Yellow: 'var(--tblr-yellow)',
-    Cyan: 'var(--tblr-cyan)',
-    Green: 'var(--tblr-lime)',
-    Red: 'var(--tblr-red)',
-    Purple: 'var(--tblr-purple)',
-    Orange: 'var(--tblr-orange)',
-    Blue: 'var(--tblr-azure)',
-    Magenta: 'var(--tblr-dribbble)',
-    White: 'var(--tblr-white)',
-    Maroon: 'var(--tblr-pinterest)',
-    'Dark Blue': 'var(--tblr-blue)',
-    Teal: 'var(--tblr-teal)',
-    'Dark Green': 'var(--tblr-green)',
-    Brown: 'var(--tblr-google)',
-};
-
 const teamColor = computed(() => {
     if (!props.team) return undefined;
 
-    return teamColors[props.team];
+    return TEAM_COLORS[props.team];
 });
 </script>

@@ -176,6 +176,7 @@ const mode = ref('default');
 
 const STYLE_PROPERTIES = new Set([
     'marker-color',
+    'marker-stroke-color',
     'marker-opacity',
     'marker-size',
     'marker-symbol',

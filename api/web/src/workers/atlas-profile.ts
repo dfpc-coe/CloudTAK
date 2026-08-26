@@ -14,7 +14,7 @@ import COT from '../base/cot.ts';
  * semi-transparent `<color>` detail native clients never produce for a team
  * member - they rely solely on `<__group>`
  */
-const SELF_STYLE_PROPERTIES = ['marker-color', 'marker-opacity', 'icon-opacity', 'icon'] as const;
+const SELF_STYLE_PROPERTIES = ['marker-color', 'marker-opacity', 'icon-opacity', 'icon', 'marker-stroke-color'] as const;
 
 export type ProfileLocationState = {
     source: LocationState
