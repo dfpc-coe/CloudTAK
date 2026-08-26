@@ -1661,17 +1661,32 @@ export const useMapStore = defineStore('cloudtak', {
                 overlay.remove();
             }
 
+            let posChanged = false;
+
             for (const item of desired) {
+                if (!this._map) return;
+
                 const loaded = OverlayManager.loadedFrom(item.id);
 
                 if (loaded) {
-                    await loaded.applyRecord(item);
+                    if (loaded.pos !== item.pos) posChanged = true;
+
+                    try {
+                        await loaded.applyRecord(item, {
+                            before: OverlayManager.loadedBeforeOverlay(loaded)
+                        });
+                    } catch (err) {
+                        console.error(`Failed to reconcile overlay ${item.id} (${item.name}):`, err);
+                    }
+
                     continue;
                 }
 
                 try {
                     const overlay = await Overlay.create(item as ProfileOverlay, { skipSave: true });
+                    if (!this._map) return;
                     OverlayManager.appendLoaded(overlay);
+                    posChanged = true;
 
                     if (overlay.mode === 'mission' && overlay.mode_id) {
                         overlay.loading = true;
@@ -1689,7 +1704,10 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
+            if (!this._map) return;
+
             OverlayManager.loaded.sort((a, b) => a.pos - b.pos);
+            if (posChanged) OverlayManager.applyLoadedOrder();
 
             this.updateBackground();
             await this.updateAttribution();

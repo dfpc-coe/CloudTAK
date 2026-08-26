@@ -116,6 +116,31 @@ export default class OverlayManager extends BaseInterface {
                 pos: orderedIds.indexOf(current.id)
             });
         }
+
+        this.loaded.sort((a, b) => a.pos - b.pos);
+    }
+
+    /**
+     * Move every loaded overlay's map layers so their stacking matches the
+     * `loaded` order (index 0 at the bottom)
+     */
+    static applyLoadedOrder(): void {
+        for (let i = this.loaded.length - 1; i >= 0; i--) {
+            this.loaded[i].moveBefore(this.loaded[i + 1]);
+        }
+    }
+
+    /**
+     * First renderable layer id of the overlay stacked directly above the
+     * given one - used to re-insert its layers at the same position
+     */
+    static loadedBeforeOverlay(overlay: Overlay): string | undefined {
+        const idx = this.loaded.indexOf(overlay);
+        if (idx === -1) return undefined;
+
+        const next = this.loaded[idx + 1];
+        const anchor = next?.styles.find((l) => l.type !== 'background');
+        return anchor ? String(anchor.id) : undefined;
     }
 
     static async deleteLoaded(idOrOverlay: string | number | Overlay): Promise<void> {

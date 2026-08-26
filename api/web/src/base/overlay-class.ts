@@ -635,7 +635,12 @@ export default class Overlay {
      * written by another client (via AtlasSync) or by this client's own
      * update()/save() are reflected without echoing a PATCH back to the API.
      */
-    async applyRecord(record: DBOverlay): Promise<void> {
+    async applyRecord(
+        record: DBOverlay,
+        opts: {
+            before?: string;
+        } = {}
+    ): Promise<void> {
         const mapStore = useMapStore();
 
         const current = this.toDBOverlay();
@@ -677,7 +682,7 @@ export default class Overlay {
             this.visible = record.visible;
             this.styles = record.styles as Array<LayerSpecification>;
             this._error = undefined;
-            await this.init({});
+            await this.init({ before: opts.before });
             return;
         }
 
