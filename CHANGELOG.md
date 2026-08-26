@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.72.7 - 2026-08-26
+
+- :tada: Introduce Shapefile support for the Events Task
+
 ### v13.72.6 - 2026-08-25
 
 - :rocket: Add Admin Hover effect to open Admin Menu
