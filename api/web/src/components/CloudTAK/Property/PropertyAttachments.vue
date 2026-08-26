@@ -110,8 +110,9 @@
 
                                             <div class='ms-auto d-flex'>
                                                 <TablerDelete
-                                                    v-if='subscription && subscription.role && subscription.role.permissions.includes("MISSION_WRITE")'
+                                                    v-if='canRemove'
                                                     displaytype='icon'
+                                                    title='Remove Attachment'
                                                     :size='24'
                                                     @delete='deleteAttachment(file)'
                                                 />
@@ -212,10 +213,17 @@ function attachmentPane(file: Attachment): void {
     floatStore.addAttachment(file);
 }
 
-async function deleteAttachment(file: Attachment): Promise<void> {
-    if (!props.subscription) return;
+// Mission attachments are removed from the mission itself (requires
+// MISSION_WRITE); otherwise the hash is simply dropped from the marker
+const canRemove = computed(() => {
+    if (!props.subscription) return true;
+    return !!props.subscription.role?.permissions.includes('MISSION_WRITE');
+});
 
-    await props.subscription.contents.delete(file.hash);
+async function deleteAttachment(file: Attachment): Promise<void> {
+    if (props.subscription) {
+        await props.subscription.contents.delete(file.hash);
+    }
 
     files.value = files.value.filter(f => f.hash !== file.hash);
 }
