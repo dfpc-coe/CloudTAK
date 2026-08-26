@@ -1,14 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TEAM_COLORS, strokeColorFor } from './cot.ts';
-
-/**
- * Regression coverage for the team colour / marker border fix: CloudTAK
- * previously rendered TAK team colours using Tabler UI framework
- * brand-palette CSS variables (e.g. `--tblr-dribbble` for Magenta), which do
- * not match what ATAK actually renders for the same team name, and always
- * drew a fixed white marker border that disappears against a light basemap
- * or a light marker colour (White/Yellow/Cyan teams).
- */
+import { TEAM_COLORS, strokeColorFor } from './team-colors.ts';
 
 describe('TEAM_COLORS', () => {
     it('matches ATAK\'s Icon2525cIconAdapter.teamToColor() values', () => {
@@ -64,9 +55,7 @@ describe('strokeColorFor', () => {
     });
 
     it('sits right at the luminance threshold boundary', () => {
-        // Luminance exactly 0.6 * 255 = 153 -> not > 0.6, so white border
         expect(strokeColorFor('#999999')).toBe('#ffffff');
-        // One step brighter crosses the threshold -> black border
         expect(strokeColorFor('#9a9a9a')).toBe('#000000');
     });
 });
