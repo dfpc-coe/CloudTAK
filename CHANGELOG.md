@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.73.1 - 2026-08-26
+
+- :bug: Don't display out of bounds or unknown alt - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1707
+
 ### v13.73.0 - 2026-08-26
 
 - :rocket: Introduce consistent puck colours with ATAK
