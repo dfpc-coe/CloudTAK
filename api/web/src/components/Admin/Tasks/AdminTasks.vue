@@ -107,6 +107,12 @@
                 </template>
             </template>
             <template v-else>
+                <TablerInput
+                    v-model='paging.filter'
+                    icon='search'
+                    placeholder='Filter...'
+                    class='mx-1 my-2'
+                />
                 <TablerLoading
                     v-if='loading'
                     desc='Loading Tasks'

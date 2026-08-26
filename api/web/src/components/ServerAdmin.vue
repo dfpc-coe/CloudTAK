@@ -21,387 +21,59 @@
                             <div
                                 v-else
                                 style='height: 100%;'
-                                class='row g-0'
+                                class='row g-0 admin-layout'
                             >
                                 <div
-                                    class='border-end'
-                                    :style='nest ? "width: 64px;" : ""'
+                                    class='border-end admin-sidebar'
                                     :class='{
-                                        "col-12 col-md-3": !nest
+                                        "col-12 col-md-3": !nest,
+                                        "admin-sidebar--nest": nest,
+                                        "admin-sidebar--hover": nest && hovered
                                     }'
+                                    @mouseenter='hovered = true'
+                                    @mouseleave='hovered = false'
                                 >
-                                    <div class='card-body'>
-                                        <h4
-                                            v-if='!nest'
-                                            class='subheader user-select-none'
+                                    <div class='card-body admin-sidebar-panel'>
+                                        <template
+                                            v-for='section in sections'
+                                            :key='section.title'
                                         >
-                                            CloudTAK Admin
-                                        </h4>
-                                        <div
-                                            role='menu'
-                                            class='list-group list-group-transparent'
-                                        >
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                            <h4
                                                 :class='{
-                                                    "active": String(route.name).startsWith("admin-server"),
-                                                    "cursor-pointer": !String(route.name).startsWith("admin-server")
+                                                    "text-center": collapsed,
+                                                    "py-2 my-0": section !== sections[0]
                                                 }'
-                                                :title='nest ? "TAK Server Connection" : undefined'
-                                                @keyup.enter='router.push(`/admin/server`)'
-                                                @click='router.push(`/admin/server`)'
+                                                class='subheader user-select-none'
                                             >
-                                                <IconServer
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >TAK Server Connection</span>
-                                            </span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String(route.name) === "admin-config",
-                                                    "cursor-pointer": String(route.name) !== "admin-config"
-                                                }'
-                                                :title='nest ? "CloudTAK Settings" : undefined'
-                                                @keyup.enter='router.push(`/admin/config`)'
-                                                @click='router.push(`/admin/config`)'
+                                                {{ collapsed ? section.short : section.title }}
+                                            </h4>
+                                            <div
+                                                role='menu'
+                                                class='list-group list-group-transparent'
                                             >
-                                                <IconSettings
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
                                                 <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >CloudTAK Settings</span>
-                                            </span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String(route.name).startsWith("admin-health"),
-                                                    "cursor-pointer": !String(route.name).startsWith("admin-health")
-                                                }'
-                                                :title='nest ? "Health" : undefined'
-                                                @keyup.enter='router.push(`/admin/health`)'
-                                                @click='router.push(`/admin/health`)'
-                                            >
-                                                <IconHeartbeat
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >Health</span>
-                                            </span>
-                                        </div>
-                                        <h4
-                                            v-if='!nest'
-                                            class='subheader user-select-none py-2 my-0'
-                                        >
-                                            Map Settings
-                                        </h4>
-                                        <div class='list-group list-group-transparent'>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String(route.name).startsWith("admin-user"),
-                                                    "cursor-pointer": !String(route.name).startsWith("admin-user")
-                                                }'
-                                                :title='nest ? "Users" : undefined'
-                                                @keyup.enter='router.push(`/admin/user`)'
-                                                @click='router.push(`/admin/user`)'
-                                            >
-                                                <IconUsers
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >Users</span>
-                                            </span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String(route.name).startsWith("admin-import"),
-                                                    "cursor-pointer": !String(route.name).startsWith("admin-import")
-                                                }'
-                                                :title='nest ? "User Imports" : undefined'
-                                                @keyup.enter='router.push(`/admin/import`)'
-                                                @click='router.push(`/admin/import`)'
-                                            >
-                                                <IconFileImport
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >User Imports</span>
-                                            </span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String(route.name).startsWith("admin-public"),
-                                                    "cursor-pointer": !String(route.name).startsWith("admin-public")
-                                                }'
-                                                :title='nest ? "Hosted Tilesets" : undefined'
-                                                @keyup.enter='router.push(`/admin/public`)'
-                                                @click='router.push(`/admin/public`)'
-                                            >
-                                                <IconCloud
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >Hosted Tilesets</span>
-                                            </span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String(route.name).includes("admin-overlays"),
-                                                    "cursor-pointer": !String(route.name).includes("admin-overlays")
-                                                }'
-                                                :title='nest ? "Basemaps & Overlays" : undefined'
-                                                @keyup.enter='router.push(`/admin/overlay`)'
-                                                @click='router.push(`/admin/overlay`)'
-                                            >
-                                                <IconMap
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >Basemaps &amp; Overlays</span>
-                                            </span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String(route.name).startsWith("admin-mission-mission-template"),
-                                                    "cursor-pointer": !String(route.name).startsWith("admin-mission-template")
-                                                }'
-                                                :title='nest ? "Mission Templates" : undefined'
-                                                @keyup.enter='router.push(`/admin/templates`)'
-                                                @click='router.push(`/admin/templates`)'
-                                            >
-                                                <IconClipboardList
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >Mission Templates</span>
-                                            </span>
-                                        </div>
-                                        <h4
-                                            v-if='!nest'
-                                            class='subheader user-select-none py-2 my-0'
-                                        >
-                                            ETL Settings
-                                        </h4>
-                                        <div class='list-group list-group-transparent'>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String(route.name) === "admin-connection",
-                                                    "cursor-pointer": String(route.name) !== "admin-connection"
-                                                }'
-                                                :title='nest ? "Connections" : undefined'
-                                                @keyup.enter='router.push(`/admin/connection`)'
-                                                @click='router.push(`/admin/connection`)'
-                                            >
-                                                <IconNetwork
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >Connections</span>
-                                            </span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String(route.name).startsWith("admin-coredata"),
-                                                    "cursor-pointer": !String(route.name).startsWith("admin-coredata")
-                                                }'
-                                                :title='nest ? "Core Data" : undefined'
-                                                @keyup.enter='router.push(`/admin/coredata`)'
-                                                @click='router.push(`/admin/coredata`)'
-                                            >
-                                                <IconDatabaseCog
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >Core Data</span>
-                                            </span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String(route.name) === "admin-layers",
-                                                    "cursor-pointer": String(route.name) !== "admin-layers"
-                                                }'
-                                                :title='nest ? "Layers" : undefined'
-                                                @keyup.enter='router.push(`/admin/layer`)'
-                                                @click='router.push(`/admin/layer`)'
-                                            >
-                                                <IconBuildingBroadcastTower
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >Layers</span>
-                                            </span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String(route.name).startsWith("admin-tasks"),
-                                                    "cursor-pointer": !String(route.name).startsWith("admin-tasks")
-                                                }'
-                                                :title='nest ? "Integrations" : undefined'
-                                                @keyup.enter='router.push(`/admin/tasks`)'
-                                                @click='router.push(`/admin/tasks`)'
-                                            >
-                                                <IconBrandDocker
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >Integrations</span>
-                                            </span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String(route.name) === "admin-data",
-                                                    "cursor-pointer": String(route.name) !== "admin-data"
-                                                }'
-                                                :title='nest ? "Data Syncs" : undefined'
-                                                @keyup.enter='router.push(`/admin/data`)'
-                                                @click='router.push(`/admin/data`)'
-                                            >
-                                                <IconDatabase
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >Data Syncs</span>
-                                            </span>
-                                        </div>
-                                        <h4
-                                            v-if='!nest'
-                                            class='subheader user-select-none py-2 my-0'
-                                        >
-                                            External Services
-                                        </h4>
-                                        <div class='list-group list-group-transparent'>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String(route.name).includes("admin-video"),
-                                                    "cursor-pointer": !String(route.name).includes("admin-video")
-                                                }'
-                                                :title='nest ? "Video Services" : undefined'
-                                                @keyup.enter='router.push(`/admin/video`)'
-                                                @click='router.push(`/admin/video`)'
-                                            >
-                                                <IconVideo
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >Video Services</span>
-                                            </span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String(route.name).includes("admin-geofence"),
-                                                    "cursor-pointer": !String(route.name).includes("admin-geofence")
-                                                }'
-                                                :title='nest ? "Geofence Server" : undefined'
-                                                @keyup.enter='router.push(`/admin/geofence`)'
-                                                @click='router.push(`/admin/geofence`)'
-                                            >
-                                                <IconMapPin
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >Geofence Server</span>
-                                            </span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String(route.name).includes("admin-export"),
-                                                    "cursor-pointer": !String(route.name).includes("admin-export")
-                                                }'
-                                                :title='nest ? "Export" : undefined'
-                                                @keyup.enter='router.push(`/admin/export`)'
-                                                @click='router.push(`/admin/export`)'
-                                            >
-                                                <IconDatabaseExport
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >Export</span>
-                                            </span>
-                                        </div>
+                                                    v-for='item in section.items'
+                                                    :key='item.to'
+                                                    tabindex='0'
+                                                    role='menuitem'
+                                                    class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                    :class='{
+                                                        "active": isActive(item),
+                                                        "cursor-pointer": !isActive(item)
+                                                    }'
+                                                    :title='collapsed ? item.label : undefined'
+                                                    @keyup.enter='router.push(item.to)'
+                                                    @click='router.push(item.to)'
+                                                >
+                                                    <component
+                                                        :is='item.icon'
+                                                        :size='32'
+                                                        stroke='1'
+                                                    />
+                                                    <span class='mx-3 admin-sidebar-label'>{{ item.label }}</span>
+                                                </span>
+                                            </div>
+                                        </template>
                                     </div>
                                 </div>
                                 <div
@@ -433,6 +105,7 @@
 
 <script setup lang='ts'>
 import { onMounted, ref, computed } from 'vue';
+import type { Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { Profile } from '../types.ts';
 import { server } from '../std.ts';
@@ -464,6 +137,50 @@ import {
 const route = useRoute();
 const router = useRouter();
 const isAdmin = ref<boolean | undefined>(undefined)
+const hovered = ref(false);
+
+type MenuItem = { label: string; to: string; match: string; icon: Component };
+type MenuSection = { title: string; short: string; items: MenuItem[] };
+
+const sections: MenuSection[] = [{
+    title: 'CloudTAK Admin',
+    short: 'Admin',
+    items: [
+        { label: 'TAK Server Connection', to: '/admin/server', match: 'admin-server', icon: IconServer },
+        { label: 'CloudTAK Settings', to: '/admin/config', match: 'admin-config', icon: IconSettings },
+        { label: 'Health', to: '/admin/health', match: 'admin-health', icon: IconHeartbeat },
+    ]
+}, {
+    title: 'Map Settings',
+    short: 'Map',
+    items: [
+        { label: 'Users', to: '/admin/user', match: 'admin-user', icon: IconUsers },
+        { label: 'User Imports', to: '/admin/import', match: 'admin-import', icon: IconFileImport },
+        { label: 'Hosted Tilesets', to: '/admin/public', match: 'admin-public', icon: IconCloud },
+        { label: 'Basemaps & Overlays', to: '/admin/overlay', match: 'admin-overlays', icon: IconMap },
+        { label: 'Mission Templates', to: '/admin/templates', match: 'admin-mission-template', icon: IconClipboardList },
+    ]
+}, {
+    title: 'ETL Settings',
+    short: 'ETL',
+    items: [
+        { label: 'Connections', to: '/admin/connection', match: 'admin-connection', icon: IconNetwork },
+        { label: 'Core Data', to: '/admin/coredata', match: 'admin-coredata', icon: IconDatabaseCog },
+        { label: 'Layers', to: '/admin/layer', match: 'admin-layer', icon: IconBuildingBroadcastTower },
+        { label: 'Integrations', to: '/admin/tasks', match: 'admin-task', icon: IconBrandDocker },
+        { label: 'Data Syncs', to: '/admin/data', match: 'admin-data', icon: IconDatabase },
+    ]
+}, {
+    title: 'External Services',
+    short: 'EXT',
+    items: [
+        { label: 'Video Services', to: '/admin/video', match: 'admin-video', icon: IconVideo },
+        { label: 'Geofence Server', to: '/admin/geofence', match: 'admin-geofence', icon: IconMapPin },
+        { label: 'Export', to: '/admin/export', match: 'admin-export', icon: IconDatabaseExport },
+    ]
+}];
+
+const isActive = (item: MenuItem) => String(route.name).startsWith(item.match);
 
 const nest = computed(() => {
     if (String(route.name).startsWith('admin-server') || String(route.name).startsWith('admin-coredata')) {
@@ -473,9 +190,53 @@ const nest = computed(() => {
     }
 });
 
+const collapsed = computed(() => nest.value && !hovered.value);
+
 onMounted(async () => {
     const res = await server.GET('/api/profile');
     if (res.error) throw new Error(res.error.message);
     isAdmin.value = (res.data as Profile).system_admin;
 });
 </script>
+
+<style scoped>
+.admin-layout {
+    container-type: inline-size;
+}
+
+.admin-sidebar--nest {
+    width: 64px;
+    position: relative;
+}
+
+.admin-sidebar--nest .admin-sidebar-panel {
+    position: relative;
+    width: 64px;
+    min-height: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    background-color: var(--cloudtak-panel-bg);
+    color: var(--cloudtak-surface-color);
+    transition: width 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    z-index: 1020;
+}
+
+.admin-sidebar--nest .list-group-item > svg {
+    flex-shrink: 0;
+}
+
+.admin-sidebar--nest .admin-sidebar-label {
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.admin-sidebar--hover .admin-sidebar-label {
+    opacity: 1;
+}
+
+.admin-sidebar--hover .admin-sidebar-panel {
+    width: calc(64px + (100cqw - 64px) * 0.25);
+    border-right: 1px solid var(--cloudtak-surface-border);
+    box-shadow: var(--tblr-card-box-shadow);
+}
+</style>
