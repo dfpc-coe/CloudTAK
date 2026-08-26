@@ -245,6 +245,39 @@ export default class Auth {
         return auth as AuthResource;
     }
 
+    /**
+     * OpenAPI Security Requirements for a route guarded by `as_user_or_scope`
+     */
+    static security(scope: string): Array<Record<string, Array<string>>> {
+        return [
+            { bearerAuth: [] },
+            { layerAuth: [scope] },
+        ];
+    }
+
+    /**
+     * Allow any authenticated user, or a Layer resource token whose stored
+     * permissions include the given `<permission>:<level>` scope
+     */
+    static async as_user_or_scope(config: Config, req: Request<any, any, any, any>, scope: string): Promise<AuthUser | AuthResource> {
+        const auth = await this.is_auth(config, req, {
+            resources: [{ access: AuthResourceAccess.LAYER }],
+        });
+
+        if (this.#is_user(auth)) return auth;
+
+        const resource = auth as AuthResource;
+        if (resource.id === undefined) throw new Err(401, null, 'Layer Resource Token must contain a Layer ID');
+
+        const layer = await config.models.Layer.from(resource.id);
+
+        if (!hasScope(layer.permissions, scope)) {
+            throw new Err(403, null, `Layer token does not have the ${scope} permission`);
+        }
+
+        return resource;
+    }
+
     static async impersonate(
         config: Config,
         req: Request<any, any, any, any>,
@@ -292,6 +325,11 @@ export default class Auth {
         const user = await this.as_user(config, req, opts);
         return await this.#as_profile(config, user);
     }
+}
+
+function hasScope(permissions: Array<string>, scope: string): boolean {
+    const wildcard = scope.slice(0, scope.indexOf(':') + 1) + '*';
+    return permissions.includes(scope) || permissions.includes(wildcard);
 }
 
 async function auth_request(
