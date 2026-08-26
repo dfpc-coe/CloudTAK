@@ -35,7 +35,6 @@ export enum WorkerMessageType {
 
     Sync_Start = 'cloudtak:sync:start',
     Sync_Complete = 'cloudtak:sync:complete',
-    Sync_Update = 'cloudtak:sync:update',
 
     Iconset_Change = 'cloudtak:iconset:change',
 

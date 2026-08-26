@@ -4,6 +4,7 @@ import type {
     TileJSON
 } from '../types.ts';
 import { Preferences } from '@capacitor/preferences';
+import { shallowReactive } from 'vue';
 import { DrawToolMode } from '../stores/modules/draw.ts';
 import type { FeatureCollection } from 'geojson';
 import { bbox } from '@turf/bbox'
@@ -92,9 +93,9 @@ export default class Overlay {
                 body: ov
             }) as ProfileOverlay;
 
-            const overlay = new Overlay(ov, {
+            const overlay = shallowReactive(new Overlay(ov, {
                 internal: opts.internal
-            });
+            })) as Overlay;
 
             await overlay.init(opts);
 
@@ -102,9 +103,9 @@ export default class Overlay {
 
             return overlay;
         } else {
-            const overlay = new Overlay(body as ProfileOverlay, {
+            const overlay = shallowReactive(new Overlay(body as ProfileOverlay, {
                 internal: opts.internal
-            });
+            })) as Overlay;
 
             await overlay.init(opts);
 
@@ -625,6 +626,81 @@ export default class Overlay {
         if (wasBasemap) {
             mapStore.updateBackground();
             await mapStore.updateAttribution();
+        }
+    }
+
+    /**
+     * Bring this loaded overlay in line with its local database record.
+     * Changes are applied to the map directly and never saved, so records
+     * written by another client (via AtlasSync) or by this client's own
+     * update()/save() are reflected without echoing a PATCH back to the API.
+     */
+    async applyRecord(
+        record: DBOverlay,
+        opts: {
+            before?: string;
+        } = {}
+    ): Promise<void> {
+        const mapStore = useMapStore();
+
+        const current = this.toDBOverlay();
+        const sourceChanged = record.type !== current.type
+            || record.url !== current.url
+            || record.token !== current.token
+            || (record.styles.length > 0 && JSON.stringify(record.styles) !== JSON.stringify(current.styles));
+
+        if (sourceChanged) this.remove();
+
+        this.name = record.name;
+        this.active = record.active;
+        this.username = record.username;
+        this.frequency = record.frequency;
+        this.iconset = record.iconset;
+        this.updated = record.updated;
+        this.actions = record.actions || { feature: [] };
+        this.pos = record.pos;
+        this.type = record.type;
+        this.mode = record.mode;
+        this.mode_id = record.mode_id || null;
+        this.encoding = record.encoding || null;
+        this.url = record.url;
+        this.token = record.token;
+
+        if (record.frequency !== current.frequency) {
+            if (this._timer) clearInterval(this._timer);
+            this._timer = record.frequency ? setInterval(() => {
+                try {
+                    mapStore.map.refreshTiles(String(this.id));
+                } catch (err) {
+                    console.error('Error refreshing tiles for overlay', this.id, err);
+                }
+            }, record.frequency * 1000) : null;
+        }
+
+        if (sourceChanged) {
+            this.opacity = record.opacity;
+            this.visible = record.visible;
+            this.styles = record.styles as Array<LayerSpecification>;
+            this._error = undefined;
+            await this.init({ before: opts.before });
+            return;
+        }
+
+        if (record.opacity !== this.opacity) {
+            this.opacity = record.opacity;
+            if (this.type === 'raster') {
+                for (const l of this.styles) {
+                    mapStore.map.setPaintProperty(l.id, 'raster-opacity', Number(this.opacity));
+                }
+            }
+        }
+
+        if (record.visible !== this.visible) {
+            this.visible = record.visible;
+            for (const l of this.styles) {
+                if (l.type === 'background') continue;
+                mapStore.map.setLayoutProperty(l.id, 'visibility', this.visible ? 'visible' : 'none');
+            }
         }
     }
 
