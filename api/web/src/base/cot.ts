@@ -50,6 +50,67 @@ export const RENDERED_PROPERTIES = [
 ]
 
 /**
+ * TAK team ("squad") colours, as literal RGB values - not CSS/UI framework
+ * theme colours. These must match what ATAK actually renders for the same
+ * team name so a marker looks the same colour in CloudTAK and ATAK side by
+ * side.
+ *
+ * Source of truth: ATAK's `Icon2525cIconAdapter.teamToColor()`
+ * (atak/ATAK/app/src/main/java/com/atakmap/android/icons/Icon2525cIconAdapter.java),
+ * which is what every ATAK client actually renders. TAK Server's own KML
+ * export (KmlUtils.initTeamStyles()) uses a third, slightly different table
+ * for several of these (notably Orange and Purple, which differ by more than
+ * shade) - ATAK is preferred here since that is the client operators
+ * visually compare CloudTAK against in the field.
+ *
+ * Previously these were CSS variables from the Tabler UI framework's brand
+ * palette (e.g. `--tblr-dribbble` for Magenta, `--tblr-google` for Brown),
+ * which do not represent the named colour at all and made "Yellow" render as
+ * amber, "Green" as yellow-green, etc.
+ */
+export const TEAM_COLORS: Record<string, string> = {
+    White: '#FFFFFF',
+    Yellow: '#FFFF00',
+    Orange: '#FF7700',
+    Magenta: '#FF00FF',
+    Red: '#FF0000',
+    Maroon: '#7F0000',
+    Purple: '#7F007F',
+    'Dark Blue': '#00007F',
+    Blue: '#0000FF',
+    Cyan: '#00FFFF',
+    Teal: '#007F7F',
+    Green: '#00FF00',
+    'Dark Green': '#007F00',
+    Brown: '#A0714F',
+};
+
+/**
+ * Perceptual lightness-based border colour for a marker fill, so a light
+ * marker (white team, or a light custom marker colour) stays visible against
+ * a light basemap rather than blending into it with the usual white border -
+ * and a dark marker keeps the white border it already had, rather than a
+ * black one disappearing against a dark basemap in the same way.
+ *
+ * Uses the standard relative-luminance formula (ITU-R BT.601 coefficients),
+ * the same approach commonly used for text/border contrast against a fill
+ * colour. Falls back to white (matching the prior fixed behaviour) for a
+ * value that cannot be parsed as `#rrggbb`.
+ */
+export function strokeColorFor(hex: string): string {
+    const match = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+    if (!match) return '#ffffff';
+
+    const r = parseInt(match[1], 16);
+    const g = parseInt(match[2], 16);
+    const b = parseInt(match[3], 16);
+
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    return luminance > 0.6 ? '#000000' : '#ffffff';
+}
+
+/**
  * MIL-STD symbols render from an icon id of the form `2525<Variant>:<SIDC>` - a
  * key into the Icon Manager's generated symbols
  *
@@ -667,35 +728,9 @@ export default class COT {
             if (properties.group) {
                 properties['icon-opacity'] = 0;
 
-                if (properties.group.name === 'Yellow') {
-                    properties["marker-color"] = '#f59f00';
-                } else if (properties.group.name === 'Orange') {
-                    properties["marker-color"] = '#f76707';
-                } else if (properties.group.name === 'Magenta') {
-                    properties["marker-color"] = '#ea4c89';
-                } else if (properties.group.name === 'Red') {
-                    properties["marker-color"] = '#d63939';
-                } else if (properties.group.name === 'Maroon') {
-                    properties["marker-color"] = '#bd081c';
-                } else if (properties.group.name === 'Purple') {
-                    properties["marker-color"] = '#ae3ec9';
-                } else if (properties.group.name === 'Dark Blue') {
-                    properties["marker-color"] = '#0054a6';
-                } else if (properties.group.name === 'Blue') {
-                    properties["marker-color"] = '#4299e1';
-                } else if (properties.group.name === 'Cyan') {
-                    properties["marker-color"] = '#17a2b8';
-                } else if (properties.group.name === 'Teal') {
-                    properties["marker-color"] = '#0ca678';
-                } else if (properties.group.name === 'Green') {
-                    properties["marker-color"] = '#74b816';
-                } else if (properties.group.name === 'Dark Green') {
-                    properties["marker-color"] = '#2fb344';
-                } else if (properties.group.name === 'Brown') {
-                    properties["marker-color"] = '#dc4e41';
-                } else {
-                    properties["marker-color"] = '#ffffff';
-                }
+                const markerColor = TEAM_COLORS[properties.group.name] ?? '#FFFFFF';
+                properties['marker-color'] = markerColor;
+                properties['marker-stroke-color'] = strokeColorFor(markerColor);
             } else if (properties.icon) {
                 // Format of icon needs to change for spritesheet
                 if (!properties.icon.includes(':')) {

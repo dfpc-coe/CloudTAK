@@ -271,7 +271,7 @@ export default function styles(id: string, opts: {
             paint: {
                 'circle-color': ['get', 'marker-color'],
                 'circle-opacity': ["number", ["get", "marker-opacity"], 1],
-                'circle-stroke-color': '#ffffff',
+                'circle-stroke-color': ["string", ["get", "marker-stroke-color"], "#ffffff"],
                 'circle-stroke-width': [
                     'interpolate',
                     ['linear'],
