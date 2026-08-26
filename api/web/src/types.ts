@@ -250,6 +250,7 @@ export type ETLConnection = paths["/api/connection/{:connectionid}"]["get"]["res
 export type ETLConnectionVideoLeaseList = paths["/api/connection/{:connectionid}/video/lease"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type ETLConnectionToken = paths["/api/connection/{:connectionid}/token"]["get"]["responses"]["200"]["content"]["application/json"]["items"][0]
+export type ETLScopeList = paths["/api/scope"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLConnectionTokenList = paths["/api/connection/{:connectionid}/token"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type ETLConnectionAssetList = paths["/api/connection/{:connectionid}/asset"]["get"]["responses"]["200"]["content"]["application/json"]

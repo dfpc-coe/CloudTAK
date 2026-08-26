@@ -1474,6 +1474,16 @@
         "query": false,
         "res": true
     },
+    "GET /scope": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /retention": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /server/injector": {
         "body": false,
         "query": false,
@@ -1496,11 +1506,6 @@
     },
     "DELETE /server/repeater/:uid": {
         "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /retention": {
-        "body": true,
         "query": false,
         "res": true
     },

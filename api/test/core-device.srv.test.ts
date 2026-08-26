@@ -401,6 +401,7 @@ test('POST: api/connection/1/token - create machine token', async () => {
                 bearer: flight.token.admin,
             },
             body: {
+                permissions: ['device:*'],
                 name: 'Core Device Token',
             },
         }, true);
@@ -520,7 +521,26 @@ test('PATCH: api/core/device/:device - layer token from same connection', async 
             name: 'Core Device Layer',
             task: 'test-task-v1.0.0',
             connection: 1,
+            permissions: ['device:update'],
         });
+
+        await flight.config!.models.Layer.generate({
+            name: 'Unscoped Layer',
+            task: 'test-task-v1.0.0',
+            connection: 1,
+            permissions: ['device:read'],
+        });
+
+        const unscopedToken = 'etl.' + jwt.sign({ access: 'layer', id: 2, internal: true }, 'coe-wildland-fire');
+
+        const denied = await flight.fetch(`/api/core/device/${machineDeviceId}`, {
+            method: 'PATCH',
+            auth: { bearer: unscopedToken },
+            body: { remarks: 'Layer Edit' },
+        }, false);
+
+        assert.equal(denied.status, 403);
+        assert.equal(denied.body.message, 'Layer token does not have the device:update permission');
 
         const layerToken = 'etl.' + jwt.sign({ access: 'layer', id: 1, internal: true }, 'coe-wildland-fire');
 

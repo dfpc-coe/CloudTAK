@@ -24,7 +24,7 @@ export default class LayerControl {
         for (const permission of permissions) {
             if (!this.isValidPermission(permission)) {
                 const known = Object.keys(PERMISSIONS).map(p => `${p}:<${PERMISSIONS[p].join('|')}|*>`).join(', ');
-                throw new Err(400, null, `Unknown Layer Permission: ${permission} - Permissions must be one of: ${known}`);
+                throw new Err(400, null, `Unknown Permission: ${permission} - Permissions must be one of: ${known}`);
             }
         }
     }

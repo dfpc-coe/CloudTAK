@@ -46,6 +46,7 @@
                     <thead>
                         <tr>
                             <th>Token Name</th>
+                            <th>Scopes</th>
                             <th>Created</th>
                             <th>Updated</th>
                         </tr>
@@ -57,6 +58,19 @@
                             @click='token = t'
                         >
                             <td v-text='t.name' />
+                            <td>
+                                <TablerBadge
+                                    v-for='permission in t.permissions'
+                                    :key='permission'
+                                    class='me-1'
+                                >
+                                    <code v-text='permission' />
+                                </TablerBadge>
+                                <span
+                                    v-if='!t.permissions.length'
+                                    class='text-secondary fst-italic'
+                                >None</span>
+                            </td>
                             <td><TablerEpoch :date='+new Date(t.created)' /></td>
                             <td><TablerEpoch :date='+new Date(t.updated)' /></td>
                         </tr>
@@ -96,6 +110,7 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerInput,
+    TablerBadge,
     TablerEpoch,
     TablerLoading,
     TablerIconButton,

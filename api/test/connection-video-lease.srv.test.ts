@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
+import jwt from 'jsonwebtoken';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -45,6 +46,37 @@ test('POST: api/connection/1/video/lease', async () => {
             message: 'Media Integration is not configured',
             messages: [],
         });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('Layer token: api/connection/1/video/lease - video:read only', async () => {
+    try {
+        await flight.config!.models.Layer.generate({
+            name: 'Video Lease Layer',
+            task: 'test-task-v1.0.0',
+            connection: 1,
+            permissions: ['video:read'],
+        });
+
+        const layerToken = 'etl.' + jwt.sign({ access: 'layer', id: 1, internal: true }, 'coe-wildland-fire');
+
+        const list = await flight.fetch('/api/connection/1/video/lease', {
+            method: 'GET',
+            auth: { bearer: layerToken },
+        }, true);
+
+        assert.ok(Array.isArray(list.body.items));
+
+        const create = await flight.fetch('/api/connection/1/video/lease', {
+            method: 'POST',
+            auth: { bearer: layerToken },
+            body: { name: 'Denied Lease' },
+        }, false);
+
+        assert.equal(create.status, 403);
+        assert.equal(create.body.message, 'Layer token does not have the video:create permission');
     } catch (err) {
         assert.ifError(err);
     }

@@ -33,6 +33,12 @@ test('GET: api/openapi - operation level security', async () => {
 
         assert.deepEqual(res.body.security, [{ bearerAuth: [] }]);
         assert.ok(res.body.components.securitySchemes.layerAuth);
+        assert.ok(res.body.components.securitySchemes.connectionAuth);
+        assert.deepEqual(res.body.paths['/api/core/device'].get.security, [
+            { bearerAuth: [] },
+            { layerAuth: ['device:read'] },
+            { connectionAuth: [] },
+        ]);
 
         assert.deepEqual(res.body.paths['/api/search/forward'].get.security, [
             { bearerAuth: [] },

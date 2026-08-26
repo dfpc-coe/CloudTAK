@@ -377,7 +377,7 @@ test('PATCH: api/connection/1/layer/1 - invalid permissions', async () => {
         }, false);
 
         assert.equal(res.status, 400);
-        assert.ok(String(res.body.message).startsWith('Unknown Layer Permission: feature:read'));
+        assert.ok(String(res.body.message).startsWith('Unknown Permission: feature:read'));
     } catch (err) {
         assert.ifError(err);
     }

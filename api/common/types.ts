@@ -623,6 +623,7 @@ export const ConnectionTokenResponse = Type.Object({
     id: Type.Integer(),
     connection: Type.Integer(),
     name: Type.String(),
+    permissions: Type.Array(Type.String()),
     created: Type.String(),
     updated: Type.String(),
 });

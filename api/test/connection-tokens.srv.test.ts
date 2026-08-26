@@ -59,10 +59,80 @@ test('POST: api/connection/1/token', async () => {
             id: 1,
             connection: 1,
             name: 'Test Token',
+            permissions: [],
             token: 'etl.123',
             created: time,
             updated: time,
         });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('POST: api/connection/1/token - with permissions', async () => {
+    try {
+        // Connection JWTs carry no unique claim so two minted in the same second collide
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+
+        const res = await flight.fetch('/api/connection/1/token', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Scoped Token',
+                permissions: ['device:read', 'video:*'],
+            },
+        }, true);
+
+        assert.deepEqual(res.body.permissions, ['device:read', 'video:*']);
+
+        const list = await flight.fetch('/api/connection/1/token', {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.deepEqual(list.body.items.map((t: { permissions: Array<string> }) => t.permissions), [[], ['device:read', 'video:*']]);
+
+        const patch = await flight.fetch('/api/connection/1/token/2', {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { permissions: ['device:read'] },
+        }, true);
+
+        assert.equal(patch.body.status, 200);
+
+        const denied = await flight.fetch('/api/connection/1/video/lease', {
+            method: 'POST',
+            auth: { bearer: res.body.token },
+            body: { name: 'Denied Lease' },
+        }, false);
+
+        assert.equal(denied.status, 403);
+        assert.equal(denied.body.message, 'Connection token does not have the video:create permission');
+
+        const allowed = await flight.fetch('/api/core/device', {
+            method: 'GET',
+            auth: { bearer: res.body.token },
+        }, true);
+
+        assert.equal(allowed.body.total, 0);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('POST: api/connection/1/token - invalid permission', async () => {
+    try {
+        const res = await flight.fetch('/api/connection/1/token', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Bad Token',
+                permissions: ['device:fly'],
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.ok(res.body.message.startsWith('Unknown Permission: device:fly'));
     } catch (err) {
         assert.ifError(err);
     }

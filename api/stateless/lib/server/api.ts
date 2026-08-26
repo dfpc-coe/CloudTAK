@@ -41,6 +41,12 @@ export default async function buildApi(config: Config): Promise<express.Applicat
                         bearerFormat: 'JWT',
                         description: 'CloudTAK User JWT',
                     },
+                    connectionAuth: {
+                        type: 'http',
+                        scheme: 'bearer',
+                        bearerFormat: 'JWT',
+                        description: 'Connection token (`etl.<jwt>`)',
+                    },
                     layerAuth: {
                         type: 'http',
                         scheme: 'bearer',
