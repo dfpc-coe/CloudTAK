@@ -56,7 +56,7 @@ test('Shapefile Transform', async (t) => {
         const result = await transform.convert();
 
         const content = await fs.promises.readFile(result.asset, 'utf8');
-        const features = content.trim().split('\n').map((l) => JSON.parse(l));
+        const features = content.trim().split('\n').map(l => JSON.parse(l));
 
         assert.ok(features.length > 0, 'should produce at least one feature');
 

@@ -164,7 +164,7 @@ export default class Worker extends EventEmitter {
         const indexes = [];
         const shapefileBases = new Set(
             files
-                .filter((file) => path.parse(file).ext.toLowerCase() === '.shp')
+                .filter(file => path.parse(file).ext.toLowerCase() === '.shp')
                 .map((file) => {
                     const parsed = path.parse(file);
                     return parsed.dir ? path.join(parsed.dir, parsed.name) : parsed.name;
