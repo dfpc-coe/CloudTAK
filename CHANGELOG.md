@@ -17,6 +17,14 @@
 
 ### Pending Release
 
+### v13.72.5 - 2026-08-25
+
+- :rocket: Add database support for outgoing subscription types
+
+### v13.72.4 - 2026-08-25
+
+- :bug: Call `.wrap()` on MapLibre coordinates to ensure +/-180 longitude values are handled correctly along the antimeridian
+
 ### v13.72.3 - 2026-08-24
 
 - :rocket: Tie into Certificate.validate in node-tak for certificate validation
@@ -127,7 +135,7 @@
 
 ### v13.63.0 - 2026-08-07
 
-- :tada: Introduce concept of CoreDevice to augment CoreEvent data structure 
+- :tada: Introduce concept of CoreDevice to augment CoreEvent data structure
 - :bug: Fix feature display with use of `maxzoom` limitation - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1642
 
 ### v13.62.0 - 2026-08-05

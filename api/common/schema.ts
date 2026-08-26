@@ -629,6 +629,7 @@ export const LayerOutgoing = pgTable('layers_outgoing', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 
     filters: jsonb().$type<Static<typeof FilterContainer>>().notNull().default({}),
+    subscriptions: text().array().notNull().default([]),
 
     environment: jsonb().notNull().default({}),
     ephemeral: jsonb().$type<Record<string, any>>().notNull().default({}),

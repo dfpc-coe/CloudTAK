@@ -1378,7 +1378,7 @@ export const useMapStore = defineStore('cloudtak', {
                     this.selected.set(cot.id, cot);
                 } else if (features.length === 1) {
                     this.radialClick(features[0], {
-                        lngLat: e.lngLat,
+                        lngLat: e.lngLat.wrap(),
                         point: e.point
                     })
                 } else if (features.length > 1) {
@@ -1417,6 +1417,7 @@ export const useMapStore = defineStore('cloudtak', {
             map.on('contextmenu', (e) => {
                 if (this.draw.editing) return;
 
+                const lngLat = e.lngLat.wrap();
                 const id = randomUUID();
                 this.radialClick({
                     id,
@@ -1431,18 +1432,18 @@ export const useMapStore = defineStore('cloudtak', {
                         time: new Date().toISOString(),
                         start: new Date().toISOString(),
                         stale: new Date(Date.now() + 2 * (60 * 60 * 1000)).toISOString(),
-                        center: [ e.lngLat.lng, e.lngLat.lat ],
+                        center: [ lngLat.lng, lngLat.lat ],
                         'marker-color': this.defaultPointType === 'u-d-p' ? '#00ff00' : undefined,
                         'marker-opacity': 1
                     },
                     geometry: {
                         type: 'Point',
-                        coordinates: [e.lngLat.lng, e.lngLat.lat]
+                        coordinates: [lngLat.lng, lngLat.lat]
                     }
                 }, {
                     mode: 'context',
                     point: e.point,
-                    lngLat: e.lngLat
+                    lngLat
                 });
             });
 
@@ -1465,6 +1466,7 @@ export const useMapStore = defineStore('cloudtak', {
                             pressEvent.originalEvent.preventDefault();
                         }
 
+                        const lngLat = pressEvent.lngLat.wrap();
                         const id = randomUUID();
                         this.radialClick({
                             id,
@@ -1479,18 +1481,18 @@ export const useMapStore = defineStore('cloudtak', {
                                 time: new Date().toISOString(),
                                 start: new Date().toISOString(),
                                 stale: new Date(Date.now() + 2 * (60 * 60 * 1000)).toISOString(),
-                                center: [ pressEvent.lngLat.lng, pressEvent.lngLat.lat ],
+                                center: [ lngLat.lng, lngLat.lat ],
                                 'marker-color': '#00ff00',
                                 'marker-opacity': 1
                             },
                             geometry: {
                                 type: 'Point',
-                                coordinates: [pressEvent.lngLat.lng, pressEvent.lngLat.lat]
+                                coordinates: [lngLat.lng, lngLat.lat]
                             }
                         }, {
                             mode: 'context',
                             point: pressEvent.point,
-                            lngLat: pressEvent.lngLat
+                            lngLat
                         });
 
                         pressEvent = undefined;
