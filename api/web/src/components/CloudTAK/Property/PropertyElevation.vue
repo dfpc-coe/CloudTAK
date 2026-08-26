@@ -83,8 +83,12 @@ watch(mode, async (val) => {
     await config.commit(val as 'feet' | 'meter');
 });
 
+const UNKNOWN_ALTITUDE = 9999999;
+
 const inMode = computed(() => {
-    if (mode.value === 'feet') {
+    if (!Number.isFinite(props.elevation) || props.elevation === UNKNOWN_ALTITUDE) {
+        return '--';
+    } else if (mode.value === 'feet') {
         return Math.round(props.elevation * 3.28084 * 100) / 100;
     } else if (mode.value === 'meter') {
         return Math.round(props.elevation * 100) / 100;
