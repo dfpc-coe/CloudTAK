@@ -1,6 +1,6 @@
 import { Type } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
-import Auth from '../../common/auth.js';
+import Auth, { AuthUser } from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import jwt from 'jsonwebtoken';
 import { sql } from 'drizzle-orm';
@@ -73,7 +73,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CreateConnectionTokenResponse,
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
+            const { auth, connection } = await Auth.is_connection(config, req, {
                 resources: [],
             }, req.params.connectionid);
 
@@ -83,6 +83,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const token = await config.models.ConnectionToken.generate({
                 name: req.body.name,
+                username: auth instanceof AuthUser ? auth.email : null,
                 permissions: req.body.permissions || [],
                 token: 'etl.' + jwt.sign({ id: req.params.connectionid, access: 'connection' }, config.SigningSecret),
                 connection: req.params.connectionid,

@@ -59,6 +59,7 @@ test('POST: api/connection/1/token', async () => {
             id: 1,
             connection: 1,
             name: 'Test Token',
+            username: 'admin@example.com',
             permissions: [],
             token: 'etl.123',
             created: time,
@@ -84,6 +85,7 @@ test('POST: api/connection/1/token - with permissions', async () => {
         }, true);
 
         assert.deepEqual(res.body.permissions, ['device:read', 'video:*']);
+        assert.equal(res.body.username, 'admin@example.com');
 
         const list = await flight.fetch('/api/connection/1/token', {
             method: 'GET',

@@ -1,5 +1,5 @@
 <template>
-    <TablerModal>
+    <TablerModal size='xl'>
         <div class='modal-status bg-yellow' />
         <button
             type='button'
@@ -31,6 +31,12 @@
                     v-model='editToken.name'
                     label='Token Name'
                 />
+                <div
+                    v-if='typeof token === "object" && token.id'
+                    class='form-hint mt-1'
+                >
+                    Created by <span v-text='token.username || "an unknown user"' />
+                </div>
 
                 <div class='mt-3'>
                     <label class='form-label'>Scopes</label>
@@ -46,11 +52,14 @@
                         <div
                             v-for='scope in scopes'
                             :key='scope.resource'
-                            class='col-12 col-md-6'
+                            class='col-12 col-md-4 d-flex'
                         >
-                            <div class='card'>
+                            <div class='card w-100 cloudtak-accent'>
                                 <div class='card-header py-2'>
-                                    <code v-text='scope.resource' />
+                                    <h3
+                                        class='card-title text-capitalize'
+                                        v-text='scope.resource'
+                                    />
                                 </div>
                                 <div class='card-body py-2'>
                                     <TablerToggle
@@ -105,7 +114,7 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 
-type Token = { id: number; name: string; permissions: Array<string>; } | boolean;
+type Token = { id: number; name: string; username: string | null; permissions: Array<string>; } | boolean;
 
 const props = defineProps<{
     token: Token

@@ -1,1 +1,1 @@
-ALTER TABLE "connection_tokens" ADD COLUMN "permissions" text[] DEFAULT '{}' NOT NULL;
+ALTER TABLE "connection_tokens" ADD COLUMN IF NOT EXISTS "permissions" text[] DEFAULT '{}' NOT NULL;

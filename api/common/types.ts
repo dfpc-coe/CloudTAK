@@ -623,6 +623,7 @@ export const ConnectionTokenResponse = Type.Object({
     id: Type.Integer(),
     connection: Type.Integer(),
     name: Type.String(),
+    username: Type.Union([Type.String(), Type.Null()], { description: 'Username of the user that created the token - null for tokens created before authorship was recorded' }),
     permissions: Type.Array(Type.String()),
     created: Type.String(),
     updated: Type.String(),

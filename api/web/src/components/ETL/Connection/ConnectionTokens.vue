@@ -47,6 +47,7 @@
                         <tr>
                             <th>Token Name</th>
                             <th>Scopes</th>
+                            <th>Created By</th>
                             <th>Created</th>
                             <th>Updated</th>
                         </tr>
@@ -70,6 +71,16 @@
                                     v-if='!t.permissions.length'
                                     class='text-secondary fst-italic'
                                 >None</span>
+                            </td>
+                            <td>
+                                <span
+                                    v-if='t.username'
+                                    v-text='t.username'
+                                />
+                                <span
+                                    v-else
+                                    class='text-secondary fst-italic'
+                                >Unknown</span>
                             </td>
                             <td><TablerEpoch :date='+new Date(t.created)' /></td>
                             <td><TablerEpoch :date='+new Date(t.updated)' /></td>
