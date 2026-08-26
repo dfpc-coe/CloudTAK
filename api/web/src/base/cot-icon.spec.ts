@@ -118,4 +118,27 @@ describe('COT.as_rendered', () => {
 
         expect(rendered.properties!.icon).toBeUndefined();
     });
+
+    // Regression: marker-stroke-color was set by styleProperties() and read by
+    // the skittle layer's circle-stroke-color expression in styles.ts, but was
+    // missing from RENDERED_PROPERTIES - the whitelist as_rendered() uses to
+    // slim a Feature down before it reaches the vector tile. It was silently
+    // stripped here, so every team's marker border fell back to the style's
+    // default white regardless of the computed value.
+    it('carries marker-stroke-color through to the rendered Feature', () => {
+        const rendered = COT.as_rendered({
+            id: 'render-contact-stroke',
+            type: 'Feature',
+            properties: properties({
+                type: 'a-f-G-U-C-I',
+                callsign: 'Test',
+                group: { name: 'Cyan', role: 'Team Member' },
+                'marker-color': '#00FFFF',
+                'marker-stroke-color': '#000000'
+            }),
+            geometry: { type: 'Point', coordinates: [-104.99, 39.73] }
+        } as Feature);
+
+        expect(rendered.properties!['marker-stroke-color']).toEqual('#000000');
+    });
 });

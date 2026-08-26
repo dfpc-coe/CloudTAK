@@ -42,6 +42,7 @@ export const RENDERED_PROPERTIES = [
     'stroke-style',
     'stroke-width',
     'marker-color',
+    'marker-stroke-color',
     'marker-radius',
     'marker-opacity',
     'circle-color',
