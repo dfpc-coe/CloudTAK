@@ -17,6 +17,12 @@
 
 ### Pending Release
 
+### v13.72.6 - 2026-08-25
+
+- :rocket: Add Admin Hover effect to open Admin Menu
+- :rocket: Add Search Bar to Admin Integrations Page
+- :rocket: Make Overlays IndexDB backed so they immediately receive updates after an AtlasSync
+
 ### v13.72.5 - 2026-08-25
 
 - :rocket: Add database support for outgoing subscription types
