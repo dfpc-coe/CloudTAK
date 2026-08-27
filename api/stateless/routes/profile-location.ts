@@ -37,7 +37,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const profile = await profileControl.from(user.email);
 
-            const now = req.body.time ? new Date(req.body.time) : new Date();
+            const now = typeof req.body.time === 'number' ? new Date(req.body.time) : new Date();
             const stale = new Date(now.getTime() + 60_000);
             const callsign = profile.tak_callsign || 'Unknown';
             const uid = `ANDROID-CloudTAK-${user.email}`;
@@ -110,7 +110,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const profile = await profileControl.from(user.email);
 
-            const now = req.body.time ? new Date(req.body.time) : new Date();
+            const now = typeof req.body.time === 'number' ? new Date(req.body.time) : new Date();
             const stale = new Date(now.getTime() + 60_000);
             const callsign = profile.tak_callsign || 'Unknown';
             const uid = `ANDROID-CloudTAK-${user.email}`;

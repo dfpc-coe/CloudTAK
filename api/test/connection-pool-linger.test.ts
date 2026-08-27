@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import ConnectionPool from '../stateful/lib/connection-pool.js';
 import type { ConnectionClient } from '../stateful/lib/connection-pool.js';
 import type ConfigStateful from '../stateful/config.js';
+import type { ConnectionWebSocket } from '../stateful/lib/connection-web.js';
 
 const tick = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -47,11 +48,24 @@ test('ConnectionPool.keep: a returning client cancels the teardown', async () =>
     await pool.close();
 });
 
-test('ConnectionPool.deleteLater: keeps the connection if a client is attached when the timer fires', async () => {
+test('ConnectionPool.deleteLater: an empty client list left by a failed attach does not block teardown', async () => {
     const { pool, destroyed } = fakePool();
 
     pool.deleteLater('user@example.com', 10);
     pool.config.wsClients.set('user@example.com', []);
+
+    await tick(30);
+    assert.deepEqual(destroyed, ['user@example.com']);
+    assert.equal(pool.has('user@example.com'), false);
+
+    await pool.close();
+});
+
+test('ConnectionPool.deleteLater: keeps the connection if a client is attached when the timer fires', async () => {
+    const { pool, destroyed } = fakePool();
+
+    pool.deleteLater('user@example.com', 10);
+    pool.config.wsClients.set('user@example.com', [{} as ConnectionWebSocket]);
 
     await tick(30);
     assert.deepEqual(destroyed, []);

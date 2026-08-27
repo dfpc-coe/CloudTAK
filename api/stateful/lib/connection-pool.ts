@@ -612,11 +612,15 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     deleteLater(id: number | string, delayMs = CONNECTION_LINGER_MS): void {
         this.keep(id);
 
-        this.lingering.set(id, setTimeout(() => {
+        const timer = setTimeout(() => {
             this.lingering.delete(id);
-            if (this.config.wsClients.has(String(id))) return;
+            // The hub seeds an empty client list before auth, so presence alone is not enough
+            if ((this.config.wsClients.get(String(id)) || []).length) return;
             this.delete(id);
-        }, delayMs));
+        }, delayMs);
+        timer.unref();
+
+        this.lingering.set(id, timer);
     }
 
     /**
