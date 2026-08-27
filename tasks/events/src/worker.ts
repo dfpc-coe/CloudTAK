@@ -158,11 +158,27 @@ export default class Worker extends EventEmitter {
 
         const files = Array.from(await pkg.files());
         const indexes = [];
+        const isRootGeodatabase = files.some(file => file === 'gdb')
+            && files.some(file => !file.includes('/') && path.extname(file).toLowerCase() === '.gdbtable');
         const geodatabaseRoots = new Set<string>();
         for (const file of files) {
             const parts = file.split('/');
             const rootIndex = parts.findIndex(part => path.extname(part).toLowerCase() === '.gdb');
             if (rootIndex !== -1) geodatabaseRoots.add(parts.slice(0, rootIndex + 1).join('/'));
+        }
+
+        if (isRootGeodatabase) {
+            const geodatabaseName = `${path.parse(local.name).name}.gdb`;
+            const geodatabasePath = path.resolve(pkg.path, geodatabaseName);
+            fs.symlinkSync(path.resolve(pkg.path, './raw/'), geodatabasePath, 'dir');
+
+            await this.processFile(local, {
+                id: randomUUID(),
+                tmpdir: pkg.path,
+                ext: '.gdb',
+                name: geodatabaseName,
+                raw: geodatabasePath,
+            });
         }
 
         for (const root of geodatabaseRoots) {
@@ -185,6 +201,7 @@ export default class Worker extends EventEmitter {
         );
 
         for (const file of files) {
+            if (isRootGeodatabase) continue;
             if (Array.from(geodatabaseRoots).some(root => file === root || file.startsWith(`${root}/`))) continue;
 
             const { dir, ext, base, name } = path.parse(file);

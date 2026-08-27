@@ -15,6 +15,8 @@ import { Import_Status } from '../../common/enums.js';
 import { Import } from '../../common/schema.js';
 import * as Default from '../lib/limits.js';
 
+const UNCOMPRESSED_GEODATABASE_ERROR = 'File geodatabases are folders. Compress the entire .gdb folder into a ZIP file before uploading.';
+
 export default async function router(schema: Schema, config: ConfigStateless) {
     const importControl = new ImportControl(config);
 
@@ -167,6 +169,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                         ext: path.parse(filename).ext,
                     };
 
+                    if (res.ext.toLowerCase() === '.gdb') {
+                        file.resume();
+                        throw new Err(400, null, UNCOMPRESSED_GEODATABASE_ERROR);
+                    }
+
                     try {
                         await S3.put(`import/${imported.id}${res.ext}`, file);
 
@@ -243,6 +250,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                         ext: path.parse(filename).ext,
                         uid: crypto.randomUUID(),
                     };
+
+                    if (res.ext.toLowerCase() === '.gdb') {
+                        file.resume();
+                        throw new Err(400, null, UNCOMPRESSED_GEODATABASE_ERROR);
+                    }
 
                     // Generate the row in the Empty state so the events worker
                     // (which polls for Pending imports) cannot pick it up before

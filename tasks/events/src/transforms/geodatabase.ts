@@ -74,7 +74,9 @@ export default class Geodatabase implements Transform {
 
     private probe<T>(args: string[]): T | undefined {
         try {
-            return JSON.parse(run('gdal', args)) as T;
+            return JSON.parse(run('gdal', args, {
+                stdio: ['ignore', 'pipe', 'pipe'],
+            })) as T;
         } catch {
             return undefined;
         }
