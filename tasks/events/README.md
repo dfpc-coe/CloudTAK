@@ -61,8 +61,7 @@ The supported runtime is Node.js 24 or newer. Processing also requires:
 - The PMTiles CLI for MBTiles conversion and PMTiles output.
 - Access to the CloudTAK API and an S3-compatible object store in production.
 
-> [!NOTE]
-> After installing Node.js, run `npm install` to ensure the above requisite tools are installed.
+> [!NOTE] After installing Node.js, run `npm install` to ensure the above requisite tools are installed.
 
 ## Running
 
