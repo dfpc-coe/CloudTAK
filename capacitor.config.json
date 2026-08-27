@@ -4,6 +4,7 @@
     "webDir": "api/web/dist",
     "ios": {
         "path": "ios",
+        "webContentsDebuggingEnabled": true,
         "includePlugins": [
             "@capgo/capacitor-updater",
             "@capacitor-community/keep-awake",
