@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert';
 import WebSocket from 'ws';
 import { ConnectionWebSocket } from '../stateful/lib/connection-web.js';
+import type { ConnectionClient } from '../stateful/lib/connection-pool.js';
 import LocalHub from '../stateful/lib/hub/local.js';
 import { WebSocket_Event } from '../common/enums.js';
 import type ConfigStateful from '../stateful/config.js';
@@ -12,6 +13,26 @@ function fakeSocket(sent: string[]): WebSocket {
         send: (raw: string) => sent.push(raw),
     } as unknown as WebSocket;
 }
+
+test('ConnectionWebSocket: answers ping with pong', async () => {
+    const sent: string[] = [];
+    let onMessage: ((data: string) => Promise<void>) | undefined;
+
+    const ws = {
+        readyState: WebSocket.OPEN,
+        send: (raw: string) => sent.push(raw),
+        on: (_event: string, handler: (data: string) => Promise<void>) => {
+            onMessage = handler;
+        },
+    } as unknown as WebSocket;
+
+    new ConnectionWebSocket(ws, 'geojson', [WebSocket_Event.MAP], {} as unknown as ConnectionClient);
+
+    assert.ok(onMessage);
+    await onMessage(JSON.stringify({ type: 'ping' }));
+
+    assert.deepEqual(sent, [JSON.stringify({ type: 'pong' })]);
+});
 
 test('ConnectionWebSocket: events defaults to [map]', () => {
     const client = new ConnectionWebSocket(fakeSocket([]));

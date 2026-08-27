@@ -128,6 +128,8 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
 
                 ws.send(JSON.stringify({ type: 'connected' }));
             } else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
+                config.conns.keep(parsedParams.connection);
+
                 let client: ConnectionClient;
                 let created = false;
                 if (!config.conns.has(parsedParams.connection)) {
@@ -160,7 +162,7 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
 
                     config.wsClients.delete(parsedParams.connection);
 
-                    config.conns.delete(parsedParams.connection);
+                    config.conns.deleteLater(parsedParams.connection);
                 });
 
                 if (created) {

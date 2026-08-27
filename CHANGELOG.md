@@ -28,6 +28,12 @@
 - :rocket: Log per-stage timings for resume recovery so slow foreground returns can be attributed on device
 - :white_check_mark: Add tests for the geolocation watch and background state listener
 
+### v13.74.1 - 2026-08-27
+
+- :rocket: Keep profile WS online across brief drops
+- :rocket: Add POST location updates to profile service
+>>>>>>> a231ef120ea6e3e35a7358d189a7635a4c134579
+
 ### v13.74.0 - 2026-08-26
 
 > [!WARNING]
