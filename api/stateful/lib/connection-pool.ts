@@ -123,12 +123,17 @@ export class ConnectionClient {
  * Maintain a pool of TAK Connections, reconnecting as necessary
  * @class
  */
+export const CONNECTION_LINGER_MS = 60000;
+
 export default class ConnectionPool extends Map<number | string, ConnectionClient> {
     config: ConfigStateful;
     sinks: Sinks;
     importControl: ImportControl;
     closed: boolean;
     pending: Map<number | string, Promise<ConnectionClient>>;
+
+    // Connections scheduled for teardown by deleteLater()
+    lingering: Map<number | string, ReturnType<typeof setTimeout>>;
 
     /**
      * In Low Bandwith environments the WebSocket can persist
@@ -144,6 +149,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
         this.closed = false;
         this.pending = new Map();
+        this.lingering = new Map();
         this.config = config;
         this.importControl = new ImportControl(config);
 
@@ -174,6 +180,9 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         this.closed = true;
 
         clearInterval(this.pingInterval);
+
+        for (const timer of this.lingering.values()) clearTimeout(timer);
+        this.lingering.clear();
 
         for (const conn of this.values()) {
             conn.destroy();
@@ -595,7 +604,36 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         connClient.retrying = false;
     }
 
+    /**
+     * Keep a connection alive briefly after its last WebSocket closes - a
+     * mobile client returning from the background reconnects within seconds
+     * and would otherwise pay for a full TLS handshake every time
+     */
+    deleteLater(id: number | string, delayMs = CONNECTION_LINGER_MS): void {
+        this.keep(id);
+
+        this.lingering.set(id, setTimeout(() => {
+            this.lingering.delete(id);
+            if (this.config.wsClients.has(String(id))) return;
+            this.delete(id);
+        }, delayMs));
+    }
+
+    /**
+     * Cancel a pending deleteLater()
+     */
+    keep(id: number | string): boolean {
+        const timer = this.lingering.get(id);
+        if (!timer) return false;
+
+        clearTimeout(timer);
+        this.lingering.delete(id);
+        return true;
+    }
+
     delete(id: number | string): boolean {
+        this.keep(id);
+
         const conn = this.get(id);
 
         if (conn) {

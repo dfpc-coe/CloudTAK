@@ -9,7 +9,6 @@ import { StandardResponse } from '../../../common/types.js';
 import { ProfileConnConfig, AdminConnConfig } from '../../../common/connection-config.js';
 import { ConnectionClient } from '../connection-pool.js';
 import { ConnectionWebSocket } from '../connection-web.js';
-import { scheduleConnectionTeardown, cancelConnectionTeardown } from '../connection-linger.js';
 import { setTimeout } from 'node:timers/promises';
 import Auth, { tokenParser, AuthUser, AuthResource, AuthResourceAccess } from '../../../common/auth.js';
 import { WebSocket_Event } from '../../../common/enums.js';
@@ -129,7 +128,7 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
 
                 ws.send(JSON.stringify({ type: 'connected' }));
             } else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
-                cancelConnectionTeardown(parsedParams.connection);
+                config.conns.keep(parsedParams.connection);
 
                 let client: ConnectionClient;
                 let created = false;
@@ -163,7 +162,7 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
 
                     config.wsClients.delete(parsedParams.connection);
 
-                    scheduleConnectionTeardown(config, parsedParams.connection);
+                    config.conns.deleteLater(parsedParams.connection);
                 });
 
                 if (created) {
