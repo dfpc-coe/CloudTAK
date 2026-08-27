@@ -2,6 +2,7 @@
 
 The events module is CloudTAK's asynchronous geospatial import worker. It polls the CloudTAK API for pending import jobs, claims them, and processes each job in an isolated worker thread. Source files typically originate from [user uploads](https://docs.cloudtak.io/user/#uploaded-files), [data sync](https://docs.cloudtak.io/user/#data-sync-missions) file imports, or TAK Server [file shares](https://docs.cloudtak.io/user/#data-packages) and are stored in S3-compatible object storage. Events downloads each source, processes standalone files or TAK Data Packages, creates CloudTAK resources and derived artifacts, and reports the final job status to the API.
 
+ [!NOTE] After installing Node.js, run `npm install` to ensure the above requisite tools are installed.
 As of Aug 2026, the module supports ingesting vectors: (GeoJSON files, KML/KMZ files, Shapefiles) and rasters: (GeoTIFF, GeoPDF, and MBTiles). Vector inputs are normalized to newline-delimited GeoJSON and tiled as PMTiles; raster inputs are converted through MBTiles to PMTiles. The containerized service relies on GDAL, Tippecanoe, and the PMTiles CLI. An offline CLI runs the same import pipeline with local substitutes for the API and object store.
 
 The main components are:
@@ -56,10 +57,6 @@ variable.
 
 The supported runtime is Node.js 24 or newer. Processing also requires:
 
-- GDAL 3.13-compatible command-line tools for shapefiles, rasters, and GeoPDFs.
-- Tippecanoe and `tile-join` for vector tiles.
-- The PMTiles CLI for MBTiles conversion and PMTiles output.
-- Access to the CloudTAK API and an S3-compatible object store in production.
 
 ### Native Tool Installation
 
@@ -75,19 +72,15 @@ On Linux, install Homebrew for Linux and run the same command:
 brew install gdal tippecanoe pmtiles
 ```
 
-On Windows, use Ubuntu under WSL2 because Tippecanoe does not provide reliable
-native Windows support. Install WSL2 from an administrator PowerShell prompt:
+On Windows, use Ubuntu under WSL2 because Tippecanoe does not provide reliable native Windows support. Install WSL2 from an administrator PowerShell prompt:
 
 ```powershell
 wsl --install -d Ubuntu
 ```
 
-Then open Ubuntu, install Homebrew for Linux, and follow the Linux instructions
-above. Keeping the repository in the WSL filesystem provides better filesystem
-performance than working under `/mnt/c`.
+Then open Ubuntu, install Homebrew for Linux, and follow the Linux instructions above. Keeping the repository in the WSL filesystem provides better filesystem performance than working under `/mnt/c`.
 
-After installing the native tools, install the JavaScript dependencies from
-this directory on any platform:
+After installing native tools, install JavaScript dependencies from this directory on any platform:
 
 ```sh
 npm install
