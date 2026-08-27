@@ -61,7 +61,37 @@ The supported runtime is Node.js 24 or newer. Processing also requires:
 - The PMTiles CLI for MBTiles conversion and PMTiles output.
 - Access to the CloudTAK API and an S3-compatible object store in production.
 
-> [!NOTE] After installing Node.js, run `npm install` to ensure the above requisite tools are installed.
+### Native Tool Installation
+
+On macOS, install the native tools with [Homebrew](https://brew.sh/):
+
+```sh
+brew install gdal tippecanoe pmtiles
+```
+
+On Linux, install Homebrew for Linux and run the same command:
+
+```sh
+brew install gdal tippecanoe pmtiles
+```
+
+On Windows, use Ubuntu under WSL2 because Tippecanoe does not provide reliable
+native Windows support. Install WSL2 from an administrator PowerShell prompt:
+
+```powershell
+wsl --install -d Ubuntu
+```
+
+Then open Ubuntu, install Homebrew for Linux, and follow the Linux instructions
+above. Keeping the repository in the WSL filesystem provides better filesystem
+performance than working under `/mnt/c`.
+
+After installing the native tools, install the JavaScript dependencies from
+this directory on any platform:
+
+```sh
+npm install
+```
 
 ## Running
 
