@@ -31,7 +31,9 @@ export class ConnectionWebSocket {
                 try {
                     const msg = JSON.parse(String(data));
 
-                    if (msg.type === 'chat') {
+                    if (msg.type === 'ping') {
+                        this.ws.send(JSON.stringify({ type: 'pong' }));
+                    } else if (msg.type === 'chat') {
                         let chat: DirectChat | MissionChat;
 
                         if (msg.data.mission) {
