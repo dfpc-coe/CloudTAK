@@ -22,16 +22,19 @@ interface TaskItem {
 
 type TaskSort = 'id' | 'prefix' | 'favorite' | 'created' | 'updated' | 'name' | 'logo' | 'repo' | 'readme' | 'enableRLS';
 
-withDefaults(defineProps<{
-    task?: string;
+const props = withDefaults(defineProps<{
+    modelValue?: string;
 }>(), {
-    task: '',
+    modelValue: '',
 });
 
 const emit = defineEmits<{
-    (e: 'task', value: string): void;
+    (e: 'update:modelValue', value: string): void;
     (e: 'close'): void;
 }>();
+
+// Browse the task list only when no task is set or the user asks to change it
+const browsing = ref(!props.modelValue);
 
 const loading = reactive({
     version: false,
@@ -73,8 +76,8 @@ async function fetchTask() {
 
         versions.value = (taskRes.data as ETLTaskVersions).versions.map((v) => v.version);
 
-        if (versions.value.length) {
-            version.value = versions.value[0];
+        if (!version.value || !versions.value.includes(version.value)) {
+            version.value = versions.value[0] || '';
         }
 
         if (current.value.readme) {
@@ -114,19 +117,61 @@ async function fetchTasks() {
     list.items = res.data.items as TaskItem[];
 
 
-    if (list.total && list.items.length) {
+    if (!current.value && list.total && list.items.length) {
         current.value = list.items[0];
     }
 
     loading.tasks = false;
 }
 
+async function fetchCurrent() {
+    const match = props.modelValue.match(/^(.+)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
+    if (!match) return;
+
+    loading.task = true;
+
+    const res = await server.GET('/api/task', {
+        params: {
+            query: {
+                filter: match[1],
+                limit: 1,
+                page: 0,
+                sort: 'name',
+                order: 'asc',
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    const task = (res.data.items as TaskItem[]).find((t) => t.prefix === match[1]);
+    if (!task) {
+        browsing.value = true;
+        loading.task = false;
+        return;
+    }
+
+    version.value = match[2];
+    current.value = task;
+}
+
+function select() {
+    if (!current.value) return;
+    emit('update:modelValue', `${current.value.prefix}-v${version.value}`);
+    emit('close');
+}
+
 watch(current, fetchTask);
 
 watch(paging, fetchTasks, { deep: true });
 
-onMounted(() => {
-    fetchTasks();
+onMounted(async () => {
+    if (props.modelValue) await fetchCurrent();
+    if (browsing.value) await fetchTasks();
+});
+
+watch(browsing, async () => {
+    if (browsing.value && !list.items.length) await fetchTasks();
 });
 
 </script>
@@ -142,7 +187,10 @@ onMounted(() => {
         <div class='modal-status bg-yellow' />
         <div class='modal-body py-4'>
             <div class='row g-0'>
-                <div class='col-12 col-md-3 border-end'>
+                <div
+                    v-if='browsing'
+                    class='col-12 col-md-3 border-end'
+                >
                     <div class='card-header'>
                         <div class='card-title subheader'>
                             Task Selection
@@ -199,7 +247,10 @@ onMounted(() => {
                         </div>
                     </div>
                 </div>
-                <div class='col-12 col-md-9 position-relative px-4'>
+                <div
+                    class='position-relative px-4'
+                    :class='browsing ? "col-12 col-md-9" : "col-12"'
+                >
                     <TablerLoading
                         v-if='loading.task'
                         desc='Loading Task'
@@ -214,6 +265,17 @@ onMounted(() => {
                                 class='card-title subheader'
                                 v-text='`${current.name} (${current.prefix})`'
                             />
+                            <div
+                                v-if='!browsing'
+                                class='ms-auto'
+                            >
+                                <button
+                                    class='btn btn-sm btn-secondary'
+                                    @click='browsing = true'
+                                >
+                                    Change Task
+                                </button>
+                            </div>
                         </div>
                         <div class='card-body'>
                             <TablerMarkdown
@@ -234,7 +296,7 @@ onMounted(() => {
                                         <button
                                             class='btn btn-primary w-100'
                                             style='margin-top: 8px;'
-                                            @click='emit("task", `${current.prefix}-v${version}`)'
+                                            @click='select'
                                         >
                                             Select
                                         </button>

@@ -31,6 +31,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 enum: Object.keys(Task),
             }),
             filter: Default.Filter,
+            prefix: Type.Optional(Type.String({
+                description: 'Only return the Task with this exact prefix',
+            })),
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -47,6 +50,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 sort: req.query.sort,
                 where: sql`
                     name ~* ${req.query.filter}
+                    AND (${req.query.prefix ?? null}::TEXT IS NULL OR prefix = ${req.query.prefix ?? null}::TEXT)
                 `,
             });
 

@@ -384,6 +384,117 @@ test('PATCH: api/connection/1/layer/1 - invalid permissions', async () => {
     }
 });
 
+test('PATCH: api/connection/1/layer/1 - permissions validated against task manifest', async () => {
+    const manifest = (capabilities: object) => JSON.stringify({
+        schemaVersion: 2,
+        mediaType: 'application/vnd.oci.image.manifest.v1+json',
+        annotations: {
+            'com.cloudtak.capabilities': JSON.stringify(capabilities),
+        },
+    });
+
+    const base = {
+        version: '1.0',
+        name: 'Test Task',
+        description: 'A Task used in testing',
+        compute: { memory: 256, timeout: 30 },
+        invocations: {},
+    };
+
+    try {
+        Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
+            if (!(command instanceof BatchGetImageCommand)) throw new Error('Unexpected command');
+
+            const tag = command.input.imageIds![0].imageTag;
+
+            if (tag === 'etl-test-v1.0.0') {
+                return Promise.resolve({
+                    images: [{
+                        imageManifest: manifest({
+                            ...base,
+                            permissions: [{
+                                resource: 'feature:submit',
+                                required: true,
+                                description: 'Post features',
+                            }],
+                        }),
+                    }],
+                });
+            } else if (tag === 'etl-test-v1.1.0') {
+                return Promise.resolve({
+                    images: [{
+                        imageManifest: manifest({
+                            ...base,
+                            permissions: [{
+                                resource: 'feature:submit',
+                                required: true,
+                                description: 'Post features',
+                            }, {
+                                resource: 'video:*',
+                                required: false,
+                                description: 'Manage video',
+                            }],
+                        }),
+                    }],
+                });
+            }
+
+            throw new Error(`Unexpected tag: ${tag}`);
+        });
+
+        // Current version (1.0.0) does not declare video:*
+        const undeclared = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { permissions: ['feature:submit', 'video:*'] },
+        }, false);
+
+        assert.equal(undeclared.status, 400);
+        assert.equal(undeclared.body.message, 'Permission video:* is not declared by etl-test-v1.0.0 - Declared permissions: feature:submit');
+
+        // Current version requires feature:submit
+        const missing = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { permissions: [] },
+        }, false);
+
+        assert.equal(missing.status, 400);
+        assert.equal(missing.body.message, 'Permission feature:submit is required by etl-test-v1.0.0');
+
+        const ok = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { permissions: ['feature:submit'] },
+        }, true);
+
+        assert.deepEqual(ok.body.permissions, ['feature:submit']);
+
+        // A task change in the body is validated against the new version's manifest
+        const newVersion = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { task: 'etl-test-v1.1.0', permissions: ['video:*'] },
+        }, false);
+
+        assert.equal(newVersion.status, 400);
+        assert.equal(newVersion.body.message, 'Permission feature:submit is required by etl-test-v1.1.0');
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    Sinon.restore();
+
+    // Without a manifest available the existing permissions are cleared unchecked
+    const cleared = await flight.fetch('/api/connection/1/layer/1', {
+        method: 'PATCH',
+        auth: { bearer: flight.token.admin },
+        body: { permissions: [] },
+    }, true);
+
+    assert.deepEqual(cleared.body.permissions, []);
+});
+
 test('PATCH: api/connection/1/layer/1 - layer token cannot modify permissions', async () => {
     try {
         const token = 'etl.' + jwt.sign({ access: 'layer', id: 1, internal: true }, 'coe-wildland-fire');

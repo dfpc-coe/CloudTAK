@@ -15,6 +15,15 @@
             </h1>
 
             <div class='ms-auto btn-list'>
+                <TablerButton
+                    v-if='updatable.length'
+                    class='btn-primary'
+                    :disabled='queue.length > 0 || Object.keys(updating).length > 0'
+                    @click='updateAll'
+                >
+                    <span v-if='queue.length'>Updating <span v-text='queue.length' /> remaining...</span>
+                    <span v-else>Update All (<span v-text='updatable.length' />)</span>
+                </TablerButton>
                 <TablerRefreshButton
                     :loading='loading'
                     @click='fetchList'
@@ -106,11 +115,22 @@
                 </table>
             </div>
         </div>
+
+        <LayerTaskUpdateModal
+            v-if='taskUpdate'
+            :layer='taskUpdate.layer'
+            :update='taskUpdate.update'
+            @close='closeUpdate'
+            @updated='closeUpdate'
+        />
     </div>
 </template>
 
 <script setup lang='ts'>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
+import LayerTaskUpdateModal from '../util/LayerTaskUpdateModal.vue';
+import type { UpdateTarget } from '../util/LayerTaskUpdateModal.vue';
+import type { TaskUpdate } from '../util/LayerTaskSelect.vue';
 import { useRouter } from 'vue-router';
 import { openSecondaryView } from '../../utils/capacitor.ts';
 import { server } from '../../std.ts';
@@ -139,6 +159,11 @@ const list = ref<AdminLayerUpdateList>({
     items: []
 });
 
+const taskUpdate = ref<{ layer: UpdateTarget; update: TaskUpdate }>();
+const queue = ref<AdminLayerUpdate[]>([]);
+
+const updatable = computed(() => list.value.items.filter((layer) => layer.has_update && layer.latest_version));
+
 onMounted(async () => {
     await fetchList();
 });
@@ -165,38 +190,42 @@ async function fetchList(): Promise<void> {
     }
 }
 
-async function updateLayer(layer: AdminLayerUpdate): Promise<void> {
-    updating.value[layer.id] = true;
+function updateLayer(layer: AdminLayerUpdate): void {
     error.value = undefined;
 
-    try {
-        if (!layer.latest_version) {
-            throw new Error('No newer version available');
-        }
-
-        const res = await server.PATCH('/api/connection/{:connectionid}/layer/{:layerid}', {
-            params: {
-                query: {
-                    alarms: false
-                },
-                path: {
-                    ':connectionid': layerConnectionId(layer),
-                    ':layerid': layer.id
-                }
-            },
-            body: {
-                task: `${layer.task_prefix}-v${layer.latest_version}`
-            }
-        });
-
-        if (res.error) throw new Error(res.error.message);
-
-        await fetchList();
-    } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err));
-    } finally {
-        delete updating.value[layer.id];
+    if (!layer.latest_version) {
+        error.value = new Error('No newer version available');
+        return;
     }
+
+    updating.value[layer.id] = true;
+
+    taskUpdate.value = {
+        layer: { id: layer.id, connection: layer.connection },
+        update: {
+            prefix: layer.task_prefix,
+            from: layer.current_version,
+            to: layer.latest_version
+        }
+    };
+}
+
+async function closeUpdate(): Promise<void> {
+    if (taskUpdate.value) delete updating.value[taskUpdate.value.layer.id];
+    taskUpdate.value = undefined;
+
+    const next = queue.value.shift();
+    if (next) {
+        updateLayer(next);
+    } else {
+        await fetchList();
+    }
+}
+
+function updateAll(): void {
+    queue.value = updatable.value.slice();
+    const first = queue.value.shift();
+    if (first) updateLayer(first);
 }
 
 async function redeployLayer(layer: AdminLayerUpdate): Promise<void> {

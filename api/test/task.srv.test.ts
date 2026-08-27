@@ -332,6 +332,28 @@ test('GET: api/task - single registered task', async () => {
     }
 });
 
+test('GET: api/task - prefix filter', async () => {
+    try {
+        const match = await flight.fetch('/api/task?prefix=etl-test', {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.equal(match.body.total, 1);
+        assert.equal(match.body.items[0].prefix, 'etl-test');
+
+        const miss = await flight.fetch('/api/task?prefix=etl-missing', {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.equal(miss.body.total, 0);
+        assert.deepEqual(miss.body.items, []);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: api/task/1', async () => {
     try {
         const res = await flight.fetch('/api/task/1', {

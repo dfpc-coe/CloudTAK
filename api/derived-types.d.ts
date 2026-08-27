@@ -49393,6 +49393,8 @@ export interface paths {
                     sort: "id" | "prefix" | "favorite" | "created" | "updated" | "name" | "logo" | "repo" | "readme" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
+                    /** @description Only return the Task with this exact prefix */
+                    prefix?: string;
                 };
                 header?: never;
                 path?: never;

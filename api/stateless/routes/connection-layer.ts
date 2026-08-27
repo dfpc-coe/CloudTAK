@@ -4,6 +4,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthResourceAccess, AuthUser } from '../../common/auth.js';
 import Lambda from '../lib/aws/lambda.js';
+import ECR from '../lib/aws/ecr.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
 import LayerDeploy from '../lib/aws/layer-deploy.js';
 import Style, { StyleContainer } from '../../common/style.js';
@@ -788,6 +789,18 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 connection = auth.connection;
                 layer = await layerControl.from(connection, req.params.layerid);
+            }
+
+            if (req.body.permissions !== undefined) {
+                const task = req.body.task || layer.task;
+                const match = task.match(/^(.+)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
+
+                if (match) {
+                    const capabilities = await ECR.capabilities(match[1], match[2]);
+                    if (capabilities) {
+                        CommonLayerControl.validateManifestPermissions(req.body.permissions, capabilities, task);
+                    }
+                }
             }
 
             let changed = false;
