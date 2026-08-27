@@ -91,67 +91,15 @@
             <template v-else>
                 <div class='row g-2'>
                     <div class='col-md-12'>
-                        <div class='d-flex'>
-                            <label class='form-label'>Layer Task</label>
-                            <div class='ms-auto'>
-                                <div class='btn-list'>
-                                    <div>
-                                        <TablerIconButton
-                                            v-if='!newTaskVersion && !loading.version'
-                                            title='Check for new version'
-                                            @click='latestVersion'
-                                        >
-                                            <IconRefresh
-                                                :size='16'
-                                                stroke='1'
-                                            />
-                                        </TablerIconButton>
-                                        <div
-                                            v-else-if='loading.version'
-                                            class='d-flex justify-content-center'
-                                        >
-                                            <div
-                                                class='spinner-border'
-                                                role='status'
-                                            />
-                                        </div>
-                                        <span v-else>
-                                            New Task Version
-                                            <span
-                                                v-if='disabled'
-                                                v-text='newTaskVersion'
-                                            />
-                                            <span
-                                                v-else
-                                                class='cursor-pointer text-blue'
-                                                @click='updateTask'
-                                                v-text='newTaskVersion'
-                                            />
-                                        </span>
-                                    </div>
-                                    <div v-if='!disabled'>
-                                        <IconSettings
-                                            :size='16'
-                                            stroke='1'
-                                            class='cursor-pointer'
-                                            @click='taskmodal = true'
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <input
+                        <LayerTaskSelect
                             v-model='config.task'
                             :disabled='disabled'
-                            :class='{
-                                "is-invalid": errors.task
-                            }'
-                            class='form-control'
-                            placeholder='Schedule Task'
-                        >
+                            :updates='true'
+                            @update='taskUpdate = $event'
+                        />
                         <div
                             v-if='errors.task'
-                            class='invalid-feedback'
+                            class='invalid-feedback d-block'
                             v-text='errors.task'
                         />
                     </div>
@@ -206,11 +154,12 @@
             </template>
         </div>
 
-        <TaskModal
-            v-if='taskmodal'
-            :task='config.task'
-            @close='taskmodal = false'
-            @task='taskmodal = false; config.task = $event'
+        <LayerTaskUpdateModal
+            v-if='taskUpdate'
+            :layer='layer'
+            :update='taskUpdate'
+            @close='taskUpdate = undefined'
+            @updated='taskUpdated'
         />
     </div>
 </template>
@@ -218,7 +167,9 @@
 <script setup lang='ts'>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
-import TaskModal from './utils/TaskModal.vue';
+import LayerTaskSelect from '../../util/LayerTaskSelect.vue';
+import type { TaskUpdate } from '../../util/LayerTaskSelect.vue';
+import LayerTaskUpdateModal from '../../util/LayerTaskUpdateModal.vue';
 import { server } from '../../../std.ts';
 import type { ETLLayer, ETLLayerTask } from '../../../types.ts';
 import {
@@ -230,7 +181,6 @@ import {
 import {
     IconPencil,
     IconRefresh,
-    IconSettings,
     IconCloudUpload,
 } from '@tabler/icons-vue';
 
@@ -249,8 +199,7 @@ const route = useRoute();
 const disabled = ref(true);
 const looping = ref<ReturnType<typeof setInterval> | false>(false);
 const config = ref<ETLLayer>(JSON.parse(JSON.stringify(props.layer)));
-const newTaskVersion = ref<string>();
-const taskmodal = ref(false);
+const taskUpdate = ref<TaskUpdate>();
 const errors = ref<Record<string, { message: string } | false>>({
     cloudwatch: false
 });
@@ -388,33 +337,13 @@ async function saveLayer() {
     }
 }
 
-function updateTask() {
-    config.value.task = config.value.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${newTaskVersion.value}`);
-    newTaskVersion.value = undefined;
-}
+function taskUpdated(layer: ETLLayer) {
+    taskUpdate.value = undefined;
+    config.value = JSON.parse(JSON.stringify(layer));
+    disabled.value = true;
 
-async function latestVersion() {
-    loading.value.version = true;
-    const match = config.value.task.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/)
-    if (!match) return;
-    const task = match[1];
-    const version = match[2];
-
-    const res = await server.GET('/api/task/raw/{:task}', {
-        params: {
-            path: {
-                ':task': task
-            }
-        }
-    });
-    if (res.error) throw new Error(res.error.message);
-    const versions = res.data.versions.map((v) => v.version);
-
-    if (versions.indexOf(version) !== 0) {
-        newTaskVersion.value = versions[0];
-    }
-
-    loading.value.version = false;
+    emit('refresh');
+    emit('stack');
 }
 
 </script>
