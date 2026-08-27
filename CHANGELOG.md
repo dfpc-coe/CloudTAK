@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v13.74.1 - 2026-08-27
+
+- :rocket: Keep profile WS online across brief drops
+- :rocket: Add POST location updates to profile service
+
 ### v13.74.0 - 2026-08-26
 
 > [!WARNING]
