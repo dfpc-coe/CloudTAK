@@ -126,7 +126,19 @@ async function select(tile: { name: string }) {
     const detail = await std(url) as Record<string, unknown>;
     detail.url = url.toString();
 
+    if (Array.isArray(detail.tiles)) {
+        detail.tiles = detail.tiles.map((tile) => stripToken(String(tile)));
+    }
+
     emit('done', detail);
+}
+
+function stripToken(tile: string): string {
+    const [base, query] = tile.split('?', 2);
+    if (!query) return tile;
+    const params = new URLSearchParams(query);
+    params.delete('token');
+    return params.size ? `${base}?${params.toString()}` : base;
 }
 
 async function listTiles() {
