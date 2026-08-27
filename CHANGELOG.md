@@ -17,6 +17,16 @@
 
 ### Pending Release
 
+### v13.74.0 - 2026-08-26
+
+> [!WARNING]
+> If Using Connection API Tokens, the PR introduces the first version of API scopes
+> Layer ETLs are excempted from this change but connection tokens will need to be updated
+> with relevant scopes to continue working
+
+- :rocket: Introduce API Scopes to allow layer API Tokens to make calls to non-layer APIs
+- :rocket: Switch to Scalar API Docs which better surface authentication requirements than the earlier swagger UI
+
 ### v13.73.1 - 2026-08-26
 
 - :bug: Don't display out of bounds or unknown alt - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1707
