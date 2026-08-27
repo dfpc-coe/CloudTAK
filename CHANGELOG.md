@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.75.0 - 2026-08-27
+
+- :tada: Introduce Task Specific UI for ETL Version & Permissions Management
+
 ### v13.74.2 - 2026-08-27
 
 - :bug: The user's token should never be saved in the tile URL when creating an overlay from a hosted tileset - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1683
