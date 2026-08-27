@@ -529,6 +529,7 @@ test('POST: api/connection/1/token - create machine token', async () => {
                 bearer: flight.token.admin,
             },
             body: {
+                permissions: ['event:*'],
                 name: 'Core Event Token',
             },
         }, true);
@@ -669,7 +670,26 @@ test('PATCH: api/core/event/:event - layer token from same connection', async ()
             name: 'Core Event Layer',
             task: 'test-task-v1.0.0',
             connection: 1,
+            permissions: ['event:update'],
         });
+
+        await flight.config!.models.Layer.generate({
+            name: 'Unscoped Layer',
+            task: 'test-task-v1.0.0',
+            connection: 1,
+            permissions: ['event:read'],
+        });
+
+        const unscopedToken = 'etl.' + jwt.sign({ access: 'layer', id: 2, internal: true }, 'coe-wildland-fire');
+
+        const denied = await flight.fetch(`/api/core/event/${machineEventId}`, {
+            method: 'PATCH',
+            auth: { bearer: unscopedToken },
+            body: { remarks: 'Layer Edit' },
+        }, false);
+
+        assert.equal(denied.status, 403);
+        assert.equal(denied.body.message, 'Layer token does not have the event:update permission');
 
         const layerToken = 'etl.' + jwt.sign({ access: 'layer', id: 1, internal: true }, 'coe-wildland-fire');
 

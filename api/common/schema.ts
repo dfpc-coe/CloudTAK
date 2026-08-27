@@ -677,6 +677,8 @@ export const ConnectionToken = pgTable('connection_tokens', {
     id: serial().notNull(),
     connection: integer().notNull().references(() => Connection.id),
     name: text().notNull(),
+    username: text(),
+    permissions: text().array().notNull().default([]),
     token: text().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),

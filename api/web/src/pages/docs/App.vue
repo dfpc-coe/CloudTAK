@@ -1,19 +1,19 @@
 <template>
-    <div>
-        <div id='swagger' />
-    </div>
+    <ApiReference :configuration='configuration' />
 </template>
 
 <script setup lang='ts'>
 import { stdurl } from '../../std.ts'
-import { onMounted } from 'vue'
-import SwaggerUI from 'swagger-ui-dist/swagger-ui-bundle.js';
-import 'swagger-ui-dist/swagger-ui.css';
+import { ApiReference } from '@scalar/api-reference';
+import '@scalar/api-reference/style.css';
 
-onMounted(() => {
-    SwaggerUI({
-        dom_id: '#swagger',
-        url: String(stdurl('/api/openapi'))
-    })
-})
+const configuration = {
+    url: String(stdurl('/api/openapi')),
+    hideDarkModeToggle: false,
+    showSidebar: true,
+    hideClientButton: true,
+    metaData: {
+        title: 'CloudTAK',
+    },
+};
 </script>

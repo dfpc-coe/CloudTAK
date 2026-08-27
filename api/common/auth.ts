@@ -3,7 +3,7 @@ import Err from '@openaddresses/batch-error';
 import jwt from 'jsonwebtoken';
 import Config from './config.js';
 import { InferSelectModel } from 'drizzle-orm';
-import type { Profile, Connection, Layer } from './schema.js';
+import type { Profile, Connection, ConnectionToken, Layer } from './schema.js';
 
 export enum ResourceCreationScope {
     SERVER = 'server',
@@ -102,11 +102,13 @@ export default class Auth {
      * @param opts.token        - Should URL query tokens be allowed (usually only for downloads)
      * @param opts.anyResources - Any Resource token can use this endpoint
      * @param resources         - Array of resource types that can use this endpoint
+     * @param opts.scope        - `<permission>:<level>` a Layer or Connection token must hold in its `permissions`
      */
     static async is_auth(config: Config, req: Request<any, any, any, any>, opts: {
         token?: boolean;
         anyResources?: boolean;
         resources?: Array<AuthResourceAccepted>;
+        scope?: string;
     } = {}): Promise<AuthResource | AuthUser> {
         if (!opts.token) opts.token = false;
         if (!opts.resources) opts.resources = [];
@@ -127,9 +129,10 @@ export default class Auth {
                 throw new Err(403, null, 'Resource token cannot access resource');
             }
 
+            let connectionToken: InferSelectModel<typeof ConnectionToken> | undefined;
             if (!auth_resource.internal) {
                 try {
-                    await config.models.ConnectionToken.from(auth_resource.token);
+                    connectionToken = await config.models.ConnectionToken.from(auth_resource.token);
                 } catch (err) {
                     if (err instanceof Error) {
                         throw new Err(403, err.name === 'PublicError' ? err : new Error(String(err)), 'Token does not exist');
@@ -148,6 +151,20 @@ export default class Auth {
             })) {
                 throw new Err(403, null, 'Resource token cannot access this resource');
             }
+
+            if (opts.scope && auth_resource.access === AuthResourceAccess.LAYER) {
+                if (auth_resource.id === undefined) throw new Err(401, null, 'Layer Resource Token must contain a Layer ID');
+
+                const layer = await config.models.Layer.from(auth_resource.id);
+
+                if (!hasScope(layer.permissions, opts.scope)) {
+                    throw new Err(403, null, `Layer token does not have the ${opts.scope} permission`);
+                }
+            } else if (opts.scope && auth_resource.access === AuthResourceAccess.CONNECTION && connectionToken) {
+                if (!hasScope(connectionToken.permissions, opts.scope)) {
+                    throw new Err(403, null, `Connection token does not have the ${opts.scope} permission`);
+                }
+            }
         }
 
         return auth;
@@ -156,6 +173,7 @@ export default class Auth {
     static async is_connection(config: Config, req: Request<any, any, any, any>, opts: {
         token?: boolean;
         resources?: Array<AuthResourceAccepted>;
+        scope?: string;
     }, connectionid: number): Promise<{
         auth: AuthResource | AuthUser;
         connection: InferSelectModel<typeof Connection>;
@@ -245,6 +263,33 @@ export default class Auth {
         return auth as AuthResource;
     }
 
+    /**
+     * OpenAPI Security Requirements for a route guarded by `as_user_or_scope`
+     */
+    static security(scope: string, opts: {
+        connection?: boolean;
+    } = {}): Array<Record<string, Array<string>>> {
+        const security: Array<Record<string, Array<string>>> = [
+            { bearerAuth: [] },
+            { layerAuth: [scope] },
+        ];
+
+        if (opts.connection) security.push({ connectionAuth: [] });
+
+        return security;
+    }
+
+    /**
+     * Allow any authenticated user, or a Layer resource token whose stored
+     * permissions include the given `<permission>:<level>` scope
+     */
+    static async as_user_or_scope(config: Config, req: Request<any, any, any, any>, scope: string): Promise<AuthUser | AuthResource> {
+        return await this.is_auth(config, req, {
+            resources: [{ access: AuthResourceAccess.LAYER }],
+            scope,
+        });
+    }
+
     static async impersonate(
         config: Config,
         req: Request<any, any, any, any>,
@@ -292,6 +337,11 @@ export default class Auth {
         const user = await this.as_user(config, req, opts);
         return await this.#as_profile(config, user);
     }
+}
+
+function hasScope(permissions: Array<string>, scope: string): boolean {
+    const wildcard = scope.slice(0, scope.indexOf(':') + 1) + '*';
+    return permissions.includes(scope) || permissions.includes(wildcard);
 }
 
 async function auth_request(

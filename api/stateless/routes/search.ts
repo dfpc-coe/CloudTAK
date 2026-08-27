@@ -3,7 +3,7 @@ import * as SunCalc from 'suncalc';
 import geomagnetism from 'geomagnetism';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth from '../../common/auth.js';
+import Auth, { AuthUser } from '../../common/auth.js';
 import { FetchHourly } from '../lib/interface-weather.js';
 import { SearchManager } from '../lib/interface-search.js';
 import { SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from '../lib/search/types.js';
@@ -75,6 +75,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/search/reverse/:longitude/:latitude', {
         name: 'Reverse Geocode',
         group: 'Search',
+        security: Auth.security('search:read'),
         description: 'Get information about a given point',
         params: Type.Object({
             latitude: Type.Number(),
@@ -90,8 +91,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: ReverseResponse,
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
-            const elevationUnit = await config.models.ProfileConfig.from(user.email).then(p => p['display::elevation'] as string).catch(() => 'feet');
+            const auth = await Auth.as_user_or_scope(config, req, 'search:read');
+            const elevationUnit = auth instanceof AuthUser
+                ? await config.models.ProfileConfig.from(auth.email).then(p => p['display::elevation'] as string).catch(() => 'feet')
+                : 'feet';
 
             const sun = SunCalc.getTimes(new Date(), req.params.latitude, req.params.longitude, req.query.altitude);
             const magnetic = geomagnetism.model().point([req.params.latitude, req.params.longitude]);
@@ -418,6 +421,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/search/forward', {
         name: 'Forward',
         group: 'Search',
+        security: Auth.security('search:read'),
         description: 'Get information about a given string',
         query: Type.Object({
             provider: Type.Optional(Type.String()),
@@ -430,7 +434,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: ForwardResponse,
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req);
+            await Auth.as_user_or_scope(config, req, 'search:read');
 
             const response: Static<typeof ForwardResponse> = {
                 items: [],

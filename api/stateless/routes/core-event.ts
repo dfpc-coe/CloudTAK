@@ -62,6 +62,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/core/event', {
         name: 'List Events',
         group: 'CoreEvent',
+        security: Auth.security('event:read', { connection: true }),
         description: 'List Core Events',
         query: Type.Object({
             limit: Default.Limit,
@@ -86,6 +87,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
+                scope: 'event:read',
                 resources: [
                     { access: AuthResourceAccess.CONNECTION },
                     { access: AuthResourceAccess.LAYER },
@@ -161,6 +163,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/core/event/:event', {
         name: 'Get Event',
         group: 'CoreEvent',
+        security: Auth.security('event:read', { connection: true }),
         description: 'Get a Core Event',
         params: Type.Object({
             event: Type.String({
@@ -171,6 +174,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
+                scope: 'event:read',
                 resources: [
                     { access: AuthResourceAccess.CONNECTION },
                     { access: AuthResourceAccess.LAYER },
@@ -192,6 +196,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.post('/core/event', {
         name: 'Create Event',
         group: 'CoreEvent',
+        security: Auth.security('event:create', { connection: true }),
         description: 'Create a new Core Event',
         body: Type.Object({
             name: Default.NameField,
@@ -243,6 +248,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
+                scope: 'event:create',
                 resources: [
                     { access: AuthResourceAccess.CONNECTION },
                     { access: AuthResourceAccess.LAYER },
@@ -280,6 +286,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.patch('/core/event/:event', {
         name: 'Update Event',
         group: 'CoreEvent',
+        security: Auth.security('event:update', { connection: true }),
         description: 'Update properties of a Core Event',
         params: Type.Object({
             event: Type.String({
@@ -321,6 +328,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
+                scope: 'event:update',
                 resources: [
                     { access: AuthResourceAccess.CONNECTION },
                     { access: AuthResourceAccess.LAYER },

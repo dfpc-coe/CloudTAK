@@ -1,6 +1,6 @@
 import { Type } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
-import Auth from '../../common/auth.js';
+import Auth, { AuthUser } from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import jwt from 'jsonwebtoken';
 import { sql } from 'drizzle-orm';
@@ -8,6 +8,7 @@ import { ConnectionToken } from '../../common/schema.js';
 import Schema from '@openaddresses/batch-schema';
 import { StandardResponse, CreateConnectionTokenResponse, ConnectionTokenResponse } from '../../common/types.js';
 import * as Default from '../lib/limits.js';
+import LayerControl from '../../common/control/layer.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/connection/:connectionid/token', {
@@ -65,18 +66,25 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         body: Type.Object({
             name: Default.NameField,
+            permissions: Type.Optional(Type.Array(Type.String(), {
+                description: 'Scopes granted to the token as `<permission>:<level>` - see GET /scope',
+            })),
         }),
         res: CreateConnectionTokenResponse,
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
+            const { auth, connection } = await Auth.is_connection(config, req, {
                 resources: [],
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
+            LayerControl.validatePermissions(req.body.permissions);
+
             const token = await config.models.ConnectionToken.generate({
                 name: req.body.name,
+                username: auth instanceof AuthUser ? auth.email : null,
+                permissions: req.body.permissions || [],
                 token: 'etl.' + jwt.sign({ id: req.params.connectionid, access: 'connection' }, config.SigningSecret),
                 connection: req.params.connectionid,
             });
@@ -97,6 +105,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         description: 'Update properties of a Token',
         body: Type.Object({
             name: Type.Optional(Default.NameField),
+            permissions: Type.Optional(Type.Array(Type.String(), {
+                description: 'Scopes granted to the token as `<permission>:<level>` - see GET /scope',
+            })),
         }),
         res: StandardResponse,
     }, async (req, res) => {
@@ -106,6 +117,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+
+            LayerControl.validatePermissions(req.body.permissions);
 
             const token = await config.models.ConnectionToken.from(sql`id = ${req.params.id}::INT`);
             if (token.connection !== req.params.connectionid) throw new Err(400, null, `Token does not belong to Connection ${req.params.connectionid}`);

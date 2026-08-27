@@ -16,6 +16,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/core/device', {
         name: 'List Devices',
         group: 'CoreDevice',
+        security: Auth.security('device:read', { connection: true }),
         description: 'List Core Devices',
         query: Type.Object({
             limit: Default.Limit,
@@ -44,6 +45,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
+                scope: 'device:read',
                 resources: [
                     { access: AuthResourceAccess.CONNECTION },
                     { access: AuthResourceAccess.LAYER },
@@ -127,6 +129,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/core/device/:device', {
         name: 'Get Device',
         group: 'CoreDevice',
+        security: Auth.security('device:read', { connection: true }),
         description: 'Get a Core Device',
         params: Type.Object({
             device: Type.String({
@@ -137,6 +140,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
+                scope: 'device:read',
                 resources: [
                     { access: AuthResourceAccess.CONNECTION },
                     { access: AuthResourceAccess.LAYER },
@@ -158,6 +162,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.post('/core/device', {
         name: 'Create Device',
         group: 'CoreDevice',
+        security: Auth.security('device:create', { connection: true }),
         description: 'Create a new Core Device',
         body: Type.Object({
             name: Default.NameField,
@@ -220,6 +225,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
+                scope: 'device:create',
                 resources: [
                     { access: AuthResourceAccess.CONNECTION },
                     { access: AuthResourceAccess.LAYER },
@@ -253,6 +259,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.patch('/core/device/:device', {
         name: 'Update Device',
         group: 'CoreDevice',
+        security: Auth.security('device:update', { connection: true }),
         description: 'Update properties of a Core Device - only the Device creator can make changes',
         params: Type.Object({
             device: Type.String({
@@ -288,6 +295,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
+                scope: 'device:update',
                 resources: [
                     { access: AuthResourceAccess.CONNECTION },
                     { access: AuthResourceAccess.LAYER },

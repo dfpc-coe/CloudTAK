@@ -1,0 +1,1 @@
+ALTER TABLE "connection_tokens" ADD COLUMN IF NOT EXISTS "permissions" text[] DEFAULT '{}' NOT NULL;

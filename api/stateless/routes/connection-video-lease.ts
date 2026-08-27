@@ -18,6 +18,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/connection/:connectionid/video/lease', {
         name: 'List Leases',
         group: 'ConnectionVideoLease',
+        security: Auth.security('video:read', { connection: true }),
         description: 'List all video leases',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 0 }),
@@ -42,6 +43,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 await Auth.as_user(config, req, { admin: true });
             } else {
                 const { connection, layer } = await Auth.is_connection(config, req, {
+                    scope: 'video:read',
                     resources: [
                         { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                         { access: AuthResourceAccess.LAYER, id: undefined },
@@ -71,6 +73,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.delete('/connection/:connectionid/video/lease', {
         name: 'Delete Leases',
         group: 'ConnectionVideoLease',
+        security: Auth.security('video:delete', { connection: true }),
         description: 'Delete all video leases for a given connection',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 0 }),
@@ -84,6 +87,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 isAdmin = true;
             } else {
                 const { profile, connection, layer } = await Auth.is_connection(config, req, {
+                    scope: 'video:delete',
                     resources: [
                         { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                         { access: AuthResourceAccess.LAYER, id: undefined },
@@ -120,6 +124,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/connection/:connectionid/video/lease/:lease', {
         name: 'Get Lease',
         group: 'ConnectionVideoLease',
+        security: Auth.security('video:read', { connection: true }),
         description: 'Get a single Video Lease',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 0 }),
@@ -137,6 +142,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 isAdmin = true;
             } else {
                 const { profile, connection, layer } = await Auth.is_connection(config, req, {
+                    scope: 'video:read',
                     resources: [
                         { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                         { access: AuthResourceAccess.LAYER, id: undefined },
@@ -169,6 +175,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.post('/connection/:connectionid/video/lease', {
         name: 'Create Lease',
         group: 'ConnectionVideoLease',
+        security: Auth.security('video:create', { connection: true }),
         description: 'Create a new video Lease',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 0 }),
@@ -221,6 +228,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 isAdmin = true;
             } else {
                 const { connection, layer: connLayer, profile } = await Auth.is_connection(config, req, {
+                    scope: 'video:create',
                     resources: [
                         { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                         { access: AuthResourceAccess.LAYER, id: undefined },
@@ -271,6 +279,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.patch('/connection/:connectionid/video/lease/:lease', {
         name: 'Update Lease',
         group: 'ConnectionVideoLease',
+        security: Auth.security('video:update', { connection: true }),
         description: 'Update a video Lease',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 0 }),
@@ -317,6 +326,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 isAdmin = true;
             } else {
                 const { connection, layer, profile } = await Auth.is_connection(config, req, {
+                    scope: 'video:update',
                     resources: [
                         { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                         { access: AuthResourceAccess.LAYER, id: undefined },
@@ -381,6 +391,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.delete('/connection/:connectionid/video/lease/:lease', {
         name: 'Delete Lease',
         group: 'ConnectionVideoLease',
+        security: Auth.security('video:delete', { connection: true }),
         description: 'Delete a video Lease',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 0 }),
@@ -395,6 +406,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 isAdmin = true;
             } else {
                 const { connection, layer, profile } = await Auth.is_connection(config, req, {
+                    scope: 'video:delete',
                     resources: [
                         { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                         { access: AuthResourceAccess.LAYER, id: undefined },
