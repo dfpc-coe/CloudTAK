@@ -9,20 +9,38 @@ import { isNativePlatform } from '../../utils/capacitor.ts';
 import { PermissionQuery, normalizePermissionState } from './shared.ts';
 import type { DevicePermissionContext } from './types.ts';
 
+export interface LocationWatchOptions {
+    // Fixes are also POSTed directly from native code, independent of the WebView
+    nativeDelivery?: {
+        url: string;
+        headers: Record<string, string>;
+        minIntervalMs: number;
+    };
+}
+
+const ALREADY_STARTED = 'ALREADY_STARTED';
+
+function isAlreadyStarted(err: unknown): boolean {
+    const e = err as { code?: string; message?: string } | undefined;
+    return e?.code === ALREADY_STARTED || (typeof e?.message === 'string' && e.message.includes('already started'));
+}
+
 export class GeolocationPermission {
     constructor(private readonly context: DevicePermissionContext) {}
 
     private watchActive = false;
     private watchGeneration = 0;
     private lastLocationTimestamp = 0;
+    private lastFixReceivedAt = 0;
+    private watchStartedAt = 0;
     private locationCallback: ((position: Position) => void) | null = null;
+    private watchOptions: LocationWatchOptions = {};
 
-    // The background watcher only emits fixes newer than its own start time and
-    // only after `DISTANCE_FILTER_M` of movement, so a stationary device can go
-    // indefinitely without one. A one-shot fix seeds the first position instead.
-    private static readonly DISTANCE_FILTER_M = 10;
+    // No distance filter so a stationary device keeps producing background fixes
+    private static readonly DISTANCE_FILTER_M = 0;
     private static readonly SEED_TIMEOUT_MS = 10000;
     private static readonly SEED_MAX_AGE_MS = 30000;
+    private static readonly STALL_RESTART_MS = 120000;
 
     static supportsLocationRequests(): boolean {
         return isNativePlatform() || (typeof navigator !== 'undefined' && 'geolocation' in navigator);
@@ -100,12 +118,15 @@ export class GeolocationPermission {
         }
     }
 
-    async startWatch(onLocation: (position: Position) => void): Promise<void> {
+    async startWatch(onLocation: (position: Position) => void, options: LocationWatchOptions = {}): Promise<void> {
         if (!GeolocationPermission.supportsLocationRequests()) return;
         await this.stopWatch();
 
         this.locationCallback = onLocation;
+        this.watchOptions = options;
         this.lastLocationTimestamp = 0;
+        this.lastFixReceivedAt = 0;
+        this.watchStartedAt = Date.now();
         const generation = ++this.watchGeneration;
 
         const handler = (position: Position | null, err?: unknown) => {
@@ -117,6 +138,7 @@ export class GeolocationPermission {
             // The seeded fix can resolve after a watcher fix has landed
             if (position.timestamp < this.lastLocationTimestamp) return;
             this.lastLocationTimestamp = position.timestamp;
+            this.lastFixReceivedAt = Date.now();
             this.locationCallback(position);
         };
 
@@ -165,6 +187,20 @@ export class GeolocationPermission {
         }
     }
 
+    /**
+     * Restart the watch if it has gone silent - iOS can end a location session
+     * without any signal reaching JavaScript.
+     */
+    async ensureWatchHealthy(): Promise<void> {
+        if (!this.locationCallback || !isNativePlatform()) return;
+
+        const lastActivity = Math.max(this.lastFixReceivedAt, this.watchStartedAt);
+        if (Date.now() - lastActivity < GeolocationPermission.STALL_RESTART_MS) return;
+
+        console.warn(`No location fix in ${Math.round((Date.now() - lastActivity) / 1000)}s - restarting location watch`);
+        await this.startWatch(this.locationCallback, this.watchOptions);
+    }
+
     async stopWatch(): Promise<void> {
         this.watchGeneration++;
 
@@ -181,7 +217,15 @@ export class GeolocationPermission {
     }
 
     private async startBackgroundWatch(handler: (position: Position | null, err?: unknown) => void): Promise<void> {
-        await BackgroundGeolocation.start({
+        // The native session outlives the WebView - after a page reload the
+        // plugin still holds the previous session and rejects a new start
+        if (isNativePlatform()) {
+            await GeolocationPermission.stopNativeQuietly();
+        }
+
+        const delivery = this.watchOptions.nativeDelivery;
+
+        const start = () => BackgroundGeolocation.start({
             backgroundTitle: 'CloudTAK GPS active',
             backgroundMessage: 'CloudTAK is sharing your location.',
             requestPermissions: true,
@@ -189,13 +233,33 @@ export class GeolocationPermission {
             // positions are seeded explicitly by seedImmediateFix() instead,
             // which bounds their age.
             stale: false,
-            // Metres of movement before a new fix is delivered. Ignored by the
-            // web fallback.
-            distanceFilter: GeolocationPermission.DISTANCE_FILTER_M
+            distanceFilter: GeolocationPermission.DISTANCE_FILTER_M,
+            ...(delivery ? {
+                url: delivery.url,
+                headers: delivery.headers,
+                minIntervalMs: delivery.minIntervalMs
+            } : {})
         }, (location?: BackgroundLocation, err?: BackgroundGeolocationError) => {
             handler(location ? GeolocationPermission.backgroundLocationToPosition(location) : null, err);
         });
+
+        try {
+            await start();
+        } catch (err) {
+            if (!isAlreadyStarted(err)) throw err;
+            await GeolocationPermission.stopNativeQuietly();
+            await start();
+        }
+
         this.watchActive = true;
+    }
+
+    private static async stopNativeQuietly(): Promise<void> {
+        try {
+            await BackgroundGeolocation.stop();
+        } catch (err) {
+            console.warn('Failed to stop previous native location session', err);
+        }
     }
 
     private static backgroundLocationToPosition(location: BackgroundLocation): Position {

@@ -48,13 +48,17 @@ import { db, recoverDatabase } from '../database.ts';
 import type { ProfileOverlay, Basemap, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource, LayerSpecification, PropertyValueSpecification } from 'maplibre-gl';
 import type { Position } from '@capacitor/geolocation';
+import type { LocationWatchOptions } from './device/geolocation.ts';
 
 // Missions the dirty sweep has already warned about having no overlay
 const sweepWarned = new Set<string>();
-const MAPLIBRE_WORKER_PROBE_TIMEOUT_MS = 1000;
+const MAPLIBRE_WORKER_PROBE_TIMEOUT_MS = 5000;
 const MAPLIBRE_WORKER_PROBE_URL = new URL('/maplibre-worker-probe.mjs', window.location.href).href;
 const COT_SOURCE_RESYNC_TIMEOUT_MS = 10000;
 const MAPLIBRE_RECOVERY_RELOAD_KEY = 'cloudtak::maplibre-recovery-reloaded';
+const BATTERY_REFRESH_MS = 15000;
+// Past this the pending diff queues are cheaper to replace wholesale than replay
+const LONG_SUSPENSION_MS = 5 * 60 * 1000;
 
 function reloadAfterMapLibreFailure(error: unknown): void {
     try {
@@ -113,6 +117,7 @@ export const useMapStore = defineStore('cloudtak', {
 
         _removeOrientationListener?: () => Promise<void>;
         _resumeRecovery?: Promise<void>;
+        _backgroundedAt?: number;
         _cotResync?: Promise<void>;
         _removeBackgroundStateListener?: () => void;
         _removePushTokenListener?: () => void;
@@ -279,6 +284,10 @@ export const useMapStore = defineStore('cloudtak', {
     actions: {
         startLocationWatch: async function() {
             const deviceStore = useDeviceStore();
+
+            let battery: { level: number | null; charging: boolean | null } = { level: null, charging: null };
+            let batteryReadAt = 0;
+
             await deviceStore.geolocation.startWatch(async (position: Position) => {
                 if (this.manualLocationMode) return;
 
@@ -294,7 +303,10 @@ export const useMapStore = defineStore('cloudtak', {
 
                 // Battery state rides along with each location broadcast so the
                 // self CoT can report it to the TAK Server
-                const battery = await deviceStore.battery.info();
+                if (Date.now() - batteryReadAt > BATTERY_REFRESH_MS) {
+                    battery = await deviceStore.battery.info();
+                    batteryReadAt = Date.now();
+                }
 
                 try {
                     this.channel.postMessage({
@@ -319,7 +331,24 @@ export const useMapStore = defineStore('cloudtak', {
                 if (isNativePlatform() && this.isBackgrounded) {
                     void this.submitLocationHttp(position);
                 }
-            });
+            }, await this.nativeLocationDelivery());
+        },
+        // Native delivery keeps reporting when iOS discards the WebView content process
+        nativeLocationDelivery: async function(): Promise<LocationWatchOptions> {
+            if (!isNativePlatform()) return {};
+
+            const token = await getRuntimeToken();
+            if (!token) return {};
+
+            const freq = Number((await ProfileConfig.get('tak_loc_freq'))?.value) || 5000;
+
+            return {
+                nativeDelivery: {
+                    url: `${serverUrl}/api/profile/location`,
+                    headers: { Authorization: `Bearer ${token}` },
+                    minIntervalMs: freq
+                }
+            };
         },
         syncGeolocateControl: function() {
             if (!this._map) return;
@@ -876,10 +905,23 @@ export const useMapStore = defineStore('cloudtak', {
         },
         /**
          * Recover IndexedDB connections and the TAK WebSocket after the app
-         * returns to the foreground.
+         * returns to the foreground. Each stage is timed and logged so slow
+         * resumes can be attributed on device.
          */
         resumeFromBackground: async function(): Promise<void> {
             if (this._resumeRecovery) return this._resumeRecovery;
+
+            const startedAt = Date.now();
+            const suspendedMs = this._backgroundedAt ? startedAt - this._backgroundedAt : 0;
+            this._backgroundedAt = undefined;
+
+            const stages: string[] = [];
+            let stageStart = startedAt;
+            const stage = (name: string) => {
+                const now = Date.now();
+                stages.push(`${name} ${now - stageStart}ms`);
+                stageStart = now;
+            };
 
             this._resumeRecovery = (async () => {
                 if (isNativePlatform() && this._map) {
@@ -889,6 +931,7 @@ export const useMapStore = defineStore('cloudtak', {
                             MAPLIBRE_WORKER_PROBE_TIMEOUT_MS,
                             'MapLibre worker response check'
                         );
+                        stage('maplibre');
                     } catch (err) {
                         reloadAfterMapLibreFailure(err);
                         return;
@@ -900,6 +943,7 @@ export const useMapStore = defineStore('cloudtak', {
                 } catch (err) {
                     console.error('Failed to recover IndexedDB on resume:', err);
                 }
+                stage('db');
 
                 if (!this._worker) return;
 
@@ -908,23 +952,40 @@ export const useMapStore = defineStore('cloudtak', {
                     if (!(await withTimeout(this.worker.initialized, 5000, 'Worker init probe'))) return;
 
                     await withTimeout(this.worker.recover(), 10000, 'Worker database recovery');
+                    stage('worker');
 
                     // iOS suspension can kill the TCP connection without a
-                    // close event ever firing, so the worker's isOpen flag
-                    // cannot be trusted - always rebuild the socket
-                    await withTimeout(
+                    // close event ever firing, so the worker probes the
+                    // socket and rebuilds it only when the server is silent
+                    const reconnected = await withTimeout(
                         this.worker.conn.resume(await this.worker.username),
                         10000,
                         'WebSocket resume'
                     );
+                    stage(reconnected ? 'socket rebuilt' : 'socket kept');
 
-                    // Diff state may have been consumed while suspended -
-                    // rebuild the source wholesale rather than trusting the
-                    // increments
-                    await this.resyncCOT();
+                    // A rebuilt socket lost events and a long suspension has a
+                    // large diff backlog - either way replace the source
+                    // wholesale; otherwise replay the diff accrued while paused
+                    if (reconnected || suspendedMs > LONG_SUSPENSION_MS) {
+                        await this.resyncCOT();
+                        stage('resync');
+                    } else {
+                        await this.updateCOT();
+                        stage('diff');
+                    }
                 } catch (err) {
                     console.error('Resume recovery failed:', err);
                 }
+
+                try {
+                    await useDeviceStore().geolocation.ensureWatchHealthy();
+                } catch (err) {
+                    console.error('Location watch recovery failed:', err);
+                }
+                stage('location');
+
+                console.log(`Resume recovery after ${Math.round(suspendedMs / 1000)}s in background: ${stages.join(', ')} (total ${Date.now() - startedAt}ms)`);
             })().finally(() => {
                 this._resumeRecovery = undefined;
             });
@@ -943,6 +1004,7 @@ export const useMapStore = defineStore('cloudtak', {
             let initialFire = true;
             this._removeBackgroundStateListener = await addBackgroundStateListener((isBackgrounded) => {
                 this.isBackgrounded = isBackgrounded;
+                if (isBackgrounded) this._backgroundedAt = Date.now();
 
                 // A new suspension gets its own recovery attempt.
                 if (isBackgrounded && isNativePlatform()) {
@@ -1218,7 +1280,9 @@ export const useMapStore = defineStore('cloudtak', {
                 this.loadingStage = '';
 
                 this.timer = setInterval(async () => {
-                    if (!this.map) return;
+                    // Nothing is visible while backgrounded - the worker keeps
+                    // queueing and resumeFromBackground replays the backlog
+                    if (!this.map || this.isBackgrounded) return;
                     await this.refresh();
                 }, 500);
             });

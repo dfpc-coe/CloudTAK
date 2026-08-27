@@ -104,7 +104,10 @@ import ChannelChangeModal from './components/CloudTAK/Menu/ChannelChangeModal.vu
 import NotificationToast from './components/CloudTAK/util/NotificationToast.vue';
 import TAKNotification_ from './base/notification.ts';
 const TAKNotification = TAKNotification_;
-import { supportsServiceWorker } from './utils/capacitor.ts';
+import { supportsServiceWorker, isNativePlatform } from './utils/capacitor.ts';
+import { CapacitorUpdater } from '@capgo/capacitor-updater';
+import type { BundleInfo } from '@capgo/capacitor-updater';
+import type { PluginListenerHandle } from '@capacitor/core';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
 import { applyServiceWorkerUpdate } from './utils/service-worker.ts';
@@ -129,8 +132,18 @@ const toastNotifications = useObservable(
 );
 const updateAvailable = ref(false);
 const pendingRegistration = ref<ServiceWorkerRegistration | null>(null);
+const pendingBundle = ref<BundleInfo | null>(null);
+let nativeUpdateListener: PluginListenerHandle | undefined;
 
 const applyUpdate = () => {
+    if (pendingBundle.value) {
+        // Reloads the WebView immediately
+        CapacitorUpdater.set({ id: pendingBundle.value.id }).catch((err: unknown) => {
+            console.error('Failed to apply native update', err);
+        });
+        return;
+    }
+
     applyServiceWorkerUpdate(pendingRegistration.value);
 };
 
@@ -222,6 +235,17 @@ onMounted(async () => {
         window.addEventListener('sw:update-available', onSwUpdateAvailable);
     }
 
+    if (isNativePlatform()) {
+        CapacitorUpdater.addListener('updateAvailable', ({ bundle }) => {
+            pendingBundle.value = bundle;
+            updateAvailable.value = true;
+        }).then((listener) => {
+            nativeUpdateListener = listener;
+        }).catch((err: unknown) => {
+            console.warn('Failed to subscribe to native updates', err);
+        });
+    }
+
     // Deep link when the user taps a push notification (path from its payload)
     removeNotificationAction = deviceStore.onNotificationAction((data) => {
         if (data && typeof data.url === 'string' && data.url.startsWith('/')) {
@@ -246,6 +270,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
     window.removeEventListener('sw:update-available', onSwUpdateAvailable);
+    if (nativeUpdateListener) void nativeUpdateListener.remove();
     if (removeNotificationAction) removeNotificationAction();
 
     if (sessionExpiryTimer !== undefined) {

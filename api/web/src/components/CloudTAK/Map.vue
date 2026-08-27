@@ -690,7 +690,7 @@ onMounted(async () => {
             if (bootComplete || isBackgrounded) return;
 
             bootStallTimer = setTimeout(onBootStalled, BOOT_STALL_RELOAD_MS);
-        });
+        }, { includeInactive: true });
     }
 
     let bootError: Error | undefined;

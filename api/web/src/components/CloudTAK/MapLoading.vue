@@ -101,7 +101,7 @@ onMounted(async () => {
         } else {
             startResetTimer();
         }
-    });
+    }, { includeInactive: true });
 
     try {
         const config = await Config.list(['login::logo']);

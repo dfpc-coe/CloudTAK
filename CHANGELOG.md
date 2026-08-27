@@ -17,6 +17,17 @@
 
 ### Pending Release
 
+- :bug: iOS: recover the native background location session after any WebView reload - the previous session outlived the page and rejected every new `start()` with `ALREADY_STARTED`, silently ending location reporting until the app was killed
+- :bug: iOS: apply live updates only when the user taps "Update Now" (`autoUpdate: onlyDownload`) instead of reloading the WebView in the background on every release
+- :rocket: iOS: run resume recovery only on real background transitions, not on transient inactivity (permission prompts, notification shade)
+- :rocket: iOS: deliver background location fixes natively (`POST /api/profile/location`) so reporting survives the WebView content process being discarded, and restart a stalled watch on resume
+- :rocket: Remove the location distance filter so a stationary device keeps heartbeating its position in the background
+- :rocket: Keep a profile's TAK Server connection alive for 60s after its last WebSocket closes so a client returning from the background reuses it instead of paying for a TLS handshake
+- :rocket: Probe the WebSocket with `ping`/`pong` on resume and only rebuild it (and run a full sync) when the server is silent
+- :rocket: Pause the 500ms CoT diff loop while backgrounded and replay the backlog on resume; a wholesale source resync now only runs after a rebuilt socket or a >5 minute suspension
+- :rocket: Log per-stage timings for resume recovery so slow foreground returns can be attributed on device
+- :white_check_mark: Add tests for the geolocation watch and background state listener
+
 ### v13.74.0 - 2026-08-26
 
 > [!WARNING]

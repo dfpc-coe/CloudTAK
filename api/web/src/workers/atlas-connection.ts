@@ -15,6 +15,7 @@ import type { Feature, Import, Chat } from '../types.ts';
 
 const RECONNECT_BACKOFF_STEP_MS = 5000;
 const RECONNECT_BACKOFF_MAX_MS = 30000;
+const PING_TIMEOUT_MS = 2000;
 
 export default class AtlasConnection {
     atlas: Atlas;
@@ -32,6 +33,7 @@ export default class AtlasConnection {
     version: string;
 
     private reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+    private pendingPong: (() => void) | undefined;
 
     constructor(atlas: Atlas) {
         this.atlas = atlas;
@@ -61,11 +63,42 @@ export default class AtlasConnection {
      * Called when the app returns to the foreground. iOS suspension can kill
      * the TCP connection with no FIN reaching the client (NAT/LB idle
      * timeout), so no close event ever fires and `isOpen` cannot be trusted -
-     * always rebuild the socket unless the user has logged out.
+     * probe the socket and rebuild it only if the server doesn't answer.
+     * Returns true when the socket was rebuilt.
      */
-    resume(connection: string) {
-        if (this.isDestroyed || this.authFailure) return;
+    async resume(connection: string): Promise<boolean> {
+        if (this.isDestroyed || this.authFailure) return false;
+        if (await this.isAlive()) return false;
+
         this.reconnect(connection);
+        return true;
+    }
+
+    private isAlive(): Promise<boolean> {
+        const ws = this.ws;
+        if (!ws || ws.readyState !== WebSocket.OPEN) return Promise.resolve(false);
+
+        return new Promise((resolve) => {
+            const timer = setTimeout(() => {
+                this.pendingPong = undefined;
+                resolve(false);
+            }, PING_TIMEOUT_MS);
+
+            this.pendingPong = () => {
+                clearTimeout(timer);
+                this.pendingPong = undefined;
+                resolve(true);
+            };
+
+            try {
+                ws.send(JSON.stringify({ type: 'ping' }));
+            } catch (err) {
+                console.warn('WebSocket ping failed', err);
+                clearTimeout(timer);
+                this.pendingPong = undefined;
+                resolve(false);
+            }
+        });
     }
 
     // COTs are submitted to pending and picked up by the partial update code every .5s
@@ -395,6 +428,8 @@ export default class AtlasConnection {
                 // Another of the user's connected clients mutated a data type
                 // via the API - trigger a targeted sync in AtlasSync
                 await this.atlas.sync.event(body.data as SyncEvent);
+            } else if (body.type === 'pong') {
+                if (this.pendingPong) this.pendingPong();
             } else if (body.type === 'connected') {
                 // Server has finished registering the WebSocket client - no client action needed
             } else {

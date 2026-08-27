@@ -19,30 +19,46 @@ export function supportsServiceWorker(): boolean {
 }
 
 /**
- * Subscribe to foreground/background transitions. On native we use Capacitor's
- * `App.appStateChange` because the web `visibilitychange` API is unreliable
- * inside an iOS WebView. The handler receives `true` when backgrounded and
- * `false` when foregrounded, and is invoked once with the current state so
- * callers registering while already backgrounded (e.g. an iOS background
- * wake) start in sync; returns a function that removes the listener.
+ * Subscribe to foreground/background transitions. On native we use the App
+ * plugin's lifecycle events because the web `visibilitychange` API is unreliable
+ * inside an iOS WebView. Only a real background transition (`pause`) counts as
+ * backgrounded - `appStateChange` also reports inactive for transient
+ * interruptions (permission prompts, notification shade) unless
+ * `includeInactive` is set. The handler receives `true` when backgrounded and
+ * `false` when foregrounded, fires only on transitions, and is invoked once
+ * with the current state so callers registering while already backgrounded
+ * (e.g. an iOS background wake) start in sync; returns a function that removes
+ * the listeners.
  */
 export async function addBackgroundStateListener(
-    handler: (isBackgrounded: boolean) => void
+    handler: (isBackgrounded: boolean) => void,
+    opts: { includeInactive?: boolean } = {}
 ): Promise<() => void> {
     if (isNativePlatform()) {
-        let sawEvent = false;
+        let current: boolean | undefined;
 
-        const listener = await App.addListener('appStateChange', ({ isActive }) => {
-            sawEvent = true;
-            handler(!isActive);
-        });
+        const emit = (isBackgrounded: boolean): void => {
+            if (current === isBackgrounded) return;
+            current = isBackgrounded;
+            handler(isBackgrounded);
+        };
+
+        const listeners = await Promise.all([
+            App.addListener('pause', () => emit(true)),
+            App.addListener('resume', () => emit(false)),
+            App.addListener('appStateChange', ({ isActive }) => {
+                if (isActive || opts.includeInactive) emit(!isActive);
+            })
+        ]);
 
         // Skip the initial fire if a transition already arrived - the sampled
         // state would be staler than what the handler has seen
         const { isActive } = await App.getState();
-        if (!sawEvent) handler(!isActive);
+        if (current === undefined) emit(!isActive);
 
-        return () => { void listener.remove(); };
+        return () => {
+            for (const listener of listeners) void listener.remove();
+        };
     }
 
     if (typeof document === 'undefined') {
