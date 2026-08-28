@@ -18,7 +18,7 @@ async function readBody(request: IncomingMessage): Promise<string> {
     return Buffer.concat(chunks).toString();
 }
 
-test('PUT: api/marti/missions/:name/layer/:uid/cot - Attach CoTs to Layer', async () => {
+test('PUT: api/marti/missions/:guid/layer/:uid/cot - Attach CoTs to Layer', async () => {
     let capturedBody: unknown;
     let creatorUid: string | null = null;
 
@@ -69,7 +69,7 @@ test('PUT: api/marti/missions/:name/layer/:uid/cot - Attach CoTs to Layer', asyn
     flight.tak.reset();
 });
 
-test('DELETE: api/marti/missions/:name/layer/:uid/cot/:cotuid - Detach CoT from Layer', async () => {
+test('DELETE: api/marti/missions/:guid/layer/:uid/cot/:cotuid - Detach CoT from Layer', async () => {
     let layerUids: string[] = [];
     let parentUid: string | null = null;
     let creatorUid: string | null = null;

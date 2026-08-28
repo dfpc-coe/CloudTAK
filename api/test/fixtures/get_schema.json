@@ -844,62 +844,62 @@
         "query": true,
         "res": false
     },
-    "GET /marti/missions/:name/layer": {
+    "GET /marti/missions/:guid/layer": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /marti/missions/:name/layer/:layerid": {
+    "GET /marti/missions/:guid/layer/:layerid": {
         "body": false,
         "query": false,
         "res": true
     },
-    "POST /marti/missions/:name/layer": {
+    "POST /marti/missions/:guid/layer": {
         "body": true,
         "query": false,
         "res": true
     },
-    "PUT /marti/missions/:name/layer/:uid/cot": {
+    "PUT /marti/missions/:guid/layer/:uid/cot": {
         "body": true,
         "query": false,
         "res": true
     },
-    "DELETE /marti/missions/:name/layer/:uid/cot/:cotuid": {
+    "DELETE /marti/missions/:guid/layer/:uid/cot/:cotuid": {
         "body": false,
         "query": false,
         "res": true
     },
-    "PATCH /marti/missions/:name/layer/:uid": {
+    "PATCH /marti/missions/:guid/layer/:uid": {
         "body": true,
         "query": false,
         "res": true
     },
-    "DELETE /marti/missions/:name/layer/:uid": {
+    "DELETE /marti/missions/:guid/layer/:uid": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /marti/missions/:name/log": {
+    "GET /marti/missions/:guid/log": {
         "body": false,
         "query": true,
         "res": true
     },
-    "POST /marti/missions/:name/log": {
+    "POST /marti/missions/:guid/log": {
         "body": true,
         "query": false,
         "res": true
     },
-    "PATCH /marti/missions/:name/log/:logid": {
+    "PATCH /marti/missions/:guid/log/:logid": {
         "body": true,
         "query": false,
         "res": true
     },
-    "DELETE /marti/missions/:name/log/:log": {
+    "DELETE /marti/missions/:guid/log/:log": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /marti/missions/:name": {
+    "GET /marti/missions/:guid": {
         "body": false,
         "query": true,
         "res": true
@@ -914,17 +914,17 @@
         "query": false,
         "res": true
     },
-    "GET /marti/missions/:name/qr": {
+    "GET /marti/missions/:guid/qr": {
         "body": false,
         "query": false,
         "res": false
     },
-    "GET /marti/missions/:name/changes": {
+    "GET /marti/missions/:guid/changes": {
         "body": false,
         "query": true,
         "res": true
     },
-    "DELETE /marti/missions/:name": {
+    "DELETE /marti/missions/:guid": {
         "body": false,
         "query": true,
         "res": true
@@ -934,7 +934,7 @@
         "query": false,
         "res": true
     },
-    "PATCH /marti/missions/:name": {
+    "PATCH /marti/missions/:guid": {
         "body": true,
         "query": false,
         "res": true
@@ -944,47 +944,47 @@
         "query": true,
         "res": true
     },
-    "GET /marti/missions/:name/archive": {
+    "GET /marti/missions/:guid/archive": {
         "body": false,
         "query": true,
         "res": false
     },
-    "GET /marti/missions/:name/role": {
+    "GET /marti/missions/:guid/role": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /marti/missions/:name/subscriptions": {
+    "GET /marti/missions/:guid/subscriptions": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /marti/missions/:name/subscriptions/roles": {
+    "GET /marti/missions/:guid/subscriptions/roles": {
         "body": false,
         "query": false,
         "res": true
     },
-    "PUT /marti/missions/:name/role": {
+    "PUT /marti/missions/:guid/role": {
         "body": true,
         "query": false,
         "res": true
     },
-    "GET /marti/missions/:name/contacts": {
+    "GET /marti/missions/:guid/contacts": {
         "body": false,
         "query": false,
         "res": true
     },
-    "PUT /marti/missions/:name/upload": {
+    "PUT /marti/missions/:guid/upload": {
         "body": true,
         "query": false,
         "res": true
     },
-    "POST /marti/missions/:name/upload": {
+    "POST /marti/missions/:guid/upload": {
         "body": false,
         "query": true,
         "res": true
     },
-    "DELETE /marti/missions/:name/upload/:hash": {
+    "DELETE /marti/missions/:guid/upload/:hash": {
         "body": false,
         "query": false,
         "res": true

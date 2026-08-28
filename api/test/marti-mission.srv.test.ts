@@ -249,7 +249,7 @@ test('GET: api/marti/mission - Filter Groups', async () => {
     flight.tak.reset();
 });
 
-test('PATCH: api/marti/missions/:name - returns refreshed groups after update', async () => {
+test('PATCH: api/marti/missions/:guid - returns refreshed groups after update', async () => {
     let postedGroups: string[] = [];
     let missionAuthorization: string | undefined;
     let allowGroupChange: string | null = null;
@@ -264,6 +264,7 @@ test('PATCH: api/marti/missions/:name - returns refreshed groups after update', 
             && (
                 url.pathname === '/Marti/api/missions/Test%20Mission'
                 || url.pathname === '/Marti/api/missions/test-mission-guid'
+                || url.pathname === '/Marti/api/missions/guid/9d2b7a6e-3c4f-4e8a-9b1d-2f6a8c0e4b71'
             )
         ) {
             response.setHeader('Content-Type', 'application/json');
@@ -324,7 +325,7 @@ test('PATCH: api/marti/missions/:name - returns refreshed groups after update', 
     });
 
     try {
-        const res = await flight.fetch('/api/marti/missions/Test Mission', {
+        const res = await flight.fetch('/api/marti/missions/9d2b7a6e-3c4f-4e8a-9b1d-2f6a8c0e4b71', {
             method: 'PATCH',
             auth: {
                 bearer: flight.token.admin,

@@ -15,11 +15,11 @@ import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 export default async function router(schema: Schema, config: ConfigStateless) {
     const profileControl = new ProfileControl(config);
 
-    await schema.get('/marti/missions/:name/log', {
+    await schema.get('/marti/missions/:guid/log', {
         name: 'List Logs',
         group: 'MartiMissionLog',
         params: Type.Object({
-            name: Type.String(),
+            guid: Type.String(),
         }),
         query: Type.Object({
             format: Type.String({
@@ -47,10 +47,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await profileControl.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.guid);
 
             const mission = await api.Mission.get(
-                req.params.name,
+                req.params.guid,
                 {
                     logs: true,
                 },
@@ -60,7 +60,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             if (req.query.format === 'csv') {
                 res.setHeader('Content-Type', 'text/csv');
                 if (req.query.download) {
-                    res.setHeader('Content-Disposition', `attachment; filename="mission-${req.params.name}-logs.csv"`);
+                    res.setHeader('Content-Disposition', `attachment; filename="mission-${mission.name}-logs.csv"`);
                 }
 
                 const headers = ['id', 'dtg', 'creatorUid', 'content', 'keywords'];
@@ -81,7 +81,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 res.end();
             } else {
                 if (req.query.download) {
-                    res.setHeader('Content-Disposition', `attachment; filename="mission-${req.params.name}-logs.json"`);
+                    res.setHeader('Content-Disposition', `attachment; filename="mission-${mission.name}-logs.json"`);
                 }
 
                 res.json({
@@ -94,11 +94,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
-    await schema.post('/marti/missions/:name/log', {
+    await schema.post('/marti/missions/:guid/log', {
         name: 'Create Log',
         group: 'MartiMissionLog',
         params: Type.Object({
-            name: Type.String(),
+            guid: Type.String(),
         }),
         description: 'Helper API to add a log to a mission',
         body: Type.Object({
@@ -119,10 +119,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await profileControl.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.guid);
 
             const log = await api.MissionLog.create(
-                req.params.name,
+                req.params.guid,
                 {
                     creatorUid: creatorUid,
                     dtg: req.body.dtg ?? new Date().toISOString(),
@@ -138,11 +138,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
-    await schema.patch('/marti/missions/:name/log/:logid', {
+    await schema.patch('/marti/missions/:guid/log/:logid', {
         name: 'Update Log',
         group: 'MartiMissionLog',
         params: Type.Object({
-            name: Type.String(),
+            guid: Type.String(),
             logid: Type.String(),
         }),
         description: 'Helper API to update a log on a mission',
@@ -166,10 +166,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await profileControl.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.guid);
 
             const mission = await api.MissionLog.update(
-                req.params.name,
+                req.params.guid,
                 {
                     id: req.params.logid,
                     dtg: req.body.dtg,
@@ -186,11 +186,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
-    await schema.delete('/marti/missions/:name/log/:log', {
+    await schema.delete('/marti/missions/:guid/log/:log', {
         name: 'Delete Log',
         group: 'MartiMissionLog',
         params: Type.Object({
-            name: Type.String(),
+            guid: Type.String(),
             log: Type.String(),
         }),
         description: 'Helper API to delete a log',
@@ -204,7 +204,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await profileControl.subscription(user.email, req.params.name);
+                : await profileControl.subscription(user.email, req.params.guid);
 
             await api.MissionLog.delete(
                 req.params.log,

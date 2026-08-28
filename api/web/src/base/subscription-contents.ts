@@ -61,8 +61,8 @@ export default class SubscriptionContents {
      * Delete/detach a content entry from the mission and remove it from the local database
      */
     async delete(hash: string): Promise<void> {
-        await server.DELETE('/api/marti/missions/{:name}/upload/{:hash}', {
-            params: { path: { ':name': this.guid, ':hash': hash } },
+        await server.DELETE('/api/marti/missions/{:guid}/upload/{:hash}', {
+            params: { path: { ':guid': this.guid, ':hash': hash } },
             headers: this.headers(),
         });
 

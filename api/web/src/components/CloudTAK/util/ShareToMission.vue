@@ -197,10 +197,10 @@ async function share(): Promise<void> {
 
     if (props.assets.length) {
         for (const mission of selected.value) {
-            const res = await server.PUT('/api/marti/missions/{:name}/upload', {
+            const res = await server.PUT('/api/marti/missions/{:guid}/upload', {
                 params: {
                     path: {
-                        ':name': mission.name
+                        ':guid': mission.guid
                     }
                 },
                 body: {

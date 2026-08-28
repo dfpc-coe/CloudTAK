@@ -32,8 +32,8 @@ export default class SubscriptionLog {
     }
 
     async refresh(): Promise<void> {
-        const { data, error } = await server.GET('/api/marti/missions/{:name}/log', {
-            params: { path: { ':name': this.guid }, query: { format: 'json' as const, download: false } },
+        const { data, error } = await server.GET('/api/marti/missions/{:guid}/log', {
+            params: { path: { ':guid': this.guid }, query: { format: 'json' as const, download: false } },
             headers: this.headers()
         });
 
@@ -110,8 +110,8 @@ export default class SubscriptionLog {
             keywords?: Array<string>;
         }
     ): Promise<MissionLog> {
-        const { data, error } = await server.POST('/api/marti/missions/{:name}/log', {
-            params: { path: { ':name': this.guid } },
+        const { data, error } = await server.POST('/api/marti/missions/{:guid}/log', {
+            params: { path: { ':guid': this.guid } },
             headers: this.headers(),
             body: body
         });
@@ -146,8 +146,8 @@ export default class SubscriptionLog {
             keywords?: Array<string>;
         },
     ): Promise<MissionLog> {
-        const { data, error } = await server.PATCH('/api/marti/missions/{:name}/log/{:logid}', {
-            params: { path: { ':name': this.guid, ':logid': logid } },
+        const { data, error } = await server.PATCH('/api/marti/missions/{:guid}/log/{:logid}', {
+            params: { path: { ':guid': this.guid, ':logid': logid } },
             headers: this.headers(),
             body: body
         });
@@ -176,8 +176,8 @@ export default class SubscriptionLog {
     async delete(
         logid: string,
     ): Promise<void> {
-        await server.DELETE('/api/marti/missions/{:name}/log/{:log}', {
-            params: { path: { ':name': this.guid, ':log': logid } },
+        await server.DELETE('/api/marti/missions/{:guid}/log/{:log}', {
+            params: { path: { ':guid': this.guid, ':log': logid } },
             headers: this.headers()
         });
 

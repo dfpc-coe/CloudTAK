@@ -74,9 +74,9 @@ export default class SubscriptionLayer {
      * in the local Dexie store.
      */
     async refresh(): Promise<void> {
-        const { data, error } = await server.GET('/api/marti/missions/{:name}/layer', {
+        const { data, error } = await server.GET('/api/marti/missions/{:guid}/layer', {
             params: {
-                path: { ':name': this.parent.guid }
+                path: { ':guid': this.parent.guid }
             },
             headers: this.headers()
         });
@@ -136,9 +136,9 @@ export default class SubscriptionLayer {
     async create(
         layer: MissionLayer_Create
     ): Promise<MissionLayer> {
-        const { data, error } = await server.POST('/api/marti/missions/{:name}/layer', {
+        const { data, error } = await server.POST('/api/marti/missions/{:guid}/layer', {
             params: {
-                path: { ':name': this.parent.guid }
+                path: { ':guid': this.parent.guid }
             },
             headers: this.headers(),
             body: layer
@@ -158,9 +158,9 @@ export default class SubscriptionLayer {
         layerid: string,
         layer: MissionLayer_Update
     ): Promise<MissionLayer> {
-        const { data, error } = await server.PATCH('/api/marti/missions/{:name}/layer/{:uid}', {
+        const { data, error } = await server.PATCH('/api/marti/missions/{:guid}/layer/{:uid}', {
             params: {
-                path: { ':name': this.parent.guid, ':uid': layerid }
+                path: { ':guid': this.parent.guid, ':uid': layerid }
             },
             headers: this.headers(),
             body: layer
@@ -202,9 +202,9 @@ export default class SubscriptionLayer {
             }
         });
 
-        const { error } = await server.PUT('/api/marti/missions/{:name}/layer/{:uid}/cot', {
+        const { error } = await server.PUT('/api/marti/missions/{:guid}/layer/{:uid}/cot', {
             params: {
-                path: { ':name': this.parent.guid, ':uid': layeruid }
+                path: { ':guid': this.parent.guid, ':uid': layeruid }
             },
             headers: this.headers(),
             body: { uids }
@@ -233,9 +233,9 @@ export default class SubscriptionLayer {
             }
         });
 
-        const { error } = await server.DELETE('/api/marti/missions/{:name}/layer/{:uid}/cot/{:cotuid}', {
+        const { error } = await server.DELETE('/api/marti/missions/{:guid}/layer/{:uid}/cot/{:cotuid}', {
             params: {
-                path: { ':name': this.parent.guid, ':uid': layeruid, ':cotuid': uid }
+                path: { ':guid': this.parent.guid, ':uid': layeruid, ':cotuid': uid }
             },
             headers: this.headers()
         });
@@ -252,9 +252,9 @@ export default class SubscriptionLayer {
     async delete(
         layeruid: string
     ): Promise<void> {
-        const { error, response } = await server.DELETE('/api/marti/missions/{:name}/layer/{:uid}', {
+        const { error, response } = await server.DELETE('/api/marti/missions/{:guid}/layer/{:uid}', {
             params: {
-                path: { ':name': this.parent.guid, ':uid': layeruid }
+                path: { ':guid': this.parent.guid, ':uid': layeruid }
             },
             headers: this.headers()
         });

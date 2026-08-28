@@ -31,8 +31,8 @@ export default class SubscriptionChanges {
     }
 
     async refresh(): Promise<void> {
-        const { data, error } = await server.GET('/api/marti/missions/{:name}/changes', {
-            params: { path: { ':name': this.guid } },
+        const { data, error } = await server.GET('/api/marti/missions/{:guid}/changes', {
+            params: { path: { ':guid': this.guid } },
             headers: this.headers()
         });
 
