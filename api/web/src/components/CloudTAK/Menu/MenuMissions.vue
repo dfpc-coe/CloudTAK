@@ -536,10 +536,10 @@ async function openMission(mission: Mission, usePassword: boolean) {
 }
 
 async function fetchMission(mission: Mission, password?: string): Promise<Mission> {
-    const { data, error } = await server.GET('/api/marti/missions/{:name}', {
+    const { data, error } = await server.GET('/api/marti/missions/{:guid}', {
         params: {
             path: {
-                ':name': mission.guid
+                ':guid': mission.guid
             },
             query: {
                 password,
