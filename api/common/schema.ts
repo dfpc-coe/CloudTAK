@@ -13,6 +13,7 @@ import { ConnectionAuth } from './connection-config.js';
 import { Layer_Config } from './models/Layer.js';
 import {
     Layer_Priority,
+    Layer_Style_Target,
     Import_Status,
     BasemapTerrain_Encoding,
     ProfilePaging_Type,
@@ -643,8 +644,6 @@ export const LayerIncoming = pgTable('layers_incoming', {
     cron: text(),
     webhooks: boolean().notNull().default(false),
 
-    enabled_styles: boolean().notNull().default(false),
-    styles: jsonb().$type<Static<typeof StyleContainer>>().notNull().default({}),
     environment: jsonb().notNull().default({}),
     ephemeral: jsonb().$type<Record<string, any>>().notNull().default({}),
     config: jsonb().$type<Static<typeof Layer_Config>>().notNull().default({}),
@@ -652,6 +651,19 @@ export const LayerIncoming = pgTable('layers_incoming', {
     // Data Destinations
     data: integer().references(() => Data.id),
 });
+
+/** Per-target style mapping for an Incoming Layer - one row per (layer, target) */
+export const LayerStyle = pgTable('layer_style', {
+    id: serial().primaryKey(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    layer: integer().notNull().references(() => LayerIncoming.layer, { onDelete: 'cascade' }),
+    target: text().$type<Layer_Style_Target>().notNull(),
+    enabled: boolean().notNull().default(true),
+    style: jsonb().$type<Static<typeof StyleContainer>>().notNull().default({}),
+}, table => ({
+    layer_target_idx: unique().on(table.layer, table.target),
+}));
 
 export const Setting = pgTable('settings', {
     key: text().primaryKey(),

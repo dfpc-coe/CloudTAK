@@ -1415,6 +1415,13 @@
       "when": 1787783265350,
       "tag": "0202_connection_token_username",
       "breakpoints": true
+    },
+    {
+      "idx": 203,
+      "version": "7",
+      "when": 1787870754966,
+      "tag": "0203_layer_style",
+      "breakpoints": true
     }
   ]
 }

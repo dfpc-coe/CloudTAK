@@ -202,6 +202,20 @@ export const StyleContainer = Type.Object({
     queries: Type.Optional(Type.Array(StyleSingleContainer)),
 });
 
+/** Style mapping for a single target data type */
+export const LayerStyleTarget = Type.Object({
+    enabled: Type.Boolean({ default: true }),
+    style: StyleContainer,
+});
+
+/**
+ * All Style mappings for an Incoming Layer keyed by target data type
+ * Additional targets (device, event) are added as new optional keys with their own style schema
+ */
+export const LayerStyles = Type.Object({
+    feature: Type.Optional(LayerStyleTarget),
+});
+
 export interface StyleInterface {
     enabled_styles: boolean;
     styles: Static<typeof StyleContainer>;
@@ -221,6 +235,24 @@ export default class Style {
         this.style = style;
         this.templates = new Map();
         if (!this.style.styles.queries) this.style.styles.queries = [];
+    }
+
+    /**
+     * Construct a Feature Style applier from the per-target styles of an Incoming Layer
+     */
+    static fromLayerStyles(styles: Static<typeof LayerStyles>): Style {
+        return new Style({
+            enabled_styles: styles.feature ? styles.feature.enabled : false,
+            styles: styles.feature ? styles.feature.style : {},
+        });
+    }
+
+    /**
+     * Validate every target present in a LayerStyles object
+     */
+    static validateLayerStyles(styles: Static<typeof LayerStyles>): true {
+        if (styles.feature) this.validate(styles.feature.style);
+        return true;
     }
 
     /**

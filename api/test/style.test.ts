@@ -1924,3 +1924,47 @@ test('Style: Template - special chars in remarks are not HTML-encoded', async ()
     if (!feat) assert.fail('Feature marked as null');
     assert.equal(feat.properties.remarks, 'Agency: Colorado Parks & Wildlife\nType: Sheriff\'s Office');
 });
+
+test('Style.fromLayerStyles - no feature target disables styling', async () => {
+    const style = Style.fromLayerStyles({});
+
+    const feat = await style.feat({
+        id: '123',
+        type: 'Feature',
+        properties: { callsign: 'Original', metadata: { name: 'Changed' } },
+        geometry: { type: 'Point', coordinates: [0, 0] },
+    });
+
+    assert.equal(feat!.properties.callsign, 'Original');
+});
+
+test('Style.fromLayerStyles - feature target applies style', async () => {
+    const style = Style.fromLayerStyles({
+        feature: {
+            enabled: true,
+            style: { callsign: '{{name}}' },
+        },
+    });
+
+    const feat = await style.feat({
+        id: '123',
+        type: 'Feature',
+        properties: { callsign: 'Original', metadata: { name: 'Changed' } },
+        geometry: { type: 'Point', coordinates: [0, 0] },
+    });
+
+    assert.equal(feat!.properties.callsign, 'Changed');
+});
+
+test('Style.validateLayerStyles - validates each target', () => {
+    assert.throws(() => {
+        Style.validateLayerStyles({
+            feature: { enabled: true, style: { callsign: '{{#if}}' } },
+        });
+    }, { status: 400, safe: 'Invalid Callsign Template: {{#if}}' });
+
+    assert.ok(Style.validateLayerStyles({}));
+    assert.ok(Style.validateLayerStyles({
+        feature: { enabled: true, style: { callsign: '{{name}}' } },
+    }));
+});

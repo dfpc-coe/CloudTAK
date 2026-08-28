@@ -47,7 +47,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             if (!layer.connection) throw new Err(400, null, 'Layer is not attached to a Connection');
             if (!layer.incoming) throw new Err(400, null, 'Incoming Layer Configuration has not been applied');
 
-            const style = new Style(layer.incoming);
+            const style = Style.fromLayerStyles(layer.incoming.styles);
 
             const styled = [];
             for (let i = 0; i < req.body.features.length; i++) {

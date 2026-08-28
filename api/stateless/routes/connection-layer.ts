@@ -7,13 +7,14 @@ import Lambda from '../lib/aws/lambda.js';
 import ECR from '../lib/aws/ecr.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
 import LayerDeploy from '../lib/aws/layer-deploy.js';
-import Style, { StyleContainer } from '../../common/style.js';
+import Style, { LayerStyles } from '../../common/style.js';
 import Filter, { FilterContainer } from '../../common/filter.js';
 import Alarm from '../lib/aws/alarm.js';
 import type ConfigStateless from '../config.js';
 import Schedule from '../../common/schedule.js';
 import LayerControl from '../lib/control/layer.js';
 import CommonLayerControl from '../../common/control/layer.js';
+import LayerStyleControl from '../../common/control/layer-style.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
 import type { InferInsertModel } from 'drizzle-orm';
@@ -293,8 +294,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             cron: Type.Optional(Type.String()),
             stale: Type.Optional(Type.Integer()),
             data: Type.Optional(Type.Integer()),
-            enabled_styles: Type.Optional(Type.Boolean()),
-            styles: Type.Optional(StyleContainer),
+            styles: Type.Optional(LayerStyles),
             config: Type.Optional(Layer_Config),
         }),
         res: LayerIncomingResponse,
@@ -320,7 +320,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (req.body.styles) {
-                await Style.validate(req.body.styles);
+                Style.validateLayerStyles(req.body.styles);
             }
 
             if (req.body.cron) {
@@ -340,10 +340,16 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
             }
 
+            const { styles, ...incomingBody } = req.body;
+
             const incoming = await config.models.LayerIncoming.generate({
                 layer: layer.id,
-                ...req.body,
+                ...incomingBody,
             });
+
+            if (styles) {
+                await LayerStyleControl.commit(config, layer.id, styles);
+            }
 
             layer = await layerControl.from(connection, req.params.layerid);
 
@@ -367,7 +373,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
             }
 
-            res.json(incoming);
+            if (!layer.incoming) throw new Err(500, null, 'Incoming Layer Configuration failed to save');
+
+            res.json(layer.incoming);
         } catch (err) {
             Err.respond(err, res);
         }
@@ -384,8 +392,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         body: Type.Object({
             webhooks: Type.Optional(Type.Boolean()),
             cron: Type.Optional(Type.Union([Type.Null(), Type.String()])),
-            enabled_styles: Type.Optional(Type.Boolean()),
-            styles: Type.Optional(StyleContainer),
+            styles: Type.Optional(LayerStyles),
             stale: Type.Optional(Type.Integer()),
             data: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
             environment: Type.Optional(Type.Any()),
@@ -434,7 +441,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (req.body.styles) {
-                await Style.validate(req.body.styles);
+                Style.validateLayerStyles(req.body.styles);
             }
 
             if (req.body.cron) {
@@ -453,10 +460,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before updating');
             }
 
+            const { styles, ...incomingBody } = req.body;
+
             const updated: InferInsertModel<typeof LayerIncoming> = {
                 // @ts-expect-error Inference expects a Date and not an SQL blob
                 updated: sql`Now()`,
-                ...req.body,
+                ...incomingBody,
             };
 
             // Ephemeral storage stores cached password, if the env changes, the ephemeral storage should be cleared
@@ -465,6 +474,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             const incoming = await config.models.LayerIncoming.commit(layer.id, updated);
+
+            if (styles) {
+                await LayerStyleControl.commit(config, layer.id, styles);
+            }
 
             if (changed) {
                 try {
@@ -492,7 +505,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 await Lambda.invoke(config, layer.id, 'environment:incoming');
             }
 
-            res.json(incoming);
+            const refreshed = await layerControl.from(connection, req.params.layerid);
+            if (!refreshed.incoming) throw new Err(500, null, 'Incoming Layer Configuration failed to save');
+
+            res.json(refreshed.incoming);
         } catch (err) {
             Err.respond(err, res);
         }

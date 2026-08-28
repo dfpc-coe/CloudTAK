@@ -11590,8 +11590,1184 @@ export interface paths {
                                     };
                                     cron: null | string;
                                     webhooks: boolean;
+                                    /** @description Deprecated: use styles.feature.enabled - retained for ETL Task compatibility */
                                     enabled_styles: boolean;
                                     styles: {
+                                        feature?: {
+                                            /** @default true */
+                                            enabled: boolean;
+                                            style: {
+                                                line?: {
+                                                    /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                    type?: "u-d-f" | "b-m-r";
+                                                    stroke?: string;
+                                                    "stroke-style"?: string;
+                                                    "stroke-opacity"?: string;
+                                                    "stroke-width"?: string;
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    phone?: string;
+                                                    stale?: number | string;
+                                                    minzoom?: number | string;
+                                                    maxzoom?: number | string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
+                                                };
+                                                point?: {
+                                                    "marker-color"?: string;
+                                                    "marker-opacity"?: string;
+                                                    id?: string;
+                                                    type?: string;
+                                                    remarks?: string;
+                                                    phone?: string;
+                                                    stale?: number | string;
+                                                    /** @default true */
+                                                    rotate: boolean;
+                                                    minzoom?: number | string;
+                                                    maxzoom?: number | string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                    icon?: string;
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
+                                                };
+                                                polygon?: {
+                                                    stroke?: string;
+                                                    "stroke-style"?: string;
+                                                    "stroke-opacity"?: string;
+                                                    "stroke-width"?: string;
+                                                    fill?: string;
+                                                    "fill-opacity"?: string;
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    phone?: string;
+                                                    callsign?: string;
+                                                    stale?: number | string;
+                                                    minzoom?: number | string;
+                                                    maxzoom?: number | string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
+                                                };
+                                                id?: string;
+                                                remarks?: string;
+                                                phone?: string;
+                                                callsign?: string;
+                                                stale?: number | string;
+                                                minzoom?: number | string;
+                                                maxzoom?: number | string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
+                                                queries?: {
+                                                    query: string;
+                                                    delete?: boolean;
+                                                    styles?: {
+                                                        id?: string;
+                                                        remarks?: string;
+                                                        phone?: string;
+                                                        callsign?: string;
+                                                        stale?: number | string;
+                                                        minzoom?: number | string;
+                                                        maxzoom?: number | string;
+                                                        links?: {
+                                                            remarks: string;
+                                                            url: string;
+                                                        }[];
+                                                        marti?: {
+                                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                                            archive?: boolean;
+                                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                            dest?: {
+                                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                                group?: string;
+                                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                mission?: string;
+                                                                /** @description Individual client UID to route this CoT to */
+                                                                uid?: string;
+                                                                /** @description Individual client callsign to route this CoT to */
+                                                                callsign?: string;
+                                                            }[];
+                                                        };
+                                                        line?: {
+                                                            /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                            type?: "u-d-f" | "b-m-r";
+                                                            stroke?: string;
+                                                            "stroke-style"?: string;
+                                                            "stroke-opacity"?: string;
+                                                            "stroke-width"?: string;
+                                                            id?: string;
+                                                            remarks?: string;
+                                                            phone?: string;
+                                                            stale?: number | string;
+                                                            minzoom?: number | string;
+                                                            maxzoom?: number | string;
+                                                            callsign?: string;
+                                                            links?: {
+                                                                remarks: string;
+                                                                url: string;
+                                                            }[];
+                                                            marti?: {
+                                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                                archive?: boolean;
+                                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                                dest?: {
+                                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                                    group?: string;
+                                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                    mission?: string;
+                                                                    /** @description Individual client UID to route this CoT to */
+                                                                    uid?: string;
+                                                                    /** @description Individual client callsign to route this CoT to */
+                                                                    callsign?: string;
+                                                                }[];
+                                                            };
+                                                        };
+                                                        point?: {
+                                                            "marker-color"?: string;
+                                                            "marker-opacity"?: string;
+                                                            id?: string;
+                                                            type?: string;
+                                                            remarks?: string;
+                                                            phone?: string;
+                                                            stale?: number | string;
+                                                            /** @default true */
+                                                            rotate: boolean;
+                                                            minzoom?: number | string;
+                                                            maxzoom?: number | string;
+                                                            callsign?: string;
+                                                            links?: {
+                                                                remarks: string;
+                                                                url: string;
+                                                            }[];
+                                                            icon?: string;
+                                                            marti?: {
+                                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                                archive?: boolean;
+                                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                                dest?: {
+                                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                                    group?: string;
+                                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                    mission?: string;
+                                                                    /** @description Individual client UID to route this CoT to */
+                                                                    uid?: string;
+                                                                    /** @description Individual client callsign to route this CoT to */
+                                                                    callsign?: string;
+                                                                }[];
+                                                            };
+                                                        };
+                                                        polygon?: {
+                                                            stroke?: string;
+                                                            "stroke-style"?: string;
+                                                            "stroke-opacity"?: string;
+                                                            "stroke-width"?: string;
+                                                            fill?: string;
+                                                            "fill-opacity"?: string;
+                                                            id?: string;
+                                                            remarks?: string;
+                                                            phone?: string;
+                                                            callsign?: string;
+                                                            stale?: number | string;
+                                                            minzoom?: number | string;
+                                                            maxzoom?: number | string;
+                                                            links?: {
+                                                                remarks: string;
+                                                                url: string;
+                                                            }[];
+                                                            marti?: {
+                                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                                archive?: boolean;
+                                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                                dest?: {
+                                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                                    group?: string;
+                                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                    mission?: string;
+                                                                    /** @description Individual client UID to route this CoT to */
+                                                                    uid?: string;
+                                                                    /** @description Individual client callsign to route this CoT to */
+                                                                    callsign?: string;
+                                                                }[];
+                                                            };
+                                                        };
+                                                    };
+                                                }[];
+                                            };
+                                        };
+                                    };
+                                    environment: unknown;
+                                    ephemeral: {
+                                        [key: string]: unknown;
+                                    };
+                                    data: null | number;
+                                };
+                                outgoing?: {
+                                    layer: number;
+                                    created: string;
+                                    updated: string;
+                                    environment: unknown;
+                                    ephemeral: {
+                                        [key: string]: unknown;
+                                    };
+                                    filters: {
+                                        queries?: {
+                                            name?: string;
+                                            query: string;
+                                        }[];
+                                    };
+                                };
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Register a new layer - a Connection ID of 0 creates a server-wide Admin Layer */
+        post: {
+            parameters: {
+                query: {
+                    /** @description Get Live Alarm state from CloudWatch */
+                    alarms: boolean;
+                };
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":connectionid": number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        task: string;
+                        priority?: "high" | "low" | "off";
+                        /** @description Human readable description */
+                        description: string;
+                        enabled?: boolean;
+                        /**
+                         * @description Enable Logging for this Layer
+                         * @default true
+                         */
+                        logging: boolean;
+                        /**
+                         * @description Memory in MB for this Layer
+                         * @default 256
+                         */
+                        memory: number;
+                        /**
+                         * @description Timeout in seconds for this Layer
+                         * @default 120
+                         */
+                        timeout: number;
+                        alarm_period?: number;
+                        alarm_evals?: number;
+                        alarm_points?: number;
+                        /** @default false */
+                        protected: boolean;
+                        /** @description Permissions granted to the Layer as <permission>:<level> pairs - ie video:read or video:* */
+                        permissions?: string[];
+                        /** @description Create an Incoming Config alongside the Layer */
+                        incoming?: {
+                            cron?: null | string;
+                            webhooks?: boolean;
+                        };
+                        /** @description Create an Outgoing Config alongside the Layer */
+                        outgoing?: Record<string, never>;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status?: string;
+                            created: string;
+                            updated: string;
+                            connection: null | number;
+                            username: null | string;
+                            uuid: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            protected: boolean;
+                            logging: boolean;
+                            task: string;
+                            memory: number;
+                            timeout: number;
+                            priority: "high" | "low" | "off";
+                            permissions: string[];
+                            /** @description Deprecated: Layer Templates have been removed - this value is always false */
+                            template: boolean;
+                            alarm_period: number;
+                            alarm_evals: number;
+                            alarm_points: number;
+                            parent?: {
+                                id: number;
+                                name: string;
+                                enabled: boolean;
+                            };
+                            incoming?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                config: {
+                                    timezone?: {
+                                        timezone: string;
+                                    };
+                                };
+                                cron: null | string;
+                                webhooks: boolean;
+                                /** @description Deprecated: use styles.feature.enabled - retained for ETL Task compatibility */
+                                enabled_styles: boolean;
+                                styles: {
+                                    feature?: {
+                                        /** @default true */
+                                        enabled: boolean;
+                                        style: {
+                                            line?: {
+                                                /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                type?: "u-d-f" | "b-m-r";
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                phone?: string;
+                                                stale?: number | string;
+                                                minzoom?: number | string;
+                                                maxzoom?: number | string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
+                                            };
+                                            point?: {
+                                                "marker-color"?: string;
+                                                "marker-opacity"?: string;
+                                                id?: string;
+                                                type?: string;
+                                                remarks?: string;
+                                                phone?: string;
+                                                stale?: number | string;
+                                                /** @default true */
+                                                rotate: boolean;
+                                                minzoom?: number | string;
+                                                maxzoom?: number | string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                icon?: string;
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
+                                            };
+                                            polygon?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                fill?: string;
+                                                "fill-opacity"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                phone?: string;
+                                                callsign?: string;
+                                                stale?: number | string;
+                                                minzoom?: number | string;
+                                                maxzoom?: number | string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
+                                            };
+                                            id?: string;
+                                            remarks?: string;
+                                            phone?: string;
+                                            callsign?: string;
+                                            stale?: number | string;
+                                            minzoom?: number | string;
+                                            maxzoom?: number | string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
+                                            queries?: {
+                                                query: string;
+                                                delete?: boolean;
+                                                styles?: {
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    phone?: string;
+                                                    callsign?: string;
+                                                    stale?: number | string;
+                                                    minzoom?: number | string;
+                                                    maxzoom?: number | string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
+                                                    line?: {
+                                                        /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                        type?: "u-d-f" | "b-m-r";
+                                                        stroke?: string;
+                                                        "stroke-style"?: string;
+                                                        "stroke-opacity"?: string;
+                                                        "stroke-width"?: string;
+                                                        id?: string;
+                                                        remarks?: string;
+                                                        phone?: string;
+                                                        stale?: number | string;
+                                                        minzoom?: number | string;
+                                                        maxzoom?: number | string;
+                                                        callsign?: string;
+                                                        links?: {
+                                                            remarks: string;
+                                                            url: string;
+                                                        }[];
+                                                        marti?: {
+                                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                                            archive?: boolean;
+                                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                            dest?: {
+                                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                                group?: string;
+                                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                mission?: string;
+                                                                /** @description Individual client UID to route this CoT to */
+                                                                uid?: string;
+                                                                /** @description Individual client callsign to route this CoT to */
+                                                                callsign?: string;
+                                                            }[];
+                                                        };
+                                                    };
+                                                    point?: {
+                                                        "marker-color"?: string;
+                                                        "marker-opacity"?: string;
+                                                        id?: string;
+                                                        type?: string;
+                                                        remarks?: string;
+                                                        phone?: string;
+                                                        stale?: number | string;
+                                                        /** @default true */
+                                                        rotate: boolean;
+                                                        minzoom?: number | string;
+                                                        maxzoom?: number | string;
+                                                        callsign?: string;
+                                                        links?: {
+                                                            remarks: string;
+                                                            url: string;
+                                                        }[];
+                                                        icon?: string;
+                                                        marti?: {
+                                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                                            archive?: boolean;
+                                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                            dest?: {
+                                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                                group?: string;
+                                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                mission?: string;
+                                                                /** @description Individual client UID to route this CoT to */
+                                                                uid?: string;
+                                                                /** @description Individual client callsign to route this CoT to */
+                                                                callsign?: string;
+                                                            }[];
+                                                        };
+                                                    };
+                                                    polygon?: {
+                                                        stroke?: string;
+                                                        "stroke-style"?: string;
+                                                        "stroke-opacity"?: string;
+                                                        "stroke-width"?: string;
+                                                        fill?: string;
+                                                        "fill-opacity"?: string;
+                                                        id?: string;
+                                                        remarks?: string;
+                                                        phone?: string;
+                                                        callsign?: string;
+                                                        stale?: number | string;
+                                                        minzoom?: number | string;
+                                                        maxzoom?: number | string;
+                                                        links?: {
+                                                            remarks: string;
+                                                            url: string;
+                                                        }[];
+                                                        marti?: {
+                                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                                            archive?: boolean;
+                                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                            dest?: {
+                                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                                group?: string;
+                                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                mission?: string;
+                                                                /** @description Individual client UID to route this CoT to */
+                                                                uid?: string;
+                                                                /** @description Individual client callsign to route this CoT to */
+                                                                callsign?: string;
+                                                            }[];
+                                                        };
+                                                    };
+                                                };
+                                            }[];
+                                        };
+                                    };
+                                };
+                                environment: unknown;
+                                ephemeral: {
+                                    [key: string]: unknown;
+                                };
+                                data: null | number;
+                            };
+                            outgoing?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                environment: unknown;
+                                ephemeral: {
+                                    [key: string]: unknown;
+                                };
+                                filters: {
+                                    queries?: {
+                                        name?: string;
+                                        query: string;
+                                    }[];
+                                };
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/connection/{:connectionid}/layer/{:layerid}/incoming": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register a new incoming layer config */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":connectionid": number;
+                    /** @description No Description */
+                    ":layerid": number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        webhooks?: boolean;
+                        cron?: string;
+                        stale?: number;
+                        data?: number;
+                        styles?: {
+                            feature?: {
+                                /** @default true */
+                                enabled: boolean;
+                                style: {
+                                    line?: {
+                                        /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                        type?: "u-d-f" | "b-m-r";
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        phone?: string;
+                                        stale?: number | string;
+                                        minzoom?: number | string;
+                                        maxzoom?: number | string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
+                                    };
+                                    point?: {
+                                        "marker-color"?: string;
+                                        "marker-opacity"?: string;
+                                        id?: string;
+                                        type?: string;
+                                        remarks?: string;
+                                        phone?: string;
+                                        stale?: number | string;
+                                        /** @default true */
+                                        rotate?: boolean;
+                                        minzoom?: number | string;
+                                        maxzoom?: number | string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        icon?: string;
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
+                                    };
+                                    polygon?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        fill?: string;
+                                        "fill-opacity"?: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        phone?: string;
+                                        callsign?: string;
+                                        stale?: number | string;
+                                        minzoom?: number | string;
+                                        maxzoom?: number | string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
+                                    };
+                                    id?: string;
+                                    remarks?: string;
+                                    phone?: string;
+                                    callsign?: string;
+                                    stale?: number | string;
+                                    minzoom?: number | string;
+                                    maxzoom?: number | string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    marti?: {
+                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                        archive?: boolean;
+                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                        dest?: {
+                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                            group?: string;
+                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                            mission?: string;
+                                            /** @description Individual client UID to route this CoT to */
+                                            uid?: string;
+                                            /** @description Individual client callsign to route this CoT to */
+                                            callsign?: string;
+                                        }[];
+                                    };
+                                    queries?: {
+                                        query: string;
+                                        delete?: boolean;
+                                        styles?: {
+                                            id?: string;
+                                            remarks?: string;
+                                            phone?: string;
+                                            callsign?: string;
+                                            stale?: number | string;
+                                            minzoom?: number | string;
+                                            maxzoom?: number | string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
+                                            line?: {
+                                                /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                type?: "u-d-f" | "b-m-r";
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                phone?: string;
+                                                stale?: number | string;
+                                                minzoom?: number | string;
+                                                maxzoom?: number | string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
+                                            };
+                                            point?: {
+                                                "marker-color"?: string;
+                                                "marker-opacity"?: string;
+                                                id?: string;
+                                                type?: string;
+                                                remarks?: string;
+                                                phone?: string;
+                                                stale?: number | string;
+                                                /** @default true */
+                                                rotate?: boolean;
+                                                minzoom?: number | string;
+                                                maxzoom?: number | string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                icon?: string;
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
+                                            };
+                                            polygon?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                fill?: string;
+                                                "fill-opacity"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                phone?: string;
+                                                callsign?: string;
+                                                stale?: number | string;
+                                                minzoom?: number | string;
+                                                maxzoom?: number | string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
+                                            };
+                                        };
+                                    }[];
+                                };
+                            };
+                        };
+                        config?: {
+                            timezone?: {
+                                timezone: string;
+                            };
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            layer: number;
+                            created: string;
+                            updated: string;
+                            config: {
+                                timezone?: {
+                                    timezone: string;
+                                };
+                            };
+                            cron: null | string;
+                            webhooks: boolean;
+                            /** @description Deprecated: use styles.feature.enabled - retained for ETL Task compatibility */
+                            enabled_styles: boolean;
+                            styles: {
+                                feature?: {
+                                    /** @default true */
+                                    enabled: boolean;
+                                    style: {
                                         line?: {
                                             /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
                                             type?: "u-d-f" | "b-m-r";
@@ -11855,1157 +13031,7 @@ export interface paths {
                                             };
                                         }[];
                                     };
-                                    environment: unknown;
-                                    ephemeral: {
-                                        [key: string]: unknown;
-                                    };
-                                    data: null | number;
                                 };
-                                outgoing?: {
-                                    layer: number;
-                                    created: string;
-                                    updated: string;
-                                    environment: unknown;
-                                    ephemeral: {
-                                        [key: string]: unknown;
-                                    };
-                                    filters: {
-                                        queries?: {
-                                            name?: string;
-                                            query: string;
-                                        }[];
-                                    };
-                                };
-                            }[];
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Register a new layer - a Connection ID of 0 creates a server-wide Admin Layer */
-        post: {
-            parameters: {
-                query: {
-                    /** @description Get Live Alarm state from CloudWatch */
-                    alarms: boolean;
-                };
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":connectionid": number;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        task: string;
-                        priority?: "high" | "low" | "off";
-                        /** @description Human readable description */
-                        description: string;
-                        enabled?: boolean;
-                        /**
-                         * @description Enable Logging for this Layer
-                         * @default true
-                         */
-                        logging: boolean;
-                        /**
-                         * @description Memory in MB for this Layer
-                         * @default 256
-                         */
-                        memory: number;
-                        /**
-                         * @description Timeout in seconds for this Layer
-                         * @default 120
-                         */
-                        timeout: number;
-                        alarm_period?: number;
-                        alarm_evals?: number;
-                        alarm_points?: number;
-                        /** @default false */
-                        protected: boolean;
-                        /** @description Permissions granted to the Layer as <permission>:<level> pairs - ie video:read or video:* */
-                        permissions?: string[];
-                        /** @description Create an Incoming Config alongside the Layer */
-                        incoming?: {
-                            cron?: null | string;
-                            webhooks?: boolean;
-                        };
-                        /** @description Create an Outgoing Config alongside the Layer */
-                        outgoing?: Record<string, never>;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            status?: string;
-                            created: string;
-                            updated: string;
-                            connection: null | number;
-                            username: null | string;
-                            uuid: string;
-                            name: string;
-                            description: string;
-                            enabled: boolean;
-                            protected: boolean;
-                            logging: boolean;
-                            task: string;
-                            memory: number;
-                            timeout: number;
-                            priority: "high" | "low" | "off";
-                            permissions: string[];
-                            /** @description Deprecated: Layer Templates have been removed - this value is always false */
-                            template: boolean;
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            parent?: {
-                                id: number;
-                                name: string;
-                                enabled: boolean;
-                            };
-                            incoming?: {
-                                layer: number;
-                                created: string;
-                                updated: string;
-                                config: {
-                                    timezone?: {
-                                        timezone: string;
-                                    };
-                                };
-                                cron: null | string;
-                                webhooks: boolean;
-                                enabled_styles: boolean;
-                                styles: {
-                                    line?: {
-                                        /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
-                                        type?: "u-d-f" | "b-m-r";
-                                        stroke?: string;
-                                        "stroke-style"?: string;
-                                        "stroke-opacity"?: string;
-                                        "stroke-width"?: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                    };
-                                    point?: {
-                                        "marker-color"?: string;
-                                        "marker-opacity"?: string;
-                                        id?: string;
-                                        type?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        stale?: number | string;
-                                        /** @default true */
-                                        rotate: boolean;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        icon?: string;
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                    };
-                                    polygon?: {
-                                        stroke?: string;
-                                        "stroke-style"?: string;
-                                        "stroke-opacity"?: string;
-                                        "stroke-width"?: string;
-                                        fill?: string;
-                                        "fill-opacity"?: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        callsign?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                    };
-                                    id?: string;
-                                    remarks?: string;
-                                    phone?: string;
-                                    callsign?: string;
-                                    stale?: number | string;
-                                    minzoom?: number | string;
-                                    maxzoom?: number | string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    marti?: {
-                                        /** @description Whether the CoT should be archived by the TAK Server */
-                                        archive?: boolean;
-                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                        dest?: {
-                                            /** @description TAK Server channel (group) name to route this CoT to */
-                                            group?: string;
-                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                            mission?: string;
-                                            /** @description Individual client UID to route this CoT to */
-                                            uid?: string;
-                                            /** @description Individual client callsign to route this CoT to */
-                                            callsign?: string;
-                                        }[];
-                                    };
-                                    queries?: {
-                                        query: string;
-                                        delete?: boolean;
-                                        styles?: {
-                                            id?: string;
-                                            remarks?: string;
-                                            phone?: string;
-                                            callsign?: string;
-                                            stale?: number | string;
-                                            minzoom?: number | string;
-                                            maxzoom?: number | string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            marti?: {
-                                                /** @description Whether the CoT should be archived by the TAK Server */
-                                                archive?: boolean;
-                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                                dest?: {
-                                                    /** @description TAK Server channel (group) name to route this CoT to */
-                                                    group?: string;
-                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                    mission?: string;
-                                                    /** @description Individual client UID to route this CoT to */
-                                                    uid?: string;
-                                                    /** @description Individual client callsign to route this CoT to */
-                                                    callsign?: string;
-                                                }[];
-                                            };
-                                            line?: {
-                                                /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
-                                                type?: "u-d-f" | "b-m-r";
-                                                stroke?: string;
-                                                "stroke-style"?: string;
-                                                "stroke-opacity"?: string;
-                                                "stroke-width"?: string;
-                                                id?: string;
-                                                remarks?: string;
-                                                phone?: string;
-                                                stale?: number | string;
-                                                minzoom?: number | string;
-                                                maxzoom?: number | string;
-                                                callsign?: string;
-                                                links?: {
-                                                    remarks: string;
-                                                    url: string;
-                                                }[];
-                                                marti?: {
-                                                    /** @description Whether the CoT should be archived by the TAK Server */
-                                                    archive?: boolean;
-                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                                    dest?: {
-                                                        /** @description TAK Server channel (group) name to route this CoT to */
-                                                        group?: string;
-                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                        mission?: string;
-                                                        /** @description Individual client UID to route this CoT to */
-                                                        uid?: string;
-                                                        /** @description Individual client callsign to route this CoT to */
-                                                        callsign?: string;
-                                                    }[];
-                                                };
-                                            };
-                                            point?: {
-                                                "marker-color"?: string;
-                                                "marker-opacity"?: string;
-                                                id?: string;
-                                                type?: string;
-                                                remarks?: string;
-                                                phone?: string;
-                                                stale?: number | string;
-                                                /** @default true */
-                                                rotate: boolean;
-                                                minzoom?: number | string;
-                                                maxzoom?: number | string;
-                                                callsign?: string;
-                                                links?: {
-                                                    remarks: string;
-                                                    url: string;
-                                                }[];
-                                                icon?: string;
-                                                marti?: {
-                                                    /** @description Whether the CoT should be archived by the TAK Server */
-                                                    archive?: boolean;
-                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                                    dest?: {
-                                                        /** @description TAK Server channel (group) name to route this CoT to */
-                                                        group?: string;
-                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                        mission?: string;
-                                                        /** @description Individual client UID to route this CoT to */
-                                                        uid?: string;
-                                                        /** @description Individual client callsign to route this CoT to */
-                                                        callsign?: string;
-                                                    }[];
-                                                };
-                                            };
-                                            polygon?: {
-                                                stroke?: string;
-                                                "stroke-style"?: string;
-                                                "stroke-opacity"?: string;
-                                                "stroke-width"?: string;
-                                                fill?: string;
-                                                "fill-opacity"?: string;
-                                                id?: string;
-                                                remarks?: string;
-                                                phone?: string;
-                                                callsign?: string;
-                                                stale?: number | string;
-                                                minzoom?: number | string;
-                                                maxzoom?: number | string;
-                                                links?: {
-                                                    remarks: string;
-                                                    url: string;
-                                                }[];
-                                                marti?: {
-                                                    /** @description Whether the CoT should be archived by the TAK Server */
-                                                    archive?: boolean;
-                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                                    dest?: {
-                                                        /** @description TAK Server channel (group) name to route this CoT to */
-                                                        group?: string;
-                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                        mission?: string;
-                                                        /** @description Individual client UID to route this CoT to */
-                                                        uid?: string;
-                                                        /** @description Individual client callsign to route this CoT to */
-                                                        callsign?: string;
-                                                    }[];
-                                                };
-                                            };
-                                        };
-                                    }[];
-                                };
-                                environment: unknown;
-                                ephemeral: {
-                                    [key: string]: unknown;
-                                };
-                                data: null | number;
-                            };
-                            outgoing?: {
-                                layer: number;
-                                created: string;
-                                updated: string;
-                                environment: unknown;
-                                ephemeral: {
-                                    [key: string]: unknown;
-                                };
-                                filters: {
-                                    queries?: {
-                                        name?: string;
-                                        query: string;
-                                    }[];
-                                };
-                            };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/connection/{:connectionid}/layer/{:layerid}/incoming": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Register a new incoming layer config */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":connectionid": number;
-                    /** @description No Description */
-                    ":layerid": number;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        webhooks?: boolean;
-                        cron?: string;
-                        stale?: number;
-                        data?: number;
-                        enabled_styles?: boolean;
-                        styles?: {
-                            line?: {
-                                /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
-                                type?: "u-d-f" | "b-m-r";
-                                stroke?: string;
-                                "stroke-style"?: string;
-                                "stroke-opacity"?: string;
-                                "stroke-width"?: string;
-                                id?: string;
-                                remarks?: string;
-                                phone?: string;
-                                stale?: number | string;
-                                minzoom?: number | string;
-                                maxzoom?: number | string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                marti?: {
-                                    /** @description Whether the CoT should be archived by the TAK Server */
-                                    archive?: boolean;
-                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                    dest?: {
-                                        /** @description TAK Server channel (group) name to route this CoT to */
-                                        group?: string;
-                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                        mission?: string;
-                                        /** @description Individual client UID to route this CoT to */
-                                        uid?: string;
-                                        /** @description Individual client callsign to route this CoT to */
-                                        callsign?: string;
-                                    }[];
-                                };
-                            };
-                            point?: {
-                                "marker-color"?: string;
-                                "marker-opacity"?: string;
-                                id?: string;
-                                type?: string;
-                                remarks?: string;
-                                phone?: string;
-                                stale?: number | string;
-                                /** @default true */
-                                rotate?: boolean;
-                                minzoom?: number | string;
-                                maxzoom?: number | string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                icon?: string;
-                                marti?: {
-                                    /** @description Whether the CoT should be archived by the TAK Server */
-                                    archive?: boolean;
-                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                    dest?: {
-                                        /** @description TAK Server channel (group) name to route this CoT to */
-                                        group?: string;
-                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                        mission?: string;
-                                        /** @description Individual client UID to route this CoT to */
-                                        uid?: string;
-                                        /** @description Individual client callsign to route this CoT to */
-                                        callsign?: string;
-                                    }[];
-                                };
-                            };
-                            polygon?: {
-                                stroke?: string;
-                                "stroke-style"?: string;
-                                "stroke-opacity"?: string;
-                                "stroke-width"?: string;
-                                fill?: string;
-                                "fill-opacity"?: string;
-                                id?: string;
-                                remarks?: string;
-                                phone?: string;
-                                callsign?: string;
-                                stale?: number | string;
-                                minzoom?: number | string;
-                                maxzoom?: number | string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                marti?: {
-                                    /** @description Whether the CoT should be archived by the TAK Server */
-                                    archive?: boolean;
-                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                    dest?: {
-                                        /** @description TAK Server channel (group) name to route this CoT to */
-                                        group?: string;
-                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                        mission?: string;
-                                        /** @description Individual client UID to route this CoT to */
-                                        uid?: string;
-                                        /** @description Individual client callsign to route this CoT to */
-                                        callsign?: string;
-                                    }[];
-                                };
-                            };
-                            id?: string;
-                            remarks?: string;
-                            phone?: string;
-                            callsign?: string;
-                            stale?: number | string;
-                            minzoom?: number | string;
-                            maxzoom?: number | string;
-                            links?: {
-                                remarks: string;
-                                url: string;
-                            }[];
-                            marti?: {
-                                /** @description Whether the CoT should be archived by the TAK Server */
-                                archive?: boolean;
-                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                dest?: {
-                                    /** @description TAK Server channel (group) name to route this CoT to */
-                                    group?: string;
-                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                    mission?: string;
-                                    /** @description Individual client UID to route this CoT to */
-                                    uid?: string;
-                                    /** @description Individual client callsign to route this CoT to */
-                                    callsign?: string;
-                                }[];
-                            };
-                            queries?: {
-                                query: string;
-                                delete?: boolean;
-                                styles?: {
-                                    id?: string;
-                                    remarks?: string;
-                                    phone?: string;
-                                    callsign?: string;
-                                    stale?: number | string;
-                                    minzoom?: number | string;
-                                    maxzoom?: number | string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    marti?: {
-                                        /** @description Whether the CoT should be archived by the TAK Server */
-                                        archive?: boolean;
-                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                        dest?: {
-                                            /** @description TAK Server channel (group) name to route this CoT to */
-                                            group?: string;
-                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                            mission?: string;
-                                            /** @description Individual client UID to route this CoT to */
-                                            uid?: string;
-                                            /** @description Individual client callsign to route this CoT to */
-                                            callsign?: string;
-                                        }[];
-                                    };
-                                    line?: {
-                                        /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
-                                        type?: "u-d-f" | "b-m-r";
-                                        stroke?: string;
-                                        "stroke-style"?: string;
-                                        "stroke-opacity"?: string;
-                                        "stroke-width"?: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                    };
-                                    point?: {
-                                        "marker-color"?: string;
-                                        "marker-opacity"?: string;
-                                        id?: string;
-                                        type?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        stale?: number | string;
-                                        /** @default true */
-                                        rotate?: boolean;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        icon?: string;
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                    };
-                                    polygon?: {
-                                        stroke?: string;
-                                        "stroke-style"?: string;
-                                        "stroke-opacity"?: string;
-                                        "stroke-width"?: string;
-                                        fill?: string;
-                                        "fill-opacity"?: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        callsign?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                    };
-                                };
-                            }[];
-                        };
-                        config?: {
-                            timezone?: {
-                                timezone: string;
-                            };
-                        };
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            layer: number;
-                            created: string;
-                            updated: string;
-                            config: {
-                                timezone?: {
-                                    timezone: string;
-                                };
-                            };
-                            cron: null | string;
-                            webhooks: boolean;
-                            enabled_styles: boolean;
-                            styles: {
-                                line?: {
-                                    /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
-                                    type?: "u-d-f" | "b-m-r";
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    phone?: string;
-                                    stale?: number | string;
-                                    minzoom?: number | string;
-                                    maxzoom?: number | string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    marti?: {
-                                        /** @description Whether the CoT should be archived by the TAK Server */
-                                        archive?: boolean;
-                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                        dest?: {
-                                            /** @description TAK Server channel (group) name to route this CoT to */
-                                            group?: string;
-                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                            mission?: string;
-                                            /** @description Individual client UID to route this CoT to */
-                                            uid?: string;
-                                            /** @description Individual client callsign to route this CoT to */
-                                            callsign?: string;
-                                        }[];
-                                    };
-                                };
-                                point?: {
-                                    "marker-color"?: string;
-                                    "marker-opacity"?: string;
-                                    id?: string;
-                                    type?: string;
-                                    remarks?: string;
-                                    phone?: string;
-                                    stale?: number | string;
-                                    /** @default true */
-                                    rotate: boolean;
-                                    minzoom?: number | string;
-                                    maxzoom?: number | string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    icon?: string;
-                                    marti?: {
-                                        /** @description Whether the CoT should be archived by the TAK Server */
-                                        archive?: boolean;
-                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                        dest?: {
-                                            /** @description TAK Server channel (group) name to route this CoT to */
-                                            group?: string;
-                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                            mission?: string;
-                                            /** @description Individual client UID to route this CoT to */
-                                            uid?: string;
-                                            /** @description Individual client callsign to route this CoT to */
-                                            callsign?: string;
-                                        }[];
-                                    };
-                                };
-                                polygon?: {
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    fill?: string;
-                                    "fill-opacity"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    phone?: string;
-                                    callsign?: string;
-                                    stale?: number | string;
-                                    minzoom?: number | string;
-                                    maxzoom?: number | string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    marti?: {
-                                        /** @description Whether the CoT should be archived by the TAK Server */
-                                        archive?: boolean;
-                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                        dest?: {
-                                            /** @description TAK Server channel (group) name to route this CoT to */
-                                            group?: string;
-                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                            mission?: string;
-                                            /** @description Individual client UID to route this CoT to */
-                                            uid?: string;
-                                            /** @description Individual client callsign to route this CoT to */
-                                            callsign?: string;
-                                        }[];
-                                    };
-                                };
-                                id?: string;
-                                remarks?: string;
-                                phone?: string;
-                                callsign?: string;
-                                stale?: number | string;
-                                minzoom?: number | string;
-                                maxzoom?: number | string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                marti?: {
-                                    /** @description Whether the CoT should be archived by the TAK Server */
-                                    archive?: boolean;
-                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                    dest?: {
-                                        /** @description TAK Server channel (group) name to route this CoT to */
-                                        group?: string;
-                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                        mission?: string;
-                                        /** @description Individual client UID to route this CoT to */
-                                        uid?: string;
-                                        /** @description Individual client callsign to route this CoT to */
-                                        callsign?: string;
-                                    }[];
-                                };
-                                queries?: {
-                                    query: string;
-                                    delete?: boolean;
-                                    styles?: {
-                                        id?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        callsign?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                        line?: {
-                                            /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
-                                            type?: "u-d-f" | "b-m-r";
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            phone?: string;
-                                            stale?: number | string;
-                                            minzoom?: number | string;
-                                            maxzoom?: number | string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            marti?: {
-                                                /** @description Whether the CoT should be archived by the TAK Server */
-                                                archive?: boolean;
-                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                                dest?: {
-                                                    /** @description TAK Server channel (group) name to route this CoT to */
-                                                    group?: string;
-                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                    mission?: string;
-                                                    /** @description Individual client UID to route this CoT to */
-                                                    uid?: string;
-                                                    /** @description Individual client callsign to route this CoT to */
-                                                    callsign?: string;
-                                                }[];
-                                            };
-                                        };
-                                        point?: {
-                                            "marker-color"?: string;
-                                            "marker-opacity"?: string;
-                                            id?: string;
-                                            type?: string;
-                                            remarks?: string;
-                                            phone?: string;
-                                            stale?: number | string;
-                                            /** @default true */
-                                            rotate: boolean;
-                                            minzoom?: number | string;
-                                            maxzoom?: number | string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            icon?: string;
-                                            marti?: {
-                                                /** @description Whether the CoT should be archived by the TAK Server */
-                                                archive?: boolean;
-                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                                dest?: {
-                                                    /** @description TAK Server channel (group) name to route this CoT to */
-                                                    group?: string;
-                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                    mission?: string;
-                                                    /** @description Individual client UID to route this CoT to */
-                                                    uid?: string;
-                                                    /** @description Individual client callsign to route this CoT to */
-                                                    callsign?: string;
-                                                }[];
-                                            };
-                                        };
-                                        polygon?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            fill?: string;
-                                            "fill-opacity"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            phone?: string;
-                                            callsign?: string;
-                                            stale?: number | string;
-                                            minzoom?: number | string;
-                                            maxzoom?: number | string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            marti?: {
-                                                /** @description Whether the CoT should be archived by the TAK Server */
-                                                archive?: boolean;
-                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                                dest?: {
-                                                    /** @description TAK Server channel (group) name to route this CoT to */
-                                                    group?: string;
-                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                    mission?: string;
-                                                    /** @description Individual client UID to route this CoT to */
-                                                    uid?: string;
-                                                    /** @description Individual client callsign to route this CoT to */
-                                                    callsign?: string;
-                                                }[];
-                                            };
-                                        };
-                                    };
-                                }[];
                             };
                             environment: unknown;
                             ephemeral: {
@@ -13208,166 +13234,11 @@ export interface paths {
                     "application/json": {
                         webhooks?: boolean;
                         cron?: null | string;
-                        enabled_styles?: boolean;
                         styles?: {
-                            line?: {
-                                /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
-                                type?: "u-d-f" | "b-m-r";
-                                stroke?: string;
-                                "stroke-style"?: string;
-                                "stroke-opacity"?: string;
-                                "stroke-width"?: string;
-                                id?: string;
-                                remarks?: string;
-                                phone?: string;
-                                stale?: number | string;
-                                minzoom?: number | string;
-                                maxzoom?: number | string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                marti?: {
-                                    /** @description Whether the CoT should be archived by the TAK Server */
-                                    archive?: boolean;
-                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                    dest?: {
-                                        /** @description TAK Server channel (group) name to route this CoT to */
-                                        group?: string;
-                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                        mission?: string;
-                                        /** @description Individual client UID to route this CoT to */
-                                        uid?: string;
-                                        /** @description Individual client callsign to route this CoT to */
-                                        callsign?: string;
-                                    }[];
-                                };
-                            };
-                            point?: {
-                                "marker-color"?: string;
-                                "marker-opacity"?: string;
-                                id?: string;
-                                type?: string;
-                                remarks?: string;
-                                phone?: string;
-                                stale?: number | string;
+                            feature?: {
                                 /** @default true */
-                                rotate?: boolean;
-                                minzoom?: number | string;
-                                maxzoom?: number | string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                icon?: string;
-                                marti?: {
-                                    /** @description Whether the CoT should be archived by the TAK Server */
-                                    archive?: boolean;
-                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                    dest?: {
-                                        /** @description TAK Server channel (group) name to route this CoT to */
-                                        group?: string;
-                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                        mission?: string;
-                                        /** @description Individual client UID to route this CoT to */
-                                        uid?: string;
-                                        /** @description Individual client callsign to route this CoT to */
-                                        callsign?: string;
-                                    }[];
-                                };
-                            };
-                            polygon?: {
-                                stroke?: string;
-                                "stroke-style"?: string;
-                                "stroke-opacity"?: string;
-                                "stroke-width"?: string;
-                                fill?: string;
-                                "fill-opacity"?: string;
-                                id?: string;
-                                remarks?: string;
-                                phone?: string;
-                                callsign?: string;
-                                stale?: number | string;
-                                minzoom?: number | string;
-                                maxzoom?: number | string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                marti?: {
-                                    /** @description Whether the CoT should be archived by the TAK Server */
-                                    archive?: boolean;
-                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                    dest?: {
-                                        /** @description TAK Server channel (group) name to route this CoT to */
-                                        group?: string;
-                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                        mission?: string;
-                                        /** @description Individual client UID to route this CoT to */
-                                        uid?: string;
-                                        /** @description Individual client callsign to route this CoT to */
-                                        callsign?: string;
-                                    }[];
-                                };
-                            };
-                            id?: string;
-                            remarks?: string;
-                            phone?: string;
-                            callsign?: string;
-                            stale?: number | string;
-                            minzoom?: number | string;
-                            maxzoom?: number | string;
-                            links?: {
-                                remarks: string;
-                                url: string;
-                            }[];
-                            marti?: {
-                                /** @description Whether the CoT should be archived by the TAK Server */
-                                archive?: boolean;
-                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                dest?: {
-                                    /** @description TAK Server channel (group) name to route this CoT to */
-                                    group?: string;
-                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                    mission?: string;
-                                    /** @description Individual client UID to route this CoT to */
-                                    uid?: string;
-                                    /** @description Individual client callsign to route this CoT to */
-                                    callsign?: string;
-                                }[];
-                            };
-                            queries?: {
-                                query: string;
-                                delete?: boolean;
-                                styles?: {
-                                    id?: string;
-                                    remarks?: string;
-                                    phone?: string;
-                                    callsign?: string;
-                                    stale?: number | string;
-                                    minzoom?: number | string;
-                                    maxzoom?: number | string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    marti?: {
-                                        /** @description Whether the CoT should be archived by the TAK Server */
-                                        archive?: boolean;
-                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                        dest?: {
-                                            /** @description TAK Server channel (group) name to route this CoT to */
-                                            group?: string;
-                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                            mission?: string;
-                                            /** @description Individual client UID to route this CoT to */
-                                            uid?: string;
-                                            /** @description Individual client callsign to route this CoT to */
-                                            callsign?: string;
-                                        }[];
-                                    };
+                                enabled: boolean;
+                                style: {
                                     line?: {
                                         /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
                                         type?: "u-d-f" | "b-m-r";
@@ -13470,8 +13341,168 @@ export interface paths {
                                             }[];
                                         };
                                     };
+                                    id?: string;
+                                    remarks?: string;
+                                    phone?: string;
+                                    callsign?: string;
+                                    stale?: number | string;
+                                    minzoom?: number | string;
+                                    maxzoom?: number | string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    marti?: {
+                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                        archive?: boolean;
+                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                        dest?: {
+                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                            group?: string;
+                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                            mission?: string;
+                                            /** @description Individual client UID to route this CoT to */
+                                            uid?: string;
+                                            /** @description Individual client callsign to route this CoT to */
+                                            callsign?: string;
+                                        }[];
+                                    };
+                                    queries?: {
+                                        query: string;
+                                        delete?: boolean;
+                                        styles?: {
+                                            id?: string;
+                                            remarks?: string;
+                                            phone?: string;
+                                            callsign?: string;
+                                            stale?: number | string;
+                                            minzoom?: number | string;
+                                            maxzoom?: number | string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
+                                            line?: {
+                                                /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                type?: "u-d-f" | "b-m-r";
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                phone?: string;
+                                                stale?: number | string;
+                                                minzoom?: number | string;
+                                                maxzoom?: number | string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
+                                            };
+                                            point?: {
+                                                "marker-color"?: string;
+                                                "marker-opacity"?: string;
+                                                id?: string;
+                                                type?: string;
+                                                remarks?: string;
+                                                phone?: string;
+                                                stale?: number | string;
+                                                /** @default true */
+                                                rotate?: boolean;
+                                                minzoom?: number | string;
+                                                maxzoom?: number | string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                icon?: string;
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
+                                            };
+                                            polygon?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                fill?: string;
+                                                "fill-opacity"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                phone?: string;
+                                                callsign?: string;
+                                                stale?: number | string;
+                                                minzoom?: number | string;
+                                                maxzoom?: number | string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
+                                            };
+                                        };
+                                    }[];
                                 };
-                            }[];
+                            };
                         };
                         stale?: number;
                         data?: null | number;
@@ -13502,166 +13533,13 @@ export interface paths {
                             };
                             cron: null | string;
                             webhooks: boolean;
+                            /** @description Deprecated: use styles.feature.enabled - retained for ETL Task compatibility */
                             enabled_styles: boolean;
                             styles: {
-                                line?: {
-                                    /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
-                                    type?: "u-d-f" | "b-m-r";
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    phone?: string;
-                                    stale?: number | string;
-                                    minzoom?: number | string;
-                                    maxzoom?: number | string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    marti?: {
-                                        /** @description Whether the CoT should be archived by the TAK Server */
-                                        archive?: boolean;
-                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                        dest?: {
-                                            /** @description TAK Server channel (group) name to route this CoT to */
-                                            group?: string;
-                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                            mission?: string;
-                                            /** @description Individual client UID to route this CoT to */
-                                            uid?: string;
-                                            /** @description Individual client callsign to route this CoT to */
-                                            callsign?: string;
-                                        }[];
-                                    };
-                                };
-                                point?: {
-                                    "marker-color"?: string;
-                                    "marker-opacity"?: string;
-                                    id?: string;
-                                    type?: string;
-                                    remarks?: string;
-                                    phone?: string;
-                                    stale?: number | string;
+                                feature?: {
                                     /** @default true */
-                                    rotate: boolean;
-                                    minzoom?: number | string;
-                                    maxzoom?: number | string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    icon?: string;
-                                    marti?: {
-                                        /** @description Whether the CoT should be archived by the TAK Server */
-                                        archive?: boolean;
-                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                        dest?: {
-                                            /** @description TAK Server channel (group) name to route this CoT to */
-                                            group?: string;
-                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                            mission?: string;
-                                            /** @description Individual client UID to route this CoT to */
-                                            uid?: string;
-                                            /** @description Individual client callsign to route this CoT to */
-                                            callsign?: string;
-                                        }[];
-                                    };
-                                };
-                                polygon?: {
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    fill?: string;
-                                    "fill-opacity"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    phone?: string;
-                                    callsign?: string;
-                                    stale?: number | string;
-                                    minzoom?: number | string;
-                                    maxzoom?: number | string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    marti?: {
-                                        /** @description Whether the CoT should be archived by the TAK Server */
-                                        archive?: boolean;
-                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                        dest?: {
-                                            /** @description TAK Server channel (group) name to route this CoT to */
-                                            group?: string;
-                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                            mission?: string;
-                                            /** @description Individual client UID to route this CoT to */
-                                            uid?: string;
-                                            /** @description Individual client callsign to route this CoT to */
-                                            callsign?: string;
-                                        }[];
-                                    };
-                                };
-                                id?: string;
-                                remarks?: string;
-                                phone?: string;
-                                callsign?: string;
-                                stale?: number | string;
-                                minzoom?: number | string;
-                                maxzoom?: number | string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                marti?: {
-                                    /** @description Whether the CoT should be archived by the TAK Server */
-                                    archive?: boolean;
-                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                    dest?: {
-                                        /** @description TAK Server channel (group) name to route this CoT to */
-                                        group?: string;
-                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                        mission?: string;
-                                        /** @description Individual client UID to route this CoT to */
-                                        uid?: string;
-                                        /** @description Individual client callsign to route this CoT to */
-                                        callsign?: string;
-                                    }[];
-                                };
-                                queries?: {
-                                    query: string;
-                                    delete?: boolean;
-                                    styles?: {
-                                        id?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        callsign?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
+                                    enabled: boolean;
+                                    style: {
                                         line?: {
                                             /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
                                             type?: "u-d-f" | "b-m-r";
@@ -13764,8 +13642,168 @@ export interface paths {
                                                 }[];
                                             };
                                         };
+                                        id?: string;
+                                        remarks?: string;
+                                        phone?: string;
+                                        callsign?: string;
+                                        stale?: number | string;
+                                        minzoom?: number | string;
+                                        maxzoom?: number | string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
+                                        queries?: {
+                                            query: string;
+                                            delete?: boolean;
+                                            styles?: {
+                                                id?: string;
+                                                remarks?: string;
+                                                phone?: string;
+                                                callsign?: string;
+                                                stale?: number | string;
+                                                minzoom?: number | string;
+                                                maxzoom?: number | string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
+                                                line?: {
+                                                    /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                    type?: "u-d-f" | "b-m-r";
+                                                    stroke?: string;
+                                                    "stroke-style"?: string;
+                                                    "stroke-opacity"?: string;
+                                                    "stroke-width"?: string;
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    phone?: string;
+                                                    stale?: number | string;
+                                                    minzoom?: number | string;
+                                                    maxzoom?: number | string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
+                                                };
+                                                point?: {
+                                                    "marker-color"?: string;
+                                                    "marker-opacity"?: string;
+                                                    id?: string;
+                                                    type?: string;
+                                                    remarks?: string;
+                                                    phone?: string;
+                                                    stale?: number | string;
+                                                    /** @default true */
+                                                    rotate: boolean;
+                                                    minzoom?: number | string;
+                                                    maxzoom?: number | string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                    icon?: string;
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
+                                                };
+                                                polygon?: {
+                                                    stroke?: string;
+                                                    "stroke-style"?: string;
+                                                    "stroke-opacity"?: string;
+                                                    "stroke-width"?: string;
+                                                    fill?: string;
+                                                    "fill-opacity"?: string;
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    phone?: string;
+                                                    callsign?: string;
+                                                    stale?: number | string;
+                                                    minzoom?: number | string;
+                                                    maxzoom?: number | string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
+                                                };
+                                            };
+                                        }[];
                                     };
-                                }[];
+                                };
                             };
                             environment: unknown;
                             ephemeral: {
@@ -14280,166 +14318,13 @@ export interface paths {
                                 };
                                 cron: null | string;
                                 webhooks: boolean;
+                                /** @description Deprecated: use styles.feature.enabled - retained for ETL Task compatibility */
                                 enabled_styles: boolean;
                                 styles: {
-                                    line?: {
-                                        /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
-                                        type?: "u-d-f" | "b-m-r";
-                                        stroke?: string;
-                                        "stroke-style"?: string;
-                                        "stroke-opacity"?: string;
-                                        "stroke-width"?: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                    };
-                                    point?: {
-                                        "marker-color"?: string;
-                                        "marker-opacity"?: string;
-                                        id?: string;
-                                        type?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        stale?: number | string;
+                                    feature?: {
                                         /** @default true */
-                                        rotate: boolean;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        icon?: string;
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                    };
-                                    polygon?: {
-                                        stroke?: string;
-                                        "stroke-style"?: string;
-                                        "stroke-opacity"?: string;
-                                        "stroke-width"?: string;
-                                        fill?: string;
-                                        "fill-opacity"?: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        callsign?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                    };
-                                    id?: string;
-                                    remarks?: string;
-                                    phone?: string;
-                                    callsign?: string;
-                                    stale?: number | string;
-                                    minzoom?: number | string;
-                                    maxzoom?: number | string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    marti?: {
-                                        /** @description Whether the CoT should be archived by the TAK Server */
-                                        archive?: boolean;
-                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                        dest?: {
-                                            /** @description TAK Server channel (group) name to route this CoT to */
-                                            group?: string;
-                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                            mission?: string;
-                                            /** @description Individual client UID to route this CoT to */
-                                            uid?: string;
-                                            /** @description Individual client callsign to route this CoT to */
-                                            callsign?: string;
-                                        }[];
-                                    };
-                                    queries?: {
-                                        query: string;
-                                        delete?: boolean;
-                                        styles?: {
-                                            id?: string;
-                                            remarks?: string;
-                                            phone?: string;
-                                            callsign?: string;
-                                            stale?: number | string;
-                                            minzoom?: number | string;
-                                            maxzoom?: number | string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            marti?: {
-                                                /** @description Whether the CoT should be archived by the TAK Server */
-                                                archive?: boolean;
-                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                                dest?: {
-                                                    /** @description TAK Server channel (group) name to route this CoT to */
-                                                    group?: string;
-                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                    mission?: string;
-                                                    /** @description Individual client UID to route this CoT to */
-                                                    uid?: string;
-                                                    /** @description Individual client callsign to route this CoT to */
-                                                    callsign?: string;
-                                                }[];
-                                            };
+                                        enabled: boolean;
+                                        style: {
                                             line?: {
                                                 /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
                                                 type?: "u-d-f" | "b-m-r";
@@ -14542,8 +14427,168 @@ export interface paths {
                                                     }[];
                                                 };
                                             };
+                                            id?: string;
+                                            remarks?: string;
+                                            phone?: string;
+                                            callsign?: string;
+                                            stale?: number | string;
+                                            minzoom?: number | string;
+                                            maxzoom?: number | string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
+                                            queries?: {
+                                                query: string;
+                                                delete?: boolean;
+                                                styles?: {
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    phone?: string;
+                                                    callsign?: string;
+                                                    stale?: number | string;
+                                                    minzoom?: number | string;
+                                                    maxzoom?: number | string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
+                                                    line?: {
+                                                        /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                        type?: "u-d-f" | "b-m-r";
+                                                        stroke?: string;
+                                                        "stroke-style"?: string;
+                                                        "stroke-opacity"?: string;
+                                                        "stroke-width"?: string;
+                                                        id?: string;
+                                                        remarks?: string;
+                                                        phone?: string;
+                                                        stale?: number | string;
+                                                        minzoom?: number | string;
+                                                        maxzoom?: number | string;
+                                                        callsign?: string;
+                                                        links?: {
+                                                            remarks: string;
+                                                            url: string;
+                                                        }[];
+                                                        marti?: {
+                                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                                            archive?: boolean;
+                                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                            dest?: {
+                                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                                group?: string;
+                                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                mission?: string;
+                                                                /** @description Individual client UID to route this CoT to */
+                                                                uid?: string;
+                                                                /** @description Individual client callsign to route this CoT to */
+                                                                callsign?: string;
+                                                            }[];
+                                                        };
+                                                    };
+                                                    point?: {
+                                                        "marker-color"?: string;
+                                                        "marker-opacity"?: string;
+                                                        id?: string;
+                                                        type?: string;
+                                                        remarks?: string;
+                                                        phone?: string;
+                                                        stale?: number | string;
+                                                        /** @default true */
+                                                        rotate: boolean;
+                                                        minzoom?: number | string;
+                                                        maxzoom?: number | string;
+                                                        callsign?: string;
+                                                        links?: {
+                                                            remarks: string;
+                                                            url: string;
+                                                        }[];
+                                                        icon?: string;
+                                                        marti?: {
+                                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                                            archive?: boolean;
+                                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                            dest?: {
+                                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                                group?: string;
+                                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                mission?: string;
+                                                                /** @description Individual client UID to route this CoT to */
+                                                                uid?: string;
+                                                                /** @description Individual client callsign to route this CoT to */
+                                                                callsign?: string;
+                                                            }[];
+                                                        };
+                                                    };
+                                                    polygon?: {
+                                                        stroke?: string;
+                                                        "stroke-style"?: string;
+                                                        "stroke-opacity"?: string;
+                                                        "stroke-width"?: string;
+                                                        fill?: string;
+                                                        "fill-opacity"?: string;
+                                                        id?: string;
+                                                        remarks?: string;
+                                                        phone?: string;
+                                                        callsign?: string;
+                                                        stale?: number | string;
+                                                        minzoom?: number | string;
+                                                        maxzoom?: number | string;
+                                                        links?: {
+                                                            remarks: string;
+                                                            url: string;
+                                                        }[];
+                                                        marti?: {
+                                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                                            archive?: boolean;
+                                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                            dest?: {
+                                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                                group?: string;
+                                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                mission?: string;
+                                                                /** @description Individual client UID to route this CoT to */
+                                                                uid?: string;
+                                                                /** @description Individual client callsign to route this CoT to */
+                                                                callsign?: string;
+                                                            }[];
+                                                        };
+                                                    };
+                                                };
+                                            }[];
                                         };
-                                    }[];
+                                    };
                                 };
                                 environment: unknown;
                                 ephemeral: {
@@ -14832,166 +14877,13 @@ export interface paths {
                                 };
                                 cron: null | string;
                                 webhooks: boolean;
+                                /** @description Deprecated: use styles.feature.enabled - retained for ETL Task compatibility */
                                 enabled_styles: boolean;
                                 styles: {
-                                    line?: {
-                                        /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
-                                        type?: "u-d-f" | "b-m-r";
-                                        stroke?: string;
-                                        "stroke-style"?: string;
-                                        "stroke-opacity"?: string;
-                                        "stroke-width"?: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                    };
-                                    point?: {
-                                        "marker-color"?: string;
-                                        "marker-opacity"?: string;
-                                        id?: string;
-                                        type?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        stale?: number | string;
+                                    feature?: {
                                         /** @default true */
-                                        rotate: boolean;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        icon?: string;
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                    };
-                                    polygon?: {
-                                        stroke?: string;
-                                        "stroke-style"?: string;
-                                        "stroke-opacity"?: string;
-                                        "stroke-width"?: string;
-                                        fill?: string;
-                                        "fill-opacity"?: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        callsign?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                    };
-                                    id?: string;
-                                    remarks?: string;
-                                    phone?: string;
-                                    callsign?: string;
-                                    stale?: number | string;
-                                    minzoom?: number | string;
-                                    maxzoom?: number | string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    marti?: {
-                                        /** @description Whether the CoT should be archived by the TAK Server */
-                                        archive?: boolean;
-                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                        dest?: {
-                                            /** @description TAK Server channel (group) name to route this CoT to */
-                                            group?: string;
-                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                            mission?: string;
-                                            /** @description Individual client UID to route this CoT to */
-                                            uid?: string;
-                                            /** @description Individual client callsign to route this CoT to */
-                                            callsign?: string;
-                                        }[];
-                                    };
-                                    queries?: {
-                                        query: string;
-                                        delete?: boolean;
-                                        styles?: {
-                                            id?: string;
-                                            remarks?: string;
-                                            phone?: string;
-                                            callsign?: string;
-                                            stale?: number | string;
-                                            minzoom?: number | string;
-                                            maxzoom?: number | string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            marti?: {
-                                                /** @description Whether the CoT should be archived by the TAK Server */
-                                                archive?: boolean;
-                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                                dest?: {
-                                                    /** @description TAK Server channel (group) name to route this CoT to */
-                                                    group?: string;
-                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                    mission?: string;
-                                                    /** @description Individual client UID to route this CoT to */
-                                                    uid?: string;
-                                                    /** @description Individual client callsign to route this CoT to */
-                                                    callsign?: string;
-                                                }[];
-                                            };
+                                        enabled: boolean;
+                                        style: {
                                             line?: {
                                                 /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
                                                 type?: "u-d-f" | "b-m-r";
@@ -15094,8 +14986,168 @@ export interface paths {
                                                     }[];
                                                 };
                                             };
+                                            id?: string;
+                                            remarks?: string;
+                                            phone?: string;
+                                            callsign?: string;
+                                            stale?: number | string;
+                                            minzoom?: number | string;
+                                            maxzoom?: number | string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
+                                            queries?: {
+                                                query: string;
+                                                delete?: boolean;
+                                                styles?: {
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    phone?: string;
+                                                    callsign?: string;
+                                                    stale?: number | string;
+                                                    minzoom?: number | string;
+                                                    maxzoom?: number | string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
+                                                    line?: {
+                                                        /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                        type?: "u-d-f" | "b-m-r";
+                                                        stroke?: string;
+                                                        "stroke-style"?: string;
+                                                        "stroke-opacity"?: string;
+                                                        "stroke-width"?: string;
+                                                        id?: string;
+                                                        remarks?: string;
+                                                        phone?: string;
+                                                        stale?: number | string;
+                                                        minzoom?: number | string;
+                                                        maxzoom?: number | string;
+                                                        callsign?: string;
+                                                        links?: {
+                                                            remarks: string;
+                                                            url: string;
+                                                        }[];
+                                                        marti?: {
+                                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                                            archive?: boolean;
+                                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                            dest?: {
+                                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                                group?: string;
+                                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                mission?: string;
+                                                                /** @description Individual client UID to route this CoT to */
+                                                                uid?: string;
+                                                                /** @description Individual client callsign to route this CoT to */
+                                                                callsign?: string;
+                                                            }[];
+                                                        };
+                                                    };
+                                                    point?: {
+                                                        "marker-color"?: string;
+                                                        "marker-opacity"?: string;
+                                                        id?: string;
+                                                        type?: string;
+                                                        remarks?: string;
+                                                        phone?: string;
+                                                        stale?: number | string;
+                                                        /** @default true */
+                                                        rotate: boolean;
+                                                        minzoom?: number | string;
+                                                        maxzoom?: number | string;
+                                                        callsign?: string;
+                                                        links?: {
+                                                            remarks: string;
+                                                            url: string;
+                                                        }[];
+                                                        icon?: string;
+                                                        marti?: {
+                                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                                            archive?: boolean;
+                                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                            dest?: {
+                                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                                group?: string;
+                                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                mission?: string;
+                                                                /** @description Individual client UID to route this CoT to */
+                                                                uid?: string;
+                                                                /** @description Individual client callsign to route this CoT to */
+                                                                callsign?: string;
+                                                            }[];
+                                                        };
+                                                    };
+                                                    polygon?: {
+                                                        stroke?: string;
+                                                        "stroke-style"?: string;
+                                                        "stroke-opacity"?: string;
+                                                        "stroke-width"?: string;
+                                                        fill?: string;
+                                                        "fill-opacity"?: string;
+                                                        id?: string;
+                                                        remarks?: string;
+                                                        phone?: string;
+                                                        callsign?: string;
+                                                        stale?: number | string;
+                                                        minzoom?: number | string;
+                                                        maxzoom?: number | string;
+                                                        links?: {
+                                                            remarks: string;
+                                                            url: string;
+                                                        }[];
+                                                        marti?: {
+                                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                                            archive?: boolean;
+                                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                            dest?: {
+                                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                                group?: string;
+                                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                mission?: string;
+                                                                /** @description Individual client UID to route this CoT to */
+                                                                uid?: string;
+                                                                /** @description Individual client callsign to route this CoT to */
+                                                                callsign?: string;
+                                                            }[];
+                                                        };
+                                                    };
+                                                };
+                                            }[];
                                         };
-                                    }[];
+                                    };
                                 };
                                 environment: unknown;
                                 ephemeral: {
@@ -25961,166 +26013,13 @@ export interface paths {
                                     };
                                     cron: null | string;
                                     webhooks: boolean;
+                                    /** @description Deprecated: use styles.feature.enabled - retained for ETL Task compatibility */
                                     enabled_styles: boolean;
                                     styles: {
-                                        line?: {
-                                            /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
-                                            type?: "u-d-f" | "b-m-r";
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            phone?: string;
-                                            stale?: number | string;
-                                            minzoom?: number | string;
-                                            maxzoom?: number | string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            marti?: {
-                                                /** @description Whether the CoT should be archived by the TAK Server */
-                                                archive?: boolean;
-                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                                dest?: {
-                                                    /** @description TAK Server channel (group) name to route this CoT to */
-                                                    group?: string;
-                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                    mission?: string;
-                                                    /** @description Individual client UID to route this CoT to */
-                                                    uid?: string;
-                                                    /** @description Individual client callsign to route this CoT to */
-                                                    callsign?: string;
-                                                }[];
-                                            };
-                                        };
-                                        point?: {
-                                            "marker-color"?: string;
-                                            "marker-opacity"?: string;
-                                            id?: string;
-                                            type?: string;
-                                            remarks?: string;
-                                            phone?: string;
-                                            stale?: number | string;
+                                        feature?: {
                                             /** @default true */
-                                            rotate: boolean;
-                                            minzoom?: number | string;
-                                            maxzoom?: number | string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            icon?: string;
-                                            marti?: {
-                                                /** @description Whether the CoT should be archived by the TAK Server */
-                                                archive?: boolean;
-                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                                dest?: {
-                                                    /** @description TAK Server channel (group) name to route this CoT to */
-                                                    group?: string;
-                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                    mission?: string;
-                                                    /** @description Individual client UID to route this CoT to */
-                                                    uid?: string;
-                                                    /** @description Individual client callsign to route this CoT to */
-                                                    callsign?: string;
-                                                }[];
-                                            };
-                                        };
-                                        polygon?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            fill?: string;
-                                            "fill-opacity"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            phone?: string;
-                                            callsign?: string;
-                                            stale?: number | string;
-                                            minzoom?: number | string;
-                                            maxzoom?: number | string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            marti?: {
-                                                /** @description Whether the CoT should be archived by the TAK Server */
-                                                archive?: boolean;
-                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                                dest?: {
-                                                    /** @description TAK Server channel (group) name to route this CoT to */
-                                                    group?: string;
-                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                    mission?: string;
-                                                    /** @description Individual client UID to route this CoT to */
-                                                    uid?: string;
-                                                    /** @description Individual client callsign to route this CoT to */
-                                                    callsign?: string;
-                                                }[];
-                                            };
-                                        };
-                                        id?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        callsign?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                        queries?: {
-                                            query: string;
-                                            delete?: boolean;
-                                            styles?: {
-                                                id?: string;
-                                                remarks?: string;
-                                                phone?: string;
-                                                callsign?: string;
-                                                stale?: number | string;
-                                                minzoom?: number | string;
-                                                maxzoom?: number | string;
-                                                links?: {
-                                                    remarks: string;
-                                                    url: string;
-                                                }[];
-                                                marti?: {
-                                                    /** @description Whether the CoT should be archived by the TAK Server */
-                                                    archive?: boolean;
-                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                                    dest?: {
-                                                        /** @description TAK Server channel (group) name to route this CoT to */
-                                                        group?: string;
-                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                        mission?: string;
-                                                        /** @description Individual client UID to route this CoT to */
-                                                        uid?: string;
-                                                        /** @description Individual client callsign to route this CoT to */
-                                                        callsign?: string;
-                                                    }[];
-                                                };
+                                            enabled: boolean;
+                                            style: {
                                                 line?: {
                                                     /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
                                                     type?: "u-d-f" | "b-m-r";
@@ -26223,8 +26122,168 @@ export interface paths {
                                                         }[];
                                                     };
                                                 };
+                                                id?: string;
+                                                remarks?: string;
+                                                phone?: string;
+                                                callsign?: string;
+                                                stale?: number | string;
+                                                minzoom?: number | string;
+                                                maxzoom?: number | string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
+                                                queries?: {
+                                                    query: string;
+                                                    delete?: boolean;
+                                                    styles?: {
+                                                        id?: string;
+                                                        remarks?: string;
+                                                        phone?: string;
+                                                        callsign?: string;
+                                                        stale?: number | string;
+                                                        minzoom?: number | string;
+                                                        maxzoom?: number | string;
+                                                        links?: {
+                                                            remarks: string;
+                                                            url: string;
+                                                        }[];
+                                                        marti?: {
+                                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                                            archive?: boolean;
+                                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                            dest?: {
+                                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                                group?: string;
+                                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                mission?: string;
+                                                                /** @description Individual client UID to route this CoT to */
+                                                                uid?: string;
+                                                                /** @description Individual client callsign to route this CoT to */
+                                                                callsign?: string;
+                                                            }[];
+                                                        };
+                                                        line?: {
+                                                            /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                            type?: "u-d-f" | "b-m-r";
+                                                            stroke?: string;
+                                                            "stroke-style"?: string;
+                                                            "stroke-opacity"?: string;
+                                                            "stroke-width"?: string;
+                                                            id?: string;
+                                                            remarks?: string;
+                                                            phone?: string;
+                                                            stale?: number | string;
+                                                            minzoom?: number | string;
+                                                            maxzoom?: number | string;
+                                                            callsign?: string;
+                                                            links?: {
+                                                                remarks: string;
+                                                                url: string;
+                                                            }[];
+                                                            marti?: {
+                                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                                archive?: boolean;
+                                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                                dest?: {
+                                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                                    group?: string;
+                                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                    mission?: string;
+                                                                    /** @description Individual client UID to route this CoT to */
+                                                                    uid?: string;
+                                                                    /** @description Individual client callsign to route this CoT to */
+                                                                    callsign?: string;
+                                                                }[];
+                                                            };
+                                                        };
+                                                        point?: {
+                                                            "marker-color"?: string;
+                                                            "marker-opacity"?: string;
+                                                            id?: string;
+                                                            type?: string;
+                                                            remarks?: string;
+                                                            phone?: string;
+                                                            stale?: number | string;
+                                                            /** @default true */
+                                                            rotate: boolean;
+                                                            minzoom?: number | string;
+                                                            maxzoom?: number | string;
+                                                            callsign?: string;
+                                                            links?: {
+                                                                remarks: string;
+                                                                url: string;
+                                                            }[];
+                                                            icon?: string;
+                                                            marti?: {
+                                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                                archive?: boolean;
+                                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                                dest?: {
+                                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                                    group?: string;
+                                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                    mission?: string;
+                                                                    /** @description Individual client UID to route this CoT to */
+                                                                    uid?: string;
+                                                                    /** @description Individual client callsign to route this CoT to */
+                                                                    callsign?: string;
+                                                                }[];
+                                                            };
+                                                        };
+                                                        polygon?: {
+                                                            stroke?: string;
+                                                            "stroke-style"?: string;
+                                                            "stroke-opacity"?: string;
+                                                            "stroke-width"?: string;
+                                                            fill?: string;
+                                                            "fill-opacity"?: string;
+                                                            id?: string;
+                                                            remarks?: string;
+                                                            phone?: string;
+                                                            callsign?: string;
+                                                            stale?: number | string;
+                                                            minzoom?: number | string;
+                                                            maxzoom?: number | string;
+                                                            links?: {
+                                                                remarks: string;
+                                                                url: string;
+                                                            }[];
+                                                            marti?: {
+                                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                                archive?: boolean;
+                                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                                dest?: {
+                                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                                    group?: string;
+                                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                    mission?: string;
+                                                                    /** @description Individual client UID to route this CoT to */
+                                                                    uid?: string;
+                                                                    /** @description Individual client callsign to route this CoT to */
+                                                                    callsign?: string;
+                                                                }[];
+                                                            };
+                                                        };
+                                                    };
+                                                }[];
                                             };
-                                        }[];
+                                        };
                                     };
                                     environment: unknown;
                                     ephemeral: {
@@ -26403,166 +26462,13 @@ export interface paths {
                                 };
                                 cron: null | string;
                                 webhooks: boolean;
+                                /** @description Deprecated: use styles.feature.enabled - retained for ETL Task compatibility */
                                 enabled_styles: boolean;
                                 styles: {
-                                    line?: {
-                                        /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
-                                        type?: "u-d-f" | "b-m-r";
-                                        stroke?: string;
-                                        "stroke-style"?: string;
-                                        "stroke-opacity"?: string;
-                                        "stroke-width"?: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                    };
-                                    point?: {
-                                        "marker-color"?: string;
-                                        "marker-opacity"?: string;
-                                        id?: string;
-                                        type?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        stale?: number | string;
+                                    feature?: {
                                         /** @default true */
-                                        rotate: boolean;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        icon?: string;
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                    };
-                                    polygon?: {
-                                        stroke?: string;
-                                        "stroke-style"?: string;
-                                        "stroke-opacity"?: string;
-                                        "stroke-width"?: string;
-                                        fill?: string;
-                                        "fill-opacity"?: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        phone?: string;
-                                        callsign?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        marti?: {
-                                            /** @description Whether the CoT should be archived by the TAK Server */
-                                            archive?: boolean;
-                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                            dest?: {
-                                                /** @description TAK Server channel (group) name to route this CoT to */
-                                                group?: string;
-                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                mission?: string;
-                                                /** @description Individual client UID to route this CoT to */
-                                                uid?: string;
-                                                /** @description Individual client callsign to route this CoT to */
-                                                callsign?: string;
-                                            }[];
-                                        };
-                                    };
-                                    id?: string;
-                                    remarks?: string;
-                                    phone?: string;
-                                    callsign?: string;
-                                    stale?: number | string;
-                                    minzoom?: number | string;
-                                    maxzoom?: number | string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    marti?: {
-                                        /** @description Whether the CoT should be archived by the TAK Server */
-                                        archive?: boolean;
-                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                        dest?: {
-                                            /** @description TAK Server channel (group) name to route this CoT to */
-                                            group?: string;
-                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                            mission?: string;
-                                            /** @description Individual client UID to route this CoT to */
-                                            uid?: string;
-                                            /** @description Individual client callsign to route this CoT to */
-                                            callsign?: string;
-                                        }[];
-                                    };
-                                    queries?: {
-                                        query: string;
-                                        delete?: boolean;
-                                        styles?: {
-                                            id?: string;
-                                            remarks?: string;
-                                            phone?: string;
-                                            callsign?: string;
-                                            stale?: number | string;
-                                            minzoom?: number | string;
-                                            maxzoom?: number | string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            marti?: {
-                                                /** @description Whether the CoT should be archived by the TAK Server */
-                                                archive?: boolean;
-                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
-                                                dest?: {
-                                                    /** @description TAK Server channel (group) name to route this CoT to */
-                                                    group?: string;
-                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
-                                                    mission?: string;
-                                                    /** @description Individual client UID to route this CoT to */
-                                                    uid?: string;
-                                                    /** @description Individual client callsign to route this CoT to */
-                                                    callsign?: string;
-                                                }[];
-                                            };
+                                        enabled: boolean;
+                                        style: {
                                             line?: {
                                                 /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
                                                 type?: "u-d-f" | "b-m-r";
@@ -26665,8 +26571,168 @@ export interface paths {
                                                     }[];
                                                 };
                                             };
+                                            id?: string;
+                                            remarks?: string;
+                                            phone?: string;
+                                            callsign?: string;
+                                            stale?: number | string;
+                                            minzoom?: number | string;
+                                            maxzoom?: number | string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
+                                            queries?: {
+                                                query: string;
+                                                delete?: boolean;
+                                                styles?: {
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    phone?: string;
+                                                    callsign?: string;
+                                                    stale?: number | string;
+                                                    minzoom?: number | string;
+                                                    maxzoom?: number | string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
+                                                    line?: {
+                                                        /** @description CoT Type for LineString Features - u-d-f: User Drawn Line (default) or b-m-r: Route */
+                                                        type?: "u-d-f" | "b-m-r";
+                                                        stroke?: string;
+                                                        "stroke-style"?: string;
+                                                        "stroke-opacity"?: string;
+                                                        "stroke-width"?: string;
+                                                        id?: string;
+                                                        remarks?: string;
+                                                        phone?: string;
+                                                        stale?: number | string;
+                                                        minzoom?: number | string;
+                                                        maxzoom?: number | string;
+                                                        callsign?: string;
+                                                        links?: {
+                                                            remarks: string;
+                                                            url: string;
+                                                        }[];
+                                                        marti?: {
+                                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                                            archive?: boolean;
+                                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                            dest?: {
+                                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                                group?: string;
+                                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                mission?: string;
+                                                                /** @description Individual client UID to route this CoT to */
+                                                                uid?: string;
+                                                                /** @description Individual client callsign to route this CoT to */
+                                                                callsign?: string;
+                                                            }[];
+                                                        };
+                                                    };
+                                                    point?: {
+                                                        "marker-color"?: string;
+                                                        "marker-opacity"?: string;
+                                                        id?: string;
+                                                        type?: string;
+                                                        remarks?: string;
+                                                        phone?: string;
+                                                        stale?: number | string;
+                                                        /** @default true */
+                                                        rotate: boolean;
+                                                        minzoom?: number | string;
+                                                        maxzoom?: number | string;
+                                                        callsign?: string;
+                                                        links?: {
+                                                            remarks: string;
+                                                            url: string;
+                                                        }[];
+                                                        icon?: string;
+                                                        marti?: {
+                                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                                            archive?: boolean;
+                                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                            dest?: {
+                                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                                group?: string;
+                                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                mission?: string;
+                                                                /** @description Individual client UID to route this CoT to */
+                                                                uid?: string;
+                                                                /** @description Individual client callsign to route this CoT to */
+                                                                callsign?: string;
+                                                            }[];
+                                                        };
+                                                    };
+                                                    polygon?: {
+                                                        stroke?: string;
+                                                        "stroke-style"?: string;
+                                                        "stroke-opacity"?: string;
+                                                        "stroke-width"?: string;
+                                                        fill?: string;
+                                                        "fill-opacity"?: string;
+                                                        id?: string;
+                                                        remarks?: string;
+                                                        phone?: string;
+                                                        callsign?: string;
+                                                        stale?: number | string;
+                                                        minzoom?: number | string;
+                                                        maxzoom?: number | string;
+                                                        links?: {
+                                                            remarks: string;
+                                                            url: string;
+                                                        }[];
+                                                        marti?: {
+                                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                                            archive?: boolean;
+                                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                            dest?: {
+                                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                                group?: string;
+                                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                                mission?: string;
+                                                                /** @description Individual client UID to route this CoT to */
+                                                                uid?: string;
+                                                                /** @description Individual client callsign to route this CoT to */
+                                                                callsign?: string;
+                                                            }[];
+                                                        };
+                                                    };
+                                                };
+                                            }[];
                                         };
-                                    }[];
+                                    };
                                 };
                                 environment: unknown;
                                 ephemeral: {

@@ -170,6 +170,11 @@ export enum Layer_Priority {
     OFF = 'off',
 }
 
+/** Underlying data type a Layer Style row applies to */
+export enum Layer_Style_Target {
+    FEATURE = 'feature',
+}
+
 export enum Profile_Text {
     Small = 'Small',
     Medium = 'Medium',

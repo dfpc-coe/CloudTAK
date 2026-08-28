@@ -10,6 +10,10 @@
 
 ## Version History
 
+### Pending Release
+
+- :rocket: Move Incoming Layer styles into a dedicated `layer_style` table keyed by target data type. `incoming.styles` is now `{ feature: { enabled, style } }` - existing styles are migrated automatically and `incoming.enabled_styles` is retained (read-only) for ETL Task compatibility
+
 ### Deprecation Notices
 
 - `GET /api/search/reverse/:long/:lat` endpoint is deprecated and will be removed in v14, use `GET /api/search/reverse/:long/:lat/<type>` instead

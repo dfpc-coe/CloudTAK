@@ -276,7 +276,7 @@ const loading = ref({
     save: false
 });
 
-const enabled = ref(props.layer.incoming?.enabled_styles);
+const enabled = ref(props.layer.incoming?.styles.feature?.enabled ?? false);
 
 const style = ref<Record<string, unknown>>({
     callsign: '',
@@ -293,11 +293,11 @@ onMounted(() => {
 });
 
 function reload() {
-    const clone = JSON.parse(JSON.stringify(props.layer.incoming?.styles ?? {}));
+    const clone = JSON.parse(JSON.stringify(props.layer.incoming?.styles.feature?.style ?? {}));
     queries.value = clone.queries || [];
     delete clone.queries;
 
-    style.value = Object.assign(style.value, JSON.parse(JSON.stringify(props.layer.incoming?.styles ?? {})));
+    style.value = Object.assign(style.value, clone);
 
     disabled.value = true;
 }
@@ -329,10 +329,14 @@ async function saveLayer() {
                 }
             },
             body: {
-                enabled_styles: enabled.value,
                 styles: {
-                    ...style.value,
-                    queries: queries.value
+                    feature: {
+                        enabled: enabled.value,
+                        style: {
+                            ...style.value,
+                            queries: queries.value
+                        }
+                    }
                 }
             }
         });

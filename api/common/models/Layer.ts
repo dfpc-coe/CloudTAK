@@ -1,12 +1,13 @@
 import Modeler, { GenericList, GenericCountInput, GenericIterInput, GenericListInput } from '@openaddresses/batch-generic';
 import Err from '@openaddresses/batch-error';
 import { jsonBuildObject } from './utils.js';
-import { StyleContainer } from '../style.js';
+import { LayerStyles } from '../style.js';
 import { FilterContainer } from '../filter.js';
 import { Layer_Priority } from '../enums.js';
 import { Static, Type } from '@sinclair/typebox';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { Connection, Layer, LayerIncoming, LayerOutgoing } from '../schema.js';
+import { Connection, Layer, LayerIncoming, LayerOutgoing, LayerStyle } from '../schema.js';
+import { Layer_Style_Target } from '../enums.js';
 import { sql, eq, asc, desc, is, SQL } from 'drizzle-orm';
 
 export const Layer_Config = Type.Object({
@@ -31,8 +32,11 @@ export const AugmentedLayerIncoming = Type.Object({
     config: Layer_Config,
     cron: Type.Union([Type.Null(), Type.String()]),
     webhooks: Type.Boolean(),
-    enabled_styles: Type.Boolean(),
-    styles: StyleContainer,
+    /** @deprecated Mirrors styles.feature.enabled - retained for ETL Task compatibility */
+    enabled_styles: Type.Boolean({
+        description: 'Deprecated: use styles.feature.enabled - retained for ETL Task compatibility',
+    }),
+    styles: LayerStyles,
     environment: Type.Any(),
     ephemeral: Type.Record(Type.String(), Type.Any()),
     data: Type.Union([Type.Null(), Type.Integer()]),
@@ -100,6 +104,23 @@ export default class LayerModel extends Modeler<typeof Layer> {
 
             return Array.from(taskSet);
         }
+    }
+
+    #layerStyles(): SQL {
+        return sql`(
+            SELECT COALESCE(jsonb_object_agg(${LayerStyle.target}, jsonb_build_object('enabled', ${LayerStyle.enabled}, 'style', ${LayerStyle.style})), '{}'::jsonb)
+            FROM ${LayerStyle}
+            WHERE ${LayerStyle.layer} = ${LayerIncoming.layer}
+        )`;
+    }
+
+    #featureStylesEnabled(): SQL {
+        return sql`COALESCE((
+            SELECT ${LayerStyle.enabled}
+            FROM ${LayerStyle}
+            WHERE ${LayerStyle.layer} = ${LayerIncoming.layer}
+                AND ${LayerStyle.target} = ${Layer_Style_Target.FEATURE}
+        ), False)`;
     }
 
     parse(input: Omit<Static<typeof AugmentedLayer>, 'template'>): Static<typeof AugmentedLayer> {
@@ -193,8 +214,8 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     ephemeral: LayerIncoming.ephemeral,
                     config: LayerIncoming.config,
                     data: LayerIncoming.data,
-                    enabled_styles: LayerIncoming.enabled_styles,
-                    styles: LayerIncoming.styles,
+                    enabled_styles: this.#featureStylesEnabled(),
+                    styles: this.#layerStyles(),
                 }),
 
                 outgoing: jsonBuildObject({
@@ -275,8 +296,8 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     ephemeral: LayerIncoming.ephemeral,
                     config: LayerIncoming.config,
                     data: LayerIncoming.data,
-                    enabled_styles: LayerIncoming.enabled_styles,
-                    styles: LayerIncoming.styles,
+                    enabled_styles: this.#featureStylesEnabled(),
+                    styles: this.#layerStyles(),
                 }),
 
                 outgoing: jsonBuildObject({
