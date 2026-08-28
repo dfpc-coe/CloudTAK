@@ -51,6 +51,7 @@
         "@openaddresses/batch-generic": "^25.0.0",
         "@openaddresses/batch-schema": "^10.28.0",
         "@openaddresses/cloudfriend": "^7.0.0",
+        "@photostructure/tz-lookup": "^11.6.1",
         "@simplewebauthn/server": "^13.3.0",
         "@sinclair/typebox": "^0.34.52",
         "@tak-ps/etl": "^10.15.0",
