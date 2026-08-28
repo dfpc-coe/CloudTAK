@@ -143,7 +143,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                         return { keep: false as const, item };
                     }
                 } else if (item.mode === 'mission' && item.mode_id && api) {
-                    const subscription = await profileControl.subscription(user.email, item.name);
+                    const subscription = await profileControl.subscription(user.email, item.mode_id);
                     if (!(await api.Mission.access(item.mode_id, subscription))) {
                         return { keep: false as const, item };
                     }
