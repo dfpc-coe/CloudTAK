@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.75.1 - 2026-08-28
+
+- :rocket: Add Touch Support for Lasso Mode
+
 ### v13.75.0 - 2026-08-27
 
 - :tada: Introduce Task Specific UI for ETL Version & Permissions Management
