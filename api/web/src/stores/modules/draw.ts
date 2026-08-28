@@ -286,7 +286,9 @@ export default class DrawTool {
                 }),
                 routeSnapMode,
                 new terraDraw.TerraDrawAngledRectangleMode(),
-                new terraDraw.TerraDrawFreehandMode(),
+                new terraDraw.TerraDrawFreehandMode({
+                    drawInteraction: 'click-move-or-drag',
+                }),
                 new terraDraw.TerraDrawSectorMode(),
                 new terraDraw.TerraDrawCircleMode({
                     drawInteraction: 'click-move-or-drag',
