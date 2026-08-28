@@ -1,0 +1,1 @@
+ALTER TABLE "data" ADD COLUMN IF NOT EXISTS "mission_guid" text;

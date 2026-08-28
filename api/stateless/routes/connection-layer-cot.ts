@@ -124,7 +124,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     const inputFeats = new Set(req.body.uids);
 
                     const { features } = await api.MissionLayer.latestFeats(
-                        data.name,
+                        data.mission_guid || data.name,
                         `layer-${layer.id}`,
                         { token: data.mission_token || undefined },
                     );
@@ -137,7 +137,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                              *  cots.push(cot);
                              */
                             await api.Mission.detachContents(
-                                data.name,
+                                data.mission_guid || data.name,
                                 { uid: String(feat.id) },
                                 { token: data.mission_token || undefined },
                             );
@@ -150,7 +150,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     }
 
                     const pathMap = await api.MissionLayer.listAsPathMap(
-                        data.name,
+                        data.mission_guid || data.name,
                         { token: data.mission_token || undefined },
                     );
 
@@ -169,7 +169,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                             if (!pathMapEntry) {
                                 const missionLayer = await api.MissionLayer.create(
-                                    data.name,
+                                    data.mission_guid || data.name,
                                     {
                                         uid: `layer-${layer.id}-${crypto.randomUUID()}`,
                                         name: p,
@@ -206,7 +206,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                         if (api.MissionLayer.isEmpty(pathLayer)) {
                             await api.MissionLayer.delete(
-                                data.name,
+                                data.mission_guid || data.name,
                                 {
                                     uid: [pathLayer.uid],
                                     creatorUid: `connection-${data.connection}-data-${data.id}`,

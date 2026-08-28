@@ -33,14 +33,19 @@ export default class DataMission {
         let mission;
 
         try {
-            mission = await api.Mission.get(data.name, {}, {
+            mission = await api.Mission.get(data.mission_guid || data.name, {}, {
                 token: data.mission_token || undefined,
             });
+
+            if (mission.guid && mission.guid !== data.mission_guid) {
+                await config.models.Data.commit(data.id, { mission_guid: mission.guid });
+                data.mission_guid = mission.guid;
+            }
 
             // TODO Update Groups: Not supported by TAK Server at this time
 
             if (!data.mission_sync) {
-                await api.Mission.delete(data.name, {}, {
+                await api.Mission.delete(data.mission_guid || data.name, {}, {
                     token: data.mission_token || undefined,
                 });
                 return;
@@ -65,10 +70,12 @@ export default class DataMission {
 
             await config.models.Data.commit(data.id, {
                 mission_token: mission.token || undefined,
+                mission_guid: mission.guid,
             });
+            data.mission_guid = mission.guid;
 
             if (connection.enabled) {
-                await api.Mission.subscribe(data.name, {
+                await api.Mission.subscribe(data.mission_guid || data.name, {
                     uid: ConnectionControl.uid(connection.auth.cert),
                 }, {
                     token: mission.token || undefined,
@@ -81,9 +88,11 @@ export default class DataMission {
             where: sql`layers_incoming.data = ${data.id}`,
         });
 
+        const missionId = data.mission_guid || data.name;
+
         const existMap: Map<string, Static<typeof MissionLayer>> = new Map();
         for (const l of (await api.MissionLayer.list(
-            data.name,
+            missionId,
             { token: data.mission_token || undefined },
         )).data) existMap.set(l.uid, l);
 
@@ -92,7 +101,7 @@ export default class DataMission {
 
             if (!exists) {
                 await api.MissionLayer.create(
-                    data.name,
+                    missionId,
                     {
                         uid: `layer-${l.id}`,
                         name: l.name,
@@ -104,7 +113,7 @@ export default class DataMission {
             } else {
                 if (exists.type !== MissionLayerType.UID) {
                     await api.MissionLayer.delete(
-                        data.name,
+                        missionId,
                         {
                             uid: [`layer-${l.id}`],
                             creatorUid: `connection-${data.connection}-data-${data.id}`,
@@ -113,7 +122,7 @@ export default class DataMission {
                     );
 
                     await api.MissionLayer.create(
-                        data.name,
+                        missionId,
                         {
                             uid: `layer-${l.id}`,
                             name: l.name,

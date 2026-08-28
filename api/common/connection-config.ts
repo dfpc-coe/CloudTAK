@@ -25,6 +25,7 @@ export const ConnectionAuth = Type.Object({
 
 export type MissionSub = {
     name: string;
+    guid: string | null;
     token: string | null;
 };
 
@@ -35,7 +36,7 @@ export default interface ConnectionConfig {
     auth: Static<typeof ConnectionAuth>;
     config: ConfigStateful;
 
-    subscription: (name: string) => Promise<null | MissionSub>;
+    subscription: (id: string) => Promise<null | MissionSub>;
     subscriptions: () => Promise<Array<MissionSub>>;
 
     geofences(): Promise<Array<Feature>>;
@@ -100,6 +101,7 @@ export class MachineConnConfig implements ConnectionConfig {
 
         return {
             name: missions.items[0].name,
+            guid: missions.items[0].mission_guid,
             token: missions.items[0].mission_token,
         };
     }
@@ -113,7 +115,7 @@ export class MachineConnConfig implements ConnectionConfig {
         });
 
         return missions.items.map((m) => {
-            return { name: m.name, token: m.mission_token };
+            return { name: m.name, guid: m.mission_guid, token: m.mission_token };
         });
     }
 
@@ -170,10 +172,10 @@ export class ProfileConnConfig implements ConnectionConfig {
         return `ANDROID-CloudTAK-${this.id}`;
     }
 
-    async subscription(name: string): Promise<null | MissionSub> {
+    async subscription(guid: string): Promise<null | MissionSub> {
         const missions = await this.config.models.ProfileOverlay.list({
             where: sql`
-                name = ${name}
+                mode_id = ${guid}
                 AND mode = 'mission'
                 AND username = ${this.id}
             `,
@@ -185,6 +187,7 @@ export class ProfileConnConfig implements ConnectionConfig {
 
         return {
             name: missions.items[0].name,
+            guid: missions.items[0].mode_id,
             token: missions.items[0].token,
         };
     }
@@ -198,7 +201,7 @@ export class ProfileConnConfig implements ConnectionConfig {
         });
 
         return missions.items.map((m) => {
-            return { name: m.name, token: m.token };
+            return { name: m.name, guid: m.mode_id, token: m.token };
         });
     }
 

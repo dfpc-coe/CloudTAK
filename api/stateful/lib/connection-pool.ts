@@ -191,20 +191,6 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         this.clear();
     }
 
-    async subscription(connection: number | string, name: string): Promise<{
-        name: string;
-        token?: string;
-    }> {
-        const conn = this.get(connection);
-        if (!conn) return { name: name };
-        const sub = await conn.config.subscription(name);
-        if (!sub) return { name: name };
-        return {
-            name: sub.name,
-            token: sub.token || undefined,
-        };
-    }
-
     async activeChannels(connection: number | string, fallbackApi?: TAKAPI): Promise<Set<number>> {
         const conn = this.get(connection);
         if (conn?.channels.size) {
@@ -500,7 +486,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                 let retry = true;
                 do {
                     try {
-                        await api.Mission.subscribe(sub.name, {
+                        await api.Mission.subscribe(sub.guid || sub.name, {
                             uid: connConfig.uid(),
                         }, {
                             token: sub.token || undefined,

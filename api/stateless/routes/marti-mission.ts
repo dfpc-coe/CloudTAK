@@ -420,8 +420,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ? { token: String(req.headers['missionauthorization']) }
                 : await profileControl.subscription(user.email, req.params.guid);
 
+            const mission = await api.Mission.get(req.params.guid, {}, opts);
+
             if (req.query.download) {
-                res.setHeader('Content-Disposition', `attachment; filename="${req.params.guid}.${req.query.format}"`);
+                res.setHeader('Content-Disposition', `attachment; filename="${mission.name}.${req.query.format}"`);
             }
 
             if (req.query.format === 'zip') {
@@ -434,10 +436,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 archive.pipe(res);
             } else if (['geojson', 'kml'].includes(req.query.format)) {
-                const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
-                    ? { token: String(req.headers['missionauthorization']) }
-                    : await profileControl.subscription(user.email, req.params.guid);
-
                 const fc = {
                     type: 'FeatureCollection',
                     features: (await api.Mission.latestFeats(req.params.guid, opts)).features,
@@ -454,7 +452,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     res.set('Content-Type', 'application/vnd.google-earth.kml+xml');
 
                     const output = Buffer.from(tokml(fc, {
-                        documentName: req.params.guid,
+                        documentName: mission.name,
                         documentDescription: 'Exported from CloudTAK',
                         simplestyle: true,
                         name: 'callsign',

@@ -115,26 +115,26 @@ export default class ProfileControl {
     }
 
     /**
-     * Resolve Mission subscription options (name + token) for a user
+     * Resolve Mission subscription options (guid + token) for a user
      */
-    async subscription(username: string, name: string): Promise<{
-        name: string;
+    async subscription(username: string, guid: string): Promise<{
+        guid: string;
         token?: string;
     }> {
         const missions = await this.config.models.ProfileOverlay.list({
             where: sql`
-                name = ${name}
+                mode_id = ${guid}
                 AND mode = 'mission'
                 AND username = ${username}
             `,
         });
 
         if (missions.items.length === 0) {
-            return { name };
+            return { guid };
         }
 
         return {
-            name: missions.items[0].name,
+            guid,
             token: missions.items[0].token || undefined,
         };
     }
