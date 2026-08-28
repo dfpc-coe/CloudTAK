@@ -53340,6 +53340,8 @@ export interface paths {
                                 nauticalDawn: string | null;
                                 /** @description dawn (morning nautical twilight ends, morning civil twilight starts) */
                                 dawn: string | null;
+                                /** @description IANA timezone identifier at the queried coordinate. The times above are UTC instants; render them in this zone, not the viewer's. Null if it could not be resolved, in which case present them as UTC. */
+                                timezone: string | null;
                             };
                             magnetic: {
                                 declination: number;
@@ -53540,6 +53542,8 @@ export interface paths {
                                 nauticalDawn: string | null;
                                 /** @description dawn (morning nautical twilight ends, morning civil twilight starts) */
                                 dawn: string | null;
+                                /** @description IANA timezone identifier at the queried coordinate. The times above are UTC instants; render them in this zone, not the viewer's. Null if it could not be resolved, in which case present them as UTC. */
+                                timezone: string | null;
                             };
                         };
                     };

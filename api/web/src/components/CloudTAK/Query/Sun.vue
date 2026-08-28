@@ -1,7 +1,13 @@
 <template>
     <div class='col-12 row g-0'>
-        <div class='col-12'>
+        <div class='col-12 d-flex align-items-center'>
             <label class='subheader mx-2'>Sun Phase</label>
+            <span
+                v-if='sun'
+                class='subheader ms-auto me-2'
+                :title='timeZone'
+                v-text='timeZoneLabel'
+            />
         </div>
         <TablerLoading
             v-if='loading'
@@ -219,10 +225,32 @@ function getMoonPhase(date: Date) {
 const moon = computed(() => getMoonPhase(new Date()));
 const prevMoon = computed(() => getMoonPhase(new Date(Date.now() - 86400000)));
 
-const timeFormatter = new Intl.DateTimeFormat(undefined, {
+const timeZone = computed(() => {
+    const zone = sun.value?.timezone;
+    if (!zone) return 'UTC';
+
+    try {
+        new Intl.DateTimeFormat(undefined, { timeZone: zone });
+        return zone;
+    } catch {
+        return 'UTC';
+    }
+});
+
+const timeFormatter = computed(() => new Intl.DateTimeFormat(undefined, {
     hour: '2-digit',
     minute: '2-digit',
-    hour12: false
+    hour12: false,
+    timeZone: timeZone.value
+}));
+
+const timeZoneLabel = computed(() => {
+    const parts = new Intl.DateTimeFormat(undefined, {
+        timeZone: timeZone.value,
+        timeZoneName: 'short'
+    }).formatToParts(new Date());
+
+    return parts.find(part => part.type === 'timeZoneName')?.value || timeZone.value;
 });
 
 const relativeTimeFormatter = new Intl.RelativeTimeFormat(undefined, {
@@ -240,7 +268,7 @@ const relativeTimeUnits = [
 ] as const;
 
 function formatTime(time: string) {
-    return timeFormatter.format(new Date(time));
+    return timeFormatter.value.format(new Date(time));
 }
 
 function fromNow(time: string) {
