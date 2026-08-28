@@ -140,7 +140,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                         console.error(err);
                     }
 
-                    await api.Mission.attachContents(data.name, {
+                    await api.Mission.attachContents(data.mission_guid || data.name, {
                         hashes: [content.Hash],
                     }, {
                         token: data.mission_token || undefined,
@@ -190,13 +190,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const file = `${req.params.asset}.${req.params.ext}`;
             try {
                 if (data.mission_sync) {
-                    const mission = await api.Mission.get(data.name, {}, {
+                    const mission = await api.Mission.get(data.mission_guid || data.name, {}, {
                         token: data.mission_token || undefined,
                     });
 
                     for (const content of mission.contents) {
                         if (content.data.name === file) {
-                            await api.Mission.detachContents(data.name, {
+                            await api.Mission.detachContents(data.mission_guid || data.name, {
                                 hash: content.data.hash,
                             }, {
                                 token: data.mission_token || undefined,

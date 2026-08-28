@@ -47,6 +47,7 @@ export default class DataModel extends Modeler<typeof Data> {
                 mission_groups: Data.mission_groups,
                 mission_role: Data.mission_role,
                 mission_token: Data.mission_token,
+                mission_guid: Data.mission_guid,
                 mission_diff: Data.mission_diff,
             })
             .from(Data)

@@ -592,6 +592,7 @@ export const Data = pgTable('data', {
     mission_diff: boolean().notNull().default(false),
     mission_role: text().notNull().default('MISSION_SUBSCRIBER'),
     mission_token: text(),
+    mission_guid: text(),
     mission_groups: text().array().notNull().default([]),
     assets: jsonb().$type<Array<string>>().notNull().default(['*']),
     connection: integer().notNull().references(() => Connection.id),

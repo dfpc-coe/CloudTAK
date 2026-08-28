@@ -500,7 +500,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                 let retry = true;
                 do {
                     try {
-                        await api.Mission.subscribe(sub.name, {
+                        await api.Mission.subscribe(sub.guid || sub.name, {
                             uid: connConfig.uid(),
                         }, {
                             token: sub.token || undefined,
