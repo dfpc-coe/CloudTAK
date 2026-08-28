@@ -17,6 +17,8 @@
 
 ### Pending Release
 
+- :rocket: Use Mission GUID internally when possible
+- :arrow_up: Update to latest node-tak which increases the number of native GUID APIs
 - :bug: `API` Resolve stored Mission tokens by `mode_id` (GUID) instead of the Mission display name when looking up a user's Data Sync subscription - the web client has passed GUIDs to these endpoints since the route migration so the name lookup never matched
 - :rocket: `API` Subscribe user connections to Data Syncs by GUID on connect
 - :rocket: `API` Store the TAK Server Mission GUID on Data Syncs (`data.mission_guid`, populated on create & backfilled on next sync) and address the Mission by GUID for all Data Sync, Layer & Asset calls
