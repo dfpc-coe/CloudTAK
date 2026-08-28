@@ -1787,21 +1787,9 @@ export const useMapStore = defineStore('cloudtak', {
             this.map.setPaintProperty('background', 'background-color', color);
         },
         updateAttribution: async function(): Promise<void> {
-            const attributionPromises = OverlayManager.visibleBasemaps().map(async (overlay) => {
-                    try {
-                        const basemapRes = await server.GET('/api/basemap/{:basemapid}', {
-                            params: { path: { ':basemapid': Number(overlay.mode_id) } }
-                        });
-                        if (basemapRes.error) return null;
-                        return (basemapRes.data as Basemap).attribution;
-                    } catch (err) {
-                        console.warn('Failed to load basemap attribution:', err);
-                        return null;
-                    }
-                });
-
-            const results = await Promise.all(attributionPromises);
-            const attributions = results.filter((a): a is string => !!a);
+            const attributions = OverlayManager.visibleBasemaps()
+                .map((overlay) => overlay.attribution)
+                .filter((a): a is string => !!a);
 
             const attributionContainer = document.querySelector('.maplibregl-ctrl-attrib-inner');
             if (attributionContainer && attributions.length > 0) {

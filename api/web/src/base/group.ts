@@ -145,9 +145,11 @@ export default class GroupManager extends BaseInterface {
     }
 
     private static async cache(channels: GroupChannel[]): Promise<void> {
-        await db.group.clear();
-        await db.group.bulkPut(channels);
-        await db.cache.put({ key: this.listCacheKey, updated: Date.now() });
+        await db.transaction('rw', db.group, db.cache, async () => {
+            await db.group.clear();
+            await db.group.bulkPut(channels);
+            await db.cache.put({ key: this.listCacheKey, updated: Date.now() });
+        });
     }
 
     private static async query(opts: Omit<Group_ListOptions, 'sync'> = {}): Promise<GroupChannel[]> {

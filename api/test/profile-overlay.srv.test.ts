@@ -175,6 +175,7 @@ test('POST: api/basemap - for overlay tests', async () => {
                 protocol: 'zxy',
                 type: 'raster-dem',
                 encoding: 'terrarium',
+                attribution: 'Overlay Test Attribution',
                 sharing_enabled: false,
             },
         }, true);
@@ -212,6 +213,7 @@ test('GET: api/profile/overlay - basemap mode, basemap present -> kept in items'
         // basemap overlays carry TileJSON actions
         assert.ok(res.body.items[0].actions);
         assert.equal(res.body.items[0].encoding, 'terrarium');
+        assert.equal(res.body.items[0].attribution, 'Overlay Test Attribution');
     } catch (err) {
         assert.ifError(err);
     }

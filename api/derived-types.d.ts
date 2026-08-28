@@ -43406,6 +43406,7 @@ export interface paths {
                                     feature: ("query" | "fetch" | "create" | "update" | "delete")[];
                                 };
                                 encoding?: "mapbox" | "terrarium";
+                                attribution: string;
                             }[];
                         };
                     };
@@ -43539,6 +43540,7 @@ export interface paths {
                                 feature: ("query" | "fetch" | "create" | "update" | "delete")[];
                             };
                             encoding?: "mapbox" | "terrarium";
+                            attribution: string;
                         };
                     };
                 };
@@ -43766,6 +43768,7 @@ export interface paths {
                                 feature: ("query" | "fetch" | "create" | "update" | "delete")[];
                             };
                             encoding?: "mapbox" | "terrarium";
+                            attribution: string;
                         };
                     };
                 };
@@ -43903,6 +43906,7 @@ export interface paths {
                                 feature: ("query" | "fetch" | "create" | "update" | "delete")[];
                             };
                             encoding?: "mapbox" | "terrarium";
+                            attribution: string;
                         };
                     };
                 };

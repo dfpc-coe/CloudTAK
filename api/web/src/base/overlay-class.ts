@@ -54,6 +54,7 @@ export default class Overlay {
     mode: string;
     mode_id: string | null;
     encoding: 'mapbox' | 'terrarium' | null;
+    attribution: string;
 
     actions: ProfileOverlay["actions"];
 
@@ -188,6 +189,7 @@ export default class Overlay {
         this.mode = overlay.mode;
         this.mode_id = overlay.mode_id || null;
         this.encoding = overlay.encoding || null;
+        this.attribution = overlay.attribution || '';
         this.url = overlay.url;
         this.styles = overlay.styles as Array<LayerSpecification>;
         this.token = overlay.token;
@@ -529,6 +531,7 @@ export default class Overlay {
             mode?: string;
             mode_id?: string;
             encoding?: 'mapbox' | 'terrarium' | null;
+            attribution?: string;
             url?: string;
             token?: string;
             styles?: Array<LayerSpecification>;
@@ -556,6 +559,7 @@ export default class Overlay {
         if (overlay.mode) this.mode = overlay.mode;
         if (overlay.mode_id) this.mode_id = overlay.mode_id || null;
         if (overlay.encoding !== undefined) this.encoding = overlay.encoding;
+        if (overlay.attribution !== undefined) this.attribution = overlay.attribution;
         if (overlay.url) this.url = overlay.url;
         if (overlay.token) this.token = overlay.token;
         if (overlay.styles) {
@@ -663,6 +667,7 @@ export default class Overlay {
         this.mode = record.mode;
         this.mode_id = record.mode_id || null;
         this.encoding = record.encoding || null;
+        this.attribution = record.attribution || '';
         this.url = record.url;
         this.token = record.token;
 
@@ -804,6 +809,7 @@ export default class Overlay {
             mode: this.mode,
             mode_id: this.mode_id,
             encoding: this.encoding,
+            attribution: this.attribution,
             actions: this.actions,
             url: this.url,
             styles,
