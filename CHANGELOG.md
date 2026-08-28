@@ -17,6 +17,7 @@
 
 ### Pending Release
 
+- :rocket: TimeZone corrections for SunCalc - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1686
 - :rocket: Use Mission GUID internally when possible
 - :arrow_up: Update to latest node-tak which increases the number of native GUID APIs
 - :bug: `API` Resolve stored Mission tokens by `mode_id` (GUID) instead of the Mission display name when looking up a user's Data Sync subscription - the web client has passed GUIDs to these endpoints since the route migration so the name lookup never matched
