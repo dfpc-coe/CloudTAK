@@ -22,10 +22,7 @@ if (!BUILD) {
 const CACHE_PREFIX = 'cloudtak-cache-';
 const CACHE_NAME = `${CACHE_PREFIX}${BUILD}`;
 
-// MapLibre glyph ranges ship with the API rather than the web build and are
-// immutable for a given path, so they live outside the versioned cache and
-// deliberately survive the activate purge - otherwise every deploy would drop
-// the map's labels until the user is next online.
+// Glyphs ship with the API, not the web build: unversioned so deploys keep them
 const GLYPH_CACHE_NAME = 'cloudtak-glyphs';
 const GLYPH_PATH_PREFIX = '/api/fonts/';
 
@@ -149,11 +146,7 @@ function isRuntimeCacheable(url) {
         || url.pathname.startsWith('/logos/');
 }
 
-/**
- * Cache-first glyphs, keyed by pathname alone: MapLibre appends the session's
- * `?token=` to every request, which would otherwise fragment the cache into a
- * fresh copy per session and never hit offline.
- */
+// Keyed by pathname: MapLibre appends a per-session `?token=`
 async function glyphResponse(event, url) {
     const cache = await caches.open(GLYPH_CACHE_NAME);
 

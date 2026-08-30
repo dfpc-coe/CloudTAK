@@ -1,13 +1,7 @@
 /*
-* cloudtak-tilejson:// - MapLibre protocol serving overlay TileJSON documents
-* from the local overlay database.
-*
-* Every tiled overlay source (raster, vector, raster-dem) points its `url` at
-* `cloudtak-tilejson://<overlay id>`. The document comes from the overlay
-* record (synced from the API, persisted in Dexie) so a reload - online or
-* offline - never fetches TileJSON. Only an overlay with no document yet
-* falls back to the API. Tile URLs are stored token-free and stamped with
-* the current session token on every request.
+* cloudtak-tilejson://<overlay id> - serves overlay TileJSON from the local
+* overlay record (network only when no document exists yet), stamping the
+* session token onto tile URLs per request.
 */
 
 import * as mapgl from 'maplibre-gl';
@@ -27,9 +21,7 @@ type TileJSONEntry = {
     tilejson: OverlayTileJSON | null;
 };
 
-// Loaded overlays register here before their source is added so the handler
-// serves the instance's document rather than a possibly stale Dexie record
-// (e.g. mid-replace(), before the PATCH response lands in the database).
+// In-memory overrides so a loaded overlay's document wins over a stale Dexie record
 const entries = new Map<number, TileJSONEntry>();
 
 let protocolRegistered = false;
@@ -47,11 +39,7 @@ export function clearOverlayTileJSON(id: number): void {
     entries.delete(id);
 }
 
-/**
- * Hosts whose tile URLs receive the session token: the API itself and the
- * hosted PMTiles server. The PMTiles URL is cached in KV so resolution works
- * offline after the first online map load.
- */
+// API host plus the hosted PMTiles host, cached in KV so it resolves offline
 async function resolveTokenHosts(): Promise<{ hosts: Set<string>; complete: boolean }> {
     const hosts = new Set<string>([new URL(serverUrl).hostname]);
 
@@ -77,7 +65,7 @@ async function resolveTokenHosts(): Promise<{ hosts: Set<string>; complete: bool
         try {
             hosts.add(new URL(tilesUrl).hostname);
         } catch {
-            // Malformed - fall back to the API host alone
+            // Malformed - API host only
         }
     }
 
@@ -87,8 +75,6 @@ async function resolveTokenHosts(): Promise<{ hosts: Set<string>; complete: bool
 function getTokenHosts(): Promise<Set<string>> {
     if (!tokenHosts) {
         tokenHosts = resolveTokenHosts().then(({ hosts, complete }) => {
-            // Retry the PMTiles lookup on the next request instead of pinning
-            // an incomplete host list for the session
             if (!complete) tokenHosts = undefined;
             return hosts;
         });
@@ -119,7 +105,6 @@ export function registerTileJSONProtocol(): void {
         if (!entry.tilejson) {
             entry.tilejson = await std(entry.url) as OverlayTileJSON;
 
-            // Best effort: persist so the next reload is served locally
             await db.overlay.update(id, { tilejson: entry.tilejson }).catch((err: unknown) => {
                 console.warn(`Failed to cache TileJSON for overlay ${id}`, err);
             });

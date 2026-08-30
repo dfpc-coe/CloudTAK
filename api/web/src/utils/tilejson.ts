@@ -1,12 +1,6 @@
 /**
- * Append the session token to tile URLs served by CloudTAK itself (the API
- * and the hosted PMTiles server). Third-party tile hosts from external
- * TileJSON imports must never receive it, and URLs that already carry a
- * token (hosted profile assets use a file-scoped signed token) are left
- * untouched.
- *
- * URLs are edited as strings rather than via `URL`: the WHATWG serializer
- * percent-encodes the `{z}/{x}/{y}` template braces MapLibre substitutes.
+ * Append the session token to tile URLs on CloudTAK hosts only - never third
+ * party tile servers. String-edited: `URL` percent-encodes `{z}/{x}/{y}`.
  */
 export function authorizeTileJSON<T extends { tiles: string[] }>(
     tilejson: T,

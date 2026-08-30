@@ -149,12 +149,7 @@ export default class UserControl {
         }
     }
 
-    /**
-     * Ensure the given user has a terrain (raster-dem) ProfileOverlay when an
-     * admin has configured a default (`map::terrain`). Terrain is provisioned
-     * hidden so the 3D view stays opt-in; toggling it is a visibility change
-     * on the overlay like any other.
-     */
+    /** Provision the admin default terrain (`map::terrain`) as a hidden raster-dem overlay */
     async ensureDefaultTerrain(username: string): Promise<void> {
         const configured = await this.config.models.Setting.typed('map::terrain', null);
         if (configured.value === null) return;

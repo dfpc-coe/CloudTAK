@@ -220,7 +220,6 @@ export default class Overlay {
         return !this._error;
     }
 
-    /** Raster, vector and terrain overlays all resolve a TileJSON document for their source */
     isTiled(): boolean {
         return this.type === 'raster' || this.type === 'vector' || this.type === 'raster-dem';
     }
@@ -237,11 +236,7 @@ export default class Overlay {
         return { type: 'raster', url };
     }
 
-    /**
-     * Terrain has no layers - visibility maps onto the map's single active
-     * terrain source. Pitch is only eased on user toggles (`ease`), never on
-     * boot or sync, so a persisted camera is not disturbed.
-     */
+    // Visibility maps onto the map's single terrain source; pitch eases only on user toggles
     applyTerrain(opts: { ease?: boolean } = {}): void {
         const mapStore = useMapStore();
         const sourceId = String(this.id);
@@ -427,12 +422,7 @@ export default class Overlay {
 
         if (this.isTiled() && this.url) {
             if (!mapStore.map.getSource(String(this.id))) {
-                // The source resolves its TileJSON through cloudtak-tilejson://
-                // so the document is served from this overlay's record (Dexie
-                // backed - offline reloads work) and only fetched from the API
-                // when no copy exists yet. Load failures surface asynchronously
-                // via the map's `error` event, which the map store routes back
-                // onto `_error` so MenuOverlays.vue shows an "Issue" badge.
+                // TileJSON load failures surface via the map `error` event (see map store)
                 registerTileJSONProtocol();
                 setOverlayTileJSON(this.id, { url: this.url, tilejson: this.tilejson });
 
@@ -518,7 +508,6 @@ export default class Overlay {
 
         this.removeHoverListeners();
 
-        // A source in use by terrain cannot be removed
         if (mapStore.map.getTerrain()?.source === String(this.id)) {
             mapStore.map.setTerrain(null);
             mapStore.terrainEnabled = false;
@@ -604,7 +593,6 @@ export default class Overlay {
         if (overlay.tilejson !== undefined) {
             this.tilejson = overlay.tilejson;
         } else if (this.url !== oldUrl || this.mode_id !== oldModeId) {
-            // The source moved - drop the old document so init() fetches the new one
             this.tilejson = null;
         }
         if (overlay.styles) {
@@ -827,8 +815,6 @@ export default class Overlay {
             }
         }) as ProfileOverlay;
 
-        // The server re-derives the document on every write - keep the local
-        // copy current so a reload never has to fetch it
         if (saved.tilejson) this.tilejson = saved.tilejson;
 
         await db.overlay.put(this.toDBOverlay());

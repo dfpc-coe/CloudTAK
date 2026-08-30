@@ -24,15 +24,9 @@ export function isEsriLayerURL(url: string): boolean {
 }
 
 /**
- * Resolve the TileJSON document for a Basemap.
- *
- * `token` is interpolated into the tile URLs for callers that cannot send an
- * Authorization header on tile requests. Omit it for a token-free document -
- * the web client augments tile URLs with the session token at request time so
- * the document can be persisted locally without pinning a credential.
- *
- * `upstreamToken` authenticates server-side metadata fetches against the
- * hosted PMTiles server.
+ * Resolve a Basemap's TileJSON. `token` is interpolated into tile URLs; omit
+ * it for a token-free document the client can persist. `upstreamToken`
+ * authenticates metadata fetches against the hosted PMTiles server.
  */
 export async function basemapTileJSON(
     config: ConfigStateless,
@@ -129,11 +123,7 @@ export async function basemapTileJSON(
     }
 }
 
-/**
- * Resolve the TileJSON document for a user's hosted PMTiles asset from the
- * PMTiles server. The tile URLs carry a file-scoped signed token rather than
- * the caller's session token.
- */
+/** TileJSON for a hosted PMTiles asset; tile URLs carry a file-scoped signed token */
 export async function profileAssetTileJSON(
     config: ConfigStateless,
     opts: {

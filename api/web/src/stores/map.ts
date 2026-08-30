@@ -543,11 +543,6 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
         },
-        /**
-         * Terrain is a raster-dem overlay like any other; the 3D control
-         * toggles its visibility, which Overlay.applyTerrain() maps onto the
-         * map's active terrain source.
-         */
         terrainOverlay: function(): Overlay | undefined {
             return OverlayManager.loaded.find((overlay) => overlay.type === 'raster-dem' && !overlay._destroyed);
         },
@@ -1132,10 +1127,7 @@ export const useMapStore = defineStore('cloudtak', {
             mapgl.setWorkerUrl(maplibreWorkerUrl);
             const map = new mapgl.Map(init);
 
-            // Sources resolve TileJSON lazily, so a bad document (deleted
-            // basemap, unreachable upstream while offline) only surfaces
-            // here. Tag the owning overlay so MenuOverlays shows an "Issue"
-            // badge; per-tile failures (404 outside bounds) are not errors.
+            // Tag TileJSON load failures onto the owning overlay; per-tile 404s are not errors
             map.on('error', (e) => {
                 const { sourceId, tile } = e as unknown as { sourceId?: string; tile?: unknown };
                 const error = e.error instanceof Error ? e.error : new Error(String(e.error?.message ?? e.error));

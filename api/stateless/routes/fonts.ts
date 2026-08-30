@@ -53,8 +53,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
             }
 
-            // Glyph ranges are static files shipped with the API build and are
-            // immutable for a given URL, so they never need revalidating.
             res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
 
             fs.createReadStream(new URL(`../../fonts/${req.params.fontstack}/${req.params.start}-${req.params.end}.pbf`, import.meta.url))

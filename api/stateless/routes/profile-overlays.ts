@@ -18,9 +18,7 @@ import { sql } from 'drizzle-orm';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import * as Default from '../lib/limits.js';
 
-// Upstream documents (hosted PMTiles, external TileJSON imports) vary in
-// shape, so only `tiles` is required and the rest is typed loosely. Response
-// validation strips anything not listed here.
+// Upstream documents vary in shape: only `tiles` is required. Response validation strips unlisted keys.
 const OverlayTileJSON = Type.Object({
     tilejson: Type.Optional(Type.String()),
     version: Type.Optional(Type.String()),
@@ -86,11 +84,7 @@ function serializeOverlay(
     } as Static<typeof AugmentedProfileOverlayResponse>;
 }
 
-/**
- * Resolve the overlay's TileJSON. Failures are logged and yield null so a
- * single unreachable upstream never drops the overlay from the list - the
- * client falls back to fetching the document on demand.
- */
+// Null on failure so an unreachable upstream never drops the overlay from the list
 async function overlayTileJSON(
     config: ConfigStateless,
     overlay: SerializableProfileOverlay,
@@ -177,8 +171,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            // Users provisioned before terrain became an overlay pick up the
-            // admin default here instead of only at first login
             await userControl.ensureDefaultTerrain(user.email);
 
             const [overlays, terrain, snapping] = await Promise.all([

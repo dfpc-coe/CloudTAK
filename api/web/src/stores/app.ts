@@ -248,10 +248,7 @@ export const useAppStore = defineStore('cloudtak-app', {
 
             systemThemeQuery?.addEventListener('change', handleSystemThemeChange);
 
-            // Branding is cosmetic and must never block boot: paint cached or
-            // default values now, and only touch the network for keys that
-            // aren't cached yet. Config.sync() re-fetches the whole cached set
-            // once a day, so a warm refresh makes no branding request at all.
+            // Branding must never block boot: cached values now, network only for missing keys
             brandingSub = liveQuery(() => db.config.bulkGet(['login::logo', 'login::name'])).subscribe(([logo, name]) => {
                 this.loginLogo = logo?.value as string | undefined;
                 this.loginName = name?.value as string | undefined;
