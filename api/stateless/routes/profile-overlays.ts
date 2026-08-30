@@ -4,6 +4,7 @@ import { fromProtocol } from '../lib/factory-basemap.js';
 import { basemapTileJSON, profileAssetTileJSON } from '../lib/tilejson.js';
 import type ConfigStateless from '../config.js';
 import ProfileControl from '../lib/control/profile.js';
+import UserControl from '../lib/control/user.js';
 import Schema from '@openaddresses/batch-schema';
 import S3 from '../../common/aws/s3.js';
 import Err from '@openaddresses/batch-error';
@@ -142,6 +143,7 @@ async function augmentOverlay(
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     const profileControl = new ProfileControl(config);
+    const userControl = new UserControl(config);
 
     await schema.get('/profile/overlay', {
         name: 'Get Overlays',
@@ -174,6 +176,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
+
+            // Users provisioned before terrain became an overlay pick up the
+            // admin default here instead of only at first login
+            await userControl.ensureDefaultTerrain(user.email);
 
             const [overlays, terrain, snapping] = await Promise.all([
                 config.models.ProfileOverlay.list({

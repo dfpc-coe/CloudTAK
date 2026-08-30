@@ -305,4 +305,16 @@ test('Profile Default Terrain - First Login Provisions Hidden Terrain Overlay', 
     assert.deepEqual(terrain.tilejson.tiles, [`${flight.base}/api/basemap/${terrain.mode_id}/tiles/{z}/{x}/{y}`]);
 });
 
+test('Profile Default Terrain - Existing User Gets Terrain Overlay on List', async () => {
+    const res = await flight.fetch('/api/profile/overlay', {
+        method: 'GET',
+        auth: { bearer: flight.token.admin },
+    }, true);
+
+    const terrain = res.body.items.find((item: { type: string }) => item.type === 'raster-dem');
+    assert.ok(terrain, 'terrain overlay provisioned for existing user');
+    assert.equal(terrain.visible, false);
+    assert.equal(terrain.mode, 'overlay');
+});
+
 flight.landing();
