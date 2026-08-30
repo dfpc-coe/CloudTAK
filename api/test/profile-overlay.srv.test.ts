@@ -64,6 +64,8 @@ test('GET: api/profile/overlay - profile mode, S3 present -> kept in items', asy
         assert.equal(res.body.items.length, 1);
         assert.equal(res.body.removed.length, 0);
         assert.equal(res.body.items[0].name, 'Kept Profile Overlay');
+        // No PMTiles server in tests - an unresolvable document must not drop the overlay
+        assert.equal(res.body.items[0].tilejson, null);
 
         stub.restore();
         stub = undefined;
@@ -214,6 +216,30 @@ test('GET: api/profile/overlay - basemap mode, basemap present -> kept in items'
         assert.ok(res.body.items[0].actions);
         assert.equal(res.body.items[0].encoding, 'terrarium');
         assert.equal(res.body.items[0].attribution, 'Overlay Test Attribution');
+
+        // TileJSON is derived from the basemap and carries no session token
+        assert.deepEqual(res.body.items[0].tilejson, {
+            tilejson: '3.0.0',
+            version: '1.0.0',
+            name: 'Overlay Test Basemap',
+            description: '',
+            scheme: 'xyz',
+            type: 'raster-dem',
+            bounds: [-180, -90, 180, 90],
+            center: [0, 0, 8],
+            attribution: 'Overlay Test Attribution',
+            tileSize: 256,
+            minzoom: 0,
+            maxzoom: 16,
+            tiles: [`${flight.base}/api/basemap/1/tiles/{z}/{x}/{y}`],
+        });
+
+        const single = await flight.fetch(`/api/profile/overlay/${post.body.id}`, {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.deepEqual(single.body.tilejson, res.body.items[0].tilejson);
     } catch (err) {
         assert.ifError(err);
     }

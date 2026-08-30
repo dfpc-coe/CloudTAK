@@ -2,7 +2,6 @@ import { liveQuery, type Observable } from 'dexie';
 import { shallowReactive } from 'vue';
 import { db, type DBOverlay } from '../database.ts';
 import type { paths } from '@cloudtak/api-types';
-import type { ProfileOverlay } from '../types.ts';
 import { server } from '../std.ts';
 import BaseInterface from './interface.ts';
 import Overlay from './overlay-class.ts';
@@ -249,7 +248,7 @@ export default class OverlayManager extends BaseInterface {
         });
     }
 
-    static async get(id: string | number): Promise<ProfileOverlay> {
+    static async get(id: string | number): Promise<DBOverlay> {
         const overlayId = this.overlayId(id);
         const res = await server.GET('/api/profile/overlay/{:overlay}', {
             params: {
@@ -264,12 +263,12 @@ export default class OverlayManager extends BaseInterface {
 
         await db.overlay.put(res.data as DBOverlay);
 
-        return res.data;
+        return res.data as DBOverlay;
     }
 
     static async generate(
         body: paths['/api/profile/overlay']['post']['requestBody']['content']['application/json']
-    ): Promise<ProfileOverlay> {
+    ): Promise<DBOverlay> {
         const res = await server.POST('/api/profile/overlay', {
             body
         });
@@ -279,7 +278,7 @@ export default class OverlayManager extends BaseInterface {
 
         await db.overlay.put(res.data as DBOverlay);
 
-        return res.data;
+        return res.data as DBOverlay;
     }
 
     static async update(

@@ -56,6 +56,7 @@ export default class UserControl {
         await Promise.all(configs);
 
         await this.ensureDefaultBasemap(profile.username);
+        await this.ensureDefaultTerrain(profile.username);
 
         return profile;
     }
@@ -144,6 +145,54 @@ export default class UserControl {
             }
         } catch (err) {
             // A concurrent login may have already provisioned the overlay - (username, url) is unique
+            if (!String(err).includes('duplicate key value violates unique constraint')) throw err;
+        }
+    }
+
+    /**
+     * Ensure the given user has a terrain (raster-dem) ProfileOverlay when an
+     * admin has configured a default (`map::terrain`). Terrain is provisioned
+     * hidden so the 3D view stays opt-in; toggling it is a visibility change
+     * on the overlay like any other.
+     */
+    async ensureDefaultTerrain(username: string): Promise<void> {
+        const configured = await this.config.models.Setting.typed('map::terrain', null);
+        if (configured.value === null) return;
+
+        const existing = await this.config.models.ProfileOverlay.count({
+            where: sql`
+                username = ${username}
+                AND type = 'raster-dem'
+            `,
+        });
+
+        if (existing > 0) return;
+
+        let terrain: InferSelectModel<typeof Basemap>;
+        try {
+            terrain = await this.config.models.Basemap.from(Number(configured.value));
+        } catch (err) {
+            console.error(`Configured Default Terrain (map::terrain: ${configured.value}) could not be found`, err);
+            return;
+        }
+
+        if (terrain.type !== 'raster-dem' || terrain.username) {
+            console.error(`Configured Default Terrain (map::terrain: ${configured.value}) is not a raster-dem Server Basemap`);
+            return;
+        }
+
+        try {
+            await this.config.models.ProfileOverlay.generate({
+                name: terrain.name,
+                username,
+                type: terrain.type,
+                visible: false,
+                mode: 'overlay',
+                mode_id: String(terrain.id),
+                url: `/api/basemap/${terrain.id}/tiles`,
+                frequency: terrain.frequency,
+            });
+        } catch (err) {
             if (!String(err).includes('duplicate key value violates unique constraint')) throw err;
         }
     }

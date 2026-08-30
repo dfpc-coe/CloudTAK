@@ -344,6 +344,7 @@ describe('sw.js', () => {
             cachesMock.stores.set('cloudtak-cache-old', new Map());
             cachesMock.stores.set('cloudtak-cache-13.0.0-legacy', new Map());
             cachesMock.stores.set('cloudtak-cache-new', new Map());
+            cachesMock.stores.set('cloudtak-glyphs', new Map());
             cachesMock.stores.set('other-cache', new Map());
 
             await emit('activate');
@@ -355,6 +356,9 @@ describe('sw.js', () => {
             expect(deletedNames).toContain('cloudtak-cache-13.0.0-legacy');
             expect(deletedNames).not.toContain('other-cache');
             expect(deletedNames).not.toContain('cloudtak-cache-new');
+            // Glyphs are API-shipped and immutable per path - a deploy must not
+            // drop them or an offline map loses its labels.
+            expect(deletedNames).not.toContain('cloudtak-glyphs');
         });
 
         it('calls clients.claim()', async () => {
@@ -467,6 +471,58 @@ describe('sw.js', () => {
                 expect.any(Response)
             );
             expect(event.waitUntil).toHaveBeenCalledOnce();
+        });
+
+        it('caches /api/fonts glyphs under the token-free pathname', async () => {
+            const fetchMock = vi.fn(async () => new Response('glyph-body', { status: 200 }));
+            const { listeners, cachesMock } = loadSW({ build: 'g1', fetchMock });
+
+            const event: FakeEvent = {
+                request: new Request('https://example.com/api/fonts/Open%20Sans/0-255.pbf?token=abc'),
+                respondWith: vi.fn(),
+                waitUntil: vi.fn((p: Promise<any>) => p),
+            };
+
+            for (const fn of listeners['fetch'] ?? []) fn(event);
+            await event.respondWith!.mock.calls[0][0];
+
+            const cache = await cachesMock.open('cloudtak-glyphs');
+            expect((cache.put as Mock)).toHaveBeenCalledWith(
+                '/api/fonts/Open%20Sans/0-255.pbf',
+                expect.any(Response)
+            );
+        });
+
+        it('serves cached glyphs without hitting the network, ignoring the token', async () => {
+            const fetchMock = vi.fn(async () => new Response('network-glyph', { status: 200 }));
+            const { listeners, cachesMock } = loadSW({ build: 'g2', fetchMock });
+
+            const cache = await cachesMock.open('cloudtak-glyphs');
+            await cache.put('/api/fonts/Open%20Sans/0-255.pbf', new Response('cached-glyph'));
+
+            // A different session token must still hit the same cache entry
+            const event: FakeEvent = {
+                request: new Request('https://example.com/api/fonts/Open%20Sans/0-255.pbf?token=different'),
+                respondWith: vi.fn(),
+            };
+
+            for (const fn of listeners['fetch'] ?? []) fn(event);
+            const response = await event.respondWith!.mock.calls[0][0];
+
+            await expect(response.text()).resolves.toBe('cached-glyph');
+            expect(fetchMock).not.toHaveBeenCalled();
+        });
+
+        it('still skips non-font /api requests', async () => {
+            const { listeners } = loadSW();
+            const event: FakeEvent = {
+                request: new Request('https://example.com/api/fontsize'),
+                respondWith: vi.fn(),
+            };
+
+            for (const fn of listeners['fetch'] ?? []) fn(event);
+
+            expect(event.respondWith).not.toHaveBeenCalled();
         });
 
         it('does NOT cache non-/assets responses even on 200', async () => {

@@ -45,7 +45,7 @@ import { isNativePlatform, addBackgroundStateListener, whenForegrounded } from '
 import { withTimeout } from '../utils/async.ts';
 import { db, recoverDatabase } from '../database.ts';
 
-import type { ProfileOverlay, Basemap, Feature } from '../types.ts';
+import type { ProfileOverlay, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource, LayerSpecification, PropertyValueSpecification } from 'maplibre-gl';
 import type { Position } from '@capacitor/geolocation';
 
@@ -543,58 +543,20 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
         },
-        // TODO: Convert to overlay
-        addTerrain: async function(): Promise<void> {
-            const cfg = await Config.list(['map::terrain'], { defaults: { 'map::terrain': null } });
-            const terrainId = cfg['map::terrain'] ? Number(cfg['map::terrain']) : null;
-            if (!terrainId) return;
-            if (this.map.getSource('-2')) return;
-
-            const terrainRes = await server.GET('/api/basemap/{:basemapid}', {
-                params: { path: { ':basemapid': terrainId } }
-            });
-            if (terrainRes.error) throw new Error(terrainRes.error.message);
-            const terrain = terrainRes.data as Basemap;
-
-            if (terrain.type !== 'raster-dem') {
-                throw new Error(`Terrain basemap ${terrainId} is not a raster-dem type`);
-            }
-
-            const { value: token } = await Preferences.get({ key: 'token' });
-            const terrainUrl = stdurl(`/api/basemap/${terrain.id}/tiles`);
-            if (token) terrainUrl.searchParams.set('token', token);
-
-            const source: { type: 'raster-dem'; url: string; tileSize?: number; encoding?: 'mapbox' | 'terrarium' } = {
-                type: 'raster-dem',
-                url: String(terrainUrl)
-            };
-
-            if (terrain.tilesize) source.tileSize = terrain.tilesize;
-            if (terrain.encoding) source.encoding = terrain.encoding;
-
-            this.map.addSource('-2', source);
-
-            this.map.setTerrain({
-                source: '-2',
-                exaggeration: 1.5
-            });
-
-            this.terrainEnabled = true;
-            this.map.setGlobalStateProperty('3d', true);
-
-            if (this.map.getPitch() === 0) {
-                this.map.easeTo({ pitch: 45 });
-            }
+        /**
+         * Terrain is a raster-dem overlay like any other; the 3D control
+         * toggles its visibility, which Overlay.applyTerrain() maps onto the
+         * map's active terrain source.
+         */
+        terrainOverlay: function(): Overlay | undefined {
+            return OverlayManager.loaded.find((overlay) => overlay.type === 'raster-dem' && !overlay._destroyed);
         },
 
-        removeTerrain: function(): void {
-            this.map.setTerrain(null);
-            this.map.removeSource('-2');
+        toggleTerrain: async function(): Promise<void> {
+            const overlay = this.terrainOverlay();
+            if (!overlay) return;
 
-            this.terrainEnabled = false;
-            this.map.setGlobalStateProperty('3d', false);
-
-            this.map.easeTo({ pitch: 0 });
+            await overlay.update({ visible: !overlay.visible });
         },
 
         returnHome: async function(): Promise<void> {
@@ -1107,8 +1069,7 @@ export const useMapStore = defineStore('cloudtak', {
                     'map::pitch',
                     'map::bearing',
                     'map::basemap',
-                    'map::basemap::favs',
-                    'map::terrain'
+                    'map::basemap::favs'
                 ], {
                     defaults: {
                         'map::center': '-100,40',
@@ -1116,8 +1077,7 @@ export const useMapStore = defineStore('cloudtak', {
                         'map::pitch': 0,
                         'map::bearing': 0,
                         'map::basemap': null,
-                        'map::basemap::favs': null,
-                        'map::terrain': null
+                        'map::basemap::favs': null
                     }
                 });
 
@@ -1171,6 +1131,24 @@ export const useMapStore = defineStore('cloudtak', {
             this.loadingStage = 'Creating map…';
             mapgl.setWorkerUrl(maplibreWorkerUrl);
             const map = new mapgl.Map(init);
+
+            // Sources resolve TileJSON lazily, so a bad document (deleted
+            // basemap, unreachable upstream while offline) only surfaces
+            // here. Tag the owning overlay so MenuOverlays shows an "Issue"
+            // badge; per-tile failures (404 outside bounds) are not errors.
+            map.on('error', (e) => {
+                const { sourceId, tile } = e as unknown as { sourceId?: string; tile?: unknown };
+                const error = e.error instanceof Error ? e.error : new Error(String(e.error?.message ?? e.error));
+                console.error(error);
+
+                if (!sourceId || tile) return;
+
+                const id = Number(sourceId);
+                if (!Number.isFinite(id)) return;
+
+                const overlay = OverlayManager.loaded.find((o) => o.id === id);
+                if (overlay && !overlay._error) overlay._error = error;
+            });
 
             const scaleControl = new mapgl.ScaleControl({
                 maxWidth: 100,

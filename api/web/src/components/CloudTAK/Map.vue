@@ -231,7 +231,7 @@
                         tabindex='0'
                         :title='mapStore.terrainEnabled ? "Disable 3D Terrain" : "Enable 3D Terrain"'
                         class='cloudtak-ctrl-btn'
-                        @click='mapStore.terrainEnabled ? mapStore.removeTerrain() : mapStore.addTerrain()'
+                        @click='mapStore.toggleTerrain()'
                     >
                         <IconMountain
                             :size='24'
@@ -509,7 +509,7 @@ import { liveQuery } from 'dexie';
 import Upload from '../util/Upload.vue';
 import { stdurl } from '../../std.ts';
 import ProfileConfig from '../../base/profile.ts';
-import Config from '../../base/config.ts';
+import OverlayManager from '../../base/overlay.ts';
 import { cutOverlayFeature } from './util/featureCut.ts';
 import { isNativePlatform, isIOSPlatform, addBackgroundStateListener } from '../../utils/capacitor.ts';
 import { copyFeatureToClipboard, readFeatureFromClipboard } from '../../stores/device/clipboard.ts';
@@ -521,10 +521,7 @@ const floatStore = useFloatStore();
 
 const isIOS = isIOSPlatform();
 
-const hasTerrain = ref<boolean>(false);
-Config.list(['map::terrain'], { defaults: { 'map::terrain': null } }).then((cfg) => {
-    hasTerrain.value = cfg['map::terrain'] !== null && cfg['map::terrain'] !== undefined;
-}).catch(() => { /* non-fatal */ });
+const hasTerrain = computed(() => OverlayManager.loaded.some((overlay) => overlay.type === 'raster-dem'));
 const router = useRouter();
 const route = useRoute();
 

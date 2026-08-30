@@ -251,4 +251,58 @@ test('Profile Default Basemap - First Login Provisions Basemap for New User', as
     assert.equal(res.body.items[0].url, '/api/basemap/2/tiles');
 });
 
+test('Profile Default Terrain - Create Terrain Basemap & Set Config', async () => {
+    const terrain = await flight.fetch('/api/basemap', {
+        method: 'POST',
+        auth: { bearer: flight.token.admin },
+        body: {
+            name: 'Terrain Basemap',
+            url: 'https://test.com/terrain/{z}/{x}/{y}',
+            protocol: 'zxy',
+            type: 'raster-dem',
+            encoding: 'terrarium',
+            scope: 'server',
+        },
+    }, true);
+
+    const res = await flight.fetch('/api/config', {
+        method: 'PUT',
+        auth: { bearer: flight.token.admin },
+        body: {
+            'map::terrain': terrain.body.id,
+        },
+    }, true);
+
+    assert.equal(res.body['map::terrain'], terrain.body.id);
+});
+
+test('Profile Default Terrain - First Login Provisions Hidden Terrain Overlay', async () => {
+    const login = await flight.fetch('/api/login', {
+        method: 'POST',
+        body: {
+            username: 'terrainuser@example.com',
+            password: 'password123',
+        },
+    }, true);
+
+    assert.ok(login.body.token);
+
+    const res = await flight.fetch('/api/profile/overlay', {
+        method: 'GET',
+        auth: { bearer: login.body.token },
+    }, true);
+
+    assert.equal(res.body.total, 2);
+
+    const terrain = res.body.items.find((item: { type: string }) => item.type === 'raster-dem');
+    assert.ok(terrain, 'terrain overlay provisioned');
+    assert.equal(terrain.mode, 'overlay');
+    assert.equal(terrain.name, 'Terrain Basemap');
+    assert.equal(terrain.visible, false);
+    assert.equal(terrain.encoding, 'terrarium');
+    assert.equal(terrain.url, `/api/basemap/${terrain.mode_id}/tiles`);
+    assert.equal(terrain.tilejson.type, 'raster-dem');
+    assert.deepEqual(terrain.tilejson.tiles, [`${flight.base}/api/basemap/${terrain.mode_id}/tiles/{z}/{x}/{y}`]);
+});
+
 flight.landing();

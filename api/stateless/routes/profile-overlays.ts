@@ -1,12 +1,13 @@
 import { Static, Type } from '@sinclair/typebox';
 import { BasemapProtocol, TileJSONActions } from '../lib/interface-basemap.js';
 import { fromProtocol } from '../lib/factory-basemap.js';
+import { basemapTileJSON, profileAssetTileJSON } from '../lib/tilejson.js';
 import type ConfigStateless from '../config.js';
 import ProfileControl from '../lib/control/profile.js';
 import Schema from '@openaddresses/batch-schema';
 import S3 from '../../common/aws/s3.js';
 import Err from '@openaddresses/batch-error';
-import Auth from '../../common/auth.js';
+import Auth, { AuthUser } from '../../common/auth.js';
 import { BasemapTerrain_Encoding } from '../../common/enums.js';
 import { ProfileOverlay } from '../../common/schema.js';
 import path from 'node:path';
@@ -16,12 +17,48 @@ import { sql } from 'drizzle-orm';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import * as Default from '../lib/limits.js';
 
+// Upstream documents (hosted PMTiles, external TileJSON imports) vary in
+// shape, so only `tiles` is required and the rest is typed loosely. Response
+// validation strips anything not listed here.
+const OverlayTileJSON = Type.Object({
+    tilejson: Type.Optional(Type.String()),
+    version: Type.Optional(Type.String()),
+    scheme: Type.Optional(Type.String()),
+    name: Type.Optional(Type.String()),
+    description: Type.Optional(Type.String()),
+    attribution: Type.Optional(Type.String()),
+    type: Type.Optional(Type.String()),
+    format: Type.Optional(Type.String()),
+    encoding: Type.Optional(Type.String()),
+    tileSize: Type.Optional(Type.Number()),
+    minzoom: Type.Optional(Type.Number()),
+    maxzoom: Type.Optional(Type.Number()),
+    tiles: Type.Array(Type.String()),
+    bounds: Type.Optional(Type.Array(Type.Number())),
+    center: Type.Optional(Type.Array(Type.Number())),
+    vector_layers: Type.Optional(Type.Array(Type.Object({
+        id: Type.String(),
+        fields: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
+        minzoom: Type.Optional(Type.Number()),
+        maxzoom: Type.Optional(Type.Number()),
+        description: Type.Optional(Type.String()),
+    }))),
+});
+
 const AugmentedProfileOverlayResponse = Type.Composite([
     ProfileOverlayResponse,
     Type.Object({
         actions: TileJSONActions,
         attribution: Type.String({ default: '', description: 'Attribution of the underlying basemap, empty if not applicable' }),
         encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),
+        tilejson: Type.Union([Type.Null(), OverlayTileJSON], {
+            description: `
+                TileJSON for the overlay's tile source, derived from the underlying Basemap or hosted asset
+                at request time - never persisted server-side. Tile URLs are token-free; clients append
+                their own session token. Null for overlays without a tile source (missions) or when the
+                document could not be resolved.
+            `,
+        }),
     }),
 ]);
 
@@ -31,17 +68,76 @@ type SerializableProfileOverlay = Omit<Static<typeof ProfileOverlayResponse>, 'o
 
 function serializeOverlay(
     overlay: SerializableProfileOverlay,
-    actions: Static<typeof TileJSONActions>,
-    encoding?: BasemapTerrain_Encoding,
-    attribution = '',
+    extras: {
+        actions: Static<typeof TileJSONActions>;
+        encoding?: BasemapTerrain_Encoding;
+        attribution?: string;
+        tilejson: Static<typeof OverlayTileJSON> | null;
+    },
 ): Static<typeof AugmentedProfileOverlayResponse> {
     return {
         ...overlay,
         opacity: Number(overlay.opacity),
-        actions,
-        attribution,
-        ...(encoding ? { encoding } : {}),
+        actions: extras.actions,
+        attribution: extras.attribution ?? '',
+        tilejson: extras.tilejson,
+        ...(extras.encoding ? { encoding: extras.encoding } : {}),
     } as Static<typeof AugmentedProfileOverlayResponse>;
+}
+
+/**
+ * Resolve the overlay's TileJSON. Failures are logged and yield null so a
+ * single unreachable upstream never drops the overlay from the list - the
+ * client falls back to fetching the document on demand.
+ */
+async function overlayTileJSON(
+    config: ConfigStateless,
+    overlay: SerializableProfileOverlay,
+    user: AuthUser,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    basemap?: any,
+): Promise<Static<typeof OverlayTileJSON> | null> {
+    try {
+        if ((overlay.mode === 'basemap' || overlay.mode === 'overlay') && basemap) {
+            return await basemapTileJSON(config, basemap, { upstreamToken: user.token });
+        } else if (overlay.mode === 'profile') {
+            return await profileAssetTileJSON(config, {
+                email: user.email,
+                owner: overlay.username,
+                asset: path.parse(overlay.url.replace(/\/tile$/, '')).name,
+            });
+        }
+
+        return null;
+    } catch (err) {
+        console.error(`Could not resolve TileJSON for overlay ${overlay.id}`, err);
+        return null;
+    }
+}
+
+async function augmentOverlay(
+    config: ConfigStateless,
+    overlay: SerializableProfileOverlay,
+    user: AuthUser,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    basemap?: any,
+): Promise<Static<typeof AugmentedProfileOverlayResponse>> {
+    if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
+        if (!overlay.mode_id) throw new Err(500, null, 'Overlay missing mode_id');
+        if (!basemap) basemap = await config.models.Basemap.from(parseInt(overlay.mode_id));
+
+        return serializeOverlay(overlay, {
+            actions: fromProtocol(basemap.protocol, basemap).actions(),
+            encoding: basemap.type === 'raster-dem' ? basemap.encoding : undefined,
+            attribution: basemap.attribution || '',
+            tilejson: await overlayTileJSON(config, overlay, user, basemap),
+        });
+    }
+
+    return serializeOverlay(overlay, {
+        actions: fromProtocol().actions(),
+        tilejson: await overlayTileJSON(config, overlay, user),
+    });
 }
 
 export default async function router(schema: Schema, config: ConfigStateless) {
@@ -138,9 +234,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                         return {
                             keep: true as const,
                             item,
-                            actions: fromProtocol(basemap.protocol, basemap).actions(),
-                            encoding: basemap.type === 'raster-dem' ? basemap.encoding : undefined,
-                            attribution: basemap.attribution || '',
+                            augmented: await augmentOverlay(config, item, user, basemap),
                         };
                     } catch (err) {
                         console.error('Could not find basemap', err);
@@ -153,7 +247,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     }
                 }
 
-                return { keep: true as const, item, actions: fromProtocol().actions() };
+                return { keep: true as const, item, augmented: await augmentOverlay(config, item, user) };
             }));
 
             // Batch all deletions in parallel
@@ -170,7 +264,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     removed.push({ ...result.item, opacity: Number(result.item.opacity) });
                     total--;
                 } else {
-                    items.push(serializeOverlay(result.item, result.actions, result.encoding, result.attribution));
+                    items.push(result.augmented);
                 }
             }
 
@@ -195,19 +289,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const overlay = await config.models.ProfileOverlay.from(req.params.overlay);
             if (overlay.username !== user.email) throw new Err(401, null, 'Cannot get another\'s overlay');
 
-            if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
-                if (!overlay.mode_id) throw new Err(500, null, 'Overlay missing mode_id');
-                const basemap = await config.models.Basemap.from(parseInt(overlay.mode_id));
-
-                res.json(serializeOverlay(
-                    overlay,
-                    fromProtocol(basemap.protocol, basemap).actions(),
-                    basemap.type === 'raster-dem' ? basemap.encoding : undefined,
-                    basemap.attribution || '',
-                ));
-            } else {
-                res.json(serializeOverlay(overlay, fromProtocol().actions()));
-            }
+            res.json(await augmentOverlay(config, overlay, user));
         } catch (err) {
             Err.respond(err, res);
         }
@@ -265,20 +347,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 opacity: req.body.opacity !== undefined ? String(req.body.opacity) : undefined,
             });
 
-            let serialized: Static<typeof AugmentedProfileOverlayResponse>;
-            if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
-                if (!overlay.mode_id) throw new Err(500, null, 'Overlay missing mode_id');
-                const basemap = await config.models.Basemap.from(parseInt(overlay.mode_id));
-
-                serialized = serializeOverlay(
-                    overlay,
-                    fromProtocol(basemap.protocol, basemap).actions(),
-                    basemap.type === 'raster-dem' ? basemap.encoding : undefined,
-                    basemap.attribution || '',
-                );
-            } else {
-                serialized = serializeOverlay(overlay, fromProtocol().actions());
-            }
+            const serialized = await augmentOverlay(config, overlay, user);
 
             // Include the serialized overlay so receiving clients can apply
             // it directly instead of re-listing overlays (which is slow due
@@ -379,20 +448,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 });
             }
 
-            let serialized: Static<typeof AugmentedProfileOverlayResponse>;
-            if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
-                if (!overlay.mode_id) throw new Err(500, null, 'Overlay missing mode_id');
-                const basemap = await config.models.Basemap.from(parseInt(overlay.mode_id));
-
-                serialized = serializeOverlay(
-                    overlay,
-                    fromProtocol(basemap.protocol, basemap).actions(),
-                    basemap.type === 'raster-dem' ? basemap.encoding : undefined,
-                    basemap.attribution || '',
-                );
-            } else {
-                serialized = serializeOverlay(overlay, fromProtocol().actions());
-            }
+            const serialized = await augmentOverlay(config, overlay, user);
 
             // Include the serialized overlay so receiving clients can apply
             // it directly instead of re-listing overlays (which is slow due
