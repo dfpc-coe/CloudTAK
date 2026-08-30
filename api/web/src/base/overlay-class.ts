@@ -248,11 +248,16 @@ export default class Overlay {
             mapStore.map.setGlobalStateProperty('3d', true);
             if (opts.ease && mapStore.map.getPitch() === 0) mapStore.map.easeTo({ pitch: 45 });
         } else if (active) {
-            mapStore.map.setTerrain(null);
-            mapStore.terrainEnabled = false;
-            mapStore.map.setGlobalStateProperty('3d', false);
-            if (opts.ease) mapStore.map.easeTo({ pitch: 0 });
+            this.disableTerrain(opts);
         }
+    }
+
+    private disableTerrain(opts: { ease?: boolean } = {}): void {
+        const mapStore = useMapStore();
+        mapStore.map.setTerrain(null);
+        mapStore.terrainEnabled = false;
+        mapStore.map.setGlobalStateProperty('3d', false);
+        if (opts.ease) mapStore.map.easeTo({ pitch: 0 });
     }
 
     hasBounds(): boolean {
@@ -508,11 +513,7 @@ export default class Overlay {
 
         this.removeHoverListeners();
 
-        if (mapStore.map.getTerrain()?.source === String(this.id)) {
-            mapStore.map.setTerrain(null);
-            mapStore.terrainEnabled = false;
-            mapStore.map.setGlobalStateProperty('3d', false);
-        }
+        if (mapStore.map.getTerrain()?.source === String(this.id)) this.disableTerrain();
 
         for (const l of this.styles) {
             if (mapStore.map.getLayer(String(l.id))) {

@@ -1130,7 +1130,7 @@ export const useMapStore = defineStore('cloudtak', {
             // Tag TileJSON load failures onto the owning overlay; per-tile 404s are not errors
             map.on('error', (e) => {
                 const { sourceId, tile } = e as unknown as { sourceId?: string; tile?: unknown };
-                const error = e.error instanceof Error ? e.error : new Error(String(e.error?.message ?? e.error));
+                const error = e.error instanceof Error ? e.error : new Error(String(e.error));
                 console.error(error);
 
                 if (!sourceId || tile) return;

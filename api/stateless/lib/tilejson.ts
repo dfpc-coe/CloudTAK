@@ -37,14 +37,10 @@ export async function basemapTileJSON(
         upstreamToken: string;
     },
 ): Promise<Static<typeof TileJSON>> {
-    let tileURL: string;
+    const pmtilesHost = new URL(config.PMTILES_URL || 'http://localhost:5001').hostname;
+    const hosted = basemap.url.includes(pmtilesHost);
 
-    if (basemap.url.includes(new URL(config.PMTILES_URL || 'http://localhost:5001').hostname)) {
-        tileURL = basemap.url;
-    } else {
-        tileURL = config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
-    }
-
+    let tileURL = hosted ? basemap.url : config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
     if (opts.token) tileURL = tileURL + `?token=${opts.token}`;
 
     const esriMetadataURL = basemap.tilejson || basemap.url;
@@ -69,7 +65,7 @@ export async function basemapTileJSON(
     if (basemap.tilejson && (basemap.tilejson.startsWith('http://') || basemap.tilejson.startsWith('https://'))) {
         const url = new URL(basemap.tilejson);
 
-        if (url.hostname === new URL(config.PMTILES_URL).hostname) {
+        if (url.hostname === pmtilesHost) {
             url.searchParams.set('token', opts.upstreamToken);
         } else {
             // Skip isSafeUrl check when StackName=test (test mode)
@@ -91,7 +87,7 @@ export async function basemapTileJSON(
             ...json,
             type: basemap.type,
         };
-    } else if (basemap.url.includes(new URL(config.PMTILES_URL || 'http://localhost:5001').hostname)) {
+    } else if (hosted) {
         // Hosted PMTiles basemap without a stored tilejson URL.
         // Reconstruct the TileJSON endpoint using the known PMTiles host and the
         // path up to (but not including) the tile-coordinate template segment.

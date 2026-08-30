@@ -85,27 +85,14 @@ function serializeOverlay(
 }
 
 // Null on failure so an unreachable upstream never drops the overlay from the list
-async function overlayTileJSON(
-    config: ConfigStateless,
-    overlay: SerializableProfileOverlay,
-    user: AuthUser,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    basemap?: any,
+async function resolveTileJSON(
+    overlayId: number,
+    resolve: () => Promise<Static<typeof OverlayTileJSON>>,
 ): Promise<Static<typeof OverlayTileJSON> | null> {
     try {
-        if ((overlay.mode === 'basemap' || overlay.mode === 'overlay') && basemap) {
-            return await basemapTileJSON(config, basemap, { upstreamToken: user.token });
-        } else if (overlay.mode === 'profile') {
-            return await profileAssetTileJSON(config, {
-                email: user.email,
-                owner: overlay.username,
-                asset: path.parse(overlay.url.replace(/\/tile$/, '')).name,
-            });
-        }
-
-        return null;
+        return await resolve();
     } catch (err) {
-        console.error(`Could not resolve TileJSON for overlay ${overlay.id}`, err);
+        console.error(`Could not resolve TileJSON for overlay ${overlayId}`, err);
         return null;
     }
 }
@@ -125,14 +112,20 @@ async function augmentOverlay(
             actions: fromProtocol(basemap.protocol, basemap).actions(),
             encoding: basemap.type === 'raster-dem' ? basemap.encoding : undefined,
             attribution: basemap.attribution || '',
-            tilejson: await overlayTileJSON(config, overlay, user, basemap),
+            tilejson: await resolveTileJSON(overlay.id, () => basemapTileJSON(config, basemap, { upstreamToken: user.token })),
         });
     }
 
-    return serializeOverlay(overlay, {
-        actions: fromProtocol().actions(),
-        tilejson: await overlayTileJSON(config, overlay, user),
-    });
+    let tilejson: Static<typeof OverlayTileJSON> | null = null;
+    if (overlay.mode === 'profile') {
+        tilejson = await resolveTileJSON(overlay.id, () => profileAssetTileJSON(config, {
+            email: user.email,
+            owner: overlay.username,
+            asset: path.parse(overlay.url.replace(/\/tile$/, '')).name,
+        }));
+    }
+
+    return serializeOverlay(overlay, { actions: fromProtocol().actions(), tilejson });
 }
 
 export default async function router(schema: Schema, config: ConfigStateless) {
