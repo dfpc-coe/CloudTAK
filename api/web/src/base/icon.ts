@@ -158,6 +158,8 @@ async function runDiff(): Promise<IconHydrateResult> {
  */
 async function syncBuiltinSprite(id: string): Promise<void> {
     try {
+        if (await db.sprite.get(id)) return;
+
         const token = await getRuntimeToken();
         const jsonUrl = stdurl(`/api/iconset/${id}/sprite.json`);
         const pngUrl = stdurl(`/api/iconset/${id}/sprite.png`);

@@ -20,6 +20,7 @@ const AugmentedProfileOverlayResponse = Type.Composite([
     ProfileOverlayResponse,
     Type.Object({
         actions: TileJSONActions,
+        attribution: Type.String({ default: '', description: 'Attribution of the underlying basemap, empty if not applicable' }),
         encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),
     }),
 ]);
@@ -32,11 +33,13 @@ function serializeOverlay(
     overlay: SerializableProfileOverlay,
     actions: Static<typeof TileJSONActions>,
     encoding?: BasemapTerrain_Encoding,
+    attribution = '',
 ): Static<typeof AugmentedProfileOverlayResponse> {
     return {
         ...overlay,
         opacity: Number(overlay.opacity),
         actions,
+        attribution,
         ...(encoding ? { encoding } : {}),
     } as Static<typeof AugmentedProfileOverlayResponse>;
 }
@@ -137,6 +140,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                             item,
                             actions: fromProtocol(basemap.protocol, basemap).actions(),
                             encoding: basemap.type === 'raster-dem' ? basemap.encoding : undefined,
+                            attribution: basemap.attribution || '',
                         };
                     } catch (err) {
                         console.error('Could not find basemap', err);
@@ -166,7 +170,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     removed.push({ ...result.item, opacity: Number(result.item.opacity) });
                     total--;
                 } else {
-                    items.push(serializeOverlay(result.item, result.actions, result.encoding));
+                    items.push(serializeOverlay(result.item, result.actions, result.encoding, result.attribution));
                 }
             }
 
@@ -199,6 +203,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     overlay,
                     fromProtocol(basemap.protocol, basemap).actions(),
                     basemap.type === 'raster-dem' ? basemap.encoding : undefined,
+                    basemap.attribution || '',
                 ));
             } else {
                 res.json(serializeOverlay(overlay, fromProtocol().actions()));
@@ -269,6 +274,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     overlay,
                     fromProtocol(basemap.protocol, basemap).actions(),
                     basemap.type === 'raster-dem' ? basemap.encoding : undefined,
+                    basemap.attribution || '',
                 );
             } else {
                 serialized = serializeOverlay(overlay, fromProtocol().actions());
@@ -382,6 +388,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     overlay,
                     fromProtocol(basemap.protocol, basemap).actions(),
                     basemap.type === 'raster-dem' ? basemap.encoding : undefined,
+                    basemap.attribution || '',
                 );
             } else {
                 serialized = serializeOverlay(overlay, fromProtocol().actions());
