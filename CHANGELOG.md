@@ -17,6 +17,9 @@
 
 ### Pending Release
 
+### v13.76.0 - 2026-08-30
+
+- :rocket: Move Attribution into Profile Overlay to further reduce needed API calls on startup
 - :rocket: TimeZone corrections for SunCalc - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1686
 - :rocket: Use Mission GUID internally when possible
 - :arrow_up: Update to latest node-tak which increases the number of native GUID APIs
