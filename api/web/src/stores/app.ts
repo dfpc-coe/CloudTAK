@@ -9,6 +9,7 @@ import Config from '../base/config.ts';
 import ServerManager from '../base/server.ts';
 import router from '../router.ts';
 import { isNativePlatform, isAndroidPlatform } from '../utils/capacitor.ts';
+import { GeolocationPermission } from './device.ts';
 
 export type DisplayStyleMode = 'System Default' | 'Light' | 'Dark';
 export type ResolvedThemeMode = 'light' | 'dark';
@@ -95,6 +96,10 @@ export const useAppStore = defineStore('cloudtak-app', {
             await Preferences.set({ key: 'token', value: opts.token });
             await KV.generate('token', opts.token);
             await KV.generate('username', opts.username);
+
+            // Native location delivery authenticates with its own copy of the
+            // token - keep it current if a watch is already running
+            await GeolocationPermission.updateNativeHeaders({ Authorization: `Bearer ${opts.token}` });
 
             await Preferences.set({
                 key: 'sessionId',

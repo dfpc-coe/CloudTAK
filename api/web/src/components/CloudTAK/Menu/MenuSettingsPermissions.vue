@@ -60,7 +60,7 @@
                     </div>
 
                     <div
-                        v-if='shouldShowAction(item.status)'
+                        v-if='shouldShowAction(item.key, item.status)'
                         class='d-flex justify-content-end'
                     >
                         <button
@@ -84,6 +84,7 @@ import {
     IconBell,
     IconCamera,
     IconCompass,
+    IconCurrentLocation,
     IconDatabase,
     IconFolderOpen,
     IconMapPin,
@@ -100,7 +101,7 @@ import type { BrowserPermissionState } from '../../../stores/device.ts';
 
 const mapStore = useMapStore();
 const deviceStore = useDeviceStore();
-type PermissionKey = 'location' | 'notification' | 'orientation' | 'storage' | 'camera' | 'wakeLock' | 'fileSystem';
+type PermissionKey = 'location' | 'backgroundLocation' | 'notification' | 'orientation' | 'storage' | 'camera' | 'wakeLock' | 'fileSystem';
 type PermissionDescriptor = {
     key: PermissionKey;
     title: string;
@@ -125,6 +126,10 @@ const permissionDescriptors: PermissionDescriptor[] = [{
     title: 'Location',
     icon: IconMapPin,
 }, {
+    key: 'backgroundLocation',
+    title: 'Background Location',
+    icon: IconCurrentLocation,
+}, {
     key: 'orientation',
     title: 'Device Orientation',
     icon: IconCompass,
@@ -145,6 +150,7 @@ const permissionDescriptors: PermissionDescriptor[] = [{
 const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsupported' | 'unknown', PermissionStatusText> = {
     granted: {
         location: 'CloudTAK can access your live position.',
+        backgroundLocation: 'CloudTAK can keep sharing your location while the app is in the background.',
         notification: 'CloudTAK can deliver browser notifications.',
         orientation: 'CloudTAK can access your device orientation for compass-based map rotation.',
         storage: 'CloudTAK can persist local data storage for more reliable offline access.',
@@ -154,6 +160,7 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
     },
     denied: {
         location: 'Location access is currently blocked. Use the button below to try again.',
+        backgroundLocation: 'Location access is currently blocked, so background location sharing is unavailable.',
         notification: 'Notification access is currently blocked. Use the button below to try again.',
         orientation: 'Device orientation access is currently blocked. Use the button below to try again.',
         storage: 'Persistent storage was not granted. Use the button below to try again.',
@@ -163,6 +170,7 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
     },
     prompt: {
         location: 'Location access has not been granted yet.',
+        backgroundLocation: 'Background location access has not been granted yet.',
         notification: 'Notification access has not been granted yet.',
         orientation: 'Device orientation access has not been granted yet.',
         storage: 'Persistent storage has not been requested yet.',
@@ -172,6 +180,7 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
     },
     unsupported: {
         location: 'This browser does not support geolocation permissions.',
+        backgroundLocation: 'Background location sharing is only available in the mobile app.',
         notification: 'This browser does not support notification permissions.',
         orientation: 'This browser does not support device orientation events.',
         storage: 'This browser does not support persistent storage requests.',
@@ -181,6 +190,7 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
     },
     unknown: {
         location: 'CloudTAK could not determine the current location permission state.',
+        backgroundLocation: 'CloudTAK could not determine the current background location permission state.',
         notification: 'CloudTAK could not determine the current notification permission state.',
         orientation: 'CloudTAK could not determine the current device orientation permission state.',
         storage: 'CloudTAK could not determine the current persistent storage state.',
@@ -191,15 +201,17 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
 };
 
 const permissionItems = computed(() => {
-    return permissionDescriptors.map((permission) => {
-        const status = deviceStore.permissions[permission.key];
+    return permissionDescriptors
+        .filter((permission) => permission.key !== 'backgroundLocation' || isNativePlatform())
+        .map((permission) => {
+            const status = deviceStore.permissions[permission.key];
 
-        return {
-            ...permission,
-            status,
-            description: descriptionFor(permission.key, status)
-        };
-    });
+            return {
+                ...permission,
+                status,
+                description: descriptionFor(permission.key, status)
+            };
+        });
 });
 
 onMounted(async () => {
@@ -210,6 +222,7 @@ onMounted(async () => {
 function badgeLabel(status: BrowserPermissionState): string {
     switch (status) {
         case 'granted': return 'Allowed';
+        case 'when_in_use': return 'While Using';
         case 'denied': return 'Re-request';
         case 'prompt': return 'Request';
         case 'unsupported': return 'Unsupported';
@@ -220,6 +233,7 @@ function badgeLabel(status: BrowserPermissionState): string {
 function badgeProps(status: BrowserPermissionState): Record<string, string> {
     switch (status) {
         case 'unsupported':
+        case 'when_in_use':
             return {
                 backgroundColor: 'rgba(249, 115, 22, 0.18)',
                 borderColor: 'rgba(234, 88, 12, 0.35)',
@@ -237,6 +251,10 @@ function badgeProps(status: BrowserPermissionState): Record<string, string> {
 }
 
 function descriptionFor(type: PermissionKey, status: BrowserPermissionState): string {
+    if (status === 'when_in_use') {
+        return 'Location is only shared while CloudTAK is open. Set Location to "Always" in Settings so your team keeps seeing you when the app is in the background.';
+    }
+
     if (isNativePlatform() && status !== 'granted' && status !== 'unsupported') {
         if (status === 'denied') return `${permissionDescriptions.denied[type].split('. ')[0]}.`;
         if (status === 'prompt') return permissionDescriptions.prompt[type];
@@ -257,7 +275,16 @@ function descriptionFor(type: PermissionKey, status: BrowserPermissionState): st
     }
 }
 
+// Background location on native is granted from system settings, not an
+// in-app prompt - offer to open them instead of a permission request.
+function offersNativeSettings(type: PermissionKey, status: BrowserPermissionState): boolean {
+    return isNativePlatform()
+        && type === 'backgroundLocation'
+        && (status === 'when_in_use' || status === 'denied');
+}
+
 function canRequest(type: PermissionKey, status: BrowserPermissionState): boolean {
+    if (offersNativeSettings(type, status)) return true;
     if (isNativePlatform()) return false;
 
     if (type === 'orientation' && !deviceStore.orientation.hasPermissionRequest() && status !== 'granted') {
@@ -267,11 +294,13 @@ function canRequest(type: PermissionKey, status: BrowserPermissionState): boolea
     return status !== 'granted' && status !== 'unsupported';
 }
 
-function shouldShowAction(status: BrowserPermissionState): boolean {
+function shouldShowAction(type: PermissionKey, status: BrowserPermissionState): boolean {
+    if (offersNativeSettings(type, status)) return true;
     return !isNativePlatform() && status !== 'granted' && status !== 'unsupported';
 }
 
 function actionLabel(status: BrowserPermissionState, type: PermissionKey): string {
+    if (offersNativeSettings(type, status)) return 'Open Settings';
     if (working.value === type) return 'Requesting...';
     if (type === 'orientation' && !deviceStore.orientation.hasPermissionRequest() && status !== 'granted') return 'Unavailable';
     if (status === 'denied') return 'Re-request Permission';
@@ -290,7 +319,23 @@ async function refreshStatuses(): Promise<void> {
 }
 
 async function requestPermission(type: PermissionKey): Promise<void> {
-    if (isNativePlatform()) return;
+    if (isNativePlatform()) {
+        if (type !== 'backgroundLocation') return;
+
+        error.value = '';
+        working.value = type;
+
+        try {
+            await deviceStore.geolocation.openNativeSettings();
+        } catch (err) {
+            error.value = err instanceof Error ? err.message : 'Failed to open system settings';
+        } finally {
+            working.value = undefined;
+            await refreshStatuses();
+        }
+
+        return;
+    }
 
     error.value = '';
     working.value = type;

@@ -7,7 +7,19 @@ import type {
 } from '@capgo/background-geolocation';
 import { isNativePlatform } from '../../utils/capacitor.ts';
 import { PermissionQuery, normalizePermissionState } from './shared.ts';
-import type { DevicePermissionContext } from './types.ts';
+import type { BrowserPermissionState, DevicePermissionContext } from './types.ts';
+
+/**
+ * When set, the native layer POSTs each fix to `url` directly, independent of
+ * the WebView - iOS suspends the WebContent process in the background, so
+ * bridge-delivered fixes stop flowing while native delivery keeps working.
+ */
+export type NativeDeliveryOptions = {
+    url: string;
+    headers?: Record<string, string>;
+    /** Minimum ms between native POSTs (and the Android update interval). */
+    minIntervalMs?: number;
+};
 
 export class GeolocationPermission {
     constructor(private readonly context: DevicePermissionContext) {}
@@ -17,10 +29,9 @@ export class GeolocationPermission {
     private lastLocationTimestamp = 0;
     private locationCallback: ((position: Position) => void) | null = null;
 
-    // The background watcher only emits fixes newer than its own start time and
-    // only after `DISTANCE_FILTER_M` of movement, so a stationary device can go
-    // indefinitely without one. A one-shot fix seeds the first position instead.
-    private static readonly DISTANCE_FILTER_M = 10;
+    // The background watcher only emits fixes newer than its own start time,
+    // so the first position can take seconds to arrive. A one-shot fix seeds
+    // the initial position instead.
     private static readonly SEED_TIMEOUT_MS = 10000;
     private static readonly SEED_MAX_AGE_MS = 30000;
 
@@ -37,8 +48,11 @@ export class GeolocationPermission {
                 console.warn('Failed to query native geolocation permission status', err);
                 this.context.setPermissionStatus('location', 'unknown');
             }
+            await this.refreshBackgroundStatus();
             return;
         }
+
+        this.context.setPermissionStatus('backgroundLocation', 'unsupported');
 
         if (!GeolocationPermission.supportsLocationRequests()) {
             this.context.setPermissionStatus('location', 'unsupported');
@@ -47,6 +61,26 @@ export class GeolocationPermission {
 
         const status = await PermissionQuery.queryPermissionStatus('geolocation', 'Failed to query geolocation permission status');
         this.context.setPermissionStatus('location', status ? status.state : 'unknown');
+    }
+
+    // Only the background plugin distinguishes iOS "Always" from
+    // "While Using App" - @capacitor/geolocation reports both as granted.
+    private async refreshBackgroundStatus(): Promise<void> {
+        try {
+            const status = await BackgroundGeolocation.checkPermissions();
+            let state: BrowserPermissionState;
+            if (status.backgroundLocation === 'when_in_use') {
+                state = 'when_in_use';
+            } else if (status.backgroundLocation === 'always') {
+                state = 'granted';
+            } else {
+                state = normalizePermissionState(status.backgroundLocation);
+            }
+            this.context.setPermissionStatus('backgroundLocation', state);
+        } catch (err) {
+            console.warn('Failed to query background location permission status', err);
+            this.context.setPermissionStatus('backgroundLocation', 'unknown');
+        }
     }
 
     async request(onGranted?: () => void): Promise<void> {
@@ -100,7 +134,7 @@ export class GeolocationPermission {
         }
     }
 
-    async startWatch(onLocation: (position: Position) => void): Promise<void> {
+    async startWatch(onLocation: (position: Position) => void, native?: NativeDeliveryOptions): Promise<void> {
         if (!GeolocationPermission.supportsLocationRequests()) return;
         await this.stopWatch();
 
@@ -135,7 +169,7 @@ export class GeolocationPermission {
             // Single watcher on every platform: on native the plugin delivers
             // foreground fixes too, and on web it falls back to
             // navigator.geolocation.watchPosition.
-            await this.startBackgroundWatch(handler);
+            await this.startBackgroundWatch(handler, native);
 
             void this.seedImmediateFix(handler, generation);
         } catch (err) {
@@ -180,7 +214,10 @@ export class GeolocationPermission {
         this.locationCallback = null;
     }
 
-    private async startBackgroundWatch(handler: (position: Position | null, err?: unknown) => void): Promise<void> {
+    private async startBackgroundWatch(
+        handler: (position: Position | null, err?: unknown) => void,
+        native?: NativeDeliveryOptions
+    ): Promise<void> {
         await BackgroundGeolocation.start({
             backgroundTitle: 'CloudTAK GPS active',
             backgroundMessage: 'CloudTAK is sharing your location.',
@@ -189,13 +226,36 @@ export class GeolocationPermission {
             // positions are seeded explicitly by seedImmediateFix() instead,
             // which bounds their age.
             stale: false,
-            // Metres of movement before a new fix is delivered. Ignored by the
-            // web fallback.
-            distanceFilter: GeolocationPermission.DISTANCE_FILTER_M
+            // A distance filter would suppress fixes while stationary, staling
+            // the user out on the TAK server - rely on minIntervalMs for rate
+            // limiting instead so parked devices still emit heartbeats.
+            distanceFilter: 0,
+            ...(native ? {
+                url: native.url,
+                headers: native.headers,
+                minIntervalMs: native.minIntervalMs
+            } : {})
         }, (location?: BackgroundLocation, err?: BackgroundGeolocationError) => {
             handler(location ? GeolocationPermission.backgroundLocationToPosition(location) : null, err);
         });
         this.watchActive = true;
+    }
+
+    /**
+     * Point native POST delivery at a rotated auth token. Best-effort: the
+     * watch restarts with fresh headers on the next app boot regardless.
+     */
+    static async updateNativeHeaders(headers: Record<string, string>): Promise<void> {
+        if (!isNativePlatform()) return;
+        try {
+            await BackgroundGeolocation.updateHeaders({ headers });
+        } catch (err) {
+            console.warn('Failed to update native location delivery headers', err);
+        }
+    }
+
+    async openNativeSettings(): Promise<void> {
+        await BackgroundGeolocation.openSettings();
     }
 
     private static backgroundLocationToPosition(location: BackgroundLocation): Position {

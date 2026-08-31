@@ -9,7 +9,6 @@
 
 import { v4 as randomUUID } from 'uuid';
 import { Preferences } from '@capacitor/preferences';
-import { CapacitorHttp } from '@capacitor/core';
 import { defineStore } from 'pinia'
 import { markRaw } from 'vue';
 import { liveQuery } from 'dexie';
@@ -17,7 +16,7 @@ import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import IconManager from './modules/icons.ts';
 import MenuManager from './modules/menu.ts';
 import BottomBarManager from './modules/bottombar.ts';
-import { useDeviceStore } from './device.ts';
+import { useDeviceStore, type BatteryInfo, type NativeDeliveryOptions } from './device.ts';
 import { useAppStore } from './app.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
@@ -34,7 +33,7 @@ import Overlay from '../base/overlay-class.ts';
 import OverlayManager from '../base/overlay.ts';
 import { FeatureVisibility } from './modules/feature-visibility.ts';
 import Subscription from '../base/subscription.ts';
-import { stdurl, server, getRuntimeToken, serverUrl } from '../std.js';
+import { stdurl, getRuntimeToken, serverUrl } from '../std.js';
 import * as mapgl from 'maplibre-gl'
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import type Atlas from '../workers/atlas.ts';
@@ -119,7 +118,6 @@ export const useMapStore = defineStore('cloudtak', {
         _overlaySubscription?: { unsubscribe: () => void };
         _overlayReconcile?: Promise<void>;
         _overlayReconcileQueued?: boolean;
-        _lastLocationHttpSubmit?: number;
 
         channel: BroadcastChannel;
 
@@ -279,6 +277,26 @@ export const useMapStore = defineStore('cloudtak', {
     actions: {
         startLocationWatch: async function() {
             const deviceStore = useDeviceStore();
+
+            // Native code POSTs each fix to the location endpoint itself,
+            // throttled to the user's reporting frequency - background
+            // reporting must not depend on the WebView, which iOS suspends.
+            let native: NativeDeliveryOptions | undefined;
+            if (isNativePlatform()) {
+                const freq = Number((await ProfileConfig.get('tak_loc_freq'))?.value) || 5000;
+                const token = await getRuntimeToken();
+                native = {
+                    url: `${serverUrl}/api/profile/location`,
+                    ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
+                    minIntervalMs: freq
+                };
+            }
+
+            // Without a distance filter fixes can arrive every second - don't
+            // pay a native bridge call for battery state on each one
+            let battery: BatteryInfo = { level: null, charging: null };
+            let batteryAt = 0;
+
             await deviceStore.geolocation.startWatch(async (position: Position) => {
                 if (this.manualLocationMode) return;
 
@@ -294,7 +312,10 @@ export const useMapStore = defineStore('cloudtak', {
 
                 // Battery state rides along with each location broadcast so the
                 // self CoT can report it to the TAK Server
-                const battery = await deviceStore.battery.info();
+                if (Date.now() - batteryAt > 30000) {
+                    battery = await deviceStore.battery.info();
+                    batteryAt = Date.now();
+                }
 
                 try {
                     this.channel.postMessage({
@@ -315,11 +336,7 @@ export const useMapStore = defineStore('cloudtak', {
                     // channel may be closed during teardown
                     console.error(err);
                 }
-
-                if (isNativePlatform() && this.isBackgrounded) {
-                    void this.submitLocationHttp(position);
-                }
-            });
+            }, native);
         },
         syncGeolocateControl: function() {
             if (!this._map) return;
@@ -1249,47 +1266,6 @@ export const useMapStore = defineStore('cloudtak', {
             this.loadingStage = '';
         },
 
-        submitLocationHttp: async function(position: Position): Promise<void> {
-            // Throttle to the user's location reporting frequency
-            // (tak_loc_freq) - the background watcher can deliver fixes far
-            // faster than the profile asks the server to be updated
-            const freq = Number((await ProfileConfig.get('tak_loc_freq'))?.value) || 5000;
-            const now = Date.now();
-            if (this._lastLocationHttpSubmit !== undefined && now - this._lastLocationHttpSubmit < freq) {
-                return;
-            }
-            this._lastLocationHttpSubmit = now;
-
-            try {
-                const body = {
-                    longitude: position.coords.longitude,
-                    latitude: position.coords.latitude,
-                    ...(position.coords.altitude !== null ? { altitude: position.coords.altitude } : {}),
-                    accuracy: position.coords.accuracy,
-                    ...(position.coords.altitudeAccuracy !== null ? { altitudeAccuracy: position.coords.altitudeAccuracy } : {}),
-                    ...(position.coords.speed !== null ? { speed: position.coords.speed } : {}),
-                    ...(position.coords.heading !== null ? { bearing: position.coords.heading } : {}),
-                    time: position.timestamp,
-                };
-
-                // Use CapacitorHttp for native background requests to avoid WebView throttling
-                if (isNativePlatform()) {
-                    const token = await getRuntimeToken();
-                    await CapacitorHttp.put({
-                        url: `${serverUrl}/api/profile/location`,
-                        headers: {
-                            'Content-Type': 'application/json',
-                            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-                        },
-                        data: body
-                    });
-                } else {
-                    await server.PUT('/api/profile/location', { body });
-                }
-            } catch (err) {
-                console.warn('Failed to submit background location via HTTP', err);
-            }
-        },
         initOverlays: async function() {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');
 

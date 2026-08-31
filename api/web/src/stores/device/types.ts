@@ -1,5 +1,5 @@
-export type BrowserPermissionState = PermissionState | 'unsupported' | 'unknown';
-export type BrowserPermissionType = 'location' | 'notification' | 'orientation' | 'storage' | 'camera' | 'wakeLock' | 'fileSystem';
+export type BrowserPermissionState = PermissionState | 'when_in_use' | 'unsupported' | 'unknown';
+export type BrowserPermissionType = 'location' | 'backgroundLocation' | 'notification' | 'orientation' | 'storage' | 'camera' | 'wakeLock' | 'fileSystem';
 
 export type FileSystemAccessHandle = FileSystemHandle & {
     queryPermission?: (descriptor?: { mode?: 'read' | 'readwrite' }) => Promise<PermissionState>;
