@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.77.1 - 2026-08-31
+
+- :tada: Introduce fully native background location reporting
+
 ### v13.77.0 - 2026-08-31
 
 - :tada: Introduce Offline TileJSON cache
