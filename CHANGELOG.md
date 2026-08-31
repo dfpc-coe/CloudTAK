@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.77.0 - 2026-08-31
+
+- :tada: Introduce Offline TileJSON cache
+
 ### v13.76.0 - 2026-08-30
 
 - :rocket: Move Attribution into Profile Overlay to further reduce needed API calls on startup
