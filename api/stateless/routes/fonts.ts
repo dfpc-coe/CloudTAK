@@ -53,6 +53,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
             }
 
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+
             fs.createReadStream(new URL(`../../fonts/${req.params.fontstack}/${req.params.start}-${req.params.end}.pbf`, import.meta.url))
                 .pipe(res);
         } catch (err) {

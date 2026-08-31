@@ -2,16 +2,15 @@ import path from 'node:path';
 import { Type } from '@sinclair/typebox';
 import { StandardResponse, ProfileFileResponse } from '../../common/types.js';
 import { sql, eq } from 'drizzle-orm';
-import { fetch } from '@tak-ps/node-safeurl';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import S3 from '../../common/aws/s3.js';
-import jwt from 'jsonwebtoken';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { ProfileFile, ProfileFileChannel } from '../../common/schema.js';
 import type ConfigStateless from '../config.js';
 import activeChannels from '../lib/tak-channels.js';
+import { profileAssetTileJSON } from '../lib/tilejson.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
@@ -340,21 +339,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 throw new Err(404, null, 'Asset does not exist');
             }
 
-            const token = jwt.sign({
-                access: 'profile',
+            res.json(await profileAssetTileJSON(config, {
                 email: user.email,
-                file: `${file.username}/${req.params.asset}`,
-            }, config.SigningSecret);
-
-            const url = new URL(`${config.PMTILES_URL}/tiles/profile/${file.username}/${req.params.asset}`);
-            url.searchParams.append('token', token);
-
-            const tilejson = await fetch(url);
-            if (!tilejson.ok) {
-                throw new Err(tilejson.status, null, `Failed to retrieve TileJSON: ${await tilejson.text()}`);
-            }
-
-            res.json(await tilejson.json());
+                owner: file.username,
+                asset: req.params.asset,
+            }));
         } catch (err) {
             Err.respond(err, res);
         }

@@ -30,7 +30,15 @@ export async function applyOverlay(overlay: ProfileOverlay): Promise<void> {
             });
         }
 
-        await db.overlay.put(overlay as DBOverlay);
+        // A null tilejson only means the server couldn't resolve the document
+        // right now - never let it wipe a cached copy that still works offline
+        const record = { ...overlay } as DBOverlay;
+        if (!record.tilejson) {
+            const existing = await db.overlay.get(record.id);
+            if (existing?.tilejson) record.tilejson = existing.tilejson;
+        }
+
+        await db.overlay.put(record);
 
         await touchListCache();
     });
@@ -86,10 +94,17 @@ export async function syncOverlays(): Promise<void> {
     const list = res.data as ProfileOverlayList;
 
     await db.transaction('rw', db.overlay, db.cache, async () => {
+        // Preserve cached TileJSON when the server couldn't resolve one
+        const cached = new Map((await db.overlay.toArray())
+            .filter((o) => o.tilejson)
+            .map((o) => [o.id, o.tilejson]));
+
         await db.overlay.clear();
 
         if (list.items.length) {
-            await db.overlay.bulkPut(list.items as DBOverlay[]);
+            await db.overlay.bulkPut(list.items.map((item) => (
+                item.tilejson ? item : { ...item, tilejson: cached.get(item.id) ?? null }
+            )) as DBOverlay[]);
         }
 
         await db.cache.put({

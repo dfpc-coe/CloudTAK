@@ -799,7 +799,7 @@ import { useMapStore } from '../../stores/map.ts';
 import { useFloatStore } from '../../stores/float.ts';
 import { useDeviceStore } from '../../stores/device.ts';
 import ProfileConfig from '../../base/profile.ts';
-import Config from '../../base/config.ts';
+import OverlayManager from '../../base/overlay.ts';
 import { setCircleRadius } from '../../base/cot/ellipse.ts';
 
 const mapStore = useMapStore();
@@ -808,10 +808,10 @@ const floatStore = useFloatStore();
 
 const deviceStore = useDeviceStore();
 
-const terrainBasemapId = ref<number | null>(null);
-Config.list(['map::terrain'], { defaults: { 'map::terrain': null } }).then((cfg) => {
-    terrainBasemapId.value = cfg['map::terrain'] ? Number(cfg['map::terrain']) : null;
-}).catch(() => { /* non-fatal */ });
+const terrainBasemapId = computed<number | null>(() => {
+    const terrain = OverlayManager.loaded.find((overlay) => overlay.type === 'raster-dem' && overlay.mode_id);
+    return terrain ? Number(terrain.mode_id) : null;
+});
 const route = useRoute();
 const router = useRouter();
 

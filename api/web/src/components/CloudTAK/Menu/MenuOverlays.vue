@@ -240,17 +240,6 @@
                                         @update:model-value='void updateOverlay(card.overlay, { opacity: $event })'
                                     />
                                 </div>
-                                <div
-                                    v-if='card.overlay.type === "raster-dem"'
-                                    class='mb-3'
-                                >
-                                    <TablerEnum
-                                        :model-value='card.overlay.encoding || "mapbox"'
-                                        label='Terrain Encoding'
-                                        :options='["mapbox", "terrarium"]'
-                                        @update:model-value='void updateOverlay(card.overlay, { encoding: $event })'
-                                    />
-                                </div>
                                 <TreeVector
                                     v-if='card.overlay.type === "vector"'
                                     :overlay='card.overlay'
@@ -277,7 +266,6 @@ import type { Subscription } from 'dexie';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerDelete,
-    TablerEnum,
     TablerIconButton,
     TablerInput,
     TablerLoading,

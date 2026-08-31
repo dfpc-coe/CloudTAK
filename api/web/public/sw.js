@@ -22,6 +22,10 @@ if (!BUILD) {
 const CACHE_PREFIX = 'cloudtak-cache-';
 const CACHE_NAME = `${CACHE_PREFIX}${BUILD}`;
 
+// Glyphs ship with the API, not the web build: unversioned so deploys keep them
+const GLYPH_CACHE_NAME = 'cloudtak-glyphs';
+const GLYPH_PATH_PREFIX = '/api/fonts/';
+
 // Vite emits one manifest entry per HTML page. Each must be precached under
 // the navigable path nginx serves it from (the browser never requests the
 // raw `.html` — those are 302'd away by the nginx config).
@@ -142,6 +146,22 @@ function isRuntimeCacheable(url) {
         || url.pathname.startsWith('/logos/');
 }
 
+// Keyed by pathname: MapLibre appends a per-session `?token=`
+async function glyphResponse(event, url) {
+    const cache = await caches.open(GLYPH_CACHE_NAME);
+
+    const cachedResponse = await cache.match(url.pathname);
+    if (cachedResponse) return cachedResponse;
+
+    const networkResponse = await fetch(event.request);
+
+    if (networkResponse.status === 200) {
+        event.waitUntil(cache.put(url.pathname, networkResponse.clone()));
+    }
+
+    return networkResponse;
+}
+
 /**
  * Navigation fallback when the network is unreachable. Prefers the cached
  * entry shell that matches the request path, then falls back to `/`.
@@ -167,6 +187,12 @@ self.addEventListener('fetch', (event) => {
     url.hash = '';
 
     if (url.origin !== self.location.origin) return;
+
+    if (url.pathname.startsWith(GLYPH_PATH_PREFIX)) {
+        event.respondWith(glyphResponse(event, url));
+        return;
+    }
+
     if (url.pathname.startsWith('/api')) return;
 
     event.respondWith((async () => {
