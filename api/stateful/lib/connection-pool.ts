@@ -463,7 +463,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         const connClient = new ConnectionClient(connConfig, tak, api);
         this.set(connConfig.id, connClient);
 
-        if (isCoreEventSubmitter(connConfig)) {
+        if (!this.config.noconnections && isCoreEventSubmitter(connConfig)) {
             connConfig.startEvents(tak, api);
         }
 
