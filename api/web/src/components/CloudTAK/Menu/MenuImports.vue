@@ -23,12 +23,9 @@
             >
                 <Upload
                     :url='stdurl(`/api/import`)'
-                    :validate='validateImportFile'
                     method='PUT'
                     @cancel='upload = false'
                     @done='uploadComplete($event)'
-                    @error='error = $event'
-                    @staged='error = undefined'
                 />
             </div>
 
@@ -161,12 +158,6 @@ function uploadComplete(event: unknown) {
     upload.value = false;
     const imp = event as { imports: Array<{ uid: string }> };
     router.push(`/menu/imports/${imp.imports[0].uid}`)
-}
-
-function validateImportFile(file: File): string | undefined {
-    if (file.name.toLowerCase().endsWith('.gdb')) {
-        return 'File geodatabases are folders. Compress the entire .gdb folder into a ZIP file before uploading.';
-    }
 }
 
 async function fetchList() {

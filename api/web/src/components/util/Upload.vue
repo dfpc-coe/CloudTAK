@@ -104,7 +104,6 @@ interface Props {
     label?: string;
     mimetype?: string;
     sizeWarning?: boolean;
-    validate?: (file: File) => string | undefined;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -156,13 +155,6 @@ function stage(event: Event) {
     if (!target.files?.length) return;
 
     const singleFile = target.files[0];
-    const validationError = props.validate?.(singleFile);
-    if (validationError) {
-        refresh();
-        emit('error', new Error(validationError));
-        return;
-    }
-
     file.value = {
         name: singleFile.name,
         file: singleFile

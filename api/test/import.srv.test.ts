@@ -118,33 +118,6 @@ test('PUT: api/import/:import - upload failure marks import failed', async () =>
     Sinon.restore();
 });
 
-test('PUT: api/import - rejects an uncompressed file geodatabase', async () => {
-    try {
-        const s3Stub = Sinon.stub(S3, 'put');
-        const body = new FormData();
-        body.append('file', new Blob(['file-content']), 'boulder.gdb');
-
-        const res = await flight.fetch('/api/import', {
-            method: 'PUT',
-            auth: {
-                bearer: flight.token.admin,
-            },
-            body,
-        }, false);
-
-        assert.equal(res.status, 400);
-        assert.equal(
-            res.body.message,
-            'File geodatabases are folders. Compress the entire .gdb folder into a ZIP file before uploading.',
-        );
-        assert.equal(s3Stub.callCount, 0);
-    } catch (err) {
-        assert.ifError(err);
-    }
-
-    Sinon.restore();
-});
-
 test(`GET: api/import/<id>`, async () => {
     try {
         const res = await flight.fetch(`/api/import/${id}`, {
