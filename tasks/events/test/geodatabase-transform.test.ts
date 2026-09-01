@@ -4,8 +4,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import cp from 'node:child_process';
 import Sinon from 'sinon';
+import StreamZip from 'node-stream-zip';
 import Geodatabase from '../src/transforms/geodatabase.js';
 import type { Message, LocalMessage } from '../src/types.js';
+
+const FIXTURE_ZIP = path.resolve(import.meta.dirname, 'fixtures/geodatabase/boulder.zip');
 
 test('Geodatabase Transform', async (t) => {
     const tmpdir = await fs.promises.mkdtemp('/tmp/geodatabase-test-');
@@ -60,5 +63,32 @@ test('Geodatabase Transform', async (t) => {
             /does not contain supported geospatial data/,
         );
         exec.restore();
+    });
+
+    await t.test('converts the flattened FileGDB fixture to GeoJSONSeq', async () => {
+        const extractDir = path.join(tmpdir, 'boulder-raw');
+        const geodatabasePath = path.join(tmpdir, 'boulder.gdb');
+        await fs.promises.mkdir(extractDir, { recursive: true });
+
+        const zip = new StreamZip.async({ file: FIXTURE_ZIP });
+        await zip.extract(null, extractDir);
+        await zip.close();
+        await fs.promises.symlink(extractDir, geodatabasePath, 'dir');
+
+        const transform = new Geodatabase({} as Message, {
+            tmpdir,
+            name: 'boulder.gdb',
+            ext: '.gdb',
+            id: 'boulder',
+            raw: geodatabasePath,
+        } as LocalMessage);
+
+        const result = await transform.convert();
+        const content = await fs.promises.readFile(result.asset, 'utf8');
+        const features = content.trim().split('\n').map(line => JSON.parse(line));
+
+        assert.equal(features.length, 50);
+        assert.ok(features.every(feature => feature.type === 'Feature'));
+        assert.ok(features.every(feature => feature.geometry?.type === 'MultiPolygon'));
     });
 });
