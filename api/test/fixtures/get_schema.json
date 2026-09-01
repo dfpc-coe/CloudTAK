@@ -239,6 +239,36 @@
         "query": false,
         "res": true
     },
+    "GET /connection/:connectionid/layer/:layerid/map": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /connection/:connectionid/layer/:layerid/map": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/layer/:layerid/map/:mapid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /connection/:connectionid/layer/:layerid/map/:mapid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/layer/:layerid/map/:mapid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /layer/:layerid/submit": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid/layer/:layerid/task": {
         "body": false,
         "query": false,

@@ -3,7 +3,8 @@ import { Type, Static } from '@sinclair/typebox';
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text, Profile_Radiation_Dose, Profile_Wake_Lock } from './enums.js';
-import { VideoLease_SourceType, CoreEvent_Priority, CoreEventBoardColumn_Type } from './enums.js';
+import { VideoLease_SourceType, CoreEvent_Priority, CoreEventBoardColumn_Type, LayerMap_Type } from './enums.js';
+import { StyleContainer } from './style.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
 import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, BasemapTerrain_Encoding } from './enums.js';
@@ -308,6 +309,122 @@ export const CoreDeviceResponse = Type.Object({
     remarks: Type.String(),
     metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Device metadata' }),
     channels: Type.Array(Type.Integer(), { description: 'TAK Server Channels the Device is shared with' }),
+});
+
+/** Defaults applied to Core Events created by a Layer Map - the JSONata query output takes precedence */
+export const LayerMapCoreEventMapping = Type.Object({
+    type: Type.Optional(Type.String({ description: 'Default MIL-STD-2525E Symbol ID' })),
+    priority: Type.Optional(Type.Enum(CoreEvent_Priority)),
+    editable: Type.Optional(Type.Boolean({ description: 'Can users other than the creator edit the Event' })),
+    location: Type.Optional(Type.String({ description: 'Human readable location - ie: an address' })),
+    remarks: Type.Optional(Type.String()),
+    metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
+    links: Type.Optional(Type.Array(CoreEventLink)),
+    style: Type.Optional(CoreEventStyle),
+    channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), {
+        uniqueItems: true,
+        description: 'TAK Server Channels to share created Events with',
+    })),
+});
+
+/** Defaults applied to Core Devices created by a Layer Map - the JSONata query output takes precedence */
+export const LayerMapCoreDeviceMapping = Type.Object({
+    type: Type.Optional(Type.String({ description: 'Default MIL-STD-2525E Symbol ID' })),
+    manufacturer: Type.Optional(Type.String()),
+    model: Type.Optional(Type.String()),
+    firmware: Type.Optional(Type.String()),
+    status: Type.Optional(Type.String()),
+    simulated: Type.Optional(Type.Boolean()),
+    remarks: Type.Optional(Type.String()),
+    metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
+    channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), {
+        uniqueItems: true,
+        description: 'TAK Server Channels to share created Devices with',
+    })),
+});
+
+/**
+ * Mapping config of a Layer Map - a StyleContainer for CoreFeature Maps,
+ * otherwise field defaults for the Core Event/Device the query output is merged over
+ *
+ * Exposed as an open Record in request/response schemas as AJV's
+ * removeAdditional strips properties from untagged unions - the mapping is
+ * validated against the Map type server side instead
+ */
+export const LayerMapMapping = Type.Union([
+    StyleContainer,
+    LayerMapCoreEventMapping,
+    LayerMapCoreDeviceMapping,
+]);
+
+export const LayerMapMappingField = Type.Record(Type.String(), Type.Unknown(), {
+    description: 'Mapping config of the Map - a Style Mapping for CoreFeature Maps, otherwise field defaults the JSONata query output is merged over',
+});
+
+/** Shape each Core Event produced by a Layer Map JSONata query must conform to once merged with the mapping */
+export const LayerMapCoreEventSubmission = Type.Object({
+    name: Type.String({ minLength: 1 }),
+    type: Type.String({ minLength: 1, description: 'MIL-STD-2525E Symbol ID' }),
+    geometry: GeoJSONFeatureGeometryPoint,
+    priority: Type.Enum(CoreEvent_Priority, { default: CoreEvent_Priority.NONE }),
+    location: Type.String({ default: '' }),
+    remarks: Type.String({ default: '' }),
+    external_id: Type.String({ default: '', description: 'ID of the Event in an external system - Events are upserted by this ID when set' }),
+    editable: Type.Boolean({ default: true }),
+    active: Type.Optional(Type.Boolean()),
+    ended: Type.Optional(Type.Union([Type.Null(), Type.String({ format: 'date-time' })])),
+    metadata: Type.Record(Type.String(), Type.Unknown(), { default: {} }),
+    links: Type.Array(CoreEventLink, { default: [] }),
+    style: Type.Object(CoreEventStyle.properties, { default: {} }),
+});
+
+/** Shape each Core Device produced by a Layer Map JSONata query must conform to once merged with the mapping */
+export const LayerMapCoreDeviceSubmission = Type.Object({
+    name: Type.String({ minLength: 1 }),
+    type: Type.String({ minLength: 1, description: 'MIL-STD-2525E Symbol ID' }),
+    manufacturer: Type.String({ default: '' }),
+    model: Type.String({ default: '' }),
+    serial: Type.String({ default: '' }),
+    firmware: Type.String({ default: '' }),
+    status: Type.String({ default: '' }),
+    battery: Type.Optional(Type.Union([Type.Null(), Type.Number({ minimum: 0, maximum: 100 })])),
+    simulated: Type.Boolean({ default: false }),
+    external_id: Type.String({ default: '', description: 'ID of the Device in an external system - Devices are upserted by this ID when set' }),
+    remarks: Type.String({ default: '' }),
+    metadata: Type.Record(Type.String(), Type.Unknown(), { default: {} }),
+});
+
+export const LayerMapResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    layer: Type.Integer(),
+    name: Type.String(),
+    enabled: Type.Boolean(),
+    query: Type.String({ description: 'JSONata query run against the submitted JSON payload' }),
+    type: Type.Enum(LayerMap_Type),
+    mapping: LayerMapMappingField,
+});
+
+export const LayerMapSubmissionResult = Type.Object({
+    map: Type.String({ description: 'Layer Map the result belongs to' }),
+    name: Type.String(),
+    type: Type.Enum(LayerMap_Type),
+    count: Type.Integer({ description: 'Number of records submitted by the Map' }),
+    message: Type.Optional(Type.String()),
+});
+
+export const LayerMapSubmissionError = Type.Object({
+    map: Type.String({ description: 'Layer Map the error belongs to' }),
+    name: Type.String(),
+    error: Type.String(),
+});
+
+export const LayerSubmitResponse = Type.Object({
+    status: Type.Integer(),
+    message: Type.String(),
+    results: Type.Array(LayerMapSubmissionResult),
+    errors: Type.Array(LayerMapSubmissionError),
 });
 
 export const MissionTemplateResponse = Type.Object({

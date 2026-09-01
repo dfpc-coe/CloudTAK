@@ -339,7 +339,7 @@ export default class Auth {
     }
 }
 
-function hasScope(permissions: Array<string>, scope: string): boolean {
+export function hasScope(permissions: Array<string>, scope: string): boolean {
     const wildcard = scope.slice(0, scope.indexOf(':') + 1) + '*';
     return permissions.includes(scope) || permissions.includes(wildcard);
 }

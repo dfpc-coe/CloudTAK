@@ -4,6 +4,7 @@ import { Static } from '@sinclair/typebox';
 import type { ProfileVideoPosition } from './types.js';
 import type { StyleContainer } from './style.js';
 import { CoreEventLink, CoreEventStyle } from './types.js';
+import type { LayerMapMapping } from './types.js';
 import type { FilterContainer } from './filter.js';
 import type { PaletteFeatureStyle } from '../stateless/lib/palette.js';
 import { Polygon, Point } from 'geojson';
@@ -17,7 +18,7 @@ import {
     BasemapTerrain_Encoding,
     ProfilePaging_Type,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
-    ProfileChatStatus, CoreEvent_Priority, CoreEventBoardColumn_Type,
+    ProfileChatStatus, CoreEvent_Priority, CoreEventBoardColumn_Type, LayerMap_Type,
 } from './enums.js';
 import { bigint, boolean, uuid, numeric, integer, doublePrecision, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
@@ -652,6 +653,23 @@ export const LayerIncoming = pgTable('layers_incoming', {
 
     // Data Destinations
     data: integer().references(() => Data.id),
+});
+
+/** Maps arbitrary JSON submitted to /layer/:layerid/submit to CoreFeatures, CoreEvents or CoreDevices */
+export const LayerMap = pgTable('layer_map', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    layer: integer().notNull().references(() => Layer.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    enabled: boolean().notNull().default(true),
+    query: text().notNull(), // JSONata query run against the submitted JSON payload
+    type: text().$type<LayerMap_Type>().notNull(),
+    mapping: jsonb().$type<Static<typeof LayerMapMapping>>().notNull().default({}),
+}, (table) => {
+    return {
+        layer_idx: index('layer_map_layer_idx').on(table.layer),
+    };
 });
 
 export const Setting = pgTable('settings', {

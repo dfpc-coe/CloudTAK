@@ -45,6 +45,12 @@ export enum CoreEventBoardColumn_Type {
     CUSTOM = 'custom',
 }
 
+export enum LayerMap_Type {
+    COREFEATURE = 'CoreFeature',
+    COREEVENT = 'CoreEvent',
+    COREDEVICE = 'CoreDevice',
+}
+
 export enum AllBoolean {
     TRUE = 'true',
     FALSE = 'false',

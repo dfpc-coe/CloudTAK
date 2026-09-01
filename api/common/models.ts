@@ -74,6 +74,7 @@ export default class Models {
     Layer: Layer;
     LayerIncoming: Modeler<typeof pgtypes.LayerIncoming>;
     LayerOutgoing: Modeler<typeof pgtypes.LayerOutgoing>;
+    LayerMap: Modeler<typeof pgtypes.LayerMap>;
 
     constructor(pg: Pool<typeof pgtypes>) {
         this.Channel = new Modeler(pg, pgtypes.Channel);
@@ -125,5 +126,6 @@ export default class Models {
         this.Layer = new Layer(pg);
         this.LayerIncoming = new Modeler(pg, pgtypes.LayerIncoming);
         this.LayerOutgoing = new Modeler(pg, pgtypes.LayerOutgoing);
+        this.LayerMap = new Modeler(pg, pgtypes.LayerMap);
     }
 }
