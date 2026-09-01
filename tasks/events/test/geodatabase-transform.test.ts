@@ -6,6 +6,7 @@ import cp from 'node:child_process';
 import Sinon from 'sinon';
 import StreamZip from 'node-stream-zip';
 import Geodatabase from '../src/transforms/geodatabase.js';
+import GDALTranslate from '../src/transforms/translate.js';
 import type { Message, LocalMessage } from '../src/types.js';
 
 const FIXTURE_ZIP = path.resolve(import.meta.dirname, 'fixtures/geodatabase/boulder.zip');
@@ -63,6 +64,22 @@ test('Geodatabase Transform', async (t) => {
             /does not contain supported geospatial data/,
         );
         exec.restore();
+    });
+
+    await t.test('routes raster data through GDALTranslate', async () => {
+        const exec = Sinon.stub(cp, 'execFileSync');
+        exec.onFirstCall().returns(Buffer.from(JSON.stringify({ layers: [] })));
+        exec.onSecondCall().returns(Buffer.from(JSON.stringify({ bands: [{}] })));
+
+        const expected = { asset: path.join(tmpdir, 'raster.mbtiles') };
+        const convert = Sinon.stub(GDALTranslate.prototype, 'convert').resolves(expected);
+
+        const result = await createTransform('raster.gdb').convert();
+
+        assert.deepEqual(result, expected);
+        assert.equal(convert.callCount, 1);
+        exec.restore();
+        convert.restore();
     });
 
     await t.test('converts the flattened FileGDB fixture to GeoJSONSeq', async () => {
