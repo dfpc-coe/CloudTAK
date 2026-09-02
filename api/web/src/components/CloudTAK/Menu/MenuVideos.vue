@@ -221,9 +221,9 @@
 
                         <div class='d-flex btn-list ms-auto'>
                             <TablerIconButton
-                                :title='l.active ? "Play Lease" : "Lease is not currently streaming"'
-                                :disabled='!l.active'
-                                @click.stop='l.active && floatStore.addLease(l)'
+                                :title='getLeasePlayTitle(l)'
+                                :disabled='!isLeasePlayable(l)'
+                                @click.stop='isLeasePlayable(l) && floatStore.addLease(l)'
                             >
                                 <IconPlayerPlay
                                     :size='24'
@@ -430,6 +430,18 @@ function getLeaseIcon(sourceType: string) {
         case 'screenshare': return IconDeviceDesktop;
         default: return IconVideo;
     }
+}
+
+// Proxied sources are pulled by MediaMTX on demand, so they are only
+// reported ready while being watched - treat them as always playable
+function isLeasePlayable(lease: VideoLeaseList['items'][number]): boolean {
+    return lease.active || lease.proxy !== null;
+}
+
+function getLeasePlayTitle(lease: VideoLeaseList['items'][number]): string {
+    if (lease.active) return 'Play Lease';
+    if (lease.proxy !== null) return 'Play Lease - starts on demand';
+    return 'Lease is not currently streaming';
 }
 
 function getLeaseDescription(lease: VideoLease): string {
