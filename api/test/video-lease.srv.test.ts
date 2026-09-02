@@ -116,6 +116,24 @@ test('POST: api/video/lease - Create Lease', async () => {
     }
 });
 
+test('GET: api/video/lease - Active reported from MediaServer', async () => {
+    try {
+        const res = await flight.fetch('/api/video/lease?impersonate=true&ephemeral=all', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.equal(res.status, 200, 'Status 200');
+        assert.equal(res.body.total, 1);
+        assert.equal(res.body.items[0].id, leaseId);
+        assert.equal(res.body.items[0].active, false, 'Path not reported ready by MediaServer');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: api/video/lease/:lease - Get Lease', async () => {
     try {
         const res = await flight.fetch(`/api/video/lease/${leaseId}`, {

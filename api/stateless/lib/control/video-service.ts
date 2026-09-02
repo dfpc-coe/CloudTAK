@@ -221,17 +221,7 @@ export default class VideoServiceControl {
         if (!res.ok) throw new Err(500, null, await res.text());
         const body = await res.typed(VideoConfig);
 
-        // TODO support paging
-        const urlPaths = new URL('/path', video.url);
-        urlPaths.port = '9997';
-
-        const resPaths = await fetch(urlPaths, {
-            headers: Object.fromEntries(headers.entries()),
-            safeUrlAllow: [new URL(video.url!).hostname],
-        });
-        if (!resPaths.ok) throw new Err(500, null, await resPaths.text());
-
-        const paths = await resPaths.typed(PathsList);
+        const paths = await this.paths();
 
         // Special case for supporting internal Docker Compose network
         let external = video.url;
@@ -244,8 +234,30 @@ export default class VideoServiceControl {
             url: video.url,
             external,
             config: body,
-            paths: paths.items,
+            paths,
         };
+    }
+
+    /**
+     * List all Paths currently known to the Media Server
+     */
+    async paths(): Promise<Static<typeof PathListItem>[]> {
+        const video = await this.settings();
+        if (!video.configured) return [];
+
+        const headers = this.headers(video.token);
+
+        // TODO support paging
+        const url = new URL('/path', video.url);
+        url.port = '9997';
+
+        const res = await fetch(url, {
+            headers: Object.fromEntries(headers.entries()),
+            safeUrlAllow: [new URL(video.url!).hostname],
+        });
+        if (!res.ok) throw new Err(500, null, await res.text());
+
+        return (await res.typed(PathsList)).items;
     }
 
     async protocols(
