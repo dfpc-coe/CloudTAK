@@ -115,6 +115,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
                 source_type: Type.Enum(VideoLease_SourceType),
                 source_model: Type.String(),
+                proxy: Type.Optional(Type.Union([Type.Null(), Type.String()])),
                 protocols: Protocols,
             })),
         }),
@@ -157,6 +158,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     source_id: lease.source_id,
                     source_type: lease.source_type,
                     source_model: lease.source_model || '',
+                    proxy: lease.proxy,
                 };
 
                 const protocols = await videoControl.protocols(lease, ProtocolPopulation.READ);

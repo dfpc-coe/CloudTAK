@@ -17,6 +17,12 @@
 
 ### Pending Release
 
+- :tada: Migrate the CloudTAK video player to video.js with WebRTC (WHEP) playback via media-infra as the default for RTSP/RTMP/SRT leases, falling back to HLS. Proxied HLS sources retain HLS as their default
+- :rocket: Populate read/write credentials in the WebRTC protocol URL of a lease, consistent with HLS
+- :bug: Pause HLS playback while the buffering overlay is shown instead of letting it run the buffer dry, and leave user initiated pauses alone
+- :rocket: Detect stalled WebRTC streams via the decoded frame counter & track mute state, falling back to HLS immediately when WebRTC never connects
+- :rocket: `API` Return the lease `proxy` source from `/api/video/active` so the player can choose the correct default protocol
+
 ### v13.77.1 - 2026-08-31
 
 - :tada: Introduce fully native background location reporting

@@ -395,10 +395,38 @@ export default class VideoServiceControl {
             const url = new URL(`/${lease.path}`, c.external);
             url.port = c.config.webrtcAddress.replace(':', '');
 
-            protocols.webrtc = {
-                name: 'Web Real-Time Communication (WebRTC)',
-                url: String(url),
-            };
+            if (lease.stream_user && lease.read_user) {
+                if (populated === ProtocolPopulation.READ && lease.read_user && lease.read_pass) {
+                    url.username = lease.read_user;
+                    url.password = lease.read_pass;
+
+                    protocols.webrtc = {
+                        name: 'Web Real-Time Communication (WebRTC)',
+                        url: String(url),
+                    };
+                } else if (populated === ProtocolPopulation.WRITE && lease.stream_user && lease.stream_pass) {
+                    url.username = lease.stream_user;
+                    url.password = lease.stream_pass;
+
+                    protocols.webrtc = {
+                        name: 'Web Real-Time Communication (WebRTC)',
+                        url: String(url),
+                    };
+                } else {
+                    url.username = 'username';
+                    url.password = 'password';
+
+                    protocols.webrtc = {
+                        name: 'Web Real-Time Communication (WebRTC)',
+                        url: String(url).replace(/username:password/, '{{username}}:{{password}}'),
+                    };
+                }
+            } else {
+                protocols.webrtc = {
+                    name: 'Web Real-Time Communication (WebRTC)',
+                    url: String(url),
+                };
+            }
         }
 
         return protocols;
