@@ -68,10 +68,10 @@ test('Mock Media Server Start', async () => {
         rtmpsAddress: '',
         hls: true,
         hlsAddress: ':8888',
-        webrtc: false,
-        webrtcAddress: '',
-        srt: false,
-        srtAddress: '',
+        webrtc: true,
+        webrtcAddress: ':8889',
+        srt: true,
+        srtAddress: ':8890',
     }).persist();
 
     mediaClient.intercept({
@@ -249,6 +249,21 @@ test('PATCH: api/video/lease/:lease - Publish pushes to TAK Server', async () =>
         method: 'PATCH',
     }).reply(200, {});
 
+    let pushed: { videoConnections: Array<{ feeds: Array<{ url: string }> }> } | undefined;
+    flight.tak.mockMarti.unshift(async (request, response) => {
+        if (request.method === 'POST' && request.url && request.url.startsWith('/Marti/api/video')) {
+            let body = '';
+            for await (const chunk of request) body += chunk;
+            pushed = JSON.parse(body);
+
+            response.setHeader('Content-Type', 'application/json');
+            response.write(JSON.stringify({}));
+            response.end();
+            return true;
+        }
+        return false;
+    });
+
     flight.tak.martiRequests.length = 0;
 
     try {
@@ -275,6 +290,49 @@ test('PATCH: api/video/lease/:lease - Publish pushes to TAK Server', async () =>
             flight.tak.martiRequests.includes('POST /Marti/api/video?group=Test+Channel'),
             'Published lease pushed to TAK Server in the lease channel',
         );
+        assert.equal(
+            pushed?.videoConnections[0].feeds[0].url,
+            `srt://media-server:8890?streamid=read:${leasePath}`,
+            'SRT feed pushed to TAK Server',
+        );
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: api/video/active - SRT feed resolves to hosted lease', async () => {
+    const mediaClient = agent.get('http://media-server:9997');
+
+    mediaClient.intercept({
+        path: `/path/${leasePath}`,
+        method: 'GET',
+    }).reply(200, {
+        name: leasePath,
+        confName: leasePath,
+        source: null,
+        ready: true,
+        readyTime: null,
+        tracks: [],
+        bytesReceived: 0,
+        bytesSent: 0,
+        readers: [],
+    });
+
+    try {
+        const url = `srt://media-server:8890?streamid=read:${leasePath}`;
+        const res = await flight.fetch(`/api/video/active?url=${encodeURIComponent(url)}`, {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.equal(res.status, 200, 'Status 200');
+        assert.equal(res.body.leasable, false, 'Stream is already hosted');
+        assert.equal(res.body.metadata.name, 'Updated Lease Name');
+        assert.equal(res.body.metadata.active, true);
+        assert.ok(res.body.metadata.protocols.webrtc, 'WebRTC playback available');
+        assert.ok(res.body.metadata.protocols.hls, 'HLS playback available');
     } catch (err) {
         assert.ifError(err);
     }

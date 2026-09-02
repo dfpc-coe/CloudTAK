@@ -335,29 +335,30 @@ export default class VideoServiceControl {
             const url = new URL(c.external.replace(/^http(s)?:/, 'srt:'));
             url.port = c.config.srtAddress.replace(':', '');
 
+            // MediaMTX streamid format: <read|publish>:<path>[:<user>:<pass>]
+            let streamid: string;
+            if (populated === ProtocolPopulation.READ) {
+                streamid = `read:${lease.path}`;
+            } else if (populated === ProtocolPopulation.WRITE) {
+                streamid = `publish:${lease.path}`;
+            } else {
+                streamid = `{{mode}}:${lease.path}`;
+            }
+
             if (lease.stream_user && lease.read_user) {
                 if (populated === ProtocolPopulation.READ) {
-                    protocols.srt = {
-                        name: 'Secure Reliable Transport (SRT)',
-                        url: String(url) + `?streamid={{mode}}:${lease.path}:${lease.read_user}}:${lease.read_pass}`,
-                    };
+                    streamid += `:${lease.read_user}:${lease.read_pass}`;
                 } else if (populated === ProtocolPopulation.WRITE) {
-                    protocols.srt = {
-                        name: 'Secure Reliable Transport (SRT)',
-                        url: String(url) + `?streamid={{mode}}:${lease.path}:${lease.stream_user}}:${lease.stream_pass}`,
-                    };
+                    streamid += `:${lease.stream_user}:${lease.stream_pass}`;
                 } else {
-                    protocols.srt = {
-                        name: 'Secure Reliable Transport (SRT)',
-                        url: String(url) + `?streamid={{mode}}:${lease.path}:{{username}}:{{password}}`,
-                    };
+                    streamid += ':{{username}}:{{password}}';
                 }
-            } else {
-                protocols.srt = {
-                    name: 'Secure Reliable Transport (SRT)',
-                    url: String(url) + `?streamid={{mode}}:${lease.path}`,
-                };
             }
+
+            protocols.srt = {
+                name: 'Secure Reliable Transport (SRT)',
+                url: String(url) + `?streamid=${streamid}`,
+            };
         }
 
         if (c.config && c.config.hls) {
@@ -442,6 +443,16 @@ export default class VideoServiceControl {
         }
 
         return protocols;
+    }
+
+    /**
+     * Feed URL pushed to the TAK Server Video Manager - SRT is preferred
+     * for low latency with HLS as the fallback
+     */
+    feedUrl(protocols: Static<typeof Protocols>): string {
+        const feed = protocols.srt || protocols.hls;
+        if (!feed) throw new Err(400, null, 'Media Server must support SRT or HLS to publish a video stream');
+        return feed.url;
     }
 
     async updateSecure(
@@ -539,24 +550,18 @@ export default class VideoServiceControl {
             );
 
             try {
-                const protocols = await this.protocols(lease, ProtocolPopulation.READ);
-
-                if (protocols.hls) {
-                    await api.Video.create({
+                await api.Video.create({
+                    uuid: lease.path,
+                    active: true,
+                    alias: lease.name,
+                    groups: [lease.channel!],
+                    feeds: [{
                         uuid: lease.path,
                         active: true,
                         alias: lease.name,
-                        groups: [lease.channel!],
-                        feeds: [{
-                            uuid: lease.path,
-                            active: true,
-                            alias: lease.name,
-                            url: protocols.hls.url,
-                        }],
-                    });
-                } else {
-                    throw new Err(400, null, 'Only HLS shared video streams are supported at this time');
-                }
+                        url: this.feedUrl(await this.protocols(lease, ProtocolPopulation.READ)),
+                    }],
+                });
             } catch (err) {
                 console.error(err);
             }
@@ -756,24 +761,18 @@ export default class VideoServiceControl {
 
             if (lease.publish) {
                 try {
-                    const protocols = await this.protocols(lease, ProtocolPopulation.READ);
-
-                    if (protocols.hls) {
-                        await api.Video.create({
+                    await api.Video.create({
+                        uuid: lease.path,
+                        active: true,
+                        alias: lease.name,
+                        groups: [lease.channel!],
+                        feeds: [{
                             uuid: lease.path,
                             active: true,
                             alias: lease.name,
-                            groups: [lease.channel!],
-                            feeds: [{
-                                uuid: lease.path,
-                                active: true,
-                                alias: lease.name,
-                                url: protocols.hls.url,
-                            }],
-                        });
-                    } else {
-                        throw new Err(400, null, 'Only HLS shared video streams are supported at this time');
-                    }
+                            url: this.feedUrl(await this.protocols(lease, ProtocolPopulation.READ)),
+                        }],
+                    });
                 } catch (err) {
                     console.error(err);
                 }

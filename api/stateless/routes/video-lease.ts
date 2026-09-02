@@ -126,7 +126,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const requested = new URL(req.query.url);
 
             const url = await videoControl.url();
-            const uuid = requested.pathname.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/);
+            // The lease path lives in the URL path for HLS/WebRTC/RTSP and in the streamid query for SRT
+            const uuid = req.query.url.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/);
 
             if (!url) {
                 res.json({
