@@ -22,6 +22,7 @@
 - :bug: Pause HLS playback while the buffering overlay is shown instead of letting it run the buffer dry, and leave user initiated pauses alone
 - :rocket: Detect stalled WebRTC streams via the decoded frame counter & track mute state, falling back to HLS immediately when WebRTC never connects
 - :rocket: `API` Return the lease `proxy` source from `/api/video/active` so the player can choose the correct default protocol
+- :bug: Always show the Read/Publish selector in the Video Lease modal - SRT URLs differ by mode even when read/write security is disabled
 
 ### v13.77.1 - 2026-08-31
 
