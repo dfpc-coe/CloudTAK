@@ -746,34 +746,37 @@ export default class VideoServiceControl {
                 new APIAuthCertificate(auth.cert, auth.key),
             );
 
+            // Remove any existing connection - covers publish being toggled off
+            // and channel changes, which the TAK Server Video API cannot apply in place
             try {
                 await api.Video.delete(lease.path);
             } catch (err) {
                 console.error(err);
             }
 
-            // We can't change channels so just delete and recreate
-            try {
-                const protocols = await this.protocols(lease, ProtocolPopulation.READ);
+            if (lease.publish) {
+                try {
+                    const protocols = await this.protocols(lease, ProtocolPopulation.READ);
 
-                if (protocols.hls) {
-                    await api.Video.create({
-                        uuid: lease.path,
-                        active: true,
-                        alias: lease.name,
-                        groups: [lease.channel!],
-                        feeds: [{
+                    if (protocols.hls) {
+                        await api.Video.create({
                             uuid: lease.path,
                             active: true,
                             alias: lease.name,
-                            url: protocols.hls.url,
-                        }],
-                    });
-                } else {
-                    throw new Err(400, null, 'Only HLS shared video streams are supported at this time');
+                            groups: [lease.channel!],
+                            feeds: [{
+                                uuid: lease.path,
+                                active: true,
+                                alias: lease.name,
+                                url: protocols.hls.url,
+                            }],
+                        });
+                    } else {
+                        throw new Err(400, null, 'Only HLS shared video streams are supported at this time');
+                    }
+                } catch (err) {
+                    console.error(err);
                 }
-            } catch (err) {
-                console.error(err);
             }
         } catch (err) {
             console.error(err);

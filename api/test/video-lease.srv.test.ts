@@ -194,6 +194,8 @@ test('PATCH: api/video/lease/:lease - Update Lease', async () => {
         method: 'PATCH',
     }).reply(200, {});
 
+    flight.tak.martiRequests.length = 0;
+
     try {
         const res = await flight.fetch(`/api/video/lease/${leaseId}`, {
             method: 'PATCH',
@@ -210,6 +212,69 @@ test('PATCH: api/video/lease/:lease - Update Lease', async () => {
         assert.equal(res.status, 200, 'Status 200');
         assert.equal(res.body.id, leaseId, 'Lease ID matches');
         assert.equal(res.body.name, 'Updated Lease Name', 'Name updated');
+
+        assert.ok(
+            flight.tak.martiRequests.includes(`DELETE /Marti/api/video/${leasePath}`),
+            'Existing TAK Server video connection removed',
+        );
+        assert.ok(
+            !flight.tak.martiRequests.some(r => r.startsWith('POST /Marti/api/video')),
+            'Unpublished lease is not pushed to TAK Server',
+        );
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/video/lease/:lease - Publish pushes to TAK Server', async () => {
+    const mediaClient = agent.get('http://media-server:9997');
+
+    mediaClient.intercept({
+        path: `/path/${leasePath}`,
+        method: 'GET',
+    }).reply(200, {
+        name: leasePath,
+        confName: leasePath,
+        source: null,
+        ready: true,
+        readyTime: null,
+        tracks: [],
+        bytesReceived: 0,
+        bytesSent: 0,
+        readers: [],
+    });
+
+    mediaClient.intercept({
+        path: `/path/${leasePath}`,
+        method: 'PATCH',
+    }).reply(200, {});
+
+    flight.tak.martiRequests.length = 0;
+
+    try {
+        const res = await flight.fetch(`/api/video/lease/${leaseId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                publish: true,
+                channel: 'Test Channel',
+            },
+        }, true);
+
+        assert.equal(res.status, 200, 'Status 200');
+        assert.equal(res.body.publish, true, 'Publish enabled');
+        assert.equal(res.body.channel, 'Test Channel', 'Channel set');
+
+        assert.ok(
+            flight.tak.martiRequests.includes(`DELETE /Marti/api/video/${leasePath}`),
+            'Existing TAK Server video connection removed',
+        );
+        assert.ok(
+            flight.tak.martiRequests.includes('POST /Marti/api/video?group=Test+Channel'),
+            'Published lease pushed to TAK Server in the lease channel',
+        );
     } catch (err) {
         assert.ifError(err);
     }
