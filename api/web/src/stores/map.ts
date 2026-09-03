@@ -1583,6 +1583,22 @@ export const useMapStore = defineStore('cloudtak', {
 
             return this._overlayReconcile;
         },
+        /**
+         * Mark a mission subscription as unsubscribed when its overlay no
+         * longer exists, clearing the active mission if it was this one
+         */
+        unsubscribeOrphanedMission: async function(guid: string): Promise<void> {
+            try {
+                if (this.mission && this.mission.guid === guid) {
+                    await this.makeActiveMission(undefined);
+                }
+
+                const sub = await Subscription.from(guid, { subscribed: true });
+                if (sub) await sub.update({ subscribed: false });
+            } catch (err) {
+                console.error(`Failed to unsubscribe orphaned mission ${guid}`, err);
+            }
+        },
         reconcileOverlaysOnce: async function(): Promise<void> {
             if (!this._map) return;
 
@@ -1599,6 +1615,13 @@ export const useMapStore = defineStore('cloudtak', {
 
                 // Already torn down by Overlay.delete() on this client
                 if (overlay._destroyed) continue;
+
+                // The overlay was removed out from under us (another client,
+                // or the server pruned it) - drop the mission subscription so
+                // the Missions menu and share targets stop listing it
+                if (overlay.mode === 'mission' && overlay.mode_id) {
+                    await this.unsubscribeOrphanedMission(overlay.mode_id);
+                }
 
                 if (overlay._timer) {
                     clearInterval(overlay._timer);

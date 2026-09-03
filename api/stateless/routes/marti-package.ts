@@ -498,7 +498,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                     await api.Mission.upload(
                         guid,
-                        user.email,
+                        `ANDROID-CloudTAK-${user.email}`,
                         fs.createReadStream(out),
                         opts,
                     );

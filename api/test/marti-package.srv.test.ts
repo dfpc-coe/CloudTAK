@@ -450,6 +450,154 @@ test('PUT api/marti/package - private package upload uses application/zip for fi
     flight.tak.reset();
 });
 
+test('PUT api/marti/package - mission destination uploads package with the mission subscription uid as creatorUid', async () => {
+    const guid = 'b32576c2-f7f1-4657-823f-3ed5ced37d23';
+    let missionUploadUrl: URL | undefined;
+
+    try {
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
+            if (!request.method || !request.url) return false;
+
+            if (request.method === 'PUT' && request.url.includes(`/Marti/api/missions/guid/${guid}/subscription`)) {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    version: '3',
+                    type: 'com.bbn.marti.sync.model.MissionSubscription',
+                    data: {
+                        clientUid: 'ANDROID-CloudTAK-admin@example.com',
+                        username: 'admin',
+                        createTime: '2024-01-01T00:00:00Z',
+                        role: {
+                            type: 'MISSION_SUBSCRIBER',
+                            permissions: ['MISSION_WRITE', 'MISSION_READ'],
+                        },
+                    },
+                }));
+                response.end();
+                return true;
+            }
+
+            return false;
+        });
+
+        const overlay = await flight.fetch('/api/profile/overlay', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Package Mission',
+                mode: 'mission',
+                mode_id: guid,
+                url: `https://tak.example.com/Marti/api/missions/guid/${guid}`,
+            },
+        }, false);
+
+        assert.equal(overlay.status, 200, `POST overlay failed: ${JSON.stringify(overlay.body)}`);
+
+        flight.tak.reset();
+
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
+            if (!request.method || !request.url) return false;
+
+            const url = new URL(request.url, 'http://takserver');
+
+            if (request.method === 'POST' && url.pathname === '/Marti/sync/upload') {
+                await stream2buffer(request);
+
+                response.setHeader('Content-Type', 'text/plain');
+                response.write(JSON.stringify({
+                    UID: 'mission-upload',
+                    SubmissionDateTime: new Date().toISOString(),
+                    Keywords: [],
+                    MIMEType: 'application/zip',
+                    SubmissionUser: 'admin@example.com',
+                    PrimaryKey: 'mission-primary',
+                    Hash: 'mission-hash',
+                    CreatorUid: 'admin',
+                    Name: 'mission-hash',
+                }));
+                response.end();
+                return true;
+            } else if (request.method === 'GET' && url.pathname === `/Marti/api/missions/guid/${guid}`) {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    version: '3',
+                    type: 'com.bbn.marti.sync.model.Mission',
+                    data: [{
+                        name: 'Package Mission',
+                        guid,
+                        description: '',
+                        chatRoom: '',
+                        baseLayer: '',
+                        bbox: '',
+                        path: '',
+                        classification: '',
+                        tool: 'public',
+                        keywords: [],
+                        creatorUid: 'ANDROID-CloudTAK-admin@example.com',
+                        createTime: '2024-01-01T00:00:00Z',
+                        externalData: [],
+                        feeds: [],
+                        mapLayers: [],
+                        inviteOnly: false,
+                        expiration: -1,
+                        uids: [],
+                        contents: [],
+                        passwordProtected: false,
+                    }],
+                }));
+                response.end();
+                return true;
+            } else if (request.method === 'PUT' && url.pathname === '/Marti/api/missions/Package%20Mission/contents/missionpackage') {
+                missionUploadUrl = url;
+
+                await stream2buffer(request);
+
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    version: '3',
+                    type: 'MissionChange',
+                    data: [],
+                }));
+                response.end();
+                return true;
+            }
+
+            return false;
+        });
+
+        const res = await flight.fetch('/api/marti/package', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                public: false,
+                keywords: [],
+                destinations: [{ mission: guid }],
+                assets: [],
+                basemaps: [],
+                features: [{
+                    id: 'feature-mission-1',
+                    type: 'Feature',
+                    properties: {},
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [-77.0365, 38.8977],
+                    },
+                }],
+            },
+        }, true);
+
+        assert.equal(res.status, 200);
+        assert.ok(missionUploadUrl, 'Mission package upload was not called');
+        assert.equal(missionUploadUrl.searchParams.get('creatorUid'), 'ANDROID-CloudTAK-admin@example.com');
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    flight.tak.reset();
+});
+
 flight.user({ username: 'pkgowner', admin: false });
 flight.user({ username: 'pkgviewer', admin: false });
 
