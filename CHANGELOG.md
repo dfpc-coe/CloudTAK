@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.78.2 - 2026-09-03
+
+- :white_check_mark: Increase Test Speed
+- :rocket: Add App icon
 - :tada: Allow Lasso Select to choose a Data Sync in the Layer Selection dropdown and select its features
 
 ### v13.78.1 - 2026-09-03
