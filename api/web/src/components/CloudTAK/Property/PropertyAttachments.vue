@@ -35,10 +35,7 @@
             </template>
             <div class='col-12'>
                 <div class='mx-2 py-2'>
-                    <div
-                        class='rounded px-2 py-2'
-                        :class='{ "cloudtak-accent": !isEmpty }'
-                    >
+                    <div class='px-2 py-2'>
                         <TablerLoading
                             v-if='loading'
                             :inline='true'
@@ -182,12 +179,6 @@ const loading = ref(true);
 const error = ref<Error | undefined>(undefined);
 const files = ref<Attachment[]>([]);
 const token = ref<string | null>(null);
-
-// The "No Items" state drops the inset surface so it reads as part of the
-// slide-down body instead of an empty raised block
-const isEmpty = computed(() => {
-    return !loading.value && !error.value && !upload.value && !files.value.length;
-});
 
 watch(() => props.modelValue, async (newVal, oldVal) => {
     if (newVal.length === oldVal.length && newVal.every((h, i) => h === oldVal[i])) return;

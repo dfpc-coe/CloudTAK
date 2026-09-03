@@ -292,6 +292,8 @@ export default class COT {
                 if (isEqual(this.properties, update.properties)) {
                     delete update.properties
                 } else {
+                    const renderedBefore = renderedIcon(this._properties);
+
                     for (const prop of RENDERED_PROPERTIES) {
                         if (this._properties[prop] !== update.properties[prop]) {
                             visuallyChanged = true;
@@ -299,7 +301,24 @@ export default class COT {
                         }
                     }
 
+                    // Object.assign cannot remove a key - a type change must drop
+                    // the type-derived milicon & icon or they outrank the new type
+                    // in renderedIcon and the old symbol stays on the map
+                    if (update.properties.type && update.properties.type !== this._properties.type) {
+                        delete this._properties.milicon;
+
+                        if (this._properties.icon && !this._properties.icon.includes(':')) {
+                            delete this._properties.icon;
+                        }
+                    }
+
                     Object.assign(this._properties, update.properties);
+
+                    // The rendered icon derives from type/milicon which are not
+                    // RENDERED_PROPERTIES themselves
+                    if (renderedIcon(this._properties) !== renderedBefore) {
+                        visuallyChanged = true;
+                    }
                 }
             }
 
