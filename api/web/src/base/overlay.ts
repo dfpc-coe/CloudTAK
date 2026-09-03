@@ -154,7 +154,11 @@ export default class OverlayManager extends BaseInterface {
 
     static queryableOverlayNames(): string[] {
         return this.loaded
-            .filter((overlay) => overlay.actions.feature.includes('query') || overlay.id === -1)
+            .filter((overlay) => {
+                return overlay.id === -1
+                    || (overlay.mode === 'mission' && overlay.mode_id)
+                    || overlay.actions.feature.includes('query');
+            })
             .map((overlay) => overlay.name);
     }
 

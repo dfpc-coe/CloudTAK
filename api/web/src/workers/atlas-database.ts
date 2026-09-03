@@ -434,9 +434,44 @@ export default class AtlasDatabase {
      * Return CoTs touching a given polygon
      *
      * @param poly - GeoJSON Polygon to test CoTs against
+     * @param opts.mission - If set, test features from the given Mission GUID instead of the CoT store
      */
-    async touching(poly: Polygon): Promise<Set<COT>> {
+    async touching(
+        poly: Polygon,
+        opts: {
+            mission?: string
+        } = {}
+    ): Promise<Set<COT>> {
         const within: Set<COT> = new Set();
+
+        if (opts.mission) {
+            const sub = await db.subscription.get(opts.mission);
+            if (!sub || !sub.subscribed) return within;
+
+            const feats = await db.subscription_feature
+                .where('mission')
+                .equals(opts.mission)
+                .toArray();
+
+            for (const feat of feats) {
+                const feature: Feature = {
+                    id: feat.id,
+                    type: 'Feature',
+                    path: feat.path,
+                    properties: feat.properties,
+                    geometry: feat.geometry,
+                };
+
+                if (booleanWithin(feature, poly)) {
+                    within.add(await COT.load(feature, {
+                        mode: OriginMode.MISSION,
+                        mode_id: opts.mission
+                    }));
+                }
+            }
+
+            return within;
+        }
 
         for (const cot of this.cots.values()) {
             if (booleanWithin(cot.as_feature(), poly)) {

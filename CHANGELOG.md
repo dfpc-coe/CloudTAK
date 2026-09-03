@@ -17,6 +17,8 @@
 
 ### Pending Release
 
+- :tada: Allow Lasso Select to choose a Data Sync in the Layer Selection dropdown and select its features
+
 ### v13.78.1 - 2026-09-03
 
 - :bug: Fix CoT w/ Attachment sharing to Data Sync
