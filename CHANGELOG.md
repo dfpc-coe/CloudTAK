@@ -17,6 +17,12 @@
 
 ### Pending Release
 
+### v13.78.1 - 2026-09-03
+
+- :bug: Fix CoT w/ Attachment sharing to Data Sync
+- :bug: Map Icon didn't reflect CoT 2525E type if a new type was selected
+- :bug: UI tweaks to attachment pane
+
 ### v13.78.0 - 2026-09-02
 
 - :tada: Migrate the CloudTAK video player to video.js with WebRTC (WHEP) playback via media-infra as the default for RTSP/RTMP/SRT leases, falling back to HLS. Proxied HLS sources retain HLS as their default
