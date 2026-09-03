@@ -154,7 +154,7 @@ export const useAppStore = defineStore('cloudtak-app', {
         async routeLogin(): Promise<void> {
             const redirect = encodeURIComponent(window.location.pathname);
             if (router.hasRoute('login')) {
-                await router.push(`/login?redirect=${redirect}`);
+                await router.replace(`/login?redirect=${redirect}`);
             } else {
                 window.location.href = `/login?redirect=${redirect}`;
             }

@@ -104,7 +104,7 @@ import ChannelChangeModal from './components/CloudTAK/Menu/ChannelChangeModal.vu
 import NotificationToast from './components/CloudTAK/util/NotificationToast.vue';
 import TAKNotification_ from './base/notification.ts';
 const TAKNotification = TAKNotification_;
-import { supportsServiceWorker } from './utils/capacitor.ts';
+import { supportsServiceWorker, addBackButtonListener, minimizeApp } from './utils/capacitor.ts';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
 import { applyServiceWorkerUpdate } from './utils/service-worker.ts';
@@ -121,6 +121,7 @@ const mapStore = useMapStore();
 const deviceStore = useDeviceStore();
 
 let removeNotificationAction: (() => void) | undefined;
+let removeBackButton: (() => void) | undefined;
 
 const toastNotifications = useObservable(
     from(liveQuery(async () => {
@@ -222,6 +223,15 @@ onMounted(async () => {
         window.addEventListener('sw:update-available', onSwUpdateAvailable);
     }
 
+    removeBackButton = await addBackButtonListener(() => {
+        const back = router.options.history.state.back;
+        if (route.name === 'login' || !back || String(back).startsWith('/login')) {
+            void minimizeApp();
+        } else {
+            router.back();
+        }
+    });
+
     // Deep link when the user taps a push notification (path from its payload)
     removeNotificationAction = deviceStore.onNotificationAction((data) => {
         if (data && typeof data.url === 'string' && data.url.startsWith('/')) {
@@ -247,6 +257,7 @@ onMounted(async () => {
 onUnmounted(() => {
     window.removeEventListener('sw:update-available', onSwUpdateAvailable);
     if (removeNotificationAction) removeNotificationAction();
+    if (removeBackButton) removeBackButton();
 
     if (sessionExpiryTimer !== undefined) {
         clearInterval(sessionExpiryTimer);
