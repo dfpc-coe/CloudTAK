@@ -5,9 +5,9 @@
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "main": "index.js",
     "scripts": {
-        "test": "StackName='test' tsx --test --test-force-exit --test-timeout=60000 test/*.test.ts",
+        "test": "StackName='test' tsx --test --test-concurrency=8 --test-force-exit --test-timeout=60000 test/*.test.ts",
         "precoverage": "mkdir -p dist/test/fixtures/ && mkdir -p dist/test/data/ && cp test/fixtures/* dist/test/fixtures/ && cp test/data/* dist/test/data/ && npm run build",
-        "coverage": "StackName='test' c8 --reporter=lcov --reporter html node --test --test-force-exit --test-timeout=60000 dist/test/*.test.js",
+        "coverage": "StackName='test' c8 --reporter=lcov --reporter html node --test --test-concurrency=8 --test-force-exit --test-timeout=60000 dist/test/*.test.js",
         "build": "tsc && (cp .env* dist/ || true) && cp ./icons dist/icons -r && cp ./fonts dist/fonts -r && cp package.json dist/ && cp migrations/ dist/ -r && mkdir -p dist/web/public && cp web/public/CloudTAKLogo.svg dist/web/public/ && cp web/public/CloudTAKLogoText.svg dist/web/public/",
         "typegen": "openapi-typescript http://localhost:5001/api/swagger --output derived-types.d.ts",
         "lint": "eslint index.ts common/ stateful/ stateless/ test/",
