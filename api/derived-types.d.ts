@@ -52251,6 +52251,8 @@ export interface paths {
                                 read_user: string | null;
                                 read_pass: string | null;
                                 proxy: null | string;
+                                /** @description True if the Media Server currently reports the lease path as ready */
+                                active: boolean;
                             }[];
                         };
                     };

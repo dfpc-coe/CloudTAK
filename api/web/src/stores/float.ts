@@ -6,19 +6,21 @@ import { defineStore } from 'pinia'
 import { markRaw, defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 import { useMapStore } from './map.ts';
-import type { VideoConnection, Attachment } from '../types.ts';
+import type { VideoConnection, VideoLease, Attachment } from '../types.ts';
 
 const FloatingVideo = defineAsyncComponent(() => import('../components/CloudTAK/util/FloatingVideo.vue'));
 const FloatingAttachment = defineAsyncComponent(() => import('../components/CloudTAK/util/FloatingAttachment.vue'));
 
 export enum VideoStoreType {
     COT = 'cot',
-    CONNECTION = 'connection'
+    CONNECTION = 'connection',
+    LEASE = 'lease'
 }
 
 export type PaneVideoConfig = {
     type: VideoStoreType,
-    url: string,
+    url?: string,
+    lease?: number,
 }
 
 export type PaneAttachmentConfig = {
@@ -96,6 +98,23 @@ export const useFloatStore = defineStore('float', {
                 config: {
                     type: VideoStoreType.CONNECTION,
                     url: connection.feeds[0].url,
+                },
+                height: 300,
+                width: 400,
+                x: 60, // Clear the left-hand map control column
+                y: 70 // Open below the 60px Active Mission header (matches the map controls' 70px offset)
+            })
+        },
+        addLease(lease: VideoLease): void {
+            const uid = `lease-${lease.id}`;
+
+            this.panes.set(uid, {
+                uid,
+                name: lease.name,
+                component: markRaw(FloatingVideo),
+                config: {
+                    type: VideoStoreType.LEASE,
+                    lease: lease.id,
                 },
                 height: 300,
                 width: 400,
