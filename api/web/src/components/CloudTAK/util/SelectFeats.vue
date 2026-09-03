@@ -165,7 +165,9 @@ async function deleteFeatures() {
     loading.value = true;
 
     for (const id of props.selected.keys()) {
-        await mapStore.worker.db.remove(id);
+        await mapStore.worker.db.remove(id, {
+            mission: true
+        });
     }
 
     props.selected.clear()
