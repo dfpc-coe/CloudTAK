@@ -11,6 +11,8 @@ import { DataPackage } from '@tak-ps/node-cot';
 import FileCommands from '@tak-ps/node-tak/lib/api/files';
 import Sinon from 'sinon';
 import stream2buffer from '../stateless/lib/stream.js';
+import S3 from '../common/aws/s3.js';
+import { Readable } from 'node:stream';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 const flight = new Flight();
@@ -448,6 +450,228 @@ test('PUT api/marti/package - private package upload uses application/zip for fi
     }
 
     flight.tak.reset();
+});
+
+test('PUT api/marti/package - mission destination attaches files by hash before uploading a CoT-only package as the subscription uid', async () => {
+    const guid = 'b32576c2-f7f1-4657-823f-3ed5ced37d23';
+    const packagePath = path.resolve(os.tmpdir(), randomUUID() + '.zip');
+    const missionPackagePath = path.resolve(os.tmpdir(), randomUUID() + '.zip');
+
+    let missionUploadUrl: URL | undefined;
+    let attachmentUploadUrl: URL | undefined;
+    let attachedHashes: string[] | undefined;
+    const order: string[] = [];
+
+    try {
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
+            if (!request.method || !request.url) return false;
+
+            if (request.method === 'PUT' && request.url.includes(`/Marti/api/missions/guid/${guid}/subscription`)) {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    version: '3',
+                    type: 'com.bbn.marti.sync.model.MissionSubscription',
+                    data: {
+                        clientUid: 'ANDROID-CloudTAK-admin@example.com',
+                        username: 'admin',
+                        createTime: '2024-01-01T00:00:00Z',
+                        role: {
+                            type: 'MISSION_SUBSCRIBER',
+                            permissions: ['MISSION_WRITE', 'MISSION_READ'],
+                        },
+                    },
+                }));
+                response.end();
+                return true;
+            }
+
+            return false;
+        });
+
+        const overlay = await flight.fetch('/api/profile/overlay', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Package Mission',
+                mode: 'mission',
+                mode_id: guid,
+                url: `https://tak.example.com/Marti/api/missions/guid/${guid}`,
+            },
+        }, false);
+
+        assert.equal(overlay.status, 200, `POST overlay failed: ${JSON.stringify(overlay.body)}`);
+
+        flight.tak.reset();
+
+        Sinon.stub(S3, 'list').resolves([{
+            Key: 'attachment/att-hash/photo.jpg',
+            Size: 9,
+            LastModified: new Date(),
+            ETag: '"abc"',
+        }]);
+        Sinon.stub(S3, 'get').resolves(Readable.from([Buffer.from('jpg-bytes')]));
+
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
+            if (!request.method || !request.url) return false;
+
+            const url = new URL(request.url, 'http://takserver');
+
+            if (request.method === 'POST' && url.pathname === '/Marti/sync/upload') {
+                const body = await stream2buffer(request);
+
+                if (url.searchParams.get('name') === 'photo.jpg') {
+                    // Raw attachment upload - stored under its own sha256 so the hash in the CoT's attachment_list resolves
+                    attachmentUploadUrl = url;
+                    order.push('attachment-upload');
+                    assert.equal(body.toString(), 'jpg-bytes');
+
+                    response.setHeader('Content-Type', 'text/plain');
+                    response.write(JSON.stringify({
+                        UID: 'att-uid',
+                        SubmissionDateTime: new Date().toISOString(),
+                        Keywords: [],
+                        MIMEType: 'image/jpeg',
+                        SubmissionUser: 'admin@example.com',
+                        PrimaryKey: 'att-primary',
+                        Hash: 'att-tak-hash',
+                        CreatorUid: 'admin',
+                        Name: 'photo.jpg',
+                    }));
+                    response.end();
+                    return true;
+                }
+
+                // Private share package still carries the CoT and its attachment
+                await fsp.writeFile(packagePath, body);
+                const dp = await DataPackage.parse(packagePath);
+                const entries = dp.contents.map(c => c._attributes.zipEntry);
+                assert.equal(entries.length, 2);
+                assert.ok(entries.some(e => e.endsWith('.cot')));
+                assert.ok(entries.some(e => e.endsWith('/photo.jpg')));
+                await dp.destroy();
+
+                response.setHeader('Content-Type', 'text/plain');
+                response.write(JSON.stringify({
+                    UID: 'mission-upload',
+                    SubmissionDateTime: new Date().toISOString(),
+                    Keywords: [],
+                    MIMEType: 'application/zip',
+                    SubmissionUser: 'admin@example.com',
+                    PrimaryKey: 'mission-primary',
+                    Hash: 'mission-hash',
+                    CreatorUid: 'admin',
+                    Name: 'mission-hash',
+                }));
+                response.end();
+                return true;
+            } else if (request.method === 'GET' && url.pathname === `/Marti/api/missions/guid/${guid}`) {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    version: '3',
+                    type: 'com.bbn.marti.sync.model.Mission',
+                    data: [{
+                        name: 'Package Mission',
+                        guid,
+                        description: '',
+                        chatRoom: '',
+                        baseLayer: '',
+                        bbox: '',
+                        path: '',
+                        classification: '',
+                        tool: 'public',
+                        keywords: [],
+                        creatorUid: 'ANDROID-CloudTAK-admin@example.com',
+                        createTime: '2024-01-01T00:00:00Z',
+                        externalData: [],
+                        feeds: [],
+                        mapLayers: [],
+                        inviteOnly: false,
+                        expiration: -1,
+                        uids: [],
+                        contents: [],
+                        passwordProtected: false,
+                    }],
+                }));
+                response.end();
+                return true;
+            } else if (request.method === 'PUT' && url.pathname === '/Marti/api/missions/Package%20Mission/contents/missionpackage') {
+                missionUploadUrl = url;
+                order.push('mission-package');
+
+                // TAK Server ignores the manifest, so the mission package must not carry the attachment
+                await fsp.writeFile(missionPackagePath, await stream2buffer(request));
+                const dp = await DataPackage.parse(missionPackagePath);
+                assert.equal(dp.contents.length, 1);
+                assert.ok(dp.contents[0]._attributes.zipEntry.endsWith('.cot'));
+                await dp.destroy();
+
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    version: '3',
+                    type: 'MissionChange',
+                    data: [],
+                }));
+                response.end();
+                return true;
+            } else if (request.method === 'PUT' && url.pathname === `/Marti/api/missions/guid/${guid}/contents`) {
+                const body = JSON.parse(String(await stream2buffer(request)));
+                attachedHashes = body.hashes;
+                order.push('attach-contents');
+
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    version: '3',
+                    type: 'Mission',
+                    data: [],
+                }));
+                response.end();
+                return true;
+            }
+
+            return false;
+        });
+
+        const res = await flight.fetch('/api/marti/package', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                public: false,
+                keywords: [],
+                destinations: [{ mission: guid }],
+                assets: [],
+                basemaps: [],
+                features: [{
+                    id: 'feature-mission-1',
+                    type: 'Feature',
+                    properties: {
+                        attachments: ['att-hash'],
+                    },
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [-77.0365, 38.8977],
+                    },
+                }],
+            },
+        }, true);
+
+        assert.equal(res.status, 200);
+        assert.ok(missionUploadUrl, 'Mission package upload was not called');
+        assert.equal(missionUploadUrl.searchParams.get('creatorUid'), 'ANDROID-CloudTAK-admin@example.com');
+        assert.ok(attachmentUploadUrl, 'Attachment was not uploaded to TAK Server');
+        assert.equal(attachmentUploadUrl.searchParams.get('uid'), null);
+        assert.deepEqual(attachedHashes, ['att-tak-hash']);
+        // The file must be in the Mission before the CoT so clients can resolve the attachment_list hash on import
+        assert.deepEqual(order, ['attachment-upload', 'attach-contents', 'mission-package']);
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    Sinon.restore();
+    flight.tak.reset();
+    await fsp.rm(packagePath, { force: true });
+    await fsp.rm(missionPackagePath, { force: true });
 });
 
 flight.user({ username: 'pkgowner', admin: false });

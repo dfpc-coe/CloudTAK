@@ -337,6 +337,18 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             pkg.setEphemeral();
 
+            const missionGuids = req.body.destinations
+                .filter(d => d.mission)
+                .map(d => d.mission) as string[];
+
+            // TAK Server ignores the package manifest when adding a package to a Mission.
+            // TAK clients resolve attachments via the sha256 hashes in the CoT's attachment_list,
+            // so the files are attached to the Mission directly and must be present before the CoT
+            const missionPkg = missionGuids.length ? new DataPackage(crypto.randomUUID(), req.body.name || id) : undefined;
+            if (missionPkg) missionPkg.setEphemeral();
+
+            const pkgs = missionPkg ? [pkg, missionPkg] : [pkg];
+
             // Hash => CoT UID
             const attachmentMap: Map<string, string> = new Map();
             for (const feat of req.body.features) {
@@ -346,7 +358,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     }
                 }
 
-                await pkg.addCoT(await CoTParser.from_geojson(feat));
+                const cot = await CoTParser.from_geojson(feat);
+                for (const p of pkgs) await p.addCoT(cot);
             }
 
             for (const basemapid of req.body.basemaps) {
@@ -368,11 +381,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     },
                 })).to_xml();
 
-                await pkg.addFile(xml, {
-                    name: `basemap-${basemap.id}.xml`,
-                });
+                for (const p of pkgs) {
+                    await p.addFile(xml, {
+                        name: `basemap-${basemap.id}.xml`,
+                    });
+                }
             }
 
+            const attachments: Array<{ name: string; body: Buffer }> = [];
             for (const hash of attachmentMap.keys()) {
                 const uid = attachmentMap.get(hash);
                 if (!uid) continue;
@@ -380,10 +396,16 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 const attachment = await S3.list(`attachment/${hash}/`);
 
                 if (attachment.length < 1 || !attachment[0].Key) continue;
-                await pkg.addFile(await S3.get(attachment[0].Key), {
-                    name: path.parse(attachment[0].Key).base,
+
+                const name = path.parse(attachment[0].Key).base;
+                const body = await stream2buffer(await S3.get(attachment[0].Key));
+
+                await pkg.addFile(body, {
+                    name,
                     attachment: uid,
                 });
+
+                attachments.push({ name, body });
             }
 
             for (const asset of req.body.assets) {
@@ -393,9 +415,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     throw new Err(400, null, 'You can only attach your own files');
                 }
 
-                await pkg.addFile(await S3.get(`profile/${user.email}/${file.id}${path.parse(file.name).ext}`), {
-                    name: file.name,
-                });
+                const body = await stream2buffer(await S3.get(`profile/${user.email}/${file.id}${path.parse(file.name).ext}`));
+
+                for (const p of pkgs) {
+                    await p.addFile(body, {
+                        name: file.name,
+                    });
+                }
             }
 
             const out = await pkg.finalize();
@@ -474,11 +500,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 });
             }
 
-            if (req.body.destinations.length && req.body.destinations.filter(d => d.mission).length) {
-                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
-
-                const guids = req.body.destinations.filter(d => d.mission).map(d => d.mission) as string[];
-
+            if (missionPkg) {
                 const ovs = new Map();
                 (await config.models.ProfileOverlay.list({
                     where: sql`
@@ -487,22 +509,44 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     `,
                 })).items.map(o => ovs.set(o.mode_id, o));
 
-                for (const guid of guids) {
+                for (const guid of missionGuids) {
                     if (!ovs.get(guid)) {
                         throw new Err(400, null, `You are not subscribed to mission ${guid}`);
                     }
+                }
 
+                const missionOut = await missionPkg.finalize();
+
+                const attachmentHashes: string[] = [];
+                for (const attachment of attachments) {
+                    const uploaded = await api.Files.upload({
+                        name: attachment.name,
+                        contentLength: attachment.body.length,
+                        keywords: [],
+                        creatorUid,
+                    }, attachment.body);
+
+                    attachmentHashes.push(uploaded.Hash);
+                }
+
+                for (const guid of missionGuids) {
                     const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                         ? { token: String(req.headers['missionauthorization']) }
                         : await profileControl.subscription(user.email, guid);
 
+                    if (attachmentHashes.length) {
+                        await api.Mission.attachContents(guid, { hashes: attachmentHashes }, opts);
+                    }
+
                     await api.Mission.upload(
                         guid,
-                        user.email,
-                        fs.createReadStream(out),
+                        `ANDROID-CloudTAK-${user.email}`,
+                        fs.createReadStream(missionOut),
                         opts,
                     );
                 }
+
+                await missionPkg.destroy();
             }
 
             res.json(content);
