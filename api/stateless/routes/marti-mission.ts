@@ -331,7 +331,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         group: 'MartiMissions',
         description: 'Helper API to list missions',
         query: Type.Composite([
-            MissionListInput,
+            Type.Omit(MissionListInput, ['sort']),
             Type.Object({
                 sort: Type.String({
                     default: 'createTime',
