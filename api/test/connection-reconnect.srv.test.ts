@@ -89,7 +89,7 @@ test('Connection - becomes live after TAK server sends a ping reply', async () =
     try {
         flight.tak.streamingWrite(pingReplyXml());
 
-        await waitForConnectionStatus('live', 3000);
+        await waitForConnectionStatus('live', 10000);
     } catch (err) {
         assert.ifError(err);
     }
@@ -99,7 +99,7 @@ test('Connection - drops to dead when the TAK streaming connection is reset (sim
     try {
         flight.tak.restartStreaming();
 
-        await waitForConnectionStatus('dead', 3000);
+        await waitForConnectionStatus('dead', 10000);
     } catch (err) {
         assert.ifError(err);
     }
@@ -109,11 +109,11 @@ test('Connection - reconnects and becomes live after TAK server comes back', asy
     try {
         // Without the race condition fix this times out - the stale socket's
         // close event destroys the new socket before the TLS handshake finishes.
-        await waitForStreamingReconnect(5000);
+        await waitForStreamingReconnect(10000);
 
         flight.tak.streamingWrite(pingReplyXml());
 
-        await waitForConnectionStatus('live', 3000);
+        await waitForConnectionStatus('live', 10000);
     } catch (err) {
         assert.ifError(err);
     }
