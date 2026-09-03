@@ -99,6 +99,23 @@ export async function whenForegrounded(): Promise<void> {
     });
 }
 
+// Registering any listener disables Capacitor's default raw WebView goBack()
+export async function addBackButtonListener(
+    handler: () => void
+): Promise<() => void> {
+    if (!isNativePlatform()) {
+        return () => { /* no-op */ };
+    }
+
+    const listener = await App.addListener('backButton', handler);
+    return () => { void listener.remove(); };
+}
+
+export async function minimizeApp(): Promise<void> {
+    if (!isNativePlatform()) return;
+    await App.minimizeApp();
+}
+
 export async function openExternalUrl(url: string | URL): Promise<void> {
     const { stdurl } = await import('../std.ts');
     const href = stdurl(url).toString();

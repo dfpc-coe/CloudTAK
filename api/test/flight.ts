@@ -11,7 +11,8 @@ import fs from 'fs';
 import api from '../index.js';
 import ConfigStateful from '../stateful/config.js';
 import ConfigStateless from '../stateless/config.js';
-import drop from './drop.js';
+import { testDatabase, dropTestDatabase } from './db.js';
+import withFileLock from './lock.js';
 import { pathToRegexp } from 'path-to-regexp';
 import test from 'node:test';
 import assert from 'node:assert';
@@ -19,8 +20,6 @@ import UserControl from '../stateless/lib/control/user.js';
 import { Ajv } from 'ajv';
 import type { FormatsPlugin } from 'ajv-formats';
 import * as ajvFormats from 'ajv-formats';
-import * as pgtypes from '../common/schema.js';
-import { Pool } from '@openaddresses/batch-generic';
 const ajv = (ajvFormats.default as unknown as FormatsPlugin)(new Ajv({ allErrors: true }));
 
 /**
@@ -51,6 +50,7 @@ export default class Flight {
     stateful?: ConfigStateful;
     srv?: any; // TODO: HTTP Server
     base: string;
+    connstr?: string;
     schema?: object;
     routes: Record<string, RegExp>;
     token: Record<string, string>;
@@ -63,10 +63,10 @@ export default class Flight {
     }
 
     /**
-     * Clear and restore an empty database schema
+     * Provision an empty, fully migrated database for this process
      *
      * @param {Object} [opts] Options
-     * @param {boolean} [opts.dropdb=true] Should the database be dropped
+     * @param {boolean} [opts.dropdb=true] Should an existing database be truncated
      * @param {boolean} [opts.takserver=false] Should the MockTAKServer be started
      */
     init(opts: { dropdb?: boolean; takserver?: boolean } = {}) {
@@ -75,16 +75,7 @@ export default class Flight {
 
         test('start: database', async () => {
             try {
-                if (dropdb) {
-                    const connstr = process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test';
-                    await drop(connstr);
-
-                    const pool = await Pool.connect(connstr, pgtypes, {
-                        migrationsFolder: (new URL('../migrations', import.meta.url)).pathname,
-                    });
-
-                    await pool.end();
-                }
+                this.connstr = await testDatabase({ reset: dropdb });
             } catch (err) {
                 assert.ifError(err);
             }
@@ -251,8 +242,10 @@ export default class Flight {
      */
     takeoff(custom = {}) {
         test('test server takeoff', async () => {
+            if (!this.connstr) throw new Error('flight.init() must be called before flight.takeoff()');
+
             const envArgs = {
-                postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+                postgres: this.connstr,
                 silent: true,
                 noevents: true,
                 nosinks: true,
@@ -310,32 +303,36 @@ export default class Flight {
         const key = `/tmp/cloudtak-test-${name}.key`;
         const cert = `/tmp/cloudtak-test-${name}.cert`;
 
-        if (
-            !fs.existsSync(key)
+        const stale = () => !fs.existsSync(key)
             || !fs.existsSync(cert)
-            || fs.statSync(cert).mtimeMs < fs.statSync(this.tak.keys.cert).mtimeMs
-        ) {
-            CP.execSync(`
-                openssl req \
-                    -newkey rsa:4096 \
-                    -keyout ${key} \
-                    -out /tmp/cloudtak-test-${name}.csr \
-                    -nodes \
-                    -subj "${subject}" \
-                    2> /dev/null
-            `);
+            || fs.statSync(cert).mtimeMs < fs.statSync(this.tak.keys.cert).mtimeMs;
 
-            CP.execSync(`
-               openssl x509 \
-                    -req \
-                    -in /tmp/cloudtak-test-${name}.csr \
-                    -CA ${this.tak.keys.cert} \
-                    -CAkey ${this.tak.keys.key} \
-                    -out ${cert} \
-                    -set_serial 01 \
-                    -days 365 \
-                    2> /dev/null
-            `);
+        if (stale()) {
+            withFileLock('certs', () => {
+                if (!stale()) return;
+
+                CP.execSync(`
+                    openssl req \
+                        -newkey rsa:4096 \
+                        -keyout ${key} \
+                        -out /tmp/cloudtak-test-${name}.csr \
+                        -nodes \
+                        -subj "${subject}" \
+                        2> /dev/null
+                `);
+
+                CP.execSync(`
+                   openssl x509 \
+                        -req \
+                        -in /tmp/cloudtak-test-${name}.csr \
+                        -CA ${this.tak.keys.cert} \
+                        -CAkey ${this.tak.keys.key} \
+                        -out ${cert} \
+                        -set_serial 01 \
+                        -days 365 \
+                        2> /dev/null
+                `);
+            });
         }
 
         return { key, cert };
@@ -463,15 +460,20 @@ export default class Flight {
      */
     landing() {
         test('test server landing - api', async () => {
-            if (this._tak) {
-                assert.equal(
-                    this._tak.unhandledMartiRequests.length, 0,
-                    `Unhandled Marti requests detected: ${this._tak.unhandledMartiRequests.join(', ')}`,
-                );
+            try {
+                if (this._tak) {
+                    assert.equal(
+                        this._tak.unhandledMartiRequests.length, 0,
+                        `Unhandled Marti requests detected: ${this._tak.unhandledMartiRequests.join(', ')}`,
+                    );
+                }
+            } finally {
+                // Always release the servers so a failed assertion can't leave
+                // open handles that keep the process alive forever
+                if (this.srv) await this.srv.close();
+                if (this._tak) await this._tak.close();
+                await dropTestDatabase();
             }
-
-            if (this.srv) await this.srv.close();
-            if (this._tak) await this._tak.close();
         });
     }
 }

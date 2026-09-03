@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import AGOL from '../stateless/lib/search/agol.js';
 import ArcGISTokenManager from '../stateless/lib/search/arcgis-token-manager.js';
 import Config from '../common/config.js';
+import { testDatabase, dropTestDatabase } from './db.js';
 
 test('AGOL - constructor with tokenManager', async () => {
     const mockConfig = {
@@ -13,7 +14,7 @@ test('AGOL - constructor with tokenManager', async () => {
     const tokenManager = new ArcGISTokenManager(mockConfig);
 
     const config = await Config.env({
-        postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+        postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
         nosinks: true,
@@ -32,7 +33,7 @@ test('AGOL - constructor with tokenManager', async () => {
 
 test('AGOL - constructor without tokenManager', async () => {
     const config = await Config.env({
-        postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+        postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
         nosinks: true,
@@ -51,7 +52,7 @@ test('AGOL - constructor without tokenManager', async () => {
 
 test('AGOL - API URLs are correctly set', async () => {
     const config = await Config.env({
-        postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+        postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
         nosinks: true,
@@ -69,7 +70,7 @@ test('AGOL - API URLs are correctly set', async () => {
 
 test('AGOL - route method handles empty features', async () => {
     const config = await Config.env({
-        postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+        postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
         nosinks: true,
@@ -104,7 +105,7 @@ test('AGOL - route method handles empty features', async () => {
 
 test('AGOL - route method processes valid route data', async () => {
     const config = await Config.env({
-        postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+        postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
         nosinks: true,
@@ -145,7 +146,7 @@ test('AGOL - route method processes valid route data', async () => {
 
 test('AGOL - error handling for different error codes', async () => {
     const config = await Config.env({
-        postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+        postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
         nosinks: true,
@@ -174,7 +175,7 @@ test('AGOL - error handling for different error codes', async () => {
 
 test('AGOL - validates route input parameters', async () => {
     const config = await Config.env({
-        postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+        postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
         nosinks: true,
@@ -205,7 +206,7 @@ test('AGOL - validates route input parameters', async () => {
 
 test('AGOL - URL construction for different endpoints', async () => {
     const config = await Config.env({
-        postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+        postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
         nosinks: true,
@@ -226,4 +227,8 @@ test('AGOL - URL construction for different endpoints', async () => {
     assert.ok(geocodeInstance.forwardApi.includes('findAddressCandidates'), 'Forward API has correct endpoint');
 
     config.pg.end();
+});
+
+test('cleanup', async () => {
+    await dropTestDatabase();
 });
