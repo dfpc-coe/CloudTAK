@@ -10,6 +10,7 @@ import type { ProfileLocationState } from './atlas-profile.ts';
 import AtlasDatabase from './atlas-database.ts';
 import AtlasConnection from './atlas-connection.ts';
 import AtlasSync from './atlas-sync.ts';
+import AtlasTiles from './atlas-tiles.ts';
 import { CloudTAKTransferHandler } from './handler.ts';
 import { db, recoverDatabase } from '../database.ts';
 
@@ -24,6 +25,7 @@ export default class Atlas {
     conn = Comlink.proxy(new AtlasConnection(this));
     profile = Comlink.proxy(new AtlasProfile(this));
     sync = Comlink.proxy(new AtlasSync(this));
+    tiles = Comlink.proxy(new AtlasTiles(this));
 
     constructor() {
         this.channel = new BroadcastChannel('cloudtak');

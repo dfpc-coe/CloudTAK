@@ -7,11 +7,11 @@
 <script setup lang="ts"></script>
 
 <style scoped>
-/* Positions content at the bottom-centre of the map, above the persistent bottom status bar. */
+/* Positions content at the bottom-centre of the map. */
 .generic-bottom-pane {
     position: absolute;
     z-index: 5;
-    bottom: calc(var(--map-bottom-bar-size, 50px) + 8px);
+    bottom: calc(8px + var(--map-bottom-inset, 0px));
     left: calc(50% - 250px);
     width: 500px;
 }

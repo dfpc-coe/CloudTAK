@@ -24,13 +24,14 @@ import COT from '../base/cot.ts';
 import KV from '../base/kv.ts';
 import GeolocateControl from '../lib/geolocate/main.ts';
 import RoutingControl from '../lib/routing/main.ts';
-import type { NavigationState, NavigationDirection } from '../lib/routing/main.ts';
+import type { NavigationState, NavigationDirection, NavigationMode } from '../lib/routing/main.ts';
 import { syncPushToken } from '../base/push.ts';
 import { normalizePointType } from '../utils/point-type.ts';
 import { WorkerMessageType, LocationState } from '../utils/events.ts';
 import type { WorkerMessage } from '../utils/events.ts';
 import Overlay from '../base/overlay-class.ts';
 import OverlayManager from '../base/overlay.ts';
+import { invalidateOfflinePMTiles } from './modules/pmtiles.ts';
 import { FeatureVisibility } from './modules/feature-visibility.ts';
 import Subscription from '../base/subscription.ts';
 import { stdurl, getRuntimeToken, serverUrl } from '../std.js';
@@ -47,6 +48,11 @@ import { db, recoverDatabase } from '../database.ts';
 import type { ProfileOverlay, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource, LayerSpecification, PropertyValueSpecification } from 'maplibre-gl';
 import type { Position } from '@capacitor/geolocation';
+import type { Position as GeoJSONPosition } from 'geojson';
+
+const finiteOrNull = (value: unknown): number | null => {
+    return typeof value === 'number' && Number.isFinite(value) ? value : null;
+};
 
 // Missions the dirty sweep has already warned about having no overlay
 const sweepWarned = new Set<string>();
@@ -133,14 +139,21 @@ export const useMapStore = defineStore('cloudtak', {
         locationAccuracy: number | undefined;
         gpsCoordinates: { lat: number; lng: number } | null;
         gpsSpeed: number | null;
+        gpsAltitude: number | null;
+        gpsHeading: number | null;
+        deviceHeading: number | null;
         navigation: {
             active: boolean;
             cotId: string | null;
             callsign: string | null;
             direction: NavigationDirection;
+            mode: NavigationMode;
+            destination: GeoJSONPosition | null;
             state: NavigationState | null;
         };
         distanceUnit: string;
+        elevationUnit: string;
+        speedUnit: string;
         coordFormat: string;
         defaultPointType: string;
         manualLocationMode: boolean;
@@ -163,6 +176,8 @@ export const useMapStore = defineStore('cloudtak', {
         container?: HTMLElement;
         hasSnapping: boolean;
         hasNoChannels: boolean;
+        // Profile asset ids with a complete PMTiles archive cached in OPFS
+        offlineTiles: Set<string>;
         channelChange: boolean;
         // Is the map ready to be shown to users
         isMapLoaded: boolean;
@@ -203,17 +218,24 @@ export const useMapStore = defineStore('cloudtak', {
             locationAccuracy: undefined,
             gpsCoordinates: null,
             gpsSpeed: null,
+            gpsAltitude: null,
+            gpsHeading: null,
+            deviceHeading: null,
             navigation: {
                 active: false,
                 cotId: null,
                 callsign: null,
                 direction: 'forward',
+                mode: 'route',
+                destination: null,
                 state: null
             },
             hasSnapping: false,
             channel: markRaw(new BroadcastChannel("cloudtak")),
             zoom: 'conditional',
             distanceUnit: 'meter',
+            elevationUnit: 'meter',
+            speedUnit: 'm/s',
             coordFormat: 'dd',
             defaultPointType: 'u-d-p',
             toastOffset: { x: 70, y: 60 },
@@ -224,6 +246,7 @@ export const useMapStore = defineStore('cloudtak', {
             locked: [],
             terrainEnabled: false,
             hasNoChannels: false,
+            offlineTiles: new Set<string>(),
             channelChange: false,
             isOpen: false,
             isMapLoaded: false,
@@ -305,9 +328,9 @@ export const useMapStore = defineStore('cloudtak', {
                     lat: position.coords.latitude,
                     lng: position.coords.longitude
                 };
-                this.gpsSpeed = typeof position.coords.speed === 'number' && !Number.isNaN(position.coords.speed)
-                    ? position.coords.speed
-                    : null;
+                this.gpsSpeed = finiteOrNull(position.coords.speed);
+                this.gpsAltitude = finiteOrNull(position.coords.altitude);
+                this.gpsHeading = finiteOrNull(position.coords.heading);
                 this.syncRoutingControl();
 
                 // Battery state rides along with each location broadcast so the
@@ -372,27 +395,50 @@ export const useMapStore = defineStore('cloudtak', {
             if (!control) return;
 
             const cot = await this.worker.db.get(cotId, { mission: true });
-            if (!cot) throw new Error('Unable to load Route for navigation');
-
-            if (!cot.is_route) {
-                throw new Error('Navigation is only supported for Route (b-m-r LineString) features');
-            }
+            if (!cot) throw new Error('Unable to load feature for navigation');
 
             const feature = cot.as_feature();
 
-            control.setRoute({
-                type: 'Feature',
-                properties: {},
-                geometry: feature.geometry as import('geojson').LineString
-            });
+            if (feature.geometry.type === 'Point') {
+                control.setDestination(feature.geometry.coordinates);
+            } else if (cot.is_route) {
+                control.setRoute({
+                    type: 'Feature',
+                    properties: {},
+                    geometry: feature.geometry as import('geojson').LineString
+                });
+            } else {
+                throw new Error('Navigation is only supported for Point and Route (b-m-r LineString) features');
+            }
 
+            this.commitNavigation(control, cotId, feature.properties.callsign);
+        },
+        // Navigate straight-line to an arbitrary coordinate that is not backed
+        // by a CoT (Overlay/Basemap features, Query Mode coordinates)
+        navigateTo: function(destination: GeoJSONPosition, callsign?: string) {
+            const control = this.routingControl();
+            if (!control) return;
+
+            control.setDestination(destination);
+
+            this.commitNavigation(control, null, callsign);
+        },
+        commitNavigation: function(control: RoutingControl, cotId: string | null, callsign?: string) {
             this.navigation.active = true;
             this.navigation.cotId = cotId;
-            this.navigation.callsign = feature.properties.callsign || 'Route';
+            this.navigation.mode = control.getMode() || 'route';
+            this.navigation.destination = control.getDestination();
+            this.navigation.callsign = callsign
+                || (this.navigation.mode === 'point' ? 'Destination' : 'Route');
             this.navigation.direction = control.getDirection();
 
-            KV.update('routing::cotId', cotId)
-                .catch((err) => console.warn('Failed to persist navigation cotId', err));
+            if (cotId) {
+                KV.update('routing::cotId', cotId)
+                    .catch((err) => console.warn('Failed to persist navigation cotId', err));
+            } else {
+                KV.delete('routing::cotId')
+                    .catch((err) => console.warn('Failed to remove persisted navigation cotId', err));
+            }
             KV.update('routing::callsign', this.navigation.callsign)
                 .catch((err) => console.warn('Failed to persist navigation callsign', err));
 
@@ -408,19 +454,24 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.navigation.active = true;
             this.navigation.cotId = (await KV.value('routing::cotId')) || null;
-            this.navigation.callsign = (await KV.value('routing::callsign')) || 'Route';
+            this.navigation.mode = control.getMode() || 'route';
+            this.navigation.destination = control.getDestination();
+            this.navigation.callsign = (await KV.value('routing::callsign'))
+                || (this.navigation.mode === 'point' ? 'Destination' : 'Route');
             this.navigation.direction = control.getDirection();
 
             this.syncRoutingControl();
         },
         stopNavigation: function() {
             const control = this.routingControl();
-            if (control) control.setRoute(null);
+            if (control) control.clear();
 
             this.navigation.active = false;
             this.navigation.cotId = null;
             this.navigation.callsign = null;
             this.navigation.direction = 'forward';
+            this.navigation.mode = 'route';
+            this.navigation.destination = null;
             this.navigation.state = null;
 
             KV.delete('routing::cotId')
@@ -430,7 +481,7 @@ export const useMapStore = defineStore('cloudtak', {
         },
         reverseNavigation: function() {
             const control = this.routingControl();
-            if (!control || !this.navigation.active) return;
+            if (!control || !this.navigation.active || this.navigation.mode === 'point') return;
 
             control.reverse();
             this.navigation.direction = control.getDirection();
@@ -944,6 +995,8 @@ export const useMapStore = defineStore('cloudtak', {
             this.startWorker();
 
             this._removeOrientationListener = await deviceStore.orientation.addListener((heading) => {
+                this.deviceHeading = heading;
+
                 // Drive the self-location puck's heading cone regardless of
                 // whether the map itself is being rotated to match.
                 const control = this._map
@@ -961,6 +1014,12 @@ export const useMapStore = defineStore('cloudtak', {
             this.loadingStage = 'Initializing worker…';
             await this._workerReady!;
             await this.worker.init(token || '');
+
+            try {
+                this.offlineTiles = new Set(await this.worker.tiles.list());
+            } catch (err) {
+                console.warn('Failed to list offline tiles', err);
+            }
 
             this.channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
                 const msg = event.data;
@@ -990,9 +1049,9 @@ export const useMapStore = defineStore('cloudtak', {
                     this.syncRoutingControl();
                 } else if (msg.type === WorkerMessageType.Profile_Location_Coordinates) {
                     this.locationAccuracy = msg.body.accuracy;
-                    this.gpsSpeed = typeof msg.body.speed === 'number' && !Number.isNaN(msg.body.speed)
-                        ? msg.body.speed
-                        : null;
+                    this.gpsSpeed = finiteOrNull(msg.body.speed);
+                    this.gpsAltitude = finiteOrNull(msg.body.altitude);
+                    this.gpsHeading = finiteOrNull(msg.body.heading);
                     if (msg.body.coordinates) {
                         this.gpsCoordinates = {
                             lng: msg.body.coordinates[0],
@@ -1012,6 +1071,10 @@ export const useMapStore = defineStore('cloudtak', {
                     this.updateIconRotation(msg.body.enabled);
                 } else if (msg.type === WorkerMessageType.Profile_Distance_Unit) {
                     this.updateDistanceUnit(msg.body.unit);
+                } else if (msg.type === WorkerMessageType.Profile_Elevation_Unit) {
+                    this.elevationUnit = msg.body.unit;
+                } else if (msg.type === WorkerMessageType.Profile_Speed_Unit) {
+                    this.speedUnit = msg.body.unit;
                 } else if (msg.type === WorkerMessageType.Map_Projection) {
                     map.setProjection(msg.body);
                 } else if (msg.type === WorkerMessageType.Connection_Open) {
@@ -1040,6 +1103,17 @@ export const useMapStore = defineStore('cloudtak', {
                         this.icons.purgeIconsets(body.purge);
                         this.icons.purgeFallbacks(body.added);
                     }
+                } else if (msg.type === WorkerMessageType.Tiles_Downloaded || msg.type === WorkerMessageType.Tiles_Removed) {
+                    const asset = String(msg.body.asset);
+                    invalidateOfflinePMTiles(asset);
+
+                    const offline = new Set(this.offlineTiles);
+                    if (msg.type === WorkerMessageType.Tiles_Downloaded) {
+                        offline.add(asset);
+                    } else {
+                        offline.delete(asset);
+                    }
+                    this.offlineTiles = offline;
                 }
             }
 
@@ -1255,6 +1329,8 @@ export const useMapStore = defineStore('cloudtak', {
             }, 100);
 
             this.distanceUnit = (await ProfileConfig.get('display_distance'))?.value || 'meter';
+            this.elevationUnit = (await ProfileConfig.get('display_elevation'))?.value || 'meter';
+            this.speedUnit = (await ProfileConfig.get('display_speed'))?.value || 'm/s';
 
             this.updateDistanceUnit(this.distanceUnit);
 

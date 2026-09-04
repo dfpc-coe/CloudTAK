@@ -9,6 +9,8 @@ import { db } from '../../database.ts';
 import KV from '../../base/kv.ts';
 import { std, server, serverUrl, getRuntimeToken } from '../../std.ts';
 import { authorizeTileJSON } from '../../utils/tilejson.ts';
+import { profileAssetIdFromUrl, hasCompleteOfflineTiles } from '../../utils/offline-tiles.ts';
+import { registerPMTilesProtocol, offlineTileJSON, offlineTileTemplate, isOfflineTileJSON, setNetworkTileTemplate } from './pmtiles.ts';
 import type { OverlayTileJSON } from '../../types.ts';
 
 export type { OverlayTileJSON };
@@ -102,16 +104,42 @@ export function registerTileJSONProtocol(): void {
             entries.set(id, entry);
         }
 
-        if (!entry.tilejson) {
-            entry.tilejson = await std(entry.url) as OverlayTileJSON;
-
-            await db.overlay.update(id, { tilejson: entry.tilejson }).catch((err: unknown) => {
+        const cache = async (tilejson: OverlayTileJSON) => {
+            entry.tilejson = tilejson;
+            await db.overlay.update(id, { tilejson }).catch((err: unknown) => {
                 console.warn(`Failed to cache TileJSON for overlay ${id}`, err);
             });
+        };
+
+        // Profile assets always tile through the PMTiles protocol, which picks
+        // the OPFS archive or the hosted server per request
+        const assetId = profileAssetIdFromUrl(entry.url);
+        if (assetId) {
+            registerPMTilesProtocol();
+
+            let tilejson = entry.tilejson;
+            if (!tilejson) {
+                tilejson = await hasCompleteOfflineTiles(assetId)
+                    ? await offlineTileJSON(assetId)
+                    : await std(entry.url) as OverlayTileJSON;
+                await cache(tilejson);
+            }
+
+            if (!isOfflineTileJSON(tilejson)) setNetworkTileTemplate(assetId, tilejson.tiles[0]);
+
+            return {
+                data: { ...tilejson, tiles: [offlineTileTemplate(assetId)] }
+            };
+        }
+
+        let tilejson = entry.tilejson;
+        if (!tilejson) {
+            tilejson = await std(entry.url) as OverlayTileJSON;
+            await cache(tilejson);
         }
 
         return {
-            data: authorizeTileJSON(entry.tilejson, await getRuntimeToken(), await getTokenHosts())
+            data: authorizeTileJSON(tilejson, await getRuntimeToken(), await getTokenHosts())
         };
     });
 }
