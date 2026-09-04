@@ -51,7 +51,10 @@
                     {{ dragHintCopy }}
                 </p>
 
-                <TablerLoading v-if='loading' />
+                <TablerLoading
+                    v-if='loading || !mapStore.isMapLoadedFully'
+                    :desc='mapStore.isMapLoadedFully ? "Loading Overlays" : "Loading Map Overlays"'
+                />
 
                 <template v-else>
                     <div
@@ -260,7 +263,7 @@
 
                     <TablerNone
                         v-else
-                        label='No overlays match your search'
+                        :label='hasSearchTerm ? "No overlays match your search" : "No overlays"'
                         :create='false'
                     />
                 </template>
