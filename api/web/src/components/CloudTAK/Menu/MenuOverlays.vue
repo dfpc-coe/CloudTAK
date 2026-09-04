@@ -370,7 +370,8 @@ const overlayCards = computed<OverlayCard[]>(() => {
         consider(overlay);
     }
 
-    return cards;
+    // Menu order mirrors the map stacking order held by the manager
+    return cards.sort((a, b) => OverlayManager.loaded.indexOf(a.overlay) - OverlayManager.loaded.indexOf(b.overlay));
 });
 
 const overlayCount = computed(() => overlayCards.value.length);
@@ -397,7 +398,7 @@ function subscribeList(): void {
     listSubscription?.unsubscribe();
     loading.value = true;
 
-    listSubscription = OverlayManager.liveList().subscribe({
+    listSubscription = OverlayManager.liveList({ localFirst: true }).subscribe({
         next: (items) => {
             dbOverlays.value = items as DBOverlay[];
             loading.value = false;
@@ -484,7 +485,6 @@ function handleCardClick(overlay: Overlay) {
 /** Whether an overlay has an expandable details panel. Mission overlays are managed from MenuMission and are not expandable here. */
 function hasOverlayDetails(overlay: Overlay): boolean {
     return overlay.type === 'raster'
-        || overlay.type === 'raster-dem'
         || overlay.type === 'vector';
 }
 
@@ -568,7 +568,11 @@ async function saveOrder(sortableEv: SortableEvent) {
 
     const overlay_ids = sortable.toArray().map((i) => parseInt(i));
 
-    await OverlayManager.reorderLoaded(overlay_ids, id);
+    try {
+        await OverlayManager.reorderLoaded(overlay_ids, id);
+    } catch (err) {
+        console.error('Failed to sync overlay order:', err);
+    }
 }
 
 async function updateOverlay(overlay: Overlay, body: OverlayUpdate): Promise<void> {
@@ -577,17 +581,18 @@ async function updateOverlay(overlay: Overlay, body: OverlayUpdate): Promise<voi
 
     try {
         await update;
+    } catch (err) {
+        console.error('Failed to sync overlay update:', err);
     } finally {
         overlayRenderTick.value += 1;
     }
 }
 
 async function removeOverlay(id: number) {
-    loading.value = true;
     try {
         await OverlayManager.deleteLoaded(id);
-    } finally {
-        loading.value = false;
+    } catch (err) {
+        console.error('Failed to sync overlay delete:', err);
     }
 }
 </script>
