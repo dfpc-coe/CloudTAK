@@ -124,7 +124,7 @@
                         v-text='name'
                     />
                 </div>
-                <div class='col-auto btn-list align-items-center'>
+                <div class='col-auto btn-list align-items-center menu-header-buttons'>
                     <slot name='buttons' />
                 </div>
             </div>
@@ -236,6 +236,11 @@ const isModal = computed(() => props.standalone && appStore.isMobileDetected);
 </script>
 
 <style scoped>
+/* Matches a 32px TablerIconButton so the header stays the same height when the buttons slot is empty */
+.menu-header-buttons {
+    min-height: 34px;
+}
+
 /* Mobile standalone menu is shown as a near-fullscreen modal with a single header.
  * The status bar inset is subtracted twice to keep the centered modal's top edge
  * clear of the transparent native status bar. */

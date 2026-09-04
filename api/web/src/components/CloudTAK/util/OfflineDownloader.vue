@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, toRaw } from 'vue';
 import * as Comlink from 'comlink';
 import type { ProfileFile } from '../../../types.ts';
 import { useMapStore } from '../../../stores/map.ts';
@@ -79,9 +79,7 @@ async function download() {
     error.value = null;
 
     try {
-        const expectedSize = props.asset.artifacts.find((artifact) => artifact.ext === '.pmtiles')?.size;
-
-        await mapStore.worker.tiles.download(props.asset.id, expectedSize, Comlink.proxy((percent: number) => {
+        await mapStore.worker.tiles.download(toRaw(props.asset), Comlink.proxy((percent: number) => {
             progress.value = percent;
         }));
 

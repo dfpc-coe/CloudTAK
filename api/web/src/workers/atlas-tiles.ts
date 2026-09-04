@@ -5,6 +5,8 @@
 import type Atlas from './atlas.ts';
 import { stdurl } from '../std.ts';
 import KV from '../base/kv.ts';
+import ProfileFileManager from '../base/profile-file.ts';
+import type { DBProfileFile } from '../database.ts';
 import { WorkerMessageType } from '../utils/events.ts';
 import {
     offlineTilesDirectory,
@@ -42,6 +44,7 @@ export default class AtlasTiles {
 
     async remove(assetId: string): Promise<void> {
         await KV.delete(offlineTilesSizeKey(assetId));
+        await ProfileFileManager.delete(assetId);
 
         const dir = await offlineTilesDirectory();
         await dir.removeEntry(offlineTilesFileName(assetId)).catch(() => undefined);
@@ -52,7 +55,9 @@ export default class AtlasTiles {
         });
     }
 
-    async download(assetId: string, expectedSize?: number, onProgress?: TilesProgress): Promise<void> {
+    async download(asset: DBProfileFile, onProgress?: TilesProgress): Promise<void> {
+        const assetId = asset.id;
+        const expectedSize = asset.artifacts.find((artifact) => artifact.ext === '.pmtiles')?.size;
         const url = stdurl(`/api/profile/asset/${assetId}.pmtiles`);
 
         const res = await fetch(url, {
@@ -98,6 +103,7 @@ export default class AtlasTiles {
         access.close();
 
         await KV.generate(offlineTilesSizeKey(assetId), String(received));
+        await ProfileFileManager.generate(asset);
         if (onProgress) onProgress(1);
 
         await this.atlas.postMessage({
