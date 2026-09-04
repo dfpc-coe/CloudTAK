@@ -80,9 +80,11 @@
                         :asset='asset'
                         :current-username='currentUsername'
                         :overlay-urls='overlayUrls'
+                        :offline-ids='offlineIds'
                         :rename='rename'
                         @create-overlay='createOverlay'
                         @download='downloadAsset'
+                        @offline='markOffline'
                         @share-mission='shareToMission = $event'
                         @share-package='shareToPackage = $event'
                         @share-channel='shareToChannel = $event'
@@ -247,10 +249,14 @@ import PathBrowser from '../util/PathBrowser.vue';
 import FileRow from './MenuFilesRow.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import OverlayManager from '../../../base/overlay.ts';
+import { useMapStore } from '../../../stores/map.ts';
 import type { Subscription } from 'dexie';
 import Upload from '../../util/Upload.vue';
 
+const mapStore = useMapStore();
+
 const overlayUrls = ref<Set<string>>(new Set());
+const offlineIds = ref<Set<string>>(new Set());
 let overlaySubscription: Subscription | undefined;
 
 onMounted(() => {
@@ -346,8 +352,20 @@ type ProfileAssetTileJSON = {
 
 onMounted(async () => {
     currentUsername.value = (await ProfileConfig.get('username'))?.value || '';
-    await fetchList();
+    await Promise.all([fetchList(), loadOffline()]);
 });
+
+async function loadOffline() {
+    try {
+        offlineIds.value = new Set(await mapStore.worker.tiles.list());
+    } catch (err) {
+        console.warn('Failed to list offline tiles', err);
+    }
+}
+
+function markOffline(asset: ProfileFile) {
+    offlineIds.value = new Set([...offlineIds.value, asset.id]);
+}
 
 watch(paging.value, async () => {
     await fetchList();

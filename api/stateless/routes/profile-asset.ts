@@ -14,6 +14,23 @@ import { profileAssetTileJSON } from '../lib/tilejson.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
+    async function ensureReadPermission(file: { username: string; channels?: Array<number | bigint> | null }, email: string) {
+        if (file.username === email) return;
+
+        const fileChannels = (file.channels || []).map(c => Number(c));
+        if (fileChannels.length === 0) {
+            throw new Err(403, null, 'You do not have permission to view this asset');
+        }
+
+        const profile = await config.models.Profile.from(email);
+        const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+        const active = await activeChannels(api);
+
+        if (!fileChannels.some(bp => active.has(bp))) {
+            throw new Err(403, null, 'You do not have permission to view this asset');
+        }
+    }
+
     async function ensureIconsetPermission(iconset: string | null | undefined, email: string) {
         if (iconset === undefined || iconset === null || iconset === '') return;
 
@@ -290,13 +307,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req, { token: true });
 
-            const file = await config.models.ProfileFile.from(req.params.asset);
+            const file = await config.models.ProfileFile.augmented_from(req.params.asset);
 
-            if (file.username !== user.email) {
-                throw new Err(403, null, 'You do not have permission to download this asset');
-            }
+            await ensureReadPermission(file, user.email);
 
-            const stream = await S3.get(`profile/${user.email}/${req.params.asset}.${req.params.ext}`);
+            const stream = await S3.get(`profile/${file.username}/${req.params.asset}.${req.params.ext}`);
 
             stream.pipe(res);
         } catch (err) {
@@ -320,20 +335,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const file = await config.models.ProfileFile.augmented_from(req.params.asset);
 
-            if (file.username !== user.email) {
-                const fileChannels = (file.channels || []).map(c => Number(c));
-                if (fileChannels.length === 0) {
-                    throw new Err(403, null, 'You do not have permission to view this asset');
-                }
-
-                const profile = await config.models.Profile.from(user.email);
-                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
-                const active = await activeChannels(api);
-
-                if (!fileChannels.some(bp => active.has(bp))) {
-                    throw new Err(403, null, 'You do not have permission to view this asset');
-                }
-            }
+            await ensureReadPermission(file, user.email);
 
             if (!await S3.exists(`profile/${file.username}/${req.params.asset}.pmtiles`)) {
                 throw new Err(404, null, 'Asset does not exist');

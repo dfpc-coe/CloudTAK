@@ -2,10 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert';
 import Flight from './flight.js';
 import Sinon from 'sinon';
+import { Readable } from 'node:stream';
 import { ProfileFileChannel } from '../common/schema.js';
 import {
     S3Client,
     HeadObjectCommand,
+    GetObjectCommand,
     ListObjectsV2Command,
     DeleteObjectsCommand,
 } from '@aws-sdk/client-s3';
@@ -235,6 +237,79 @@ test('GET: api/profile/asset includes channel shared files', async () => {
         assert.deepEqual(shared.channels, [42]);
     } catch (err) {
         assert.ifError(err);
+    }
+});
+
+test('GET: api/profile/asset/:asset.:ext - channel shared file is downloadable', async () => {
+    try {
+        Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
+            assert.ok(command instanceof GetObjectCommand);
+
+            assert.deepEqual(command.input, {
+                Bucket: 'fake-asset-bucket',
+                Key: 'profile/shared@example.com/1db1f443-23e2-44b1-b879-fab2db95ce66.zip',
+            });
+
+            return Promise.resolve({
+                Body: Readable.from(['shared-body']),
+            });
+        });
+
+        const res = await flight.fetch('/api/profile/asset/1db1f443-23e2-44b1-b879-fab2db95ce66.zip', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, {
+            json: false,
+        });
+
+        assert.equal(res.status, 200);
+        assert.equal(res.body, 'shared-body');
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        Sinon.restore();
+    }
+});
+
+test('GET: api/profile/asset/:asset.:ext - unshared file from another user is forbidden', async () => {
+    try {
+        await flight.config?.models.Profile.generate({
+            username: 'private@example.com',
+            system_admin: false,
+            auth: {
+                cert: 'private-cert',
+                key: 'private-key',
+            },
+        });
+
+        await flight.config?.models.ProfileFile.generate({
+            id: '7c1c2a3e-5d6f-4a7b-8c9d-0e1f2a3b4c5d',
+            username: 'private@example.com',
+            path: '/',
+            name: 'private.zip',
+            iconset: null,
+            size: 12,
+            artifacts: [],
+        });
+
+        const s3 = Sinon.stub(S3Client.prototype, 'send');
+
+        const res = await flight.fetch('/api/profile/asset/7c1c2a3e-5d6f-4a7b-8c9d-0e1f2a3b4c5d.zip', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, false);
+
+        assert.equal(res.status, 403);
+        assert.equal(res.body.message, 'You do not have permission to view this asset');
+        assert.equal(s3.callCount, 0);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        Sinon.restore();
     }
 });
 
