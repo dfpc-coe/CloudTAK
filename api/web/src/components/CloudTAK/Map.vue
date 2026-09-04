@@ -292,8 +292,8 @@
                     height: 60px;
                     max-width: calc(100vw - 16px);
                     top: calc(8px + var(--status-bar-height, 0px));
+                    right: 8px;
                 '
-                :style='{ right: noMenuShown ? "8px" : "calc(var(--map-side-offset, 0px) + 8px)" }'
             >
                 <TablerDropdown>
                     <TablerIconButton
