@@ -5,7 +5,7 @@
         :style='{
             "--map-side-offset": `${mapSideOffset}px`,
             "--map-compact-menu-size": "60px",
-            "--map-bottom-bar-size": "50px"
+            "--map-gps-panel-size": "110px"
         }'
         data-bs-theme-base='neutral'
         data-bs-theme-primary='blue'
@@ -94,16 +94,17 @@
                     </div>
                 </div>
             </GenericBottomPane>
-            <BottomBar
+            <GPSPanel
                 :mode='mode'
                 @set-location='setLocation'
                 @to-location='toLocation'
             />
+            <PluginPane v-if='mode === "Default"' />
             <div
                 v-if='mapStore.selected.size'
                 class='position-absolute'
                 style='
-                    bottom: calc(var(--map-bottom-bar-size, 50px) + 8px);
+                    bottom: calc(var(--map-gps-panel-size, 110px) + 16px);
                     left: 8px;
                 '
             >
@@ -291,8 +292,8 @@
                     height: 60px;
                     max-width: calc(100vw - 16px);
                     top: calc(8px + var(--status-bar-height, 0px));
-                    right: 8px;
                 '
+                :style='{ right: noMenuShown ? "8px" : "calc(var(--map-side-offset, 0px) + 8px)" }'
             >
                 <TablerDropdown>
                     <TablerIconButton
@@ -378,7 +379,7 @@
                 class='position-absolute'
                 style='
                     z-index: 4;
-                    bottom: var(--map-bottom-bar-size, 50px);
+                    bottom: 0;
                     right: 0;
                     padding: 8px;
                 '
@@ -450,7 +451,8 @@
 import GeoJSONInput from './Inputs/GeoJSONInput.vue';
 import BufferInput from './Inputs/BufferInput.vue';
 import { ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
-import BottomBar from './BottomBar/BottomBar.vue';
+import GPSPanel from './GPSPanel/GPSPanel.vue';
+import PluginPane from './PluginPane.vue';
 import {useRoute, useRouter } from 'vue-router';
 import ActiveMission from './ActiveMission.vue';
 import Navigating from './Navigating.vue';
@@ -1145,7 +1147,7 @@ html[data-bs-theme='light'] .cloudtak-ctrl-btn:focus-within {
 }
 
 .maplibregl-ctrl-bottom-left {
-    bottom: calc(var(--map-bottom-bar-size, 50px) + 4px);
+    bottom: calc(var(--map-gps-panel-size, 110px) + 12px);
     left: 8px;
     right: auto;
     margin: 0;
@@ -1154,7 +1156,7 @@ html[data-bs-theme='light'] .cloudtak-ctrl-btn:focus-within {
 }
 
 .maplibregl-ctrl-bottom-right {
-    bottom: calc(var(--map-bottom-bar-size, 50px) + 4px);
+    bottom: 4px;
     right: calc(var(--map-side-offset, 0px) + 8px);
     left: auto;
     z-index: 3 !important;

@@ -14,10 +14,10 @@
             style='
                 z-index: 4;
                 right: 8px;
-                top: calc(76px + var(--status-bar-height, 0px));
-                bottom: calc(8px + var(--map-bottom-bar-size, 50px));
+                bottom: 8px;
             '
             :style='`
+                top: calc(${compact ? "76px" : "8px"} + var(--status-bar-height, 0px));
                 width: ${compact ? "var(--map-compact-menu-size, 60px)" : `${menuWidth}px`};
                 min-width: ${compact ? "var(--map-compact-menu-size, 60px)" : `400px`};
             `'

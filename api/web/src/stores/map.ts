@@ -49,6 +49,10 @@ import type { ProfileOverlay, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource, LayerSpecification, PropertyValueSpecification } from 'maplibre-gl';
 import type { Position } from '@capacitor/geolocation';
 
+const finiteOrNull = (value: unknown): number | null => {
+    return typeof value === 'number' && Number.isFinite(value) ? value : null;
+};
+
 // Missions the dirty sweep has already warned about having no overlay
 const sweepWarned = new Set<string>();
 const MAPLIBRE_WORKER_PROBE_TIMEOUT_MS = 1000;
@@ -134,6 +138,9 @@ export const useMapStore = defineStore('cloudtak', {
         locationAccuracy: number | undefined;
         gpsCoordinates: { lat: number; lng: number } | null;
         gpsSpeed: number | null;
+        gpsAltitude: number | null;
+        gpsHeading: number | null;
+        deviceHeading: number | null;
         navigation: {
             active: boolean;
             cotId: string | null;
@@ -142,6 +149,8 @@ export const useMapStore = defineStore('cloudtak', {
             state: NavigationState | null;
         };
         distanceUnit: string;
+        elevationUnit: string;
+        speedUnit: string;
         coordFormat: string;
         defaultPointType: string;
         manualLocationMode: boolean;
@@ -206,6 +215,9 @@ export const useMapStore = defineStore('cloudtak', {
             locationAccuracy: undefined,
             gpsCoordinates: null,
             gpsSpeed: null,
+            gpsAltitude: null,
+            gpsHeading: null,
+            deviceHeading: null,
             navigation: {
                 active: false,
                 cotId: null,
@@ -217,6 +229,8 @@ export const useMapStore = defineStore('cloudtak', {
             channel: markRaw(new BroadcastChannel("cloudtak")),
             zoom: 'conditional',
             distanceUnit: 'meter',
+            elevationUnit: 'meter',
+            speedUnit: 'm/s',
             coordFormat: 'dd',
             defaultPointType: 'u-d-p',
             toastOffset: { x: 70, y: 60 },
@@ -309,9 +323,9 @@ export const useMapStore = defineStore('cloudtak', {
                     lat: position.coords.latitude,
                     lng: position.coords.longitude
                 };
-                this.gpsSpeed = typeof position.coords.speed === 'number' && !Number.isNaN(position.coords.speed)
-                    ? position.coords.speed
-                    : null;
+                this.gpsSpeed = finiteOrNull(position.coords.speed);
+                this.gpsAltitude = finiteOrNull(position.coords.altitude);
+                this.gpsHeading = finiteOrNull(position.coords.heading);
                 this.syncRoutingControl();
 
                 // Battery state rides along with each location broadcast so the
@@ -948,6 +962,8 @@ export const useMapStore = defineStore('cloudtak', {
             this.startWorker();
 
             this._removeOrientationListener = await deviceStore.orientation.addListener((heading) => {
+                this.deviceHeading = heading;
+
                 // Drive the self-location puck's heading cone regardless of
                 // whether the map itself is being rotated to match.
                 const control = this._map
@@ -1000,9 +1016,9 @@ export const useMapStore = defineStore('cloudtak', {
                     this.syncRoutingControl();
                 } else if (msg.type === WorkerMessageType.Profile_Location_Coordinates) {
                     this.locationAccuracy = msg.body.accuracy;
-                    this.gpsSpeed = typeof msg.body.speed === 'number' && !Number.isNaN(msg.body.speed)
-                        ? msg.body.speed
-                        : null;
+                    this.gpsSpeed = finiteOrNull(msg.body.speed);
+                    this.gpsAltitude = finiteOrNull(msg.body.altitude);
+                    this.gpsHeading = finiteOrNull(msg.body.heading);
                     if (msg.body.coordinates) {
                         this.gpsCoordinates = {
                             lng: msg.body.coordinates[0],
@@ -1022,6 +1038,10 @@ export const useMapStore = defineStore('cloudtak', {
                     this.updateIconRotation(msg.body.enabled);
                 } else if (msg.type === WorkerMessageType.Profile_Distance_Unit) {
                     this.updateDistanceUnit(msg.body.unit);
+                } else if (msg.type === WorkerMessageType.Profile_Elevation_Unit) {
+                    this.elevationUnit = msg.body.unit;
+                } else if (msg.type === WorkerMessageType.Profile_Speed_Unit) {
+                    this.speedUnit = msg.body.unit;
                 } else if (msg.type === WorkerMessageType.Map_Projection) {
                     map.setProjection(msg.body);
                 } else if (msg.type === WorkerMessageType.Connection_Open) {
@@ -1276,6 +1296,8 @@ export const useMapStore = defineStore('cloudtak', {
             }, 100);
 
             this.distanceUnit = (await ProfileConfig.get('display_distance'))?.value || 'meter';
+            this.elevationUnit = (await ProfileConfig.get('display_elevation'))?.value || 'meter';
+            this.speedUnit = (await ProfileConfig.get('display_speed'))?.value || 'm/s';
 
             this.updateDistanceUnit(this.distanceUnit);
 

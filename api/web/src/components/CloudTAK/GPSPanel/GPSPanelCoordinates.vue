@@ -1,25 +1,25 @@
 <template>
-    <div
-        class='position-relative text-white user-select-none border-start border-white border-opacity-25 px-2 py-1'
-        style='width: clamp(220px, 26vw, 340px); min-width: 220px; max-width: 340px;'
-    >
+    <div class='position-relative'>
         <TablerDropdown
-            class='h-100'
-            position='top-end'
+            position='top-start'
             :width='240'
         >
             <template #default>
                 <div
-                    class='px-2 py-2 d-flex flex-column justify-content-center h-100'
-                    :class='isNative ? "" : "cursor-pointer cloudtak-hover pe-5"'
+                    class='d-flex align-items-center gap-2 rounded'
+                    :class='isNative ? "" : "cursor-pointer cloudtak-hover"'
+                    :title='coordSource === "gps" ? "GPS Location - Click to change format" : "Cursor Position - Click to change format"'
                 >
+                    <IconCursorText
+                        v-if='coordSource === "cursor"'
+                        class='flex-shrink-0 text-white-50'
+                        :size='14'
+                        stroke='1'
+                    />
                     <span
-                        class='d-block text-uppercase text-white-50'
-                        style='font-size: 0.65rem; line-height: 1.1; letter-spacing: 0.04em;'
-                    >{{ coordSource === 'gps' ? 'GPS Location' : 'Cursor Position' }}</span>
-                    <span
-                        class='d-block text-truncate'
-                        style='font-size: 0.85rem; line-height: 1.2; font-variant-numeric: tabular-nums;'
+                        class='text-truncate'
+                        style='font-size: 0.95rem; line-height: 1.4; font-variant-numeric: tabular-nums;'
+                        data-test='coordinates'
                     >{{ formattedCoord }}</span>
                 </div>
             </template>
@@ -55,19 +55,26 @@
                     </TablerPillGroup>
                 </li>
                 <li
-                    v-if='appStore.isMobileDetected && coordSource === "gps" && formattedCoord'
+                    v-if='displayCoord'
                     class='px-3 py-2'
-                    @click='Clipboard.write({ string: formattedCoord })'
+                    @click.stop='void copy()'
                 >
                     <button
                         type='button'
                         class='btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2'
+                        data-test='copy'
                     >
-                        <IconCopy
+                        <IconCopyCheck
+                            v-if='copied'
                             :size='16'
                             stroke='1'
                         />
-                        Copy Coordinates
+                        <IconCopy
+                            v-else
+                            :size='16'
+                            stroke='1'
+                        />
+                        {{ copied ? 'Copied' : 'Copy' }}
                     </button>
                 </li>
                 <li
@@ -82,15 +89,6 @@
                 </li>
             </template>
         </TablerDropdown>
-
-        <CopyButton
-            v-if='coordSource === "gps" && !appStore.isMobileDetected'
-            title='Copy Coordinates'
-            :text='formattedCoord'
-            class='position-absolute top-50 end-0 translate-middle-y me-2'
-            :size='24'
-            :stroke='1'
-        />
     </div>
 </template>
 
@@ -101,21 +99,32 @@ import { Clipboard } from '@capacitor/clipboard';
 import { TablerDropdown, TablerPillGroup } from '@tak-ps/vue-tabler';
 import {
     IconCopy,
+    IconCopyCheck,
     IconCursorText,
     IconCurrentLocation
 } from '@tabler/icons-vue';
 import { formatCoordPair, COORD_MODES, type CoordMode } from '../../../utils/coordinateFormat.ts';
 import { useMapStore } from '../../../stores/map.ts';
-import { useAppStore } from '../../../stores/app.ts';
 import { isNativePlatform } from '../../../utils/capacitor.ts';
-import CopyButton from '../util/CopyButton.vue';
 
 const mapStore = useMapStore();
-const appStore = useAppStore();
 
 const isNative = isNativePlatform();
 
-const coordSource = ref<string>(isNative ? 'gps' : 'cursor');
+const coordSource = ref<string>('gps');
+
+const copied = ref(false);
+let copiedTimeout: ReturnType<typeof setTimeout> | undefined;
+
+async function copy(): Promise<void> {
+    await Clipboard.write({ string: formattedCoord.value });
+    copied.value = true;
+
+    if (copiedTimeout) clearTimeout(copiedTimeout);
+    copiedTimeout = setTimeout(() => {
+        copied.value = false;
+    }, 1000);
+}
 
 // The cursor position is tracked here rather than in Map.vue so that a
 // mousemove only re-renders this readout, not the whole map shell, and
@@ -158,6 +167,8 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+    if (copiedTimeout) clearTimeout(copiedTimeout);
+
     if (rafId !== null) {
         cancelAnimationFrame(rafId);
         rafId = null;
@@ -197,7 +208,7 @@ const formattedCoord = computed(() => {
         c.lat,
         c.lng,
         mapStore.coordFormat as CoordMode,
-        6
+        5
     );
 });
 
