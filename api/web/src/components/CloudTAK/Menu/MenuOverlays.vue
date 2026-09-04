@@ -147,8 +147,8 @@
                                             </div>
                                         </div>
                                         <div
-                                            v-if='card.badges.length'
-                                            class='d-flex flex-wrap gap-2 mt-2'
+                                            v-if='card.badges.length || card.offline'
+                                            class='d-flex flex-wrap align-items-center gap-2 mt-2'
                                         >
                                             <span
                                                 v-for='badge in card.badges'
@@ -158,6 +158,16 @@
                                             >
                                                 {{ badge.label }}
                                             </span>
+                                            <TablerBadge
+                                                v-if='card.offline'
+                                                class='small'
+                                                background-color='rgba(32, 107, 196, 0.15)'
+                                                border-color='rgba(32, 107, 196, 0.35)'
+                                                text-color='#206bc4'
+                                                title='Tiles are available offline on this device'
+                                            >
+                                                Offline
+                                            </TablerBadge>
                                         </div>
                                     </div>
                                 </div>
@@ -265,6 +275,7 @@ import { useRouter } from 'vue-router';
 import type { Subscription } from 'dexie';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
+    TablerBadge,
     TablerDelete,
     TablerIconButton,
     TablerInput,
@@ -291,13 +302,16 @@ import type { SortableEvent } from 'sortablejs';
 import type Overlay from '../../../../src/base/overlay-class.ts';
 import type { DBOverlay } from '../../../../src/database.ts';
 import OverlayManager from '../../../../src/base/overlay.ts';
+import { useMapStore } from '../../../stores/map.ts';
+import { profileAssetIdFromUrl } from '../../../utils/offline-tiles.ts';
 
 type OverlayBadge = { label: string; variant: string };
 type OverlayStatus = { label: string; variant: string; tooltip?: string };
 type OverlayUpdate = Parameters<Overlay['update']>[0];
-type OverlayCard = { overlay: Overlay; visible: boolean; status: OverlayStatus; badges: OverlayBadge[] };
+type OverlayCard = { overlay: Overlay; visible: boolean; status: OverlayStatus; badges: OverlayBadge[]; offline: boolean };
 
 const router = useRouter();
+const mapStore = useMapStore();
 
 let sortable: Sortable | undefined;
 
@@ -339,7 +353,8 @@ const overlayCards = computed<OverlayCard[]>(() => {
             overlay,
             visible: overlay.visible,
             status: resolveOverlayStatus(overlay),
-            badges: getOverlayBadges(overlay)
+            badges: getOverlayBadges(overlay),
+            offline: isOfflineOverlay(overlay)
         });
     };
 
@@ -499,6 +514,11 @@ function resolveOverlayStatus(overlay: Overlay): OverlayStatus {
         label: 'Ready',
         variant: 'success'
     };
+}
+
+function isOfflineOverlay(overlay: Overlay): boolean {
+    const assetId = profileAssetIdFromUrl(overlay.url);
+    return !!assetId && mapStore.offlineTiles.has(assetId);
 }
 
 function getOverlayBadges(overlay: Overlay): OverlayBadge[] {

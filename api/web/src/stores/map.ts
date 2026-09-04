@@ -31,6 +31,7 @@ import { WorkerMessageType, LocationState } from '../utils/events.ts';
 import type { WorkerMessage } from '../utils/events.ts';
 import Overlay from '../base/overlay-class.ts';
 import OverlayManager from '../base/overlay.ts';
+import { invalidateOfflinePMTiles } from './modules/pmtiles.ts';
 import { FeatureVisibility } from './modules/feature-visibility.ts';
 import Subscription from '../base/subscription.ts';
 import { stdurl, getRuntimeToken, serverUrl } from '../std.js';
@@ -163,6 +164,8 @@ export const useMapStore = defineStore('cloudtak', {
         container?: HTMLElement;
         hasSnapping: boolean;
         hasNoChannels: boolean;
+        // Profile asset ids with a complete PMTiles archive cached in OPFS
+        offlineTiles: Set<string>;
         channelChange: boolean;
         // Is the map ready to be shown to users
         isMapLoaded: boolean;
@@ -224,6 +227,7 @@ export const useMapStore = defineStore('cloudtak', {
             locked: [],
             terrainEnabled: false,
             hasNoChannels: false,
+            offlineTiles: new Set<string>(),
             channelChange: false,
             isOpen: false,
             isMapLoaded: false,
@@ -962,6 +966,12 @@ export const useMapStore = defineStore('cloudtak', {
             await this._workerReady!;
             await this.worker.init(token || '');
 
+            try {
+                this.offlineTiles = new Set(await this.worker.tiles.list());
+            } catch (err) {
+                console.warn('Failed to list offline tiles', err);
+            }
+
             this.channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
                 const msg = event.data;
 
@@ -1040,6 +1050,17 @@ export const useMapStore = defineStore('cloudtak', {
                         this.icons.purgeIconsets(body.purge);
                         this.icons.purgeFallbacks(body.added);
                     }
+                } else if (msg.type === WorkerMessageType.Tiles_Downloaded || msg.type === WorkerMessageType.Tiles_Removed) {
+                    const asset = String(msg.body.asset);
+                    invalidateOfflinePMTiles(asset);
+
+                    const offline = new Set(this.offlineTiles);
+                    if (msg.type === WorkerMessageType.Tiles_Downloaded) {
+                        offline.add(asset);
+                    } else {
+                        offline.delete(asset);
+                    }
+                    this.offlineTiles = offline;
                 }
             }
 

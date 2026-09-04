@@ -4,55 +4,52 @@
 
 import type Atlas from './atlas.ts';
 import { stdurl } from '../std.ts';
+import KV from '../base/kv.ts';
+import { WorkerMessageType } from '../utils/events.ts';
+import {
+    offlineTilesDirectory,
+    offlineTilesFileName,
+    offlineTilesSizeKey,
+    hasCompleteOfflineTiles,
+} from '../utils/offline-tiles.ts';
 
 export type TilesProgress = (percent: number) => void;
 
 export default class AtlasTiles {
     atlas: Atlas;
 
-    static DIR = 'pmtiles';
-
     constructor(atlas: Atlas) {
         this.atlas = atlas;
     }
 
-    private static fileName(assetId: string): string {
-        return `${assetId}.pmtiles`;
-    }
-
-    private async directory(): Promise<FileSystemDirectoryHandle> {
-        if (!navigator.storage?.getDirectory) {
-            throw new Error('Offline storage is not supported on this device');
-        }
-
-        const root = await navigator.storage.getDirectory();
-        return await root.getDirectoryHandle(AtlasTiles.DIR, { create: true });
-    }
-
     async has(assetId: string): Promise<boolean> {
-        try {
-            const dir = await this.directory();
-            await dir.getFileHandle(AtlasTiles.fileName(assetId));
-            return true;
-        } catch {
-            return false;
-        }
+        return await hasCompleteOfflineTiles(assetId);
     }
 
     async list(): Promise<string[]> {
-        const dir = await this.directory();
+        const dir = await offlineTilesDirectory();
         const ids: string[] = [];
 
         for await (const name of dir.keys()) {
-            if (name.endsWith('.pmtiles')) ids.push(name.slice(0, -'.pmtiles'.length));
+            if (!name.endsWith('.pmtiles')) continue;
+
+            const id = name.slice(0, -'.pmtiles'.length);
+            if (await hasCompleteOfflineTiles(id)) ids.push(id);
         }
 
         return ids;
     }
 
     async remove(assetId: string): Promise<void> {
-        const dir = await this.directory();
-        await dir.removeEntry(AtlasTiles.fileName(assetId));
+        await KV.delete(offlineTilesSizeKey(assetId));
+
+        const dir = await offlineTilesDirectory();
+        await dir.removeEntry(offlineTilesFileName(assetId)).catch(() => undefined);
+
+        await this.atlas.postMessage({
+            type: WorkerMessageType.Tiles_Removed,
+            body: { asset: assetId }
+        });
     }
 
     async download(assetId: string, onProgress?: TilesProgress): Promise<void> {
@@ -68,8 +65,10 @@ export default class AtlasTiles {
 
         const total = Number(res.headers.get('Content-Length')) || 0;
 
-        const dir = await this.directory();
-        const name = AtlasTiles.fileName(assetId);
+        await KV.delete(offlineTilesSizeKey(assetId));
+
+        const dir = await offlineTilesDirectory();
+        const name = offlineTilesFileName(assetId);
         const handle = await dir.getFileHandle(name, { create: true });
         const access = await handle.createSyncAccessHandle();
 
@@ -97,6 +96,13 @@ export default class AtlasTiles {
         }
 
         access.close();
+
+        await KV.generate(offlineTilesSizeKey(assetId), String(received));
         if (onProgress) onProgress(1);
+
+        await this.atlas.postMessage({
+            type: WorkerMessageType.Tiles_Downloaded,
+            body: { asset: assetId }
+        });
     }
 }

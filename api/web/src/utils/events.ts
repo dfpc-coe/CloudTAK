@@ -38,6 +38,9 @@ export enum WorkerMessageType {
 
     Iconset_Change = 'cloudtak:iconset:change',
 
+    Tiles_Downloaded = 'cloudtak:tiles:downloaded',
+    Tiles_Removed = 'cloudtak:tiles:removed',
+
     VideoWall_Ping = 'cloudtak:videowall:ping',
     VideoWall_Pong = 'cloudtak:videowall:pong',
     VideoWall_Refresh = 'cloudtak:videowall:refresh',
