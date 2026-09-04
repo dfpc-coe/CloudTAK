@@ -24,7 +24,7 @@ import COT from '../base/cot.ts';
 import KV from '../base/kv.ts';
 import GeolocateControl from '../lib/geolocate/main.ts';
 import RoutingControl from '../lib/routing/main.ts';
-import type { NavigationState, NavigationDirection } from '../lib/routing/main.ts';
+import type { NavigationState, NavigationDirection, NavigationMode } from '../lib/routing/main.ts';
 import { syncPushToken } from '../base/push.ts';
 import { normalizePointType } from '../utils/point-type.ts';
 import { WorkerMessageType, LocationState } from '../utils/events.ts';
@@ -48,6 +48,7 @@ import { db, recoverDatabase } from '../database.ts';
 import type { ProfileOverlay, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource, LayerSpecification, PropertyValueSpecification } from 'maplibre-gl';
 import type { Position } from '@capacitor/geolocation';
+import type { Position as GeoJSONPosition } from 'geojson';
 
 const finiteOrNull = (value: unknown): number | null => {
     return typeof value === 'number' && Number.isFinite(value) ? value : null;
@@ -146,6 +147,8 @@ export const useMapStore = defineStore('cloudtak', {
             cotId: string | null;
             callsign: string | null;
             direction: NavigationDirection;
+            mode: NavigationMode;
+            destination: GeoJSONPosition | null;
             state: NavigationState | null;
         };
         distanceUnit: string;
@@ -223,6 +226,8 @@ export const useMapStore = defineStore('cloudtak', {
                 cotId: null,
                 callsign: null,
                 direction: 'forward',
+                mode: 'route',
+                destination: null,
                 state: null
             },
             hasSnapping: false,
@@ -390,27 +395,50 @@ export const useMapStore = defineStore('cloudtak', {
             if (!control) return;
 
             const cot = await this.worker.db.get(cotId, { mission: true });
-            if (!cot) throw new Error('Unable to load Route for navigation');
-
-            if (!cot.is_route) {
-                throw new Error('Navigation is only supported for Route (b-m-r LineString) features');
-            }
+            if (!cot) throw new Error('Unable to load feature for navigation');
 
             const feature = cot.as_feature();
 
-            control.setRoute({
-                type: 'Feature',
-                properties: {},
-                geometry: feature.geometry as import('geojson').LineString
-            });
+            if (feature.geometry.type === 'Point') {
+                control.setDestination(feature.geometry.coordinates);
+            } else if (cot.is_route) {
+                control.setRoute({
+                    type: 'Feature',
+                    properties: {},
+                    geometry: feature.geometry as import('geojson').LineString
+                });
+            } else {
+                throw new Error('Navigation is only supported for Point and Route (b-m-r LineString) features');
+            }
 
+            this.commitNavigation(control, cotId, feature.properties.callsign);
+        },
+        // Navigate straight-line to an arbitrary coordinate that is not backed
+        // by a CoT (Overlay/Basemap features, Query Mode coordinates)
+        navigateTo: function(destination: GeoJSONPosition, callsign?: string) {
+            const control = this.routingControl();
+            if (!control) return;
+
+            control.setDestination(destination);
+
+            this.commitNavigation(control, null, callsign);
+        },
+        commitNavigation: function(control: RoutingControl, cotId: string | null, callsign?: string) {
             this.navigation.active = true;
             this.navigation.cotId = cotId;
-            this.navigation.callsign = feature.properties.callsign || 'Route';
+            this.navigation.mode = control.getMode() || 'route';
+            this.navigation.destination = control.getDestination();
+            this.navigation.callsign = callsign
+                || (this.navigation.mode === 'point' ? 'Destination' : 'Route');
             this.navigation.direction = control.getDirection();
 
-            KV.update('routing::cotId', cotId)
-                .catch((err) => console.warn('Failed to persist navigation cotId', err));
+            if (cotId) {
+                KV.update('routing::cotId', cotId)
+                    .catch((err) => console.warn('Failed to persist navigation cotId', err));
+            } else {
+                KV.delete('routing::cotId')
+                    .catch((err) => console.warn('Failed to remove persisted navigation cotId', err));
+            }
             KV.update('routing::callsign', this.navigation.callsign)
                 .catch((err) => console.warn('Failed to persist navigation callsign', err));
 
@@ -426,19 +454,24 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.navigation.active = true;
             this.navigation.cotId = (await KV.value('routing::cotId')) || null;
-            this.navigation.callsign = (await KV.value('routing::callsign')) || 'Route';
+            this.navigation.mode = control.getMode() || 'route';
+            this.navigation.destination = control.getDestination();
+            this.navigation.callsign = (await KV.value('routing::callsign'))
+                || (this.navigation.mode === 'point' ? 'Destination' : 'Route');
             this.navigation.direction = control.getDirection();
 
             this.syncRoutingControl();
         },
         stopNavigation: function() {
             const control = this.routingControl();
-            if (control) control.setRoute(null);
+            if (control) control.clear();
 
             this.navigation.active = false;
             this.navigation.cotId = null;
             this.navigation.callsign = null;
             this.navigation.direction = 'forward';
+            this.navigation.mode = 'route';
+            this.navigation.destination = null;
             this.navigation.state = null;
 
             KV.delete('routing::cotId')
@@ -448,7 +481,7 @@ export const useMapStore = defineStore('cloudtak', {
         },
         reverseNavigation: function() {
             const control = this.routingControl();
-            if (!control || !this.navigation.active) return;
+            if (!control || !this.navigation.active || this.navigation.mode === 'point') return;
 
             control.reverse();
             this.navigation.direction = control.getDirection();

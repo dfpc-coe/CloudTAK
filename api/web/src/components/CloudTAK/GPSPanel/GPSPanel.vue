@@ -1,12 +1,11 @@
 <template>
     <div
-        class='position-absolute cloudtak-panel d-flex flex-column justify-content-center text-white user-select-none gps-panel px-3 py-2'
+        class='position-absolute cloudtak-panel d-flex flex-column justify-content-center text-white user-select-none gps-panel'
         :title='locationTooltip'
     >
         <div class='d-flex align-items-center gap-2'>
             <span
-                class='flex-grow-1 text-truncate fw-semibold cursor-pointer'
-                style='font-size: 1.05rem; line-height: 1.3;'
+                class='flex-grow-1 text-truncate fw-semibold cursor-pointer gps-panel-callsign'
                 title='Zoom To Location'
                 @click='$emit("to-location")'
             >{{ mapStore.callsign }}</span>
@@ -144,13 +143,19 @@ const headingText = computed(() => {
 <style scoped>
 .gps-panel {
     z-index: 5;
-    left: 8px;
-    bottom: 8px;
+    left: calc(8px + env(safe-area-inset-left, 0px));
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
     height: var(--map-gps-panel-size, 110px);
     width: fit-content;
     min-width: 220px;
-    max-width: calc(100vw - 16px);
+    max-width: calc(100vw - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    padding: 0.5rem 1rem;
     overflow: visible;
+}
+
+.gps-panel-callsign {
+    font-size: 1.05rem;
+    line-height: 1.3;
 }
 
 .gps-panel-row {
@@ -160,7 +165,19 @@ const headingText = computed(() => {
 
 @media (max-width: 600px) {
     .gps-panel {
-        max-width: calc(100vw - 70px);
+        min-width: 180px;
+        max-width: calc(100vw - 70px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+        padding: 0.25rem 0.75rem;
+    }
+
+    .gps-panel-callsign {
+        font-size: 0.9rem;
+        line-height: 1.2;
+    }
+
+    .gps-panel-row {
+        font-size: 0.75rem;
+        line-height: 1.25;
     }
 }
 </style>

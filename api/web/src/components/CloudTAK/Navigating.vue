@@ -3,7 +3,14 @@
         class='cloudtak-navigating cloudtak-panel user-select-none'
     >
         <div class='d-flex align-items-center px-3 py-2 gap-2'>
+            <IconMapPin
+                v-if='mapStore.navigation.mode === "point"'
+                :size='28'
+                stroke='1.5'
+                class='flex-shrink-0'
+            />
             <IconRoute
+                v-else
                 :size='28'
                 stroke='1.5'
                 class='flex-shrink-0'
@@ -16,7 +23,7 @@
                 <div class='d-flex align-items-center gap-2'>
                     <span
                         class='fw-bold text-truncate'
-                        v-text='mapStore.navigation.callsign || "Route"'
+                        v-text='mapStore.navigation.callsign || (mapStore.navigation.mode === "point" ? "Destination" : "Route")'
                     />
                 </div>
                 <div class='small text-secondary'>
@@ -62,7 +69,7 @@
 
             <div class='d-flex align-items-center gap-1 flex-shrink-0'>
                 <TablerIconButton
-                    title='Zoom to Route'
+                    :title='mapStore.navigation.mode === "point" ? "Zoom to Destination" : "Zoom to Route"'
                     @click='zoomToRoute'
                 >
                     <IconZoomPan
@@ -71,6 +78,7 @@
                     />
                 </TablerIconButton>
                 <TablerIconButton
+                    v-if='mapStore.navigation.mode !== "point"'
                     title='Reverse Direction'
                     @click='mapStore.reverseNavigation()'
                 >
@@ -95,8 +103,10 @@
 
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
+import type { LngLatLike } from 'maplibre-gl';
 import {
     IconRoute,
+    IconMapPin,
     IconX,
     IconZoomPan,
     IconArrowsExchange,
@@ -179,12 +189,18 @@ const etaDisplay = computed(() => {
 });
 
 async function zoomToRoute() {
-    if (!mapStore.navigation.cotId) return;
     try {
-        const cot = await mapStore.worker.db.get(mapStore.navigation.cotId);
-        if (cot) await cot.flyTo();
+        if (mapStore.navigation.cotId) {
+            const cot = await mapStore.worker.db.get(mapStore.navigation.cotId);
+            if (cot) await cot.flyTo();
+        } else if (mapStore.navigation.destination) {
+            mapStore.map.flyTo({
+                center: mapStore.navigation.destination as LngLatLike,
+                zoom: 14
+            });
+        }
     } catch (err) {
-        console.error('Failed to zoom to route', err);
+        console.error('Failed to zoom to navigation target', err);
     }
 }
 </script>

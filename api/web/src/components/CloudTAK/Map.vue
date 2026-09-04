@@ -1,11 +1,10 @@
 <template>
     <div
-        class='d-flex position-relative'
+        class='d-flex position-relative map-shell'
         style='height: calc(100vh) !important;'
         :style='{
             "--map-side-offset": `${mapSideOffset}px`,
-            "--map-compact-menu-size": "60px",
-            "--map-gps-panel-size": "110px"
+            "--map-compact-menu-size": "60px"
         }'
         data-bs-theme-base='neutral'
         data-bs-theme-primary='blue'
@@ -104,8 +103,8 @@
                 v-if='mapStore.selected.size'
                 class='position-absolute'
                 style='
-                    bottom: calc(var(--map-gps-panel-size, 110px) + 16px);
-                    left: 8px;
+                    bottom: calc(var(--map-gps-panel-size, 110px) + 16px + var(--map-bottom-inset, 0px));
+                    left: calc(8px + env(safe-area-inset-left, 0px));
                 '
             >
                 <SelectFeats :selected='mapStore.selected' />
@@ -379,8 +378,8 @@
                 class='position-absolute'
                 style='
                     z-index: 4;
-                    bottom: 0;
-                    right: 0;
+                    bottom: var(--map-bottom-inset, 0px);
+                    right: env(safe-area-inset-right, 0px);
                     padding: 8px;
                 '
             >
@@ -1146,9 +1145,14 @@ html[data-bs-theme='light'] .cloudtak-ctrl-btn:focus-within {
     bottom: 1px;
 }
 
+.map-shell {
+    --map-gps-panel-size: 110px;
+    --map-bottom-inset: env(safe-area-inset-bottom, 0px);
+}
+
 .maplibregl-ctrl-bottom-left {
-    bottom: calc(var(--map-gps-panel-size, 110px) + 12px);
-    left: 8px;
+    bottom: calc(var(--map-gps-panel-size, 110px) + 12px + var(--map-bottom-inset, 0px));
+    left: calc(8px + env(safe-area-inset-left, 0px));
     right: auto;
     margin: 0;
     z-index: 3 !important;
@@ -1156,8 +1160,8 @@ html[data-bs-theme='light'] .cloudtak-ctrl-btn:focus-within {
 }
 
 .maplibregl-ctrl-bottom-right {
-    bottom: 4px;
-    right: calc(var(--map-side-offset, 0px) + 8px);
+    bottom: calc(4px + var(--map-bottom-inset, 0px));
+    right: calc(var(--map-side-offset, 0px) + 8px + env(safe-area-inset-right, 0px));
     left: auto;
     z-index: 3 !important;
     color: black !important;
@@ -1184,12 +1188,16 @@ html[data-bs-theme='light'] .use-gps-btn {
 }
 
 @media (max-width: 600px) {
+    .map-shell {
+        --map-gps-panel-size: 84px;
+    }
+
     .maplibregl-ctrl-bottom-left {
-        left: 4px;
+        left: calc(4px + env(safe-area-inset-left, 0px));
     }
 
     .maplibregl-ctrl-bottom-right {
-        right: 58px;
+        right: calc(58px + env(safe-area-inset-right, 0px));
     }
 }
 </style>

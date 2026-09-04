@@ -89,7 +89,7 @@
                     </TablerIconButton>
 
                     <TablerIconButton
-                        v-if='cot.is_route'
+                        v-if='cot.is_route || cot.geometry.type === "Point"'
                         :title='isNavigating ? "End Navigation" : "Navigate"'
                         @click='toggleNavigation'
                     >

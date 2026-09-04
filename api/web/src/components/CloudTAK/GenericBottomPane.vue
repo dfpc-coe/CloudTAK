@@ -11,7 +11,7 @@
 .generic-bottom-pane {
     position: absolute;
     z-index: 5;
-    bottom: 8px;
+    bottom: calc(8px + var(--map-bottom-inset, 0px));
     left: calc(50% - 250px);
     width: 500px;
 }

@@ -17,8 +17,8 @@
                         stroke='1'
                     />
                     <span
-                        class='text-truncate'
-                        style='font-size: 0.95rem; line-height: 1.4; font-variant-numeric: tabular-nums;'
+                        class='text-truncate gps-panel-coordinates'
+                        style='font-variant-numeric: tabular-nums;'
                         data-test='coordinates'
                     >{{ formattedCoord }}</span>
                 </div>
@@ -213,3 +213,17 @@ const formattedCoord = computed(() => {
 });
 
 </script>
+
+<style scoped>
+.gps-panel-coordinates {
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+@media (max-width: 600px) {
+    .gps-panel-coordinates {
+        font-size: 0.8rem;
+        line-height: 1.25;
+    }
+}
+</style>
