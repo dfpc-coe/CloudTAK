@@ -78,7 +78,7 @@
         v-else
         class='w-100 px-0 d-flex flex-column overflow-hidden'
         :class='standalone ? "" : "flex-grow-1"'
-        :style='standalone ? "height: calc(100vh - 64px); max-height: 100%;" : "min-height: 0"'
+        :style='standalone ? "height: 100%; max-height: 100%;" : "min-height: 0"'
     >
         <div
             class='col-12 cloudtak-header flex-shrink-0'
