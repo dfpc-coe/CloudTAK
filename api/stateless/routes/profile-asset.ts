@@ -6,10 +6,9 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import S3 from '../../common/aws/s3.js';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { ProfileFile, ProfileFileChannel } from '../../common/schema.js';
 import type ConfigStateless from '../config.js';
-import activeChannels from '../lib/tak-channels.js';
+import { userChannels } from '../lib/tak-channels.js';
 import { profileAssetTileJSON } from '../lib/tilejson.js';
 import * as Default from '../lib/limits.js';
 
@@ -22,9 +21,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             throw new Err(403, null, 'You do not have permission to view this asset');
         }
 
-        const profile = await config.models.Profile.from(email);
-        const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
-        const active = await activeChannels(api);
+        const active = await userChannels(config, email);
 
         if (!fileChannels.some(bp => active.has(bp))) {
             throw new Err(403, null, 'You do not have permission to view this asset');
@@ -71,9 +68,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            const profile = await config.models.Profile.from(user.email);
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
-            const channels = [...await activeChannels(api)];
+            const channels = [...await userChannels(config, user.email)];
             const where = channels.length
                 ? sql`
                     name ~* ${req.query.filter}
