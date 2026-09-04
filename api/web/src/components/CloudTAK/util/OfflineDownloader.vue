@@ -79,7 +79,9 @@ async function download() {
     error.value = null;
 
     try {
-        await mapStore.worker.tiles.download(props.asset.id, Comlink.proxy((percent: number) => {
+        const expectedSize = props.asset.artifacts.find((artifact) => artifact.ext === '.pmtiles')?.size;
+
+        await mapStore.worker.tiles.download(props.asset.id, expectedSize, Comlink.proxy((percent: number) => {
             progress.value = percent;
         }));
 

@@ -252,6 +252,8 @@ test('GET: api/profile/asset/:asset.:ext - channel shared file is downloadable',
 
             return Promise.resolve({
                 Body: Readable.from(['shared-body']),
+                ContentLength: 11,
+                ContentType: 'application/zip',
             });
         });
 
@@ -265,6 +267,8 @@ test('GET: api/profile/asset/:asset.:ext - channel shared file is downloadable',
         });
 
         assert.equal(res.status, 200);
+        assert.equal(res.headers.get('content-length'), '11');
+        assert.equal(res.headers.get('content-type'), 'application/zip');
         assert.equal(res.body, 'shared-body');
     } catch (err) {
         assert.ifError(err);

@@ -52,7 +52,7 @@ export default class AtlasTiles {
         });
     }
 
-    async download(assetId: string, onProgress?: TilesProgress): Promise<void> {
+    async download(assetId: string, expectedSize?: number, onProgress?: TilesProgress): Promise<void> {
         const url = stdurl(`/api/profile/asset/${assetId}.pmtiles`);
 
         const res = await fetch(url, {
@@ -63,7 +63,7 @@ export default class AtlasTiles {
             throw new Error(`Download failed (${res.status})`);
         }
 
-        const total = Number(res.headers.get('Content-Length')) || 0;
+        const total = Number(res.headers.get('Content-Length')) || expectedSize || 0;
 
         await KV.delete(offlineTilesSizeKey(assetId));
 

@@ -306,9 +306,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             await ensureReadPermission(file, user.email);
 
-            const stream = await S3.get(`profile/${file.username}/${req.params.asset}.${req.params.ext}`);
+            const object = await S3.getObject(`profile/${file.username}/${req.params.asset}.${req.params.ext}`);
 
-            stream.pipe(res);
+            if (object.contentLength !== undefined) res.set('Content-Length', String(object.contentLength));
+            if (object.contentType) res.set('Content-Type', object.contentType);
+
+            object.body.pipe(res);
         } catch (err) {
             Err.respond(err, res);
         }
