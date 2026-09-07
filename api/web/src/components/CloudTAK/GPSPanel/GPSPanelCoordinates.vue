@@ -216,14 +216,7 @@ const formattedCoord = computed(() => {
 
 <style scoped>
 .gps-panel-coordinates {
-    font-size: 0.95rem;
-    line-height: 1.4;
-}
-
-@media (max-width: 600px) {
-    .gps-panel-coordinates {
-        font-size: 0.8rem;
-        line-height: 1.25;
-    }
+    font-size: 0.8rem;
+    line-height: 1.25;
 }
 </style>

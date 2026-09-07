@@ -21,6 +21,12 @@ vi.mock('../../../stores/map.ts', () => ({
     useMapStore: () => store
 }));
 
+const appStore = reactive({ isMobileDetected: false });
+
+vi.mock('../../../stores/app.ts', () => ({
+    useAppStore: () => appStore
+}));
+
 import GPSPanel from './GPSPanel.vue';
 
 function mountPanel(mode = 'Default') {
@@ -86,7 +92,22 @@ describe('GPSPanel', () => {
         await wrapper.find('.fw-semibold').trigger('click');
         expect(wrapper.emitted('to-location')).toHaveLength(1);
 
+        await wrapper.find('[data-test="speed"]').trigger('click');
+        expect(wrapper.emitted('to-location')).toHaveLength(2);
+
         await wrapper.find('[data-test="set-location"]').trigger('click');
         expect(wrapper.emitted('set-location')).toHaveLength(1);
+        expect(wrapper.emitted('to-location')).toHaveLength(2);
+    });
+
+    it('hides on mobile while setting location', () => {
+        appStore.isMobileDetected = true;
+
+        expect(mountPanel('SetLocation').find('.gps-panel').exists()).toBe(false);
+        expect(mountPanel('Default').find('.gps-panel').exists()).toBe(true);
+
+        appStore.isMobileDetected = false;
+
+        expect(mountPanel('SetLocation').find('.gps-panel').exists()).toBe(true);
     });
 });

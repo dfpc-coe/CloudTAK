@@ -1,61 +1,67 @@
 <template>
     <div
+        v-if='!(appStore.isMobileDetected && mode === "SetLocation")'
         class='position-absolute cloudtak-panel d-flex flex-column justify-content-center text-white user-select-none gps-panel'
         :title='locationTooltip'
     >
-        <div class='d-flex align-items-center gap-2'>
-            <span
-                class='flex-grow-1 text-truncate fw-semibold cursor-pointer gps-panel-callsign'
-                title='Zoom To Location'
-                @click='$emit("to-location")'
-            >{{ mapStore.callsign }}</span>
+        <div
+            class='cursor-pointer'
+            title='Zoom To Location'
+            data-test='to-location'
+            @click='$emit("to-location")'
+        >
+            <div class='d-flex align-items-center gap-2'>
+                <span
+                    class='flex-grow-1 text-truncate fw-semibold gps-panel-callsign'
+                >{{ mapStore.callsign }}</span>
 
-            <TablerIconButton
-                :title='locationTooltip'
-                :hover='false'
-                class='flex-shrink-0'
-                data-test='set-location'
-                @click='$emit("set-location")'
+                <TablerIconButton
+                    :title='locationTooltip'
+                    :hover='false'
+                    class='flex-shrink-0'
+                    data-test='set-location'
+                    @click.stop='$emit("set-location")'
+                >
+                    <IconLocation
+                        v-if='mapStore.location === LocationState.Live'
+                        :size='18'
+                        stroke='1'
+                        :color='locationColor'
+                    />
+                    <IconLocationPin
+                        v-else-if='mapStore.location === LocationState.Preset'
+                        :size='18'
+                        stroke='1'
+                    />
+                    <IconLocationOff
+                        v-else
+                        :size='18'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+            </div>
+
+            <div
+                class='d-flex justify-content-between gap-3 gps-panel-row'
+                style='font-variant-numeric: tabular-nums;'
             >
-                <IconLocation
-                    v-if='mapStore.location === LocationState.Live'
-                    :size='18'
-                    stroke='1'
-                    :color='locationColor'
-                />
-                <IconLocationPin
-                    v-else-if='mapStore.location === LocationState.Preset'
-                    :size='18'
-                    stroke='1'
-                />
-                <IconLocationOff
-                    v-else
-                    :size='18'
-                    stroke='1'
-                />
-            </TablerIconButton>
+                <span data-test='altitude'>{{ altitudeText }}</span>
+                <span
+                    data-test='accuracy'
+                    class='text-white-50'
+                >{{ accuracyText }}</span>
+            </div>
+
+            <div
+                class='d-flex justify-content-between gap-3 gps-panel-row'
+                style='font-variant-numeric: tabular-nums;'
+            >
+                <span data-test='speed'>{{ speedText }}</span>
+                <span data-test='heading'>{{ headingText }}</span>
+            </div>
         </div>
 
         <GPSPanelCoordinates />
-
-        <div
-            class='d-flex justify-content-between gap-3 gps-panel-row'
-            style='font-variant-numeric: tabular-nums;'
-        >
-            <span data-test='altitude'>{{ altitudeText }}</span>
-            <span
-                data-test='accuracy'
-                class='text-white-50'
-            >{{ accuracyText }}</span>
-        </div>
-
-        <div
-            class='d-flex justify-content-between gap-3 gps-panel-row'
-            style='font-variant-numeric: tabular-nums;'
-        >
-            <span data-test='speed'>{{ speedText }}</span>
-            <span data-test='heading'>{{ headingText }}</span>
-        </div>
     </div>
 </template>
 
@@ -63,6 +69,7 @@
 import { computed } from 'vue';
 import { LocationState } from '../../../utils/events.ts';
 import { useMapStore } from '../../../stores/map.ts';
+import { useAppStore } from '../../../stores/app.ts';
 import { TablerIconButton } from '@tak-ps/vue-tabler';
 import {
     IconLocation,
@@ -78,6 +85,7 @@ const props = defineProps<{
 defineEmits(['set-location', 'to-location']);
 
 const mapStore = useMapStore();
+const appStore = useAppStore();
 
 const isLive = computed(() => {
     return mapStore.location === LocationState.Live && !mapStore.manualLocationMode;
@@ -145,39 +153,27 @@ const headingText = computed(() => {
     z-index: 5;
     left: calc(8px + env(safe-area-inset-left, 0px));
     bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-    height: var(--map-gps-panel-size, 110px);
+    height: var(--map-gps-panel-size, 84px);
     width: fit-content;
-    min-width: 220px;
+    min-width: 180px;
     max-width: calc(100vw - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
-    padding: 0.5rem 1rem;
+    padding: 0.25rem 0.75rem;
     overflow: visible;
 }
 
 .gps-panel-callsign {
-    font-size: 1.05rem;
-    line-height: 1.3;
+    font-size: 0.9rem;
+    line-height: 1.2;
 }
 
 .gps-panel-row {
-    font-size: 0.9rem;
-    line-height: 1.4;
+    font-size: 0.75rem;
+    line-height: 1.25;
 }
 
 @media (max-width: 600px) {
     .gps-panel {
-        min-width: 180px;
         max-width: calc(100vw - 70px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
-        padding: 0.25rem 0.75rem;
-    }
-
-    .gps-panel-callsign {
-        font-size: 0.9rem;
-        line-height: 1.2;
-    }
-
-    .gps-panel-row {
-        font-size: 0.75rem;
-        line-height: 1.25;
     }
 }
 </style>

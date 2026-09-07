@@ -103,7 +103,7 @@
                 v-if='mapStore.selected.size'
                 class='position-absolute'
                 style='
-                    bottom: calc(var(--map-gps-panel-size, 110px) + 16px + var(--map-bottom-inset, 0px));
+                    bottom: calc(var(--map-gps-panel-size, 84px) + 16px + var(--map-bottom-inset, 0px));
                     left: calc(8px + env(safe-area-inset-left, 0px));
                 '
             >
@@ -1146,12 +1146,12 @@ html[data-bs-theme='light'] .cloudtak-ctrl-btn:focus-within {
 }
 
 .map-shell {
-    --map-gps-panel-size: 110px;
+    --map-gps-panel-size: 84px;
     --map-bottom-inset: env(safe-area-inset-bottom, 0px);
 }
 
 .maplibregl-ctrl-bottom-left {
-    bottom: calc(var(--map-gps-panel-size, 110px) + 12px + var(--map-bottom-inset, 0px));
+    bottom: calc(var(--map-gps-panel-size, 84px) + 12px + var(--map-bottom-inset, 0px));
     left: calc(8px + env(safe-area-inset-left, 0px));
     right: auto;
     margin: 0;
@@ -1188,10 +1188,6 @@ html[data-bs-theme='light'] .use-gps-btn {
 }
 
 @media (max-width: 600px) {
-    .map-shell {
-        --map-gps-panel-size: 84px;
-    }
-
     .maplibregl-ctrl-bottom-left {
         left: calc(4px + env(safe-area-inset-left, 0px));
     }

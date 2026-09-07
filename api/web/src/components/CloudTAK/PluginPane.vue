@@ -40,7 +40,7 @@ const pluginItems = computed(() => {
 
 @media (max-width: 600px) {
     .plugin-pane {
-        bottom: calc(var(--map-gps-panel-size, 110px) + 16px + var(--map-bottom-inset, 0px));
+        bottom: calc(var(--map-gps-panel-size, 84px) + 16px + var(--map-bottom-inset, 0px));
     }
 }
 </style>
