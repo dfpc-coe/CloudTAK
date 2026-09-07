@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.79.1 - 2026-09-07
+
+- :bug: More resilient location reporting after background resume on iOS
+
 ### v13.79.0 - 2026-09-07
 
 - :tada: Prelim offline file support
