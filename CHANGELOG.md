@@ -17,6 +17,9 @@
 
 ### Pending Release
 
+### v13.79.0 - 2026-09-07
+
+- :tada: Prelim offline file support
 - :tada: Navigation now supports Point features - the `Navigate` button appears on Point CoTs and the routing control draws a straight line from the user's location to the destination, updated as the location changes. The `Reverse Direction` control is hidden in point mode
 - :tada: Add `Navigate` buttons to `FeatView` (Overlay/Basemap features) and `QueryView` (Query Mode coordinates) for straight-line navigation to non-CoT locations
 
