@@ -321,7 +321,7 @@ export const useMapStore = defineStore('cloudtak', {
             let batteryAt = 0;
 
             await deviceStore.geolocation.startWatch(async (position: Position) => {
-                if (this.manualLocationMode) return;
+                if (this.manualLocationMode || this.location === LocationState.Preset) return;
 
                 this.locationAccuracy = position.coords.accuracy;
                 this.gpsCoordinates = {
@@ -331,6 +331,11 @@ export const useMapStore = defineStore('cloudtak', {
                 this.gpsSpeed = finiteOrNull(position.coords.speed);
                 this.gpsAltitude = finiteOrNull(position.coords.altitude);
                 this.gpsHeading = finiteOrNull(position.coords.heading);
+                this.location = LocationState.Live;
+
+                // Drive the puck from the fix itself rather than waiting on the
+                // worker to echo Profile_Location_Source back over the channel
+                this.syncGeolocateControl();
                 this.syncRoutingControl();
 
                 // Battery state rides along with each location broadcast so the
