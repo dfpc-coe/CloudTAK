@@ -84,6 +84,29 @@ export default class S3 {
         }
     }
 
+    static async getObject(key: string): Promise<{
+        body: Readable;
+        contentLength?: number;
+        contentType?: string;
+    }> {
+        try {
+            const s3 = this.#client();
+
+            const res = await s3.send(new S3AWS.GetObjectCommand({
+                Bucket: process.env.ASSET_BUCKET,
+                Key: key,
+            }));
+
+            return {
+                body: res.Body as Readable,
+                contentLength: res.ContentLength,
+                contentType: res.ContentType,
+            };
+        } catch (err) {
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to get file');
+        }
+    }
+
     static async exists(key: string): Promise<boolean> {
         try {
             const s3 = this.#client();

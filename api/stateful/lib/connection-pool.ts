@@ -482,30 +482,36 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             await connClient.refreshChannels();
             await this.loadGeofences(connConfig);
 
-            for (const sub of await connConfig.subscriptions()) {
-                let retry = true;
-                do {
-                    try {
-                        await api.Mission.subscribe(sub.guid || sub.name, {
-                            uid: connConfig.uid(),
-                        }, {
-                            token: sub.token || undefined,
-                        });
+            // Async event listeners must not leak rejections - the pool may
+            // be closed while the subscription query is in flight
+            try {
+                for (const sub of await connConfig.subscriptions()) {
+                    let retry = true;
+                    do {
+                        try {
+                            await api.Mission.subscribe(sub.guid || sub.name, {
+                                uid: connConfig.uid(),
+                            }, {
+                                token: sub.token || undefined,
+                            });
 
-                        console.log(`Connection: ${connConfig.id} - Sync: ${sub.name}: Subscribed!`);
-                        retry = false;
-                    } catch (err) {
-                        console.warn(`Connection: ${connConfig.id} (${connConfig.uid()}) - Sync: ${sub.name}: ${err instanceof Error ? err.message : String(err)}`);
-
-                        if (err instanceof Error && err.message.includes('ECONNREFUSED')) {
-                            await delay(1000);
-                        } else {
-                            // We don't retry for unknown issues as it could be the Sync has been remotely deleted and will
-                            // retry forwever
+                            console.log(`Connection: ${connConfig.id} - Sync: ${sub.name}: Subscribed!`);
                             retry = false;
+                        } catch (err) {
+                            console.warn(`Connection: ${connConfig.id} (${connConfig.uid()}) - Sync: ${sub.name}: ${err instanceof Error ? err.message : String(err)}`);
+
+                            if (err instanceof Error && err.message.includes('ECONNREFUSED')) {
+                                await delay(1000);
+                            } else {
+                                // We don't retry for unknown issues as it could be the Sync has been remotely deleted and will
+                                // retry forwever
+                                retry = false;
+                            }
                         }
-                    }
-                } while (retry);
+                    } while (retry);
+                }
+            } catch (err) {
+                console.error(`not ok - ${connConfig.id} - ${connConfig.name} - failed to load mission subscriptions: ${err instanceof Error ? err.message : String(err)}`);
             }
         }).on('close', async () => {
             connClient.secure = false;

@@ -6,6 +6,7 @@ import nearestPointOnLine from '@turf/nearest-point-on-line';
 import KV from '../../base/kv.ts';
 
 export type NavigationDirection = 'forward' | 'reverse';
+export type NavigationMode = 'route' | 'point';
 
 export interface NavigationState {
     /** Distance remaining along the route to the destination, in kilometers. */
@@ -20,6 +21,8 @@ export interface NavigationState {
     destination: Position;
     /** Which end of the route is the destination. */
     direction: NavigationDirection;
+    /** Whether navigating along a Route or straight-line to a Point. */
+    mode: NavigationMode;
 }
 
 export type RoutingControlOptions = {
@@ -29,6 +32,7 @@ export type RoutingControlOptions = {
 const SOURCE = 'cloudtak-routing';
 
 const KV_ROUTE = 'routing::route';
+const KV_DESTINATION = 'routing::destination';
 const KV_DIRECTION = 'routing::direction';
 
 // KV persistence is best-effort - a failed write must never break live
@@ -39,6 +43,12 @@ function kvPut(key: string, value: string): void {
 
 function kvDelete(key: string): void {
     KV.delete(key).catch((err) => console.warn(`Failed to remove persisted ${key}`, err));
+}
+
+function isPosition(pos: unknown): pos is Position {
+    return Array.isArray(pos)
+        && pos.length >= 2
+        && pos.every((n) => Number.isFinite(n));
 }
 
 const LAYER_ROUTE = 'cloudtak-routing-route-line';
@@ -60,6 +70,7 @@ export class RoutingControl implements IControl {
     private container?: HTMLElement;
 
     private route: Feature<LineString> | null = null;
+    private destination: Position | null = null;
     private location: { lng: number; lat: number } | null = null;
     private direction: NavigationDirection = 'forward';
     private state: NavigationState | null = null;
@@ -101,27 +112,61 @@ export class RoutingControl implements IControl {
     }
 
     get active(): boolean {
-        return this.route !== null;
+        return this.route !== null || this.destination !== null;
+    }
+
+    getMode(): NavigationMode | null {
+        if (this.route) return 'route';
+        if (this.destination) return 'point';
+        return null;
+    }
+
+    clear(): void {
+        this.route = null;
+        this.destination = null;
+        this.remainingLine = null;
+        this.connectorLine = null;
+        this.destinationPoint = null;
+        this.snappedPoint = null;
+        this.state = null;
+        this.teardownLayers();
+        kvDelete(KV_ROUTE);
+        kvDelete(KV_DESTINATION);
+        kvDelete(KV_DIRECTION);
+        this.options.onUpdate?.(null);
     }
 
     setRoute(route: Feature<LineString> | null): void {
         if (!route || route.geometry.type !== 'LineString' || route.geometry.coordinates.length < 2) {
-            this.route = null;
-            this.remainingLine = null;
-            this.connectorLine = null;
-            this.destinationPoint = null;
-            this.snappedPoint = null;
-            this.state = null;
-            this.teardownLayers();
-            kvDelete(KV_ROUTE);
-            kvDelete(KV_DIRECTION);
-            this.options.onUpdate?.(null);
+            this.clear();
             return;
         }
 
         this.route = turfLineString(route.geometry.coordinates, { role: 'route' });
+        this.destination = null;
         this.direction = 'forward';
+        kvDelete(KV_DESTINATION);
         kvPut(KV_ROUTE, JSON.stringify(route.geometry.coordinates));
+        kvPut(KV_DIRECTION, this.direction);
+        this.ensureLayers();
+        this.recompute();
+    }
+
+    /**
+     * Navigate straight-line to a single Point - the remaining line is redrawn
+     * from the user's current location to the destination on every update.
+     */
+    setDestination(destination: Position | null): void {
+        if (!isPosition(destination)) {
+            this.clear();
+            return;
+        }
+
+        this.destination = [destination[0], destination[1]];
+        this.route = null;
+        this.direction = 'forward';
+        kvDelete(KV_ROUTE);
+        kvPut(KV_DESTINATION, JSON.stringify(this.destination));
         kvPut(KV_DIRECTION, this.direction);
         this.ensureLayers();
         this.recompute();
@@ -133,32 +178,40 @@ export class RoutingControl implements IControl {
      * location updates via setLocation().
      */
     async restore(): Promise<boolean> {
-        if (this.route) return true;
+        if (this.active) return true;
 
-        const [routeVal, directionVal] = await Promise.all([
+        const [routeVal, destinationVal, directionVal] = await Promise.all([
             KV.value(KV_ROUTE),
+            KV.value(KV_DESTINATION),
             KV.value(KV_DIRECTION)
         ]);
 
-        if (!routeVal) return false;
+        if (!routeVal && !destinationVal) return false;
 
         try {
-            const coordinates = JSON.parse(routeVal) as Position[];
-            const valid = Array.isArray(coordinates)
-                && coordinates.length >= 2
-                && coordinates.every((pos) =>
-                    Array.isArray(pos)
-                    && pos.length >= 2
-                    && pos.every((n) => Number.isFinite(n)));
+            if (routeVal) {
+                const coordinates = JSON.parse(routeVal) as Position[];
+                const valid = Array.isArray(coordinates)
+                    && coordinates.length >= 2
+                    && coordinates.every(isPosition);
 
-            if (!valid) {
-                throw new Error('Persisted route must be a list of at least 2 finite [lng, lat] positions');
+                if (!valid) {
+                    throw new Error('Persisted route must be a list of at least 2 finite [lng, lat] positions');
+                }
+
+                this.route = turfLineString(coordinates, { role: 'route' });
+            } else if (destinationVal) {
+                const destination = JSON.parse(destinationVal) as Position;
+                if (!isPosition(destination)) {
+                    throw new Error('Persisted destination must be a finite [lng, lat] position');
+                }
+
+                this.destination = [destination[0], destination[1]];
             }
-
-            this.route = turfLineString(coordinates, { role: 'route' });
         } catch (err) {
-            console.warn('Discarding invalid persisted route', err);
+            console.warn('Discarding invalid persisted navigation', err);
             kvDelete(KV_ROUTE);
+            kvDelete(KV_DESTINATION);
             kvDelete(KV_DIRECTION);
             return false;
         }
@@ -175,7 +228,7 @@ export class RoutingControl implements IControl {
     }
 
     setDirection(direction: NavigationDirection): void {
-        if (this.direction === direction) return;
+        if (this.direction === direction || this.destination) return;
         this.direction = direction;
         if (this.route) kvPut(KV_DIRECTION, direction);
         this.recompute();
@@ -189,12 +242,16 @@ export class RoutingControl implements IControl {
         return this.direction;
     }
 
+    getDestination(): Position | null {
+        return this.destination;
+    }
+
     getState(): NavigationState | null {
         return this.state;
     }
 
     private recompute(): void {
-        if (!this.map || !this.route) return;
+        if (!this.map || !this.active) return;
 
         if (!this.location) {
             this.remainingLine = null;
@@ -207,8 +264,36 @@ export class RoutingControl implements IControl {
             return;
         }
 
+        const userCoord: Position = [this.location.lng, this.location.lat];
+
+        if (this.destination) {
+            this.remainingLine = turfLineString([userCoord, this.destination], { role: 'remaining' });
+            this.connectorLine = null;
+            this.destinationPoint = turfPoint(this.destination, { role: 'destination' });
+            this.snappedPoint = null;
+
+            const remaining = length(this.remainingLine, { units: 'kilometers' });
+
+            this.updateSource();
+
+            this.state = {
+                remaining,
+                offRoute: 0,
+                total: remaining,
+                snapped: userCoord,
+                destination: this.destination,
+                direction: this.direction,
+                mode: 'point'
+            };
+
+            this.options.onUpdate?.(this.state);
+            return;
+        }
+
+        if (!this.route) return;
+
         const coords = this.route.geometry.coordinates;
-        const userPoint = turfPoint([this.location.lng, this.location.lat]);
+        const userPoint = turfPoint(userCoord);
         const snapped = nearestPointOnLine(this.route, userPoint, { units: 'kilometers' }) as Feature<
             Point,
             { index: number; dist: number; location: number }
@@ -233,10 +318,7 @@ export class RoutingControl implements IControl {
         }
 
         this.remainingLine = turfLineString(remainingCoords, { role: 'remaining' });
-        this.connectorLine = turfLineString(
-            [[this.location.lng, this.location.lat], snapCoord],
-            { role: 'connector' }
-        );
+        this.connectorLine = turfLineString([userCoord, snapCoord], { role: 'connector' });
         this.destinationPoint = turfPoint(destination, { role: 'destination' });
         this.snappedPoint = turfPoint(snapCoord, { role: 'snapped' });
 
@@ -252,7 +334,8 @@ export class RoutingControl implements IControl {
             total,
             snapped: snapCoord,
             destination,
-            direction: this.direction
+            direction: this.direction,
+            mode: 'route'
         };
 
         this.options.onUpdate?.(this.state);
@@ -397,7 +480,7 @@ export class RoutingControl implements IControl {
     }
 
     private onStyleData = (): void => {
-        if (this.route && this.map && !this.map.getLayer(LAYER_ROUTE)) {
+        if (this.active && this.map && !this.map.getLayer(LAYER_ROUTE)) {
             this.ensureLayers();
             this.recompute();
         }

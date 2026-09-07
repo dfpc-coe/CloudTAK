@@ -51,7 +51,10 @@
                     {{ dragHintCopy }}
                 </p>
 
-                <TablerLoading v-if='loading' />
+                <TablerLoading
+                    v-if='loading || !mapStore.isMapLoadedFully'
+                    :desc='mapStore.isMapLoadedFully ? "Loading Overlays" : "Loading Map Overlays"'
+                />
 
                 <template v-else>
                     <div
@@ -147,8 +150,8 @@
                                             </div>
                                         </div>
                                         <div
-                                            v-if='card.badges.length'
-                                            class='d-flex flex-wrap gap-2 mt-2'
+                                            v-if='card.badges.length || card.offline'
+                                            class='d-flex flex-wrap align-items-center gap-2 mt-2'
                                         >
                                             <span
                                                 v-for='badge in card.badges'
@@ -158,6 +161,16 @@
                                             >
                                                 {{ badge.label }}
                                             </span>
+                                            <TablerBadge
+                                                v-if='card.offline'
+                                                class='small'
+                                                background-color='rgba(32, 107, 196, 0.15)'
+                                                border-color='rgba(32, 107, 196, 0.35)'
+                                                text-color='#206bc4'
+                                                title='Tiles are available offline on this device'
+                                            >
+                                                Offline
+                                            </TablerBadge>
                                         </div>
                                     </div>
                                 </div>
@@ -250,7 +263,7 @@
 
                     <TablerNone
                         v-else
-                        label='No overlays match your search'
+                        :label='hasSearchTerm ? "No overlays match your search" : "No overlays"'
                         :create='false'
                     />
                 </template>
@@ -265,6 +278,7 @@ import { useRouter } from 'vue-router';
 import type { Subscription } from 'dexie';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
+    TablerBadge,
     TablerDelete,
     TablerIconButton,
     TablerInput,
@@ -291,13 +305,16 @@ import type { SortableEvent } from 'sortablejs';
 import type Overlay from '../../../../src/base/overlay-class.ts';
 import type { DBOverlay } from '../../../../src/database.ts';
 import OverlayManager from '../../../../src/base/overlay.ts';
+import { useMapStore } from '../../../stores/map.ts';
+import { profileAssetIdFromUrl } from '../../../utils/offline-tiles.ts';
 
 type OverlayBadge = { label: string; variant: string };
 type OverlayStatus = { label: string; variant: string; tooltip?: string };
 type OverlayUpdate = Parameters<Overlay['update']>[0];
-type OverlayCard = { overlay: Overlay; visible: boolean; status: OverlayStatus; badges: OverlayBadge[] };
+type OverlayCard = { overlay: Overlay; visible: boolean; status: OverlayStatus; badges: OverlayBadge[]; offline: boolean };
 
 const router = useRouter();
+const mapStore = useMapStore();
 
 let sortable: Sortable | undefined;
 
@@ -339,7 +356,8 @@ const overlayCards = computed<OverlayCard[]>(() => {
             overlay,
             visible: overlay.visible,
             status: resolveOverlayStatus(overlay),
-            badges: getOverlayBadges(overlay)
+            badges: getOverlayBadges(overlay),
+            offline: isOfflineOverlay(overlay)
         });
     };
 
@@ -352,7 +370,8 @@ const overlayCards = computed<OverlayCard[]>(() => {
         consider(overlay);
     }
 
-    return cards;
+    // Menu order mirrors the map stacking order held by the manager
+    return cards.sort((a, b) => OverlayManager.loaded.indexOf(a.overlay) - OverlayManager.loaded.indexOf(b.overlay));
 });
 
 const overlayCount = computed(() => overlayCards.value.length);
@@ -379,7 +398,7 @@ function subscribeList(): void {
     listSubscription?.unsubscribe();
     loading.value = true;
 
-    listSubscription = OverlayManager.liveList().subscribe({
+    listSubscription = OverlayManager.liveList({ localFirst: true }).subscribe({
         next: (items) => {
             dbOverlays.value = items as DBOverlay[];
             loading.value = false;
@@ -466,7 +485,6 @@ function handleCardClick(overlay: Overlay) {
 /** Whether an overlay has an expandable details panel. Mission overlays are managed from MenuMission and are not expandable here. */
 function hasOverlayDetails(overlay: Overlay): boolean {
     return overlay.type === 'raster'
-        || overlay.type === 'raster-dem'
         || overlay.type === 'vector';
 }
 
@@ -499,6 +517,11 @@ function resolveOverlayStatus(overlay: Overlay): OverlayStatus {
         label: 'Ready',
         variant: 'success'
     };
+}
+
+function isOfflineOverlay(overlay: Overlay): boolean {
+    const assetId = profileAssetIdFromUrl(overlay.url);
+    return !!assetId && mapStore.offlineTiles.has(assetId);
 }
 
 function getOverlayBadges(overlay: Overlay): OverlayBadge[] {
@@ -545,7 +568,11 @@ async function saveOrder(sortableEv: SortableEvent) {
 
     const overlay_ids = sortable.toArray().map((i) => parseInt(i));
 
-    await OverlayManager.reorderLoaded(overlay_ids, id);
+    try {
+        await OverlayManager.reorderLoaded(overlay_ids, id);
+    } catch (err) {
+        console.error('Failed to sync overlay order:', err);
+    }
 }
 
 async function updateOverlay(overlay: Overlay, body: OverlayUpdate): Promise<void> {
@@ -554,17 +581,18 @@ async function updateOverlay(overlay: Overlay, body: OverlayUpdate): Promise<voi
 
     try {
         await update;
+    } catch (err) {
+        console.error('Failed to sync overlay update:', err);
     } finally {
         overlayRenderTick.value += 1;
     }
 }
 
 async function removeOverlay(id: number) {
-    loading.value = true;
     try {
         await OverlayManager.deleteLoaded(id);
-    } finally {
-        loading.value = false;
+    } catch (err) {
+        console.error('Failed to sync overlay delete:', err);
     }
 }
 </script>

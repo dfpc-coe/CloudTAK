@@ -473,6 +473,20 @@ export default class AtlasProfile {
             });
         }
 
+        if (body.display_elevation) {
+            this.atlas.postMessage({
+                type: WorkerMessageType.Profile_Elevation_Unit,
+                body: { unit: body.display_elevation }
+            });
+        }
+
+        if (body.display_speed) {
+            this.atlas.postMessage({
+                type: WorkerMessageType.Profile_Speed_Unit,
+                body: { unit: body.display_speed }
+            });
+        }
+
         if (body.tak_loc !== undefined || body.tak_type) {
             this.updateLocation();
         }

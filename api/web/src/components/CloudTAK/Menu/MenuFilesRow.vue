@@ -45,32 +45,44 @@
                             <span class='mx-2 user-select-none'>
                                 <TablerBytes :bytes='asset.size' /> - <TablerEpoch :date='asset.updated' />
                             </span>
-                            <button
-                                v-if='hasSharedChannels(asset) && !isSharedAsset(asset)'
-                                type='button'
-                                class='menu-files-row__shared-badge-btn ms-auto flex-shrink-0 p-0 border-0 bg-transparent'
-                                title='Share to Channel'
-                                @click.stop.prevent='emit("share-channel", asset)'
-                            >
+                            <div class='ms-auto d-flex align-items-center gap-1 flex-shrink-0'>
                                 <TablerBadge
+                                    v-if='offlineIds.has(asset.id)'
+                                    class='small'
+                                    background-color='rgba(32, 107, 196, 0.15)'
+                                    border-color='rgba(32, 107, 196, 0.35)'
+                                    text-color='#206bc4'
+                                    title='Available offline on this device'
+                                >
+                                    Offline
+                                </TablerBadge>
+                                <button
+                                    v-if='hasSharedChannels(asset) && !isSharedAsset(asset)'
+                                    type='button'
+                                    class='menu-files-row__shared-badge-btn p-0 border-0 bg-transparent'
+                                    title='Share to Channel'
+                                    @click.stop.prevent='emit("share-channel", asset)'
+                                >
+                                    <TablerBadge
+                                        class='small menu-files-row__shared-badge'
+                                        background-color='rgba(255, 171, 0, 0.15)'
+                                        border-color='rgba(255, 171, 0, 0.35)'
+                                        text-color='#c98500'
+                                    >
+                                        Shared
+                                    </TablerBadge>
+                                </button>
+                                <TablerBadge
+                                    v-else-if='isSharedAsset(asset) || hasSharedChannels(asset)'
                                     class='small menu-files-row__shared-badge'
                                     background-color='rgba(255, 171, 0, 0.15)'
                                     border-color='rgba(255, 171, 0, 0.35)'
                                     text-color='#c98500'
+                                    :title='isSharedAsset(asset) ? "Shared file from another user" : "Shared to channel"'
                                 >
                                     Shared
                                 </TablerBadge>
-                            </button>
-                            <TablerBadge
-                                v-else-if='isSharedAsset(asset) || hasSharedChannels(asset)'
-                                class='small ms-auto flex-shrink-0 menu-files-row__shared-badge'
-                                background-color='rgba(255, 171, 0, 0.15)'
-                                border-color='rgba(255, 171, 0, 0.35)'
-                                text-color='#c98500'
-                                :title='isSharedAsset(asset) ? "Shared file from another user" : "Shared to channel"'
-                            >
-                                Shared
-                            </TablerBadge>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -117,49 +129,57 @@
                     <span class='mx-2'>Cannot Add to Map - Unsupported Format</span>
                 </div>
 
+                <TablerDropdown
+                    v-if='assetSupportsOverlay(asset) || !isSharedAsset(asset)'
+                    class='menu-files-row__download'
+                >
+                    <template #default>
+                        <div
+                            class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
+                        >
+                            <IconDownload
+                                :size='32'
+                                stroke='1'
+                            />
+                            <span class='mx-2'>Download</span>
+                        </div>
+                    </template>
+                    <template #dropdown>
+                        <div
+                            class='cursor-pointer cloudtak-hover d-flex align-items-center px-3 py-2 user-select-none'
+                            role='menuitem'
+                            tabindex='0'
+                            @click.stop.prevent='emit("download", asset, "original")'
+                            @keyup.enter='emit("download", asset, "original")'
+                        >
+                            <IconFile
+                                :size='24'
+                                stroke='1'
+                            />
+                            <span class='mx-2'>{{ asset.name }}</span>
+                        </div>
+                        <div
+                            v-if='assetSupportsOverlay(asset)'
+                            class='cursor-pointer cloudtak-hover d-flex align-items-center px-3 py-2 user-select-none'
+                            role='menuitem'
+                            tabindex='0'
+                            @click.stop.prevent='emit("download", asset, "pmtiles")'
+                            @keyup.enter='emit("download", asset, "pmtiles")'
+                        >
+                            <IconMap
+                                :size='24'
+                                stroke='1'
+                            />
+                            <span class='mx-2'>{{ pmtilesName(asset) }}</span>
+                        </div>
+                        <OfflineDownloader
+                            v-if='assetSupportsOverlay(asset)'
+                            :asset='asset'
+                            @done='emit("offline", $event)'
+                        />
+                    </template>
+                </TablerDropdown>
                 <template v-if='!isSharedAsset(asset)'>
-                    <TablerDropdown>
-                        <template #default>
-                            <div
-                                class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
-                            >
-                                <IconDownload
-                                    :size='32'
-                                    stroke='1'
-                                />
-                                <span class='mx-2'>Download</span>
-                            </div>
-                        </template>
-                        <template #dropdown>
-                            <div
-                                class='cursor-pointer cloudtak-hover d-flex align-items-center px-3 py-2 user-select-none'
-                                role='menuitem'
-                                tabindex='0'
-                                @click.stop.prevent='emit("download", asset, "original")'
-                                @keyup.enter='emit("download", asset, "original")'
-                            >
-                                <IconFile
-                                    :size='24'
-                                    stroke='1'
-                                />
-                                <span class='mx-2'>{{ asset.name }}</span>
-                            </div>
-                            <div
-                                v-if='assetSupportsOverlay(asset)'
-                                class='cursor-pointer cloudtak-hover d-flex align-items-center px-3 py-2 user-select-none'
-                                role='menuitem'
-                                tabindex='0'
-                                @click.stop.prevent='emit("download", asset, "pmtiles")'
-                                @keyup.enter='emit("download", asset, "pmtiles")'
-                            >
-                                <IconMap
-                                    :size='24'
-                                    stroke='1'
-                                />
-                                <span class='mx-2'>{{ pmtilesName(asset) }}</span>
-                            </div>
-                        </template>
-                    </TablerDropdown>
                     <div
                         class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
                         role='menuitem'
@@ -255,6 +275,7 @@
 <script setup lang='ts'>
 import type { ProfileFile } from '../../../types.ts';
 import StandardItem from '../util/StandardItem.vue';
+import OfflineDownloader from '../util/OfflineDownloader.vue';
 import {
     TablerDelete,
     TablerSlidedown,
@@ -282,6 +303,7 @@ const props = defineProps<{
     asset: ProfileFile;
     currentUsername: string;
     overlayUrls: Set<string>;
+    offlineIds: Set<string>;
     rename?: {
         id: string;
         loading: boolean;
@@ -292,6 +314,7 @@ const props = defineProps<{
 const emit = defineEmits<{
     'create-overlay': [asset: ProfileFile];
     'download': [asset: ProfileFile, type: 'original' | 'pmtiles'];
+    'offline': [asset: ProfileFile];
     'share-mission': [asset: ProfileFile];
     'share-package': [asset: ProfileFile];
     'share-channel': [asset: ProfileFile];
@@ -338,6 +361,11 @@ function overlayButtonTitle(asset: ProfileFile): string {
 </script>
 
 <style scoped>
+.menu-files-row__download,
+.menu-files-row__download :deep(> div) {
+    width: 100%;
+}
+
 .menu-files-row__shared-badge-btn {
     line-height: 0;
 }

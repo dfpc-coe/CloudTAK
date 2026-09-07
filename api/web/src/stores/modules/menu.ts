@@ -178,10 +178,10 @@ export default class MenuManager {
             },
             {
                 key: 'files',
-                label: 'Uploaded Files',
+                label: 'Files',
                 route: '/menu/files',
-                tooltip: 'Your Files',
-                description: 'Browse files you have uploaded',
+                tooltip: 'Files',
+                description: 'Browse your uploaded and offline files',
                 icon: IconFiles,
             },
             {

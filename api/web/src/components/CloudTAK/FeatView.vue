@@ -30,6 +30,23 @@
                 </TablerIconButton>
 
                 <TablerIconButton
+                    :title='isNavigating ? "End Navigation" : "Navigate"'
+                    @click='toggleNavigation'
+                >
+                    <IconNavigationFilled
+                        v-if='isNavigating'
+                        :size='32'
+                        stroke='1'
+                        style='color: #1E90FF;'
+                    />
+                    <IconNavigation
+                        v-else
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <TablerIconButton
                     v-if='overlay && ["basemap", "overlay"].includes(overlay.mode) && overlay.actions.feature.includes("fetch")'
                     title='Cut to Marker'
                     @click='cutFeature'
@@ -158,7 +175,9 @@ import {
     IconScissors,
     IconZoomPan,
     IconBlockquote,
-    IconCode
+    IconCode,
+    IconNavigation,
+    IconNavigationFilled
 } from '@tabler/icons-vue';
 
 const mapStore = useMapStore();
@@ -215,6 +234,23 @@ const htmlDescription = computed(() => {
 
 async function cutFeature() {
     await cutOverlayFeature(mapStore, feature.value);
+}
+
+const isNavigating = computed(() => {
+    const dest = mapStore.navigation.destination;
+    return mapStore.navigation.active
+        && !mapStore.navigation.cotId
+        && !!dest
+        && dest[0] === center.value[0]
+        && dest[1] === center.value[1];
+});
+
+function toggleNavigation() {
+    if (isNavigating.value) {
+        mapStore.stopNavigation();
+    } else if (feature.value) {
+        mapStore.navigateTo(center.value, feature.value.properties?.name);
+    }
 }
 
 function zoomTo() {

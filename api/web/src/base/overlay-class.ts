@@ -8,7 +8,7 @@ import type { FeatureCollection } from 'geojson';
 import { bbox } from '@turf/bbox'
 import type { LngLatBoundsLike, LayerSpecification, SourceSpecification, VectorTileSource, RasterTileSource, GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl'
 import cotStyles from '../utils/styles.ts'
-import { std } from '../std.js';
+import { std, server } from '../std.js';
 import { db, type DBOverlay } from '../database.ts';
 import {
     registerTileJSONProtocol,
@@ -652,11 +652,17 @@ export default class Overlay {
         if (this._internal) return;
 
         if (this.id) {
-            await std(`/api/profile/overlay?id=${this.id}`, {
-                method: 'DELETE'
+            await db.overlay.delete(this.id);
+
+            const { error, response } = await server.DELETE('/api/profile/overlay', {
+                params: {
+                    query: {
+                        id: String(this.id),
+                    }
+                }
             });
 
-            await db.overlay.delete(this.id);
+            if (error && response.status !== 404) throw new Error(error.message);
         }
 
         // If the remaining basemaps provide no background color the CloudTAK
@@ -801,6 +807,8 @@ export default class Overlay {
         // We only want to save the style on custom datasources
         const dropStyles = ['mission', 'internal'].includes(this.mode);
 
+        await db.overlay.put(this.toDBOverlay());
+
         const saved = await std(`/api/profile/overlay/${this.id}`, {
             method: 'PATCH',
             body: {
@@ -816,9 +824,10 @@ export default class Overlay {
             }
         }) as ProfileOverlay;
 
-        if (saved.tilejson) this.tilejson = saved.tilejson;
-
-        await db.overlay.put(this.toDBOverlay());
+        if (saved.tilejson && JSON.stringify(saved.tilejson) !== JSON.stringify(this.tilejson)) {
+            this.tilejson = saved.tilejson;
+            await db.overlay.put(this.toDBOverlay());
+        }
     }
 
     toDBOverlay(): DBOverlay {

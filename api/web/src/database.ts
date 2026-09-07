@@ -10,6 +10,7 @@ import type {
     MissionLog,
     Contact,
     Server,
+    ProfileFile,
     ProfileOverlayList
 } from './types.ts';
 
@@ -103,6 +104,9 @@ export interface DBIconset {
 }
 
 export type DBOverlay = ProfileOverlayList["items"][number];
+
+/** Profile asset metadata retained for files downloaded for offline use */
+export type DBProfileFile = ProfileFile;
 
 export interface DBFilter {
     id: string;
@@ -283,6 +287,7 @@ export type DatabaseType = Dexie & {
     mission_template_log: EntityTable<DBMissionTemplateLog, 'id'>,
     kv: EntityTable<DBKV, 'key'>,
     profile: EntityTable<DBProfileConfig, 'key'>,
+    profile_file: EntityTable<DBProfileFile, 'id'>,
     config: EntityTable<DBConfig, 'key'>,
     cache: EntityTable<DBCache, 'key'>,
     contact: EntityTable<Contact, 'uid'>
@@ -290,7 +295,7 @@ export type DatabaseType = Dexie & {
 
 export const db = new Dexie('CloudTAK') as DatabaseType;
 
-db.version(2).stores({
+db.version(3).stores({
     kv: 'key',
 
     server: '_id',
@@ -305,6 +310,7 @@ db.version(2).stores({
     video: 'id, username',
     feature: 'id, path',
     profile: 'key',
+    profile_file: 'id, name, path',
     contact: 'uid, callsign',
     config: 'key',
     cache: 'key',

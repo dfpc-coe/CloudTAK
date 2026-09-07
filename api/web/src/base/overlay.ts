@@ -110,13 +110,18 @@ export default class OverlayManager extends BaseInterface {
         const post = postId === undefined ? undefined : this.loadedFrom(postId);
         overlay.moveBefore(post);
 
-        for (const current of this.loaded) {
-            await current.update({
-                pos: orderedIds.indexOf(current.id)
-            });
-        }
+        const changed = this.loaded.filter((current) => {
+            const pos = orderedIds.indexOf(current.id);
+            if (pos === -1 || pos === current.pos) return false;
+            current.pos = pos;
+            return true;
+        });
 
         this.loaded.sort((a, b) => a.pos - b.pos);
+
+        const results = await Promise.allSettled(changed.map((current) => current.save()));
+        const failed = results.find((result): result is PromiseRejectedResult => result.status === 'rejected');
+        if (failed) throw failed.reason;
     }
 
     /**

@@ -278,6 +278,8 @@ watch(
         await mapStore.worker.profile.update(toRaw(newProfile) as DisplayProfileUpdate);
 
         mapStore.updateDistanceUnit(newProfile.display_distance);
+        mapStore.elevationUnit = newProfile.display_elevation;
+        mapStore.speedUnit = newProfile.display_speed;
 
         // Immediately update coordinate format and icon rotation to avoid requiring page reload
         mapStore.coordFormat = (newProfile.display_coordinate as CoordMode) || 'dd';
