@@ -28,6 +28,12 @@ export class GeolocationPermission {
     private watchGeneration = 0;
     private lastLocationTimestamp = 0;
     private locationCallback: ((position: Position) => void) | null = null;
+    private nativeDelivery?: NativeDeliveryOptions;
+    private restartTimer: ReturnType<typeof setTimeout> | null = null;
+    private restartAttempts = 0;
+
+    private static readonly RESTART_BASE_MS = 2000;
+    private static readonly RESTART_MAX_MS = 60000;
 
     // The background watcher only emits fixes newer than its own start time,
     // so the first position can take seconds to arrive. A one-shot fix seeds
@@ -139,18 +145,26 @@ export class GeolocationPermission {
         await this.stopWatch();
 
         this.locationCallback = onLocation;
+        this.nativeDelivery = native;
         this.lastLocationTimestamp = 0;
         const generation = ++this.watchGeneration;
 
         const handler = (position: Position | null, err?: unknown) => {
+            if (generation !== this.watchGeneration || !this.locationCallback) return;
             if (err) {
+                // Errors arrive through the watcher callback rather than as a
+                // rejected start(), so a watcher that failed to start (e.g.
+                // ALREADY_STARTED after a WebView reload) would otherwise stay
+                // silently dead
                 console.error('Location Error', err);
+                this.scheduleRestart();
                 return;
             }
-            if (!position || generation !== this.watchGeneration || !this.locationCallback) return;
+            if (!position) return;
             // The seeded fix can resolve after a watcher fix has landed
             if (position.timestamp < this.lastLocationTimestamp) return;
             this.lastLocationTimestamp = position.timestamp;
+            this.restartAttempts = 0;
             this.locationCallback(position);
         };
 
@@ -199,16 +213,40 @@ export class GeolocationPermission {
         }
     }
 
+    private scheduleRestart(): void {
+        if (this.restartTimer) return;
+        if (['denied', 'unsupported'].includes(this.context.permissions.location)) return;
+
+        const delay = Math.min(
+            GeolocationPermission.RESTART_BASE_MS * 2 ** this.restartAttempts,
+            GeolocationPermission.RESTART_MAX_MS
+        );
+        this.restartAttempts++;
+
+        this.restartTimer = setTimeout(() => {
+            this.restartTimer = null;
+            const callback = this.locationCallback;
+            if (!callback) return;
+            void this.startWatch(callback, this.nativeDelivery);
+        }, delay);
+    }
+
     async stopWatch(): Promise<void> {
         this.watchGeneration++;
 
-        if (this.watchActive) {
-            this.watchActive = false;
-            try {
-                await BackgroundGeolocation.stop();
-            } catch (err) {
-                console.warn('Failed to clear location watch', err);
-            }
+        if (this.restartTimer) {
+            clearTimeout(this.restartTimer);
+            this.restartTimer = null;
+        }
+
+        // Always stop natively, not just when this JS context started the
+        // watcher: the plugin instance outlives WebView reloads, and a
+        // watcher orphaned by one rejects the next start() as ALREADY_STARTED
+        this.watchActive = false;
+        try {
+            await BackgroundGeolocation.stop();
+        } catch (err) {
+            console.warn('Failed to clear location watch', err);
         }
 
         this.locationCallback = null;

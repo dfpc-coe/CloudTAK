@@ -843,6 +843,7 @@ function setLocation() {
 }
 
 function cancelLocationSetting() {
+    mapStore.manualLocationMode = false;
     mode.value = 'Default';
     mapStore.map.getCanvas().style.cursor = '';
 
