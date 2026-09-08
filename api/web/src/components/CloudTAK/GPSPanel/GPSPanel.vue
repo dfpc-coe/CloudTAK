@@ -1,7 +1,7 @@
 <template>
     <div
         v-if='!(appStore.isMobileDetected && mode === "SetLocation")'
-        class='position-absolute cloudtak-panel d-flex flex-column justify-content-center text-white user-select-none gps-panel'
+        class='position-absolute cloudtak-panel d-flex flex-column justify-content-center user-select-none gps-panel'
         :title='locationTooltip'
     >
         <div
@@ -48,7 +48,7 @@
                 <span data-test='altitude'>{{ altitudeText }}</span>
                 <span
                     data-test='accuracy'
-                    class='text-white-50'
+                    class='text-secondary'
                 >{{ accuracyText }}</span>
             </div>
 
@@ -97,7 +97,7 @@ const locationAccuracy = computed(() => {
 });
 
 const locationColor = computed(() => {
-    if (!locationAccuracy.value) return '#ffffff';
+    if (!locationAccuracy.value) return 'currentColor';
     const accuracy = locationAccuracy.value;
     if (accuracy <= 50) return '#22c55e';
     if (accuracy <= 200) return '#eab308';
