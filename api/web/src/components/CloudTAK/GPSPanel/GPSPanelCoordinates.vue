@@ -12,7 +12,7 @@
                 >
                     <IconCursorText
                         v-if='coordSource === "cursor"'
-                        class='flex-shrink-0 text-white-50'
+                        class='flex-shrink-0 text-secondary'
                         :size='14'
                         stroke='1'
                     />
