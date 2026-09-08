@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.79.3 - 2026-09-08
+
+- :bug: Fix white text in light theme
+
 ### v13.79.2 - 2026-09-08
 
 - :arrow_up: Update BackgroundGeolocation
