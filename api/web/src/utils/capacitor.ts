@@ -1,6 +1,7 @@
 import { Browser } from '@capacitor/browser';
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
+import { stdurl } from '../std.ts';
 
 export function isNativePlatform(): boolean {
     return Capacitor.isNativePlatform();
@@ -117,7 +118,6 @@ export async function minimizeApp(): Promise<void> {
 }
 
 export async function openExternalUrl(url: string | URL): Promise<void> {
-    const { stdurl } = await import('../std.ts');
     const href = stdurl(url).toString();
 
     if (isNativePlatform()) {
@@ -129,7 +129,6 @@ export async function openExternalUrl(url: string | URL): Promise<void> {
 }
 
 export async function openSecondaryView(url: string | URL): Promise<void> {
-    const { stdurl } = await import('../std.ts');
     const href = stdurl(url);
 
     if (isNativePlatform()) {

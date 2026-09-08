@@ -4,25 +4,8 @@ import { reactive } from '@vue/reactivity';
 import type { FilterSpecification, ExpressionSpecification } from 'maplibre-gl';
 import PathManager from '../../utils/path-manager.ts';
 import type Overlay from '../../base/overlay-class.ts';
-
-let browserModulesPromise: Promise<{
-    useMapStore: typeof import('../map.ts')['useMapStore'];
-    OverlayManager: typeof import('../../base/overlay.ts')['default'];
-}> | null = null;
-
-function loadBrowserModules(): NonNullable<typeof browserModulesPromise> {
-    if (!browserModulesPromise) {
-        browserModulesPromise = Promise.all([
-            import('../map.ts'),
-            import('../../base/overlay.ts')
-        ]).then(([mapMod, overlayMod]) => ({
-            useMapStore: mapMod.useMapStore,
-            OverlayManager: overlayMod.default
-        }));
-    }
-
-    return browserModulesPromise;
-}
+import { useMapStore } from '../map.ts';
+import OverlayManager from '../../base/overlay.ts';
 
 /**
  * Source id used for the internal "Map Features" GeoJSON overlay that holds
@@ -180,8 +163,6 @@ export class FeatureVisibility {
     static async applyToOverlay(overlay: Overlay): Promise<void> {
         if (overlay.type !== 'geojson') return;
 
-        const { useMapStore } = await loadBrowserModules();
-
         const mapStore = useMapStore();
         if (!mapStore._map) return;
         const map = mapStore.map;
@@ -212,8 +193,6 @@ export class FeatureVisibility {
 
     static async apply(): Promise<void> {
         try {
-            const { useMapStore, OverlayManager } = await loadBrowserModules();
-
             const mapStore = useMapStore();
             if (!mapStore._map) return;
 
