@@ -1,7 +1,7 @@
 <template>
     <div
         v-if='pluginItems.length'
-        class='position-absolute cloudtak-panel d-flex align-items-center gap-2 px-2 text-white plugin-pane'
+        class='position-absolute cloudtak-panel d-flex align-items-center gap-2 px-2 plugin-pane'
     >
         <div
             v-for='item in pluginItems'
