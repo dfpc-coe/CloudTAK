@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.79.2 - 2026-09-08
+
+- :arrow_up: Update BackgroundGeolocation
+
 ### v13.79.1 - 2026-09-07
 
 - :bug: More resilient location reporting after background resume on iOS
