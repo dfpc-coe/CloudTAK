@@ -1,6 +1,6 @@
 <template>
     <div
-        v-if='!(appStore.isMobileDetected && mode === "SetLocation")'
+        v-if='!hidden'
         class='position-absolute cloudtak-panel d-flex flex-column justify-content-center user-select-none gps-panel'
         :title='locationTooltip'
     >
@@ -70,6 +70,7 @@ import { computed } from 'vue';
 import { LocationState } from '../../../utils/events.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useAppStore } from '../../../stores/app.ts';
+import { DrawToolMode } from '../../../stores/modules/draw.ts';
 import { TablerIconButton } from '@tak-ps/vue-tabler';
 import {
     IconLocation,
@@ -86,6 +87,12 @@ defineEmits(['set-location', 'to-location']);
 
 const mapStore = useMapStore();
 const appStore = useAppStore();
+
+// On small screens the bottom panes overlap the GPS panel, so hide it while they are shown
+const hidden = computed(() => {
+    if (!appStore.isMobileDetected) return false;
+    return props.mode === 'SetLocation' || mapStore.draw.mode !== DrawToolMode.STATIC;
+});
 
 const isLive = computed(() => {
     return mapStore.location === LocationState.Live && !mapStore.manualLocationMode;

@@ -46,7 +46,7 @@
             />
 
             <DrawOverlay
-                v-if='mapStore.draw.mode !== DrawToolMode.STATIC'
+                v-if='isDrawing'
             />
 
             <GeoJSONInput
@@ -99,7 +99,7 @@
                 @set-location='setLocation'
                 @to-location='toLocation'
             />
-            <PluginPane v-if='mode === "Default"' />
+            <PluginPane v-if='mode === "Default" && !isDrawing' />
             <div
                 v-if='mapStore.selected.size'
                 class='position-absolute'
@@ -614,6 +614,10 @@ function detectMobile() {
 
 const isMobileDetected = computed(() => {
     return detectMobile();
+});
+
+const isDrawing = computed(() => {
+    return mapStore.draw.mode !== DrawToolMode.STATIC;
 });
 
 watch(isMobileDetected, () => {
