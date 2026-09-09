@@ -17,6 +17,9 @@
 
 ### Pending Release
 
+- :tada: Add the `group:read` & `group:update` permissions - Connection & Layer tokens must hold them to list & update channels via `/api/marti/group` (requires `@tak-ps/etl@10.17.0`)
+- :rocket: Remove `GET /api/connection/:connectionid/channel` in favour of `GET /api/marti/group` - Connection & Layer tokens infer the Connection from the token, User tokens may pass `?connection=<id>` (`0` for the server certificate)
+
 ### v13.81.1 - 2026-09-09
 
 - :bug: Ensure Draw Tools is shown instead of GPS component

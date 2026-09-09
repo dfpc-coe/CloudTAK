@@ -24,6 +24,13 @@ test('GET: api/scope', async () => {
             scopes: ['search:*', 'search:read'],
         });
 
+        const group = res.body.items.find((item: { resource: string }) => item.resource === 'group');
+        assert.deepEqual(group, {
+            resource: 'group',
+            levels: ['read', 'update'],
+            scopes: ['group:*', 'group:read', 'group:update'],
+        });
+
         const device = res.body.items.find((item: { resource: string }) => item.resource === 'device');
         assert.deepEqual(device.scopes, ['device:*', 'device:create', 'device:read', 'device:update', 'device:delete']);
     } catch (err) {
