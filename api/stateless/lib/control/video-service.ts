@@ -138,6 +138,30 @@ export const Configuration = Type.Object({
     paths: Type.Optional(Type.Array(PathListItem)),
 });
 
+/**
+ * RTSP proxy sources typically point at the media service's own advertised
+ * hostname (media::url) - correct when an off-host EUD/plugin is publishing
+ * to it, but when the media service itself pulls that same source to relay
+ * it, resolving its own public hostname back to itself is a hairpin-NAT path
+ * many networks/NAT setups can't route. Rewriting to an internal alias that
+ * resolves directly avoids that, but which alias (if any) is valid is
+ * deployment-specific, so this only rewrites when an operator has opted in
+ * via media::ingest::internal::host; otherwise it's a no-op.
+ */
+export function ingestSource(proxy: string | null | undefined, ownHostname?: string, internalHost?: string): string | null | undefined {
+    if (!proxy || !ownHostname || !internalHost) return proxy;
+
+    try {
+        const url = new URL(proxy);
+        if (['rtsp:', 'rtsps:'].includes(url.protocol) && url.hostname === ownHostname) {
+            url.hostname = internalHost;
+        }
+        return String(url);
+    } catch {
+        return proxy;
+    }
+}
+
 export default class VideoServiceControl {
     config: Config;
 
@@ -162,6 +186,8 @@ export default class VideoServiceControl {
     async settings(): Promise<{
         configured: boolean;
         url?: string;
+        playbackUrl?: string;
+        ingestInternalHost?: string;
         token?: string;
     }> {
         let video;
@@ -185,9 +211,16 @@ export default class VideoServiceControl {
             }
         }
 
+        const playbackValue = (await this.config.models.Setting.typed('media::playback::url', '')).value;
+        const ingestInternalHostValue = (await this.config.models.Setting.typed('media::ingest::internal::host', '')).value;
+
+        if (playbackValue) new URL(playbackValue);
+
         return {
             configured: true,
             url: video,
+            playbackUrl: playbackValue || undefined,
+            ingestInternalHost: ingestInternalHostValue || undefined,
             token: jwt.sign({
                 internal: true,
                 access: AuthResourceAccess.MEDIA,
@@ -363,8 +396,15 @@ export default class VideoServiceControl {
 
         if (c.config && c.config.hls) {
             // Format: http://localhost:9997/mystream/index.m3u8 - Proxied
-            const url = new URL(`/stream/${lease.path}/index.m3u8`, c.external);
-            url.port = '9997';
+            // media::playback::url overrides the browser-facing host/port for HLS
+            // playback (e.g. a standard-port reverse proxy for networks that block
+            // the media server's dedicated port), while every other protocol keeps
+            // using c.external as-is.
+            const video = await this.settings();
+            const url = video.playbackUrl
+                ? new URL(`/stream/${lease.path}/index.m3u8`, video.playbackUrl)
+                : new URL(`/stream/${lease.path}/index.m3u8`, c.external);
+            if (!video.playbackUrl) url.port = '9997';
 
             if (lease.stream_user && lease.read_user) {
                 if (populated === ProtocolPopulation.READ && lease.read_user && lease.read_pass) {
@@ -604,7 +644,7 @@ export default class VideoServiceControl {
                         safeUrlAllow: [new URL(video.url!).hostname],
                         body: JSON.stringify({
                             name: lease.path,
-                            source: lease.proxy,
+                            source: ingestSource(lease.proxy, new URL(video.url!).hostname, video.ingestInternalHost),
                             record: lease.recording,
                         }),
                     });
@@ -796,7 +836,7 @@ export default class VideoServiceControl {
                 safeUrlAllow: [new URL(video.url!).hostname],
                 body: JSON.stringify({
                     name: lease.path,
-                    source: lease.proxy,
+                    source: ingestSource(lease.proxy, new URL(video.url!).hostname, video.ingestInternalHost),
                     record: lease.recording,
                 }),
             });
@@ -816,7 +856,7 @@ export default class VideoServiceControl {
                     safeUrlAllow: [new URL(video.url!).hostname],
                     body: JSON.stringify({
                         name: lease.path,
-                        source: lease.proxy,
+                        source: ingestSource(lease.proxy, new URL(video.url!).hostname, video.ingestInternalHost),
                         record: lease.recording,
                     }),
                 });
