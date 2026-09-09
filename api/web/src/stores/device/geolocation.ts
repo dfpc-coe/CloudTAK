@@ -31,6 +31,7 @@ export class GeolocationPermission {
     private nativeDelivery?: NativeDeliveryOptions;
     private restartTimer: ReturnType<typeof setTimeout> | null = null;
     private restartAttempts = 0;
+    private starting: Promise<void> | null = null;
 
     private static readonly RESTART_BASE_MS = 2000;
     private static readonly RESTART_MAX_MS = 60000;
@@ -89,18 +90,32 @@ export class GeolocationPermission {
         }
     }
 
+    // The only place location permission is prompted for - nothing on the
+    // boot path may trigger a system dialog.
     async request(onGranted?: () => void): Promise<void> {
         if (isNativePlatform()) {
+            let granted = false;
             try {
                 const status = await Geolocation.requestPermissions();
                 const state = normalizePermissionState(status.location ?? status.coarseLocation);
                 this.context.setPermissionStatus('location', state);
-                if (state === 'granted') onGranted?.();
+                granted = state === 'granted';
             } catch (err) {
                 console.warn('Failed to request native geolocation permission', err);
             } finally {
                 await this.refreshStatus();
             }
+
+            if (!granted) return;
+            onGranted?.();
+
+            // iOS ignores the Always escalation while the foreground prompt is
+            // still pending, so it must follow the first grant. Not awaited:
+            // the plugin holds the call for up to 30s if the user keeps
+            // While Using, and the watch must not wait on that.
+            void BackgroundGeolocation.requestPermissions({ permissions: ['backgroundLocation'] })
+                .catch((err) => console.warn('Failed to request background location permission', err))
+                .finally(() => this.refreshStatus());
             return;
         }
 
@@ -111,16 +126,26 @@ export class GeolocationPermission {
 
         try {
             await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
-            onGranted?.();
-        } finally {
             await this.refreshStatus();
+            // Browsers without the Permissions API cannot report state, but a
+            // successful fix proves the grant.
+            if (this.context.permissions.location === 'unknown') {
+                this.context.setPermissionStatus('location', 'granted');
+            }
+            onGranted?.();
+        } catch (err) {
+            await this.refreshStatus();
+            throw err;
         }
+    }
+
+    canStartWatch(): boolean {
+        return ['granted', 'when_in_use'].includes(this.context.permissions.location);
     }
 
     async initializeSubscription(onGranted?: () => void): Promise<void> {
         if (isNativePlatform()) {
             await this.refreshStatus();
-            if (this.context.permissions.location === 'granted') onGranted?.();
             return;
         }
 
@@ -142,6 +167,19 @@ export class GeolocationPermission {
 
     async startWatch(onLocation: (position: Position) => void, native?: NativeDeliveryOptions): Promise<void> {
         if (!GeolocationPermission.supportsLocationRequests()) return;
+        if (!this.canStartWatch()) {
+            console.warn('Location watch not started: permission has not been granted');
+            return;
+        }
+        if (this.starting) return this.starting;
+
+        this.starting = this.doStartWatch(onLocation, native).finally(() => {
+            this.starting = null;
+        });
+        return this.starting;
+    }
+
+    private async doStartWatch(onLocation: (position: Position) => void, native?: NativeDeliveryOptions): Promise<void> {
         await this.stopWatch();
 
         this.locationCallback = onLocation;
@@ -169,17 +207,6 @@ export class GeolocationPermission {
         };
 
         try {
-            // Resolve the foreground (When In Use) prompt before starting the
-            // watcher: iOS ignores the watcher's escalation to "Always" while
-            // that first prompt is still pending, which used to defer the
-            // Always prompt to the second app launch.
-            if (isNativePlatform()) {
-                await this.refreshStatus();
-                if (this.context.permissions.location === 'prompt') {
-                    await this.request();
-                }
-            }
-
             // Single watcher on every platform: on native the plugin delivers
             // foreground fixes too, and on web it falls back to
             // navigator.geolocation.watchPosition.
@@ -197,7 +224,7 @@ export class GeolocationPermission {
         handler: (position: Position | null, err?: unknown) => void,
         generation: number
     ): Promise<void> {
-        if (['denied', 'unsupported'].includes(this.context.permissions.location)) return;
+        if (!this.canStartWatch()) return;
 
         try {
             const position = await Geolocation.getCurrentPosition({
@@ -215,7 +242,7 @@ export class GeolocationPermission {
 
     private scheduleRestart(): void {
         if (this.restartTimer) return;
-        if (['denied', 'unsupported'].includes(this.context.permissions.location)) return;
+        if (!this.canStartWatch()) return;
 
         const delay = Math.min(
             GeolocationPermission.RESTART_BASE_MS * 2 ** this.restartAttempts,
@@ -259,7 +286,7 @@ export class GeolocationPermission {
         await BackgroundGeolocation.start({
             backgroundTitle: 'CloudTAK GPS active',
             backgroundMessage: 'CloudTAK is sharing your location.',
-            requestPermissions: true,
+            requestPermissions: false,
             // Reject fixes cached from before the watcher started - stale
             // positions are seeded explicitly by seedImmediateFix() instead,
             // which bounds their age.

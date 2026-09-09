@@ -37,7 +37,8 @@
 
             <WarnConfiguration
                 v-if='warnConfiguration'
-                @close='warnConfiguration = false'
+                :page='warnConfiguration'
+                @close='warnConfiguration = undefined'
             />
             <WarnChannels
                 v-else-if='warnChannels'
@@ -460,6 +461,7 @@ import WarnChannels from './util/WarnChannels.vue';
 import Notifications from './Notifications.vue';
 import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
+import type { WarnConfigurationPage } from './util/WarnConfiguration.vue';
 import DrawTools from './DrawTools.vue';
 import GenericBottomPane from './GenericBottomPane.vue';
 import type { MapGeoJSONFeature, LngLatLike, MapMouseEvent } from 'maplibre-gl';
@@ -503,6 +505,7 @@ import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';
+import { useDeviceStore } from '../../stores/device.ts';
 import { useAppStore } from '../../stores/app.ts';
 import { DrawToolMode } from '../../stores/modules/draw.ts';
 import { useFloatStore } from '../../stores/float.ts';
@@ -517,6 +520,7 @@ import { copyFeatureToClipboard, readFeatureFromClipboard } from '../../stores/d
 import MissionInviteModal from './Menu/Mission/MissionInviteModal.vue';
 
 const mapStore = useMapStore();
+const deviceStore = useDeviceStore();
 const appStore = useAppStore();
 const floatStore = useFloatStore();
 
@@ -537,7 +541,7 @@ appStore.isMobileDetected = detectMobile();
 
 const warnChannels = ref<boolean>(false)
 
-const warnConfiguration = ref<boolean>(false);
+const warnConfiguration = ref<WarnConfigurationPage | undefined>();
 
 const searchBoxShown = ref(false);
 
@@ -724,7 +728,11 @@ onMounted(async () => {
 
     // TODO these are no longer reactive, does it matter?
     warnChannels.value = await mapStore.worker.profile.hasNoChannels();
-    warnConfiguration.value = await mapStore.worker.profile.hasNoConfiguration();
+    if (await mapStore.worker.profile.hasNoConfiguration()) {
+        warnConfiguration.value = 'details';
+    } else if (!deviceStore.hasRequiredPermissions()) {
+        warnConfiguration.value = 'permissions';
+    }
 
     loading.value = false;
 

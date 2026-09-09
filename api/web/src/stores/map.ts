@@ -301,6 +301,16 @@ export const useMapStore = defineStore('cloudtak', {
         startLocationWatch: async function() {
             const deviceStore = useDeviceStore();
 
+            // Location is only ever prompted for from the permissions UI. Without
+            // a grant there is nothing to acquire, so don't leave the panel on
+            // "Acquiring GPS"; a preset location posted by the worker still wins.
+            if (!deviceStore.geolocation.canStartWatch()) {
+                if (this.location === LocationState.Loading) {
+                    this.location = LocationState.Disabled;
+                }
+                return;
+            }
+
             // Native code POSTs each fix to the location endpoint itself,
             // throttled to the user's reporting frequency - background
             // reporting must not depend on the WebView, which iOS suspends.
@@ -1122,11 +1132,8 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
-            let startedGPSWatchFromPermissionSubscription = false;
-
-            this.loadingStage = 'Requesting permissions…';
+            this.loadingStage = 'Checking permissions…';
             await deviceStore.initializePermissionSubscriptions(() => {
-                startedGPSWatchFromPermissionSubscription = true;
                 void this.startLocationWatch();
             });
 
@@ -1138,12 +1145,7 @@ export const useMapStore = defineStore('cloudtak', {
             });
             void syncPushToken(deviceStore.getMessagingToken());
 
-            if (
-                deviceStore.permissions.location !== 'unsupported'
-                && !startedGPSWatchFromPermissionSubscription
-            ) {
-                await this.startLocationWatch();
-            }
+            await this.startLocationWatch();
 
             const sprites = IconManager.defaultSprite();
 
