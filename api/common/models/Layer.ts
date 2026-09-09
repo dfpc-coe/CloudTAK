@@ -22,6 +22,7 @@ export const AugmentedLayerOutgoing = Type.Object({
     environment: Type.Any(),
     ephemeral: Type.Record(Type.String(), Type.Any()),
     filters: FilterContainer,
+    subscriptions: Type.Array(Type.String()),
 });
 
 export const AugmentedLayerIncoming = Type.Object({
@@ -204,6 +205,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     environment: LayerOutgoing.environment,
                     ephemeral: LayerOutgoing.ephemeral,
                     filters: LayerOutgoing.filters,
+                    subscriptions: LayerOutgoing.subscriptions,
                 }),
             })
             .from(Layer)
@@ -286,6 +288,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     environment: LayerOutgoing.environment,
                     ephemeral: LayerOutgoing.ephemeral,
                     filters: LayerOutgoing.filters,
+                    subscriptions: LayerOutgoing.subscriptions,
                 }),
             })
             .from(Layer)

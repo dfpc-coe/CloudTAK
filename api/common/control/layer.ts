@@ -54,4 +54,12 @@ export default class LayerControl {
             }
         }
     }
+
+    /**
+     * The Outgoing types a Task's Capabilities document declares, used as the
+     * Outgoing subscriptions of a Layer running that Task
+     */
+    static outgoingSubscriptions(capabilities: StaticCapabilitiesDocument): Array<string> {
+        return (capabilities.invocations.outgoing?.types ?? []).map(type => type.resource);
+    }
 }
