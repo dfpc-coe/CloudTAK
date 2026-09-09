@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.81.1 - 2026-09-09
+
+- :bug: Ensure Draw Tools is shown instead of GPS component
+
 ### v13.81.0 - 2026-09-09
 
 - :tada: Populate Outgoing Layer `subscriptions` from the task Capabilities manifest when a Layer or Outgoing config is created and when the task version changes
