@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+- :tada: Populate Outgoing Layer `subscriptions` from the task Capabilities manifest when a Layer or Outgoing config is created and when the task version changes
+- :tada: Show read-only Outgoing subscriptions in the Layer Outgoing Config panel and only offer Exclusion Filters when a `feature` type is subscribed
+- :bug: `api/context` now exits with an error when the dump or database load fails instead of starting the dev server on a stale database
+
 ### v13.80.0 - 2026-09-09
 
 - :rocket: Update WarnConfiguration component to also ensure base permissions are assigned and be compliant with Google Play store requirements

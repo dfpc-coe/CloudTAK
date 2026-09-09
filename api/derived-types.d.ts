@@ -11876,6 +11876,7 @@ export interface paths {
                                             query: string;
                                         }[];
                                     };
+                                    subscriptions: string[];
                                 };
                             }[];
                         };
@@ -12341,6 +12342,7 @@ export interface paths {
                                         query: string;
                                     }[];
                                 };
+                                subscriptions: string[];
                             };
                         };
                     };
@@ -13905,6 +13907,7 @@ export interface paths {
                                     query: string;
                                 }[];
                             };
+                            subscriptions: string[];
                         };
                     };
                 };
@@ -14130,6 +14133,7 @@ export interface paths {
                                     query: string;
                                 }[];
                             };
+                            subscriptions: string[];
                         };
                     };
                 };
@@ -14566,6 +14570,7 @@ export interface paths {
                                         query: string;
                                     }[];
                                 };
+                                subscriptions: string[];
                             };
                         };
                     };
@@ -15118,6 +15123,7 @@ export interface paths {
                                         query: string;
                                     }[];
                                 };
+                                subscriptions: string[];
                             };
                         };
                     };
@@ -26247,6 +26253,7 @@ export interface paths {
                                             query: string;
                                         }[];
                                     };
+                                    subscriptions: string[];
                                 };
                             }[];
                         };
@@ -26689,6 +26696,7 @@ export interface paths {
                                         query: string;
                                     }[];
                                 };
+                                subscriptions: string[];
                             };
                         };
                     };
