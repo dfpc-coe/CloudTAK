@@ -46,23 +46,27 @@ async function waitForConnectionStatus(
     );
 }
 
-async function waitForStreamingReconnect(timeoutMs: number): Promise<void> {
-    if (flight.tak.streamingSockets.size > 0) return;
+/**
+ * The mock server carries more than one streaming socket (the server's admin
+ * connection plus the test connection), and they reconnect independently.
+ * Waiting for the pre-restart socket count ensures the ping reply reaches
+ * every client rather than only whichever finished its handshake first.
+ */
+async function waitForStreamingReconnect(expected: number, timeoutMs: number): Promise<void> {
+    const deadline = Date.now() + timeoutMs;
+    const live = () => [...flight.tak.streamingSockets].filter(s => !s.destroyed).length;
 
-    await new Promise<void>((resolve, reject) => {
-        const timer = setTimeout(
-            () => reject(new Error(
-                `Timed out after ${timeoutMs} ms waiting for streaming reconnect`,
-            )),
-            timeoutMs,
-        );
-
-        flight.tak.streaming.once('secureConnection', () => {
-            clearTimeout(timer);
-            resolve();
-        });
-    });
+    while (live() < expected) {
+        if (Date.now() > deadline) {
+            throw new Error(
+                `Timed out after ${timeoutMs} ms waiting for ${expected} streaming sockets to reconnect (have ${live()})`,
+            );
+        }
+        await new Promise(r => setTimeout(r, 25));
+    }
 }
+
+let streamingSocketsBeforeRestart = 0;
 
 test('Connection - reports dead before any ping reply is received', async () => {
     try {
@@ -97,6 +101,9 @@ test('Connection - becomes live after TAK server sends a ping reply', async () =
 
 test('Connection - drops to dead when the TAK streaming connection is reset (simulated restart)', async () => {
     try {
+        streamingSocketsBeforeRestart = flight.tak.streamingSockets.size;
+        assert.ok(streamingSocketsBeforeRestart > 0, 'Expected at least one streaming socket before restart');
+
         flight.tak.restartStreaming();
 
         await waitForConnectionStatus('dead', 10000);
@@ -109,7 +116,7 @@ test('Connection - reconnects and becomes live after TAK server comes back', asy
     try {
         // Without the race condition fix this times out - the stale socket's
         // close event destroys the new socket before the TLS handshake finishes.
-        await waitForStreamingReconnect(10000);
+        await waitForStreamingReconnect(streamingSocketsBeforeRestart, 10000);
 
         flight.tak.streamingWrite(pingReplyXml());
 

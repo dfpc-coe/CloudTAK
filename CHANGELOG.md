@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.80.0 - 2026-09-09
+
+- :rocket: Update WarnConfiguration component to also ensure base permissions are assigned and be compliant with Google Play store requirements
+
 ### v13.79.3 - 2026-09-08
 
 - :bug: Fix white text in light theme
