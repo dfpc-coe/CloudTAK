@@ -584,6 +584,7 @@ export const ProfileFileResponse = Type.Object({
     created: Type.String(),
     updated: Type.String(),
     username: Type.String(),
+    parent: Type.Union([Type.Null(), Type.String()]),
     path: Type.String(),
     name: Type.String(),
     iconset: Type.Union([Type.Null(), Type.String()]),

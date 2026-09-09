@@ -1,0 +1,2 @@
+ALTER TABLE "profile_files" ADD COLUMN "parent" uuid;--> statement-breakpoint
+ALTER TABLE "profile_files" ADD CONSTRAINT "profile_files_parent_profile_files_id_fk" FOREIGN KEY ("parent") REFERENCES "public"."profile_files"("id") ON DELETE cascade ON UPDATE no action;

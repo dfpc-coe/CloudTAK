@@ -38,6 +38,23 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     }
 
+    async function ensureParentPermission(parentId: string, email: string, childId?: string) {
+        const visited = new Set(childId ? [childId] : []);
+        let currentParentId: string | null = parentId;
+
+        while (currentParentId) {
+            const parent = await config.models.ProfileFile.from(currentParentId);
+            if (parent.username !== email) {
+                throw new Err(403, null, 'You do not have permission to attach this asset to the requested parent');
+            } else if (visited.has(parent.id)) {
+                throw new Err(400, null, 'Profile asset parent relationships cannot contain cycles');
+            }
+
+            visited.add(parent.id);
+            currentParentId = parent.parent;
+        }
+    }
+
     await schema.get('/profile/asset', {
         name: 'List Files',
         group: 'ProfileFile',
@@ -126,6 +143,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 throw new Err(403, null, 'You do not have permission to delete this asset');
             }
 
+            const files = [file];
+            for (let index = 0; index < files.length; index++) {
+                files.push(...await config.pg.select().from(ProfileFile)
+                    .where(eq(ProfileFile.parent, files[index].id)));
+            }
+
             await config.models.ProfileFile.delete(req.params.asset);
 
             if (file.iconset) {
@@ -145,9 +168,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
             }
 
-            await S3.del(`profile/${user.email}/${req.params.asset}`, {
+            await Promise.all(files.map(child => S3.del(`profile/${child.username}/${child.id}`, {
                 recurse: true,
-            });
+            })));
 
             res.json({
                 status: 200,
@@ -167,6 +190,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 description: 'Random UUID v4 of uploaded asset',
             }),
             name: Type.String(),
+            parent: Type.Optional(Type.Union([Type.Null(), Type.String({ format: 'uuid' })])),
             path: Type.String({
                 default: '/',
             }),
@@ -192,11 +216,16 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 });
             }
 
+            if (req.body.parent) {
+                await ensureParentPermission(req.body.parent, user.email, req.body.id);
+            }
+
             await ensureIconsetPermission(req.body.iconset, user.email);
 
             const file = await config.models.ProfileFile.generate({
                 id: req.body.id,
                 username: user.email,
+                parent: req.body.parent ?? null,
                 name: req.body.name,
                 path: req.body.path,
                 iconset: req.body.iconset ?? null,
@@ -221,6 +250,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         body: Type.Object({
             path: Type.Optional(Type.String()),
+            parent: Type.Optional(Type.Union([Type.Null(), Type.String({ format: 'uuid' })])),
             artifacts: Type.Optional(Type.Array(Type.Object({
                 ext: Type.String(),
             }))),
@@ -237,6 +267,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             if (file.username !== user.email) {
                 throw new Err(403, null, 'You do not have permission to modify this asset');
+            }
+
+            if (req.body.parent) {
+                await ensureParentPermission(req.body.parent, user.email, file.id);
             }
 
             if (req.body.artifacts) {
@@ -261,6 +295,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             await ensureIconsetPermission(iconsetValue, user.email);
 
             file = await config.models.ProfileFile.commit(req.params.asset, {
+                parent: req.body.parent,
                 name: req.body.name,
                 path: req.body.path,
                 iconset: iconsetValue,
