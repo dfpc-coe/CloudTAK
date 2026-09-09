@@ -366,9 +366,16 @@ function badgeProps(status: BrowserPermissionState): Record<string, string> {
     }
 }
 
+// iOS never re-shows a system prompt after a denial, so only then do we
+// fall back to the settings app; otherwise the in-app request drives the
+// system dialogs (Share Location, then the Always upgrade).
+function needsNativeSettings(status: BrowserPermissionState): boolean {
+    return isNativePlatform() && status === 'denied';
+}
+
 function actionLabel(type: BrowserPermissionType, status: BrowserPermissionState): string {
     if (working.value === type) return 'Requesting...';
-    if (isNativePlatform()) return 'Open Settings';
+    if (needsNativeSettings(status)) return 'Open Settings';
     if (status === 'denied') return 'Re-request Permission';
     return 'Request Permission';
 }
@@ -388,7 +395,7 @@ async function requestPermission(type: BrowserPermissionType): Promise<void> {
     working.value = type;
 
     try {
-        if (isNativePlatform()) {
+        if (needsNativeSettings(deviceStore.permissions[type])) {
             await deviceStore.geolocation.openNativeSettings();
         } else if (type === 'location') {
             await deviceStore.geolocation.request(() => {
