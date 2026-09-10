@@ -17,6 +17,8 @@
 
 ### Pending Release
 
+### v13.83.0 - 2026-09-10
+
 - :tada: Add a standalone Forms page (`/forms`) for creating, editing & deleting the Core Forms used by Events and Boards, reachable from the Application Switcher
 - :rocket: Wrap the Advanced section of the Error popup in the Copy field so long error bodies wrap and can be copied for debugging
 - :tada: Complete any Form shared with one of an Event's Channels from the Forms section of the Event view - the Response is linked to the Event
