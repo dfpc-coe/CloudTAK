@@ -411,6 +411,8 @@ export async function tokenParser(
 
             const profile = await config.models.Profile.from(decoded.id);
 
+            if (profile.disabled) throw new Err(401, null, 'User is disabled');
+
             if (profile.system_admin) {
                 return new AuthUser(AuthUserAccess.ADMIN, profile.username, `etl.${token}`);
             } else if (profile.agency_admin.length) {

@@ -254,6 +254,7 @@ export const Profile = pgTable('profile', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     system_admin: boolean().notNull().default(false),
     agency_admin: jsonb().notNull().$type<Array<number>>().default([]),
+    disabled: boolean().notNull().default(false),
 });
 
 export const ProfileSetting = pgTable('profile_settings',

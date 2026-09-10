@@ -81,6 +81,8 @@ export default class AuthProvider {
             }
         }
 
+        if (profile.disabled) throw new Err(403, null, 'User is disabled - Contact your administrator');
+
         await this.valid(profile, password);
 
         return contents.sub;

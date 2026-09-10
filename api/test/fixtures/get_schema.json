@@ -774,71 +774,6 @@
         "query": false,
         "res": true
     },
-    "GET /iconset": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /iconset": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /iconset/:iconset": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /iconset/:iconset": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /iconset/:iconset/regen": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /iconset/:iconset": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /iconset/:iconset/icon": {
-        "body": true,
-        "query": true,
-        "res": true
-    },
-    "GET /icon": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /iconset/:iconset/icon/:icon": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /iconset/:iconset/icon/:icon": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /iconset/:iconset/icon/:icon": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /iconset/:iconset/sprite{:size}.json": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /iconset/:iconset/sprite{:size}.png": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
     "GET /login/passkey": {
         "body": false,
         "query": false,
@@ -878,16 +813,6 @@
         "body": false,
         "query": false,
         "res": true
-    },
-    "GET /manifest.webmanifest": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /manifest.webmanifest/logos/:size": {
-        "body": false,
-        "query": false,
-        "res": false
     },
     "POST /marti/export": {
         "body": true,
@@ -1474,13 +1399,53 @@
         "query": false,
         "res": true
     },
-    "GET /scope": {
+    "GET /scim/v2/ServiceProviderConfig": {
         "body": false,
         "query": false,
         "res": true
     },
-    "POST /retention": {
+    "GET /scim/v2/ResourceTypes": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /scim/v2/Schemas": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /scim/v2/Users": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /scim/v2/Users": {
         "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /scim/v2/Users/:id": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /scim/v2/Users/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /scim/v2/Users/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /scim/v2/Users/:id": {
+        "body": false,
+        "query": false,
+        "res": false
+    },
+    "GET /scope": {
+        "body": false,
         "query": false,
         "res": true
     },
@@ -1499,11 +1464,6 @@
         "query": true,
         "res": true
     },
-    "POST /retention": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "GET /server/repeater": {
         "body": false,
         "query": false,
@@ -1512,56 +1472,6 @@
     "DELETE /server/repeater/:uid": {
         "body": false,
         "query": false,
-        "res": true
-    },
-    "GET /search": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /search/reverse/:longitude/:latitude": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /search/reverse/:longitude/:latitude/sun": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /search/reverse/:longitude/:latitude/magnetic": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /search/reverse/:longitude/:latitude/weather": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /search/reverse/:longitude/:latitude/reverse": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /search/reverse/:longitude/:latitude/elevation": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /search/route": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /search/forward": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /search/suggest": {
-        "body": false,
-        "query": true,
         "res": true
     },
     "POST /server/tileset": {
@@ -1639,26 +1549,6 @@
         "query": false,
         "res": true
     },
-    "GET /type/cot": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /type/2525e": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /type/2525e/:sidc": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /type/cot/:type": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /user": {
         "body": false,
         "query": true,
@@ -1728,5 +1618,155 @@
         "body": false,
         "query": false,
         "res": true
+    },
+    "POST /retention": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /type/cot": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /type/2525e": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /type/2525e/:sidc": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /type/cot/:type": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /manifest.webmanifest": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /manifest.webmanifest/logos/:size": {
+        "body": false,
+        "query": false,
+        "res": false
+    },
+    "GET /search": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /search/reverse/:longitude/:latitude": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /search/reverse/:longitude/:latitude/sun": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /search/reverse/:longitude/:latitude/magnetic": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /search/reverse/:longitude/:latitude/weather": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /search/reverse/:longitude/:latitude/reverse": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /search/reverse/:longitude/:latitude/elevation": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /search/route": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /search/forward": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /search/suggest": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /iconset": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /iconset": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /iconset/:iconset": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /iconset/:iconset": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /iconset/:iconset/regen": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /iconset/:iconset": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /iconset/:iconset/icon": {
+        "body": true,
+        "query": true,
+        "res": true
+    },
+    "GET /icon": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /iconset/:iconset/icon/:icon": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /iconset/:iconset/icon/:icon": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /iconset/:iconset/icon/:icon": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /iconset/:iconset/sprite{:size}.json": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /iconset/:iconset/sprite{:size}.png": {
+        "body": false,
+        "query": true,
+        "res": false
     }
 }

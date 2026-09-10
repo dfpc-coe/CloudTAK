@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+- :tada: Add incoming SCIM 2.0 user provisioning at `/api/scim/v2` - an Identity Provider can list, create, update, deactivate & deprovision CloudTAK users with the `userName`, `name`, `displayName` & `active` attributes
+- :tada: Add a SCIM User Provisioning section to the Admin Config page to enable SCIM and set the Bearer Token an Identity Provider must present (`scim::enabled`, `scim::token`)
+- :rocket: Add a `disabled` flag to Profiles - a deprovisioned user has their sessions revoked and cannot log in via password, passkey or API token until reactivated
+
 ### v13.83.1 - 2026-09-10
 
 - :rocket: Add `parent` field to profile overlay for overlay hierarchy and inheritance

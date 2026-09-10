@@ -357,6 +357,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const profile = await config.models.Profile.from(passkey.username);
 
+            if (profile.disabled) throw new Err(403, null, 'User is disabled - Contact your administrator');
+
             let access = AuthUserAccess.USER;
             if (profile.system_admin) {
                 access = AuthUserAccess.ADMIN;

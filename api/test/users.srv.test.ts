@@ -43,6 +43,7 @@ test('GET: api/user', async () => {
                 last_login: time,
                 created: time,
                 updated: time,
+                disabled: false,
                 system_admin: true,
                 agency_admin: [],
             }],
@@ -101,6 +102,7 @@ test('PATCH: api/user/admin@example.com', async () => {
             geometry_point_type: 'u-d-p',
             geometry_point_color: '#ff0000',
             geometry_point_icon: '',
+            disabled: false,
             system_admin: true,
             agency_admin: [],
         });
@@ -158,6 +160,7 @@ test('GET: api/user/admin@example.com', async () => {
             geometry_point_type: 'u-d-p',
             geometry_point_color: '#ff0000',
             geometry_point_icon: '',
+            disabled: false,
             system_admin: true,
             agency_admin: [],
         });
