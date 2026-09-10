@@ -38824,7 +38824,7 @@ export interface paths {
                     /** @description No Description */
                     limit: number;
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "username" | "path" | "name" | "iconset" | "size" | "artifacts" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "username" | "parent" | "path" | "name" | "iconset" | "size" | "artifacts" | "enableRLS";
                     /** @description No Description */
                     filter: string;
                     /** @description Iterate through "pages" of items based on the "limit" query param */
@@ -38854,6 +38854,7 @@ export interface paths {
                                 created: string;
                                 updated: string;
                                 username: string;
+                                parent: null | string;
                                 path: string;
                                 name: string;
                                 iconset: null | string;
@@ -38954,6 +38955,7 @@ export interface paths {
                         /** @description Random UUID v4 of uploaded asset */
                         id: string;
                         name: string;
+                        parent?: null | string;
                         /** @default / */
                         path: string;
                         iconset?: null | string;
@@ -38976,6 +38978,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             username: string;
+                            parent: null | string;
                             path: string;
                             name: string;
                             iconset: null | string;
@@ -39192,6 +39195,7 @@ export interface paths {
                 content: {
                     "application/json": {
                         path?: string;
+                        parent?: null | string;
                         artifacts?: {
                             ext: string;
                         }[];
@@ -39213,6 +39217,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             username: string;
+                            parent: null | string;
                             path: string;
                             name: string;
                             iconset: null | string;
