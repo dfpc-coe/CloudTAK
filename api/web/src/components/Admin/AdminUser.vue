@@ -246,7 +246,6 @@
 </template>
 
 <script setup lang='ts'>
-import CopyField from '../CloudTAK/util/CopyField.vue';
 import { server } from '../../std.ts';
 import type { User } from '../../types.ts';
 import CopyField from '../CloudTAK/util/CopyField.vue';
