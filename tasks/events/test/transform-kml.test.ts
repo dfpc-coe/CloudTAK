@@ -2,6 +2,7 @@ import test, { type TestContext } from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import KML from '../src/transforms/kml.js';
 import type { Message, LocalMessage } from '../src/types.js';
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
@@ -402,6 +403,28 @@ test('KML Transform — NetworkLink', async (t) => {
         assert.ok(result.children?.length, 'GroundOverlay child asset should be generated');
         assert.ok(result.children?.[0].ext === '.pmtiles', 'generated child asset should be PMTiles');
         assert.ok(await fs.stat(result.children![0].path).then(() => true).catch(() => false), 'PMTiles output should exist on disk');
+    });
+
+    await t.test('KMZ JPEG GroundOverlay is converted to a child raster asset', async (st) => {
+        const tmpdir = await fs.mkdtemp('/tmp/kml-test-');
+        st.after(() => fs.rm(tmpdir, { recursive: true, force: true }));
+
+        const raw = fileURLToPath(new URL('./fixtures/kmz-overlay/mason_lake.kmz', import.meta.url));
+        const transform = new KML(
+            {} as Message,
+            {
+                tmpdir,
+                name: 'mason_lake.kmz',
+                ext: '.kmz',
+                id: 'mason-lake',
+                raw,
+            } as LocalMessage,
+        );
+
+        const result = await transform.convert();
+        assert.equal(result.children?.length, 1, 'JPEG GroundOverlay child asset should be generated');
+        assert.equal(result.children[0].ext, '.pmtiles', 'generated child asset should be PMTiles');
+        assert.ok(await fs.stat(result.children[0].path).then(() => true).catch(() => false), 'PMTiles output should exist on disk');
     });
 
     await t.test('local relative NetworkLink within tmpdir is resolved', async (st) => {
