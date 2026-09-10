@@ -609,7 +609,7 @@ test('PUT api/marti/package - mission destination attaches files by hash before 
                 response.write(JSON.stringify({
                     version: '3',
                     type: 'MissionChange',
-                    data: [],
+                    data: [{ type: 'ADD_CONTENT', contentUid: 'feature-mission-1' }],
                 }));
                 response.end();
                 return true;

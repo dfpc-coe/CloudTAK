@@ -7,7 +7,7 @@ import fsp from 'node:fs/promises';
 import { Type, Static } from '@sinclair/typebox';
 import { sql } from 'drizzle-orm';
 import S3 from '../../common/aws/s3.js';
-import { CoTParser, FileShare, DataPackage } from '@tak-ps/node-cot';
+import { FileShare, DataPackage } from '@tak-ps/node-cot';
 import { fromProtocol } from '../lib/factory-basemap.js';
 import { StandardResponse } from '../../common/types.js';
 import Schema from '@openaddresses/batch-schema';
@@ -15,6 +15,7 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import ProfileControl from '../lib/control/profile.js';
+import MissionPackage from '../lib/mission-package.js';
 import activeChannels from '../lib/tak-channels.js';
 import { Basemap as BasemapParser } from '@tak-ps/node-cot';
 import { Content } from '@tak-ps/node-tak/lib/api/files';
@@ -341,25 +342,22 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 .filter(d => d.mission)
                 .map(d => d.mission) as string[];
 
-            // TAK Server ignores the package manifest when adding a package to a Mission.
-            // TAK clients resolve attachments via the sha256 hashes in the CoT's attachment_list,
-            // so the files are attached to the Mission directly and must be present before the CoT
-            const missionPkg = missionGuids.length ? new DataPackage(crypto.randomUUID(), req.body.name || id) : undefined;
-            if (missionPkg) missionPkg.setEphemeral();
+            const missionPkg = await MissionPackage.from(req.body.features, {
+                username: user.email,
+                name: req.body.name || id,
+            });
 
-            const pkgs = missionPkg ? [pkg, missionPkg] : [pkg];
+            const pkgs = [pkg, missionPkg.pkg];
 
-            // Hash => CoT UID
-            const attachmentMap: Map<string, string> = new Map();
-            for (const feat of req.body.features) {
-                if (feat.properties.attachments && feat.properties.attachments.length) {
-                    for (const hash of feat.properties.attachments) {
-                        attachmentMap.set(hash, feat.id);
-                    }
-                }
+            for (const cot of missionPkg.cots) {
+                await pkg.addCoT(cot);
+            }
 
-                const cot = await CoTParser.from_geojson(feat);
-                for (const p of pkgs) await p.addCoT(cot);
+            for (const attachment of missionPkg.attachments) {
+                await pkg.addFile(attachment.body, {
+                    name: attachment.name,
+                    attachment: attachment.uid,
+                });
             }
 
             for (const basemapid of req.body.basemaps) {
@@ -386,26 +384,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                         name: `basemap-${basemap.id}.xml`,
                     });
                 }
-            }
-
-            const attachments: Array<{ name: string; body: Buffer }> = [];
-            for (const hash of attachmentMap.keys()) {
-                const uid = attachmentMap.get(hash);
-                if (!uid) continue;
-
-                const attachment = await S3.list(`attachment/${hash}/`);
-
-                if (attachment.length < 1 || !attachment[0].Key) continue;
-
-                const name = path.parse(attachment[0].Key).base;
-                const body = await stream2buffer(await S3.get(attachment[0].Key));
-
-                await pkg.addFile(body, {
-                    name,
-                    attachment: uid,
-                });
-
-                attachments.push({ name, body });
             }
 
             for (const asset of req.body.assets) {
@@ -500,7 +478,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 });
             }
 
-            if (missionPkg) {
+            if (missionGuids.length) {
                 const ovs = new Map();
                 (await config.models.ProfileOverlay.list({
                     where: sql`
@@ -515,39 +493,16 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     }
                 }
 
-                const missionOut = await missionPkg.finalize();
-
-                const attachmentHashes: string[] = [];
-                for (const attachment of attachments) {
-                    const uploaded = await api.Files.upload({
-                        name: attachment.name,
-                        contentLength: attachment.body.length,
-                        keywords: [],
-                        creatorUid,
-                    }, attachment.body);
-
-                    attachmentHashes.push(uploaded.Hash);
-                }
-
                 for (const guid of missionGuids) {
                     const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                         ? { token: String(req.headers['missionauthorization']) }
                         : await profileControl.subscription(user.email, guid);
 
-                    if (attachmentHashes.length) {
-                        await api.Mission.attachContents(guid, { hashes: attachmentHashes }, opts);
-                    }
-
-                    await api.Mission.upload(
-                        guid,
-                        `ANDROID-CloudTAK-${user.email}`,
-                        fs.createReadStream(missionOut),
-                        opts,
-                    );
+                    await missionPkg.upload(api, guid, opts);
                 }
-
-                await missionPkg.destroy();
             }
+
+            await missionPkg.destroy();
 
             res.json(content);
 
