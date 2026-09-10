@@ -2,8 +2,10 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { reactive } from 'vue';
 import { LocationState } from '../../../utils/events.ts';
+import { DrawToolMode } from '../../../stores/modules/draw.ts';
 
 const store = reactive({
+    draw: { mode: DrawToolMode.STATIC },
     callsign: 'COTAK Admin Buttlar',
     location: LocationState.Live,
     locationAccuracy: 3 as number | undefined,
@@ -109,5 +111,18 @@ describe('GPSPanel', () => {
         appStore.isMobileDetected = false;
 
         expect(mountPanel('SetLocation').find('.gps-panel').exists()).toBe(true);
+    });
+
+    it('hides on mobile while the draw tools are active', () => {
+        appStore.isMobileDetected = true;
+        store.draw.mode = DrawToolMode.POINT;
+
+        expect(mountPanel('Default').find('.gps-panel').exists()).toBe(false);
+
+        appStore.isMobileDetected = false;
+
+        expect(mountPanel('Default').find('.gps-panel').exists()).toBe(true);
+
+        store.draw.mode = DrawToolMode.STATIC;
     });
 });
