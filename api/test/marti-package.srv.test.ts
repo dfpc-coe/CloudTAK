@@ -587,7 +587,7 @@ test('PUT api/marti/package - mission destination attaches files by hash before 
                         mapLayers: [],
                         inviteOnly: false,
                         expiration: -1,
-                        uids: [],
+                        uids: [{ data: 'feature-mission-1', timestamp: '2024-01-01T00:00:00Z' }],
                         contents: [],
                         passwordProtected: false,
                     }],
@@ -609,7 +609,7 @@ test('PUT api/marti/package - mission destination attaches files by hash before 
                 response.write(JSON.stringify({
                     version: '3',
                     type: 'MissionChange',
-                    data: [{ type: 'ADD_CONTENT', contentUid: 'feature-mission-1' }],
+                    data: [],
                 }));
                 response.end();
                 return true;

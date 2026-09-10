@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { setTimeout as delay } from 'node:timers/promises';
 import type { Static } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import { CoTParser, DataPackage } from '@tak-ps/node-cot';
@@ -10,6 +11,11 @@ import type { TAKAPI } from '@tak-ps/node-tak';
 import type { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
 import S3 from '../../common/aws/s3.js';
 import stream2buffer from './stream.js';
+
+// TAK Server hands package CoTs to its async messaging pipeline before responding,
+// so mission membership is only visible on a subsequent read of the mission
+const CONFIRM_ATTEMPTS = 5;
+const CONFIRM_DELAY_MS = 300;
 
 export type MissionAttachment = {
     name: string;
@@ -86,6 +92,9 @@ export default class MissionPackage {
     /**
      * Upload the package to a Mission and confirm every CoT is now part of it
      *
+     * The submitting user must hold a Mission subscription as ANDROID-CloudTAK-<username>
+     * with MISSION_WRITE - TAK Server silently drops package CoTs otherwise
+     *
      * @returns The UIDs of the CoTs confirmed by the TAK Server
      */
     async upload(
@@ -114,22 +123,21 @@ export default class MissionPackage {
 
         if (!this.#finalized) this.#finalized = await this.pkg.finalize();
 
-        const changes = await api.Mission.upload(
+        // A non-empty response body lists conflicts and arrives with a 409, which node-tak throws
+        await api.Mission.upload(
             guid,
             `ANDROID-CloudTAK-${this.username}`,
             fs.createReadStream(this.#finalized),
             opts,
-        ) as { data?: Array<{ contentUid?: unknown }> };
+        );
 
-        const confirmed = new Set<string>();
-        for (const change of changes.data || []) {
-            if (typeof change.contentUid === 'string') confirmed.add(change.contentUid);
-        }
+        let missing = this.uids;
+        for (let attempt = 0; attempt < CONFIRM_ATTEMPTS && missing.length; attempt++) {
+            if (attempt > 0) await delay(CONFIRM_DELAY_MS);
 
-        // Not every TAK Server version reports the package contents as changes
-        if (this.uids.some(uid => !confirmed.has(uid))) {
             const mission = await api.Mission.get(guid, {}, opts) as { uids?: unknown[] };
 
+            const confirmed = new Set<string>();
             for (const entry of mission.uids || []) {
                 if (typeof entry === 'string') {
                     confirmed.add(entry);
@@ -137,9 +145,10 @@ export default class MissionPackage {
                     confirmed.add((entry as { data: string }).data);
                 }
             }
+
+            missing = missing.filter(uid => !confirmed.has(uid));
         }
 
-        const missing = this.uids.filter(uid => !confirmed.has(uid));
         if (missing.length) {
             throw new Err(502, null, `TAK Server did not confirm CoT: ${missing.join(', ')}`);
         }

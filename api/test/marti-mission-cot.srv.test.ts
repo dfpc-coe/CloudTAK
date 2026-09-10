@@ -130,15 +130,17 @@ function missionResponse(uids: string[]) {
 /**
  * Mock the TAK Server calls behind a mission package upload
  *
- * @param opts.changes - contentUids reported by the package upload response
- * @param opts.uids - UIDs the mission reports on a subsequent GET
+ * TAK Server records package CoTs on the mission asynchronously, so the mission
+ * only reports `opts.uids` from the `opts.confirmAfter`th read following the upload
  */
 function mockMission(opts: {
-    changes: string[];
     uids: string[];
+    confirmAfter?: number;
+    uploadStatus?: number;
 }) {
     const calls = {
         gets: 0,
+        getsAfterUpload: 0,
         uploads: [] as Array<{ url: URL; headers: IncomingMessage['headers']; entries: string[] }>,
     };
 
@@ -149,8 +151,12 @@ function mockMission(opts: {
 
         if (request.method === 'GET' && url.pathname === `/Marti/api/missions/guid/${GUID}`) {
             calls.gets++;
+            if (calls.uploads.length) calls.getsAfterUpload++;
+
+            const confirmed = calls.getsAfterUpload >= (opts.confirmAfter ?? 1);
+
             response.setHeader('Content-Type', 'application/json');
-            response.write(missionResponse(opts.uids));
+            response.write(missionResponse(confirmed ? opts.uids : []));
             response.end();
             return true;
         } else if (request.method === 'PUT' && url.pathname === PACKAGE_PATH) {
@@ -165,11 +171,12 @@ function mockMission(opts: {
             await dp.destroy();
             await fsp.rm(packagePath, { force: true });
 
+            response.statusCode = opts.uploadStatus || 200;
             response.setHeader('Content-Type', 'application/json');
             response.write(JSON.stringify({
                 version: '3',
                 type: 'MissionChange',
-                data: opts.changes.map(contentUid => ({ type: 'ADD_CONTENT', contentUid })),
+                data: opts.uploadStatus === 409 ? [{ type: 'ADD_CONTENT', contentUid: opts.uids[0] }] : [],
             }));
             response.end();
             return true;
@@ -181,8 +188,8 @@ function mockMission(opts: {
     return calls;
 }
 
-test('PUT: api/marti/missions/:guid/cot - Uploads a Mission Package and confirms from the change list', async () => {
-    const calls = mockMission({ changes: ['uid-1', 'uid-2'], uids: [] });
+test('PUT: api/marti/missions/:guid/cot - Uploads a Mission Package and confirms from the Mission UID list', async () => {
+    const calls = mockMission({ uids: ['uid-1', 'uid-2'] });
 
     try {
         const res = await flight.fetch(`/api/marti/missions/${GUID}/cot`, {
@@ -204,8 +211,8 @@ test('PUT: api/marti/missions/:guid/cot - Uploads a Mission Package and confirms
             uids: ['uid-1', 'uid-2'],
         });
 
-        // One GET resolves the guid to the mission name - no confirmation GET was needed
-        assert.equal(calls.gets, 1);
+        // One GET resolves the guid to the mission name, one confirms the upload
+        assert.equal(calls.gets, 2);
         assert.equal(calls.uploads.length, 1);
         assert.equal(calls.uploads[0].url.searchParams.get('creatorUid'), 'ANDROID-CloudTAK-admin@example.com');
         assert.equal(calls.uploads[0].headers['missionauthorization'], 'Bearer test-mission-token');
@@ -218,8 +225,8 @@ test('PUT: api/marti/missions/:guid/cot - Uploads a Mission Package and confirms
     }
 });
 
-test('PUT: api/marti/missions/:guid/cot - Falls back to the Mission UID list when no changes are reported', async () => {
-    const calls = mockMission({ changes: [], uids: ['uid-1'] });
+test('PUT: api/marti/missions/:guid/cot - Retries confirmation while the TAK Server pipeline is still processing', async () => {
+    const calls = mockMission({ uids: ['uid-1'], confirmAfter: 3 });
 
     try {
         const res = await flight.fetch(`/api/marti/missions/${GUID}/cot`, {
@@ -233,7 +240,7 @@ test('PUT: api/marti/missions/:guid/cot - Falls back to the Mission UID list whe
         }, true);
 
         assert.deepEqual(res.body.uids, ['uid-1']);
-        assert.equal(calls.gets, 2);
+        assert.equal(calls.getsAfterUpload, 3);
     } catch (err) {
         assert.ifError(err);
     } finally {
@@ -241,8 +248,8 @@ test('PUT: api/marti/missions/:guid/cot - Falls back to the Mission UID list whe
     }
 });
 
-test('PUT: api/marti/missions/:guid/cot - Unconfirmed CoT is a 502', async () => {
-    mockMission({ changes: ['uid-1'], uids: ['uid-1'] });
+test('PUT: api/marti/missions/:guid/cot - Unconfirmed CoT is a 502 after the confirmation attempts', async () => {
+    const calls = mockMission({ uids: ['uid-1'] });
 
     try {
         const res = await flight.fetch(`/api/marti/missions/${GUID}/cot`, {
@@ -257,6 +264,30 @@ test('PUT: api/marti/missions/:guid/cot - Unconfirmed CoT is a 502', async () =>
 
         assert.equal(res.status, 502);
         assert.equal(res.body.message, 'TAK Server did not confirm CoT: uid-2');
+        assert.equal(calls.getsAfterUpload, 5);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        flight.tak.reset();
+    }
+});
+
+test('PUT: api/marti/missions/:guid/cot - Mission Package conflicts are passed through', async () => {
+    const calls = mockMission({ uids: ['uid-1'], uploadStatus: 409 });
+
+    try {
+        const res = await flight.fetch(`/api/marti/missions/${GUID}/cot`, {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                features: [feature('uid-1')],
+            },
+        }, false);
+
+        assert.equal(res.status, 409);
+        assert.equal(calls.getsAfterUpload, 0);
     } catch (err) {
         assert.ifError(err);
     } finally {
@@ -315,7 +346,7 @@ test('PUT: api/marti/missions/:guid/cot - Attachments are uploaded and attached 
         return false;
     });
 
-    const calls = mockMission({ changes: ['uid-1'], uids: [] });
+    const calls = mockMission({ uids: ['uid-1'] });
 
     try {
         const res = await flight.fetch(`/api/marti/missions/${GUID}/cot`, {
