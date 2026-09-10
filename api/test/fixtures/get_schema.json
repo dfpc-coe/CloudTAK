@@ -1439,6 +1439,36 @@
         "query": false,
         "res": true
     },
+    "GET /scim/v2/Groups": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /scim/v2/Groups": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /scim/v2/Groups/:id": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /scim/v2/Groups/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /scim/v2/Groups/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /scim/v2/Groups/:id": {
+        "body": false,
+        "query": false,
+        "res": false
+    },
     "DELETE /scim/v2/Users/:id": {
         "body": false,
         "query": false,
