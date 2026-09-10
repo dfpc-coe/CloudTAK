@@ -11,6 +11,7 @@ import MissionTemplate from './models/MissionTemplate.js';
 import MissionTemplateLog from './models/MissionTemplateLog.js';
 import Setting from './models/Setting.js';
 import ProfileChat from './models/ProfileChat.js';
+import ProfileModel from './models/Profile.js';
 import ProfileConfig from './models/ProfileConfig.js';
 import ProfilePasskey from './models/ProfilePasskey.js';
 import ProfileFile from './models/ProfileFile.js';
@@ -49,7 +50,7 @@ export default class Models {
     MissionTemplate: MissionTemplate;
     MissionTemplateLog: MissionTemplateLog;
 
-    Profile: Modeler<typeof pgtypes.Profile>;
+    Profile: ProfileModel;
     ProfileConfig: ProfileConfig;
     ProfileChat: ProfileChat;
     ProfileToken: Modeler<typeof pgtypes.ProfileToken>;
@@ -101,7 +102,7 @@ export default class Models {
         this.MissionTemplate = new MissionTemplate(pg);
         this.MissionTemplateLog = new MissionTemplateLog(pg);
 
-        this.Profile = new Modeler(pg, pgtypes.Profile);
+        this.Profile = new ProfileModel(pg);
         this.ProfileConfig = new ProfileConfig(pg);
         this.ProfileToken = new Modeler(pg, pgtypes.ProfileToken);
         this.ProfileFile = new ProfileFile(pg);

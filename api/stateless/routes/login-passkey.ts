@@ -385,8 +385,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             // A passkey login has no password so the certificate cannot be regenerated here,
             // instead the client is told to collect a password and call POST /login
-            let certRenewalRequired = Provider.certificateRenewalRequired(profile.auth.cert);
-            let certExpired = Provider.certificateExpired(profile.auth.cert);
+            let certRenewalRequired = Provider.certificateRenewalRequired(profile.auth?.cert);
+            let certExpired = Provider.certificateExpired(profile.auth?.cert);
 
             if (!certRenewalRequired && config.server.auth.key && config.server.auth.cert) {
                 try {

@@ -102,6 +102,10 @@ test('POST: api/scim/v2/Users', async () => {
     }, true);
 
     assert.equal(res.status, 201);
+
+    const provisioned = await flight.config!.models.Profile.from('scim.user@example.com');
+    assert.equal(provisioned.auth, null, 'provisioned users have no auth until first login');
+
     assert.ok(res.body.meta.created);
     assert.ok(res.body.meta.lastModified);
     assert.ok(res.body.meta.location.endsWith('/api/scim/v2/Users/scim.user%40example.com'), res.body.meta.location);
@@ -285,7 +289,7 @@ test('POST: api/login - provisioned user first login', async () => {
     assert.equal(res.body.access, 'user');
 
     const profile = await flight.config!.models.Profile.from('scim.user@example.com');
-    assert.ok(profile.auth.cert, 'certificate issued on first login');
+    assert.ok(profile.auth?.cert, 'certificate issued on first login');
 });
 
 test('PUT: api/scim/v2/Users/:id', async () => {

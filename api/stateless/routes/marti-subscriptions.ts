@@ -22,7 +22,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             await Auth.is_auth(config, req);
 
             const user = await Auth.as_user(config, req);
-            const profile = await config.models.Profile.from(user.email);
+            const profile = await config.models.Profile.withAuth(user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             const channels = await activeChannels(api);
 
@@ -53,7 +53,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             await Auth.is_auth(config, req);
 
             const user = await Auth.as_user(config, req);
-            const profile = await config.models.Profile.from(user.email);
+            const profile = await config.models.Profile.withAuth(user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const subs = await api.Subscription.list({

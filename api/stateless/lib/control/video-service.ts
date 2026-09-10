@@ -676,7 +676,7 @@ export default class VideoServiceControl {
             if (opts.username === lease.username) {
                 return lease;
             } else {
-                const profile = await this.config.models.Profile.from(opts.username);
+                const profile = await this.config.models.Profile.withAuth(opts.username);
                 const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
                 const groups = (await api.Group.list({ useCache: true }))
                     .data.map(group => group.name);

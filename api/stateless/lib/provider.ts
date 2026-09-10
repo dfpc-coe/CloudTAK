@@ -92,20 +92,25 @@ export default class AuthProvider {
         profile: InferSelectModel<typeof Profile>,
         password?: string,
     ): Promise<InferSelectModel<typeof Profile>> {
-        if (AuthProvider.certificateRenewalRequired(profile.auth.cert)) {
-            console.error(`Error: CertificateExpiration: ${profile.username}: ${AuthProvider.certificate(profile.auth.cert)?.validTo ?? 'unparseable'}: Certificate has expired or is about to`);
+        let auth = profile.auth;
+
+        if (!auth || AuthProvider.certificateRenewalRequired(auth.cert)) {
+            if (auth) {
+                console.error(`Error: CertificateExpiration: ${profile.username}: ${AuthProvider.certificate(auth.cert)?.validTo ?? 'unparseable'}: Certificate has expired or is about to`);
+            }
 
             if (password) {
                 const api = await TAKAPI.init(new URL(this.config.server.webtak), new APIAuthPassword(profile.username, password));
-                profile = await this.config.models.Profile.commit(profile.username, {
-                    auth: await api.Credentials.generate(),
-                });
-            } else {
+                auth = await api.Credentials.generate();
+                profile = await this.config.models.Profile.commit(profile.username, { auth });
+            } else if (auth) {
                 throw new Err(401, null, 'Certificate is expired');
+            } else {
+                throw new Err(401, null, 'User has been provisioned but has not yet logged in');
             }
         }
 
-        const cert_api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+        const cert_api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
         // The TAK Server X509 filter runs on every request so a GET of the anonymous, DB-free
         // version endpoint is the cheapest authoritative check that the certificate is still
@@ -128,7 +133,7 @@ export default class AuthProvider {
 
                     // Best effort - the admin certificate lookup adds the revocation date to the message
                     try {
-                        const status = await this.status(profile.auth.cert);
+                        const status = await this.status(auth.cert);
                         if (status?.revocationDate) message = `Certificate was revoked on ${status.revocationDate}`;
                     } catch (err) {
                         console.error(err);
