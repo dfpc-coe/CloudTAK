@@ -21,6 +21,7 @@
 - :tada: Accept SCIM 2.0 Groups at `/api/scim/v2/Groups` so Identity Providers that always sync groups (authentik) complete without errors - Groups are not stored, the id encodes the group name
 - :tada: Add a SCIM User Provisioning section to the Admin Config page to enable SCIM and set the Bearer Token an Identity Provider must present (`scim::enabled`, `scim::token`)
 - :rocket: Add a `disabled` flag to Profiles - a deprovisioned user has their sessions revoked and cannot log in via password, passkey or API token until reactivated
+- :rocket: `Profile.auth` is now nullable - a `null` auth marks a user that was provisioned (SCIM) but has never logged in, the TAK certificate is issued on their first password login
 
 ### v13.83.0 - 2026-09-10
 

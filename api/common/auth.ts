@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import Config from './config.js';
 import { InferSelectModel } from 'drizzle-orm';
 import type { Profile, Connection, ConnectionToken, Layer } from './schema.js';
+import type { AuthenticatedProfile } from './models/Profile.js';
 
 export enum ResourceCreationScope {
     SERVER = 'server',
@@ -326,14 +327,18 @@ export default class Auth {
         return user;
     }
 
-    static async #as_profile(config: Config, user: AuthUser): Promise<InferSelectModel<typeof Profile>> {
-        return await config.models.Profile.from(user.email);
+    static async #as_profile(config: Config, user: AuthUser): Promise<AuthenticatedProfile> {
+        return await config.models.Profile.withAuth(user.email);
     }
 
+    /**
+     * The authenticated user's Profile - a Profile that has been provisioned (SCIM)
+     * but has never logged in has no TAK certificate and is rejected
+     */
     static async as_profile(config: Config, req: Request<any, any, any, any>, opts: {
         token?: boolean;
         admin?: boolean;
-    } = {}): Promise<InferSelectModel<typeof Profile>> {
+    } = {}): Promise<AuthenticatedProfile> {
         const user = await this.as_user(config, req, opts);
         return await this.#as_profile(config, user);
     }

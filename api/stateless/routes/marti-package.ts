@@ -147,7 +147,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            const profile = await config.models.Profile.from(user.email);
+            const profile = await config.models.Profile.withAuth(user.email);
             const auth = profile.auth;
             const creatorUid = profile.username;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
@@ -322,7 +322,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const profile = await config.models.Profile.from(user.email);
+            const profile = await config.models.Profile.withAuth(user.email);
             const auth = profile.auth;
             const creatorUid = profile.username;
             const id = crypto.randomUUID();
@@ -584,14 +584,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 auth = config.serverCert();
 
                 if (typeof req.query.impersonate === 'string' && req.query.impersonate !== 'true') {
-                    const profile = await config.models.Profile.from(req.query.impersonate);
+                    const profile = await config.models.Profile.withAuth(req.query.impersonate);
                     auth = profile.auth;
                 } else {
                     auth = config.serverCert();
                 }
             } else {
                 const user = await Auth.as_user(config, req);
-                auth = (await config.models.Profile.from(user.email)).auth;
+                auth = (await config.models.Profile.withAuth(user.email)).auth;
             }
 
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
@@ -641,7 +641,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            const auth = (await config.models.Profile.from(user.email)).auth;
+            const auth = (await config.models.Profile.withAuth(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const pkg = await api.Package.list({
@@ -701,7 +701,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const latest = current.items[current.items.length - 1];
 
             if (user.access !== AuthUserAccess.ADMIN) {
-                const profile = await config.models.Profile.from(user.email);
+                const profile = await config.models.Profile.withAuth(user.email);
                 const userApi = await TAKAPI.init(
                     new URL(String(config.server.api)),
                     new APIAuthCertificate(profile.auth.cert, profile.auth.key),

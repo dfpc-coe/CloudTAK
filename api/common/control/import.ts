@@ -62,7 +62,7 @@ export default class ImportControl {
 
         // Both Package and Mission Imports fetch from the File API
         if (body.source === ImportSourceEnum.PACKAGE || body.source === ImportSourceEnum.MISSION) {
-            const profile = await this.config.models.Profile.from(body.username);
+            const profile = await this.config.models.Profile.withAuth(body.username);
             const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             if (!body.source_id) throw new Error('Source ID Must be set for Package Import Source');

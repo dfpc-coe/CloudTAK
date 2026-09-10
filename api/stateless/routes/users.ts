@@ -71,7 +71,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             list.items = list.items.map((user) => {
                 return {
                     active: presence[user.username].active,
-                    certificate: Provider.certificate(user.auth.cert),
+                    certificate: Provider.certificate(user.auth?.cert),
                     ...user,
                 };
             });
@@ -120,7 +120,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             res.json({
                 ...profile,
-                certificate: Provider.certificate((await config.models.Profile.from(req.params.username)).auth.cert),
+                certificate: Provider.certificate((await config.models.Profile.from(req.params.username)).auth?.cert),
             });
         } catch (err) {
             Err.respond(err, res);
@@ -141,10 +141,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const profile = await profileControl.from(req.params.username);
 
-            const cert = (await config.models.Profile.from(req.params.username)).auth.cert;
+            const cert = (await config.models.Profile.from(req.params.username)).auth?.cert;
             const certificate = Provider.certificate(cert);
 
-            if (certificate) {
+            if (certificate && cert) {
                 // Best effort - the TAK Server revocation record supplements the local metadata
                 try {
                     const status = await new Provider(config).status(cert);

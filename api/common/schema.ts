@@ -249,7 +249,7 @@ export const Profile = pgTable('profile', {
     name: text().default('Unknown'),
     username: text().primaryKey(),
     last_login: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    auth: jsonb().$type<Static<typeof ConnectionAuth>>().notNull(),
+    auth: jsonb().$type<Static<typeof ConnectionAuth>>(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     system_admin: boolean().notNull().default(false),

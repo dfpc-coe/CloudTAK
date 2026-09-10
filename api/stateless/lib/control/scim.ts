@@ -6,7 +6,6 @@ import type { InferSelectModel } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import type Config from '../../../common/config.js';
 import { Profile, ProfileSession } from '../../../common/schema.js';
-import type { ConnectionAuth } from '../../../common/connection-config.js';
 import UserControl from './user.js';
 
 export const SCIM_USER_SCHEMA = 'urn:ietf:params:scim:schemas:core:2.0:User';
@@ -328,11 +327,11 @@ export default class ScimControl {
             throw new ScimErr(409, `User ${username} already exists`, 'uniqueness');
         }
 
-        // Certificates are issued from the TAK Server on the user's first login
+        // A null auth marks a provisioned user - the certificate is issued on their first login
         const profile = await this.userControl.generate({
             username,
             name: formatName(body.name) ?? 'Unknown',
-            auth: {} as Static<typeof ConnectionAuth>,
+            auth: null,
             disabled: body.active === false,
         });
 

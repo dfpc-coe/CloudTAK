@@ -23,7 +23,7 @@ export default async function activeChannels(api: TAKAPI): Promise<Set<number>> 
  * selection rather than the Admin cert's
  */
 export async function userChannels(config: Config, email: string): Promise<Set<number>> {
-    const profile = await config.models.Profile.from(email);
+    const profile = await config.models.Profile.withAuth(email);
 
     const api = await TAKAPI.init(
         new URL(String(config.server.api)),

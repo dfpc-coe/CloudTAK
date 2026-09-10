@@ -261,7 +261,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             } else {
                 const user = await Auth.as_user(config, req);
 
-                const profile = await config.models.Profile.from(user.email);
+                const profile = await config.models.Profile.withAuth(user.email);
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
                 const groups = (await api.Group.list({ useCache: true }))

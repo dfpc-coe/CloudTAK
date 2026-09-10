@@ -1429,6 +1429,13 @@
       "when": 1789053728309,
       "tag": "0204_profile_disabled",
       "breakpoints": true
+    },
+    {
+      "idx": 205,
+      "version": "7",
+      "when": 1789057693075,
+      "tag": "0205_profile_auth_nullable",
+      "breakpoints": true
     }
   ]
 }

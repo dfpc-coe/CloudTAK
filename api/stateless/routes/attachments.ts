@@ -106,7 +106,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     if (!result) throw new Err(400, null, 'No file uploaded');
 
                     if (req.query.mission) {
-                        const profile = await config.models.Profile.from(user.email);
+                        const profile = await config.models.Profile.withAuth(user.email);
                         const auth = profile.auth;
                         const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
