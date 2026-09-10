@@ -49,7 +49,14 @@
             <TablerError
                 v-else-if='error'
                 :err='error'
-            />
+            >
+                <template #advanced='{ body }'>
+                    <CopyField
+                        mode='pre'
+                        :model-value='body'
+                    />
+                </template>
+            </TablerError>
             <template v-else-if='edit'>
                 <div class='col-12 pb-4'>
                     <TablerToggle
@@ -239,6 +246,7 @@
 </template>
 
 <script setup lang='ts'>
+import CopyField from '../CloudTAK/util/CopyField.vue';
 import { server } from '../../std.ts';
 import type { User } from '../../types.ts';
 import CopyField from '../CloudTAK/util/CopyField.vue';

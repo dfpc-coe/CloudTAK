@@ -45,7 +45,14 @@
                             v-else-if='error'
                             :err='error'
                             @close='refresh'
-                        />
+                        >
+                            <template #advanced='{ body }'>
+                                <CopyField
+                                    mode='pre'
+                                    :model-value='body'
+                                />
+                            </template>
+                        </TablerError>
                         <div
                             v-else-if='upload'
                             class='py-2 px-4'
@@ -136,6 +143,7 @@
 </template>
 
 <script setup lang="ts">
+import CopyField from '../util/CopyField.vue';
 import { ref, computed, onMounted, watch } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import { server, std, stdurl } from '../../../std.ts';

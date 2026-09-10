@@ -70,7 +70,14 @@
             v-if='error'
             :err='error'
             @close='error = undefined'
-        />
+        >
+            <template #advanced='{ body }'>
+                <CopyField
+                    mode='pre'
+                    :model-value='body'
+                />
+            </template>
+        </TablerError>
         <ChannelChangeModal
             v-if='mapStore.channelChange'
             @close='mapStore.channelChange = false'
@@ -85,6 +92,7 @@
 </template>
 
 <script setup lang='ts'>
+import CopyField from './components/CloudTAK/util/CopyField.vue';
 import { ref, computed, onErrorCaptured, onMounted, onUnmounted } from 'vue'
 import { liveQuery } from 'dexie';
 import { isTransientDbError } from './database.ts';

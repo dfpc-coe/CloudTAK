@@ -151,7 +151,7 @@
                         <TablerIconButton
                             title='Load Breadcrumb'
                         >
-                            <div style='position: relative; display: inline-flex;'>
+                            <div style='position: relative; display: inline-flex; vertical-align: bottom;'>
                                 <IconRoute
                                     :size='actionIconSize'
                                     stroke='1'

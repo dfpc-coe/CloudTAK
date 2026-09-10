@@ -31,6 +31,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     const boardControl = new BoardControl(config);
     const formControl = new FormControl(config);
 
+    /**
+     * A Column change is not carried on the Event CoT but the rebroadcast
+     * signals Map clients to refetch the Event - best effort, the next
+     * scheduled cycle recovers a failed submit
+     */
+    function rebroadcast(event: string): void {
+        config.hub.coreEventSubmit(event).catch((err) => {
+            console.error(`not ok - failed to immediately submit Core Event ${event}:`, err);
+        });
+    }
+
     /** Refuse placing an Event into a Column whose required Forms it has not completed */
     async function ensureRequiredForms(column: string, event: string): Promise<void> {
         const missing = await formControl.missingRequiredForms(column, event);
@@ -396,6 +407,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 });
             }
 
+            if (!existing.items.length || existing.items[0].column !== column.id) {
+                rebroadcast(req.body.event);
+            }
+
             res.json(placementResponse(placement, event));
         } catch (err) {
             Err.respond(err, res);
@@ -425,6 +440,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             let { placement } = await boardControl.placementAccess(user, req.params.placement);
 
+            const moved = req.body.column !== undefined && req.body.column !== placement.column;
+
             if (req.body.column !== undefined) {
                 const column = await config.models.CoreEventBoardColumn.from(req.body.column);
 
@@ -443,6 +460,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     updated: sql`Now()`,
                 });
             }
+
+            if (moved) rebroadcast(placement.event);
 
             res.json(placementResponse(
                 placement,
@@ -467,9 +486,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            await boardControl.placementAccess(user, req.params.placement);
+            const { placement } = await boardControl.placementAccess(user, req.params.placement);
 
             await config.models.CoreEventBoardEvent.delete(req.params.placement);
+
+            rebroadcast(placement.event);
 
             res.json({ status: 200, message: 'Event removed from Board' });
         } catch (err) {
