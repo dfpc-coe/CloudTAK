@@ -23,6 +23,10 @@
 - :rocket: Add a `disabled` flag to Profiles - a deprovisioned user has their sessions revoked and cannot log in via password, passkey or API token until reactivated
 - :rocket: `Profile.auth` is now nullable - a `null` auth marks a user that was provisioned (SCIM) but has never logged in, the TAK certificate is issued on their first password login
 
+### v13.83.1 - 2026-09-10
+
+- :rocket: Add `parent` field to profile overlay for overlay hierarchy and inheritance
+
 ### v13.83.0 - 2026-09-10
 
 - :tada: Add a standalone Forms page (`/forms`) for creating, editing & deleting the Core Forms used by Events and Boards, reachable from the Application Switcher

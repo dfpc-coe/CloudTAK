@@ -1,5 +1,5 @@
 {
-  "id": "988d513c-b2ac-4a08-a742-0280efb91a28",
+  "id": "94121267-e7b2-4e8a-b1e6-6257e288d754",
   "prevId": "e2ed0d8b-c582-4c6a-accb-150db25c4cdc",
   "version": "7",
   "dialect": "postgresql",
@@ -3165,13 +3165,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'[]'::jsonb"
-        },
-        "disabled": {
-          "name": "disabled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
         }
       },
       "indexes": {},
@@ -3471,6 +3464,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "parent": {
+          "name": "parent",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "path": {
           "name": "path",
           "type": "text",
@@ -3517,6 +3516,19 @@
             "username"
           ],
           "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "profile_files_parent_profile_files_id_fk": {
+          "name": "profile_files_parent_profile_files_id_fk",
+          "tableFrom": "profile_files",
+          "tableTo": "profile_files",
+          "columnsFrom": [
+            "parent"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "profile_files_iconset_iconsets_uid_fk": {

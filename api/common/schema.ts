@@ -276,6 +276,7 @@ export const ProfileFile = pgTable('profile_files', {
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     username: text().notNull().references(() => Profile.username),
+    parent: uuid().references((): AnyPgColumn => ProfileFile.id, { onDelete: 'cascade' }),
     path: text().notNull().default('/'),
     name: text().notNull(),
     iconset: text().references(() => Iconset.uid),
