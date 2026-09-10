@@ -6,6 +6,8 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import S3 from '../../common/aws/s3.js';
+import IconsetControl from '../../common/control/iconset.js';
+import ProfileFileControl from '../../common/control/profile-file.js';
 import { ProfileFile, ProfileFileChannel } from '../../common/schema.js';
 import type ConfigStateless from '../config.js';
 import { userChannels } from '../lib/tak-channels.js';
@@ -13,47 +15,8 @@ import { profileAssetTileJSON } from '../lib/tilejson.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
-    async function ensureReadPermission(file: { username: string; channels?: Array<number | bigint> | null }, email: string) {
-        if (file.username === email) return;
-
-        const fileChannels = (file.channels || []).map(c => Number(c));
-        if (fileChannels.length === 0) {
-            throw new Err(403, null, 'You do not have permission to view this asset');
-        }
-
-        const active = await userChannels(config, email);
-
-        if (!fileChannels.some(bp => active.has(bp))) {
-            throw new Err(403, null, 'You do not have permission to view this asset');
-        }
-    }
-
-    async function ensureIconsetPermission(iconset: string | null | undefined, email: string) {
-        if (iconset === undefined || iconset === null || iconset === '') return;
-
-        const iconsetRes = await config.models.Iconset.from(iconset);
-
-        if (iconsetRes.username !== email) {
-            throw new Err(403, null, `You do not have permission to associate iconset '${iconset}'`);
-        }
-    }
-
-    async function ensureParentPermission(parentId: string, email: string, childId?: string) {
-        const visited = new Set(childId ? [childId] : []);
-        let currentParentId: string | null = parentId;
-
-        while (currentParentId) {
-            const parent = await config.models.ProfileFile.from(currentParentId);
-            if (parent.username !== email) {
-                throw new Err(403, null, 'You do not have permission to attach this asset to the requested parent');
-            } else if (visited.has(parent.id)) {
-                throw new Err(400, null, 'Profile asset parent relationships cannot contain cycles');
-            }
-
-            visited.add(parent.id);
-            currentParentId = parent.parent;
-        }
-    }
+    const iconsetControl = new IconsetControl(config);
+    const profileFileControl = new ProfileFileControl(config);
 
     await schema.get('/profile/asset', {
         name: 'List Files',
@@ -217,10 +180,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (req.body.parent) {
-                await ensureParentPermission(req.body.parent, user.email, req.body.id);
+                await profileFileControl.ensureParentPermission(req.body.parent, user.email, req.body.id);
             }
 
-            await ensureIconsetPermission(req.body.iconset, user.email);
+            await iconsetControl.ensurePermission(req.body.iconset, user.email);
 
             const file = await config.models.ProfileFile.generate({
                 id: req.body.id,
@@ -270,7 +233,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (req.body.parent) {
-                await ensureParentPermission(req.body.parent, user.email, file.id);
+                await profileFileControl.ensureParentPermission(req.body.parent, user.email, file.id);
             }
 
             if (req.body.artifacts) {
@@ -292,7 +255,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 iconsetValue = req.body.iconset;
             }
 
-            await ensureIconsetPermission(iconsetValue, user.email);
+            await iconsetControl.ensurePermission(iconsetValue, user.email);
 
             file = await config.models.ProfileFile.commit(req.params.asset, {
                 parent: req.body.parent,
@@ -339,7 +302,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const file = await config.models.ProfileFile.augmented_from(req.params.asset);
 
-            await ensureReadPermission(file, user.email);
+            await profileFileControl.ensureReadPermission(file, user.email);
 
             const object = await S3.getObject(`profile/${file.username}/${req.params.asset}.${req.params.ext}`);
 
@@ -368,7 +331,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const file = await config.models.ProfileFile.augmented_from(req.params.asset);
 
-            await ensureReadPermission(file, user.email);
+            await profileFileControl.ensureReadPermission(file, user.email);
 
             if (!await S3.exists(`profile/${file.username}/${req.params.asset}.pmtiles`)) {
                 throw new Err(404, null, 'Asset does not exist');

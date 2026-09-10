@@ -95,11 +95,19 @@ test('POST: api/profile/asset', async () => {
 test('POST: api/profile/asset supports parent linkage', async () => {
     try {
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
-            assert.ok(command instanceof HeadObjectCommand);
+            if (command instanceof HeadObjectCommand) {
+                return Promise.resolve({
+                    ContentLength: 123,
+                });
+            } else if (command instanceof ListObjectsV2Command) {
+                return Promise.resolve({
+                    Contents: [],
+                });
+            } else if (command instanceof DeleteObjectsCommand) {
+                return Promise.resolve({});
+            }
 
-            return Promise.resolve({
-                ContentLength: 123,
-            });
+            throw new Error(`Unknown S3 Command: ${command.constructor.name}`);
         });
 
         const parent = await flight.fetch('/api/profile/asset', {
@@ -153,6 +161,15 @@ test('POST: api/profile/asset supports parent linkage', async () => {
             },
         }, false);
         assert.equal(cyclic.status, 400);
+
+        for (const id of [parent.body.id, res.body.id]) {
+            await flight.fetch(`/api/profile/asset/${id}`, {
+                method: 'DELETE',
+                auth: {
+                    bearer: flight.token.admin,
+                },
+            }, true);
+        }
     } catch (err) {
         assert.ifError(err);
     } finally {
@@ -214,7 +231,11 @@ test('DELETE: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7 cascades ch
     try {
         const deletedPrefixes = new Set<string>();
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
-            if (command instanceof ListObjectsV2Command) {
+            if (command instanceof HeadObjectCommand) {
+                return Promise.resolve({
+                    ContentLength: 123,
+                });
+            } else if (command instanceof ListObjectsV2Command) {
                 deletedPrefixes.add(String(command.input.Prefix));
                 return Promise.resolve({
                     Contents: [],
@@ -226,16 +247,20 @@ test('DELETE: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7 cascades ch
             throw new Error(`Unknown S3 Command: ${command.constructor.name}`);
         });
 
-        await flight.config?.models.ProfileFile.generate({
-            id: '33333333-3333-4333-8333-333333333333',
-            username: 'admin@example.com',
-            parent: '9e286ca6-1932-4365-804b-7dd4830f01d7',
-            path: '/',
-            name: 'child.pmtiles',
-            iconset: null,
-            size: 123,
-            artifacts: [{ ext: '.pmtiles', size: 123 }],
-        });
+        const child = await flight.fetch('/api/profile/asset', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                id: '33333333-3333-4333-8333-333333333333',
+                name: 'child.pmtiles',
+                parent: '9e286ca6-1932-4365-804b-7dd4830f01d7',
+                path: '/',
+                artifacts: [],
+            },
+        }, true);
+        assert.equal(child.body.parent, '9e286ca6-1932-4365-804b-7dd4830f01d7');
 
         const res = await flight.fetch('/api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7', {
             method: 'DELETE',
