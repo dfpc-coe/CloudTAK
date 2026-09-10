@@ -10,6 +10,7 @@ import type ConfigStateless from '../config.js';
 import ProfileControl from '../lib/control/profile.js';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
+import { authenticatedProfile } from '../../common/control/profile.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     const attachmentControl = new AttachmentControl(config);
@@ -106,7 +107,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     if (!result) throw new Err(400, null, 'No file uploaded');
 
                     if (req.query.mission) {
-                        const profile = await config.models.Profile.withAuth(user.email);
+                        const profile = await authenticatedProfile(config, user.email);
                         const auth = profile.auth;
                         const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 

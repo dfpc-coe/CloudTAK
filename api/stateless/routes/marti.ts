@@ -11,6 +11,7 @@ import { ClientEndpoint } from '@tak-ps/node-tak/lib/api/client';
 import { TAKList } from '@tak-ps/node-tak/lib/api/types';
 import { TAKAPI, APIAuthPassword, APIAuthCertificate } from '@tak-ps/node-tak';
 import type { Request } from 'express';
+import { authenticatedProfile } from '../../common/control/profile.js';
 
 /**
  * Resolve the TAK API client a Marti helper should act as.
@@ -67,7 +68,7 @@ async function groupApi(
         const { connection: conn } = await Auth.is_connection_auth(config, auth, inferred);
         return await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(conn.auth.cert, conn.auth.key));
     } else if (connection === undefined) {
-        const profile = await config.models.Profile.withAuth(auth.email);
+        const profile = await authenticatedProfile(config, auth.email);
         return await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
     } else if (connection === 0) {
         await Auth.as_user(config, req, { admin: true });
@@ -183,7 +184,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            const profile = await config.models.Profile.withAuth(user.email);
+            const profile = await authenticatedProfile(config, user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const contacts = await api.Contacts.list();

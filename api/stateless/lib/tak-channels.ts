@@ -1,5 +1,6 @@
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import type Config from '../../common/config.js';
+import { authenticatedProfile } from '../../common/control/profile.js';
 
 /**
  * Resolve the active channel bitpos set for a given Profile or Connection
@@ -23,7 +24,7 @@ export default async function activeChannels(api: TAKAPI): Promise<Set<number>> 
  * selection rather than the Admin cert's
  */
 export async function userChannels(config: Config, email: string): Promise<Set<number>> {
-    const profile = await config.models.Profile.withAuth(email);
+    const profile = await authenticatedProfile(config, email);
 
     const api = await TAKAPI.init(
         new URL(String(config.server.api)),

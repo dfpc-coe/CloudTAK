@@ -27,6 +27,30 @@ const ScimDiscoveryList = Type.Object({
 
 const security = [{ scimAuth: [] }];
 
+type ScimAttribute = {
+    name: string;
+    type: string;
+    multiValued: boolean;
+    required: boolean;
+    mutability: string;
+    returned: string;
+    uniqueness?: string;
+    caseExact?: boolean;
+    subAttributes?: ScimAttribute[];
+};
+
+function attribute(name: string, type: string, opts: Partial<Omit<ScimAttribute, 'name' | 'type'>> = {}): ScimAttribute {
+    return {
+        name,
+        type,
+        multiValued: false,
+        required: false,
+        mutability: 'readWrite',
+        returned: 'default',
+        ...opts,
+    };
+}
+
 export default async function router(schema: Schema, config: ConfigStateless) {
     const scim = new ScimControl(config);
 
@@ -135,15 +159,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     name: 'User',
                     description: 'CloudTAK User',
                     attributes: [
-                        { name: 'userName', type: 'string', multiValued: false, required: true, mutability: 'immutable', returned: 'default', uniqueness: 'server', caseExact: false },
-                        { name: 'name', type: 'complex', multiValued: false, required: false, mutability: 'readWrite', returned: 'default', subAttributes: [
-                            { name: 'formatted', type: 'string', multiValued: false, required: false, mutability: 'readWrite', returned: 'default' },
-                            { name: 'givenName', type: 'string', multiValued: false, required: false, mutability: 'readWrite', returned: 'default' },
-                            { name: 'familyName', type: 'string', multiValued: false, required: false, mutability: 'readWrite', returned: 'default' },
-                        ] },
-                        { name: 'displayName', type: 'string', multiValued: false, required: false, mutability: 'readWrite', returned: 'default' },
-                        { name: 'emails', type: 'complex', multiValued: true, required: false, mutability: 'readOnly', returned: 'default' },
-                        { name: 'active', type: 'boolean', multiValued: false, required: false, mutability: 'readWrite', returned: 'default' },
+                        attribute('userName', 'string', { required: true, mutability: 'immutable', uniqueness: 'server', caseExact: false }),
+                        attribute('name', 'complex', {
+                            subAttributes: [
+                                attribute('formatted', 'string'),
+                                attribute('givenName', 'string'),
+                                attribute('familyName', 'string'),
+                            ],
+                        }),
+                        attribute('displayName', 'string'),
+                        attribute('emails', 'complex', { multiValued: true, mutability: 'readOnly' }),
+                        attribute('active', 'boolean'),
                     ],
                     meta: {
                         resourceType: 'Schema',
@@ -155,12 +181,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     name: 'Group',
                     description: 'CloudTAK Group - accepted for Identity Provider compatibility, membership is not stored',
                     attributes: [
-                        { name: 'displayName', type: 'string', multiValued: false, required: true, mutability: 'readWrite', returned: 'default', uniqueness: 'server', caseExact: true },
-                        { name: 'externalId', type: 'string', multiValued: false, required: false, mutability: 'readWrite', returned: 'default' },
-                        { name: 'members', type: 'complex', multiValued: true, required: false, mutability: 'readWrite', returned: 'default', subAttributes: [
-                            { name: 'value', type: 'string', multiValued: false, required: true, mutability: 'readWrite', returned: 'default' },
-                            { name: 'display', type: 'string', multiValued: false, required: false, mutability: 'readOnly', returned: 'default' },
-                        ] },
+                        attribute('displayName', 'string', { required: true, uniqueness: 'server', caseExact: true }),
+                        attribute('externalId', 'string'),
+                        attribute('members', 'complex', {
+                            multiValued: true,
+                            subAttributes: [
+                                attribute('value', 'string', { required: true }),
+                                attribute('display', 'string', { mutability: 'readOnly' }),
+                            ],
+                        }),
                     ],
                     meta: {
                         resourceType: 'Schema',

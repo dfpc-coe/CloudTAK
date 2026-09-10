@@ -9,6 +9,7 @@ import {
 } from '@tak-ps/node-tak/lib/api/types';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import activeChannels from '../lib/tak-channels.js';
+import { authenticatedProfile } from '../../common/control/profile.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/marti/subscription', {
@@ -22,7 +23,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             await Auth.is_auth(config, req);
 
             const user = await Auth.as_user(config, req);
-            const profile = await config.models.Profile.withAuth(user.email);
+            const profile = await authenticatedProfile(config, user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             const channels = await activeChannels(api);
 
@@ -53,7 +54,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             await Auth.is_auth(config, req);
 
             const user = await Auth.as_user(config, req);
-            const profile = await config.models.Profile.withAuth(user.email);
+            const profile = await authenticatedProfile(config, user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const subs = await api.Subscription.list({
