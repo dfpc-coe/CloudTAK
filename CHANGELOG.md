@@ -17,8 +17,9 @@
 
 ### Pending Release
 
+- :arrow_up: Update `@tak-ps/etl` to v10.17.0 for the `group` permission
 - :arrow_up: Update `@simplewebauthn/server` to v14 - adds ML-DSA passkey algorithms, existing passkeys are unaffected
-- :tada: Add the `group:read` & `group:update` permissions - Connection & Layer tokens must hold them to list & update channels via `/api/marti/group` (requires `@tak-ps/etl@10.17.0`)
+- :tada: Add the `group:read` & `group:update` permissions - Connection & Layer tokens must hold them to list & update channels via `/api/marti/group`
 - :rocket: Remove `GET /api/connection/:connectionid/channel` in favour of `GET /api/marti/group` - Connection & Layer tokens infer the Connection from the token, User tokens may pass `?connection=<id>` (`0` for the server certificate)
 
 ### v13.81.1 - 2026-09-09

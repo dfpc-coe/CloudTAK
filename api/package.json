@@ -54,7 +54,7 @@
         "@photostructure/tz-lookup": "^11.6.1",
         "@simplewebauthn/server": "^14.0.1",
         "@sinclair/typebox": "^0.34.52",
-        "@tak-ps/etl": "^10.15.0",
+        "@tak-ps/etl": "^10.17.0",
         "@tak-ps/node-cot": "^14.50.0",
         "@tak-ps/node-safeurl": "^1.5.0",
         "@tak-ps/node-tak": "^12.26.1",
