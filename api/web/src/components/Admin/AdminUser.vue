@@ -49,7 +49,14 @@
             <TablerError
                 v-else-if='error'
                 :err='error'
-            />
+            >
+                <template #advanced='{ body }'>
+                    <CopyField
+                        mode='pre'
+                        :model-value='body'
+                    />
+                </template>
+            </TablerError>
             <template v-else-if='edit'>
                 <div class='col-12 pb-4'>
                     <TablerToggle

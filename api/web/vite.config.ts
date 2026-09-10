@@ -82,6 +82,8 @@ export default defineConfig(({ mode }) => {
                             req.url = '/video.html';
                         } else if (req.url?.startsWith('/board') && !path.extname(req.url)) {
                             req.url = '/board.html';
+                        } else if (req.url?.startsWith('/forms') && !path.extname(req.url)) {
+                            req.url = '/forms.html';
                         } else if (req.url?.startsWith('/docs') && !path.extname(req.url)) {
                             req.url = '/docs.html';
                         }
@@ -110,6 +112,7 @@ export default defineConfig(({ mode }) => {
                     docs: path.resolve(__dirname, 'docs.html'),
                     video: path.resolve(__dirname, 'video.html'),
                     board: path.resolve(__dirname, 'board.html'),
+                    forms: path.resolve(__dirname, 'forms.html'),
                     admin: path.resolve(__dirname, 'admin.html'),
                     connection: path.resolve(__dirname, 'connection.html'),
                     setup: path.resolve(__dirname, 'setup.html'),

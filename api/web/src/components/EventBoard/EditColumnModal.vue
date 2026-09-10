@@ -84,8 +84,17 @@
                                 class='flex-grow-1'
                             />
                             <TablerIconButton
+                                title='Refresh Forms'
+                                @click='formSelect?.refresh()'
+                            >
+                                <IconRefresh
+                                    :size='24'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                            <TablerIconButton
                                 title='Manage Forms'
-                                @click='manageForms = true'
+                                @click='manageForms'
                             >
                                 <IconSettings
                                     :size='24'
@@ -116,25 +125,17 @@
                 </button>
             </div>
         </div>
-
-        <FormManager
-            v-if='manageForms'
-            :channel='props.channel'
-            @close='closeManager'
-            @saved='onFormSaved'
-            @deleted='onFormDeleted'
-        />
     </TablerModal>
 </template>
 
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
 import { server } from '../../std.ts';
-import type { CoreForm, CoreEventBoardColumn } from '../../types.ts';
+import { openSecondaryView } from '../../utils/capacitor.ts';
+import type { CoreEventBoardColumn } from '../../types.ts';
 import FormSelect from '../CloudTAK/util/FormSelect.vue';
 import type { FormAttachment } from '../CloudTAK/util/FormSelect.vue';
-import FormManager from '../Forms/FormManager.vue';
-import { IconCheck, IconSettings } from '@tabler/icons-vue';
+import { IconCheck, IconRefresh, IconSettings } from '@tabler/icons-vue';
 import {
     TablerAlert,
     TablerBadge,
@@ -184,27 +185,11 @@ const forms = ref<Array<FormAttachment>>([]);
 const formsLoading = ref(true);
 const formsError = ref<Error | undefined>();
 
-const manageForms = ref(false);
 const formSelect = ref<InstanceType<typeof FormSelect> | null>(null);
 
-/** An edit in the manager reflects onto the already staged attachment rows */
-function onFormSaved(form: CoreForm): void {
-    forms.value = forms.value.map((attachment) => {
-        return attachment.form.id === form.id
-            ? { ...attachment, form }
-            : attachment;
-    });
-}
-
-/** A deleted Form can no longer be attached - drop it from the staged rows */
-function onFormDeleted(id: string): void {
-    forms.value = forms.value.filter((attachment) => attachment.form.id !== id);
-}
-
-async function closeManager(): Promise<void> {
-    manageForms.value = false;
-
-    await formSelect.value?.refresh();
+/** Forms are managed on the dedicated Forms page - opened alongside the Board */
+function manageForms(): void {
+    void openSecondaryView(String(new URL('/forms', window.location.origin)));
 }
 
 onMounted(async () => {

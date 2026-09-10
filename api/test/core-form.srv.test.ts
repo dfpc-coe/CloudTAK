@@ -122,6 +122,22 @@ test('GET: api/core/form - filter by shared channel', async () => {
     }
 });
 
+test('GET: api/core/form - filter by any of several channels', async () => {
+    try {
+        const res = await flight.fetch('/api/core/form?channel=13&channel=7', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.equal(res.body.total, 1);
+        assert.equal(res.body.items[0].id, formId);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: api/core/form - filter by unshared channel', async () => {
     try {
         const res = await flight.fetch('/api/core/form?channel=13', {
