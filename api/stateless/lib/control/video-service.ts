@@ -9,6 +9,7 @@ import { VideoLeaseResponse } from '../../../common/types.js';
 import { VideoLease_SourceType } from '../../../common/enums.js';
 import { fetch, isSafeUrl } from '@tak-ps/node-safeurl';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
+import { authenticatedProfile } from '../../../common/control/profile.js';
 
 export enum ProtocolPopulation {
     TEMPLATE,
@@ -676,7 +677,7 @@ export default class VideoServiceControl {
             if (opts.username === lease.username) {
                 return lease;
             } else {
-                const profile = await this.config.models.Profile.withAuth(opts.username);
+                const profile = await authenticatedProfile(this.config, opts.username);
                 const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
                 const groups = (await api.Group.list({ useCache: true }))
                     .data.map(group => group.name);

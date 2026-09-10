@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import Config from './config.js';
 import { InferSelectModel } from 'drizzle-orm';
 import type { Profile, Connection, ConnectionToken, Layer } from './schema.js';
-import type { AuthenticatedProfile } from './models/Profile.js';
+import { authenticatedProfile, type AuthenticatedProfile } from './control/profile.js';
 
 export enum ResourceCreationScope {
     SERVER = 'server',
@@ -328,7 +328,7 @@ export default class Auth {
     }
 
     static async #as_profile(config: Config, user: AuthUser): Promise<AuthenticatedProfile> {
-        return await config.models.Profile.withAuth(user.email);
+        return await authenticatedProfile(config, user.email);
     }
 
     /**
