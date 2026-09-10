@@ -18,6 +18,7 @@
             <ConfigGroups />
             <ConfigMap />
             <ConfigProvider />
+            <ConfigScim />
             <ConfigCoturn />
         </div>
     </div>
@@ -36,5 +37,6 @@ import ConfigCoreEvents from './AdminConfig/ConfigCoreEvents.vue';
 import ConfigGroups from './AdminConfig/ConfigGroups.vue';
 import ConfigMap from './AdminConfig/ConfigMap.vue';
 import ConfigProvider from './AdminConfig/ConfigProvider.vue';
+import ConfigScim from './AdminConfig/ConfigScim.vue';
 import ConfigCoturn from './AdminConfig/ConfigCoturn.vue';
 </script>

@@ -53,6 +53,11 @@ export default async function buildApi(config: Config): Promise<express.Applicat
                         bearerFormat: 'JWT',
                         description: 'Layer ETL token (`etl.<jwt>`) - the listed scopes must be present in the Layer\'s `permissions`',
                     },
+                    scimAuth: {
+                        type: 'http',
+                        scheme: 'bearer',
+                        description: 'SCIM token configured by a System Administrator (`scim::token`)',
+                    },
                 },
             },
             security: [{

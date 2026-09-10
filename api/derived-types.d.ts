@@ -2492,6 +2492,10 @@ export interface paths {
                             "oidc::logo"?: string;
                             /** @description Enable Passkey Authentication */
                             "passkey::enabled"?: boolean;
+                            /** @description Enable incoming SCIM 2.0 user provisioning at /api/scim/v2 */
+                            "scim::enabled"?: boolean;
+                            /** @description Bearer token an Identity Provider must present to the SCIM API */
+                            "scim::token"?: string;
                             "provider::url"?: string;
                             "provider::secret"?: string;
                             "provider::client"?: string;
@@ -2760,6 +2764,10 @@ export interface paths {
                         "oidc::logo"?: string;
                         /** @description Enable Passkey Authentication */
                         "passkey::enabled"?: boolean;
+                        /** @description Enable incoming SCIM 2.0 user provisioning at /api/scim/v2 */
+                        "scim::enabled"?: boolean;
+                        /** @description Bearer token an Identity Provider must present to the SCIM API */
+                        "scim::token"?: string;
                         "provider::url"?: string;
                         "provider::secret"?: string;
                         "provider::client"?: string;
@@ -2953,6 +2961,10 @@ export interface paths {
                             "oidc::logo"?: string;
                             /** @description Enable Passkey Authentication */
                             "passkey::enabled"?: boolean;
+                            /** @description Enable incoming SCIM 2.0 user provisioning at /api/scim/v2 */
+                            "scim::enabled"?: boolean;
+                            /** @description Bearer token an Identity Provider must present to the SCIM API */
+                            "scim::token"?: string;
                             "provider::url"?: string;
                             "provider::secret"?: string;
                             "provider::client"?: string;

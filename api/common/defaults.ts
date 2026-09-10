@@ -30,6 +30,7 @@ export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'display::style': Profile_Style.SYSTEM_DEFAULT,
     'display::radiation_dose': Profile_Radiation_Dose.SIEVERTS,
     'proxy::enabled': false,
+    'scim::enabled': false,
     'proxy::whitelist': [],
     'media::proxy::allow': [],
     'login::name': 'CloudTAK',

@@ -199,6 +199,7 @@ test('GET: api/profile/asset includes channel shared files', async () => {
 
         await flight.config?.models.Profile.generate({
             username: 'shared@example.com',
+            disabled: false,
             system_admin: false,
             auth: {
                 cert: 'shared-cert',
@@ -281,6 +282,7 @@ test('GET: api/profile/asset/:asset.:ext - unshared file from another user is fo
     try {
         await flight.config?.models.Profile.generate({
             username: 'private@example.com',
+            disabled: false,
             system_admin: false,
             auth: {
                 cert: 'private-cert',
