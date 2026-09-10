@@ -10,6 +10,7 @@ import type { ConnectionAuth } from '../../../common/connection-config.js';
 import UserControl from './user.js';
 
 export const SCIM_USER_SCHEMA = 'urn:ietf:params:scim:schemas:core:2.0:User';
+export const SCIM_GROUP_SCHEMA = 'urn:ietf:params:scim:schemas:core:2.0:Group';
 export const SCIM_LIST_SCHEMA = 'urn:ietf:params:scim:api:messages:2.0:ListResponse';
 export const SCIM_PATCH_SCHEMA = 'urn:ietf:params:scim:api:messages:2.0:PatchOp';
 export const SCIM_ERROR_SCHEMA = 'urn:ietf:params:scim:api:messages:2.0:Error';
@@ -72,6 +73,48 @@ export const ScimUserList = Type.Object({
     Resources: Type.Array(ScimUser),
 });
 
+export const ScimMember = Type.Object({
+    value: Type.String({ minLength: 1 }),
+    display: Type.Optional(Type.String()),
+});
+
+export const ScimGroupBody = Type.Object({
+    schemas: Type.Optional(Type.Array(Type.String())),
+    displayName: Type.String({ minLength: 1 }),
+    externalId: Type.Optional(Type.String()),
+    members: Type.Optional(Type.Array(ScimMember)),
+});
+
+export const ScimGroupResource = Type.Object({
+    schemas: Type.Array(Type.String()),
+    id: Type.String(),
+    displayName: Type.String(),
+    externalId: Type.Optional(Type.String()),
+    members: Type.Array(ScimMember),
+    meta: Type.Object({
+        resourceType: Type.Literal('Group'),
+        created: Type.String(),
+        lastModified: Type.String(),
+        location: Type.String(),
+    }),
+});
+
+export const ScimGroupList = Type.Object({
+    schemas: Type.Array(Type.String()),
+    totalResults: Type.Integer(),
+    startIndex: Type.Integer(),
+    itemsPerPage: Type.Integer(),
+    Resources: Type.Array(ScimGroupResource),
+});
+
+export type ScimGroupInput = {
+    displayName?: string;
+    externalId?: string | null;
+    members?: string[];
+    addMembers?: string[];
+    removeMembers?: string[];
+};
+
 export const ScimError = Type.Object({
     schemas: Type.Array(Type.String()),
     status: Type.String(),
@@ -120,6 +163,18 @@ export class ScimErr extends Err {
         super(status, null, safe, status >= 500);
         this.scimType = scimType;
     }
+}
+
+function memberValues(members: unknown): string[] {
+    const list = Array.isArray(members) ? members : [members];
+
+    const values = list.map((member) => {
+        if (typeof member === 'string') return member;
+        if (member && typeof member === 'object' && 'value' in member) return String((member as { value: unknown }).value);
+        return '';
+    }).map(value => value.trim().toLowerCase()).filter(Boolean);
+
+    return Array.from(new Set(values));
 }
 
 function formatName(name?: Static<typeof ScimName>): string | undefined {
@@ -376,6 +431,196 @@ export default class ScimControl {
      */
     async deprovision(profile: InferSelectModel<typeof Profile>): Promise<void> {
         await this.update(profile, { active: false });
+    }
+
+    groupLocation(id: string): string {
+        return `${this.config.API_URL}/api/scim/v2/Groups/${id}`;
+    }
+
+    /**
+     * Groups are accepted but not stored - the id is a reversible encoding of the
+     * displayName so an Identity Provider can address the Group on later syncs
+     */
+    static groupId(displayName: string): string {
+        return Buffer.from(displayName, 'utf8').toString('base64url');
+    }
+
+    static groupName(id: string): string {
+        const displayName = Buffer.from(id, 'base64url').toString('utf8');
+
+        const control = Array.from(displayName).some(char => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127);
+
+        if (!displayName || control || ScimControl.groupId(displayName) !== id) {
+            throw new ScimErr(404, `Group ${id} not found`);
+        }
+
+        return displayName;
+    }
+
+    serializeGroup(group: {
+        displayName: string;
+        externalId?: string | null;
+        members?: string[];
+    }): Static<typeof ScimGroupResource> {
+        const id = ScimControl.groupId(group.displayName);
+        const now = new Date().toISOString();
+
+        return {
+            schemas: [SCIM_GROUP_SCHEMA],
+            id,
+            displayName: group.displayName,
+            ...(group.externalId ? { externalId: group.externalId } : {}),
+            members: (group.members || []).map(value => ({ value, display: value })),
+            meta: {
+                resourceType: 'Group',
+                created: now,
+                lastModified: now,
+                location: this.groupLocation(id),
+            },
+        };
+    }
+
+    static parseGroupFilter(filter?: string): { attribute: 'displayName' | 'externalId' | 'id'; value: string } | undefined {
+        if (!filter || !filter.trim()) return undefined;
+
+        const match = filter.trim().match(/^(displayName|externalId|id)\s+eq\s+"((?:[^"\\]|\\.)*)"$/i);
+
+        if (!match) {
+            throw new ScimErr(400, 'Only "displayName eq \\"value\\"" and "externalId eq \\"value\\"" filters are supported', 'invalidFilter');
+        }
+
+        const attribute = match[1].toLowerCase() === 'displayname' ? 'displayName' : match[1].toLowerCase() === 'externalid' ? 'externalId' : 'id';
+
+        return { attribute, value: match[2].replace(/\\(.)/g, '$1') };
+    }
+
+    groupList(opts: {
+        filter?: string;
+        startIndex: number;
+        count: number;
+    }): Static<typeof ScimGroupList> {
+        const filter = ScimControl.parseGroupFilter(opts.filter);
+
+        const groups: Static<typeof ScimGroupResource>[] = [];
+
+        if (filter && filter.attribute === 'displayName' && filter.value.trim()) {
+            groups.push(this.serializeGroup({ displayName: filter.value.trim() }));
+        } else if (filter && filter.attribute === 'id') {
+            try {
+                groups.push(this.serializeGroup({ displayName: ScimControl.groupName(filter.value) }));
+            } catch (err) {
+                if (!isPublicError(err) || Number(err.status) !== 404) throw err;
+            }
+        }
+
+        const page = opts.startIndex === 1 ? groups.slice(0, opts.count) : [];
+
+        return {
+            schemas: [SCIM_LIST_SCHEMA],
+            totalResults: groups.length,
+            startIndex: opts.startIndex,
+            itemsPerPage: page.length,
+            Resources: page,
+        };
+    }
+
+    groupCreate(body: Static<typeof ScimGroupBody>): Static<typeof ScimGroupResource> {
+        const displayName = body.displayName.trim();
+        if (!displayName) throw new ScimErr(400, 'displayName cannot be empty', 'invalidValue');
+
+        return this.serializeGroup({
+            displayName,
+            externalId: body.externalId,
+            members: memberValues(body.members || []),
+        });
+    }
+
+    groupUpdate(id: string, input: ScimGroupInput): Static<typeof ScimGroupResource> {
+        let displayName = ScimControl.groupName(id);
+
+        if (input.displayName !== undefined) {
+            displayName = input.displayName.trim();
+            if (!displayName) throw new ScimErr(400, 'displayName cannot be empty', 'invalidValue');
+        }
+
+        let members = input.members ? [...input.members] : [];
+
+        if (input.addMembers) {
+            members = Array.from(new Set([...members, ...input.addMembers]));
+        }
+
+        if (input.removeMembers) {
+            const remove = new Set(input.removeMembers);
+            members = members.filter(member => !remove.has(member));
+        }
+
+        return this.serializeGroup({
+            displayName,
+            externalId: input.externalId,
+            members,
+        });
+    }
+
+    /**
+     * Apply RFC 7644 PatchOp operations to a Group - displayName, externalId and
+     * members are supported, including the `members[value eq "id"]` remove form
+     */
+    static groupPatchInput(operations: Static<typeof ScimPatchBody>['Operations']): ScimGroupInput {
+        const input: ScimGroupInput = {};
+
+        const assign = (op: string, path: string, value: unknown) => {
+            const key = path.trim();
+            const lower = key.toLowerCase();
+
+            if (lower === 'displayname') {
+                if (op === 'remove') throw new ScimErr(400, 'displayName cannot be removed', 'mutability');
+                input.displayName = String(value ?? '');
+            } else if (lower === 'externalid') {
+                input.externalId = op === 'remove' || value === null || value === undefined ? null : String(value);
+            } else if (lower === 'members') {
+                if (op === 'replace') {
+                    input.members = memberValues(value ?? []);
+                } else if (op === 'add') {
+                    input.addMembers = [...(input.addMembers || []), ...memberValues(value ?? [])];
+                } else if (value === undefined || value === null) {
+                    input.members = [];
+                } else {
+                    input.removeMembers = [...(input.removeMembers || []), ...memberValues(value)];
+                }
+            } else if (lower.startsWith('members[')) {
+                const match = key.match(/^members\[\s*value\s+eq\s+"((?:[^"\\]|\\.)*)"\s*\]$/i);
+
+                if (!match) throw new ScimErr(400, `Unsupported members filter path: ${path}`, 'invalidPath');
+
+                const member = match[1].replace(/\\(.)/g, '$1');
+
+                if (op === 'remove') {
+                    input.removeMembers = [...(input.removeMembers || []), ...memberValues(member)];
+                } else {
+                    input.addMembers = [...(input.addMembers || []), ...memberValues(member)];
+                }
+            }
+        };
+
+        for (const operation of operations) {
+            const op = operation.op.toLowerCase();
+
+            if (op !== 'replace' && op !== 'add' && op !== 'remove') {
+                throw new ScimErr(400, `Unsupported PatchOp operation: ${operation.op}`, 'invalidValue');
+            }
+
+            if (operation.path) {
+                assign(op, operation.path, operation.value);
+            } else if (operation.value && typeof operation.value === 'object') {
+                for (const [path, value] of Object.entries(operation.value as Record<string, unknown>)) {
+                    assign(op, path, value);
+                }
+            } else {
+                throw new ScimErr(400, 'PatchOp operation requires a path or an object value', 'invalidValue');
+            }
+        }
+
+        return input;
     }
 
     async revokeSessions(username: string): Promise<void> {

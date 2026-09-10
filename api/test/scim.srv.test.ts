@@ -340,4 +340,158 @@ test('DELETE: api/scim/v2/Users/:id', async () => {
     assert.equal(admin.body.tak_callsign, 'SCIM3');
 });
 
+const groupId = Buffer.from('Firefighters', 'utf8').toString('base64url');
+
+test('POST: api/scim/v2/Groups', async () => {
+    const res = await flight.fetch('/api/scim/v2/Groups', {
+        method: 'POST',
+        auth: { bearer: SCIM_TOKEN },
+        body: {
+            schemas: ['urn:ietf:params:scim:schemas:core:2.0:Group'],
+            displayName: 'Firefighters',
+            externalId: 'idp-group-1',
+            members: [{ value: 'SCIM.User@example.com', display: 'Scim User' }],
+        },
+    }, true);
+
+    assert.equal(res.status, 201);
+    assert.ok(res.body.meta.location.endsWith(`/api/scim/v2/Groups/${groupId}`));
+    delete res.body.meta;
+
+    assert.deepEqual(res.body, {
+        schemas: ['urn:ietf:params:scim:schemas:core:2.0:Group'],
+        id: groupId,
+        displayName: 'Firefighters',
+        externalId: 'idp-group-1',
+        members: [{ value: 'scim.user@example.com', display: 'scim.user@example.com' }],
+    });
+
+    const again = await flight.fetch('/api/scim/v2/Groups', {
+        method: 'POST',
+        auth: { bearer: SCIM_TOKEN },
+        body: { displayName: 'Firefighters' },
+    }, true);
+
+    assert.equal(again.status, 201, 'Groups are not stored so a repeat create is accepted');
+    assert.equal(again.body.id, groupId);
+});
+
+test('GET: api/scim/v2/Groups', async () => {
+    const res = await flight.fetch('/api/scim/v2/Groups', {
+        method: 'GET',
+        auth: { bearer: SCIM_TOKEN },
+    }, true);
+
+    assert.equal(res.body.totalResults, 0);
+    assert.deepEqual(res.body.Resources, []);
+
+    const filtered = await flight.fetch(`/api/scim/v2/Groups?filter=${encodeURIComponent('displayName eq "Firefighters"')}`, {
+        method: 'GET',
+        auth: { bearer: SCIM_TOKEN },
+    }, true);
+
+    assert.equal(filtered.body.totalResults, 1);
+    assert.equal(filtered.body.Resources[0].id, groupId);
+    assert.deepEqual(filtered.body.Resources[0].members, []);
+
+    const external = await flight.fetch(`/api/scim/v2/Groups?filter=${encodeURIComponent('externalId eq "idp-group-1"')}`, {
+        method: 'GET',
+        auth: { bearer: SCIM_TOKEN },
+    }, true);
+
+    assert.equal(external.body.totalResults, 0);
+
+    const bad = await flight.fetch(`/api/scim/v2/Groups?filter=${encodeURIComponent('displayName co "Fire"')}`, {
+        method: 'GET',
+        auth: { bearer: SCIM_TOKEN },
+    }, false);
+
+    assert.equal(bad.status, 400);
+    assert.equal(bad.body.scimType, 'invalidFilter');
+});
+
+test('GET: api/scim/v2/Groups/:id', async () => {
+    const res = await flight.fetch(`/api/scim/v2/Groups/${groupId}`, {
+        method: 'GET',
+        auth: { bearer: SCIM_TOKEN },
+    }, true);
+
+    assert.equal(res.body.displayName, 'Firefighters');
+    assert.deepEqual(res.body.members, []);
+
+    for (const id of ['AAAA', 'not-a-group!']) {
+        const missing = await flight.fetch(`/api/scim/v2/Groups/${id}`, {
+            method: 'GET',
+            auth: { bearer: SCIM_TOKEN },
+        }, false);
+
+        assert.equal(missing.status, 404, `Group id "${id}" is not found`);
+    }
+});
+
+test('PATCH: api/scim/v2/Groups/:id', async () => {
+    const res = await flight.fetch(`/api/scim/v2/Groups/${groupId}`, {
+        method: 'PATCH',
+        auth: { bearer: SCIM_TOKEN },
+        body: {
+            schemas: ['urn:ietf:params:scim:api:messages:2.0:PatchOp'],
+            Operations: [{
+                op: 'add',
+                path: 'members',
+                value: [{ value: 'admin@example.com' }, { value: 'SCIM.User@example.com' }],
+            }, {
+                op: 'remove',
+                path: 'members[value eq "scim.user@example.com"]',
+            }, {
+                op: 'replace',
+                path: 'displayName',
+                value: 'Wildland Firefighters',
+            }],
+        },
+    }, true);
+
+    assert.equal(res.body.displayName, 'Wildland Firefighters');
+    assert.equal(res.body.id, Buffer.from('Wildland Firefighters', 'utf8').toString('base64url'));
+    assert.deepEqual(res.body.members.map((m: { value: string }) => m.value), ['admin@example.com']);
+});
+
+test('PUT: api/scim/v2/Groups/:id', async () => {
+    const res = await flight.fetch(`/api/scim/v2/Groups/${groupId}`, {
+        method: 'PUT',
+        auth: { bearer: SCIM_TOKEN },
+        body: {
+            displayName: 'Firefighters',
+            members: [{ value: 'scim.user@example.com' }],
+        },
+    }, true);
+
+    assert.equal(res.body.displayName, 'Firefighters');
+    assert.equal(res.body.externalId, undefined);
+    assert.deepEqual(res.body.members, [{ value: 'scim.user@example.com', display: 'scim.user@example.com' }]);
+
+    const missing = await flight.fetch('/api/scim/v2/Groups/AAAA', {
+        method: 'PUT',
+        auth: { bearer: SCIM_TOKEN },
+        body: { displayName: 'Firefighters' },
+    }, false);
+
+    assert.equal(missing.status, 404);
+});
+
+test('DELETE: api/scim/v2/Groups/:id', async () => {
+    const res = await flight.fetch(`/api/scim/v2/Groups/${groupId}`, {
+        method: 'DELETE',
+        auth: { bearer: SCIM_TOKEN },
+    }, { json: false });
+
+    assert.equal(res.status, 204);
+
+    const missing = await flight.fetch('/api/scim/v2/Groups/AAAA', {
+        method: 'DELETE',
+        auth: { bearer: SCIM_TOKEN },
+    }, false);
+
+    assert.equal(missing.status, 404);
+});
+
 flight.landing();
