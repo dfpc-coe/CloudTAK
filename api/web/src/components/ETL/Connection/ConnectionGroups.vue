@@ -179,10 +179,11 @@ async function fetch() {
     error.value = undefined;
 
     try {
-        const { data, error: reqError } = await server.GET('/api/connection/{:connectionid}/channel', {
+        const { data, error: reqError } = await server.GET('/api/marti/group', {
             params: {
-                path: {
-                    ':connectionid': Number(route.params.connectionid)
+                query: {
+                    connection: Number(route.params.connectionid),
+                    useCache: true
                 }
             }
         });

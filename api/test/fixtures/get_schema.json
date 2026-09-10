@@ -134,11 +134,6 @@
         "query": true,
         "res": false
     },
-    "GET /connection/:connectionid/channel": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /connection/:connectionid/data/:dataid/asset": {
         "body": false,
         "query": false,
@@ -1502,6 +1497,11 @@
     "DELETE /server/injector": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "POST /retention": {
+        "body": true,
+        "query": false,
         "res": true
     },
     "GET /server/repeater": {

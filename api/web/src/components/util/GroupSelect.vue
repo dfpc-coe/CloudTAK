@@ -155,11 +155,12 @@ async function fetch() {
     loading.value = true;
 
     let list: Group[];
-    if (props.connection) {
-        const res = await server.GET('/api/connection/{:connectionid}/channel', {
+    if (props.connection !== undefined) {
+        const res = await server.GET('/api/marti/group', {
             params: {
-                path: {
-                    ':connectionid': Number(props.connection)
+                query: {
+                    connection: Number(props.connection),
+                    useCache: true
                 }
             }
         });

@@ -13,7 +13,7 @@ import {
     verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
 import type {
-    AuthenticatorTransportFuture,
+    AuthenticatorTransport,
     RegistrationResponseJSON as WebAuthnRegistrationResponseJSON,
     AuthenticationResponseJSON as WebAuthnAuthenticationResponseJSON,
 } from '@simplewebauthn/server';
@@ -163,7 +163,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 attestationType: 'none',
                 excludeCredentials: existingPasskeys.map(p => ({
                     id: p.credential_id,
-                    transports: (p.transports || []) as AuthenticatorTransportFuture[],
+                    transports: (p.transports || []) as AuthenticatorTransport[],
                 })),
                 authenticatorSelection: {
                     residentKey: 'preferred',
@@ -339,7 +339,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                         id: passkey.credential_id,
                         publicKey: Buffer.from(passkey.public_key, 'base64url'),
                         counter: passkey.counter,
-                        transports: (passkey.transports || []) as AuthenticatorTransportFuture[],
+                        transports: (passkey.transports || []) as AuthenticatorTransport[],
                     },
                 });
             } catch (e) {
