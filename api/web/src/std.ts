@@ -1,7 +1,6 @@
 import createClient from "openapi-fetch";
 import { Browser } from '@capacitor/browser';
 import { Preferences } from '@capacitor/preferences';
-import KV from './base/kv.ts'
 import type { Middleware } from "openapi-fetch";
 import type { paths } from '@cloudtak/api-types'
 import type { APIError } from './types.js'
@@ -9,6 +8,7 @@ import type { Router } from 'vue-router'
 import { isNativePlatform, openSecondaryView } from './utils/capacitor.ts';
 import { reportError } from './lib/reporting/index.ts';
 import { db } from './database.ts';
+import { parseWorkerBootConfig } from './utils/worker-boot.ts';
 
 export const serverUrl = await getRuntimeServerUrl();
 export const server = await getServer();
@@ -74,7 +74,10 @@ async function getRuntimeServerUrl(): Promise<string> {
         return value || getRuntimeOrigin();
     }
 
-    return (await KV.value('serverUrl')) || getRuntimeOrigin();
+    // Handed over on Worker.name by the main thread - never read from
+    // IndexedDB here, a stalled read would block the worker before it can
+    // even signal ready
+    return parseWorkerBootConfig(self.name)?.serverUrl || getRuntimeOrigin();
 }
 
 function getRuntimeOrigin(): string {
