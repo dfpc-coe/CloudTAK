@@ -105,6 +105,7 @@ test('POST: api/scim/v2/Users', async () => {
 
     const provisioned = await flight.config!.models.Profile.from('scim.user@example.com');
     assert.equal(provisioned.auth, null, 'provisioned users have no auth until first login');
+    assert.equal(provisioned.last_login, null, 'provisioned users have no last_login until first login');
 
     assert.ok(res.body.meta.created);
     assert.ok(res.body.meta.lastModified);

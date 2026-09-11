@@ -46155,7 +46155,7 @@ export interface paths {
                             username: string;
                             created: string;
                             updated: string;
-                            last_login: string;
+                            last_login: string | null;
                             /** @description Does the user have an active CloudTAK Session */
                             active: boolean;
                             system_admin: boolean;
@@ -46337,7 +46337,7 @@ export interface paths {
                             username: string;
                             created: string;
                             updated: string;
-                            last_login: string;
+                            last_login: string | null;
                             /** @description Does the user have an active CloudTAK Session */
                             active: boolean;
                             system_admin: boolean;
@@ -49714,7 +49714,7 @@ export interface paths {
                                 name: string;
                                 created: string;
                                 updated: string;
-                                last_login: string;
+                                last_login: string | null;
                                 /** @description Does the user have an active CloudTAK Session */
                                 active: boolean;
                                 system_admin: boolean;
@@ -49845,7 +49845,7 @@ export interface paths {
                             username: string;
                             created: string;
                             updated: string;
-                            last_login: string;
+                            last_login: string | null;
                             /** @description Does the user have an active CloudTAK Session */
                             active: boolean;
                             system_admin: boolean;
@@ -50012,7 +50012,7 @@ export interface paths {
                             username: string;
                             created: string;
                             updated: string;
-                            last_login: string;
+                            last_login: string | null;
                             /** @description Does the user have an active CloudTAK Session */
                             active: boolean;
                             system_admin: boolean;

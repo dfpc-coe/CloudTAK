@@ -408,7 +408,9 @@ export const ProfileListResponse = Type.Object({
     name: Type.String(),
     created: Type.String(),
     updated: Type.String(),
-    last_login: Type.String(),
+    last_login: Type.Union([Type.String(), Type.Null()], {
+        description: 'Null until the user has logged in for the first time',
+    }),
     active: Type.Boolean({
         description: 'Does the user have an active CloudTAK Session',
     }),
@@ -468,7 +470,9 @@ export const ProfileResponse = Type.Composite([
         username: Type.String(),
         created: Type.String(),
         updated: Type.String(),
-        last_login: Type.String(),
+        last_login: Type.Union([Type.String(), Type.Null()], {
+            description: 'Null until the user has logged in for the first time',
+        }),
         active: Type.Boolean({
             description: 'Does the user have an active CloudTAK Session',
         }),

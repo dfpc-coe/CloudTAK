@@ -78,11 +78,19 @@
                                         <div
                                             v-else-if='h.name === "last_login"'
                                         >
-                                            <div v-text='timeDiff(user[h.name])' />
+                                            <template v-if='user.last_login'>
+                                                <div v-text='timeDiff(user.last_login)' />
+                                                <div
+                                                    class='subheader'
+                                                    v-text='user.last_login'
+                                                />
+                                            </template>
                                             <div
+                                                v-else
                                                 class='subheader'
-                                                v-text='(user as Partial<User>)[h.name]'
-                                            />
+                                            >
+                                                Never
+                                            </div>
                                         </div>
                                         <span
                                             v-else

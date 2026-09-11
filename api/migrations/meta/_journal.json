@@ -1436,6 +1436,13 @@
       "when": 1789062067989,
       "tag": "0205_profile_scim",
       "breakpoints": true
+    },
+    {
+      "idx": 206,
+      "version": "7",
+      "when": 1789137312238,
+      "tag": "0206_profile_last_login_nullable",
+      "breakpoints": true
     }
   ]
 }

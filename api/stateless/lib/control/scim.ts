@@ -340,6 +340,7 @@ export default class ScimControl {
             username,
             name: formatName(body.name) ?? 'Unknown',
             auth: null,
+            last_login: null,
             disabled: body.active === false,
         });
 
