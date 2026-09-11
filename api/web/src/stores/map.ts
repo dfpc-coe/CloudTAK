@@ -41,9 +41,10 @@ import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../workers/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
-import { isNativePlatform, addBackgroundStateListener, whenForegrounded } from '../utils/capacitor.ts';
+import { isNativePlatform, whenForegrounded } from '../utils/capacitor.ts';
 import { withTimeout } from '../utils/async.ts';
-import { db, recoverDatabase } from '../database.ts';
+import { db, suspendDatabase, resumeDatabase } from '../database.ts';
+import { serializeWorkerBootConfig } from '../utils/worker-boot.ts';
 
 import type { ProfileOverlay, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource, LayerSpecification, PropertyValueSpecification } from 'maplibre-gl';
@@ -56,28 +57,12 @@ const finiteOrNull = (value: unknown): number | null => {
 
 // Missions the dirty sweep has already warned about having no overlay
 const sweepWarned = new Set<string>();
-const MAPLIBRE_WORKER_PROBE_TIMEOUT_MS = 1000;
-const MAPLIBRE_WORKER_PROBE_URL = new URL('/maplibre-worker-probe.mjs', window.location.href).href;
-const COT_SOURCE_RESYNC_TIMEOUT_MS = 10000;
-const MAPLIBRE_RECOVERY_RELOAD_KEY = 'cloudtak::maplibre-recovery-reloaded';
 
-function reloadAfterMapLibreFailure(error: unknown): void {
-    try {
-        if (sessionStorage.getItem(MAPLIBRE_RECOVERY_RELOAD_KEY)) {
-            console.error('MapLibre recovery still failing after automatic reload', error);
-            return;
-        }
-
-        sessionStorage.setItem(MAPLIBRE_RECOVERY_RELOAD_KEY, '1');
-    } catch (guardErr) {
-        console.warn('MapLibre reload guard unavailable, skipping automatic reload', guardErr);
-        return;
-    }
-
-    // The map uses hash:true, so reloading retains its camera.
-    console.error('MapLibre recovery failed - reloading the WebView', error);
-    window.location.reload();
-}
+const WORKER_READY_TIMEOUT_MS = 20000;
+const WORKER_INIT_TIMEOUT_MS = 30000;
+const OFFLINE_TILES_LIST_TIMEOUT_MS = 10000;
+const WORKER_LIFECYCLE_TIMEOUT_MS = 5000;
+const COT_REFRESH_INTERVAL_MS = 500;
 
 function waitForAtlasWorkerReady(worker: Worker): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -117,9 +102,8 @@ export const useMapStore = defineStore('cloudtak', {
         _bottomBar?: unknown;
 
         _removeOrientationListener?: () => Promise<void>;
-        _resumeRecovery?: Promise<void>;
         _cotResync?: Promise<void>;
-        _removeBackgroundStateListener?: () => void;
+        _destroying?: Promise<void>;
         _removePushTokenListener?: () => void;
         _overlaySubscription?: { unsubscribe: () => void };
         _overlayReconcile?: Promise<void>;
@@ -157,7 +141,6 @@ export const useMapStore = defineStore('cloudtak', {
         coordFormat: string;
         defaultPointType: string;
         manualLocationMode: boolean;
-        isBackgrounded: boolean;
 
         lastUpdateCOTErrorSignature: string | null;
 
@@ -167,6 +150,8 @@ export const useMapStore = defineStore('cloudtak', {
         };
 
         timer: ReturnType<typeof setInterval> | null;
+        // Native app is in the background: storage is suspended, timers paused
+        backgrounded: boolean;
 
         _rawWorker?: Worker;
         _workerReady?: Promise<void>;
@@ -210,8 +195,10 @@ export const useMapStore = defineStore('cloudtak', {
             _rawWorker: undefined,
             _workerReady: undefined,
             _worker: undefined,
+            _destroying: undefined,
             _bottomBar: markRaw(new BottomBarManager()),
             timer: null,
+            backgrounded: false,
             callsign: 'Unknown',
             toImport: [],
             location: LocationState.Loading,
@@ -242,7 +229,6 @@ export const useMapStore = defineStore('cloudtak', {
             manualLocationMode: false,
 
             lastUpdateCOTErrorSignature: null,
-            isBackgrounded: false,
             locked: [],
             terrainEnabled: false,
             hasNoChannels: false,
@@ -526,7 +512,12 @@ export const useMapStore = defineStore('cloudtak', {
         startWorker: function() {
             if (this._rawWorker) return;
 
-            const rawWorker = new Worker(AtlasWorker, { type: 'module' });
+            // The server URL rides along on the worker name so the worker's
+            // module evaluation never waits on IndexedDB
+            const rawWorker = new Worker(AtlasWorker, {
+                type: 'module',
+                name: serializeWorkerBootConfig({ serverUrl })
+            });
 
             new CloudTAKTransferHandler(
                 Comlink.transferHandlers,
@@ -537,7 +528,76 @@ export const useMapStore = defineStore('cloudtak', {
             this._workerReady = waitForAtlasWorkerReady(rawWorker);
             this._worker = markRaw(Comlink.wrap<Atlas>(rawWorker));
         },
+        startRefreshTimer: function() {
+            if (this.timer) window.clearInterval(this.timer);
+
+            this.timer = setInterval(async () => {
+                if (!this.map || this.backgrounded) return;
+                await this.refresh();
+            }, COT_REFRESH_INTERVAL_MS);
+        },
+        /**
+         * Native app moved to the background: stop every IndexedDB touch on
+         * both threads. iOS kills WKWebView's storage process under a
+         * backgrounded app and a request caught in flight wedges storage for
+         * the life of the WebView - see suspendDatabase().
+         */
+        suspend: async function(): Promise<void> {
+            if (this.backgrounded) return;
+            this.backgrounded = true;
+
+            if (this.timer) {
+                window.clearInterval(this.timer);
+                this.timer = null;
+            }
+
+            // Worker first - its WebSocket handlers are the busiest writers
+            if (this._worker) {
+                try {
+                    await withTimeout(this.worker.suspend(), WORKER_LIFECYCLE_TIMEOUT_MS, 'Atlas worker suspend');
+                } catch (err) {
+                    console.warn('Atlas worker did not acknowledge suspend', err);
+                }
+            }
+
+            suspendDatabase();
+        },
+        resume: async function(): Promise<void> {
+            if (!this.backgrounded) return;
+            this.backgrounded = false;
+
+            // Main thread first so a worker write cannot re-run a liveQuery
+            // against a still-suspended main-thread database
+            resumeDatabase();
+
+            if (this._worker) {
+                try {
+                    await withTimeout(this.worker.resume(), WORKER_LIFECYCLE_TIMEOUT_MS, 'Atlas worker resume');
+                } catch (err) {
+                    console.warn('Atlas worker did not acknowledge resume', err);
+                }
+            }
+
+            if (this.isMapLoadedFully) {
+                this.startRefreshTimer();
+
+                try {
+                    await this.refresh();
+                } catch (err) {
+                    console.error('Refresh after resume failed', err);
+                }
+            }
+        },
         destroy: async function() {
+            if (this._destroying) return this._destroying;
+
+            this._destroying = this._destroy().finally(() => {
+                this._destroying = undefined;
+            });
+
+            return this._destroying;
+        },
+        _destroy: async function() {
             // Capture current worker instances to avoid races with $reset()/state() creating new ones.
             const currentWorker = this._worker;
             const currentRawWorker = this._rawWorker;
@@ -546,6 +606,9 @@ export const useMapStore = defineStore('cloudtak', {
             if (this.timer) {
                 window.clearInterval(this.timer);
             }
+
+            // $reset() below forgets `backgrounded` - storage must not stay suspended
+            resumeDatabase();
 
             // Stop geolocation watch first so no callbacks fire during async teardown below
             await deviceStore.geolocation.stopWatch();
@@ -577,10 +640,6 @@ export const useMapStore = defineStore('cloudtak', {
             if (this._removeOrientationListener) {
                 await this._removeOrientationListener();
                 this._removeOrientationListener = undefined;
-            }
-            if (this._removeBackgroundStateListener) {
-                this._removeBackgroundStateListener();
-                this._removeBackgroundStateListener = undefined;
             }
             if (this._removePushTokenListener) {
                 this._removePushTokenListener();
@@ -806,9 +865,9 @@ export const useMapStore = defineStore('cloudtak', {
         },
         /**
          * Rebuild the CoT GeoJSON source wholesale from the worker's full
-         * feature state. Used on app resume and as recovery whenever an
-         * incremental diff was consumed from the worker but failed to apply -
-         * without this those features would never render again.
+         * feature state. Recovery whenever an incremental diff was consumed
+         * from the worker but failed to apply - without this those features
+         * would never render again.
          */
         resyncCOT: async function(): Promise<void> {
             if (this._cotResync) return this._cotResync;
@@ -820,15 +879,10 @@ export const useMapStore = defineStore('cloudtak', {
 
                 const features = await this.worker.db.snapshot();
 
-                try {
-                    await withTimeout(source.setData({
-                        type: 'FeatureCollection',
-                        features
-                    }), COT_SOURCE_RESYNC_TIMEOUT_MS, 'MapLibre CoT source resync');
-                } catch (err) {
-                    if (!isNativePlatform()) throw err;
-                    reloadAfterMapLibreFailure(err);
-                }
+                await source.setData({
+                    type: 'FeatureCollection',
+                    features
+                });
             })().finally(() => {
                 this._cotResync = undefined;
             });
@@ -914,93 +968,15 @@ export const useMapStore = defineStore('cloudtak', {
 
             return sub;
         },
-        /**
-         * Recover IndexedDB connections and the TAK WebSocket after the app
-         * returns to the foreground.
-         */
-        resumeFromBackground: async function(): Promise<void> {
-            if (this._resumeRecovery) return this._resumeRecovery;
-
-            this._resumeRecovery = (async () => {
-                if (isNativePlatform() && this._map) {
-                    try {
-                        await withTimeout(
-                            mapgl.importScriptInWorkers(MAPLIBRE_WORKER_PROBE_URL),
-                            MAPLIBRE_WORKER_PROBE_TIMEOUT_MS,
-                            'MapLibre worker response check'
-                        );
-                    } catch (err) {
-                        reloadAfterMapLibreFailure(err);
-                        return;
-                    }
-                }
-
-                try {
-                    await recoverDatabase();
-                } catch (err) {
-                    console.error('Failed to recover IndexedDB on resume:', err);
-                }
-
-                if (!this._worker) return;
-
-                try {
-                    // Still booting - Map.vue owns recovery until init completes
-                    if (!(await withTimeout(this.worker.initialized, 5000, 'Worker init probe'))) return;
-
-                    await withTimeout(this.worker.recover(), 10000, 'Worker database recovery');
-
-                    // iOS suspension can kill the TCP connection without a
-                    // close event ever firing, so the worker's isOpen flag
-                    // cannot be trusted - always rebuild the socket
-                    await withTimeout(
-                        this.worker.conn.resume(await this.worker.username),
-                        10000,
-                        'WebSocket resume'
-                    );
-
-                    // Diff state may have been consumed while suspended -
-                    // rebuild the source wholesale rather than trusting the
-                    // increments
-                    await this.resyncCOT();
-                } catch (err) {
-                    console.error('Resume recovery failed:', err);
-                }
-            })().finally(() => {
-                this._resumeRecovery = undefined;
-            });
-
-            return this._resumeRecovery;
-        },
         init: async function(container: HTMLElement) {
+            // A remount while the previous instance is still tearing down
+            // must not adopt its worker
+            if (this._destroying) await this._destroying;
+
             const deviceStore = useDeviceStore();
 
             this.container = container;
 
-            // visibilitychange is unreliable inside an iOS WebView, so both
-            // background location gating and resume recovery hang off the
-            // native appStateChange signal
-            this.isBackgrounded = false;
-            let initialFire = true;
-            this._removeBackgroundStateListener = await addBackgroundStateListener((isBackgrounded) => {
-                this.isBackgrounded = isBackgrounded;
-
-                // A new suspension gets its own recovery attempt.
-                if (isBackgrounded && isNativePlatform()) {
-                    try {
-                        sessionStorage.removeItem(MAPLIBRE_RECOVERY_RELOAD_KEY);
-                    } catch (err) {
-                        console.warn('Failed to reset MapLibre reload guard', err);
-                    }
-                }
-
-                // The initial fire only syncs state - running recovery there
-                // would race boot's own database open
-                if (!isBackgrounded && !initialFire) void this.resumeFromBackground();
-                initialFire = false;
-            });
-
-            // iOS restores a killed WebView on background wakes with networking
-            // and IndexedDB suspended - booting in that state wedges partway
             this.loadingStage = 'Waiting for app to resume…';
             await whenForegrounded();
 
@@ -1027,11 +1003,15 @@ export const useMapStore = defineStore('cloudtak', {
             const { value: token } = await Preferences.get({ key: 'token' });
 
             this.loadingStage = 'Initializing worker…';
-            await this._workerReady!;
-            await this.worker.init(token || '');
+            await withTimeout(this._workerReady!, WORKER_READY_TIMEOUT_MS, 'Atlas worker startup');
+            await withTimeout(this.worker.init(token || ''), WORKER_INIT_TIMEOUT_MS, 'Atlas worker init');
 
             try {
-                this.offlineTiles = new Set(await this.worker.tiles.list());
+                this.offlineTiles = new Set(await withTimeout(
+                    this.worker.tiles.list(),
+                    OFFLINE_TILES_LIST_TIMEOUT_MS,
+                    'Offline tiles list'
+                ));
             } catch (err) {
                 console.warn('Failed to list offline tiles', err);
             }
@@ -1285,10 +1265,7 @@ export const useMapStore = defineStore('cloudtak', {
                 this.isMapLoadedFully = true;
                 this.loadingStage = '';
 
-                this.timer = setInterval(async () => {
-                    if (!this.map) return;
-                    await this.refresh();
-                }, 500);
+                this.startRefreshTimer();
             });
 
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment

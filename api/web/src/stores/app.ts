@@ -3,7 +3,7 @@ import { liveQuery, type Subscription } from 'dexie';
 import { Preferences } from '@capacitor/preferences';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import KV from '../base/kv.ts';
-import { db, withDbRetry } from '../database.ts';
+import { db } from '../database.ts';
 import { withTimeout } from '../utils/async.ts';
 import Config from '../base/config.ts';
 import ServerManager from '../base/server.ts';
@@ -76,20 +76,6 @@ export const useAppStore = defineStore('cloudtak-app', {
     actions: {
         async setServerUrl(serverUrl: string): Promise<void> {
             await Preferences.set({ key: 'serverUrl', value: serverUrl });
-            await this.mirrorServerUrl(serverUrl);
-        },
-
-        // Best-effort KV copy for web workers; must not block boot.
-        async mirrorServerUrl(serverUrl: string): Promise<void> {
-            try {
-                await withTimeout(
-                    withDbRetry(() => KV.generate('serverUrl', serverUrl)),
-                    BOOT_LOCAL_TIMEOUT_MS,
-                    'serverUrl KV mirror'
-                );
-            } catch (err) {
-                console.warn('Failed to mirror serverUrl into KV store', err);
-            }
         },
 
         async persistSession(opts: { token: string; username: string; session: string }): Promise<void> {
@@ -215,8 +201,6 @@ export const useAppStore = defineStore('cloudtak-app', {
                     window.location.href = '/setup.html';
                     return false;
                 }
-
-                await this.mirrorServerUrl(serverUrl);
             }
 
             this.loadingStage = 'Setting up styles…';

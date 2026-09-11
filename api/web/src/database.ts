@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
-import { withTimeout } from './utils/async.ts';
+import { withTimeout, TimeoutError } from './utils/async.ts';
 import type {
     Feature,
     GroupChannel,
@@ -343,6 +343,13 @@ let reopenPromise: Promise<void> | null = null;
 // restore) resumes.
 let shuttingDown = false;
 
+// While the app is backgrounded on native, IndexedDB must stay idle: iOS
+// kills WKWebView's storage (network) process out from under a backgrounded
+// app, and any request in flight when that happens wedges this content
+// process's connection for good - a page reload does not clear it, only a
+// fresh WebView does. See suspendDatabase().
+let suspended = false;
+
 if (typeof window !== 'undefined') {
     window.addEventListener('pagehide', () => {
         shuttingDown = true;
@@ -363,13 +370,13 @@ if (typeof window !== 'undefined') {
 }
 
 export async function ensureDatabase(): Promise<void> {
-    if (shuttingDown || db.isOpen()) return;
+    if (shuttingDown || suspended || db.isOpen()) return;
 
     if (!reopenPromise) {
         reopenPromise = (async () => {
             let lastError: unknown;
             for (let attempt = 0; attempt < 5; attempt++) {
-                if (shuttingDown || db.isOpen()) return;
+                if (shuttingDown || suspended || db.isOpen()) return;
 
                 try {
                     await db.open();
@@ -388,32 +395,6 @@ export async function ensureDatabase(): Promise<void> {
     }
 
     return reopenPromise;
-}
-
-/**
- * Probe the IndexedDB connection with a real read and reopen it if needed.
- * An iOS suspend can invalidate the connection without a close event -
- * db.isOpen() still reports true while every request wedges - so a failed
- * probe forces an explicit close before reopening.
- */
-export async function recoverDatabase(probeTimeoutMs = 2000): Promise<void> {
-    if (!shuttingDown && db.isOpen()) {
-        try {
-            await withTimeout(db.kv.get('__connection_probe__'), probeTimeoutMs, 'IndexedDB probe');
-
-            return;
-        } catch (err) {
-            console.warn('IndexedDB connection probe failed, forcing reopen:', err);
-
-            try {
-                db.close();
-            } catch (closeErr) {
-                console.warn('Failed to close zombie IndexedDB connection:', closeErr);
-            }
-        }
-    }
-
-    await ensureDatabase();
 }
 
 const TRANSIENT_DB_ERROR_NAMES = new Set([
@@ -435,8 +416,87 @@ const TRANSIENT_DB_ERROR_MESSAGES = [
     'premature commit'
 ];
 
+// A close that arrives while suspended (the storage process died) is
+// reopened on resume rather than immediately
+let closedWhileSuspended = false;
+
 db.on('close', () => {
-    if (!shuttingDown) void ensureDatabase();
+    if (shuttingDown) return;
+
+    if (suspended) {
+        closedWhileSuspended = true;
+        return;
+    }
+
+    void ensureDatabase();
+});
+
+/** Thrown for any IndexedDB access while suspendDatabase() is in effect */
+export class DatabaseSuspendedError extends Error {
+    constructor(message = 'IndexedDB is suspended while the app is in the background') {
+        super(message);
+        this.name = 'DatabaseSuspendedError';
+    }
+}
+
+/**
+ * The storage process did not answer a bounded probe. Every read and write
+ * would hang forever; only a fresh WebView (or app process) recovers.
+ */
+export class DatabaseUnavailableError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'DatabaseUnavailableError';
+    }
+}
+
+// Feature ids whose persist was skipped while suspended. Re-persisted from
+// the in-memory copy on resume so the offline cache does not drift.
+const deferredFeatureIds = new Set<string>();
+
+export function isDatabaseSuspended(): boolean {
+    return suspended;
+}
+
+/**
+ * Reject every IndexedDB transaction synchronously, before an
+ * IDBTransaction is opened, so nothing is ever in flight while the app is
+ * backgrounded. A closed database is not reopened until resumeDatabase().
+ */
+export function suspendDatabase(): void {
+    suspended = true;
+}
+
+export function resumeDatabase(): void {
+    if (!suspended) return;
+    suspended = false;
+
+    if (closedWhileSuspended && !shuttingDown) {
+        closedWhileSuspended = false;
+        void ensureDatabase();
+    }
+}
+
+export function deferFeaturePersist(id: string): void {
+    deferredFeatureIds.add(id);
+}
+
+export function takeDeferredFeatureIds(): string[] {
+    const ids = [...deferredFeatureIds];
+    deferredFeatureIds.clear();
+    return ids;
+}
+
+db.use({
+    stack: 'dbcore',
+    name: 'CloudTAKSuspend',
+    create: (core) => ({
+        ...core,
+        transaction: (stores, mode, options) => {
+            if (suspended) throw new DatabaseSuspendedError();
+            return core.transaction(stores, mode, options);
+        }
+    })
 });
 
 export function isTransientDbError(err: unknown): boolean {
@@ -448,6 +508,9 @@ export function isTransientDbError(err: unknown): boolean {
 }
 
 export async function withDbRetry<T>(fn: () => Promise<T>, attempts = 4): Promise<T> {
+    // Never let a retry reopen a closed database while suspended
+    if (suspended) throw new DatabaseSuspendedError();
+
     let lastError: unknown;
 
     for (let attempt = 0; attempt < attempts; attempt++) {
@@ -464,4 +527,27 @@ export async function withDbRetry<T>(fn: () => Promise<T>, attempts = 4): Promis
     }
 
     throw lastError;
+}
+
+/**
+ * Bounded round trip to the storage process. A wedged IndexedDB (see
+ * suspendDatabase()) never answers, so callers on a boot path use this to
+ * fail in seconds with a DatabaseUnavailableError instead of hanging until
+ * their own, much longer, stage timeout.
+ */
+export async function probeDatabase(timeoutMs: number): Promise<void> {
+    const probe = (async () => {
+        await ensureDatabase();
+        await db.config.count();
+    })();
+
+    try {
+        await withTimeout(probe, timeoutMs, 'IndexedDB probe');
+    } catch (err) {
+        if (err instanceof TimeoutError) {
+            throw new DatabaseUnavailableError(`IndexedDB did not respond within ${timeoutMs}ms - the WebView storage process is not answering`);
+        }
+
+        throw err;
+    }
 }

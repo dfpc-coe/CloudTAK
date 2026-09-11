@@ -17,6 +17,9 @@
 
 ### Pending Release
 
+- :tada: Enable Safari Web Inspector for the iOS app on TestFlight builds
+- :rocket: Adopt the UIKit scene-based life cycle on iOS (required to launch when built with the iOS 27 SDK)
+
 ### v13.84.2 - 2026-09-11
 
 - :bug: Take status bar height into account when routing component is shown
