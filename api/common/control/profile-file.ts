@@ -1,6 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import type Config from '../config.js';
+import { authenticatedProfile } from './profile.js';
 
 export default class ProfileFileControl {
     config: Config;
@@ -17,7 +18,7 @@ export default class ProfileFileControl {
             throw new Err(403, null, 'You do not have permission to view this asset');
         }
 
-        const profile = await this.config.models.Profile.from(email);
+        const profile = await authenticatedProfile(this.config, email);
         const api = await TAKAPI.init(
             new URL(String(this.config.server.api)),
             new APIAuthCertificate(profile.auth.cert, profile.auth.key),

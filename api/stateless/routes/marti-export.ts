@@ -7,6 +7,7 @@ import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import { ExportInput } from '@tak-ps/node-tak/lib/api/export';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
+import { authenticatedProfile } from '../../common/control/profile.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.post('/marti/export', {
@@ -47,7 +48,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            const profile = await config.models.Profile.from(user.email);
+            const profile = await authenticatedProfile(config, user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const feat = await api.Query.singleFeat(req.params.uid);
@@ -81,7 +82,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            const profile = await config.models.Profile.from(user.email);
+            const profile = await authenticatedProfile(config, user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const feats = await api.Query.historyFeats(req.params.uid, {
