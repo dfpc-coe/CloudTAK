@@ -1,4 +1,5 @@
 import { Type } from '@sinclair/typebox';
+import type { Static } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import type ConfigStateless from '../config.js';
 import ScimControl, {
@@ -15,6 +16,7 @@ import ScimControl, {
     SCIM_GROUP_SCHEMA,
     SCIM_LIST_SCHEMA,
     SCIM_CONTENT_TYPE,
+    scimBody,
 } from '../lib/control/scim.js';
 
 const ScimDiscoveryList = Type.Object({
@@ -234,13 +236,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         group: 'SCIM',
         security,
         description: 'Provision a User - the TAK certificate is issued on their first login',
-        body: ScimUserBody,
+        body: scimBody(ScimUserBody),
         res: ScimUser,
     }, async (req, res) => {
         try {
             await scim.auth(req);
 
-            const profile = await scim.create(req.body);
+            const profile = await scim.create(req.body as Static<typeof ScimUserBody>);
 
             res.status(201).type(SCIM_CONTENT_TYPE).json(await scim.serialize(profile));
         } catch (err) {
@@ -277,22 +279,23 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         params: Type.Object({
             id: Type.String(),
         }),
-        body: ScimUserBody,
+        body: scimBody(ScimUserBody),
         res: ScimUser,
     }, async (req, res) => {
         try {
             await scim.auth(req);
 
+            const body = req.body as Static<typeof ScimUserBody>;
             let profile = await scim.from(req.params.id);
 
-            if (req.body.userName.trim().toLowerCase() !== profile.username) {
+            if (body.userName.trim().toLowerCase() !== profile.username) {
                 throw new ScimErr(400, 'userName cannot be changed', 'mutability');
             }
 
             profile = await scim.update(profile, {
-                name: req.body.name,
-                displayName: req.body.displayName,
-                active: req.body.active ?? true,
+                name: body.name,
+                displayName: body.displayName,
+                active: body.active ?? true,
             });
 
             res.type(SCIM_CONTENT_TYPE).json(await scim.serialize(profile));
@@ -309,7 +312,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         params: Type.Object({
             id: Type.String(),
         }),
-        body: ScimPatchBody,
+        body: scimBody(ScimPatchBody),
         res: ScimUser,
     }, async (req, res) => {
         try {
@@ -317,7 +320,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             let profile = await scim.from(req.params.id);
 
-            const input = ScimControl.patchInput(req.body.Operations, profile.username);
+            const input = ScimControl.patchInput((req.body as Static<typeof ScimPatchBody>).Operations, profile.username);
 
             profile = await scim.update(profile, input);
 
@@ -359,13 +362,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         group: 'SCIM',
         security,
         description: 'Accept a Group - Groups are not stored, the returned id encodes the displayName so the Group can be addressed on later syncs',
-        body: ScimGroupBody,
+        body: scimBody(ScimGroupBody),
         res: ScimGroupResource,
     }, async (req, res) => {
         try {
             await scim.auth(req);
 
-            res.status(201).type(SCIM_CONTENT_TYPE).json(scim.groupCreate(req.body));
+            res.status(201).type(SCIM_CONTENT_TYPE).json(scim.groupCreate(req.body as Static<typeof ScimGroupBody>));
         } catch (err) {
             scimRespond(err, res);
         }
@@ -400,7 +403,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         params: Type.Object({
             id: Type.String(),
         }),
-        body: ScimGroupBody,
+        body: scimBody(ScimGroupBody),
         res: ScimGroupResource,
     }, async (req, res) => {
         try {
@@ -408,7 +411,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             ScimControl.groupName(req.params.id);
 
-            res.type(SCIM_CONTENT_TYPE).json(scim.groupCreate(req.body));
+            res.type(SCIM_CONTENT_TYPE).json(scim.groupCreate(req.body as Static<typeof ScimGroupBody>));
         } catch (err) {
             scimRespond(err, res);
         }
@@ -422,13 +425,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         params: Type.Object({
             id: Type.String(),
         }),
-        body: ScimPatchBody,
+        body: scimBody(ScimPatchBody),
         res: ScimGroupResource,
     }, async (req, res) => {
         try {
             await scim.auth(req);
 
-            res.type(SCIM_CONTENT_TYPE).json(scim.groupUpdate(req.params.id, ScimControl.groupPatchInput(req.body.Operations)));
+            res.type(SCIM_CONTENT_TYPE).json(scim.groupUpdate(req.params.id, ScimControl.groupPatchInput((req.body as Static<typeof ScimPatchBody>).Operations)));
         } catch (err) {
             scimRespond(err, res);
         }

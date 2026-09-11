@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import type { Request, Response } from 'express';
 import { Type, Static } from '@sinclair/typebox';
+import type { TSchema } from '@sinclair/typebox';
 import { sql, eq, count } from 'drizzle-orm';
 import type { InferSelectModel } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
@@ -14,6 +15,13 @@ export const SCIM_LIST_SCHEMA = 'urn:ietf:params:scim:api:messages:2.0:ListRespo
 export const SCIM_PATCH_SCHEMA = 'urn:ietf:params:scim:api:messages:2.0:PatchOp';
 export const SCIM_ERROR_SCHEMA = 'urn:ietf:params:scim:api:messages:2.0:Error';
 export const SCIM_CONTENT_TYPE = 'application/scim+json';
+
+export function scimBody<T extends TSchema>(schema: T): Record<string, T> {
+    return {
+        'application/json': schema,
+        [SCIM_CONTENT_TYPE]: schema,
+    };
+}
 
 export const ScimName = Type.Object({
     formatted: Type.Optional(Type.String()),

@@ -145,6 +145,52 @@ test('POST: api/scim/v2/Users - duplicate', async () => {
     });
 });
 
+test('POST: api/scim/v2/Users - application/scim+json', async () => {
+    const res = await flight.fetch('/api/scim/v2/Users', {
+        method: 'POST',
+        auth: { bearer: SCIM_TOKEN },
+        headers: {
+            'Content-Type': 'application/scim+json',
+        },
+        body: JSON.stringify({
+            schemas: ['urn:ietf:params:scim:schemas:core:2.0:User'],
+            userName: 'scim.json@example.com',
+            displayName: 'SCIM JSON',
+        }),
+    }, true);
+
+    assert.equal(res.status, 201);
+    assert.equal(res.headers.get('content-type'), 'application/scim+json; charset=utf-8');
+    assert.equal(res.body.userName, 'scim.json@example.com');
+    assert.equal(res.body.displayName, 'SCIM JSON');
+});
+
+test('PATCH: api/scim/v2/Users/:id - application/scim+json', async () => {
+    const res = await flight.fetch('/api/scim/v2/Users/scim.json%40example.com', {
+        method: 'PATCH',
+        auth: { bearer: SCIM_TOKEN },
+        headers: {
+            'Content-Type': 'application/scim+json',
+        },
+        body: JSON.stringify({
+            schemas: ['urn:ietf:params:scim:api:messages:2.0:PatchOp'],
+            Operations: [{ op: 'replace', path: 'active', value: false }],
+        }),
+    }, true);
+
+    assert.equal(res.status, 200);
+    assert.equal(res.body.active, false);
+});
+
+test('DELETE: api/scim/v2/Users/:id - scim.json', async () => {
+    const res = await flight.fetch('/api/scim/v2/Users/scim.json%40example.com', {
+        method: 'DELETE',
+        auth: { bearer: SCIM_TOKEN },
+    }, false);
+
+    assert.equal(res.status, 204);
+});
+
 test('GET: api/scim/v2/Users?filter', async () => {
     const res = await flight.fetch(`/api/scim/v2/Users?filter=${encodeURIComponent('userName eq "SCIM.User@example.com"')}`, {
         method: 'GET',

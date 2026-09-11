@@ -95,6 +95,7 @@ export default async function buildApi(config: Config): Promise<express.Applicat
         });
     });
 
+    app.use('/api/scim', express.json({ type: 'application/scim+json', limit: '50mb' }));
     app.use('/api', schema.router);
 
     await schema.api();
