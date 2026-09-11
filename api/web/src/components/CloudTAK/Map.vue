@@ -420,7 +420,8 @@ import { stdurl } from '../../std.ts';
 import ProfileConfig from '../../base/profile.ts';
 import OverlayManager from '../../base/overlay.ts';
 import { cutOverlayFeature } from './util/featureCut.ts';
-import { isNativePlatform, isIOSPlatform, addBackgroundStateListener } from '../../utils/capacitor.ts';
+import { isIOSPlatform, isNativePlatform, addAppLifecycleListeners } from '../../utils/capacitor.ts';
+import { TimeoutError } from '../../utils/async.ts';
 import { copyFeatureToClipboard, readFeatureFromClipboard } from '../../stores/device/clipboard.ts';
 import MissionInviteModal from './Menu/Mission/MissionInviteModal.vue';
 
@@ -470,30 +471,42 @@ let inviteChannel: BroadcastChannel | undefined;
 
 const loading = ref(true)
 
-// If the app backgrounds mid-boot, awaits inside mapStore.init() can wedge
-// permanently (suspended networking, invalidated IndexedDB). Reload once -
-// the Hard Reset recovery, but automatic - when the boot still hasn't
-// completed this long after returning to the foreground.
-const BOOT_STALL_RELOAD_MS = 30000;
-const BOOT_STALL_RELOAD_KEY = 'cloudtak::boot-stall-reloaded';
+// A boot suspended by a background transition can wedge - reload on resume
 let bootComplete = false;
-let bootStallTimer: ReturnType<typeof setTimeout> | undefined;
-let removeBootWatchdog: (() => void) | undefined;
+let bootInterrupted = false;
+let unmounted = false;
+let removeAppLifecycleListeners: (() => void) | undefined;
 
-function onBootStalled(): void {
-    if (bootComplete) return;
+// A boot stage that times out on native is reloaded rather than retried in
+// place - terminating a worker mid-open can wedge the next attempt. Once per
+// page session, so a second timeout falls through to the error and Hard Reset.
+const BOOT_TIMEOUT_RELOAD_KEY = 'cloudtak::boot-timeout-reloaded';
 
+function reloadOnceForBootTimeout(): boolean {
     try {
-        if (sessionStorage.getItem(BOOT_STALL_RELOAD_KEY)) return;
-        sessionStorage.setItem(BOOT_STALL_RELOAD_KEY, '1');
-    } catch (err) {
-        // Unguarded automatic reloads could loop - fall back to the Hard Reset button
-        console.warn('Boot stall reload guard unavailable, skipping automatic reload', err);
-        return;
+        if (sessionStorage.getItem(BOOT_TIMEOUT_RELOAD_KEY)) return false;
+        sessionStorage.setItem(BOOT_TIMEOUT_RELOAD_KEY, '1');
+    } catch {
+        return false;
     }
 
-    console.error('Map boot stalled after app resume - reloading');
     location.reload();
+    return true;
+}
+
+// A stage that hung, or the worker's storage probe giving up, both mean
+// IndexedDB is not answering. The probe's error arrives through Comlink,
+// which keeps the name but not the class.
+function isStorageStall(err: Error): boolean {
+    return err instanceof TimeoutError || err.name === 'DatabaseUnavailableError';
+}
+
+function clearBootTimeoutReloadGuard(): void {
+    try {
+        sessionStorage.removeItem(BOOT_TIMEOUT_RELOAD_KEY);
+    } catch {
+        // storage unavailable - the guard was never set either
+    }
 }
 
 function detectMobile() {
@@ -584,11 +597,27 @@ onMounted(async () => {
     if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
 
     if (isNativePlatform()) {
-        removeBootWatchdog = await addBackgroundStateListener((isBackgrounded) => {
-            clearTimeout(bootStallTimer);
-            if (bootComplete || isBackgrounded) return;
+        removeAppLifecycleListeners = await addAppLifecycleListeners({
+            pause: () => {
+                // A new background gets its own reload attempt
+                clearBootTimeoutReloadGuard();
 
-            bootStallTimer = setTimeout(onBootStalled, BOOT_STALL_RELOAD_MS);
+                if (!bootComplete) {
+                    bootInterrupted = true;
+                    return;
+                }
+
+                // Storage must be idle while backgrounded - see mapStore.suspend()
+                void mapStore.suspend();
+            },
+            resume: () => {
+                if (bootInterrupted) {
+                    location.reload();
+                    return;
+                }
+
+                if (bootComplete) void mapStore.resume();
+            }
         });
     }
 
@@ -603,6 +632,15 @@ onMounted(async () => {
             console.error(`Map boot attempt ${attempt} failed:`, err);
 
             if (attempt === 3) break;
+            if (unmounted) return;
+
+            // Native never retries a stalled stage in place: destroy would
+            // terminate a worker mid-open, and its teardown is unbounded.
+            // Reload once per background, otherwise surface the error.
+            if (isNativePlatform() && isStorageStall(bootError)) {
+                if (reloadOnceForBootTimeout()) return;
+                break;
+            }
 
             await mapStore.destroy();
             mapStore.loadingStage = 'Load failed - retrying…';
@@ -611,17 +649,13 @@ onMounted(async () => {
     }
 
     bootComplete = true;
-    clearTimeout(bootStallTimer);
-    try {
-        sessionStorage.removeItem(BOOT_STALL_RELOAD_KEY);
-    } catch (err) {
-        console.warn('Failed to clear boot stall reload guard', err);
-    }
 
     if (bootError) {
         emit('err', bootError);
         return;
     }
+
+    clearBootTimeoutReloadGuard();
 
     // TODO these are no longer reactive, does it matter?
     warnChannels.value = await mapStore.worker.profile.hasNoChannels();
@@ -674,9 +708,9 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+    unmounted = true;
     bootComplete = true;
-    clearTimeout(bootStallTimer);
-    if (removeBootWatchdog) removeBootWatchdog();
+    removeAppLifecycleListeners?.();
     inviteChannel?.close();
     void mapStore.destroy();
 });

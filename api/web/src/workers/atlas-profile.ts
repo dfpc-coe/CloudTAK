@@ -223,6 +223,14 @@ export default class AtlasProfile {
         };
     }
 
+    /** Stop the periodic self CoT; setupTimer() restarts it */
+    pauseTimer(): void {
+        if (this.timerSelf) {
+            clearInterval(this.timerSelf);
+            this.timerSelf = undefined;
+        }
+    }
+
     setupTimer() {
         if (this.timerSelf) {
             clearInterval(this.timerSelf);
