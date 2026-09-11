@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.84.2 - 2026-09-11
+
+- :bug: Take status bar height into account when routing component is shown
+
 ### v13.84.1 - 2026-09-11
 
 - :rocket: On mobile present a unified top bar
