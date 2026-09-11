@@ -15,7 +15,7 @@ type CliArgs = {
     silent?: boolean;
     nocache?: boolean;
     noevents?: boolean;
-    nosinks?: boolean;
+    noetlevents?: boolean;
     nogeofence?: boolean;
     noconnections?: boolean;
     postgres?: string;
@@ -28,7 +28,7 @@ const { values: parsedArgs } = parseArgs({
         'silent': { type: 'boolean' }, // Turn off logging as much as possible
         'no-cache': { type: 'boolean' }, // Ignore MemCached
         'no-events': { type: 'boolean' }, // Disable Initialization of Second Level Events
-        'no-sinks': { type: 'boolean' }, // Disable Push to Sinks
+        'no-etl-events': { type: 'boolean' }, // Disable delivery of Outgoing ETL Events
         'no-geofence': { type: 'boolean' }, // Disable Geofence Server Integration
         'no-connections': { type: 'boolean' }, // Disable Automatic Initialization of ETL Connections & CoreEvent Broadcast
         'postgres': { type: 'string' }, // Postgres Connection String
@@ -40,7 +40,7 @@ const { values: parsedArgs } = parseArgs({
     'silent'?: boolean;
     'no-cache'?: boolean;
     'no-events'?: boolean;
-    'no-sinks'?: boolean;
+    'no-etl-events'?: boolean;
     'no-geofence'?: boolean;
     'no-connections'?: boolean;
     'postgres'?: string;
@@ -51,7 +51,7 @@ const args: CliArgs = {
     silent: parsedArgs.silent,
     nocache: parsedArgs['no-cache'],
     noevents: parsedArgs['no-events'],
-    nosinks: parsedArgs['no-sinks'],
+    noetlevents: parsedArgs['no-etl-events'],
     nogeofence: parsedArgs['no-geofence'],
     noconnections: parsedArgs['no-connections'],
     postgres: parsedArgs.postgres,
@@ -88,7 +88,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         silent: args.silent || false,
         noevents: args.noevents || false,
         postgres: process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl',
-        nosinks: args.nosinks || false,
+        noetlevents: args.noetlevents || false,
         nogeofence: args.nogeofence || false,
         noconnections: args.noconnections || false,
         nocache: args.nocache || false,

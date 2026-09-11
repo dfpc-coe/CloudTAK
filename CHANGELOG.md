@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+- :rocket: Redesign the Outgoing Sinks model as `ETLEvents` - streaming CoT Features are now delivered as typed `feature` messages
+- :tada: Deliver `event:create`, `event:update` & `event:delete` ETL Events for Core Event changes to subscribed Outgoing Layers whose Connection shares a Channel with the Event
+- :rocket: Rename the `--no-sinks` CLI flag to `--no-etl-events`
+
 ### v13.85.0 - 2026-09-11
 
 - :bug: Keep the map usable after a background to foreground transition on mobile - iOS kills the WebView storage process while backgrounded and any IndexedDB request in flight wedged the page for good, stalling boot at "Initializing worker" even after a reload
