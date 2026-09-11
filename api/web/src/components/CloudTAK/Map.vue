@@ -964,7 +964,7 @@ async function handleRadial(event: string): Promise<void> {
  */
 @media (max-width: 767.98px) {
     .cloudtak-left-controls--nav {
-        top: 134px !important;
+        top: calc(134px + var(--status-bar-height, 0px)) !important;
     }
 }
 
