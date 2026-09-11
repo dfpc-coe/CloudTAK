@@ -5,7 +5,7 @@
             label='Mission'
         >
             <template #icon>
-                <IconAmbulance
+                <IconCloudPin
                     :size='18'
                     stroke='1'
                     color='#6b7990'
@@ -48,7 +48,7 @@
                             :title='name'
                             @click='router.push(`/menu/missions/${props.modelValue}`)'
                         >
-                            <IconAmbulance
+                            <IconCloudPin
                                 :size='20'
                                 stroke='1'
                                 class='flex-shrink-0'
@@ -123,7 +123,7 @@
                                         stroke='1'
                                         class='me-2 flex-shrink-0'
                                     />
-                                    <IconAmbulance
+                                    <IconCloudPin
                                         v-else
                                         :size='18'
                                         stroke='1'
@@ -204,7 +204,7 @@ import {
     IconLock,
     IconPlus,
     IconTrash,
-    IconAmbulance,
+    IconCloudPin,
     IconListSearch,
 } from '@tabler/icons-vue';
 
