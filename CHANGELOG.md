@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+- :rocket: Redesign the Outgoing Sinks model as `ETLEvents` - streaming CoT Features are now delivered as typed `feature` messages
+- :tada: Deliver `event:create`, `event:update` & `event:delete` ETL Events for Core Event changes to subscribed Outgoing Layers whose Connection shares a Channel with the Event
+- :rocket: Rename the `--no-sinks` CLI flag to `--no-etl-events`
+
 ### v13.84.2 - 2026-09-11
 
 - :bug: Take status bar height into account when routing component is shown

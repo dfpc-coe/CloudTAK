@@ -2,7 +2,6 @@ import Err from '@openaddresses/batch-error';
 import fs from 'node:fs';
 import path from 'node:path';
 import ImportControl, { ImportSourceEnum } from '../../common/control/import.js';
-import Sinks from './sinks.js';
 import type ConfigStateful from '../config.js';
 import { randomUUID } from 'node:crypto';
 import Modeler from '@openaddresses/batch-generic';
@@ -127,7 +126,6 @@ export const CONNECTION_LINGER_MS = 60000;
 
 export default class ConnectionPool extends Map<number | string, ConnectionClient> {
     config: ConfigStateful;
-    sinks: Sinks;
     importControl: ImportControl;
     closed: boolean;
     pending: Map<number | string, Promise<ConnectionClient>>;
@@ -152,8 +150,6 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         this.lingering = new Map();
         this.config = config;
         this.importControl = new ImportControl(config);
-
-        this.sinks = new Sinks(config);
 
         this.pingInterval = setInterval(() => {
             try {
@@ -274,7 +270,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     }
 
     /**
-     * Handle writing a CoT into the Sink/WebSocket Clients
+     * Handle writing a CoT into the ETL Events/WebSocket Clients
      * This is also called externally by the layer/:layer/cot API as CoTs
      * aren't rebroadcast to the submitter by the TAK Server
      */
@@ -398,8 +394,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                 }
             }
 
-            if (conn instanceof MachineConnConfig && !this.config.nosinks) {
-                await this.sinks.cots(conn, cots);
+            if (conn instanceof MachineConnConfig) {
+                await this.config.etlEvents.features(conn, cots);
             }
         } catch (err) {
             console.error('Error', err);
