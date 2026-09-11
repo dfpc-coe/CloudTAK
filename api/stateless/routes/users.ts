@@ -1,5 +1,5 @@
 import { Type, Static } from '@sinclair/typebox';
-import { sql, eq } from 'drizzle-orm';
+import { sql, eq, asc, desc, getTableColumns } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
@@ -44,9 +44,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             order: Default.Order,
             sort: Type.String({
                 default: 'last_login',
-                enum: Object.keys(Profile),
+                enum: Object.keys(getTableColumns(Profile)),
             }),
             filter: Default.Filter,
+            disabled: Type.Optional(Type.Boolean({
+                description: 'Only return users that have (true) or have not (false) been deprovisioned',
+            })),
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -56,30 +59,43 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            const list = await config.models.Profile.list({
-                limit: req.query.limit,
-                page: req.query.page,
-                order: req.query.order,
-                sort: req.query.sort,
-                where: sql`
-                    username ~* ${req.query.filter}
-                    OR name ~* ${req.query.filter}
-                `,
+            const columns = getTableColumns(Profile);
+            const column = columns[req.query.sort as keyof typeof columns];
+            if (!column) throw new Err(400, null, `Invalid sort: ${req.query.sort}`);
+
+            // Users that have never logged in (SCIM provisioned) sort after every real login
+            let orderBy = req.query.order === 'desc' ? desc(column) : asc(column);
+            if (req.query.sort === 'last_login') {
+                orderBy = req.query.order === 'desc' ? sql`${column} DESC NULLS LAST` : sql`${column} ASC NULLS FIRST`;
+            }
+
+            const pgres = await config.models.Profile.pool.select({
+                count: sql<string>`count(*) OVER()`.as('count'),
+                profile: Profile,
+            })
+                .from(Profile)
+                .where(sql`
+                    (username ~* ${req.query.filter} OR name ~* ${req.query.filter})
+                    ${req.query.disabled === undefined ? sql`` : sql`AND disabled = ${req.query.disabled}`}
+                `)
+                .orderBy(orderBy)
+                .limit(req.query.limit)
+                .offset(req.query.page * req.query.limit);
+
+            const profiles = pgres.map(row => row.profile);
+            const presence = await config.hub.wsPresence(profiles.map(user => user.username));
+
+            res.json({
+                total: pgres.length ? parseInt(pgres[0].count) : 0,
+                items: profiles.map((user) => {
+                    return {
+                        active: presence[user.username].active,
+                        certificate: Provider.certificate(user.auth?.cert),
+                        ...user,
+                        name: user.name || 'Unknown',
+                    };
+                }),
             });
-
-            const presence = await config.hub.wsPresence(list.items.map(user => user.username));
-
-            list.items = list.items.map((user) => {
-                return {
-                    active: presence[user.username].active,
-                    certificate: Provider.certificate(user.auth?.cert),
-                    ...user,
-                    name: user.name || 'Unknown',
-                };
-            });
-
-            // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
-            res.json(list);
         } catch (err) {
             Err.respond(err, res);
         }
