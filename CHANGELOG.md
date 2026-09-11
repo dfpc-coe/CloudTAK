@@ -17,6 +17,12 @@
 
 ### Pending Release
 
+- :bug: Keep the map usable after a background to foreground transition on mobile - iOS kills the WebView storage process while backgrounded and any IndexedDB request in flight wedged the page for good, stalling boot at "Initializing worker" even after a reload
+- :rocket: Suspend IndexedDB on both threads while backgrounded, pause the refresh & self CoT timers, keep features arriving over the WebSocket in memory & persist them on resume with a mission resync
+- :rocket: Hand the Atlas worker its server URL over `Worker.name` so module evaluation never touches storage & drop the IndexedDB mirror of the URL from boot
+- :rocket: Bound every boot stage & probe storage in the worker so a storage wedge surfaces in seconds, reloading once per background on a stall
+- :rocket: On foreground after 30s load the app into a fresh WKWebView with its own WKProcessPool instead of reloading in place; Android reloads & recreates the WebView on a lost render process
+- :rocket: Remove the in-place resume recovery whose storage probe & reopen were themselves in-flight requests at the worst moment
 - :tada: Enable Safari Web Inspector for the iOS app on TestFlight builds
 - :rocket: Adopt the UIKit scene-based life cycle on iOS (required to launch when built with the iOS 27 SDK)
 
