@@ -111,16 +111,10 @@
                 <SelectFeats :selected='mapStore.selected' />
             </div>
 
-            <div
+            <TopBar
                 v-if='mode === "Default"'
-                class='position-absolute'
-                style='
-                    top: calc(8px + var(--status-bar-height, 0px));
-                    left: 8px;
-                '
-            >
-                <ActiveMission />
-            </div>
+                :menu-shown='!noMenuShown'
+            />
             <div
                 v-if='mapStore.navigation.active'
                 class='position-absolute start-50 translate-middle-x'
@@ -284,85 +278,6 @@
                 </div>
             </TablerModal>
 
-            <div
-                v-if='mapStore.isMapLoaded && mode === "Default"'
-                class='position-absolute cloudtak-panel d-flex align-items-center px-2'
-                style='
-                    z-index: 5;
-                    height: 60px;
-                    max-width: calc(100vw - 16px);
-                    top: calc(8px + var(--status-bar-height, 0px));
-                    right: 8px;
-                '
-            >
-                <TablerDropdown>
-                    <TablerIconButton
-                        id='map-notifications'
-                        title='Notifications Icon'
-                        class='cloudtak-hover'
-                        :class='{ "alert-pulse": alertNotifications }'
-                        :hover='false'
-                    >
-                        <IconAlertTriangle
-                            v-if='alertNotifications'
-                            :size='40'
-                            stroke='1'
-                            class='text-danger'
-                        />
-                        <IconBell
-                            v-else
-                            :size='40'
-                            stroke='1'
-                        />
-                    </TablerIconButton>
-                    <template #dropdown>
-                        <Notifications />
-                    </template>
-                </TablerDropdown>
-
-                <span
-                    v-if='notifications'
-                    class='badge bg-red mb-2'
-                />
-                <span
-                    v-else
-                    style='width: 10px;'
-                />
-
-                <DrawTools />
-
-                <div
-                    class='border-start mx-1'
-                    style='height: 32px;'
-                />
-
-                <TablerIconButton
-                    v-if='noMenuShown'
-                    title='Open Menu'
-                    class='ms-1 cloudtak-hover'
-                    :hover='false'
-                    @click='router.push("/menu")'
-                >
-                    <IconMenu2
-                        :size='40'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-                <TablerIconButton
-                    v-else
-                    title='Close Menu'
-                    class='ms-1 cloudtak-hover'
-                    :hover='false'
-                    @click='closeAllMenu'
-                >
-                    <IconX
-                        :size='40'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-            </div>
-
-
             <MainMenu
                 v-if='
                     mapStore.isMapLoaded
@@ -454,21 +369,18 @@ import { ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef
 import GPSPanel from './GPSPanel/GPSPanel.vue';
 import PluginPane from './PluginPane.vue';
 import {useRoute, useRouter } from 'vue-router';
-import ActiveMission from './ActiveMission.vue';
 import Navigating from './Navigating.vue';
+import TopBar from './TopBar.vue';
 import DrawOverlay from './util/DrawOverlay.vue';
 import WarnChannels from './util/WarnChannels.vue';
-import Notifications from './Notifications.vue';
 import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
 import type { WarnConfigurationPage } from './util/WarnConfiguration.vue';
-import DrawTools from './DrawTools.vue';
 import GenericBottomPane from './GenericBottomPane.vue';
 import type { MapGeoJSONFeature, LngLatLike, MapMouseEvent } from 'maplibre-gl';
 import type { Feature } from '../../types.ts';
 import {
     IconCircleArrowUp,
-    IconAlertTriangle,
     IconLocationPin,
     IconLockAccess,
     IconLocation,
@@ -476,26 +388,20 @@ import {
     IconCompass,
     IconSearch,
     IconMinus,
-    IconMenu2,
     IconAngle,
     IconPlus,
-    IconBell,
     IconX,
 } from '@tabler/icons-vue';
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
 import MainMenu from './MainMenu.vue';
 import ServerStatus from './ServerStatus.vue';
-import { from } from 'rxjs';
-import { useObservable } from '@vueuse/rxjs';
 import {
     TablerIconButton,
-    TablerDropdown,
     TablerModal,
 } from '@tak-ps/vue-tabler';
 import { LocationState, WorkerMessageType } from '../../utils/events.ts';
 import type { WorkerMessage } from '../../utils/events.ts';
-import TAKNotification, { NotificationType } from '../../base/notification.ts';
 import { v4 as randomUUID } from 'uuid';
 import { lineString as turfLineString, point as turfPoint } from '@turf/helpers';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
@@ -509,7 +415,6 @@ import { useDeviceStore } from '../../stores/device.ts';
 import { useAppStore } from '../../stores/app.ts';
 import { DrawToolMode } from '../../stores/modules/draw.ts';
 import { useFloatStore } from '../../stores/float.ts';
-import { liveQuery } from 'dexie';
 import Upload from '../util/Upload.vue';
 import { stdurl } from '../../std.ts';
 import ProfileConfig from '../../base/profile.ts';
@@ -590,18 +495,6 @@ function onBootStalled(): void {
     console.error('Map boot stalled after app resume - reloading');
     location.reload();
 }
-
-const notifications = useObservable<number>(
-    from(liveQuery(async () => {
-        return await TAKNotification.count()
-    }))
-);
-
-const alertNotifications = useObservable<number>(
-    from(liveQuery(async () => {
-        return await TAKNotification.countByType(NotificationType.Alert)
-    }))
-);
 
 function detectMobile() {
   //TODO: This needs to follow something like:
@@ -807,10 +700,6 @@ function selectFeat(selectedFeat: MapGeoJSONFeature | COT) {
         mapStore.viewedFeature = selectedFeat;
         router.push(`/menu/feature`);
     }
-}
-
-function closeAllMenu() {
-    router.push('/');
 }
 
 function closeRadial() {
@@ -1068,15 +957,6 @@ async function handleRadial(event: string): Promise<void> {
 </script>
 
 <style>
-@keyframes alert-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-}
-
-.alert-pulse {
-    animation: alert-pulse 1.2s ease-in-out infinite;
-}
-
 /*
  * Drops the left controls below the navigation banner once it wraps to its own
  * row on small screens - `.cloudtak-navigating` itself is styled in style.scss

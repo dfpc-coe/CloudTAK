@@ -117,7 +117,7 @@
                                         class='flex-shrink-0 text-white-50'
                                         title='Data Sync'
                                     >
-                                        <IconAmbulance
+                                        <IconCloudPin
                                             :size='20'
                                             stroke='1'
                                         />
@@ -289,7 +289,7 @@ import {
 import TreeVector from './Overlays/TreeVector.vue';
 import {
     IconGripVertical,
-    IconAmbulance,
+    IconCloudPin,
     IconMaximize,
     IconVector,
     IconEyeOff,
