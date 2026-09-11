@@ -124,7 +124,7 @@
         "eslint-plugin-vue": "^10.0.0",
         "globals": "^17.3.0",
         "happy-dom": "^20.0.0",
-        "jsdom": "^29.0.0",
+        "jsdom": "^30.0.0",
         "sass-embedded": "^1.86.0",
         "typedoc": "^0.28.1",
         "typescript": "^6.0.0",
