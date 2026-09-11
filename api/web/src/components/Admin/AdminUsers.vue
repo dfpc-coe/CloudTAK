@@ -63,10 +63,13 @@
                                                 :dark='true'
                                                 :status='user.active ? "Success" : "Unknown"'
                                             />
-                                            <span
-                                                class='mx-2'
-                                                v-text='user[h.name]'
-                                            />
+                                            <div class='mx-2'>
+                                                <div v-text='user.name' />
+                                                <div
+                                                    class='subheader'
+                                                    v-text='user.username'
+                                                />
+                                            </div>
                                             <CertificateBadge
                                                 class='ms-auto'
                                                 :certificate='user.certificate'

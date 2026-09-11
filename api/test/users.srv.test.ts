@@ -40,6 +40,7 @@ test('GET: api/user', async () => {
             items: [{
                 active: false,
                 username: 'admin@example.com',
+                name: 'Unknown',
                 last_login: time,
                 created: time,
                 updated: time,

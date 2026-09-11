@@ -63,6 +63,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 sort: req.query.sort,
                 where: sql`
                     username ~* ${req.query.filter}
+                    OR name ~* ${req.query.filter}
                 `,
             });
 
@@ -73,6 +74,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     active: presence[user.username].active,
                     certificate: Provider.certificate(user.auth?.cert),
                     ...user,
+                    name: user.name || 'Unknown',
                 };
             });
 

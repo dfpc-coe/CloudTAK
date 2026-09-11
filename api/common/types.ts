@@ -405,6 +405,7 @@ export const CertificateResponse = Type.Object({
 
 export const ProfileListResponse = Type.Object({
     username: Type.String(),
+    name: Type.String(),
     created: Type.String(),
     updated: Type.String(),
     last_login: Type.String(),

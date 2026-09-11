@@ -49711,6 +49711,7 @@ export interface paths {
                             total: number;
                             items: {
                                 username: string;
+                                name: string;
                                 created: string;
                                 updated: string;
                                 last_login: string;
