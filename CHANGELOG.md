@@ -17,6 +17,13 @@
 
 ### Pending Release
 
+### v13.84.1 - 2026-09-11
+
+- :rocket: On mobile present a unified top bar
+- :bug: Ensure long mission names don't cause overlap over the notification bell
+- :bug: Ensure GPS Component doesn't infinitely expand based on callsign name by truncating long callsigns
+- :rocket: Change Data Sync icon based on COTAK user feedback
+
 ### v13.84.0 - 2026-09-11
 
 - :tada: Add incoming SCIM 2.0 user provisioning at `/api/scim/v2` - an Identity Provider can list, create, update, deactivate & deprovision CloudTAK users with the `userName`, `name`, `displayName` & `active` attributes
