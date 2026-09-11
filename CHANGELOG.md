@@ -17,6 +17,8 @@
 
 ### Pending Release
 
+### v13.85.0 - 2026-09-11
+
 - :bug: Keep the map usable after a background to foreground transition on mobile - iOS kills the WebView storage process while backgrounded and any IndexedDB request in flight wedged the page for good, stalling boot at "Initializing worker" even after a reload
 - :rocket: Suspend IndexedDB on both threads while backgrounded, pause the refresh & self CoT timers, keep features arriving over the WebSocket in memory & persist them on resume with a mission resync
 - :rocket: Hand the Atlas worker its server URL over `Worker.name` so module evaluation never touches storage & drop the IndexedDB mirror of the URL from boot
