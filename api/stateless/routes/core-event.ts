@@ -29,15 +29,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }
 
     /**
-     * Best effort delivery of a CoreEvent change to subscribed Outgoing Layers
-     */
-    function notifyETL(action: ETLEventAction, event: Static<typeof CoreEventResponse>): void {
-        config.etlEvents.event(action, event).catch((err) => {
-            console.error(`not ok - failed to deliver ${action} ETL Event for Core Event ${event.id}:`, err);
-        });
-    }
-
-    /**
      * Is the requester the creator of the Event - the user that created it,
      * a System Admin, or a Connection/Layer token belonging to the Connection
      * that created it
@@ -289,7 +280,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const created = await config.models.CoreEvent.augmented_from(event.id);
 
-            notifyETL(ETLEventAction.Create, created);
+            config.etlEvents.event(ETLEventAction.Create, created).catch((err) => {
+                console.error(`not ok - failed to deliver create ETL Event for Core Event ${created.id}:`, err);
+            });
 
             res.json(created);
         } catch (err) {
@@ -412,7 +405,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     console.error(`not ok - failed to immediately submit Core Event ${req.params.event}:`, err);
                 });
 
-                notifyETL(ETLEventAction.Update, updated);
+                config.etlEvents.event(ETLEventAction.Update, updated).catch((err) => {
+                    console.error(`not ok - failed to deliver update ETL Event for Core Event ${updated.id}:`, err);
+                });
             }
 
             res.json(updated);
@@ -443,7 +438,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             await config.models.CoreEvent.delete(req.params.event);
 
-            notifyETL(ETLEventAction.Delete, event);
+            config.etlEvents.event(ETLEventAction.Delete, event).catch((err) => {
+                console.error(`not ok - failed to deliver delete ETL Event for Core Event ${event.id}:`, err);
+            });
 
             res.json({ status: 200, message: 'Core Event Deleted' });
         } catch (err) {
