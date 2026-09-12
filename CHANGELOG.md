@@ -17,6 +17,8 @@
 
 ### Pending Release
 
+### v13.86.0 - 2026-09-12
+
 - :rocket: Redesign the Outgoing Sinks model as `ETLEvents` - streaming CoT Features are now delivered as typed `feature` messages
 - :tada: Deliver `event:create`, `event:update` & `event:delete` ETL Events for Core Event changes to subscribed Outgoing Layers whose Connection shares a Channel with the Event
 - :rocket: Rename the `--no-sinks` CLI flag to `--no-etl-events`
