@@ -77,6 +77,7 @@ test('POST: api/profile/asset', async () => {
             created: '2025-09-12T00:12:46.016Z',
             updated: '2025-09-12T00:12:46.016Z',
             username: 'admin@example.com',
+            parent: null,
             path: '/',
             name: 'example.zip',
             iconset: null,
@@ -84,6 +85,91 @@ test('POST: api/profile/asset', async () => {
             channels: [],
             artifacts: [],
         });
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        Sinon.restore();
+    }
+});
+
+test('POST: api/profile/asset supports parent linkage', async () => {
+    try {
+        Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
+            if (command instanceof HeadObjectCommand) {
+                return Promise.resolve({
+                    ContentLength: 123,
+                });
+            } else if (command instanceof ListObjectsV2Command) {
+                return Promise.resolve({
+                    Contents: [],
+                });
+            } else if (command instanceof DeleteObjectsCommand) {
+                return Promise.resolve({});
+            }
+
+            throw new Error(`Unknown S3 Command: ${command.constructor.name}`);
+        });
+
+        const parent = await flight.fetch('/api/profile/asset', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                id: '11111111-1111-4111-8111-111111111111',
+                name: 'parent.zip',
+                path: '/',
+                artifacts: [],
+            },
+        }, true);
+        assert.equal(parent.body.parent, null);
+
+        const res = await flight.fetch('/api/profile/asset', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                id: '22222222-2222-4222-8222-222222222222',
+                name: 'child.zip',
+                path: '/',
+                parent: parent.body.id,
+                artifacts: [],
+            },
+        }, true);
+
+        assert.equal(res.body.parent, parent.body.id);
+
+        const detached = await flight.fetch(`/api/profile/asset/${res.body.id}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                parent: null,
+            },
+        }, true);
+        assert.equal(detached.body.parent, null);
+
+        const cyclic = await flight.fetch(`/api/profile/asset/${parent.body.id}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                parent: parent.body.id,
+            },
+        }, false);
+        assert.equal(cyclic.status, 400);
+
+        for (const id of [parent.body.id, res.body.id]) {
+            await flight.fetch(`/api/profile/asset/${id}`, {
+                method: 'DELETE',
+                auth: {
+                    bearer: flight.token.admin,
+                },
+            }, true);
+        }
     } catch (err) {
         assert.ifError(err);
     } finally {
@@ -126,6 +212,7 @@ test('PATCH: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7', async () =
             created: '2025-09-12T00:12:46.016Z',
             updated: '2025-09-12T00:12:46.016Z',
             username: 'admin@example.com',
+            parent: null,
             path: '/',
             name: 'example.zip',
             iconset: null,
@@ -142,8 +229,14 @@ test('PATCH: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7', async () =
 
 test('DELETE: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7 cascades channel rows', async () => {
     try {
+        const deletedPrefixes = new Set<string>();
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
-            if (command instanceof ListObjectsV2Command) {
+            if (command instanceof HeadObjectCommand) {
+                return Promise.resolve({
+                    ContentLength: 123,
+                });
+            } else if (command instanceof ListObjectsV2Command) {
+                deletedPrefixes.add(String(command.input.Prefix));
                 return Promise.resolve({
                     Contents: [],
                 });
@@ -153,6 +246,21 @@ test('DELETE: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7 cascades ch
 
             throw new Error(`Unknown S3 Command: ${command.constructor.name}`);
         });
+
+        const child = await flight.fetch('/api/profile/asset', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                id: '33333333-3333-4333-8333-333333333333',
+                name: 'child.pmtiles',
+                parent: '9e286ca6-1932-4365-804b-7dd4830f01d7',
+                path: '/',
+                artifacts: [],
+            },
+        }, true);
+        assert.equal(child.body.parent, '9e286ca6-1932-4365-804b-7dd4830f01d7');
 
         const res = await flight.fetch('/api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7', {
             method: 'DELETE',
@@ -165,6 +273,10 @@ test('DELETE: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7 cascades ch
             status: 200,
             message: 'Asset Deleted',
         });
+        assert.deepEqual(deletedPrefixes, new Set([
+            'profile/admin@example.com/9e286ca6-1932-4365-804b-7dd4830f01d7',
+            'profile/admin@example.com/33333333-3333-4333-8333-333333333333',
+        ]));
 
         const rows = await flight.config?.pg.select().from(ProfileFileChannel);
         assert.deepEqual(rows, []);
@@ -199,6 +311,7 @@ test('GET: api/profile/asset includes channel shared files', async () => {
 
         await flight.config?.models.Profile.generate({
             username: 'shared@example.com',
+            disabled: false,
             system_admin: false,
             auth: {
                 cert: 'shared-cert',
@@ -281,6 +394,7 @@ test('GET: api/profile/asset/:asset.:ext - unshared file from another user is fo
     try {
         await flight.config?.models.Profile.generate({
             username: 'private@example.com',
+            disabled: false,
             system_admin: false,
             auth: {
                 cert: 'private-cert',

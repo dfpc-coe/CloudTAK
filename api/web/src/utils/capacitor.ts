@@ -143,3 +143,24 @@ export async function openSecondaryView(url: string | URL): Promise<void> {
 
     window.open(href.toString(), '_blank', 'noopener');
 }
+
+/**
+ * Subscribe to native background (pause) and foreground (resume)
+ * transitions. Unlike appStateChange these do not fire for transient
+ * inactivity such as Control Center. Returns a no-op remover on web.
+ */
+export async function addAppLifecycleListeners(handlers: {
+    pause?: () => void;
+    resume?: () => void;
+}): Promise<() => void> {
+    if (!isNativePlatform()) return () => { /* no-op */ };
+
+    const listeners = await Promise.all([
+        handlers.pause ? App.addListener('pause', handlers.pause) : undefined,
+        handlers.resume ? App.addListener('resume', handlers.resume) : undefined
+    ]);
+
+    return () => {
+        for (const listener of listeners) void listener?.remove();
+    };
+}

@@ -1,7 +1,15 @@
 import type { paths } from '@cloudtak/api-types';
 
+export type AssetNode = {
+    name: string;
+    path: string;
+    ext: string;
+    children?: AssetNode[];
+};
+
 export type ConvertResponse = {
     asset: string;
+    children?: AssetNode[];
     icons?: Set<{
         name: string;
         data: string;

@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/CloudTAK",
     "type": "module",
-    "version": "13.82.0",
+    "version": "13.86.0",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "scripts": {
         "lint": "eslint bin/ cloudformation/",
@@ -49,7 +49,7 @@
         "@mapbox/tile-cover": "^3.0.2",
         "@mapbox/tilebelt": "^2.0.3",
         "@openaddresses/cloudfriend": "^7.0.0",
-        "@openaddresses/deploy": "^10.0.0",
+        "@openaddresses/deploy": "^10.5.0",
         "@sinclair/typebox": "^0.34.52"
     },
     "devDependencies": {

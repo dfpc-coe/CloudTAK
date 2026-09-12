@@ -68,6 +68,7 @@
                 />
                 <pre
                     v-else
+                    style='white-space: pre-wrap; word-break: break-word;'
                     v-text='text'
                 />
 

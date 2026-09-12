@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/cloudtak",
     "type": "module",
-    "version": "13.82.0",
+    "version": "13.86.0",
     "types": "dist/types/plugin.d.ts",
     "files": [
         "dist/types"
@@ -55,7 +55,7 @@
         "@tabler/icons-vue": "^3.0.0",
         "@tak-ps/node-cot": "^14.47.0",
         "@tak-ps/node-p12": "^1.0.3",
-        "@tak-ps/vue-tabler": "^5.1.0",
+        "@tak-ps/vue-tabler": "^5.3.0",
         "@turf/area": "^7.2.0",
         "@turf/bbox": "^7.1.0",
         "@turf/boolean-point-in-polygon": "^7.3.1",
@@ -124,7 +124,7 @@
         "eslint-plugin-vue": "^10.0.0",
         "globals": "^17.3.0",
         "happy-dom": "^20.0.0",
-        "jsdom": "^29.0.0",
+        "jsdom": "^30.0.0",
         "sass-embedded": "^1.86.0",
         "typedoc": "^0.28.1",
         "typescript": "^6.0.0",

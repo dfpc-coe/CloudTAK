@@ -248,12 +248,13 @@ export const Profile = pgTable('profile', {
     id: integer(),
     name: text().default('Unknown'),
     username: text().primaryKey(),
-    last_login: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    auth: jsonb().$type<Static<typeof ConnectionAuth>>().notNull(),
+    last_login: timestamp({ withTimezone: true, mode: 'string' }).default(sql`Now()`),
+    auth: jsonb().$type<Static<typeof ConnectionAuth>>(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     system_admin: boolean().notNull().default(false),
     agency_admin: jsonb().notNull().$type<Array<number>>().default([]),
+    disabled: boolean().notNull().default(false),
 });
 
 export const ProfileSetting = pgTable('profile_settings',
@@ -275,6 +276,7 @@ export const ProfileFile = pgTable('profile_files', {
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     username: text().notNull().references(() => Profile.username),
+    parent: uuid().references((): AnyPgColumn => ProfileFile.id, { onDelete: 'cascade' }),
     path: text().notNull().default('/'),
     name: text().notNull(),
     iconset: text().references(() => Iconset.uid),

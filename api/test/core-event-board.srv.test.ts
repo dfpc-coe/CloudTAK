@@ -17,6 +17,17 @@ let eventId: string;
 let unsharedEventId: string;
 let placementId: string;
 
+/** Core Events whose CoT the placement routes asked the Hub to rebroadcast */
+const submitted: Array<string> = [];
+
+test('spy on Core Event rebroadcasts', () => {
+    if (!flight.config) throw new Error('flight.config is not initialised');
+
+    flight.config.hub.coreEventSubmit = async (event: string) => {
+        submitted.push(event);
+    };
+});
+
 test('GET: api/board - auto-creates the Channel Board', async () => {
     try {
         const res = await flight.fetch('/api/board?channel=7', {
@@ -259,6 +270,7 @@ test('PUT: api/board/event - nominate Event', async () => {
         }, true);
 
         eventId = event.body.id;
+        submitted.length = 0;
 
         const res = await flight.fetch('/api/board/event', {
             method: 'PUT',
@@ -279,6 +291,8 @@ test('PUT: api/board/event - nominate Event', async () => {
         assert.equal(res.body.position, 0);
         assert.equal(res.body.event.id, eventId);
         assert.equal(res.body.event.name, 'Wildfire Report');
+
+        assert.deepEqual(submitted, [eventId], 'nomination rebroadcasts the Event CoT');
     } catch (err) {
         assert.ifError(err);
     }
@@ -383,6 +397,8 @@ test('PUT: api/board/event - 400 for unshared Event', async () => {
 
 test('PATCH: api/board/event/:placement - move between Columns', async () => {
     try {
+        submitted.length = 0;
+
         const res = await flight.fetch(`/api/board/event/${placementId}`, {
             method: 'PATCH',
             auth: {
@@ -396,6 +412,22 @@ test('PATCH: api/board/event/:placement - move between Columns', async () => {
 
         assert.equal(res.body.column, customId);
         assert.equal(res.body.position, 2);
+
+        assert.deepEqual(submitted, [eventId], 'a Column move rebroadcasts the Event CoT');
+
+        submitted.length = 0;
+
+        await flight.fetch(`/api/board/event/${placementId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                position: 0,
+            },
+        }, true);
+
+        assert.deepEqual(submitted, [], 'a re-order within the Column does not rebroadcast');
 
         const list = await flight.fetch(`/api/board/event?board=${boardId}&column=${customId}`, {
             method: 'GET',
@@ -438,6 +470,8 @@ test('PATCH: api/board/event/:placement - 400 for a Column of another Board', as
 
 test('PUT: api/board/event - re-placing keeps a single placement per Board', async () => {
     try {
+        submitted.length = 0;
+
         const res = await flight.fetch('/api/board/event', {
             method: 'PUT',
             auth: {
@@ -452,6 +486,8 @@ test('PUT: api/board/event - re-placing keeps a single placement per Board', asy
 
         assert.equal(res.body.id, placementId);
         assert.equal(res.body.column, nominatedId);
+
+        assert.deepEqual(submitted, [eventId], 'moving back to the Nominated Column rebroadcasts the Event CoT');
 
         const list = await flight.fetch(`/api/board/event?board=${boardId}`, {
             method: 'GET',
@@ -508,6 +544,8 @@ test('DELETE: api/board/column/:column - custom Column', async () => {
 
 test('DELETE: api/board/event/:placement - remove placement', async () => {
     try {
+        submitted.length = 0;
+
         const res = await flight.fetch(`/api/board/event/${placementId}`, {
             method: 'DELETE',
             auth: {
@@ -516,6 +554,8 @@ test('DELETE: api/board/event/:placement - remove placement', async () => {
         }, true);
 
         assert.deepEqual(res.body, { status: 200, message: 'Event removed from Board' });
+
+        assert.deepEqual(submitted, [eventId], 'removal rebroadcasts the Event CoT');
 
         const list = await flight.fetch(`/api/board/event?board=${boardId}`, {
             method: 'GET',

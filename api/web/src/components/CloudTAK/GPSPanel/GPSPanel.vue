@@ -161,14 +161,18 @@ const headingText = computed(() => {
     left: calc(8px + env(safe-area-inset-left, 0px));
     bottom: calc(8px + env(safe-area-inset-bottom, 0px));
     height: var(--map-gps-panel-size, 84px);
-    width: fit-content;
-    min-width: 180px;
+    width: 220px;
     max-width: calc(100vw - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
     padding: 0.25rem 0.75rem;
     overflow: visible;
 }
 
+.gps-panel > div {
+    min-width: 0;
+}
+
 .gps-panel-callsign {
+    min-width: 0;
     font-size: 0.9rem;
     line-height: 1.2;
 }

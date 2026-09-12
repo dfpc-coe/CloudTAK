@@ -151,7 +151,7 @@
                         <TablerIconButton
                             title='Load Breadcrumb'
                         >
-                            <div style='position: relative; display: inline-flex;'>
+                            <div style='position: relative; display: inline-flex; vertical-align: bottom;'>
                                 <IconRoute
                                     :size='actionIconSize'
                                     stroke='1'
@@ -420,7 +420,7 @@
                         class='col-12'
                     >
                         <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded cloudtak-accent'>
-                            <IconAmbulance
+                            <IconCloudPin
                                 :size='32'
                                 stroke='1'
                             />
@@ -777,7 +777,7 @@ import {
     IconMessage,
     IconBlockquote,
     IconDotsVertical,
-    IconAmbulance,
+    IconCloudPin,
     IconPlayerPlay,
     IconShare2,
     IconZoomPan,

@@ -13,12 +13,66 @@
             </div>
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
-            <TablerInput
+            <SearchSortFilter
                 v-model='paging.filter'
-                icon='search'
-                placeholder='Filter...'
                 class='mx-1 my-2'
-            />
+                placeholder='Filter...'
+                :sort='sortOption'
+                :sort-options='sortOptions'
+                :active-filters='activeFilterCount'
+                @update:sort='applySortOption($event)'
+            >
+                <template #sort-icon>
+                    <template v-if='sortOption'>
+                        <component
+                            :is='sortTypeIcon'
+                            :size='20'
+                            stroke='1'
+                        />
+                        <component
+                            :is='sortDirectionIcon'
+                            :size='20'
+                            stroke='1'
+                        />
+                    </template>
+                    <IconArrowsSort
+                        v-else
+                        :size='20'
+                        stroke='1'
+                    />
+                </template>
+                <template #filters>
+                    <div class='d-flex flex-column'>
+                        <div class='d-flex align-items-center justify-content-between px-3 py-2'>
+                            <strong class='small text-uppercase text-white-50'>Filters</strong>
+                            <button
+                                v-if='activeFilterCount > 0'
+                                type='button'
+                                class='btn btn-link btn-sm p-0'
+                                @click='clearFilters'
+                            >
+                                Clear
+                            </button>
+                        </div>
+                        <div class='px-3 pb-2 d-flex flex-column gap-2'>
+                            <div>
+                                <div class='small text-uppercase text-white-50 mb-1'>
+                                    Status
+                                </div>
+                                <label class='form-check mb-1'>
+                                    <input
+                                        class='form-check-input'
+                                        type='checkbox'
+                                        :checked='paging.disabled === true'
+                                        @change='paging.disabled = paging.disabled === true ? undefined : true'
+                                    >
+                                    <span class='form-check-label'>Disabled</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </SearchSortFilter>
 
             <TablerAlert
                 v-if='error'
@@ -63,10 +117,13 @@
                                                 :dark='true'
                                                 :status='user.active ? "Success" : "Unknown"'
                                             />
-                                            <span
-                                                class='mx-2'
-                                                v-text='user[h.name]'
-                                            />
+                                            <div class='mx-2'>
+                                                <div v-text='user.name' />
+                                                <div
+                                                    class='subheader'
+                                                    v-text='user.username'
+                                                />
+                                            </div>
                                             <CertificateBadge
                                                 class='ms-auto'
                                                 :certificate='user.certificate'
@@ -75,11 +132,19 @@
                                         <div
                                             v-else-if='h.name === "last_login"'
                                         >
-                                            <div v-text='timeDiff(user[h.name])' />
+                                            <template v-if='user.last_login'>
+                                                <div v-text='timeDiff(user.last_login)' />
+                                                <div
+                                                    class='subheader'
+                                                    v-text='user.last_login'
+                                                />
+                                            </template>
                                             <div
+                                                v-else
                                                 class='subheader'
-                                                v-text='(user as Partial<User>)[h.name]'
-                                            />
+                                            >
+                                                Never
+                                            </div>
                                         </div>
                                         <span
                                             v-else
@@ -107,7 +172,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { server, stdclick } from '../../std.ts';
 import timeDiff from '../../timediff.ts';
@@ -116,10 +181,17 @@ import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import StatusDot from '../util/StatusDot.vue';
 import CertificateBadge from '../util/CertificateBadge.vue';
+import SearchSortFilter from '../CloudTAK/util/SearchSortFilter.vue';
+import {
+    IconLetterCase,
+    IconClock,
+    IconArrowUp,
+    IconArrowDown,
+    IconArrowsSort,
+} from '@tabler/icons-vue';
 import {
     TablerNone,
     TablerAlert,
-    TablerInput,
     TablerLoading,
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
@@ -129,18 +201,54 @@ const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 
 type Header = { name: keyof User, display: boolean };
-type UserSort = 'id' | 'name' | 'username' | 'last_login' | 'auth' | 'created' | 'updated' | 'system_admin' | 'agency_admin' | 'enableRLS';
+type UserSort = 'id' | 'name' | 'username' | 'last_login' | 'auth' | 'created' | 'updated' | 'system_admin' | 'agency_admin' | 'disabled';
+type UserOrder = 'asc' | 'desc';
+
+const sortOptionMap: Record<string, { sort: UserSort; order: UserOrder }> = {
+    'Last Login: Newest → Oldest': { sort: 'last_login', order: 'desc' },
+    'Last Login: Oldest → Newest': { sort: 'last_login', order: 'asc' },
+    'Name: A → Z': { sort: 'name', order: 'asc' },
+    'Name: Z → A': { sort: 'name', order: 'desc' },
+};
+const sortOptions = Object.keys(sortOptionMap);
+
 const header = ref<Array<Header>>([])
 const list = ref<UserList>({ total: 0, items: [] });
 const paging = ref({
     filter: '',
+    disabled: undefined as boolean | undefined,
     sort: 'last_login' as UserSort,
-    order: 'desc' as 'asc' | 'desc',
+    order: 'desc' as UserOrder,
     limit: 100,
     page: 0
 });
 
-watch(() => paging.value.filter, () => {
+// The table header can sort by any column - only the sort options above are named in the dropdown
+const sortOption = computed<string>(() => {
+    return sortOptions.find((option) => {
+        return sortOptionMap[option].sort === paging.value.sort && sortOptionMap[option].order === paging.value.order;
+    }) ?? '';
+});
+
+const sortTypeIcon = computed(() => paging.value.sort === 'name' ? IconLetterCase : IconClock);
+const sortDirectionIcon = computed(() => paging.value.order === 'asc' ? IconArrowUp : IconArrowDown);
+
+function applySortOption(option: string): void {
+    const selected = sortOptionMap[option];
+    if (!selected) return;
+    paging.value.sort = selected.sort;
+    paging.value.order = selected.order;
+}
+
+const activeFilterCount = computed<number>(() => {
+    return paging.value.disabled === undefined ? 0 : 1;
+});
+
+function clearFilters(): void {
+    paging.value.disabled = undefined;
+}
+
+watch(() => [paging.value.filter, paging.value.disabled, paging.value.sort, paging.value.order], () => {
     // A new filter invalidates the current page offset - the page watcher below refetches
     if (paging.value.page !== 0) paging.value.page = 0;
 });
@@ -192,6 +300,7 @@ async function fetchList() {
             params: {
                 query: {
                     filter: paging.value.filter,
+                    disabled: paging.value.disabled,
                     limit: paging.value.limit,
                     page: paging.value.page,
                     sort: paging.value.sort,

@@ -1,7 +1,7 @@
 import { v4 as randomUUID } from 'uuid';
 import Type2525 from '@tak-ps/node-cot/2525';
 import { std } from '../std.ts';
-import { db, withDbRetry } from '../database.ts';
+import { db, withDbRetry, isDatabaseSuspended, deferFeaturePersist } from '../database.ts';
 import { liveQuery } from 'dexie';
 import { bbox } from '@turf/bbox'
 import { length } from '@turf/length'
@@ -338,12 +338,17 @@ export default class COT {
             }
 
             if (this.origin.mode === OriginMode.CONNECTION) {
-                await withDbRetry(() => db.feature.put({
-                    id: this.id,
-                    path: this._path,
-                    properties: this._properties,
-                    geometry: this._geometry
-                }));
+                // Backgrounded on native: keep the in-memory update, persist on resume
+                if (isDatabaseSuspended()) {
+                    deferFeaturePersist(this.id);
+                } else {
+                    await withDbRetry(() => db.feature.put({
+                        id: this.id,
+                        path: this._path,
+                        properties: this._properties,
+                        geometry: this._geometry
+                    }));
+                }
             }
 
             // skipSave: true is passed when applying server state locally

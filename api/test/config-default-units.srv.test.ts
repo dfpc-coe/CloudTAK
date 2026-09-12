@@ -196,6 +196,7 @@ test('GET api/profile', async () => {
             geometry_point_type: 'u-d-p',
             geometry_point_color: '#ff0000',
             geometry_point_icon: '',
+            disabled: false,
             system_admin: false,
             agency_admin: [],
         });

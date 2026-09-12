@@ -357,6 +357,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const profile = await config.models.Profile.from(passkey.username);
 
+            if (profile.disabled) throw new Err(403, null, 'User is disabled - Contact your administrator');
+
             let access = AuthUserAccess.USER;
             if (profile.system_admin) {
                 access = AuthUserAccess.ADMIN;
@@ -383,8 +385,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             // A passkey login has no password so the certificate cannot be regenerated here,
             // instead the client is told to collect a password and call POST /login
-            let certRenewalRequired = Provider.certificateRenewalRequired(profile.auth.cert);
-            let certExpired = Provider.certificateExpired(profile.auth.cert);
+            let certRenewalRequired = Provider.certificateRenewalRequired(profile.auth?.cert);
+            let certExpired = Provider.certificateExpired(profile.auth?.cert);
 
             if (!certRenewalRequired && config.server.auth.key && config.server.auth.cert) {
                 try {

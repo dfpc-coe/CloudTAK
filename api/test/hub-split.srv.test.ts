@@ -25,7 +25,7 @@ test('Split: boot a hub-mode server', async () => {
         postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
-        nosinks: true,
+        noetlevents: true,
         nocache: true,
         mode: 'hub',
     });
@@ -44,7 +44,7 @@ test('Split: boot an api-mode server pointed at the hub', async () => {
         postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
-        nosinks: true,
+        noetlevents: true,
         nocache: true,
         mode: 'api',
         hubUrl: `http://localhost:${rpcAddress.port}`,
@@ -68,7 +68,7 @@ test('Split: api mode requires a hub URL', async () => {
         postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
-        nosinks: true,
+        noetlevents: true,
         nocache: true,
         mode: 'api',
     }), /CLOUDTAK_Hub_URL must be set/);

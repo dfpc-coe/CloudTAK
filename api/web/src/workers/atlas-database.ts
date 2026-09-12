@@ -4,8 +4,8 @@
 */
 
 import { std } from '../std.ts';
-import { db, withDbRetry } from '../database.ts';
-import type { DBSubscriptionChanges } from '../database.ts';
+import { db, withDbRetry, isDatabaseSuspended, deferFeaturePersist, takeDeferredFeatureIds } from '../database.ts';
+import type { DBSubscriptionChanges, DBFeature } from '../database.ts';
 import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
 import type Atlas from './atlas.ts';
@@ -570,6 +570,32 @@ export default class AtlasDatabase {
     }
 
     /**
+     * Persist features whose IndexedDB write was skipped while the database
+     * was suspended (app backgrounded on native). Returns the number written.
+     */
+    async flushDeferred(): Promise<number> {
+        const rows: DBFeature[] = [];
+
+        for (const id of takeDeferredFeatureIds()) {
+            const cot = this.cots.get(id);
+            if (!cot || cot.origin.mode !== OriginMode.CONNECTION) continue;
+
+            rows.push({
+                id: cot.id,
+                path: cot.path,
+                properties: cot.properties,
+                geometry: cot.geometry
+            });
+        }
+
+        if (rows.length) {
+            await withDbRetry(() => db.feature.bulkPut(rows));
+        }
+
+        return rows.length;
+    }
+
+    /**
      * Remove a given CoT from the store
      *
      * @param id - UID of the CoT to remove
@@ -937,12 +963,17 @@ export default class AtlasDatabase {
 
                 const created = exists;
                 if (opts.skipDatabase !== true) {
-                    await withDbRetry(() => db.feature.put({
-                        id: created.id,
-                        path: created.path,
-                        properties: created.properties,
-                        geometry: created.geometry
-                    }));
+                    // Backgrounded on native: keep it in memory, persist on resume
+                    if (isDatabaseSuspended()) {
+                        deferFeaturePersist(created.id);
+                    } else {
+                        await withDbRetry(() => db.feature.put({
+                            id: created.id,
+                            path: created.path,
+                            properties: created.properties,
+                            geometry: created.geometry
+                        }));
+                    }
                 }
 
                 if (opts.skipBroadcast !== true && exists.properties.archived) {

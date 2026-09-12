@@ -5,6 +5,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
+import { authenticatedProfile } from '../../common/control/profile.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.delete('/marti/api/files/:hash', {
@@ -21,7 +22,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { token: true });
-            const profile = await config.models.Profile.from(user.email);
+            const profile = await authenticatedProfile(config, user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             await api.Files.delete(req.params.hash);
 
@@ -48,7 +49,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { token: true });
-            const profile = await config.models.Profile.from(user.email);
+            const profile = await authenticatedProfile(config, user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             res.setHeader('Content-Disposition', `attachment; filename="${req.query.name || req.params.hash}"`);

@@ -53,6 +53,11 @@ export default async function buildApi(config: Config): Promise<express.Applicat
                         bearerFormat: 'JWT',
                         description: 'Layer ETL token (`etl.<jwt>`) - the listed scopes must be present in the Layer\'s `permissions`',
                     },
+                    scimAuth: {
+                        type: 'http',
+                        scheme: 'bearer',
+                        description: 'SCIM token configured by a System Administrator (`scim::token`)',
+                    },
                 },
             },
             security: [{
@@ -90,6 +95,7 @@ export default async function buildApi(config: Config): Promise<express.Applicat
         });
     });
 
+    app.use('/api/scim', express.json({ type: 'application/scim+json', limit: '50mb' }));
     app.use('/api', schema.router);
 
     await schema.api();

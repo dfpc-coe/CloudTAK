@@ -187,7 +187,7 @@
                         @click.stop.prevent='emit("share-mission", asset)'
                         @keyup.enter='emit("share-mission", asset)'
                     >
-                        <IconAmbulance
+                        <IconCloudPin
                             :size='32'
                             stroke='1'
                         />
@@ -287,7 +287,7 @@ import {
     TablerDropdown
 } from '@tak-ps/vue-tabler';
 import {
-    IconAmbulance,
+    IconCloudPin,
     IconPackage,
     IconMapOff,
     IconMapPlus,

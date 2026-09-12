@@ -17,6 +17,54 @@
 
 ### Pending Release
 
+### v13.86.0 - 2026-09-12
+
+- :rocket: Redesign the Outgoing Sinks model as `ETLEvents` - streaming CoT Features are now delivered as typed `feature` messages
+- :tada: Deliver `event:create`, `event:update` & `event:delete` ETL Events for Core Event changes to subscribed Outgoing Layers whose Connection shares a Channel with the Event
+- :rocket: Rename the `--no-sinks` CLI flag to `--no-etl-events`
+- :tada: Deliver `board:*`, `board:column:*` & `board:event:*` ETL Events for Board, Column & Event placement changes to subscribed Outgoing Layers whose Connection has the Board's Channel active
+
+### v13.85.0 - 2026-09-11
+
+- :bug: Keep the map usable after a background to foreground transition on mobile - iOS kills the WebView storage process while backgrounded and any IndexedDB request in flight wedged the page for good, stalling boot at "Initializing worker" even after a reload
+- :rocket: Suspend IndexedDB on both threads while backgrounded, pause the refresh & self CoT timers, keep features arriving over the WebSocket in memory & persist them on resume with a mission resync
+- :rocket: Hand the Atlas worker its server URL over `Worker.name` so module evaluation never touches storage & drop the IndexedDB mirror of the URL from boot
+- :rocket: Bound every boot stage & probe storage in the worker so a storage wedge surfaces in seconds, reloading once per background on a stall
+- :rocket: On foreground after 30s load the app into a fresh WKWebView with its own WKProcessPool instead of reloading in place; Android reloads & recreates the WebView on a lost render process
+- :rocket: Remove the in-place resume recovery whose storage probe & reopen were themselves in-flight requests at the worst moment
+- :tada: Enable Safari Web Inspector for the iOS app on TestFlight builds
+- :rocket: Adopt the UIKit scene-based life cycle on iOS (required to launch when built with the iOS 27 SDK)
+
+### v13.84.2 - 2026-09-11
+
+- :bug: Take status bar height into account when routing component is shown
+
+### v13.84.1 - 2026-09-11
+
+- :rocket: On mobile present a unified top bar
+- :bug: Ensure long mission names don't cause overlap over the notification bell
+- :bug: Ensure GPS Component doesn't infinitely expand based on callsign name by truncating long callsigns
+- :rocket: Change Data Sync icon based on COTAK user feedback
+
+### v13.84.0 - 2026-09-11
+
+- :tada: Add incoming SCIM 2.0 user provisioning at `/api/scim/v2` - an Identity Provider can list, create, update, deactivate & deprovision CloudTAK users with the `userName`, `name`, `displayName` & `active` attributes
+- :tada: Accept SCIM 2.0 Groups at `/api/scim/v2/Groups` so Identity Providers that always sync groups (authentik) complete without errors - Groups are not stored, the id encodes the group name
+- :tada: Add a SCIM User Provisioning section to the Admin Config page to enable SCIM and set the Bearer Token an Identity Provider must present (`scim::enabled`, `scim::token`)
+- :rocket: Add a `disabled` flag to Profiles - a deprovisioned user has their sessions revoked and cannot log in via password, passkey or API token until reactivated
+- :rocket: `Profile.auth` is now nullable - a `null` auth marks a user that was provisioned (SCIM) but has never logged in, the TAK certificate is issued on their first password login
+
+### v13.83.1 - 2026-09-10
+
+- :rocket: Add `parent` field to profile overlay for overlay hierarchy and inheritance
+
+### v13.83.0 - 2026-09-10
+
+- :tada: Add a standalone Forms page (`/forms`) for creating, editing & deleting the Core Forms used by Events and Boards, reachable from the Application Switcher
+- :rocket: Wrap the Advanced section of the Error popup in the Copy field so long error bodies wrap and can be copied for debugging
+- :tada: Complete any Form shared with one of an Event's Channels from the Forms section of the Event view - the Response is linked to the Event
+- :rocket: Rebroadcast the Event CoT when an Event is nominated to, moved between or removed from Board Columns - the Map Event view refetches the Event on the new broadcast so its Column status stays current
+
 ### v13.82.0 - 2026-09-09
 
 - :arrow_up: Update `@tak-ps/etl` to v10.17.0 for the `group` permission
