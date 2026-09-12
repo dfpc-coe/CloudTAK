@@ -41,7 +41,7 @@
         },
         "CapacitorUpdater": {
             "appId": "io.cloudtak.app",
-            "version": "13.85.0",
+            "version": "13.86.0",
             "autoUpdate": "atBackground"
         }
     }
