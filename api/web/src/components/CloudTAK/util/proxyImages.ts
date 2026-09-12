@@ -30,3 +30,23 @@ export function proxyHtmlImages(html: string, token?: string | null): string {
 
     return doc.body.innerHTML;
 }
+
+/**
+ * Extract an HTML description (`{"@type":"html","value":...}`) from feature
+ * properties with remote images routed through the proxy
+ */
+export function featureHtmlDescription(properties: Record<string, unknown> | null | undefined, token?: string | null): string | null {
+    const raw = properties?.description;
+    if (typeof raw !== 'string' || !raw) return null;
+
+    try {
+        const desc = JSON.parse(raw);
+        if (desc && desc['@type'] === 'html' && desc.value) {
+            return proxyHtmlImages(String(desc.value), token);
+        }
+    } catch {
+        return null;
+    }
+
+    return null;
+}

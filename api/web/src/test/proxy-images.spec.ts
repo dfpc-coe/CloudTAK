@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { proxyHtmlImages } from '../components/CloudTAK/util/proxyImages.ts';
+import { proxyHtmlImages, featureHtmlDescription } from '../components/CloudTAK/util/proxyImages.ts';
 import { stdurl } from '../std.ts';
 
 describe('proxyHtmlImages', () => {
@@ -37,5 +37,24 @@ describe('proxyHtmlImages', () => {
 
     it('returns html without images unchanged', () => {
         expect(proxyHtmlImages('<b>hello</b> world')).toBe('<b>hello</b> world');
+    });
+});
+
+describe('featureHtmlDescription', () => {
+    it('proxies images inside an html typed description', () => {
+        const description = JSON.stringify({ '@type': 'html', value: '<img src="https://files.airnowtech.org/a.png">' });
+        const out = featureHtmlDescription({ description }, 'tok');
+        expect(out).not.toBeNull();
+        const src = new URL(new DOMParser().parseFromString(out!, 'text/html').querySelector('img')!.getAttribute('src')!);
+        expect(src.pathname).toBe('/api/proxy/image');
+        expect(src.searchParams.get('url')).toBe('https://files.airnowtech.org/a.png');
+        expect(src.searchParams.get('token')).toBe('tok');
+    });
+
+    it('returns null for plain or non-html descriptions', () => {
+        expect(featureHtmlDescription({ description: 'just text' })).toBeNull();
+        expect(featureHtmlDescription({ description: JSON.stringify({ '@type': 'text', value: 'x' }) })).toBeNull();
+        expect(featureHtmlDescription({})).toBeNull();
+        expect(featureHtmlDescription(null)).toBeNull();
     });
 });
