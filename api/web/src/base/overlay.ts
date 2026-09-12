@@ -60,14 +60,7 @@ export default class OverlayManager extends BaseInterface {
     }
 
     private static loadedBeforeId(): string | undefined {
-        if (this.loaded.length > 1 && this.loaded[1].styles.length > 0) {
-            // Background layers are never added to the map so they cannot
-            // anchor an insert - use the first renderable layer
-            const anchor = this.loaded[1].styles.find((l) => l.type !== 'background');
-            if (anchor) return String(anchor.id);
-        }
-
-        return undefined;
+        return this.loadedAnchorFrom(1);
     }
 
     static appendLoaded(...overlays: Overlay[]): void {
@@ -142,9 +135,21 @@ export default class OverlayManager extends BaseInterface {
         const idx = this.loaded.indexOf(overlay);
         if (idx === -1) return undefined;
 
-        const next = this.loaded[idx + 1];
-        const anchor = next?.styles.find((l) => l.type !== 'background');
-        return anchor ? String(anchor.id) : undefined;
+        return this.loadedAnchorFrom(idx + 1);
+    }
+
+    /**
+     * First renderable layer id present on the map, searching `loaded`
+     * upward from the given index - overlays that failed to load or are
+     * still initializing have no layers and are skipped
+     */
+    static loadedAnchorFrom(idx: number): string | undefined {
+        for (let i = idx; i < this.loaded.length; i++) {
+            const anchor = this.loaded[i].anchorLayerId();
+            if (anchor) return anchor;
+        }
+
+        return undefined;
     }
 
     static async deleteLoaded(idOrOverlay: string | number | Overlay): Promise<void> {
