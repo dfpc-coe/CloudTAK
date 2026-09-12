@@ -11,11 +11,16 @@
         "test:debug": "playwright test --debug",
         "report": "playwright show-report",
         "lint": "eslint .",
-        "check": "tsc --noEmit"
+        "check": "tsc --noEmit",
+        "allure:generate": "allure generate allure-results --clean -o allure-report",
+        "allure:open": "allure open allure-report",
+        "allure:report": "allure generate allure-results --clean -o allure-report && allure open allure-report"
     },
     "devDependencies": {
         "@playwright/test": "^1.61.1",
         "@types/node": "^26.1.1",
+        "allure-commandline": "^2.43.0",
+        "allure-playwright": "^3.12.1",
         "dotenv": "^17.4.2",
         "eslint": "^10.7.0",
         "typescript": "^5.9.3",
