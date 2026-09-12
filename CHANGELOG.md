@@ -17,6 +17,8 @@
 
 ### Pending Release
 
+- :tada: Add `GET /api/proxy/image` to stream remote images from any SSRF-safe public origin & route remote images in the Feature sidebar through it so they are permitted by the CSP
+
 ### v13.86.0 - 2026-09-12
 
 - :rocket: Redesign the Outgoing Sinks model as `ETLEvents` - streaming CoT Features are now delivered as typed `feature` messages

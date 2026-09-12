@@ -1,208 +1,20 @@
 import { Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import { fetch, Headers, Response } from 'undici';
-import { isSafeUrl } from '@tak-ps/node-safeurl';
+import { fetch } from 'undici';
 import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
-
-const REQUEST_BODY_LIMIT = 256 * 1024;
-const RESPONSE_BODY_LIMIT = 1024 * 1024;
-const REQUEST_TIMEOUT = 15_000;
-
-const ALLOWED_METHODS = ['GET', 'POST'] as const;
-
-const FORWARDED_REQUEST_HEADER_ALLOWLIST = new Set([
-    'accept',
-    'accept-language',
-    'authorization',
-    'content-type',
-    'if-match',
-    'if-none-match',
-    'user-agent',
-    'x-api-key',
-    'x-requested-with',
-]);
-
-const BLOCKED_REQUEST_HEADERS = new Set([
-    'connection',
-    'content-length',
-    'cookie',
-    'host',
-    'origin',
-    'proxy-authenticate',
-    'proxy-authorization',
-    'sec-fetch-dest',
-    'sec-fetch-mode',
-    'sec-fetch-site',
-    'te',
-    'trailer',
-    'transfer-encoding',
-    'upgrade',
-]);
-
-const BLOCKED_RESPONSE_HEADERS = new Set([
-    'connection',
-    'keep-alive',
-    'proxy-authenticate',
-    'proxy-authorization',
-    'set-cookie',
-    'te',
-    'trailer',
-    'transfer-encoding',
-    'upgrade',
-]);
-
-function normalizeWhitelist(raw: string[]): Set<string> {
-    const whitelist = new Set<string>();
-
-    for (const entry of raw.map(entry => String(entry).trim()).filter(Boolean)) {
-        let url: URL;
-
-        try {
-            url = new URL(entry);
-        } catch {
-            throw new Err(400, null, `Invalid whitelist entry: ${entry}`);
-        }
-
-        if (!['http:', 'https:'].includes(url.protocol)) {
-            throw new Err(400, null, `Invalid whitelist entry protocol: ${entry}`);
-        }
-
-        if (url.username || url.password || url.search || url.hash || (url.pathname && url.pathname !== '/')) {
-            throw new Err(400, null, 'Whitelist entries must be origin-only (scheme + host + optional port), without path, query, fragment, or credentials');
-        }
-
-        whitelist.add(url.origin);
-    }
-
-    return whitelist;
-}
-
-function sanitizeRequestHeaders(input?: Record<string, string>): Headers {
-    const headers = new Headers();
-
-    for (const [key, value] of Object.entries(input || {})) {
-        const normalized = key.toLowerCase();
-
-        if (normalized.startsWith('x-forwarded-') || normalized === 'x-real-ip') {
-            throw new Err(400, null, `Header ${key} is not allowed`);
-        }
-
-        if (BLOCKED_REQUEST_HEADERS.has(normalized)) {
-            throw new Err(400, null, `Header ${key} is not allowed`);
-        }
-
-        if (!FORWARDED_REQUEST_HEADER_ALLOWLIST.has(normalized) && !normalized.startsWith('x-')) {
-            throw new Err(400, null, `Header ${key} is not allowed`);
-        }
-
-        headers.set(normalized, String(value));
-    }
-
-    return headers;
-}
-
-function sanitizeResponseHeaders(headers: Headers): Record<string, string> {
-    const sanitized: Record<string, string> = {};
-
-    for (const [key, value] of headers.entries()) {
-        if (BLOCKED_RESPONSE_HEADERS.has(key.toLowerCase())) continue;
-        sanitized[key] = value;
-    }
-
-    return sanitized;
-}
-
-function serializeRequestBody(method: typeof ALLOWED_METHODS[number], headers: Headers, body: unknown): string | undefined {
-    if (body === undefined || body === null) return undefined;
-    if (method === 'GET') throw new Err(400, null, 'GET proxy requests cannot include a body');
-
-    let serialized: string;
-    if (typeof body === 'string') {
-        serialized = body;
-    } else {
-        serialized = JSON.stringify(body);
-        if (!headers.has('content-type')) headers.set('content-type', 'application/json');
-    }
-
-    if (Buffer.byteLength(serialized) > REQUEST_BODY_LIMIT) {
-        throw new Err(400, null, 'Proxy request body exceeds the 256KB limit');
-    }
-
-    return serialized;
-}
-
-async function readResponseBodyWithLimit(response: Response, limit: number): Promise<Buffer> {
-    const body = response.body;
-    if (!body) return Buffer.alloc(0);
-
-    const reader = body.getReader();
-    const chunks: Uint8Array[] = [];
-    let total = 0;
-
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        if (value) {
-            total += value.byteLength;
-
-            if (total > limit) {
-                try {
-                    await reader.cancel();
-                } catch {
-                    // Ignore cancellation errors
-                }
-
-                throw new Err(400, null, 'Proxy response body exceeds the 1MB limit');
-            }
-
-            chunks.push(value);
-        }
-    }
-
-    const result = new Uint8Array(total);
-    let offset = 0;
-    for (const chunk of chunks) {
-        result.set(chunk, offset);
-        offset += chunk.byteLength;
-    }
-
-    return Buffer.from(result.buffer, result.byteOffset, result.byteLength);
-}
-
-async function readUpstreamBody(response: Response): Promise<{
-    body: unknown;
-    encoding?: 'base64';
-}> {
-    const declaredLength = response.headers.get('content-length');
-    if (declaredLength && Number(declaredLength) > RESPONSE_BODY_LIMIT) {
-        throw new Err(400, null, 'Proxy response body exceeds the 1MB limit');
-    }
-
-    const contentType = (response.headers.get('content-type') || '').toLowerCase();
-    const buf = await readResponseBodyWithLimit(response, RESPONSE_BODY_LIMIT);
-
-    if (contentType.includes('application/json') || contentType.endsWith('+json')) {
-        return { body: JSON.parse(buf.toString('utf-8')) };
-    }
-
-    if (
-        contentType.startsWith('text/')
-        || contentType.includes('application/xml')
-        || contentType.includes('text/xml')
-        || contentType.includes('application/javascript')
-        || contentType.includes('application/x-www-form-urlencoded')
-    ) {
-        return { body: buf.toString('utf-8') };
-    }
-
-    return {
-        body: buf.toString('base64'),
-        encoding: 'base64',
-    };
-}
+import {
+    ALLOWED_METHODS,
+    IMAGE_CACHE_SECONDS,
+    REQUEST_TIMEOUT,
+    fetchProxyImage,
+    readUpstreamBody,
+    resolveProxyTarget,
+    sanitizeRequestHeaders,
+    sanitizeResponseHeaders,
+    serializeRequestBody,
+} from '../lib/control/proxy.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.post('/proxy', {
@@ -228,33 +40,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const parsed = new URL(req.body.url);
-            if (!['http:', 'https:'].includes(parsed.protocol)) {
-                throw new Err(400, null, 'Proxy only supports http and https URLs');
-            }
-
-            if (parsed.username || parsed.password) {
-                throw new Err(400, null, 'Proxy URLs cannot include embedded credentials');
-            }
-
-            const enabled = await config.models.Setting.typed('proxy::enabled', false);
-            if (!enabled.value) {
-                throw new Err(403, null, 'Proxy is disabled');
-            }
-
-            const whitelistRaw = await config.models.Setting.typed('proxy::whitelist', []);
-            const whitelist = normalizeWhitelist(whitelistRaw.value);
-
-            if (!whitelist.size) {
-                throw new Err(403, null, 'No proxy origins have been configured');
-            }
-
-            if (!whitelist.has(parsed.origin)) {
-                throw new Err(403, null, `Proxy origin ${parsed.origin} is not allowed`);
-            }
-
-            const { safe, reason } = await isSafeUrl(parsed.href, { allow: [...whitelist] });
-            if (!safe) throw new Err(403, null, `Blocked proxy URL: ${reason}`);
+            const parsed = await resolveProxyTarget(config, req.body.url);
 
             const method = String(req.body.method || 'GET').toUpperCase() as typeof ALLOWED_METHODS[number];
             if (!ALLOWED_METHODS.includes(method)) {
@@ -289,6 +75,31 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 body: response.body,
                 ...(response.encoding ? { encoding: response.encoding } : {}),
             });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/proxy/image', {
+        name: 'Proxy Image',
+        group: 'Proxy',
+        description: 'Stream a remote image through CloudTAK so it can be displayed under the Content-Security-Policy. Any public origin is allowed; admin whitelisted proxy origins are additionally trusted',
+        query: Type.Object({
+            url: Type.String({ description: 'Absolute http(s) URL of the image to proxy' }),
+            token: Type.Optional(Type.String()),
+        }),
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req, { token: true });
+
+            const { contentType, body } = await fetchProxyImage(config, req.query.url);
+
+            res.setHeader('Content-Type', contentType);
+            res.setHeader('Content-Length', body.byteLength);
+            res.setHeader('Content-Disposition', 'inline');
+            res.setHeader('X-Content-Type-Options', 'nosniff');
+            res.setHeader('Cache-Control', `private, max-age=${IMAGE_CACHE_SECONDS}`);
+            res.end(body);
         } catch (err) {
             Err.respond(err, res);
         }

@@ -159,7 +159,8 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { useMapStore } from '../../stores/map.ts';
 import type { LngLatLike, MapGeoJSONFeature } from 'maplibre-gl';
 import type { Feature } from 'geojson';
@@ -167,6 +168,7 @@ import pointOnFeature from '@turf/point-on-feature';
 import Coordinate from './util/Coordinate.vue';
 import CopyField from './util/CopyField.vue';
 import { cutOverlayFeature, getFeatureOverlay } from './util/featureCut.ts';
+import { proxyHtmlImages } from './util/proxyImages.ts';
 import {
     TablerIconButton
 } from '@tak-ps/vue-tabler';
@@ -192,6 +194,11 @@ const feature = computed(() => {
 })
 
 const mode = ref('default');
+const token = ref<string | null>(null);
+
+onMounted(async () => {
+    token.value = (await Preferences.get({ key: 'token' })).value;
+});
 
 const STYLE_PROPERTIES = new Set([
     'marker-color',
@@ -224,7 +231,7 @@ const htmlDescription = computed(() => {
     try {
         const desc = JSON.parse(feature.value.properties.description);
         if (desc['@type'] === 'html' && desc.value) {
-            return desc.value;
+            return proxyHtmlImages(String(desc.value), token.value);
         }
     } catch {
         return null;

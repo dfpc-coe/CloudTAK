@@ -51,7 +51,7 @@
 
                         <template v-if='config["proxy::enabled"]'>
                             <p class='text-secondary mt-2 mb-2'>
-                                Allow plugins to make outbound requests through CloudTAK. Configure the whitelist as an array of allowed origin URLs.
+                                Allow plugins to make outbound requests through CloudTAK. Configure the whitelist as an array of allowed origin URLs. Whitelisted origins are also trusted by the image proxy, which otherwise allows any public origin.
                             </p>
 
                             <div class='d-flex align-items-center justify-content-between mb-2'>
