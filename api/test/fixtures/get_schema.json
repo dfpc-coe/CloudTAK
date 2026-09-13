@@ -904,6 +904,11 @@
         "query": false,
         "res": true
     },
+    "PUT /marti/missions/:guid/cot": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "DELETE /marti/missions/:guid/cot/:uid": {
         "body": false,
         "query": false,
