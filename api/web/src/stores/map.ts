@@ -578,6 +578,16 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
+            // iOS may have killed the tile workers while backgrounded; replace
+            // them before refresh() pushes new source data through them
+            if (this._map) {
+                try {
+                    await withTimeout(mapgl.restartWorkers(), WORKER_LIFECYCLE_TIMEOUT_MS, 'MapLibre worker restart');
+                } catch (err) {
+                    console.warn('MapLibre worker restart failed', err);
+                }
+            }
+
             if (this.isMapLoadedFully) {
                 this.startRefreshTimer();
 
