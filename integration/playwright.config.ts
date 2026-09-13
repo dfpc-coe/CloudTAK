@@ -18,7 +18,11 @@ export default defineConfig({
     retries: process.env.CI ? 2 : 0,
     workers: process.env.CI ? 1 : undefined,
     timeout: 120_000,
-    reporter: [['html', { open: 'never' }], ['list']],
+    reporter: [
+        ['html', { open: 'never' }],
+        ['list'],
+        ['allure-playwright', { resultsDir: 'allure-results' }],
+    ],
     use: {
         baseURL: cloudtakUrl(),
         trace: 'on-first-retry',
