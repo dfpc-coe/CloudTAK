@@ -5,7 +5,7 @@ import { cloudtakUsername, cloudtakPassword } from './env.ts';
 
 export async function skipPermissionsModal(page: Page): Promise<void> {
     const skip = page.getByRole('button', { name: 'Skip for now' });
-    if (await skip.isVisible({ timeout: 10_000 }).catch(() => false)) {
+    if (await skip.isVisible({ timeout: 1000 }).catch(() => false)) {
         await skip.click();
     }
 }
