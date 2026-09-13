@@ -17,6 +17,9 @@
 
 ### Pending Release
 
+- :bug: Stop recreating the iOS WebView after a long background - the WebKit networking-process crash it targeted recovers in place, and every swap leaked the previous WebView (still connected, still writing to IndexedDB) through Capacitor plugin retain cycles
+- :bug: Declare the `remote-notification` background mode on iOS so silent pushes reach the app in the background
+
 ### v13.86.0 - 2026-09-12
 
 - :rocket: Redesign the Outgoing Sinks model as `ETLEvents` - streaming CoT Features are now delivered as typed `feature` messages
