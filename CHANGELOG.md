@@ -17,6 +17,8 @@
 
 ### Pending Release
 
+### v13.86.1 - 2026-09-12
+
 - :bug: Stop recreating the iOS WebView after a long background - the WebKit networking-process crash it targeted recovers in place, and every swap leaked the previous WebView (still connected, still writing to IndexedDB) through Capacitor plugin retain cycles
 - :bug: Declare the `remote-notification` background mode on iOS so silent pushes reach the app in the background
 
