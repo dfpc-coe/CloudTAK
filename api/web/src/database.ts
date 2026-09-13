@@ -343,11 +343,6 @@ let reopenPromise: Promise<void> | null = null;
 // restore) resumes.
 let shuttingDown = false;
 
-// While the app is backgrounded on native, IndexedDB must stay idle: iOS
-// kills WKWebView's storage (network) process out from under a backgrounded
-// app, and any request in flight when that happens wedges this content
-// process's connection for good - a page reload does not clear it, only a
-// fresh WebView does. See suspendDatabase().
 let suspended = false;
 
 if (typeof window !== 'undefined') {
@@ -439,10 +434,6 @@ export class DatabaseSuspendedError extends Error {
     }
 }
 
-/**
- * The storage process did not answer a bounded probe. Every read and write
- * would hang forever; only a fresh WebView (or app process) recovers.
- */
 export class DatabaseUnavailableError extends Error {
     constructor(message: string) {
         super(message);
