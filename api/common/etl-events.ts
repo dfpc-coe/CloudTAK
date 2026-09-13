@@ -8,7 +8,12 @@ import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { OutgoingMessageType, OutgoingAction, StaticCapabilities } from '@tak-ps/etl';
 import type Config from './config.js';
 import type ConnectionConfig from './connection-config.js';
-import type { CoreEventResponse } from './types.js';
+import type {
+    CoreEventResponse,
+    CoreEventBoardResponse,
+    CoreEventBoardColumnResponse,
+    CoreEventBoardEventResponse,
+} from './types.js';
 import Filter from './filter.js';
 import Queue from './aws/queue.js';
 
@@ -24,9 +29,10 @@ type Message = {
  * is invoked with, in the `OutgoingMessage` envelope of @tak-ps/etl
  *
  * Feature events are the streaming CoTs of a Connection, delivered to every
- * enabled Outgoing Layer of that Connection. Event events are CoreEvent
- * lifecycle changes, delivered to Outgoing Layers subscribed to
- * `event:<action>` whose Connection shares a Channel with the Event
+ * enabled Outgoing Layer of that Connection. Every other type is a lifecycle
+ * change of a Channel scoped resource, delivered to Outgoing Layers subscribed
+ * to `<type>:<action>` whose Connection has one of the resource's Channels
+ * active
  */
 export default class ETLEvents {
     config: Config;
@@ -74,27 +80,58 @@ export default class ETLEvents {
         return true;
     }
 
+    /** `event:<action>` - a CoreEvent, scoped to the Channels it is shared with */
     async event(action: OutgoingAction, event: Static<typeof CoreEventResponse>): Promise<void> {
+        await this.deliver(OutgoingMessageType.Event, action, event.id, event.channels.map(Number), event);
+    }
+
+    /** `board:<action>` - a CoreEvent Board, scoped to its Channel */
+    async board(action: OutgoingAction, board: Static<typeof CoreEventBoardResponse>): Promise<void> {
+        await this.deliver(OutgoingMessageType.Board, action, board.id, [board.channel], board);
+    }
+
+    /** `board:column:<action>` - a Column, scoped to the Channel of the Board it belongs to */
+    async boardColumn(action: OutgoingAction, channel: number, column: Static<typeof CoreEventBoardColumnResponse>): Promise<void> {
+        await this.deliver(OutgoingMessageType.BoardColumn, action, column.id, [channel], column);
+    }
+
+    /** `board:event:<action>` - a CoreEvent placed on a Board, scoped to the Channel of that Board */
+    async boardEvent(action: OutgoingAction, channel: number, placement: Static<typeof CoreEventBoardEventResponse>): Promise<void> {
+        await this.deliver(OutgoingMessageType.BoardEvent, action, placement.id, [channel], placement);
+    }
+
+    /**
+     * Deliver a `<type>:<action>` message to every enabled Outgoing Layer
+     * subscribed to it (or to `<type>:*`) whose Connection has one of the
+     * given Channels active
+     */
+    async deliver(
+        type: OutgoingMessageType,
+        action: OutgoingAction,
+        id: string,
+        shared: number[],
+        data: Record<string, unknown>,
+    ): Promise<void> {
         if (this.config.noetlevents) return;
 
-        const resource = `${OutgoingMessageType.Event}:${action}`;
-        const channels = new Set(event.channels.map(Number));
+        const resource = `${type}:${action}`;
+        const channels = new Set(shared);
         if (!channels.size) return;
 
-        const shared = new Map<number, number[]>();
+        const overlaps = new Map<number, number[]>();
 
         for await (const layer of this.config.models.Layer.augmented_iter({
             where: sql`
                 layers.enabled IS True
                 AND layers.connection IS NOT NULL
                 AND layers_outgoing.layer IS NOT NULL
-                AND layers_outgoing.subscriptions && ARRAY[${resource}, ${`${OutgoingMessageType.Event}:*`}]::TEXT[]
+                AND layers_outgoing.subscriptions && ARRAY[${resource}, ${`${type}:*`}]::TEXT[]
             `,
         })) {
             if (!layer.outgoing || layer.connection === null) continue;
             if (!StaticCapabilities.isSubscribedOutgoingType(layer.outgoing.subscriptions, resource)) continue;
 
-            let overlap = shared.get(layer.connection);
+            let overlap = overlaps.get(layer.connection);
             if (!overlap) {
                 let active = new Set<number>();
                 try {
@@ -104,18 +141,18 @@ export default class ETLEvents {
                 }
 
                 overlap = [...channels].filter(channel => active.has(channel)).sort((a, b) => a - b);
-                shared.set(layer.connection, overlap);
+                overlaps.set(layer.connection, overlap);
             }
 
             if (!overlap.length) continue;
 
             await this.submit(layer.id, [{
-                group: `${layer.id}-${event.id}`,
+                group: `${layer.id}-${id}`,
                 body: {
-                    type: OutgoingMessageType.Event,
+                    type,
                     action,
                     channels: overlap,
-                    data: event,
+                    data,
                 },
             }]);
         }

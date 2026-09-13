@@ -529,6 +529,15 @@ export default class Overlay {
         clearOverlayTileJSON(this.id);
     }
 
+    /**
+     * First renderable layer id of this overlay that is present on the map
+     */
+    anchorLayerId(): string | undefined {
+        const mapStore = useMapStore();
+        const anchor = this.styles.find((l) => l.type !== 'background' && mapStore.map.getLayer(l.id));
+        return anchor ? String(anchor.id) : undefined;
+    }
+
     moveBefore(overlay?: Overlay): void {
         const mapStore = useMapStore();
         const before = overlay?.styles.find((l) => l.type !== 'background')?.id;

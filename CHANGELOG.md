@@ -19,9 +19,13 @@
 
 - :bug: Stop recreating the iOS WebView after a long background - the WebKit networking-process crash it targeted recovers in place, and every swap leaked the previous WebView (still connected, still writing to IndexedDB) through Capacitor plugin retain cycles
 - :bug: Declare the `remote-notification` background mode on iOS so silent pushes reach the app in the background
+
+### v13.86.0 - 2026-09-12
+
 - :rocket: Redesign the Outgoing Sinks model as `ETLEvents` - streaming CoT Features are now delivered as typed `feature` messages
 - :tada: Deliver `event:create`, `event:update` & `event:delete` ETL Events for Core Event changes to subscribed Outgoing Layers whose Connection shares a Channel with the Event
 - :rocket: Rename the `--no-sinks` CLI flag to `--no-etl-events`
+- :tada: Deliver `board:*`, `board:column:*` & `board:event:*` ETL Events for Board, Column & Event placement changes to subscribed Outgoing Layers whose Connection has the Board's Channel active
 
 ### v13.85.0 - 2026-09-11
 
