@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v13.87.0 - 2026-09-13
+
+- :rocket: Switch to temporary MapLibre fork that supports refreshing workers for iOS background=>foreground transitions
+- :tada: Introduce new Data Sync feature PUT API
 - :tada: Add `GET /api/proxy/image` to stream remote images from any SSRF-safe public origin & route remote images in the Feature sidebar through it so they are permitted by the CSP
 
 ### v13.86.1 - 2026-09-12
