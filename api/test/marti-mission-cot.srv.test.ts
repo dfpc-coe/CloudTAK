@@ -139,7 +139,6 @@ function mockMission(opts: {
     uploadStatus?: number;
 }) {
     const calls = {
-        gets: 0,
         getsAfterUpload: 0,
         uploads: [] as Array<{ url: URL; headers: IncomingMessage['headers']; entries: string[] }>,
     };
@@ -150,7 +149,6 @@ function mockMission(opts: {
         const url = new URL(request.url, 'http://localhost');
 
         if (request.method === 'GET' && url.pathname === `/Marti/api/missions/guid/${GUID}`) {
-            calls.gets++;
             if (calls.uploads.length) calls.getsAfterUpload++;
 
             const confirmed = calls.getsAfterUpload >= (opts.confirmAfter ?? 1);
@@ -211,8 +209,7 @@ test('PUT: api/marti/missions/:guid/cot - Uploads a Mission Package and confirms
             uids: ['uid-1', 'uid-2'],
         });
 
-        // One GET resolves the guid to the mission name, one confirms the upload
-        assert.equal(calls.gets, 2);
+        assert.equal(calls.getsAfterUpload, 1);
         assert.equal(calls.uploads.length, 1);
         assert.equal(calls.uploads[0].url.searchParams.get('creatorUid'), 'ANDROID-CloudTAK-admin@example.com');
         assert.equal(calls.uploads[0].headers['missionauthorization'], 'Bearer test-mission-token');

@@ -14,14 +14,54 @@ import stream2buffer from './stream.js';
 
 // TAK Server hands package CoTs to its async messaging pipeline before responding,
 // so mission membership is only visible on a subsequent read of the mission
-const CONFIRM_ATTEMPTS = 5;
-const CONFIRM_DELAY_MS = 300;
+const CONFIRM_DELAYS_MS = [0, 250, 500, 1000, 2000];
 
 export type MissionAttachment = {
     name: string;
     body: Buffer;
     uid: string;
 };
+
+export type ResolvedFeatures = {
+    cots: CoT[];
+    attachments: MissionAttachment[];
+};
+
+/**
+ * Parse Features into CoTs and fetch the attachments they reference from S3
+ */
+export async function resolveFeatures(
+    features: Array<Static<typeof Feature.InputFeature>>,
+): Promise<ResolvedFeatures> {
+    const cots: CoT[] = [];
+
+    // Hash => CoT UID
+    const attachmentMap: Map<string, string> = new Map();
+
+    for (const feat of features) {
+        const cot = await CoTParser.from_geojson(feat);
+        cots.push(cot);
+
+        for (const hash of feat.properties.attachments || []) {
+            attachmentMap.set(hash, cot.uid());
+        }
+    }
+
+    const attachments: MissionAttachment[] = [];
+
+    for (const [hash, uid] of attachmentMap) {
+        const attachment = await S3.list(`attachment/${hash}/`);
+        if (attachment.length < 1 || !attachment[0].Key) continue;
+
+        attachments.push({
+            uid,
+            name: path.parse(attachment[0].Key).base,
+            body: await stream2buffer(await S3.get(attachment[0].Key)),
+        });
+    }
+
+    return { cots, attachments };
+}
 
 /**
  * A CoT-only Data Package destined for a Mission
@@ -33,23 +73,21 @@ export type MissionAttachment = {
 export default class MissionPackage {
     pkg: DataPackage;
     cots: CoT[];
-    uids: string[];
     attachments: MissionAttachment[];
     username: string;
 
     #finalized?: string;
     #hashes?: string[];
 
-    private constructor(pkg: DataPackage, username: string) {
+    private constructor(pkg: DataPackage, resolved: ResolvedFeatures, username: string) {
         this.pkg = pkg;
         this.username = username;
-        this.cots = [];
-        this.uids = [];
-        this.attachments = [];
+        this.cots = resolved.cots;
+        this.attachments = resolved.attachments;
     }
 
     static async from(
-        features: Array<Static<typeof Feature.InputFeature>>,
+        resolved: ResolvedFeatures,
         opts: {
             username: string;
             name?: string;
@@ -59,49 +97,33 @@ export default class MissionPackage {
         const pkg = new DataPackage(id, opts.name || id);
         pkg.setEphemeral();
 
-        const missionPkg = new MissionPackage(pkg, opts.username);
-
-        // Hash => CoT UID
-        const attachmentMap: Map<string, string> = new Map();
-
-        for (const feat of features) {
-            const cot = await CoTParser.from_geojson(feat);
-            await pkg.addCoT(cot);
-            missionPkg.cots.push(cot);
-            missionPkg.uids.push(cot.uid());
-
-            for (const hash of feat.properties.attachments || []) {
-                attachmentMap.set(hash, cot.uid());
+        try {
+            for (const cot of resolved.cots) {
+                await pkg.addCoT(cot);
             }
+        } catch (err) {
+            await pkg.destroy();
+            throw err;
         }
 
-        for (const [hash, uid] of attachmentMap) {
-            const attachment = await S3.list(`attachment/${hash}/`);
-            if (attachment.length < 1 || !attachment[0].Key) continue;
+        return new MissionPackage(pkg, resolved, opts.username);
+    }
 
-            missionPkg.attachments.push({
-                uid,
-                name: path.parse(attachment[0].Key).base,
-                body: await stream2buffer(await S3.get(attachment[0].Key)),
-            });
-        }
-
-        return missionPkg;
+    get uids(): string[] {
+        return this.cots.map(cot => cot.uid());
     }
 
     /**
-     * Upload the package to a Mission and confirm every CoT is now part of it
+     * Upload the package to a Mission
      *
      * The submitting user must hold a Mission subscription as ANDROID-CloudTAK-<username>
      * with MISSION_WRITE - TAK Server silently drops package CoTs otherwise
-     *
-     * @returns The UIDs of the CoTs confirmed by the TAK Server
      */
     async upload(
         api: TAKAPI,
         guid: string,
         opts: Static<typeof MissionOptions>,
-    ): Promise<string[]> {
+    ): Promise<void> {
         if (!this.#hashes) {
             const hashes: string[] = [];
             for (const attachment of this.attachments) {
@@ -130,21 +152,26 @@ export default class MissionPackage {
             fs.createReadStream(this.#finalized),
             opts,
         );
+    }
 
+    /**
+     * Poll the Mission until every CoT in the package is listed
+     *
+     * @returns The UIDs of the CoTs confirmed by the TAK Server
+     */
+    async confirm(
+        api: TAKAPI,
+        guid: string,
+        opts: Static<typeof MissionOptions>,
+    ): Promise<string[]> {
         let missing = this.uids;
-        for (let attempt = 0; attempt < CONFIRM_ATTEMPTS && missing.length; attempt++) {
-            if (attempt > 0) await delay(CONFIRM_DELAY_MS);
 
-            const mission = await api.Mission.get(guid, {}, opts) as { uids?: unknown[] };
+        for (const wait of CONFIRM_DELAYS_MS) {
+            if (!missing.length) break;
+            if (wait) await delay(wait);
 
-            const confirmed = new Set<string>();
-            for (const entry of mission.uids || []) {
-                if (typeof entry === 'string') {
-                    confirmed.add(entry);
-                } else if (entry && typeof entry === 'object' && typeof (entry as { data?: unknown }).data === 'string') {
-                    confirmed.add((entry as { data: string }).data);
-                }
-            }
+            const mission = await api.Mission.get(guid, {}, opts);
+            const confirmed = new Set(mission.uids.map(entry => (entry as { data?: unknown }).data));
 
             missing = missing.filter(uid => !confirmed.has(uid));
         }

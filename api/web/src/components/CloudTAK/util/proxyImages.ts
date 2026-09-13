@@ -5,10 +5,15 @@ import { stdurl } from '../../../std.ts';
  * CloudTAK image proxy so they are permitted by the Content-Security-Policy
  */
 export function proxyHtmlImages(html: string, token?: string | null): string {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
+    if (!/<img\b/i.test(html)) return html;
+
+    // A template preserves head-only elements (style, meta, title) that a
+    // full document parse would move out of the body
+    const template = document.createElement('template');
+    template.innerHTML = html;
     const apiOrigin = stdurl('/').origin;
 
-    for (const img of doc.querySelectorAll('img[src]')) {
+    for (const img of template.content.querySelectorAll('img[src]')) {
         const src = img.getAttribute('src') || '';
 
         let url: URL;
@@ -28,21 +33,20 @@ export function proxyHtmlImages(html: string, token?: string | null): string {
         img.setAttribute('src', proxied.href);
     }
 
-    return doc.body.innerHTML;
+    return template.innerHTML;
 }
 
 /**
- * Extract an HTML description (`{"@type":"html","value":...}`) from feature
- * properties with remote images routed through the proxy
+ * Extract the value of an HTML description (`{"@type":"html","value":...}`) from feature properties
  */
-export function featureHtmlDescription(properties: Record<string, unknown> | null | undefined, token?: string | null): string | null {
+export function featureHtmlDescription(properties: Record<string, unknown> | null | undefined): string | null {
     const raw = properties?.description;
     if (typeof raw !== 'string' || !raw) return null;
 
     try {
         const desc = JSON.parse(raw);
-        if (desc && desc['@type'] === 'html' && desc.value) {
-            return proxyHtmlImages(String(desc.value), token);
+        if (desc['@type'] === 'html' && typeof desc.value === 'string' && desc.value) {
+            return desc.value;
         }
     } catch {
         return null;

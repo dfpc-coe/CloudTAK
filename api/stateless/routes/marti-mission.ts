@@ -9,7 +9,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import ProfileControl from '../lib/control/profile.js';
-import MissionPackage from '../lib/mission-package.js';
+import MissionPackage, { resolveFeatures } from '../lib/mission-package.js';
 import { GenericMartiResponse, StandardResponse } from '../../common/types.js';
 import * as Default from '../lib/limits.js';
 import {
@@ -161,12 +161,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ? { token: String(req.headers['missionauthorization']) }
                 : await profileControl.subscription(user.email, req.params.guid);
 
-            const missionPkg = await MissionPackage.from(req.body.features, {
+            const missionPkg = await MissionPackage.from(await resolveFeatures(req.body.features), {
                 username: user.email,
             });
 
             try {
-                const uids = await missionPkg.upload(api, req.params.guid, opts);
+                await missionPkg.upload(api, req.params.guid, opts);
+                const uids = await missionPkg.confirm(api, req.params.guid, opts);
 
                 res.json({
                     status: 200,

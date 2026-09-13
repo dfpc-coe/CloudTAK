@@ -15,7 +15,7 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import ProfileControl from '../lib/control/profile.js';
-import MissionPackage from '../lib/mission-package.js';
+import MissionPackage, { resolveFeatures } from '../lib/mission-package.js';
 import activeChannels from '../lib/tak-channels.js';
 import { Basemap as BasemapParser } from '@tak-ps/node-cot';
 import { Content } from '@tak-ps/node-tak/lib/api/files';
@@ -321,6 +321,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         res: Content,
     }, async (req, res) => {
+        let pkg: DataPackage | undefined;
+        let missionPkg: MissionPackage | undefined;
+
         try {
             const user = await Auth.as_user(config, req);
 
@@ -335,7 +338,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const pkg = new DataPackage(id, req.body.name || id);
+            pkg = new DataPackage(id, req.body.name || id);
 
             pkg.setEphemeral();
 
@@ -343,18 +346,22 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 .filter(d => d.mission)
                 .map(d => d.mission) as string[];
 
-            const missionPkg = await MissionPackage.from(req.body.features, {
-                username: user.email,
-                name: req.body.name || id,
-            });
+            const resolved = await resolveFeatures(req.body.features);
 
-            const pkgs = [pkg, missionPkg.pkg];
+            if (missionGuids.length) {
+                missionPkg = await MissionPackage.from(resolved, {
+                    username: user.email,
+                    name: req.body.name || id,
+                });
+            }
 
-            for (const cot of missionPkg.cots) {
+            const pkgs = missionPkg ? [pkg, missionPkg.pkg] : [pkg];
+
+            for (const cot of resolved.cots) {
                 await pkg.addCoT(cot);
             }
 
-            for (const attachment of missionPkg.attachments) {
+            for (const attachment of resolved.attachments) {
                 await pkg.addFile(attachment.body, {
                     name: attachment.name,
                     attachment: attachment.uid,
@@ -479,7 +486,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 });
             }
 
-            if (missionGuids.length) {
+            if (missionPkg) {
                 const ovs = new Map();
                 (await config.models.ProfileOverlay.list({
                     where: sql`
@@ -503,13 +510,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
             }
 
-            await missionPkg.destroy();
-
             res.json(content);
-
-            await pkg.destroy();
         } catch (err) {
             Err.respond(err, res);
+        } finally {
+            if (missionPkg) await missionPkg.destroy();
+            if (pkg) await pkg.destroy();
         }
     });
 

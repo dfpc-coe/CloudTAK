@@ -132,7 +132,12 @@ export function serializeRequestBody(method: typeof ALLOWED_METHODS[number], hea
     return serialized;
 }
 
-async function readResponseBodyWithLimit(response: Response, limit: number, message = 'Proxy response body exceeds the 1MB limit'): Promise<Buffer> {
+async function readResponseBodyWithLimit(response: Response, limit: number, message: string): Promise<Buffer> {
+    const declaredLength = response.headers.get('content-length');
+    if (declaredLength && Number(declaredLength) > limit) {
+        throw new Err(400, null, message);
+    }
+
     const body = response.body;
     if (!body) return Buffer.alloc(0);
 
@@ -161,27 +166,15 @@ async function readResponseBodyWithLimit(response: Response, limit: number, mess
         }
     }
 
-    const result = new Uint8Array(total);
-    let offset = 0;
-    for (const chunk of chunks) {
-        result.set(chunk, offset);
-        offset += chunk.byteLength;
-    }
-
-    return Buffer.from(result.buffer, result.byteOffset, result.byteLength);
+    return Buffer.concat(chunks, total);
 }
 
 export async function readUpstreamBody(response: Response): Promise<{
     body: unknown;
     encoding?: 'base64';
 }> {
-    const declaredLength = response.headers.get('content-length');
-    if (declaredLength && Number(declaredLength) > RESPONSE_BODY_LIMIT) {
-        throw new Err(400, null, 'Proxy response body exceeds the 1MB limit');
-    }
-
     const contentType = (response.headers.get('content-type') || '').toLowerCase();
-    const buf = await readResponseBodyWithLimit(response, RESPONSE_BODY_LIMIT);
+    const buf = await readResponseBodyWithLimit(response, RESPONSE_BODY_LIMIT, 'Proxy response body exceeds the 1MB limit');
 
     if (contentType.includes('application/json') || contentType.endsWith('+json')) {
         return { body: JSON.parse(buf.toString('utf-8')) };
@@ -269,11 +262,29 @@ export function sniffImageType(buf: Buffer): string | null {
     return null;
 }
 
+/**
+ * Origins the image proxy may fetch even when they resolve to a private address
+ *
+ * Only an exact match against the plugin whitelist qualifies, and only while the
+ * plugin proxy is enabled - a malformed whitelist never blocks public images
+ */
+async function imageProxyAllow(config: ConfigStateless, origin: string): Promise<string[]> {
+    const enabled = await config.models.Setting.typed('proxy::enabled', false);
+    if (!enabled.value) return [];
+
+    try {
+        const whitelist = await proxyWhitelist(config);
+        return whitelist.has(origin) ? [origin] : [];
+    } catch {
+        return [];
+    }
+}
+
 export async function fetchProxyImage(config: ConfigStateless, raw: string): Promise<{ contentType: string; body: Buffer }> {
     const parsed = parseProxyUrl(raw);
 
-    const whitelist = await proxyWhitelist(config);
-    const { safe, reason } = await isSafeUrl(parsed.href, { allow: [...whitelist] });
+    const allow = await imageProxyAllow(config, parsed.origin);
+    const { safe, reason } = await isSafeUrl(parsed.href, { allow });
     if (!safe) throw new Err(403, null, `Blocked proxy URL: ${reason}`);
 
     const upstream = await fetch(parsed, {
@@ -284,12 +295,8 @@ export async function fetchProxyImage(config: ConfigStateless, raw: string): Pro
     });
 
     if (!upstream.ok) {
+        await upstream.body?.cancel().catch(() => undefined);
         throw new Err(502, null, `Proxy image upstream returned ${upstream.status}`);
-    }
-
-    const declaredLength = upstream.headers.get('content-length');
-    if (declaredLength && Number(declaredLength) > IMAGE_RESPONSE_BODY_LIMIT) {
-        throw new Err(400, null, 'Proxy image exceeds the 10MB limit');
     }
 
     const body = await readResponseBodyWithLimit(upstream, IMAGE_RESPONSE_BODY_LIMIT, 'Proxy image exceeds the 10MB limit');

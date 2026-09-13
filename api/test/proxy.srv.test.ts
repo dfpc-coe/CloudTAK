@@ -469,7 +469,7 @@ test('GET api/proxy/image rejects oversized images', async () => {
     }
 });
 
-test('GET api/proxy/image is not gated by the plugin proxy toggle', async () => {
+test('GET api/proxy/image only trusts whitelisted private origins while the plugin proxy is enabled', async () => {
     try {
         const res = await flight.fetch('/api/config', {
             method: 'PUT',
@@ -489,10 +489,68 @@ test('GET api/proxy/image is not gated by the plugin proxy toggle', async () => 
             auth: {
                 bearer: flight.token.user,
             },
-        }, { verify: false, json: false, binary: true });
+        }, false);
 
-        assert.equal(image.status, 200);
-        assert.equal(image.headers.get('content-type'), 'image/png');
+        assert.equal(image.status, 403);
+        assert.equal(image.body.message, 'Blocked proxy URL: blocked IP address: 127.0.0.1');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET api/proxy/image does not extend a whitelisted host to other ports', async () => {
+    try {
+        const res = await flight.fetch('/api/config', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                'proxy::enabled': true,
+                'proxy::whitelist': ['http://127.0.0.1:1'],
+            },
+        }, false);
+
+        assert.equal(res.status, 200);
+
+        const image = await flight.fetch(`/api/proxy/image?url=${encodeURIComponent(`${upstreamOrigin}/image.png`)}`, {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.user,
+            },
+        }, false);
+
+        assert.equal(image.status, 403);
+        assert.equal(image.body.message, 'Blocked proxy URL: blocked IP address: 127.0.0.1');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET api/proxy/image ignores a malformed plugin whitelist', async () => {
+    try {
+        const res = await flight.fetch('/api/config', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                'proxy::enabled': true,
+                'proxy::whitelist': ['example.com'],
+            },
+        }, false);
+
+        assert.equal(res.status, 200);
+
+        const image = await flight.fetch(`/api/proxy/image?url=${encodeURIComponent(`${upstreamOrigin}/image.png`)}`, {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.user,
+            },
+        }, false);
+
+        assert.equal(image.status, 403);
+        assert.equal(image.body.message, 'Blocked proxy URL: blocked IP address: 127.0.0.1');
     } catch (err) {
         assert.ifError(err);
     }

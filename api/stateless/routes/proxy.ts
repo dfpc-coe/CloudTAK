@@ -83,7 +83,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/proxy/image', {
         name: 'Proxy Image',
         group: 'Proxy',
-        description: 'Stream a remote image through CloudTAK so it can be displayed under the Content-Security-Policy. Any public origin is allowed; admin whitelisted proxy origins are additionally trusted',
+        description: 'Stream a remote image through CloudTAK so it can be displayed under the Content-Security-Policy. Any public origin is allowed; while the plugin proxy is enabled its whitelisted origins may also be private',
         query: Type.Object({
             url: Type.String({ description: 'Absolute http(s) URL of the image to proxy' }),
             token: Type.Optional(Type.String()),
