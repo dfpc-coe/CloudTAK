@@ -10,6 +10,11 @@
 * clients mutates a data type via the API - the server broadcasts a `sync`
 * message over the WebSocket which AtlasConnection passes to this manager.
 *
+* Mission (Data Sync) change events received while the device was offline
+* or the socket was closed are not replayed, so every subscribed mission is
+* refreshed from the server when AtlasConnection reports connectivity
+* restored (device network or TAK socket).
+*
 * INVARIANT: Everything a sync triggers - the handlers in syncEvent()/
 * runFullSync() and any main-thread reaction to the Sync_* messages they
 * post - must apply server state with local-only operations (GET + IndexedDB
@@ -24,6 +29,7 @@ import type Atlas from './atlas.ts';
 import { std } from '../std.ts';
 import type { Feature, ProfileOverlay } from '../types.ts';
 import { WorkerMessageType } from '../utils/events.ts';
+import type { SyncTriggerReason } from '../utils/events.ts';
 
 // base/overlay.ts (OverlayManager) cannot be imported here - it pulls in the
 // map store & maplibre-gl which touch `document` at import time and break the
@@ -37,6 +43,7 @@ import MissionTemplate from '../base/mission-template.ts';
 import ProfileConfig from '../base/profile.ts';
 import ServerManager from '../base/server.ts';
 import Config from '../base/config.ts';
+import Subscription from '../base/subscription.ts';
 
 export enum SyncDataType {
     Overlay = 'overlay',
@@ -84,6 +91,8 @@ export default class AtlasSync {
     lastErrors: string[];
 
     private current: Promise<void> | null;
+    private missions: Promise<void> | null;
+    private offSync: (() => void) | undefined;
     private queue: SyncEvent[];
     private timer: ReturnType<typeof setTimeout> | undefined;
     private flushing: Promise<void>;
@@ -97,6 +106,8 @@ export default class AtlasSync {
         this.lastErrors = [];
 
         this.current = null;
+        this.missions = null;
+        this.offSync = undefined;
         this.queue = [];
         this.timer = undefined;
         this.flushing = Promise.resolve();
@@ -110,7 +121,34 @@ export default class AtlasSync {
         if (this.started) return;
         this.started = true;
 
+        this.offSync = this.atlas.conn.onSync((reason) => this.onTrigger(reason));
+
         await this.fullSync();
+    }
+
+    /**
+     * Connectivity restored - refresh every subscribed mission since change
+     * events that fired while offline or disconnected were not replayed
+     */
+    private onTrigger(reason: SyncTriggerReason): void {
+        this.syncMissions().catch((err: unknown) => {
+            console.error(`AtlasSync: Failed to sync missions after ${reason} restored`, err);
+        });
+    }
+
+    /**
+     * Refresh every subscribed mission (Data Sync) from the server.
+     * Concurrent calls coalesce onto the in-flight sync.
+     */
+    async syncMissions(): Promise<void> {
+        if (this.missions) return this.missions;
+
+        this.missions = this.runMissionSync()
+            .finally(() => {
+                this.missions = null;
+            });
+
+        return this.missions;
     }
 
     /**
@@ -159,8 +197,34 @@ export default class AtlasSync {
             this.timer = undefined;
         }
 
+        if (this.offSync) {
+            this.offSync();
+            this.offSync = undefined;
+        }
+
         this.queue = [];
         this.started = false;
+    }
+
+    private async runMissionSync(): Promise<void> {
+        const subscribed = await Subscription.localList({ subscribed: true });
+
+        const results = await Promise.allSettled([...subscribed].map(async ({ guid }) => {
+            const sub = await Subscription.from(guid, { subscribed: true });
+            if (!sub) return;
+
+            // SubscriptionFeature.refresh() posts Mission_Change_Feature so
+            // the main thread repaints the mission overlay
+            await sub.refresh({ refreshMission: true });
+        }));
+
+        const guids = [...subscribed].map(({ guid }) => guid);
+        for (let i = 0; i < results.length; i++) {
+            const result = results[i];
+            if (result.status === 'rejected') {
+                console.error(`AtlasSync: Failed to sync mission ${guids[i]}`, result.reason);
+            }
+        }
     }
 
     private async runFullSync(): Promise<void> {

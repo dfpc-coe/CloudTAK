@@ -28,7 +28,7 @@ import type { NavigationState, NavigationDirection, NavigationMode } from '../li
 import { syncPushToken } from '../base/push.ts';
 import { normalizePointType } from '../utils/point-type.ts';
 import { WorkerMessageType, LocationState } from '../utils/events.ts';
-import type { WorkerMessage } from '../utils/events.ts';
+import type { WorkerMessage, SyncTriggerReason } from '../utils/events.ts';
 import Overlay from '../base/overlay-class.ts';
 import OverlayManager from '../base/overlay.ts';
 import { invalidateOfflinePMTiles } from './modules/pmtiles.ts';
@@ -171,6 +171,10 @@ export const useMapStore = defineStore('cloudtak', {
         // Human-readable description of the current map loading step
         loadingStage: string;
         isOpen: boolean;
+        // Device network status as reported by the device store
+        isOnline: boolean;
+        // Last connectivity restoration - watch it to retry deferred work
+        syncTrigger: { reason: SyncTriggerReason; at: number } | null;
         userOrientationMode: boolean;
         pitch: number;
         bearing: number;
@@ -235,6 +239,8 @@ export const useMapStore = defineStore('cloudtak', {
             offlineTiles: new Set<string>(),
             channelChange: false,
             isOpen: false,
+            isOnline: typeof navigator === 'undefined' || navigator.onLine !== false,
+            syncTrigger: null,
             isMapLoaded: false,
             isMapLoadedFully: false,
             loadingStage: '',
@@ -1089,6 +1095,10 @@ export const useMapStore = defineStore('cloudtak', {
                 } else if (msg.type === WorkerMessageType.Connection_AuthFailure) {
                     this.isOpen = false;
                     await useAppStore().sessionExpired();
+                } else if (msg.type === WorkerMessageType.Network_Change) {
+                    this.isOnline = msg.body.online === true;
+                } else if (msg.type === WorkerMessageType.Sync_Trigger) {
+                    this.syncTrigger = { reason: msg.body.reason, at: Date.now() };
                 } else if (msg.type === WorkerMessageType.Channels_None) {
                     this.hasNoChannels = true;
                 } else if (msg.type === WorkerMessageType.Channels_List) {
