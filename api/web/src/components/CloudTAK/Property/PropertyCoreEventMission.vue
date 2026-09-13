@@ -72,20 +72,18 @@
                     </div>
 
                     <template v-else-if='mode === "select"'>
-                        <div class='d-flex align-items-center mb-2'>
-                            <div class='subheader user-select-none'>
+                        <div class='d-flex align-items-center mb-2 user-select-none'>
+                            <TablerIconButton
+                                title='Back'
+                                @click='mode = "view"'
+                            >
+                                <IconChevronLeft
+                                    :size='20'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                            <div class='mx-2 subheader'>
                                 Select Mission
-                            </div>
-                            <div class='ms-auto'>
-                                <TablerIconButton
-                                    title='Cancel Mission Selection'
-                                    @click='mode = "view"'
-                                >
-                                    <IconX
-                                        :size='18'
-                                        stroke='1'
-                                    />
-                                </TablerIconButton>
                             </div>
                         </div>
 
@@ -200,12 +198,12 @@ import {
     TablerInlineAlert,
 } from '@tak-ps/vue-tabler';
 import {
-    IconX,
     IconLock,
     IconPlus,
     IconTrash,
     IconCloudPin,
     IconListSearch,
+    IconChevronLeft,
 } from '@tabler/icons-vue';
 
 const props = defineProps<{

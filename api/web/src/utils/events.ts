@@ -37,6 +37,12 @@ export enum WorkerMessageType {
 
     Sync_Start = 'cloudtak:sync:start',
     Sync_Complete = 'cloudtak:sync:complete',
+    // Connectivity was restored (device network or TAK socket) - consumers
+    // holding deferred work should retry now
+    Sync_Trigger = 'cloudtak:sync:trigger',
+
+    // Device network status forwarded from the main thread
+    Network_Change = 'cloudtak:network:change',
 
     Iconset_Change = 'cloudtak:iconset:change',
 
@@ -47,6 +53,16 @@ export enum WorkerMessageType {
     VideoWall_Pong = 'cloudtak:videowall:pong',
     VideoWall_Refresh = 'cloudtak:videowall:refresh',
 }
+
+export type SyncTriggerReason = 'network' | 'connection';
+
+export type SyncTriggerBody = {
+    reason: SyncTriggerReason;
+};
+
+export type NetworkChangeBody = {
+    online: boolean;
+};
 
 export type WorkerMessage = {
     type: WorkerMessageType,

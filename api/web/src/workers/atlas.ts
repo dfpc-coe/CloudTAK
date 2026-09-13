@@ -62,6 +62,8 @@ export default class Atlas {
                 this.db.add(msg.body, { authored: true });
             } else if (msg.type === WorkerMessageType.Profile_Update) {
                 this.profile.update(msg.body);
+            } else if (msg.type === WorkerMessageType.Network_Change) {
+                this.conn.setOnline(msg.body.online === true);
             }
         }
     }

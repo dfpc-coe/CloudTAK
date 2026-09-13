@@ -1,6 +1,8 @@
 import { ConnectionType, Network } from '@capawesome/capacitor-network';
 import type { PluginListenerHandle } from '@capacitor/core';
 import type { GetStatusResult } from '@capawesome/capacitor-network';
+import { WorkerMessageType } from '../../utils/events.ts';
+import type { WorkerMessage, NetworkChangeBody } from '../../utils/events.ts';
 
 /**
  * Network status exposed by `@capawesome/capacitor-network` 0.1.3.
@@ -16,6 +18,7 @@ export class NetworkStatus {
     private ultraConstrained: boolean | null = null;
     private reachable: boolean | null = null;
     private listener: PluginListenerHandle | null = null;
+    private channel: BroadcastChannel | null = null;
 
     // General connection state
 
@@ -65,8 +68,13 @@ export class NetworkStatus {
     }
 
     async init(): Promise<void> {
+        if (!this.channel && typeof BroadcastChannel !== 'undefined') {
+            this.channel = new BroadcastChannel('cloudtak');
+        }
+
         const status = await Network.getStatus();
         this.update(status);
+        this.broadcast();
 
         this.listener = await Network.addListener('networkStatusChange', (status) => {
             this.update(status);
@@ -78,14 +86,32 @@ export class NetworkStatus {
             await this.listener.remove();
             this.listener = null;
         }
+
+        if (this.channel) {
+            this.channel.close();
+            this.channel = null;
+        }
+    }
+
+    private broadcast(): void {
+        if (!this.channel) return;
+
+        this.channel.postMessage({
+            type: WorkerMessageType.Network_Change,
+            body: { online: this.online } satisfies NetworkChangeBody
+        } satisfies WorkerMessage);
     }
 
     private update(status: GetStatusResult): void {
+        const wasOnline = this.online;
+
         this.online = status.connected;
         this.connectionType = status.connectionType;
         this.constrained = status.constrained;
         this.expensive = status.expensive;
         this.ultraConstrained = status.ultraConstrained;
         this.reachable = status.internetReachable;
+
+        if (this.online !== wasOnline) this.broadcast();
     }
 }

@@ -24,81 +24,88 @@
                 </TablerBadge>
             </template>
 
-            <div class='overflow-hidden mb-2'>
-                <div class='cloudtak-accent rounded mx-2 mt-2 px-2 py-2'>
-                    <TablerLoading
-                        v-if='loading'
-                        desc='Loading terrain profile'
+            <div class='px-2 pt-2'>
+                <TablerLoading
+                    v-if='loading'
+                    desc='Loading terrain profile'
+                />
+
+                <div
+                    v-else-if='error'
+                    class='d-flex align-items-start gap-2'
+                >
+                    <TablerInlineAlert
+                        class='flex-grow-1 flex-shrink-1'
+                        severity='danger'
+                        title='Terrain Profile Error'
+                        :description='error.message'
                     />
-
-                    <div
-                        v-else-if='error'
-                        class='px-1 py-1 text-danger'
-                    >
-                        {{ error }}
-                    </div>
-
-                    <div
-                        v-else-if='!stats'
-                        class='px-1 py-1 text-muted'
-                    >
-                        No terrain samples are available for this line.
-                    </div>
-
-                    <template v-else>
-                        <div class='row g-2'>
-                            <div class='col-sm-6 col-xl-3'>
-                                <div class='profile-stat rounded px-2 py-2'>
-                                    <div class='subheader'>
-                                        Distance
-                                    </div>
-                                    <div class='fw-semibold'>
-                                        {{ formatDistance(stats.distanceKm) }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class='col-sm-6 col-xl-3'>
-                                <div class='profile-stat rounded px-2 py-2'>
-                                    <div class='subheader'>
-                                        Min / Max
-                                    </div>
-                                    <div class='fw-semibold'>
-                                        {{ formatElevation(stats.minElevation) }} / {{ formatElevation(stats.maxElevation) }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class='col-sm-6 col-xl-3'>
-                                <div class='profile-stat rounded px-2 py-2'>
-                                    <div class='subheader'>
-                                        Gain
-                                    </div>
-                                    <div class='fw-semibold text-success d-flex align-items-center gap-1'>
-                                        <IconArrowUp :size='16' />
-                                        {{ formatElevation(stats.gain) }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class='col-sm-6 col-xl-3'>
-                                <div class='profile-stat rounded px-2 py-2'>
-                                    <div class='subheader'>
-                                        Loss
-                                    </div>
-                                    <div class='fw-semibold text-danger d-flex align-items-center gap-1'>
-                                        <IconArrowDown :size='16' />
-                                        {{ formatElevation(stats.loss) }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div
-                            ref='shellRef'
-                            class='profile-chart-shell mt-2'
-                        >
-                            <canvas ref='canvasRef' />
-                        </div>
-                    </template>
+                    <TablerRefreshButton
+                        title='Retry Terrain Profile'
+                        @click='loadProfile()'
+                    />
                 </div>
+
+                <div
+                    v-else-if='!stats'
+                    class='px-1 py-1 text-muted'
+                >
+                    No terrain samples are available for this line.
+                </div>
+
+                <template v-else>
+                    <div class='row g-2'>
+                        <div class='col-sm-6 col-xl-3'>
+                            <div class='profile-stat rounded px-2 py-2'>
+                                <div class='subheader'>
+                                    Distance
+                                </div>
+                                <div class='fw-semibold'>
+                                    {{ formatDistance(stats.distanceKm) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class='col-sm-6 col-xl-3'>
+                            <div class='profile-stat rounded px-2 py-2'>
+                                <div class='subheader'>
+                                    Min / Max
+                                </div>
+                                <div class='fw-semibold'>
+                                    {{ formatElevation(stats.minElevation) }} / {{ formatElevation(stats.maxElevation) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class='col-sm-6 col-xl-3'>
+                            <div class='profile-stat rounded px-2 py-2'>
+                                <div class='subheader'>
+                                    Gain
+                                </div>
+                                <div class='fw-semibold text-success d-flex align-items-center gap-1'>
+                                    <IconArrowUp :size='16' />
+                                    {{ formatElevation(stats.gain) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class='col-sm-6 col-xl-3'>
+                            <div class='profile-stat rounded px-2 py-2'>
+                                <div class='subheader'>
+                                    Loss
+                                </div>
+                                <div class='fw-semibold text-danger d-flex align-items-center gap-1'>
+                                    <IconArrowDown :size='16' />
+                                    {{ formatElevation(stats.loss) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        ref='shellRef'
+                        class='profile-chart-shell mt-2'
+                    >
+                        <canvas ref='canvasRef' />
+                    </div>
+                </template>
             </div>
         </SlideDownHeader>
     </div>
@@ -113,7 +120,7 @@ import { length } from '@turf/length';
 import type { ChartData, ChartOptions, TooltipItem } from 'chart.js';
 import Chart from 'chart.js/auto';
 import { IconChartLine, IconArrowUp, IconArrowDown } from '@tabler/icons-vue';
-import { TablerBadge, TablerLoading } from '@tak-ps/vue-tabler';
+import { TablerBadge, TablerInlineAlert, TablerLoading, TablerRefreshButton } from '@tak-ps/vue-tabler';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
 import { server, std, stdurl } from '../../../std.ts';
 
@@ -148,7 +155,7 @@ const props = defineProps({
 
 const expanded = ref(false);
 const loading = ref(false);
-const error = ref<string | null>(null);
+const error = ref<Error | null>(null);
 const profile = ref<ElevationProfile | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const shellRef = ref<HTMLDivElement | null>(null);
@@ -259,7 +266,7 @@ async function loadProfile(): Promise<void> {
         renderChart();
     } catch (err) {
         destroyChart();
-        error.value = err instanceof Error ? err.message : String(err);
+        error.value = err instanceof Error ? err : new Error(String(err));
         profile.value = null;
     } finally {
         loading.value = false;
