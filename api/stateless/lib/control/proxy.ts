@@ -251,6 +251,24 @@ export async function resolveProxyTarget(config: ConfigStateless, raw: string): 
     return parsed;
 }
 
+const IMAGE_SIGNATURES: Array<{ mime: string; test: (buf: Buffer) => boolean }> = [
+    { mime: 'image/png', test: b => b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])) },
+    { mime: 'image/jpeg', test: b => b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF },
+    { mime: 'image/gif', test: b => b.subarray(0, 4).toString('latin1') === 'GIF8' },
+    { mime: 'image/webp', test: b => b.subarray(0, 4).toString('latin1') === 'RIFF' && b.subarray(8, 12).toString('latin1') === 'WEBP' },
+    { mime: 'image/bmp', test: b => b[0] === 0x42 && b[1] === 0x4D },
+    { mime: 'image/x-icon', test: b => b[0] === 0x00 && b[1] === 0x00 && b[2] === 0x01 && b[3] === 0x00 },
+    { mime: 'image/tiff', test: b => ['II*\0', 'MM\0*'].includes(b.subarray(0, 4).toString('latin1')) },
+];
+
+export function sniffImageType(buf: Buffer): string | null {
+    if (buf.byteLength < 12) return null;
+    for (const sig of IMAGE_SIGNATURES) {
+        if (sig.test(buf)) return sig.mime;
+    }
+    return null;
+}
+
 export async function fetchProxyImage(config: ConfigStateless, raw: string): Promise<{ contentType: string; body: Buffer }> {
     const parsed = parseProxyUrl(raw);
 
@@ -269,17 +287,23 @@ export async function fetchProxyImage(config: ConfigStateless, raw: string): Pro
         throw new Err(502, null, `Proxy image upstream returned ${upstream.status}`);
     }
 
-    const contentType = (upstream.headers.get('content-type') || '').toLowerCase();
-    if (!contentType.startsWith('image/')) {
-        throw new Err(400, null, 'Proxy image URL did not return an image');
-    }
-
     const declaredLength = upstream.headers.get('content-length');
     if (declaredLength && Number(declaredLength) > IMAGE_RESPONSE_BODY_LIMIT) {
         throw new Err(400, null, 'Proxy image exceeds the 10MB limit');
     }
 
     const body = await readResponseBodyWithLimit(upstream, IMAGE_RESPONSE_BODY_LIMIT, 'Proxy image exceeds the 10MB limit');
+
+    // Servers (S3 in particular) commonly mislabel images as octet-stream so
+    // trust the bytes first and the declared type second. SVG is never
+    // served as it could carry script when opened directly on our origin
+    const declared = (upstream.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+    const contentType = sniffImageType(body)
+        || (declared.startsWith('image/') && declared !== 'image/svg+xml' ? declared : null);
+
+    if (!contentType) {
+        throw new Err(400, null, 'Proxy image URL did not return an image');
+    }
 
     return { contentType, body };
 }

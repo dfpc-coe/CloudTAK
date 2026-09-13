@@ -30,6 +30,18 @@ test('start upstream proxy test server', async () => {
             return;
         }
 
+        if (req.url === '/octet.png' && req.method === 'GET') {
+            res.writeHead(200, { 'content-type': 'binary/octet-stream' });
+            res.end(PNG);
+            return;
+        }
+
+        if (req.url === '/image.svg' && req.method === 'GET') {
+            res.writeHead(200, { 'content-type': 'image/svg+xml' });
+            res.end('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>');
+            return;
+        }
+
         if (req.url === '/large.png' && req.method === 'GET') {
             res.writeHead(200, { 'content-type': 'image/png' });
             res.end(Buffer.alloc((10 * 1024 * 1024) + 1));
@@ -359,6 +371,39 @@ test('GET api/proxy/image accepts a query token', async () => {
         assert.equal(res.status, 200);
         assert.equal(res.headers.get('content-type'), 'image/png');
         assert.ok(Buffer.from(res.body).equals(PNG));
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET api/proxy/image sniffs images served as octet-stream', async () => {
+    try {
+        const res = await flight.fetch(`/api/proxy/image?url=${encodeURIComponent(`${upstreamOrigin}/octet.png`)}`, {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.user,
+            },
+        }, { verify: false, json: false, binary: true });
+
+        assert.equal(res.status, 200);
+        assert.equal(res.headers.get('content-type'), 'image/png');
+        assert.ok(Buffer.from(res.body).equals(PNG));
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET api/proxy/image rejects SVG', async () => {
+    try {
+        const res = await flight.fetch(`/api/proxy/image?url=${encodeURIComponent(`${upstreamOrigin}/image.svg`)}`, {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.user,
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'Proxy image URL did not return an image');
     } catch (err) {
         assert.ifError(err);
     }
