@@ -1,0 +1,41 @@
+{
+  "currentVersion": 10.91,
+  "name": "Imagery/2020_Ortho",
+  "serviceDescription": "Ayres Associates provided Jefferson County, Wisconsin with digital, 4-band orthoimagery services in 2020 as part of WROC. The aerial imagery was collected on March 17th, April 5th, 18th, 20th and May 3rd using a Microsoft Vexcel UltraCam Eagle sensor mounted in a fixed-wing aircraft. Aerial imagery was collected to support 0.5 foot ground sample distance (GSD) orthoimagery to meet ASPRS Class II horizontal accuracy specifications at 1\"=100' map scale. The 6-inch pixel orthoimagery was produced to meet or exceed 1.4 foot RMSE according to ASPRS Positional Accuracy Standards for Digital Geospatial Data. Resultant orthoimagery was rectified to a DEM created from LiDAR collected in 2019. Orthoimagery was delivered in PLSS section GeoTiff and MrSID tiles and a project-wide MrSID mosaic. The orthoimagery was delivered according to a PLSS section tile schematic. The project area covers approximately 582 square miles. Supplemental Information: The Wisconsin Regional Orthoimagery Consortium (WROC) is a multi-entity group of county members and partners led by regional planning commissions (RPCs) and WROC representatives from Ayres Associates. The goal of the consortium is to build and sustain a multi-participant program to acquire digital orthoimagery and elevation data throughout Wisconsin. Orthoimagery was collected for Jefferson County in 2020 to provide consistent deliverable products and accuracy standards for each of the participating entities.",
+  "description": "Ayres Associates provided Jefferson County, Wisconsin with digital, 4-band orthoimagery services in 2020 as part of WROC. The aerial imagery was collected on March 17th, April 5th, 18th, 20th and May 3rd using a Microsoft Vexcel UltraCam Eagle sensor mounted in a fixed-wing aircraft. Aerial imagery was collected to support 0.5 foot ground sample distance (GSD) orthoimagery to meet ASPRS Class II horizontal accuracy specifications at 1\"=100' map scale. The 6-inch pixel orthoimagery was produced to meet or exceed 1.4 foot RMSE according to ASPRS Positional Accuracy Standards for Digital Geospatial Data. Resultant orthoimagery was rectified to a DEM created from LiDAR collected in 2019. Orthoimagery was delivered in PLSS section GeoTiff and MrSID tiles and a project-wide MrSID mosaic. The orthoimagery was delivered according to a PLSS section tile schematic. The project area covers approximately 582 square miles. Supplemental Information: The Wisconsin Regional Orthoimagery Consortium (WROC) is a multi-entity group of county members and partners led by regional planning commissions (RPCs) and WROC representatives from Ayres Associates. The goal of the consortium is to build and sustain a multi-participant program to acquire digital orthoimagery and elevation data throughout Wisconsin. Orthoimagery was collected for Jefferson County in 2020 to provide consistent deliverable products and accuracy standards for each of the participating entities.",
+  "copyrightText": "",
+  "capabilities": "Mensuration,Image,Metadata",
+  "serviceDataType": "esriImageServiceDataTypeGeneric",
+  "extent": {
+    "xmin": 2231750.018311379,
+    "ymin": 309045.3063030745,
+    "xmax": 2360149.018311379,
+    "ymax": 439979.3063030745,
+    "spatialReference": {
+      "wkt": "PROJCS[\"NAD_1983_2011_StatePlane_Wisconsin_South_FIPS_4803_Ft_US\",GEOGCS[\"GCS_NAD_1983_2011\",DATUM[\"D_NAD_1983_2011\",SPHEROID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Lambert_Conformal_Conic\"],PARAMETER[\"False_Easting\",1968500.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\",-90.0],PARAMETER[\"Standard_Parallel_1\",42.73333333333333],PARAMETER[\"Standard_Parallel_2\",44.06666666666667],PARAMETER[\"Latitude_Of_Origin\",42.0],UNIT[\"Foot_US\",0.3048006096012192]],VERTCS[\"VCS Name = NAVD88 height - Geoid12B (ftUS)|Datum Name = North American Vertical\",VDATUM[\"North American Vertical Datum 1988\"],PARAMETER[\"Vertical_Shift\",0.0],PARAMETER[\"Direction\",1.0],UNIT[\"US survey foot\",1.0]]"
+    }
+  },
+  "initialExtent": {
+    "xmin": 2231750.018311379,
+    "ymin": 309045.3063030745,
+    "xmax": 2360149.018311379,
+    "ymax": 439979.3063030745,
+    "spatialReference": {
+      "wkt": "PROJCS[\"NAD_1983_2011_StatePlane_Wisconsin_South_FIPS_4803_Ft_US\",GEOGCS[\"GCS_NAD_1983_2011\",DATUM[\"D_NAD_1983_2011\",SPHEROID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Lambert_Conformal_Conic\"],PARAMETER[\"False_Easting\",1968500.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\",-90.0],PARAMETER[\"Standard_Parallel_1\",42.73333333333333],PARAMETER[\"Standard_Parallel_2\",44.06666666666667],PARAMETER[\"Latitude_Of_Origin\",42.0],UNIT[\"Foot_US\",0.3048006096012192]],VERTCS[\"VCS Name = NAVD88 height - Geoid12B (ftUS)|Datum Name = North American Vertical\",VDATUM[\"North American Vertical Datum 1988\"],PARAMETER[\"Vertical_Shift\",0.0],PARAMETER[\"Direction\",1.0],UNIT[\"US survey foot\",1.0]]"
+    }
+  },
+  "fullExtent": {
+    "xmin": 2231750.018311379,
+    "ymin": 309045.3063030745,
+    "xmax": 2360149.018311379,
+    "ymax": 439979.3063030745,
+    "spatialReference": {
+      "wkt": "PROJCS[\"NAD_1983_2011_StatePlane_Wisconsin_South_FIPS_4803_Ft_US\",GEOGCS[\"GCS_NAD_1983_2011\",DATUM[\"D_NAD_1983_2011\",SPHEROID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Lambert_Conformal_Conic\"],PARAMETER[\"False_Easting\",1968500.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\",-90.0],PARAMETER[\"Standard_Parallel_1\",42.73333333333333],PARAMETER[\"Standard_Parallel_2\",44.06666666666667],PARAMETER[\"Latitude_Of_Origin\",42.0],UNIT[\"Foot_US\",0.3048006096012192]],VERTCS[\"VCS Name = NAVD88 height - Geoid12B (ftUS)|Datum Name = North American Vertical\",VDATUM[\"North American Vertical Datum 1988\"],PARAMETER[\"Vertical_Shift\",0.0],PARAMETER[\"Direction\",1.0],UNIT[\"US survey foot\",1.0]]"
+    }
+  },
+  "spatialReference": {
+    "wkt": "PROJCS[\"NAD_1983_2011_StatePlane_Wisconsin_South_FIPS_4803_Ft_US\",GEOGCS[\"GCS_NAD_1983_2011\",DATUM[\"D_NAD_1983_2011\",SPHEROID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Lambert_Conformal_Conic\"],PARAMETER[\"False_Easting\",1968500.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\",-90.0],PARAMETER[\"Standard_Parallel_1\",42.73333333333333],PARAMETER[\"Standard_Parallel_2\",44.06666666666667],PARAMETER[\"Latitude_Of_Origin\",42.0],UNIT[\"Foot_US\",0.3048006096012192]],VERTCS[\"VCS Name = NAVD88 height - Geoid12B (ftUS)|Datum Name = North American Vertical\",VDATUM[\"North American Vertical Datum 1988\"],PARAMETER[\"Vertical_Shift\",0.0],PARAMETER[\"Direction\",1.0],UNIT[\"US survey foot\",1.0]]"
+  },
+  "minLOD": 0,
+  "maxLOD": 7
+}

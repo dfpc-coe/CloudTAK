@@ -190,6 +190,11 @@ const props = defineProps({
         type: [String, Number],
         required: true
     },
+    display: {
+        // Rendered in place of modelValue; copy and edit still use modelValue
+        type: String,
+        default: undefined
+    },
     rows: {
         type: Number,
         default: 1
@@ -232,7 +237,7 @@ const error = ref<string | undefined>()
 const infoboxRef = useTemplateRef<HTMLElement>('infobox');
 
 const markdown = computed(() => {
-    return String(props.modelValue || '')
+    return String(props.display ?? (props.modelValue || ''))
         .replace(/\n/g, '</br>')
         .replace(/(?<![="'])(https?:\/\/[a-z-]+[:.].*?)(?=[\s"]|$)/g, '[$1]($1)')
         .trim()

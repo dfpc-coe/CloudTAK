@@ -1,0 +1,43 @@
+{
+  "currentVersion": 11.3,
+  "name": "USGSNAIPImagery",
+  "serviceDescription": "The USGS NAIP Imagery service from The National Map (TNM) consists of high resolution aerial images that combine the visual attributes of an aerial photograph with the spatial accuracy and reliability of a map. The USGS NAIP Imagery service is a mosaic primarily of 0.6 meter resolution 4-band imagery presented in natural color. This service also supports the use of templates that can be used to dynamically generate 'false color', also known as color-infrared (CIR), and Normalized Difference Vegetation Index (NDVI) views of the data. USGS relies on a partnership with the U.S. Department of Agriculture’s Farm Service Agency for NAIP data. The National Map Downloader application allows free downloads of public domain, NAIP compressed orthoimagery in JPEG 2000 (.jp2) format for the conterminous United States.",
+  "description": "The USGS NAIP Imagery service from The National Map (TNM) consists of high resolution aerial images that combine the visual attributes of an aerial photograph with the spatial accuracy and reliability of a map. The USGS NAIP Imagery service is a mosaic primarily of 0.6 meter resolution 4-band imagery presented in natural color. This service also supports the use of templates that can be used to dynamically generate 'false color', also known as color-infrared (CIR), and Normalized Difference Vegetation Index (NDVI) views of the data. USGS relies on a partnership with the U.S. Department of Agriculture’s Farm Service Agency for NAIP data. The National Map Downloader application allows free downloads of public domain, NAIP compressed orthoimagery in JPEG 2000 (.jp2) format for the conterminous United States.",
+  "copyrightText": "USGS, USDA, The National Map: Orthoimagery. January 09, 2025.",
+  "capabilities": "Image,Metadata,Catalog,Mensuration",
+  "serviceDataType": "esriImageServiceDataTypeProcessed",
+  "extent": {
+    "xmin": -13896162.899973024,
+    "ymin": 2812730.7000011485,
+    "xmax": -7441890.599985033,
+    "ymax": 6372359.699994525,
+    "spatialReference": {
+      "wkid": 102100,
+      "latestWkid": 3857
+    }
+  },
+  "initialExtent": {
+    "xmin": -13896162.899973024,
+    "ymin": 2812730.7000011485,
+    "xmax": -7441890.599985033,
+    "ymax": 6372359.699994525,
+    "spatialReference": {
+      "wkid": 102100,
+      "latestWkid": 3857
+    }
+  },
+  "fullExtent": {
+    "xmin": -13896162.899973024,
+    "ymin": 2812730.7000011485,
+    "xmax": -7441890.599985033,
+    "ymax": 6372359.699994525,
+    "spatialReference": {
+      "wkid": 102100,
+      "latestWkid": 3857
+    }
+  },
+  "spatialReference": {
+    "wkid": 102100,
+    "latestWkid": 3857
+  }
+}
