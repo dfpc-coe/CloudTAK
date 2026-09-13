@@ -1404,6 +1404,11 @@
         "query": false,
         "res": true
     },
+    "GET /proxy/image": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
     "GET /scim/v2/ServiceProviderConfig": {
         "body": false,
         "query": false,
