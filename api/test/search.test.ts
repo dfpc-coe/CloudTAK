@@ -17,7 +17,7 @@ test('AGOL - constructor with tokenManager', async () => {
         postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
-        nosinks: true,
+        noetlevents: true,
         nocache: true,
     });
 
@@ -36,7 +36,7 @@ test('AGOL - constructor without tokenManager', async () => {
         postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
-        nosinks: true,
+        noetlevents: true,
         nocache: true,
     });
 
@@ -55,7 +55,7 @@ test('AGOL - API URLs are correctly set', async () => {
         postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
-        nosinks: true,
+        noetlevents: true,
         nocache: true,
     });
 
@@ -73,7 +73,7 @@ test('AGOL - route method handles empty features', async () => {
         postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
-        nosinks: true,
+        noetlevents: true,
         nocache: true,
     });
 
@@ -108,7 +108,7 @@ test('AGOL - route method processes valid route data', async () => {
         postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
-        nosinks: true,
+        noetlevents: true,
         nocache: true,
     });
 
@@ -149,7 +149,7 @@ test('AGOL - error handling for different error codes', async () => {
         postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
-        nosinks: true,
+        noetlevents: true,
         nocache: true,
     });
 
@@ -178,7 +178,7 @@ test('AGOL - validates route input parameters', async () => {
         postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
-        nosinks: true,
+        noetlevents: true,
         nocache: true,
     });
 
@@ -209,7 +209,7 @@ test('AGOL - URL construction for different endpoints', async () => {
         postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
-        nosinks: true,
+        noetlevents: true,
         nocache: true,
     });
 

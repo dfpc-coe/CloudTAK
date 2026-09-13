@@ -48,26 +48,6 @@ export default class AtlasConnection {
         this.reconnectTimer = undefined;
     }
 
-    reconnect(connection: string) {
-        console.log('Forcing WebSocket reconnection...');
-        this.reconnectAttempts = 0;  // Reset counter
-        if (this.ws) {
-            this.ws.close();
-        }
-        this.connect(connection);
-    }
-
-    /**
-     * Called when the app returns to the foreground. iOS suspension can kill
-     * the TCP connection with no FIN reaching the client (NAT/LB idle
-     * timeout), so no close event ever fires and `isOpen` cannot be trusted -
-     * always rebuild the socket unless the user has logged out.
-     */
-    resume(connection: string) {
-        if (this.isDestroyed || this.authFailure) return;
-        this.reconnect(connection);
-    }
-
     // COTs are submitted to pending and picked up by the partial update code every .5s
     connect(connection: string) {
         this.isDestroyed = false;
@@ -118,7 +98,7 @@ export default class AtlasConnection {
         });
 
         ws.addEventListener('close', () => {
-            // A socket superseded by reconnect() must not touch state or
+            // A socket superseded by a newer connect() must not touch state or
             // spawn another connection - that's how reconnect loops multiply
             if (ws !== this.ws) return;
 

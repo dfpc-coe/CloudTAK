@@ -17,6 +17,40 @@
 
 ### Pending Release
 
+### v13.86.1 - 2026-09-12
+
+- :bug: Stop recreating the iOS WebView after a long background - the WebKit networking-process crash it targeted recovers in place, and every swap leaked the previous WebView (still connected, still writing to IndexedDB) through Capacitor plugin retain cycles
+- :bug: Declare the `remote-notification` background mode on iOS so silent pushes reach the app in the background
+
+### v13.86.0 - 2026-09-12
+
+- :rocket: Redesign the Outgoing Sinks model as `ETLEvents` - streaming CoT Features are now delivered as typed `feature` messages
+- :tada: Deliver `event:create`, `event:update` & `event:delete` ETL Events for Core Event changes to subscribed Outgoing Layers whose Connection shares a Channel with the Event
+- :rocket: Rename the `--no-sinks` CLI flag to `--no-etl-events`
+- :tada: Deliver `board:*`, `board:column:*` & `board:event:*` ETL Events for Board, Column & Event placement changes to subscribed Outgoing Layers whose Connection has the Board's Channel active
+
+### v13.85.0 - 2026-09-11
+
+- :bug: Keep the map usable after a background to foreground transition on mobile - iOS kills the WebView storage process while backgrounded and any IndexedDB request in flight wedged the page for good, stalling boot at "Initializing worker" even after a reload
+- :rocket: Suspend IndexedDB on both threads while backgrounded, pause the refresh & self CoT timers, keep features arriving over the WebSocket in memory & persist them on resume with a mission resync
+- :rocket: Hand the Atlas worker its server URL over `Worker.name` so module evaluation never touches storage & drop the IndexedDB mirror of the URL from boot
+- :rocket: Bound every boot stage & probe storage in the worker so a storage wedge surfaces in seconds, reloading once per background on a stall
+- :rocket: On foreground after 30s load the app into a fresh WKWebView with its own WKProcessPool instead of reloading in place; Android reloads & recreates the WebView on a lost render process
+- :rocket: Remove the in-place resume recovery whose storage probe & reopen were themselves in-flight requests at the worst moment
+- :tada: Enable Safari Web Inspector for the iOS app on TestFlight builds
+- :rocket: Adopt the UIKit scene-based life cycle on iOS (required to launch when built with the iOS 27 SDK)
+
+### v13.84.2 - 2026-09-11
+
+- :bug: Take status bar height into account when routing component is shown
+
+### v13.84.1 - 2026-09-11
+
+- :rocket: On mobile present a unified top bar
+- :bug: Ensure long mission names don't cause overlap over the notification bell
+- :bug: Ensure GPS Component doesn't infinitely expand based on callsign name by truncating long callsigns
+- :rocket: Change Data Sync icon based on COTAK user feedback
+
 ### v13.84.0 - 2026-09-11
 
 - :tada: Add incoming SCIM 2.0 user provisioning at `/api/scim/v2` - an Identity Provider can list, create, update, deactivate & deprovision CloudTAK users with the `userName`, `name`, `displayName` & `active` attributes

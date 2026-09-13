@@ -13,7 +13,7 @@ import {
     IconNetwork,
     IconPackages,
     IconSettings,
-    IconAmbulance,
+    IconCloudPin,
     IconServerCog,
     IconBoxMultiple,
     IconFileImport,
@@ -134,7 +134,7 @@ export default class MenuManager {
                 route: '/menu/missions',
                 tooltip: 'Data Sync',
                 description: 'Real-Time Datasets',
-                icon: IconAmbulance,
+                icon: IconCloudPin,
             },
             {
                 key: 'packages',

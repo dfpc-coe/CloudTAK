@@ -248,7 +248,7 @@ export default class Flight {
                 postgres: this.connstr,
                 silent: true,
                 noevents: true,
-                nosinks: true,
+                noetlevents: true,
                 nocache: true,
             };
 
