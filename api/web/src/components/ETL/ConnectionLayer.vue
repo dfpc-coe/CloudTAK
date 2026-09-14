@@ -87,9 +87,11 @@
                                 <TablerBadge
                                     v-for='permission in layer.permissions'
                                     :key='permission'
-                                    class='me-1'
+                                    class='me-1 font-monospace'
+                                    background-color='rgba(107, 114, 128, 0.15)'
+                                    border-color='rgba(107, 114, 128, 0.3)'
                                 >
-                                    <code v-text='permission' />
+                                    <span v-text='permission' />
                                 </TablerBadge>
                                 <span
                                     v-if='!layer.permissions.length'
