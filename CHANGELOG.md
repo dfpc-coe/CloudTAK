@@ -17,6 +17,8 @@
 
 ### Pending Release
 
+- :bug: Stop reloading the Android WebView after a long background and recreating the Activity on a lost render process, matching the iOS revert in v13.86.1
+
 ### v13.87.2 - 2026-09-14
 
 - :rocket: Show `read-only` state in the CoTView UI if the CoT is part of a READONLY mission

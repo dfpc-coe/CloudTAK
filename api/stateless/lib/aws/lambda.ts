@@ -9,6 +9,8 @@ import process from 'node:process';
 import { Static } from '@sinclair/typebox';
 import { StackFrame } from './cloudformation.js';
 import { Capabilities } from '@tak-ps/etl';
+import { DEFAULT_SCHEMA_ID } from '../../../common/types.js';
+import type { NamedSchema, TaskCapabilitiesResponse } from '../../../common/types.js';
 import ECR from './ecr.js';
 
 function repositoryName(): string {
@@ -22,14 +24,47 @@ export default class Lambda {
     static async capabilities(
         config: Config,
         layerid: number,
-    ): Promise<Static<typeof Capabilities>> {
+    ): Promise<Static<typeof TaskCapabilitiesResponse>> {
         const res = await Lambda.invoke(config, layerid, 'capabilities');
 
         if (!res) {
             throw new Err(400, null, 'Capabilities API returned empty response');
         }
 
-        return JSON.parse(res.toString()) as Static<typeof Capabilities>;
+        return Lambda.normalizeCapabilities(JSON.parse(res.toString()) as Static<typeof Capabilities>);
+    }
+
+    /**
+     * Tasks return either a single Output schema or an array of named schemas -
+     * a single schema is mapped to the `default` name so consumers only handle named schemas
+     */
+    static normalizeCapabilities(capabilities: Static<typeof Capabilities>): Static<typeof TaskCapabilitiesResponse> {
+        const normalized = structuredClone(capabilities) as Static<typeof TaskCapabilitiesResponse>;
+
+        for (const flow of ['incoming', 'outgoing'] as const) {
+            const schema = capabilities[flow]?.schema;
+            if (!schema) continue;
+
+            normalized[flow]!.schema.output = Lambda.namedSchemas(schema.output);
+        }
+
+        return normalized;
+    }
+
+    static namedSchemas(output: unknown): Array<Static<typeof NamedSchema>> {
+        if (output === null || output === undefined) return [];
+
+        if (Array.isArray(output)) {
+            return output.filter((entry): entry is Static<typeof NamedSchema> => {
+                return typeof entry === 'object' && entry !== null
+                    && typeof entry.id === 'string'
+                    && typeof entry.schema === 'object' && entry.schema !== null;
+            });
+        }
+
+        if (typeof output !== 'object') return [];
+
+        return [{ id: DEFAULT_SCHEMA_ID, schema: output as Record<string, unknown> }];
     }
 
     static async invoke(config: Config, layerid: number, type?: string): Promise<Buffer | undefined> {

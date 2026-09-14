@@ -4,6 +4,7 @@ import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text, Profile_Radiation_Dose, Profile_Wake_Lock } from './enums.js';
 import { VideoLease_SourceType, CoreEvent_Priority, CoreEventBoardColumn_Type } from './enums.js';
+import { Capabilities, InvocationType } from '@tak-ps/etl';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
 import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, BasemapTerrain_Encoding } from './enums.js';
@@ -308,6 +309,35 @@ export const CoreDeviceResponse = Type.Object({
     remarks: Type.String(),
     metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Device metadata' }),
     channels: Type.Array(Type.Integer(), { description: 'TAK Server Channels the Device is shared with' }),
+});
+
+/** A single named Output schema of a Task - tasks exposing a single unnamed schema are mapped to the `default` id */
+export const NamedSchema = Type.Object({
+    id: Type.String(),
+    schema: Type.Record(Type.String(), Type.Unknown()),
+});
+
+export const DEFAULT_SCHEMA_ID = 'default';
+
+const TaskCapabilitiesSchema = Type.Object({
+    input: Type.Unknown(),
+    inputError: Type.Optional(Capabilities.properties.incoming.properties.schema.properties.inputError),
+    output: Type.Array(NamedSchema, { description: 'Named Output schemas the Task submits records against' }),
+    outputError: Type.Optional(Capabilities.properties.incoming.properties.schema.properties.outputError),
+});
+
+/** Live Task Capabilities with Output schemas normalized to named schemas */
+export const TaskCapabilitiesResponse = Type.Object({
+    name: Type.String(),
+    version: Type.String(),
+    incoming: Type.Optional(Type.Object({
+        invocation: Type.Array(Type.Enum(InvocationType)),
+        invocationDefaults: Capabilities.properties.incoming.properties.invocationDefaults,
+        schema: TaskCapabilitiesSchema,
+    })),
+    outgoing: Type.Optional(Type.Object({
+        schema: TaskCapabilitiesSchema,
+    })),
 });
 
 export const MissionTemplateResponse = Type.Object({
