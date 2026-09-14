@@ -14,7 +14,7 @@ export function enabledGeofence(properties?: Pick<FeatureProperties, 'geofence'>
  */
 export function isUserPuck(
     id: string,
-    properties?: Pick<FeatureProperties, 'group' | 'takv'>
+    properties?: Pick<FeatureProperties, 'group' | 'takv'>,
 ): boolean {
     if (id.startsWith('ANDROID-')) return true;
     if (properties?.group) return true;
