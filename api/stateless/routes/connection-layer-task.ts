@@ -8,8 +8,7 @@ import LayerDeploy from '../lib/aws/layer-deploy.js';
 import LayerControl from '../lib/control/layer.js';
 import Logs from '../lib/aws/lambda-logs.js';
 import type ConfigStateless from '../config.js';
-import { Capabilities } from '@tak-ps/etl';
-import { StandardResponse, JobLogResponse } from '../../common/types.js';
+import { StandardResponse, JobLogResponse, TaskCapabilitiesResponse } from '../../common/types.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     const layerControl = new LayerControl(config);
@@ -159,7 +158,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             layerid: Type.Integer(),
         }),
         description: 'Get the Capabilities object',
-        res: Capabilities,
+        res: TaskCapabilitiesResponse,
     }, async (req, res) => {
         try {
             let layer;

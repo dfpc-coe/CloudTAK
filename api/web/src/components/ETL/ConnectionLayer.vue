@@ -196,47 +196,6 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Deployment</span></span>
 
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": route.name === "layer-alarm",
-                                                    "cursor-pointer": route.name !== "layer-alarm"
-                                                }'
-                                                @keyup.enter='router.push(`/connection/${route.params.connectionid || 0}/layer/${route.params.layerid}/alarm`)'
-                                                @click='router.push(`/connection/${route.params.connectionid || 0}/layer/${route.params.layerid}/alarm`)'
-                                            ><IconAlarm
-                                                 :size='32'
-                                                 stroke='1'
-                                             />
-                                                <span class='mx-3'>Alarms</span>
-
-                                                <div class='ms-auto'>
-                                                    <TablerBadge
-                                                        v-if='layer.priority === "high"'
-                                                        style='height: 20px'
-                                                        background-color='rgba(239, 68, 68, 0.2)'
-                                                        border-color='rgba(239, 68, 68, 0.5)'
-                                                        text-color='#dc2626'
-                                                    >High Urgency</TablerBadge>
-                                                    <TablerBadge
-                                                        v-else-if='layer.priority === "low"'
-                                                        style='height: 20px'
-                                                        background-color='rgba(245, 158, 11, 0.2)'
-                                                        border-color='rgba(245, 158, 11, 0.5)'
-                                                        text-color='#d97706'
-                                                    >Low Urgency</TablerBadge>
-                                                    <TablerBadge
-                                                        v-else
-                                                        style='height: 20px'
-                                                        background-color='rgba(107, 114, 128, 0.2)'
-                                                        border-color='rgba(107, 114, 128, 0.5)'
-                                                        text-color='#6b7280'
-                                                    >Disabled</TablerBadge>
-                                                </div>
-                                            </span>
-
                                             <TablerPillGroup
                                                 v-model='mode'
                                                 :options='[
@@ -338,7 +297,7 @@
                                                         stroke='1'
                                                     /><span class='mx-3'>Styling</span></span>
                                                     <div
-                                                        class='list-group-item list-group-item-action d-flex align-items-center justify-content-center'
+                                                        class='list-group-item d-flex align-items-center justify-content-center'
                                                     >
                                                         <TablerDelete
                                                             label='Delete Incoming'
@@ -450,7 +409,6 @@ import {
     IconPencil,
     IconDownload,
     IconPlaneDeparture,
-    IconAlarm,
     IconAdjustments,
     IconBeach,
     IconSchema,

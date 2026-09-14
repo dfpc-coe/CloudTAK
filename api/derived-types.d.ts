@@ -11066,7 +11066,13 @@ export interface paths {
                                         status: number;
                                         message: string;
                                     };
-                                    output: unknown;
+                                    /** @description Named Output schemas the Task submits records against */
+                                    output: {
+                                        id: string;
+                                        schema: {
+                                            [key: string]: unknown;
+                                        };
+                                    }[];
                                     outputError?: {
                                         status: number;
                                         message: string;
@@ -11080,7 +11086,13 @@ export interface paths {
                                         status: number;
                                         message: string;
                                     };
-                                    output: unknown;
+                                    /** @description Named Output schemas the Task submits records against */
+                                    output: {
+                                        id: string;
+                                        schema: {
+                                            [key: string]: unknown;
+                                        };
+                                    }[];
                                     outputError?: {
                                         status: number;
                                         message: string;

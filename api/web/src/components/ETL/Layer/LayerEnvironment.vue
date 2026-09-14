@@ -194,7 +194,7 @@ interface DirectionCapability {
     schema: {
         input: SchemaDefinition;
         inputError?: { status: number; message: string };
-        output: SchemaDefinition;
+        output: Array<{ id: string; schema: SchemaDefinition }>;
         outputError?: { status: number; message: string };
     };
     [key: string]: unknown;
@@ -245,11 +245,10 @@ function dirCap(): DirectionCapability | undefined {
 function hasDateTime(): boolean {
     if (!props.capabilities) return false;
     const cap = dirCap();
-    if (!cap?.schema.output?.properties) return false;
 
-    for (const prop of Object.keys(cap.schema.output.properties)) {
-        if (cap.schema.output.properties[prop].format === 'date-time') {
-            return true;
+    for (const { schema } of cap?.schema.output ?? []) {
+        for (const prop of Object.values(schema.properties ?? {})) {
+            if (prop.format === 'date-time') return true;
         }
     }
 

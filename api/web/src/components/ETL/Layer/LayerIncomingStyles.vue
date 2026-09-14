@@ -38,7 +38,7 @@
         </div>
 
         <TablerInlineAlert
-            v-if='!props.capabilities || !props.capabilities.incoming?.schema?.output'
+            v-if='!outputSchema'
             severity='danger'
             class='px-2 my-2'
             title='Data Schema Error'
@@ -67,7 +67,7 @@
             <div class='card-body'>
                 <StyleSingle
                     v-model='style'
-                    :schema='(capabilities.incoming?.schema?.output ?? { properties: {} }) as Record<string, unknown>'
+                    :schema='outputSchema ?? { properties: {} }'
                     :disabled='disabled'
                     :disable-marti='!!props.layer.incoming?.data'
                     :connection='Number(route.params.connectionid)'
@@ -215,7 +215,7 @@
                     <template v-else>
                         <StyleSingle
                             v-model='queries[query!].styles'
-                            :schema='(capabilities.incoming?.schema?.output ?? {}) as Record<string, unknown>'
+                            :schema='outputSchema ?? {}'
                             :disabled='disabled'
                             :disable-marti='!!props.layer.incoming?.data'
                             :connection='Number(route.params.connectionid)'
@@ -228,7 +228,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { openExternalUrl } from '../../../utils/capacitor.ts';
 import { useRoute } from 'vue-router'
 import { server } from '../../../std.ts';
@@ -251,6 +251,7 @@ import {
     TablerPillGroup
 } from '@tak-ps/vue-tabler';
 import StyleSingle from './utils/StyleSingle.vue';
+import { defaultOutputSchema } from './utils/namedSchemas.ts';
 import QueryInput from './utils/QueryInput.vue';
 
 interface StyleQuery {
@@ -269,6 +270,8 @@ const emit = defineEmits<{
 }>();
 
 const route = useRoute();
+
+const outputSchema = computed(() => defaultOutputSchema(props.capabilities));
 
 const disabled = ref(true);
 const loading = ref({

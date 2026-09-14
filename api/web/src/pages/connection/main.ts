@@ -30,10 +30,6 @@ const router = VueRouter.createRouter({
                 name: `layer-deployment`,
                 component: () => import('../../components/ETL/Layer/LayerDeployment.vue')
             },{
-                path: 'alarm',
-                name: `layer-alarm`,
-                component: () => import('../../components/ETL/Layer/LayerAlarm.vue')
-            },{
                 path: 'incoming/config',
                 name: `layer-incoming-config`,
                 component: () => import('../../components/ETL/Layer/LayerIncomingConfig.vue')
