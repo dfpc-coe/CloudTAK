@@ -14,10 +14,14 @@
 
 - `GET /api/search/reverse/:long/:lat` endpoint is deprecated and will be removed in v14, use `GET /api/search/reverse/:long/:lat/<type>` instead
 - `Layer.template` is deprecated and will be removed
+- ETLs in v14 will be required to declare Named Schemas, single schema support will be removed
 
 ### Pending Release
 
-- :bug: Stop reloading the Android WebView after a long background and recreating the Activity on a lost render process, matching the iOS revert in v13.86.1
+### v13.88.0 - 2026-09-14
+
+- :tada: Introduce API & UI support for named ETL Schemas allowing multiple data shapes from ETLs
+- :rocket: Update Android App to drop 30s reload to match iOS behavior
 
 ### v13.87.2 - 2026-09-14
 
