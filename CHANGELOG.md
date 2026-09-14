@@ -17,6 +17,12 @@
 
 ### Pending Release
 
+### v13.87.1 - 2026-09-14
+
+- :bug: Clear our user pucks from the ProfileFeature database
+- :rocket: Stronger protections to ensure user pucks can't be saved to the ProfileFeature store on the backend and UI
+- :rocket: Performance improvements to CoT rendering pipeline by caching Display Stale Time
+
 ### v13.87.0 - 2026-09-13
 
 - :rocket: Switch to temporary MapLibre fork that supports refreshing workers for iOS background=>foreground transitions
