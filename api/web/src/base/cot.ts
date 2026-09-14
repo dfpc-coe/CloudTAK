@@ -188,6 +188,8 @@ export default class COT {
         this._properties = feat["properties"] || {};
         this._geometry = feat["geometry"];
 
+        if (this.is_skittle) this._properties.archived = false;
+
         this._remote = !!(opts && opts.remote === true)
         this._liveQuerySubscription = null;
 
@@ -314,6 +316,8 @@ export default class COT {
 
                     Object.assign(this._properties, update.properties);
 
+                    if (this.is_skittle) this._properties.archived = false;
+
                     // The rendered icon derives from type/milicon which are not
                     // RENDERED_PROPERTIES themselves
                     if (renderedIcon(this._properties) !== renderedBefore) {
@@ -370,6 +374,7 @@ export default class COT {
         if (
             !this._remote
             && !this.is_self
+            && !this.is_skittle
             && this.properties.archived
             && this.origin.mode === OriginMode.CONNECTION
         ) {
