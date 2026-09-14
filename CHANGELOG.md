@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+- :rocket: Replace the custom Layer Environment schema form with the generic `TablerSchema` component, gaining multi-select and primitive array support
+
 ### v13.88.0 - 2026-09-14
 
 - :tada: Introduce API & UI support for named ETL Schemas allowing multiple data shapes from ETLs
