@@ -915,7 +915,7 @@ export default class AtlasDatabase {
                             this.pendingUpdate.set(existing.id, existing);
                         }
                     }
-                })
+                });
 
                 if (geometryMoved) {
                     await this.syncCoreEventGeometry(exists);
