@@ -250,6 +250,8 @@ export default class COT {
         update: COTUpdate,
         opts?: {
             skipSave?: boolean;
+            /** Called once the in-memory COT is current, before it is persisted */
+            onApplied?: (visuallyChanged: boolean) => void;
         }
     ): Promise<boolean> {
         update = applyCOTMutations(this.as_feature(), update);
@@ -340,6 +342,8 @@ export default class COT {
                     }
                 }
             }
+
+            if (opts && opts.onApplied) opts.onApplied(visuallyChanged);
 
             if (this.origin.mode === OriginMode.CONNECTION) {
                 // Backgrounded on native: keep the in-memory update, persist on resume

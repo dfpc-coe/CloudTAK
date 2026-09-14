@@ -895,21 +895,27 @@ export default class AtlasDatabase {
             return exists;
         } else {
             if (exists) {
+                const existing = exists;
                 const geometryMoved = opts.authored === true
                     && !!feat.geometry
-                    && !isEqual(exists.geometry, feat.geometry);
+                    && !isEqual(existing.geometry, feat.geometry);
 
-                const changed = await exists.update({
+                await existing.update({
                     path: feat.path,
                     properties: feat.properties,
                     geometry: feat.geometry
-                }, { skipSave: opts.skipSave })
-
-                // Skip pendingUpdate for a not-yet-flushed pending-create COT
-                // (mutated in place) to avoid a duplicate add+update in one diff.
-                if (changed && !this.pendingCreate.has(exists.id)) {
-                    this.pendingUpdate.set(exists.id, exists);
-                }
+                }, {
+                    skipSave: opts.skipSave,
+                    // Queue the render as soon as memory is current rather than
+                    // after the IndexedDB write, which can lag by seconds after
+                    // a resume. Skip a not-yet-flushed pending-create COT
+                    // (mutated in place) to avoid a duplicate add+update in one diff.
+                    onApplied: (changed) => {
+                        if (changed && !this.pendingCreate.has(existing.id)) {
+                            this.pendingUpdate.set(existing.id, existing);
+                        }
+                    }
+                });
 
                 if (geometryMoved) {
                     await this.syncCoreEventGeometry(exists);

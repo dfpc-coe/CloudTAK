@@ -415,23 +415,10 @@
                 style='min-height: 0;'
             >
                 <div class='row g-0'>
-                    <div
+                    <PropertyOrigin
                         v-if='subscription'
-                        class='col-12'
-                    >
-                        <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded cloudtak-accent'>
-                            <IconCloudPin
-                                :size='32'
-                                stroke='1'
-                            />
-                            <span class='ms-2'>From:</span>
-                            <a
-                                class='mx-2 cursor-pointer'
-                                @click='router.push(`/menu/missions/${subscription.meta.guid}`)'
-                                v-text='subscription.meta.name'
-                            />
-                        </div>
-                    </div>
+                        :subscription='subscription'
+                    />
 
                     <div class='pt-2 col-12 px-2'>
                         <!-- Not keyed on the type - a remount would collapse the
@@ -741,6 +728,7 @@ import Coordinate from './util/Coordinate.vue';
 import PropertyProfile from './Property/PropertyProfile.vue';
 import PropertyType from './Property/PropertyType.vue';
 import PropertyMission from './Property/PropertyMission.vue';
+import PropertyOrigin from './Property/PropertyOrigin.vue';
 import Type2525 from '@tak-ps/node-cot/2525';
 
 function isSIDCType(type: string): boolean {
@@ -777,7 +765,6 @@ import {
     IconMessage,
     IconBlockquote,
     IconDotsVertical,
-    IconCloudPin,
     IconPlayerPlay,
     IconShare2,
     IconZoomPan,
