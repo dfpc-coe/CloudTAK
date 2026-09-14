@@ -1,5 +1,6 @@
 import { Preferences } from '@capacitor/preferences';
 import { isNativePlatform } from '../utils/capacitor.ts';
+import { server } from '../std.ts';
 
 /**
  * Per-device push registration bookkeeping.
@@ -59,7 +60,6 @@ export async function syncPushToken(token: string | null): Promise<void> {
 
 async function performSync(token: string): Promise<void> {
     try {
-        const { server } = await import('../std.ts');
         const stored = await getStored();
 
         if (stored.id !== null) {

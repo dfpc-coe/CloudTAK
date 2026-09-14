@@ -11,6 +11,7 @@ import type {
     CoreEventBoardEventResponse,
 } from '../../../common/types.js';
 import type ConfigStateless from '../../config.js';
+import { ETLEventAction } from '../../../common/etl-events.js';
 import { userChannels } from '../tak-channels.js';
 
 /** Upper bound on Boards, Columns & placed Events returned for a single request */
@@ -71,6 +72,13 @@ export default class BoardControl {
         this.config = config;
     }
 
+    /** Best effort ETL Event delivery - a failure is logged and never fails the request that caused it */
+    deliver(delivery: Promise<void>, subject: string): void {
+        delivery.catch((err) => {
+            console.error(`not ok - failed to deliver ETL Event for ${subject}:`, err);
+        });
+    }
+
     /**
      * Boards are visible to System Admins and any user with the Board's
      * Channel currently active
@@ -122,20 +130,27 @@ export default class BoardControl {
      * Every Board has a single automatically managed Column of type nominated
      * that newly nominated Events land in by default
      */
-    async ensureNominatedColumn(board: string): Promise<typeof CoreEventBoardColumn.$inferSelect> {
+    async ensureNominatedColumn(board: typeof CoreEventBoard.$inferSelect): Promise<typeof CoreEventBoardColumn.$inferSelect> {
         const existing = await this.config.models.CoreEventBoardColumn.list({
             limit: 1,
-            where: sql`board = ${board} AND type = ${CoreEventBoardColumn_Type.NOMINATED}`,
+            where: sql`board = ${board.id} AND type = ${CoreEventBoardColumn_Type.NOMINATED}`,
         });
 
         if (existing.items.length) return existing.items[0];
 
-        return await this.config.models.CoreEventBoardColumn.generate({
-            board,
+        const column = await this.config.models.CoreEventBoardColumn.generate({
+            board: board.id,
             name: 'Nominated',
             type: CoreEventBoardColumn_Type.NOMINATED,
             position: 0,
         });
+
+        this.deliver(
+            this.config.etlEvents.boardColumn(ETLEventAction.Create, Number(board.channel), columnResponse(column)),
+            `Column ${column.id}`,
+        );
+
+        return column;
     }
 
     /**
@@ -148,13 +163,17 @@ export default class BoardControl {
             where: sql`channel = ${channel}`,
         });
 
-        const board = existing.items.length
-            ? existing.items[0]
-            : await this.config.models.CoreEventBoard.generate({
-                    channel: BigInt(channel),
-                    name: 'Events',
-                });
+        let board = existing.items[0];
 
-        await this.ensureNominatedColumn(board.id);
+        if (!board) {
+            board = await this.config.models.CoreEventBoard.generate({
+                channel: BigInt(channel),
+                name: 'Events',
+            });
+
+            this.deliver(this.config.etlEvents.board(ETLEventAction.Create, boardResponse(board)), `Board ${board.id}`);
+        }
+
+        await this.ensureNominatedColumn(board);
     }
 }

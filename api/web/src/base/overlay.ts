@@ -60,14 +60,7 @@ export default class OverlayManager extends BaseInterface {
     }
 
     private static loadedBeforeId(): string | undefined {
-        if (this.loaded.length > 1 && this.loaded[1].styles.length > 0) {
-            // Background layers are never added to the map so they cannot
-            // anchor an insert - use the first renderable layer
-            const anchor = this.loaded[1].styles.find((l) => l.type !== 'background');
-            if (anchor) return String(anchor.id);
-        }
-
-        return undefined;
+        return this.loadedAnchorFrom(1);
     }
 
     static appendLoaded(...overlays: Overlay[]): void {
@@ -110,13 +103,18 @@ export default class OverlayManager extends BaseInterface {
         const post = postId === undefined ? undefined : this.loadedFrom(postId);
         overlay.moveBefore(post);
 
-        for (const current of this.loaded) {
-            await current.update({
-                pos: orderedIds.indexOf(current.id)
-            });
-        }
+        const changed = this.loaded.filter((current) => {
+            const pos = orderedIds.indexOf(current.id);
+            if (pos === -1 || pos === current.pos) return false;
+            current.pos = pos;
+            return true;
+        });
 
         this.loaded.sort((a, b) => a.pos - b.pos);
+
+        const results = await Promise.allSettled(changed.map((current) => current.save()));
+        const failed = results.find((result): result is PromiseRejectedResult => result.status === 'rejected');
+        if (failed) throw failed.reason;
     }
 
     /**
@@ -137,9 +135,21 @@ export default class OverlayManager extends BaseInterface {
         const idx = this.loaded.indexOf(overlay);
         if (idx === -1) return undefined;
 
-        const next = this.loaded[idx + 1];
-        const anchor = next?.styles.find((l) => l.type !== 'background');
-        return anchor ? String(anchor.id) : undefined;
+        return this.loadedAnchorFrom(idx + 1);
+    }
+
+    /**
+     * First renderable layer id present on the map, searching `loaded`
+     * upward from the given index - overlays that failed to load or are
+     * still initializing have no layers and are skipped
+     */
+    static loadedAnchorFrom(idx: number): string | undefined {
+        for (let i = idx; i < this.loaded.length; i++) {
+            const anchor = this.loaded[i].anchorLayerId();
+            if (anchor) return anchor;
+        }
+
+        return undefined;
     }
 
     static async deleteLoaded(idOrOverlay: string | number | Overlay): Promise<void> {
@@ -154,7 +164,11 @@ export default class OverlayManager extends BaseInterface {
 
     static queryableOverlayNames(): string[] {
         return this.loaded
-            .filter((overlay) => overlay.actions.feature.includes('query') || overlay.id === -1)
+            .filter((overlay) => {
+                return overlay.id === -1
+                    || (overlay.mode === 'mission' && overlay.mode_id)
+                    || overlay.actions.feature.includes('query');
+            })
             .map((overlay) => overlay.name);
     }
 

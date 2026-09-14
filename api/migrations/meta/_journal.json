@@ -1426,8 +1426,36 @@
     {
       "idx": 204,
       "version": "7",
-      "when": 1788209776962,
-      "tag": "0204_layer_map",
+      "when": 1788900358374,
+      "tag": "0204_profile_file_parent",
+      "breakpoints": true
+    },
+    {
+      "idx": 205,
+      "version": "7",
+      "when": 1789062067989,
+      "tag": "0205_profile_scim",
+      "breakpoints": true
+    },
+    {
+      "idx": 206,
+      "version": "7",
+      "when": 1789137312238,
+      "tag": "0206_profile_last_login_nullable",
+      "breakpoints": true
+    },
+    {
+      "idx": 207,
+      "version": "7",
+      "when": 1789398788000,
+      "tag": "0207_remove_user_pucks",
+      "breakpoints": true
+    },
+    {
+      "idx": 208,
+      "version": "7",
+      "when": 1789418542676,
+      "tag": "0208_layer_map",
       "breakpoints": true
     }
   ]

@@ -60,7 +60,7 @@ const props = withDefaults(defineProps<{
     droppable: false
 });
 
-const collection = defineModel<string>('collection');
+const collection = defineModel<string>('collection', { default: '' });
 
 const emit = defineEmits<{
     /** Number of segments retained - 0 is Home */

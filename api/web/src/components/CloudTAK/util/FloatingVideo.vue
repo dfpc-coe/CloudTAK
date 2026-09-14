@@ -81,6 +81,7 @@
             <VideoPlayer
                 class='flex-grow-1'
                 :url='video.config.url'
+                :lease='video.config.lease'
                 @metadata='metadata = $event'
             />
         </div>
@@ -157,7 +158,10 @@ async function pushToWall(): Promise<void> {
     try {
         await std('/api/profile/video', {
             method: 'POST',
-            body: {
+            body: video.value.config.lease !== undefined ? {
+                lease: video.value.config.lease,
+                name: title.value
+            } : {
                 url: video.value.config.url,
                 name: title.value
             }

@@ -4,12 +4,12 @@ import type { Component, Ref } from 'vue';
 export type BottomBarItemConfig = {
     /** Unique identifier for the item */
     key: string;
-    /** Vue component rendered in the centre of the bottom status bar */
+    /** Vue component rendered in the floating plugin pane at the bottom centre of the map */
     component: Component;
 };
 
 /**
- * Manages plugin-registered components displayed in the centre of the map status bar
+ * Manages plugin-registered components displayed in the floating plugin pane
  */
 export default class BottomBarManager {
     pluginItems: Ref<BottomBarItemConfig[]>;
@@ -19,7 +19,7 @@ export default class BottomBarManager {
     }
 
     /**
-     * Add a component to the centre of the bottom status bar
+     * Add a component to the floating plugin pane
      */
     addItem(item: BottomBarItemConfig) {
         if (this.pluginItems.value.find((i) => i.key === item.key)) {
@@ -33,7 +33,7 @@ export default class BottomBarManager {
     }
 
     /**
-     * Remove a previously registered bottom bar component by key
+     * Remove a previously registered plugin pane component by key
      */
     removeItem(key: string) {
         this.pluginItems.value = this.pluginItems.value.filter((i) => i.key !== key);

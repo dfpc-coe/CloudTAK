@@ -334,13 +334,14 @@ export class PluginAPI {
     }
 
     /**
-     * Manage the Map Status Bar
+     * Manage the floating plugin pane at the bottom centre of the map.
+     * The pane is only rendered while at least one item is registered.
      */
     get bottomBar() {
         const mapStore = useMapStore(this.pinia);
         return {
             /**
-             * Add a component to the centre of the bottom status bar
+             * Add a component to the floating plugin pane
              * @param item The bottom bar item configuration
              */
             add: (item: BottomBarItemConfig) => {
@@ -351,7 +352,7 @@ export class PluginAPI {
                 }
             },
             /**
-             * Remove a previously registered bottom bar component by key
+             * Remove a previously registered plugin pane component by key
              * @param key The key of the item to remove
              */
             remove: (key: string) => {

@@ -7,6 +7,7 @@ import StreamZip from 'node-stream-zip';
 import { kml } from '../togeojson/index.ts';
 import { isSafeUrl } from '@tak-ps/node-safeurl';
 import { fetch } from '@tak-ps/node-safeurl';
+import { run } from '../utils.ts';
 
 const MAX_NETWORK_LINK_DEPTH = 3;
 const NETWORK_LINK_FETCH_TIMEOUT_MS = 10_000;
@@ -78,6 +79,7 @@ export default class KML implements Transform {
                             console.warn(`NetworkLink ${resolved} already visited, skipping`);
                             continue;
                         }
+
                         visited.add(resolved);
 
                         try {
@@ -139,6 +141,7 @@ export default class KML implements Transform {
                     console.warn(`NetworkLink ${normalized} already visited, skipping`);
                     continue;
                 }
+
                 visited.add(normalized);
 
                 try {
@@ -299,6 +302,69 @@ export default class KML implements Transform {
         return features;
     }
 
+    private async extractGroundOverlayRasters(
+        kmlContent: string,
+        baseDir: string,
+    ): Promise<string[]> {
+        const matches = Array.from(kmlContent.matchAll(/<GroundOverlay\b[\s\S]*?<Icon[\s\S]*?<href>([\s\S]*?)<\/href>[\s\S]*?<LatLonBox[\s\S]*?<north>([\s\S]*?)<\/north>[\s\S]*?<south>([\s\S]*?)<\/south>[\s\S]*?<east>([\s\S]*?)<\/east>[\s\S]*?<west>([\s\S]*?)<\/west>[\s\S]*?<\/LatLonBox>[\s\S]*?<\/GroundOverlay>/gi));
+        const childAssets: string[] = [];
+        const seen = new Set<string>();
+
+        for (const [index, match] of matches.entries()) {
+            const [, hrefRaw = '', northRaw = '', southRaw = '', eastRaw = '', westRaw = ''] = match;
+            const href = hrefRaw.trim();
+            const north = Number.parseFloat(northRaw.trim());
+            const south = Number.parseFloat(southRaw.trim());
+            const east = Number.parseFloat(eastRaw.trim());
+            const west = Number.parseFloat(westRaw.trim());
+
+            if (!href || Number.isNaN(north) || Number.isNaN(south) || Number.isNaN(east) || Number.isNaN(west)) {
+                continue;
+            }
+
+            const resolved = href.startsWith('http://') || href.startsWith('https://')
+                ? null
+                : path.resolve(baseDir, href);
+
+            if (!resolved) {
+                continue;
+            }
+
+            if (!await fs.stat(resolved).then(() => true).catch(() => false)) {
+                continue;
+            }
+
+            const imageKey = resolved;
+            if (seen.has(imageKey)) continue;
+            seen.add(imageKey);
+
+            const stem = path.basename(resolved, path.extname(resolved));
+            const tifPath = path.join(this.local.tmpdir, `ground-overlay-${index}-${stem}.tif`);
+            const mbtilesPath = path.join(this.local.tmpdir, `ground-overlay-${index}-${stem}.mbtiles`);
+            const pmtilesPath = path.join(this.local.tmpdir, `ground-overlay-${index}-${stem}.pmtiles`);
+
+            run('gdal_translate', [
+                '-of', 'GTiff',
+                '-a_srs', 'EPSG:4326',
+                '-a_ullr', String(west), String(north), String(east), String(south),
+                resolved,
+                tifPath,
+            ]);
+
+            run('gdal', [
+                'raster', 'convert',
+                '--overwrite',
+                tifPath,
+                mbtilesPath,
+            ]);
+
+            run('pmtiles', ['convert', mbtilesPath, pmtilesPath]);
+            childAssets.push(pmtilesPath);
+        }
+
+        return childAssets;
+    }
+
     async convert(): Promise<ConvertResponse> {
         const icons = new Map<string, Buffer>();
 
@@ -383,14 +449,26 @@ export default class KML implements Transform {
             }
         }
 
+        const groundOverlayAssets = await this.extractGroundOverlayRasters(String(await fs.readFile(asset)), path.dirname(asset));
+        const children = groundOverlayAssets.length
+            ? groundOverlayAssets.map(assetPath => ({
+                    name: path.basename(assetPath),
+                    path: assetPath,
+                    ext: path.extname(assetPath),
+                    children: [],
+                }))
+            : undefined;
+
         if (iconMap.size) {
             return {
                 asset: output,
+                children,
                 icons: iconMap,
             };
         } else {
             return {
                 asset: output,
+                children,
             };
         }
     }

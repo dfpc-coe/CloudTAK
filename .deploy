@@ -2,6 +2,7 @@
     "name": "tak-cloudtak",
     "profile": "coegc",
     "region": "us-gov-east-1",
+    "role": "arn:{{partition}}:iam::{{accountId}}:role/tak-vpc-{{stack}}-cloudformation",
     "tags": [
         {
             "Key": "Project",

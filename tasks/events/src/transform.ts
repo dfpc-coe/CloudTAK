@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import readline from 'node:readline';
 import jwt from 'jsonwebtoken';
 import { randomUUID } from 'node:crypto';
-import type { Message, LocalMessage, Asset } from './types.ts';
+import type { Message, LocalMessage, Asset, AssetNode } from './types.ts';
 import s3client from './s3.ts';
 import { Upload } from '@aws-sdk/lib-storage';
 import path from 'node:path';
@@ -17,10 +17,11 @@ import Translate from './transforms/translate.ts';
 import GeoJSON from './transforms/geojson.ts';
 import MBTiles from './transforms/mbtiles.ts';
 import Shapefile from './transforms/shapefile.ts';
+import Geodatabase from './transforms/geodatabase.ts';
 import { createImportResult } from './api.ts';
 import { fetch } from '@tak-ps/node-safeurl';
 
-const FORMATS = [KML, Translate, GeoJSON, MBTiles, Shapefile];
+const FORMATS = [KML, Translate, GeoJSON, MBTiles, Shapefile, Geodatabase];
 const formats = new Map();
 
 // TODO load all conversion files from a directory
@@ -57,8 +58,45 @@ export default class DataTransform {
         const convert = new (formats.get(this.local.ext))(this.msg, this.local);
 
         const conversion = await convert.convert();
-
         const artifacts: Array<{ ext: string }> = this.asset.artifacts.map((a: { ext: string }) => ({ ext: a.ext }));
+
+        const createAssetTree = async (parentId: string, node: AssetNode): Promise<void> => {
+            const childId = randomUUID();
+            const uploader = new Upload({
+                client: s3,
+                params: {
+                    Bucket: this.msg.bucket,
+                    Key: `profile/${this.msg.job.username}/${childId}${node.ext}`,
+                    Body: fs.createReadStream(node.path),
+                },
+            });
+
+            await uploader.done();
+
+            const res = await fetch(new URL(`/api/profile/asset`, this.msg.api), {
+                safeUrlAllow: [this.msg.api],
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                },
+                body: JSON.stringify({
+                    id: childId,
+                    name: `${path.parse(node.name).name}${node.ext}`,
+                    parent: parentId,
+                    path: '/',
+                    artifacts: [{ ext: node.ext }],
+                }),
+            });
+
+            if (!res.ok) {
+                throw new Error(`Failed to create child asset: ${await res.text()}`);
+            }
+
+            for (const child of node.children ?? []) {
+                await createAssetTree(childId, child);
+            }
+        };
 
         if (conversion.icons && conversion.icons.size > 0) {
             console.error('ok - Creating Iconset');
@@ -259,6 +297,10 @@ export default class DataTransform {
             console.log(pmout);
 
             console.log(`ok - converted: ${path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')}`);
+        }
+
+        for (const childNode of conversion.children ?? []) {
+            await createAssetTree(this.asset.id, childNode);
         }
 
         // Validate PMTiles format before uploading

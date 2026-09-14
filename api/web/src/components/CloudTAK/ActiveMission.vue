@@ -1,43 +1,41 @@
 <template>
     <div
-        class='cloudtak-panel d-flex align-items-center px-2'
-        style='
-            z-index: 1;
-            height: 60px;
-            max-width: calc(100vw - 16px);
-        '
+        class='d-flex align-items-center'
+        style='min-width: 0;'
+        :class='{ "flex-grow-1": compact }'
     >
         <template v-if='!mapStore.mission'>
             <div
                 class='cloudtak-hover d-flex align-items-center user-select-none cursor-pointer rounded px-2'
-                style='height: 40px;'
+                style='height: 40px; min-width: 0;'
                 @click='router.push("/menu/missions")'
             >
-                <IconMap
+                <IconCloudPin
                     :size='32'
                     stroke='1'
-                    class='me-2'
+                    class='me-2 flex-shrink-0'
                 />
-                <div class='me-2 font-weight-bold'>
-                    No Active Data Sync
+                <div class='me-2 font-weight-bold text-truncate'>
+                    No Active Mission
                 </div>
             </div>
         </template>
         <template v-else>
             <div
                 class='d-flex align-items-center user-select-none cursor-pointer cloudtak-hover rounded px-2 me-2'
-                style='height: 40px;'
+                style='height: 40px; min-width: 0;'
+                :class='{ "flex-grow-1": compact }'
                 @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}`)'
             >
-                <IconAmbulance
+                <IconCloudPin
                     :size='32'
                     stroke='1'
-                    class='me-2'
+                    class='me-2 flex-shrink-0'
                 />
 
                 <span
                     class='text-truncate fw-bold'
-                    style='max-width: 200px;'
+                    :style='compact ? { minWidth: 0 } : { maxWidth: "200px" }'
                     v-text='mapStore.mission.meta.name'
                 />
             </div>
@@ -151,8 +149,7 @@ import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
 import { TablerIconButton } from '@tak-ps/vue-tabler';
 import {
-    IconAmbulance,
-    IconMap,
+    IconCloudPin,
     IconBoxMultiple,
     IconTimeline,
     IconUsers,
@@ -160,6 +157,12 @@ import {
     IconFiles,
     IconMessage,
 } from '@tabler/icons-vue';
+
+withDefaults(defineProps<{
+    compact?: boolean;
+}>(), {
+    compact: false,
+});
 
 const mapStore = useMapStore();
 const router = useRouter();

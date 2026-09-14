@@ -185,10 +185,27 @@ echo "ok - wrote api/.env-${Stack}"
 
 cd $(pwd)/api
 
-ssh "${Stack}-bastion" -t "pg_dump -d ${POSTGRES} > ${Stack}-latest.dump; exit"
-scp "${Stack}-bastion:~/${Stack}-latest.dump" .
-ssh "${Stack}-bastion" -t "rm ${Stack}-latest.dump; exit"
+Dump="${Stack}-latest.dump"
 
-npm run loaddb "${Stack}-latest.dump"
+# Owners & grants reference roles that only exist on the deployed database
+if ! ssh "${Stack}-bastion" -t "pg_dump --no-owner --no-privileges -d ${POSTGRES} > ${Dump}"; then
+    echo "not ok - pg_dump on ${Stack}-bastion failed" >&2
+    exit 1
+fi
+
+scp "${Stack}-bastion:~/${Dump}" .
+ssh "${Stack}-bastion" -t "rm ${Dump}; exit"
+
+if [[ ! -s "$Dump" ]]; then
+    echo "not ok - ${Dump} is missing or empty" >&2
+    exit 1
+fi
+
+if ! npm run loaddb "$Dump"; then
+    echo "not ok - failed to load ${Dump} into tak_ps_etl - the local database was not updated" >&2
+    exit 1
+fi
+
+echo "ok - loaded ${Dump} into tak_ps_etl"
 
 npm run dev -- --env ${Stack}

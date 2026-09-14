@@ -89,7 +89,7 @@
                     </TablerIconButton>
 
                     <TablerIconButton
-                        v-if='cot.is_route'
+                        v-if='cot.is_route || cot.geometry.type === "Point"'
                         :title='isNavigating ? "End Navigation" : "Navigate"'
                         @click='toggleNavigation'
                     >
@@ -151,7 +151,7 @@
                         <TablerIconButton
                             title='Load Breadcrumb'
                         >
-                            <div style='position: relative; display: inline-flex;'>
+                            <div style='position: relative; display: inline-flex; vertical-align: bottom;'>
                                 <IconRoute
                                     :size='actionIconSize'
                                     stroke='1'
@@ -415,23 +415,10 @@
                 style='min-height: 0;'
             >
                 <div class='row g-0'>
-                    <div
+                    <PropertyOrigin
                         v-if='subscription'
-                        class='col-12'
-                    >
-                        <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded cloudtak-accent'>
-                            <IconAmbulance
-                                :size='32'
-                                stroke='1'
-                            />
-                            <span class='ms-2'>From:</span>
-                            <a
-                                class='mx-2 cursor-pointer'
-                                @click='router.push(`/menu/missions/${subscription.meta.guid}`)'
-                                v-text='subscription.meta.name'
-                            />
-                        </div>
-                    </div>
+                        :subscription='subscription'
+                    />
 
                     <div class='pt-2 col-12 px-2'>
                         <!-- Not keyed on the type - a remount would collapse the
@@ -741,6 +728,7 @@ import Coordinate from './util/Coordinate.vue';
 import PropertyProfile from './Property/PropertyProfile.vue';
 import PropertyType from './Property/PropertyType.vue';
 import PropertyMission from './Property/PropertyMission.vue';
+import PropertyOrigin from './Property/PropertyOrigin.vue';
 import Type2525 from '@tak-ps/node-cot/2525';
 
 function isSIDCType(type: string): boolean {
@@ -777,7 +765,6 @@ import {
     IconMessage,
     IconBlockquote,
     IconDotsVertical,
-    IconAmbulance,
     IconPlayerPlay,
     IconShare2,
     IconZoomPan,

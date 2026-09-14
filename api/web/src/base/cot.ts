@@ -1,7 +1,7 @@
 import { v4 as randomUUID } from 'uuid';
 import Type2525 from '@tak-ps/node-cot/2525';
 import { std } from '../std.ts';
-import { db, withDbRetry } from '../database.ts';
+import { db, withDbRetry, isDatabaseSuspended, deferFeaturePersist } from '../database.ts';
 import { liveQuery } from 'dexie';
 import { bbox } from '@turf/bbox'
 import { length } from '@turf/length'
@@ -188,6 +188,8 @@ export default class COT {
         this._properties = feat["properties"] || {};
         this._geometry = feat["geometry"];
 
+        if (this.is_skittle) this._properties.archived = false;
+
         this._remote = !!(opts && opts.remote === true)
         this._liveQuerySubscription = null;
 
@@ -248,6 +250,8 @@ export default class COT {
         update: COTUpdate,
         opts?: {
             skipSave?: boolean;
+            /** Called once the in-memory COT is current, before it is persisted */
+            onApplied?: (visuallyChanged: boolean) => void;
         }
     ): Promise<boolean> {
         update = applyCOTMutations(this.as_feature(), update);
@@ -292,6 +296,8 @@ export default class COT {
                 if (isEqual(this.properties, update.properties)) {
                     delete update.properties
                 } else {
+                    const renderedBefore = renderedIcon(this._properties);
+
                     for (const prop of RENDERED_PROPERTIES) {
                         if (this._properties[prop] !== update.properties[prop]) {
                             visuallyChanged = true;
@@ -299,7 +305,26 @@ export default class COT {
                         }
                     }
 
+                    // Object.assign cannot remove a key - a type change must drop
+                    // the type-derived milicon & icon or they outrank the new type
+                    // in renderedIcon and the old symbol stays on the map
+                    if (update.properties.type && update.properties.type !== this._properties.type) {
+                        delete this._properties.milicon;
+
+                        if (this._properties.icon && !this._properties.icon.includes(':')) {
+                            delete this._properties.icon;
+                        }
+                    }
+
                     Object.assign(this._properties, update.properties);
+
+                    if (this.is_skittle) this._properties.archived = false;
+
+                    // The rendered icon derives from type/milicon which are not
+                    // RENDERED_PROPERTIES themselves
+                    if (renderedIcon(this._properties) !== renderedBefore) {
+                        visuallyChanged = true;
+                    }
                 }
             }
 
@@ -318,13 +343,20 @@ export default class COT {
                 }
             }
 
+            if (opts && opts.onApplied) opts.onApplied(visuallyChanged);
+
             if (this.origin.mode === OriginMode.CONNECTION) {
-                await withDbRetry(() => db.feature.put({
-                    id: this.id,
-                    path: this._path,
-                    properties: this._properties,
-                    geometry: this._geometry
-                }));
+                // Backgrounded on native: keep the in-memory update, persist on resume
+                if (isDatabaseSuspended()) {
+                    deferFeaturePersist(this.id);
+                } else {
+                    await withDbRetry(() => db.feature.put({
+                        id: this.id,
+                        path: this._path,
+                        properties: this._properties,
+                        geometry: this._geometry
+                    }));
+                }
             }
 
             // skipSave: true is passed when applying server state locally
@@ -346,6 +378,7 @@ export default class COT {
         if (
             !this._remote
             && !this.is_self
+            && !this.is_skittle
             && this.properties.archived
             && this.origin.mode === OriginMode.CONNECTION
         ) {

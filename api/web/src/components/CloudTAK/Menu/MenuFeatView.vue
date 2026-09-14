@@ -71,6 +71,7 @@
                     >
                         <CopyField
                             :model-value='htmlDescription'
+                            :display='htmlDisplay'
                             :rows='2'
                             mode='text'
                         />
@@ -120,17 +121,18 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useMapStore } from '../../../stores/map.ts';
 import type { LngLatLike, MapGeoJSONFeature } from 'maplibre-gl';
 import type { Feature } from 'geojson';
 import pointOnFeature from '@turf/point-on-feature';
 import Handlebars from 'handlebars';
-import { server } from '../../../std.ts';
+import { server, getRuntimeToken } from '../../../std.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import Coordinate from '../util/Coordinate.vue';
 import CopyField from '../util/CopyField.vue';
 import { cutOverlayFeature, getFeatureOverlay } from '../util/featureCut.ts';
+import { featureHtmlDescription, proxyHtmlImages } from '../util/proxyImages.ts';
 import {
     TablerIconButton
 } from '@tak-ps/vue-tabler';
@@ -154,6 +156,11 @@ const feature = computed(() => {
 })
 
 const mode = ref('default');
+const token = ref<string | null | undefined>(undefined);
+
+onMounted(async () => {
+    token.value = (await getRuntimeToken()) ?? null;
+});
 
 const overlay = computed(() => getFeatureOverlay(feature.value));
 
@@ -198,17 +205,12 @@ const center = computed(() => {
     return pointOnFeature(feature.value).geometry.coordinates;
 });
 
-const htmlDescription = computed(() => {
-    if (!feature.value || !feature.value.properties?.description) return null;
-    try {
-        const desc = JSON.parse(feature.value.properties.description);
-        if (desc['@type'] === 'html' && desc.value) {
-            return desc.value;
-        }
-    } catch {
-        return null;
-    }
-    return null;
+const htmlDescription = computed(() => featureHtmlDescription(feature.value?.properties));
+
+const htmlDisplay = computed(() => {
+    // Empty until the token is read so images are never requested without it
+    if (token.value === undefined || !htmlDescription.value) return '';
+    return proxyHtmlImages(htmlDescription.value, token.value);
 });
 
 async function cutFeature() {

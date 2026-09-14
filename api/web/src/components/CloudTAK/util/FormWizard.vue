@@ -13,7 +13,7 @@
                     :size='24'
                     stroke='1.5'
                 />
-                Complete Required Forms
+                <span v-text='props.title' />
             </div>
             <div
                 v-if='props.forms.length > 1'
@@ -97,8 +97,9 @@
  * a Core Event, linking each Response to the Event as it goes. Used wherever
  * placing an Event into a Board Column is blocked on required Forms: the
  * board's drag & drop flow and Event nomination from both the board and the
- * map side. Forms already submitted before a Cancel stay submitted - re-opening
- * the wizard resumes with the still missing Forms.
+ * map side, and for completing any Form shared with an Event's Channels from
+ * the Event view. Forms already submitted before a Cancel stay submitted -
+ * re-opening the wizard resumes with the still missing Forms.
  */
 
 import { ref, computed } from 'vue';
@@ -112,14 +113,18 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     /** Core Event each Response is linked to */
     eventId: string;
     /** Shown so the user knows what they are submitting against */
     eventName?: string;
     /** Forms to submit, one wizard step each */
     forms: Array<CoreForm>;
-}>();
+    title?: string;
+}>(), {
+    eventName: undefined,
+    title: 'Complete Required Forms',
+});
 
 const emit = defineEmits<{
     /** Every Form was submitted */

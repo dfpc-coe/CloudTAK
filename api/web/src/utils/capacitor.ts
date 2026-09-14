@@ -1,6 +1,7 @@
 import { Browser } from '@capacitor/browser';
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
+import { stdurl } from '../std.ts';
 
 export function isNativePlatform(): boolean {
     return Capacitor.isNativePlatform();
@@ -99,8 +100,24 @@ export async function whenForegrounded(): Promise<void> {
     });
 }
 
+// Registering any listener disables Capacitor's default raw WebView goBack()
+export async function addBackButtonListener(
+    handler: () => void
+): Promise<() => void> {
+    if (!isNativePlatform()) {
+        return () => { /* no-op */ };
+    }
+
+    const listener = await App.addListener('backButton', handler);
+    return () => { void listener.remove(); };
+}
+
+export async function minimizeApp(): Promise<void> {
+    if (!isNativePlatform()) return;
+    await App.minimizeApp();
+}
+
 export async function openExternalUrl(url: string | URL): Promise<void> {
-    const { stdurl } = await import('../std.ts');
     const href = stdurl(url).toString();
 
     if (isNativePlatform()) {
@@ -112,7 +129,6 @@ export async function openExternalUrl(url: string | URL): Promise<void> {
 }
 
 export async function openSecondaryView(url: string | URL): Promise<void> {
-    const { stdurl } = await import('../std.ts');
     const href = stdurl(url);
 
     if (isNativePlatform()) {
@@ -126,4 +142,25 @@ export async function openSecondaryView(url: string | URL): Promise<void> {
     }
 
     window.open(href.toString(), '_blank', 'noopener');
+}
+
+/**
+ * Subscribe to native background (pause) and foreground (resume)
+ * transitions. Unlike appStateChange these do not fire for transient
+ * inactivity such as Control Center. Returns a no-op remover on web.
+ */
+export async function addAppLifecycleListeners(handlers: {
+    pause?: () => void;
+    resume?: () => void;
+}): Promise<() => void> {
+    if (!isNativePlatform()) return () => { /* no-op */ };
+
+    const listeners = await Promise.all([
+        handlers.pause ? App.addListener('pause', handlers.pause) : undefined,
+        handlers.resume ? App.addListener('resume', handlers.resume) : undefined
+    ]);
+
+    return () => {
+        for (const listener of listeners) void listener?.remove();
+    };
 }

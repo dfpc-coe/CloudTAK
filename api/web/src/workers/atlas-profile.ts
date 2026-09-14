@@ -48,6 +48,7 @@ export default class AtlasProfile {
     profile_loc_freq?: ProfileConfig<'tak_loc_freq'>;
     profile_created?: ProfileConfig<'created'>;
     profile_updated?: ProfileConfig<'updated'>;
+    display_stale?: ProfileConfig<'display_stale'>;
 
     constructor(atlas: Atlas) {
         this.atlas = atlas;
@@ -90,6 +91,7 @@ export default class AtlasProfile {
             profile_loc_freq,
             profile_created,
             profile_updated,
+            display_stale,
             usernameConfig
         ] = await Promise.all([
             ProfileConfig.get('tak_type'),
@@ -102,6 +104,7 @@ export default class AtlasProfile {
             ProfileConfig.get('tak_loc_freq'),
             ProfileConfig.get('created'),
             ProfileConfig.get('updated'),
+            ProfileConfig.get('display_stale'),
             ProfileConfig.get('username')
         ]);
 
@@ -134,6 +137,11 @@ export default class AtlasProfile {
 
         this.profile_updated = profile_updated;
         if (this.profile_updated) this.profile_updated.subscribe();
+
+        // Read on every diff() tick - kept in memory and followed via liveQuery
+        // rather than paying an IndexedDB round-trip per tick
+        this.display_stale = display_stale || new ProfileConfig('display_stale', 'Immediate');
+        this.display_stale.subscribe();
 
         if (usernameConfig) {
             this.username = usernameConfig.value;
@@ -213,6 +221,9 @@ export default class AtlasProfile {
         this.profile_updated?.destroy();
         this.profile_updated = undefined;
 
+        this.display_stale?.destroy();
+        this.display_stale = undefined;
+
         this.username = null;
         this.server = null;
         this.location = {
@@ -221,6 +232,14 @@ export default class AtlasProfile {
             altitude: undefined,
             coordinates: [0, 0]
         };
+    }
+
+    /** Stop the periodic self CoT; setupTimer() restarts it */
+    pauseTimer(): void {
+        if (this.timerSelf) {
+            clearInterval(this.timerSelf);
+            this.timerSelf = undefined;
+        }
     }
 
     setupTimer() {
@@ -470,6 +489,20 @@ export default class AtlasProfile {
             this.atlas.postMessage({
                 type: WorkerMessageType.Profile_Distance_Unit,
                 body: { unit: body.display_distance }
+            });
+        }
+
+        if (body.display_elevation) {
+            this.atlas.postMessage({
+                type: WorkerMessageType.Profile_Elevation_Unit,
+                body: { unit: body.display_elevation }
+            });
+        }
+
+        if (body.display_speed) {
+            this.atlas.postMessage({
+                type: WorkerMessageType.Profile_Speed_Unit,
+                body: { unit: body.display_speed }
             });
         }
 

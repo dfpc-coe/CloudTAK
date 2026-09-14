@@ -77,7 +77,7 @@
                                 class='cursor-pointer col-12 cloudtak-hover rounded d-flex align-items-center px-2'
                                 @click.stop='share = ShareType.MISSION'
                             >
-                                <IconAmbulance
+                                <IconCloudPin
                                     :size='32'
                                     stroke='1'
                                     class='me-2'
@@ -130,7 +130,7 @@ import { useMapStore } from '../../../stores/map.ts';
 import {
     IconPackageExport,
     IconDotsVertical,
-    IconAmbulance,
+    IconCloudPin,
     IconPackages,
     IconTrash,
     IconX,
@@ -165,7 +165,9 @@ async function deleteFeatures() {
     loading.value = true;
 
     for (const id of props.selected.keys()) {
-        await mapStore.worker.db.remove(id);
+        await mapStore.worker.db.remove(id, {
+            mission: true
+        });
     }
 
     props.selected.clear()

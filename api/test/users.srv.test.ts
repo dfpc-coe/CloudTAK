@@ -40,9 +40,11 @@ test('GET: api/user', async () => {
             items: [{
                 active: false,
                 username: 'admin@example.com',
+                name: 'Unknown',
                 last_login: time,
                 created: time,
                 updated: time,
+                disabled: false,
                 system_admin: true,
                 agency_admin: [],
             }],
@@ -50,6 +52,69 @@ test('GET: api/user', async () => {
     } catch (err) {
         assert.ifError(err);
     }
+});
+
+test('GET: api/user?disabled', async () => {
+    await flight.config!.models.Profile.generate({
+        username: 'disabled@example.com',
+        auth: null,
+        last_login: null,
+        disabled: true,
+    });
+
+    const disabled = await flight.fetch('/api/user?disabled=true', {
+        method: 'GET',
+        auth: { bearer: flight.token.admin },
+    }, true);
+
+    assert.equal(disabled.body.total, 1);
+    assert.deepEqual(disabled.body.items.map((i: { username: string }) => i.username), ['disabled@example.com']);
+
+    const enabled = await flight.fetch('/api/user?disabled=false', {
+        method: 'GET',
+        auth: { bearer: flight.token.admin },
+    }, true);
+
+    assert.equal(enabled.body.total, 1);
+    assert.deepEqual(enabled.body.items.map((i: { username: string }) => i.username), ['admin@example.com']);
+
+    const all = await flight.fetch('/api/user', {
+        method: 'GET',
+        auth: { bearer: flight.token.admin },
+    }, true);
+
+    assert.equal(all.body.total, 2);
+
+    const usernames = (res: { body: { items: Array<{ username: string }> } }) => res.body.items.map(i => i.username);
+
+    // A never-logged-in user sorts after real logins when most recent first, and before them when oldest first
+    const recent = await flight.fetch('/api/user?sort=last_login&order=desc', {
+        method: 'GET',
+        auth: { bearer: flight.token.admin },
+    }, true);
+    assert.deepEqual(usernames(recent), ['admin@example.com', 'disabled@example.com']);
+
+    const oldest = await flight.fetch('/api/user?sort=last_login&order=asc', {
+        method: 'GET',
+        auth: { bearer: flight.token.admin },
+    }, true);
+    assert.deepEqual(usernames(oldest), ['disabled@example.com', 'admin@example.com']);
+
+    await flight.config!.models.Profile.commit('disabled@example.com', { name: 'Aaron' });
+
+    const nameAsc = await flight.fetch('/api/user?sort=name&order=asc', {
+        method: 'GET',
+        auth: { bearer: flight.token.admin },
+    }, true);
+    assert.deepEqual(usernames(nameAsc), ['disabled@example.com', 'admin@example.com']);
+
+    const nameDesc = await flight.fetch('/api/user?sort=name&order=desc', {
+        method: 'GET',
+        auth: { bearer: flight.token.admin },
+    }, true);
+    assert.deepEqual(usernames(nameDesc), ['admin@example.com', 'disabled@example.com']);
+
+    await flight.config!.models.Profile.delete('disabled@example.com');
 });
 
 test('PATCH: api/user/admin@example.com', async () => {
@@ -101,6 +166,7 @@ test('PATCH: api/user/admin@example.com', async () => {
             geometry_point_type: 'u-d-p',
             geometry_point_color: '#ff0000',
             geometry_point_icon: '',
+            disabled: false,
             system_admin: true,
             agency_admin: [],
         });
@@ -158,6 +224,7 @@ test('GET: api/user/admin@example.com', async () => {
             geometry_point_type: 'u-d-p',
             geometry_point_color: '#ff0000',
             geometry_point_icon: '',
+            disabled: false,
             system_admin: true,
             agency_admin: [],
         });

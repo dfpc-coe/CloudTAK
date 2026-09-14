@@ -10,7 +10,7 @@ import Auth from '../../common/auth.js';
 import { ProfileFeature } from '../../common/schema.js';
 import { StandardResponse, FeatureResponse, GeoJSONFeatureCollection, GeoJSONFeature } from '../../common/types.js';
 import { ExportFeatureFormat } from '../../common/enums.js';
-import { enabledGeofence } from '../lib/control/feature.js';
+import { enabledGeofence, isUserPuck } from '../lib/control/feature.js';
 import ConnectionEvents, { ConnectionEventDataType, ConnectionEventAction } from '../lib/connection-events.js';
 import { sql } from 'drizzle-orm';
 import * as Default from '../lib/limits.js';
@@ -220,6 +220,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
+
+            if (isUserPuck(req.body.id, req.body.properties)) {
+                throw new Err(400, null, 'User markers cannot be saved as features');
+            }
 
             coordEach(req.body.geometry, (coords) => {
                 if (coords.length === 2) coords.push(0);

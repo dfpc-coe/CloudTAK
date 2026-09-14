@@ -169,6 +169,8 @@ export default class LocalHub implements HubClient {
     }
 
     async coreEventSubmit(event: string): Promise<void> {
+        if (this.config.noconnections) return;
+
         const client = this.config.conns.get(0);
         if (!client || !isCoreEventSubmitter(client.config)) return;
 

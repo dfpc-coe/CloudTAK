@@ -81,9 +81,9 @@ test('GET: api/marti/mission - Sorted List (Oldest => Newest)', async () => {
         assert.equal(res.body.items[2].name, 'Mission C');
     } catch (err) {
         assert.ifError(err);
+    } finally {
+        flight.tak.reset();
     }
-
-    flight.tak.reset();
 });
 
 test('GET: api/marti/mission - Sorted List (Newest => Oldest)', async () => {
@@ -157,9 +157,9 @@ test('GET: api/marti/mission - Sorted List (Newest => Oldest)', async () => {
         assert.equal(res.body.items[2].name, 'Mission A');
     } catch (err) {
         assert.ifError(err);
+    } finally {
+        flight.tak.reset();
     }
-
-    flight.tak.reset();
 });
 
 test('GET: api/marti/mission - Filter Groups', async () => {
@@ -244,9 +244,9 @@ test('GET: api/marti/mission - Filter Groups', async () => {
         assert.equal(res2.body.items[2].name, 'Mission C');
     } catch (err) {
         assert.ifError(err);
+    } finally {
+        flight.tak.reset();
     }
-
-    flight.tak.reset();
 });
 
 test('PATCH: api/marti/missions/:guid - returns refreshed groups after update', async () => {
@@ -344,9 +344,9 @@ test('PATCH: api/marti/missions/:guid - returns refreshed groups after update', 
         assert.deepEqual(res.body.groups, ['updated-group']);
     } catch (err) {
         assert.ifError(err);
+    } finally {
+        flight.tak.reset();
     }
-
-    flight.tak.reset();
 });
 
 flight.landing();

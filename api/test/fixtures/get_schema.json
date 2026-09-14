@@ -134,11 +134,6 @@
         "query": true,
         "res": false
     },
-    "GET /connection/:connectionid/channel": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /connection/:connectionid/data/:dataid/asset": {
         "body": false,
         "query": false,
@@ -939,6 +934,11 @@
         "query": false,
         "res": true
     },
+    "PUT /marti/missions/:guid/cot": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "DELETE /marti/missions/:guid/cot/:uid": {
         "body": false,
         "query": false,
@@ -1433,6 +1433,86 @@
         "body": true,
         "query": false,
         "res": true
+    },
+    "GET /proxy/image": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
+    "GET /scim/v2/ServiceProviderConfig": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /scim/v2/ResourceTypes": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /scim/v2/Schemas": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /scim/v2/Users": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /scim/v2/Users": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /scim/v2/Users/:id": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /scim/v2/Users/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /scim/v2/Users/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /scim/v2/Groups": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /scim/v2/Groups": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /scim/v2/Groups/:id": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /scim/v2/Groups/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /scim/v2/Groups/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /scim/v2/Groups/:id": {
+        "body": false,
+        "query": false,
+        "res": false
+    },
+    "DELETE /scim/v2/Users/:id": {
+        "body": false,
+        "query": false,
+        "res": false
     },
     "GET /scope": {
         "body": false,

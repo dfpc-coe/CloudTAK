@@ -11,6 +11,8 @@ export enum WorkerMessageType {
     Profile_Icon_Rotation = 'cloudtak:profile:icon:rotation',
 
     Profile_Distance_Unit = 'cloudtak:profile:distance:unit',
+    Profile_Elevation_Unit = 'cloudtak:profile:elevation:unit',
+    Profile_Speed_Unit = 'cloudtak:profile:speed:unit',
 
     Profile_Location_Coordinates = 'cloudtak:profile:location:coordinates',
     Profile_Location_Source = 'cloudtak:profile:location:source',
@@ -35,13 +37,32 @@ export enum WorkerMessageType {
 
     Sync_Start = 'cloudtak:sync:start',
     Sync_Complete = 'cloudtak:sync:complete',
+    // Connectivity was restored (device network or TAK socket) - consumers
+    // holding deferred work should retry now
+    Sync_Trigger = 'cloudtak:sync:trigger',
+
+    // Device network status forwarded from the main thread
+    Network_Change = 'cloudtak:network:change',
 
     Iconset_Change = 'cloudtak:iconset:change',
+
+    Tiles_Downloaded = 'cloudtak:tiles:downloaded',
+    Tiles_Removed = 'cloudtak:tiles:removed',
 
     VideoWall_Ping = 'cloudtak:videowall:ping',
     VideoWall_Pong = 'cloudtak:videowall:pong',
     VideoWall_Refresh = 'cloudtak:videowall:refresh',
 }
+
+export type SyncTriggerReason = 'network' | 'connection';
+
+export type SyncTriggerBody = {
+    reason: SyncTriggerReason;
+};
+
+export type NetworkChangeBody = {
+    online: boolean;
+};
 
 export type WorkerMessage = {
     type: WorkerMessageType,

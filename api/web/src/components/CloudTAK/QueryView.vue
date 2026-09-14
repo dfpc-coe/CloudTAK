@@ -2,6 +2,23 @@
     <MenuTemplate name='Query Mode'>
         <template #buttons>
             <TablerIconButton
+                v-if='coords && coords.length >= 2'
+                :title='isNavigating ? "End Navigation" : "Navigate"'
+                @click='toggleNavigation'
+            >
+                <IconNavigationFilled
+                    v-if='isNavigating'
+                    :size='32'
+                    stroke='1'
+                    style='color: #1E90FF;'
+                />
+                <IconNavigation
+                    v-else
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+            <TablerIconButton
                 title='Create Route'
                 @click='openRoute'
             >
@@ -86,10 +103,13 @@
 <script setup lang='ts'>
 import { ref, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useMapStore } from '../../stores/map.ts';
 import type { SearchReverseReverse } from '../../types.ts';
 import {
     IconRefresh,
-    IconRoute
+    IconRoute,
+    IconNavigation,
+    IconNavigationFilled
 } from '@tabler/icons-vue';
 import QueryWeather from './Query/Weather.vue';
 import QuerySun from './Query/Sun.vue';
@@ -105,6 +125,7 @@ import CreateCoreEvent from './util/CreateCoreEvent.vue';
 
 const route = useRoute();
 const router = useRouter();
+const mapStore = useMapStore();
 
 const refreshKey = ref(0);
 const eventModal = ref(false);
@@ -120,6 +141,27 @@ watch(coords, () => {
     reverse.value = null;
     refreshKey.value++;
 });
+
+const isNavigating = computed(() => {
+    const dest = mapStore.navigation.destination;
+    return mapStore.navigation.active
+        && !mapStore.navigation.cotId
+        && !!dest
+        && !!coords.value
+        && dest[0] === coords.value[0]
+        && dest[1] === coords.value[1];
+});
+
+function toggleNavigation() {
+    if (isNavigating.value) {
+        mapStore.stopNavigation();
+    } else if (coords.value && coords.value.length >= 2) {
+        mapStore.navigateTo(
+            [coords.value[0], coords.value[1]],
+            reverse.value ? reverse.value.LongLabel : undefined
+        );
+    }
+}
 
 function openRoute() {
     if (coords.value && coords.value.length >= 2) {

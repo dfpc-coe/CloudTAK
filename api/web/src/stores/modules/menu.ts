@@ -13,7 +13,7 @@ import {
     IconNetwork,
     IconPackages,
     IconSettings,
-    IconAmbulance,
+    IconCloudPin,
     IconServerCog,
     IconBoxMultiple,
     IconFileImport,
@@ -134,7 +134,7 @@ export default class MenuManager {
                 route: '/menu/missions',
                 tooltip: 'Data Sync',
                 description: 'Real-Time Datasets',
-                icon: IconAmbulance,
+                icon: IconCloudPin,
             },
             {
                 key: 'packages',
@@ -178,10 +178,10 @@ export default class MenuManager {
             },
             {
                 key: 'files',
-                label: 'Uploaded Files',
+                label: 'Files',
                 route: '/menu/files',
-                tooltip: 'Your Files',
-                description: 'Browse files you have uploaded',
+                tooltip: 'Files',
+                description: 'Browse your uploaded and offline files',
                 icon: IconFiles,
             },
             {

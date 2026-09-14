@@ -4,7 +4,6 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthResourceAccess, AuthUser } from '../../common/auth.js';
 import Lambda from '../lib/aws/lambda.js';
-import ECR from '../lib/aws/ecr.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
 import LayerDeploy from '../lib/aws/layer-deploy.js';
 import Style, { StyleContainer } from '../../common/style.js';
@@ -591,9 +590,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 await Filter.validate(req.body.filters);
             }
 
+            const capabilities = await layerControl.capabilities(layer.task);
+
             const incoming = await config.models.LayerOutgoing.generate({
                 layer: layer.id,
                 ...req.body,
+                ...(capabilities ? { subscriptions: CommonLayerControl.outgoingSubscriptions(capabilities) } : {}),
             });
 
             layer = await layerControl.from(connection, req.params.layerid);
@@ -791,16 +793,16 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 layer = await layerControl.from(connection, req.params.layerid);
             }
 
-            if (req.body.permissions !== undefined) {
-                const task = req.body.task || layer.task;
-                const match = task.match(/^(.+)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
+            const task = req.body.task || layer.task;
+            const taskChanged = req.body.task !== undefined && req.body.task !== layer.task;
 
-                if (match) {
-                    const capabilities = await ECR.capabilities(match[1], match[2]);
-                    if (capabilities) {
-                        CommonLayerControl.validateManifestPermissions(req.body.permissions, capabilities, task);
-                    }
-                }
+            let capabilities = null;
+            if (req.body.permissions !== undefined || (taskChanged && layer.outgoing)) {
+                capabilities = await layerControl.capabilities(task);
+            }
+
+            if (req.body.permissions !== undefined && capabilities) {
+                CommonLayerControl.validateManifestPermissions(req.body.permissions, capabilities, task);
             }
 
             let changed = false;
@@ -821,6 +823,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 updated: sql`Now()`,
                 ...req.body,
             });
+
+            if (taskChanged && layer.outgoing && capabilities) {
+                await config.models.LayerOutgoing.commit(layer.id, {
+                    updated: sql`Now()`,
+                    subscriptions: CommonLayerControl.outgoingSubscriptions(capabilities),
+                });
+            }
 
             layer = await layerControl.from(connection, req.params.layerid);
 

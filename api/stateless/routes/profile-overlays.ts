@@ -17,6 +17,7 @@ import ConnectionEvents, { ConnectionEventDataType, ConnectionEventAction } from
 import { sql } from 'drizzle-orm';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import * as Default from '../lib/limits.js';
+import { authenticatedProfile } from '../../common/control/profile.js';
 
 // Upstream documents vary in shape: only `tiles` is required. Response validation strips unlisted keys.
 const OverlayTileJSON = Type.Object({
@@ -204,7 +205,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const hasMissionOverlays = overlays.items.some(item => item.mode === 'mission' && item.mode_id);
             let api: TAKAPI | null = null;
             if (hasMissionOverlays) {
-                const profile = await config.models.Profile.from(user.email);
+                const profile = await authenticatedProfile(config, user.email);
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             }
 
@@ -406,7 +407,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             if (req.body.mode === 'mission') {
                 if (!req.body.mode_id) throw new Err(400, null, 'Mode: Mission must have mode_id set');
 
-                const profile = await config.models.Profile.from(user.email);
+                const profile = await authenticatedProfile(config, user.email);
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
                 const sub = await api.Mission.subscribe(req.body.mode_id, {
@@ -477,7 +478,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             await config.models.ProfileOverlay.delete(overlay.id);
 
             if (overlay.mode === 'mission' && overlay.mode_id) {
-                const profile = await config.models.Profile.from(user.email);
+                const profile = await authenticatedProfile(config, user.email);
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
                 try {

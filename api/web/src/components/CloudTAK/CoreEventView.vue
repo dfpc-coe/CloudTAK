@@ -252,6 +252,9 @@
                 <PropertyCoreEventForms
                     :event='event.id'
                     :refresh='formsRefresh'
+                    :channels='event.channels'
+                    :edit='is_editable'
+                    @add='completeForm($event)'
                 />
 
                 <PropertyCoreEventMetadata
@@ -273,6 +276,7 @@
             :event-id='event.id'
             :event-name='event.name'
             :forms='formWizard.forms'
+            :title='formWizard.title'
             @complete='completeFormWizard'
             @close='formWizard = undefined; formsRefresh += 1'
         />
@@ -280,7 +284,8 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
+import { liveQuery } from 'dexie';
 import { useRoute, useRouter } from 'vue-router';
 import {
     TablerNone,
@@ -319,6 +324,7 @@ import PropertyCoreEventTimes from './Property/PropertyCoreEventTimes.vue';
 import FormWizard from './util/FormWizard.vue';
 import type { CoreForm, CoreEvent, CoreEventStyle, CoreEventBoardSummary } from '../../types.ts';
 import { server } from '../../std.ts';
+import { db } from '../../database.ts';
 import { missingRequiredForms } from '../../utils/column-forms.ts';
 import { useMapStore } from '../../stores/map.ts';
 import ProfileConfig from '../../base/profile.ts';
@@ -350,10 +356,15 @@ const error = ref<Error | undefined>();
 // doesn't replace the Event with an error page
 const saveError = ref<Error | undefined>();
 
-/** A nomination held back by required Forms - completed by the FormWizard */
+/**
+ * Forms open in the FormWizard - a nomination held back by required Forms
+ * carries the Column to place the Event in once they are submitted, a Form
+ * picked from the Forms section carries none
+ */
 const formWizard = ref<{
     forms: Array<CoreForm>;
-    column: string;
+    column?: string;
+    title?: string;
 } | undefined>();
 
 /** Bumped when the wizard submits Responses so the Forms section re-fetches */
@@ -426,10 +437,16 @@ onMounted(async () => {
     }
 
     await fetchEvent();
+    watchCot();
+});
+
+onBeforeUnmount(() => {
+    unwatchCot();
 });
 
 watch(eventKey, async () => {
     await fetchEvent();
+    watchCot();
 });
 
 async function fetchEvent(): Promise<void> {
@@ -439,23 +456,69 @@ async function fetchEvent(): Promise<void> {
     error.value = undefined;
 
     try {
-        const res = await server.GET('/api/core/event/{:event}', {
-            params: {
-                path: {
-                    ':event': eventKey.value
-                }
-            }
-        });
-
-        if (res.error) throw new Error(res.error.message);
-
-        // openapi-fetch widens the coordinate 2-tuple the API declares
-        event.value = res.data as CoreEvent;
+        event.value = await loadEvent();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
 
     loading.value = false;
+}
+
+/** Reload server state in place - no loading flash, the current Event stays up on failure */
+async function refreshEvent(): Promise<void> {
+    if (!eventKey.value) return;
+
+    try {
+        event.value = await loadEvent();
+    } catch (err) {
+        console.error('Failed to refresh Core Event', err);
+    }
+}
+
+async function loadEvent(): Promise<CoreEvent> {
+    const res = await server.GET('/api/core/event/{:event}', {
+        params: {
+            path: {
+                ':event': eventKey.value
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    // openapi-fetch widens the coordinate 2-tuple the API declares
+    return res.data as CoreEvent;
+}
+
+/**
+ * The API rebroadcasts the Event CoT when its Board placement changes. The
+ * placement itself is not carried on the CoT, so a new broadcast time on the
+ * locally stored feature is the cue to refetch the Event
+ */
+let cotSubscription: { unsubscribe: () => void } | undefined;
+
+function watchCot(): void {
+    unwatchCot();
+
+    if (embedded.value || !eventKey.value) return;
+
+    const id = eventKey.value;
+    let seeded = false;
+    let lastTime: string | undefined;
+
+    cotSubscription = liveQuery(() => db.feature.get(id)).subscribe((feat) => {
+        const time = feat ? feat.properties.time : undefined;
+
+        if (seeded && time !== lastTime) void refreshEvent();
+
+        seeded = true;
+        lastTime = time;
+    });
+}
+
+function unwatchCot(): void {
+    if (cotSubscription) cotSubscription.unsubscribe();
+    cotSubscription = undefined;
 }
 
 // The PATCH response replaces local state so the view always renders
@@ -536,6 +599,11 @@ async function placeNomination(column: string): Promise<void> {
     await fetchEvent();
 }
 
+/** Complete any Form shared with one of the Event's Channels */
+function completeForm(form: CoreForm): void {
+    formWizard.value = { forms: [form], title: 'Complete Form' };
+}
+
 async function completeFormWizard(): Promise<void> {
     const pending = formWizard.value;
     formWizard.value = undefined;
@@ -543,6 +611,8 @@ async function completeFormWizard(): Promise<void> {
     if (!pending) return;
 
     formsRefresh.value += 1;
+
+    if (!pending.column) return;
 
     try {
         await placeNomination(pending.column);

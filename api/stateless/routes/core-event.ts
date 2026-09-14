@@ -8,6 +8,7 @@ import { CoreEvent, CoreEventChannel } from '../../common/schema.js';
 import { CoreEvent_Priority } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
 import { userChannels } from '../lib/tak-channels.js';
+import { ETLEventAction } from '../../common/etl-events.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
@@ -277,7 +278,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 console.error(`not ok - failed to immediately submit Core Event ${event.id}:`, err);
             });
 
-            res.json(await config.models.CoreEvent.augmented_from(event.id));
+            const created = await config.models.CoreEvent.augmented_from(event.id);
+
+            config.etlEvents.event(ETLEventAction.Create, created).catch((err) => {
+                console.error(`not ok - failed to deliver create ETL Event for Core Event ${created.id}:`, err);
+            });
+
+            res.json(created);
         } catch (err) {
             Err.respond(err, res);
         }
@@ -389,15 +396,21 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
             }
 
+            const updated = await config.models.CoreEvent.augmented_from(req.params.event);
+
             if (Object.keys(body).length > 0 || channels !== undefined) {
                 // Best effort - a failed immediate submit is recovered by the
                 // next scheduled cycle; an ended Event ages out via stale
                 config.hub.coreEventSubmit(req.params.event).catch((err) => {
                     console.error(`not ok - failed to immediately submit Core Event ${req.params.event}:`, err);
                 });
+
+                config.etlEvents.event(ETLEventAction.Update, updated).catch((err) => {
+                    console.error(`not ok - failed to deliver update ETL Event for Core Event ${updated.id}:`, err);
+                });
             }
 
-            res.json(await config.models.CoreEvent.augmented_from(req.params.event));
+            res.json(updated);
         } catch (err) {
             Err.respond(err, res);
         }
@@ -417,13 +430,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const event = await config.models.CoreEvent.from(req.params.event);
+            const event = await config.models.CoreEvent.augmented_from(req.params.event);
 
             if (!user.is_admin() && event.username !== user.email) {
                 throw new Err(403, null, 'Only the Event creator can delete this Event');
             }
 
             await config.models.CoreEvent.delete(req.params.event);
+
+            config.etlEvents.event(ETLEventAction.Delete, event).catch((err) => {
+                console.error(`not ok - failed to deliver delete ETL Event for Core Event ${event.id}:`, err);
+            });
 
             res.json({ status: 200, message: 'Core Event Deleted' });
         } catch (err) {

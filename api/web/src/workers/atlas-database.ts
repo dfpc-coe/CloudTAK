@@ -4,8 +4,8 @@
 */
 
 import { std } from '../std.ts';
-import { db, withDbRetry } from '../database.ts';
-import type { DBSubscriptionChanges } from '../database.ts';
+import { db, withDbRetry, isDatabaseSuspended, deferFeaturePersist, takeDeferredFeatureIds } from '../database.ts';
+import type { DBSubscriptionChanges, DBFeature } from '../database.ts';
 import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
 import type Atlas from './atlas.ts';
@@ -24,7 +24,6 @@ import type {
     Feature as GeoJSONFeature,
     Geometry as GeoJSONGeometry,
 } from 'geojson';
-import ProfileConfig from '../base/profile.ts';
 import * as Comlink from 'comlink';
 import AtlasBreadcrumb from './atlas-breadcrumb.ts';
 
@@ -153,7 +152,7 @@ export default class AtlasDatabase {
         diff.update = [];
         const staleDelete = new Set<string>();
 
-        const display_stale = (await ProfileConfig.get('display_stale'))?.value || 'Immediate';
+        const display_stale = this.displayStale();
 
         for (const cot of this.cots.values()) {
             // The user's own position is drawn by the GeolocateControl puck
@@ -165,16 +164,7 @@ export default class AtlasDatabase {
             if (this.pendingHidden.has(String(cot.id))) {
                 diff.remove.push(cot.vectorId())
                 this.pendingHidden.delete(cot.id);
-            } else if (
-                !['Never'].includes(display_stale)
-                && !cot.properties.archived
-                && (
-                    display_stale === 'Immediate'       && now > stale
-                    || display_stale === '10 Minutes'   && now > stale + 600000
-                    || display_stale === '30 Minutes'   && now > stale + 600000 * 3
-                    || display_stale === '1 Hour'       && now > stale + 600000 * 6
-                )
-            ) {
+            } else if (!cot.properties.archived && AtlasDatabase.staleElapsed(display_stale, stale, now)) {
                 diff.remove.push(cot.vectorId())
                 staleDelete.add(cot.id);
             } else if (!cot.properties.archived) {
@@ -264,6 +254,11 @@ export default class AtlasDatabase {
         return diff;
     }
 
+    /** Current display_stale setting from the in-memory profile cache */
+    displayStale(): string {
+        return String(this.atlas.profile.display_stale?.value || 'Immediate');
+    }
+
     /**
      * Has a CoT's stale time exceeded the user's configured display window
      */
@@ -285,7 +280,7 @@ export default class AtlasDatabase {
      */
     async snapshot(): Promise<Array<GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>>>> {
         const now = +new Date();
-        const display_stale = String((await ProfileConfig.get('display_stale'))?.value || 'Immediate');
+        const display_stale = this.displayStale();
 
         // Queue consumption and the cots iteration happen synchronously
         // (no awaits) so a feature added mid-snapshot can never be dropped
@@ -434,9 +429,44 @@ export default class AtlasDatabase {
      * Return CoTs touching a given polygon
      *
      * @param poly - GeoJSON Polygon to test CoTs against
+     * @param opts.mission - If set, test features from the given Mission GUID instead of the CoT store
      */
-    async touching(poly: Polygon): Promise<Set<COT>> {
+    async touching(
+        poly: Polygon,
+        opts: {
+            mission?: string
+        } = {}
+    ): Promise<Set<COT>> {
         const within: Set<COT> = new Set();
+
+        if (opts.mission) {
+            const sub = await db.subscription.get(opts.mission);
+            if (!sub || !sub.subscribed) return within;
+
+            const feats = await db.subscription_feature
+                .where('mission')
+                .equals(opts.mission)
+                .toArray();
+
+            for (const feat of feats) {
+                const feature: Feature = {
+                    id: feat.id,
+                    type: 'Feature',
+                    path: feat.path,
+                    properties: feat.properties,
+                    geometry: feat.geometry,
+                };
+
+                if (booleanWithin(feature, poly)) {
+                    within.add(await COT.load(feature, {
+                        mode: OriginMode.MISSION,
+                        mode_id: opts.mission
+                    }));
+                }
+            }
+
+            return within;
+        }
 
         for (const cot of this.cots.values()) {
             if (booleanWithin(cot.as_feature(), poly)) {
@@ -532,6 +562,32 @@ export default class AtlasDatabase {
         this.atlas.postMessage({
             type: WorkerMessageType.Feature_Archived_Added,
         });
+    }
+
+    /**
+     * Persist features whose IndexedDB write was skipped while the database
+     * was suspended (app backgrounded on native). Returns the number written.
+     */
+    async flushDeferred(): Promise<number> {
+        const rows: DBFeature[] = [];
+
+        for (const id of takeDeferredFeatureIds()) {
+            const cot = this.cots.get(id);
+            if (!cot || cot.origin.mode !== OriginMode.CONNECTION) continue;
+
+            rows.push({
+                id: cot.id,
+                path: cot.path,
+                properties: cot.properties,
+                geometry: cot.geometry
+            });
+        }
+
+        if (rows.length) {
+            await withDbRetry(() => db.feature.bulkPut(rows));
+        }
+
+        return rows.length;
     }
 
     /**
@@ -839,21 +895,27 @@ export default class AtlasDatabase {
             return exists;
         } else {
             if (exists) {
+                const existing = exists;
                 const geometryMoved = opts.authored === true
                     && !!feat.geometry
-                    && !isEqual(exists.geometry, feat.geometry);
+                    && !isEqual(existing.geometry, feat.geometry);
 
-                const changed = await exists.update({
+                await existing.update({
                     path: feat.path,
                     properties: feat.properties,
                     geometry: feat.geometry
-                }, { skipSave: opts.skipSave })
-
-                // Skip pendingUpdate for a not-yet-flushed pending-create COT
-                // (mutated in place) to avoid a duplicate add+update in one diff.
-                if (changed && !this.pendingCreate.has(exists.id)) {
-                    this.pendingUpdate.set(exists.id, exists);
-                }
+                }, {
+                    skipSave: opts.skipSave,
+                    // Queue the render as soon as memory is current rather than
+                    // after the IndexedDB write, which can lag by seconds after
+                    // a resume. Skip a not-yet-flushed pending-create COT
+                    // (mutated in place) to avoid a duplicate add+update in one diff.
+                    onApplied: (changed) => {
+                        if (changed && !this.pendingCreate.has(existing.id)) {
+                            this.pendingUpdate.set(existing.id, existing);
+                        }
+                    }
+                });
 
                 if (geometryMoved) {
                     await this.syncCoreEventGeometry(exists);
@@ -876,19 +938,8 @@ export default class AtlasDatabase {
             } else {
                 // Don't add already-stale CoTs to the map
                 if (!feat.properties.archived) {
-                    const display_stale = (await ProfileConfig.get('display_stale'))?.value || 'Immediate';
                     const stale = new Date(feat.properties.stale).getTime();
-                    const now = Date.now();
-
-                    if (
-                        !['Never'].includes(display_stale)
-                        && (
-                            display_stale === 'Immediate'       && now > stale
-                            || display_stale === '10 Minutes'   && now > stale + 600000
-                            || display_stale === '30 Minutes'   && now > stale + 600000 * 3
-                            || display_stale === '1 Hour'       && now > stale + 600000 * 6
-                        )
-                    ) {
+                    if (AtlasDatabase.staleElapsed(this.displayStale(), stale, Date.now())) {
                         return;
                     }
                 }
@@ -902,12 +953,17 @@ export default class AtlasDatabase {
 
                 const created = exists;
                 if (opts.skipDatabase !== true) {
-                    await withDbRetry(() => db.feature.put({
-                        id: created.id,
-                        path: created.path,
-                        properties: created.properties,
-                        geometry: created.geometry
-                    }));
+                    // Backgrounded on native: keep it in memory, persist on resume
+                    if (isDatabaseSuspended()) {
+                        deferFeaturePersist(created.id);
+                    } else {
+                        await withDbRetry(() => db.feature.put({
+                            id: created.id,
+                            path: created.path,
+                            properties: created.properties,
+                            geometry: created.geometry
+                        }));
+                    }
                 }
 
                 if (opts.skipBroadcast !== true && exists.properties.archived) {

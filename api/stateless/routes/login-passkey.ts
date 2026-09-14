@@ -13,7 +13,7 @@ import {
     verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
 import type {
-    AuthenticatorTransportFuture,
+    AuthenticatorTransport,
     RegistrationResponseJSON as WebAuthnRegistrationResponseJSON,
     AuthenticationResponseJSON as WebAuthnAuthenticationResponseJSON,
 } from '@simplewebauthn/server';
@@ -163,7 +163,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 attestationType: 'none',
                 excludeCredentials: existingPasskeys.map(p => ({
                     id: p.credential_id,
-                    transports: (p.transports || []) as AuthenticatorTransportFuture[],
+                    transports: (p.transports || []) as AuthenticatorTransport[],
                 })),
                 authenticatorSelection: {
                     residentKey: 'preferred',
@@ -339,7 +339,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                         id: passkey.credential_id,
                         publicKey: Buffer.from(passkey.public_key, 'base64url'),
                         counter: passkey.counter,
-                        transports: (passkey.transports || []) as AuthenticatorTransportFuture[],
+                        transports: (passkey.transports || []) as AuthenticatorTransport[],
                     },
                 });
             } catch (e) {
@@ -356,6 +356,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             );
 
             const profile = await config.models.Profile.from(passkey.username);
+
+            if (profile.disabled) throw new Err(403, null, 'User is disabled - Contact your administrator');
 
             let access = AuthUserAccess.USER;
             if (profile.system_admin) {
@@ -383,8 +385,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             // A passkey login has no password so the certificate cannot be regenerated here,
             // instead the client is told to collect a password and call POST /login
-            let certRenewalRequired = Provider.certificateRenewalRequired(profile.auth.cert);
-            let certExpired = Provider.certificateExpired(profile.auth.cert);
+            let certRenewalRequired = Provider.certificateRenewalRequired(profile.auth?.cert);
+            let certExpired = Provider.certificateExpired(profile.auth?.cert);
 
             if (!certRenewalRequired && config.server.auth.key && config.server.auth.cert) {
                 try {

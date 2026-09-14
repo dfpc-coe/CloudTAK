@@ -9,6 +9,7 @@ import stream2buffer from '../stateless/lib/stream.js';
 import crypto from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import fs from 'node:fs';
+import withFileLock from './lock.js';
 
 /**
  * Mocking Framework for CloudTAK <=> TAK Server API Interactions
@@ -92,20 +93,29 @@ export default class MockTAKServer {
         // Generating the CA is comparatively expensive so reuse an existing one,
         // regenerating weekly to stay well clear of certificate expiry
         const maxCAAgeMs = 7 * 24 * 60 * 60 * 1000;
-        if (
-            !fs.existsSync(this.keys.cert)
+        const stale = () => !fs.existsSync(this.keys.cert)
             || !fs.existsSync(this.keys.key)
-            || (Date.now() - fs.statSync(this.keys.cert).mtimeMs) > maxCAAgeMs
-        ) {
-            CP.execSync(`openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 365 -subj '/CN=localhost' -keyout ${this.keys.key} -out ${this.keys.cert} 2> /dev/null`);
-        }
+            || (Date.now() - fs.statSync(this.keys.cert).mtimeMs) > maxCAAgeMs;
+
+        // Parallel test workers share the CA - regenerate and read it under
+        // a lock so every worker ends up trusting the same certificate
+        const ca = withFileLock('certs', () => {
+            if (stale()) {
+                CP.execSync(`openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 365 -subj '/CN=localhost' -keyout ${this.keys.key} -out ${this.keys.cert} 2> /dev/null`);
+            }
+
+            return {
+                cert: fs.readFileSync(this.keys.cert),
+                key: fs.readFileSync(this.keys.key),
+            };
+        });
 
         this.streaming = tls.createServer({
-            cert: fs.readFileSync(this.keys.cert),
-            key: fs.readFileSync(this.keys.key),
+            cert: ca.cert,
+            key: ca.key,
             requestCert: true,
             rejectUnauthorized: true,
-            ca: fs.readFileSync(this.keys.cert),
+            ca: ca.cert,
         }, (socket) => {
             this.sockets.add(socket);
             this.streamingSockets.add(socket);

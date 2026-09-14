@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import Flight from './flight.js';
+import { readFileSync } from 'node:fs';
+import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 
 const flight = new Flight();
 
@@ -27,6 +29,29 @@ function assertBoundsIn4326(bounds: Array<number>): void {
 flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
+
+const originalDispatcher = getGlobalDispatcher();
+
+test('Mock ArcGIS ImageServer Metadata', () => {
+    const agent = new MockAgent();
+    agent.enableNetConnect();
+    setGlobalDispatcher(agent);
+
+    for (const [url, fixture] of [
+        [ARCGIS_IMAGERY_URL, 'arcgis-imageserver-usgs-naip.json'],
+        [JEFFERSON_COUNTY_IMAGERY_URL, 'arcgis-imageserver-jefferson-2020-ortho.json'],
+    ]) {
+        const { origin, pathname } = new URL(url);
+        const body = readFileSync(new URL(`./fixtures/${fixture}`, import.meta.url), 'utf8');
+
+        agent.get(origin).intercept({
+            path: path => path.split('?')[0] === pathname,
+            method: 'GET',
+        }).reply(200, body, {
+            headers: { 'content-type': 'application/json' },
+        }).persist();
+    }
+});
 
 test('POST: api/basemap - ArcGIS Imagery Source', async () => {
     try {
@@ -181,5 +206,9 @@ for (const { label, z, x, y } of SAMPLE_TILES) {
         }
     });
 }
+
+test('Restore Dispatcher', () => {
+    setGlobalDispatcher(originalDispatcher);
+});
 
 flight.landing();

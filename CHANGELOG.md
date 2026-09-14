@@ -17,6 +17,136 @@
 
 ### Pending Release
 
+### v13.87.2 - 2026-09-14
+
+- :rocket: Show `read-only` state in the CoTView UI if the CoT is part of a READONLY mission
+- :rocket: Performance improvements to Maplibre CoT Rendering pipeline
+
+### v13.87.1 - 2026-09-14
+
+- :bug: Clear our user pucks from the ProfileFeature database
+- :rocket: Stronger protections to ensure user pucks can't be saved to the ProfileFeature store on the backend and UI
+- :rocket: Performance improvements to CoT rendering pipeline by caching Display Stale Time
+
+### v13.87.0 - 2026-09-13
+
+- :rocket: Switch to temporary MapLibre fork that supports refreshing workers for iOS background=>foreground transitions
+- :tada: Introduce new Data Sync feature PUT API
+- :tada: Add `GET /api/proxy/image` to stream remote images from any SSRF-safe public origin & route remote images in the Feature sidebar through it so they are permitted by the CSP
+
+### v13.86.1 - 2026-09-12
+
+- :bug: Stop recreating the iOS WebView after a long background - the WebKit networking-process crash it targeted recovers in place, and every swap leaked the previous WebView (still connected, still writing to IndexedDB) through Capacitor plugin retain cycles
+- :bug: Declare the `remote-notification` background mode on iOS so silent pushes reach the app in the background
+
+### v13.86.0 - 2026-09-12
+
+- :rocket: Redesign the Outgoing Sinks model as `ETLEvents` - streaming CoT Features are now delivered as typed `feature` messages
+- :tada: Deliver `event:create`, `event:update` & `event:delete` ETL Events for Core Event changes to subscribed Outgoing Layers whose Connection shares a Channel with the Event
+- :rocket: Rename the `--no-sinks` CLI flag to `--no-etl-events`
+- :tada: Deliver `board:*`, `board:column:*` & `board:event:*` ETL Events for Board, Column & Event placement changes to subscribed Outgoing Layers whose Connection has the Board's Channel active
+
+### v13.85.0 - 2026-09-11
+
+- :bug: Keep the map usable after a background to foreground transition on mobile - iOS kills the WebView storage process while backgrounded and any IndexedDB request in flight wedged the page for good, stalling boot at "Initializing worker" even after a reload
+- :rocket: Suspend IndexedDB on both threads while backgrounded, pause the refresh & self CoT timers, keep features arriving over the WebSocket in memory & persist them on resume with a mission resync
+- :rocket: Hand the Atlas worker its server URL over `Worker.name` so module evaluation never touches storage & drop the IndexedDB mirror of the URL from boot
+- :rocket: Bound every boot stage & probe storage in the worker so a storage wedge surfaces in seconds, reloading once per background on a stall
+- :rocket: On foreground after 30s load the app into a fresh WKWebView with its own WKProcessPool instead of reloading in place; Android reloads & recreates the WebView on a lost render process
+- :rocket: Remove the in-place resume recovery whose storage probe & reopen were themselves in-flight requests at the worst moment
+- :tada: Enable Safari Web Inspector for the iOS app on TestFlight builds
+- :rocket: Adopt the UIKit scene-based life cycle on iOS (required to launch when built with the iOS 27 SDK)
+
+### v13.84.2 - 2026-09-11
+
+- :bug: Take status bar height into account when routing component is shown
+
+### v13.84.1 - 2026-09-11
+
+- :rocket: On mobile present a unified top bar
+- :bug: Ensure long mission names don't cause overlap over the notification bell
+- :bug: Ensure GPS Component doesn't infinitely expand based on callsign name by truncating long callsigns
+- :rocket: Change Data Sync icon based on COTAK user feedback
+
+### v13.84.0 - 2026-09-11
+
+- :tada: Add incoming SCIM 2.0 user provisioning at `/api/scim/v2` - an Identity Provider can list, create, update, deactivate & deprovision CloudTAK users with the `userName`, `name`, `displayName` & `active` attributes
+- :tada: Accept SCIM 2.0 Groups at `/api/scim/v2/Groups` so Identity Providers that always sync groups (authentik) complete without errors - Groups are not stored, the id encodes the group name
+- :tada: Add a SCIM User Provisioning section to the Admin Config page to enable SCIM and set the Bearer Token an Identity Provider must present (`scim::enabled`, `scim::token`)
+- :rocket: Add a `disabled` flag to Profiles - a deprovisioned user has their sessions revoked and cannot log in via password, passkey or API token until reactivated
+- :rocket: `Profile.auth` is now nullable - a `null` auth marks a user that was provisioned (SCIM) but has never logged in, the TAK certificate is issued on their first password login
+
+### v13.83.1 - 2026-09-10
+
+- :rocket: Add `parent` field to profile overlay for overlay hierarchy and inheritance
+
+### v13.83.0 - 2026-09-10
+
+- :tada: Add a standalone Forms page (`/forms`) for creating, editing & deleting the Core Forms used by Events and Boards, reachable from the Application Switcher
+- :rocket: Wrap the Advanced section of the Error popup in the Copy field so long error bodies wrap and can be copied for debugging
+- :tada: Complete any Form shared with one of an Event's Channels from the Forms section of the Event view - the Response is linked to the Event
+- :rocket: Rebroadcast the Event CoT when an Event is nominated to, moved between or removed from Board Columns - the Map Event view refetches the Event on the new broadcast so its Column status stays current
+
+### v13.82.0 - 2026-09-09
+
+- :arrow_up: Update `@tak-ps/etl` to v10.17.0 for the `group` permission
+- :arrow_up: Update `@simplewebauthn/server` to v14 - adds ML-DSA passkey algorithms, existing passkeys are unaffected
+- :tada: Add the `group:read` & `group:update` permissions - Connection & Layer tokens must hold them to list & update channels via `/api/marti/group`
+- :rocket: Remove `GET /api/connection/:connectionid/channel` in favour of `GET /api/marti/group` - Connection & Layer tokens infer the Connection from the token, User tokens may pass `?connection=<id>` (`0` for the server certificate)
+
+### v13.81.1 - 2026-09-09
+
+- :bug: Ensure Draw Tools is shown instead of GPS component
+
+### v13.81.0 - 2026-09-09
+
+- :tada: Populate Outgoing Layer `subscriptions` from the task Capabilities manifest when a Layer or Outgoing config is created and when the task version changes
+- :tada: Show read-only Outgoing subscriptions in the Layer Outgoing Config panel and only offer Exclusion Filters when a `feature` type is subscribed
+- :bug: `api/context` now exits with an error when the dump or database load fails instead of starting the dev server on a stale database
+
+### v13.80.0 - 2026-09-09
+
+- :rocket: Update WarnConfiguration component to also ensure base permissions are assigned and be compliant with Google Play store requirements
+
+### v13.79.3 - 2026-09-08
+
+- :bug: Fix white text in light theme
+
+### v13.79.2 - 2026-09-08
+
+- :arrow_up: Update BackgroundGeolocation
+
+### v13.79.1 - 2026-09-07
+
+- :bug: More resilient location reporting after background resume on iOS
+
+### v13.79.0 - 2026-09-07
+
+- :tada: Prelim offline file support
+- :tada: Navigation now supports Point features - the `Navigate` button appears on Point CoTs and the routing control draws a straight line from the user's location to the destination, updated as the location changes. The `Reverse Direction` control is hidden in point mode
+- :tada: Add `Navigate` buttons to `FeatView` (Overlay/Basemap features) and `QueryView` (Query Mode coordinates) for straight-line navigation to non-CoT locations
+
+### v13.78.2 - 2026-09-03
+
+- :white_check_mark: Increase Test Speed
+- :rocket: Add App icon
+- :tada: Allow Lasso Select to choose a Data Sync in the Layer Selection dropdown and select its features
+
+### v13.78.1 - 2026-09-03
+
+- :bug: Fix CoT w/ Attachment sharing to Data Sync
+- :bug: Map Icon didn't reflect CoT 2525E type if a new type was selected
+- :bug: UI tweaks to attachment pane
+
+### v13.78.0 - 2026-09-02
+
+- :tada: Migrate the CloudTAK video player to video.js with WebRTC (WHEP) playback via media-infra as the default for RTSP/RTMP/SRT leases, falling back to HLS. Proxied HLS sources retain HLS as their default
+- :rocket: Populate read/write credentials in the WebRTC protocol URL of a lease, consistent with HLS
+- :bug: Pause HLS playback while the buffering overlay is shown instead of letting it run the buffer dry, and leave user initiated pauses alone
+- :rocket: Detect stalled WebRTC streams via the decoded frame counter & track mute state, falling back to HLS immediately when WebRTC never connects
+- :rocket: `API` Return the lease `proxy` source from `/api/video/active` so the player can choose the correct default protocol
+- :bug: Always show the Read/Publish selector in the Video Lease modal - SRT URLs differ by mode even when read/write security is disabled
+
 ### v13.77.1 - 2026-08-31
 
 - :tada: Introduce fully native background location reporting

@@ -36,6 +36,7 @@ const ENTRY_HTML_TO_PATH = {
     'docs.html': '/docs',
     'video.html': '/video',
     'board.html': '/board',
+    'forms.html': '/forms',
 };
 
 /**

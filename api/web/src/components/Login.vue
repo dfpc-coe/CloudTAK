@@ -723,14 +723,14 @@ function navigateAfterLogin() {
         })();
 
         if (resolved.matched.length > 0) {
-            router.push(redirectPath);
+            router.replace(redirectPath);
         } else if (isSafeRedirect) {
             window.location.href = redirectPath;
         } else {
-            router.push("/");
+            router.replace("/");
         }
     } else {
-        router.push("/");
+        router.replace("/");
     }
 }
 

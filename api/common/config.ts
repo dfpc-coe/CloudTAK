@@ -7,6 +7,7 @@ import { type InferSelectModel } from 'drizzle-orm';
 import Models from './models.js';
 import process from 'node:process';
 import * as pgtypes from './schema.js';
+import ETLEvents from './etl-events.js';
 
 export type ServerMode = 'both' | 'api' | 'hub';
 
@@ -16,7 +17,7 @@ export interface ConfigArgs {
     silent: boolean;
     postgres: string;
     noevents: boolean;
-    nosinks: boolean;
+    noetlevents: boolean;
     nogeofence?: boolean;
     noconnections?: boolean;
     nocache: boolean;
@@ -27,7 +28,7 @@ export interface ConfigArgs {
 export interface ConfigInit {
     silent: boolean;
     noevents: boolean;
-    nosinks: boolean;
+    noetlevents: boolean;
     nogeofence: boolean;
     noconnections: boolean;
     nocache: boolean;
@@ -62,7 +63,7 @@ let envInitOnce = false;
 export default class Config {
     silent: boolean;
     noevents: boolean;
-    nosinks: boolean;
+    noetlevents: boolean;
     nogeofence: boolean;
     noconnections: boolean;
     nocache: boolean;
@@ -77,11 +78,12 @@ export default class Config {
     server: InferSelectModel<typeof Server>;
     mode: ServerMode;
     arnPrefix?: string;
+    etlEvents: ETLEvents;
 
     constructor(init: ConfigInit) {
         this.silent = init.silent;
         this.noevents = init.noevents;
-        this.nosinks = init.nosinks;
+        this.noetlevents = init.noetlevents;
         this.nogeofence = init.nogeofence;
         this.noconnections = init.noconnections;
         this.nocache = init.nocache;
@@ -95,6 +97,7 @@ export default class Config {
         this.Bucket = init.Bucket;
         this.server = init.server;
         this.mode = init.mode;
+        this.etlEvents = new ETLEvents(this);
     }
 
     serverCert(): {
@@ -219,7 +222,7 @@ export default class Config {
         return {
             silent: (args.silent || false),
             noevents: (args.noevents || false),
-            nosinks: (args.nosinks || false),
+            noetlevents: (args.noetlevents || false),
             nogeofence: (args.nogeofence || false),
             noconnections: (args.noconnections || false),
             nocache: (args.nocache || false),

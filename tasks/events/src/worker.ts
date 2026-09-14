@@ -102,10 +102,6 @@ export default class Worker extends EventEmitter {
             return await this.processFile(local);
         }
 
-        // We disable cleanup in the parser just in case we choose to
-        // treat it as a single file upload above
-        fs.unlinkSync(local.raw);
-
         const s3 = s3client();
 
         const cots = await pkg.cots();
@@ -162,6 +158,39 @@ export default class Worker extends EventEmitter {
 
         const files = Array.from(await pkg.files());
         const indexes = [];
+        const isRootGeodatabase = files.some(file => file === 'gdb')
+            && files.some(file => !file.includes('/') && path.extname(file).toLowerCase() === '.gdbtable');
+        const geodatabaseRoots = new Set<string>();
+        for (const file of files) {
+            const parts = file.split('/');
+            const rootIndex = parts.findIndex(part => path.extname(part).toLowerCase() === '.gdb');
+            if (rootIndex !== -1) geodatabaseRoots.add(parts.slice(0, rootIndex + 1).join('/'));
+        }
+
+        if (isRootGeodatabase) {
+            const geodatabaseName = `${path.parse(local.name).name}.gdb`;
+            const geodatabasePath = path.resolve(pkg.path, geodatabaseName);
+            fs.symlinkSync(path.resolve(pkg.path, './raw/'), geodatabasePath, 'dir');
+
+            await this.processFile(local, {
+                id: randomUUID(),
+                tmpdir: pkg.path,
+                ext: '.gdb',
+                name: geodatabaseName,
+                raw: geodatabasePath,
+            });
+        }
+
+        for (const root of geodatabaseRoots) {
+            await this.processFile(local, {
+                id: randomUUID(),
+                tmpdir: pkg.path,
+                ext: '.gdb',
+                name: path.basename(root),
+                raw: path.resolve(pkg.path, './raw/', root),
+            });
+        }
+
         const shapefileBases = new Set(
             files
                 .filter(file => path.parse(file).ext.toLowerCase() === '.shp')
@@ -172,6 +201,9 @@ export default class Worker extends EventEmitter {
         );
 
         for (const file of files) {
+            if (isRootGeodatabase) continue;
+            if (Array.from(geodatabaseRoots).some(root => file === root || file.startsWith(`${root}/`))) continue;
+
             const { dir, ext, base, name } = path.parse(file);
             const extLower = ext.toLowerCase();
             const fileBase = dir ? path.join(dir, name) : name;
@@ -205,6 +237,9 @@ export default class Worker extends EventEmitter {
             }
         }
 
+        // We disable parser cleanup until now so a .gdb conversion can retain
+        // the original archive as its source profile asset.
+        fs.unlinkSync(local.raw);
         await pkg.destroy();
     }
 
@@ -215,6 +250,7 @@ export default class Worker extends EventEmitter {
      */
     async processFile(
         local: LocalMessage,
+        transformLocal: LocalMessage = local,
     ): Promise<void> {
         if (local.ext.toLowerCase() === '.xml') {
             try {
@@ -273,7 +309,7 @@ export default class Worker extends EventEmitter {
 
         const transformer = new DataTransform(
             this.msg,
-            local,
+            transformLocal,
             asset,
         );
 

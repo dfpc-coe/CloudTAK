@@ -9,6 +9,7 @@ const pkg_api = JSON.parse(String(await fs.readFile(new URL('../api/package.json
 const pkg_web = JSON.parse(String(await fs.readFile(new URL('../api/web/package.json', import.meta.url))));
 const capacitor = JSON.parse(String(await fs.readFile(new URL('../capacitor.config.json', import.meta.url))));
 const xcodeproj = String(await fs.readFile(new URL('../ios/App/App.xcodeproj/project.pbxproj', import.meta.url)));
+const gradle = String(await fs.readFile(new URL('../android/app/build.gradle', import.meta.url)));
 
 console.error('ok version - ' + pkg_root.version);
 
@@ -16,11 +17,15 @@ pkg_api.version = pkg_root.version;
 pkg_web.version = pkg_root.version;
 capacitor.plugins.CapacitorUpdater.version = pkg_root.version;
 
+const [major, minor, patch] = pkg_root.version.split('.').map(Number);
+const versionCode = major * 1000000 + minor * 1000 + patch;
+
 const updated = [
     new URL('../api/package.json', import.meta.url),
     new URL('../api/web/package.json', import.meta.url),
     new URL('../capacitor.config.json', import.meta.url),
-    new URL('../ios/App/App.xcodeproj/project.pbxproj', import.meta.url)
+    new URL('../ios/App/App.xcodeproj/project.pbxproj', import.meta.url),
+    new URL('../android/app/build.gradle', import.meta.url)
 ];
 
 await fs.writeFile(updated[0], JSON.stringify(pkg_api, null, 4));
@@ -30,6 +35,10 @@ await fs.writeFile(updated[3], xcodeproj.replace(
     /MARKETING_VERSION = [^;]+;/g,
     `MARKETING_VERSION = ${pkg_root.version};`
 ));
+await fs.writeFile(updated[4], gradle
+    .replace(/versionCode \d+/, `versionCode ${versionCode}`)
+    .replace(/versionName "[^"]*"/, `versionName "${pkg_root.version}"`)
+);
 
 console.error('ok saved');
 

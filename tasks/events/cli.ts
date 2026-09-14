@@ -195,8 +195,18 @@ async function main(): Promise<void> {
 
     const inputPath = path.resolve(process.cwd(), input);
 
-    if (!fs.existsSync(inputPath) || !fs.statSync(inputPath).isFile()) {
+    if (!fs.existsSync(inputPath)) {
         console.error(`Error: File not found: '${inputPath}'`);
+        process.exit(1);
+    }
+
+    if (fs.statSync(inputPath).isDirectory() && path.extname(inputPath).toLowerCase() === '.gdb') {
+        console.error('Error: File geodatabases are folders. Compress the entire .gdb folder into a ZIP file before uploading.');
+        process.exit(1);
+    }
+
+    if (!fs.statSync(inputPath).isFile()) {
+        console.error(`Error: Input is not a file: '${inputPath}'`);
         process.exit(1);
     }
 

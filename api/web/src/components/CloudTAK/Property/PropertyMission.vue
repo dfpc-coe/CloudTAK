@@ -5,7 +5,7 @@
             :title='name'
             @click='router.push(`/menu/missions/${props.guid}`)'
         >
-            <IconAmbulance
+            <IconCloudPin
                 :size='20'
                 stroke='1'
                 class='flex-shrink-0'
@@ -34,7 +34,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { TablerButton, TablerIconButton } from '@tak-ps/vue-tabler';
-import { IconAmbulance, IconTrash } from '@tabler/icons-vue';
+import { IconCloudPin, IconTrash } from '@tabler/icons-vue';
 import Subscription from '../../../base/subscription.ts';
 
 const props = defineProps<{

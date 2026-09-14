@@ -331,41 +331,24 @@ async function setBasemap(basemap: Basemap) {
     });
 
     if (hasBasemap) {
-        for (let i = 0; i < overlays.length; i++) {
-            const overlay = overlays[i];
+        for (const overlay of overlays) {
+            if (overlay.mode !== 'basemap') continue;
 
-            if (overlay.mode === 'basemap') {
-                if (overlays[i + 1]) {
-                    await overlay.replace({
-                        name: basemap.name,
-                        type: basemap.type,
-                        opacity: 1,
-                        visible: true,
-                        url: `/api/basemap/${basemap.id}/tiles`,
-                        mode: 'basemap',
-                        mode_id: String(basemap.id),
-                        styles: basemap.styles as Array<LayerSpecification>
-                    }, {
-                        before: overlays[i + 1].styles[0].id
-                    });
-                } else {
-                    await overlay.replace({
-                        name: basemap.name,
-                        type: basemap.type,
-                        opacity: 1,
-                        visible: true,
-                        url: `/api/basemap/${basemap.id}/tiles`,
-                        mode: 'basemap',
-                        mode_id: String(basemap.id),
-                        styles: basemap.styles as Array<LayerSpecification>
-                    });
-                }
-                break;
-            }
+            await overlay.replace({
+                name: basemap.name,
+                type: basemap.type,
+                opacity: 1,
+                visible: true,
+                url: `/api/basemap/${basemap.id}/tiles`,
+                mode: 'basemap',
+                mode_id: String(basemap.id),
+                styles: basemap.styles as Array<LayerSpecification>
+            }, {
+                before: OverlayManager.loadedBeforeOverlay(overlay)
+            });
+            break;
         }
     } else {
-        const before = String(overlays[0].styles[0].id);
-
         await OverlayManager.createLoaded({
             name: basemap.name,
             pos: -1,
@@ -377,7 +360,7 @@ async function setBasemap(basemap: Basemap) {
             mode: 'basemap',
             mode_id: String(basemap.id),
             styles: basemap.styles
-        }, { before, position: 'prepend' });
+        }, { before: OverlayManager.loadedAnchorFrom(0), position: 'prepend' });
     }
 }
 

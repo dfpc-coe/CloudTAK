@@ -836,10 +836,8 @@ test('POST: api/connection/1/layer - with incoming & outgoing config', async () 
 
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             if (command instanceof BatchGetImageCommand) {
-                assert.deepEqual(command.input, {
-                    repositoryName: process.env.ECR_TASKS_REPOSITORY_NAME,
-                    imageIds: [{ imageTag: 'etl-test-v1.0.0' }],
-                });
+                assert.equal(command.input.repositoryName, process.env.ECR_TASKS_REPOSITORY_NAME);
+                assert.deepEqual(command.input.imageIds, [{ imageTag: 'etl-test-v1.0.0' }]);
 
                 return Promise.resolve({
                     images: [{
@@ -887,11 +885,158 @@ test('POST: api/connection/1/layer - with incoming & outgoing config', async () 
         assert.equal(res.body.incoming.webhooks, true);
 
         assert.ok(res.body.outgoing, 'has outgoing config');
+        assert.deepEqual(res.body.outgoing.subscriptions, []);
     } catch (err) {
         assert.ifError(err);
     } finally {
         if (layerId !== undefined) {
             await flight.config!.models.LayerIncoming.delete(layerId);
+            await flight.config!.models.LayerOutgoing.delete(layerId);
+            await flight.config!.models.Layer.delete(layerId);
+        }
+
+        Sinon.restore();
+    }
+});
+
+test('Outgoing subscriptions follow the task manifest on create & version update', async () => {
+    const manifest = (capabilities: object) => JSON.stringify({
+        schemaVersion: 2,
+        mediaType: 'application/vnd.oci.image.manifest.v1+json',
+        annotations: {
+            'com.cloudtak.capabilities': JSON.stringify(capabilities),
+        },
+    });
+
+    const base = {
+        version: '1.0',
+        name: 'Test Task',
+        description: 'A Task used in testing',
+        compute: { memory: 256, timeout: 30 },
+        permissions: [],
+    };
+
+    const manifests: Record<string, string> = {
+        'etl-test-v1.0.0': manifest({
+            ...base,
+            invocations: {
+                outgoing: {
+                    types: [
+                        { resource: 'feature:*', description: 'Streaming CoT' },
+                        { resource: 'event:create', description: 'New Events' },
+                    ],
+                },
+            },
+        }),
+        'etl-test-v1.1.0': manifest({
+            ...base,
+            invocations: {
+                outgoing: {
+                    types: [
+                        { resource: 'event:*', description: 'All Events' },
+                    ],
+                },
+            },
+        }),
+        'etl-test-v1.2.0': manifest({
+            ...base,
+            invocations: {},
+        }),
+    };
+
+    let layerId: number | undefined;
+
+    try {
+        Sinon.stub(CloudFormationClient.prototype, 'send').callsFake((command) => {
+            if (command instanceof DescribeStacksCommand) {
+                return Promise.resolve({ Stacks: [{ StackStatus: 'CREATE_COMPLETE' }] });
+            } else if (command instanceof CreateStackCommand) {
+                return Promise.resolve({});
+            } else {
+                throw new Error('Unexpected command');
+            }
+        });
+
+        Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
+            if (!(command instanceof BatchGetImageCommand)) throw new Error('Unexpected command');
+
+            const tag = command.input.imageIds![0].imageTag!;
+            if (!manifests[tag]) throw new Error(`Unexpected tag: ${tag}`);
+
+            return Promise.resolve({
+                images: [{
+                    imageId: { imageTag: tag, imageDigest: 'sha256:abcdef1234567890' },
+                    imageManifest: manifests[tag],
+                }],
+            });
+        });
+
+        const created = await flight.fetch('/api/connection/1/layer', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Subscriptions Layer',
+                description: 'Outgoing subscriptions are derived from the manifest',
+                task: 'etl-test-v1.0.0',
+                outgoing: {},
+            },
+        }, true);
+
+        layerId = created.body.id;
+
+        assert.deepEqual(created.body.outgoing.subscriptions, ['feature:*', 'event:create']);
+
+        // An update that leaves the task alone leaves subscriptions alone
+        const renamed = await flight.fetch(`/api/connection/1/layer/${layerId}`, {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { name: 'Renamed Subscriptions Layer' },
+        }, true);
+
+        assert.deepEqual(renamed.body.outgoing.subscriptions, ['feature:*', 'event:create']);
+
+        // A version bump replaces subscriptions with the new manifest's types
+        const bumped = await flight.fetch(`/api/connection/1/layer/${layerId}`, {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { task: 'etl-test-v1.1.0' },
+        }, true);
+
+        assert.equal(bumped.body.task, 'etl-test-v1.1.0');
+        assert.deepEqual(bumped.body.outgoing.subscriptions, ['event:*']);
+
+        // A version that no longer declares outgoing types clears subscriptions
+        const dropped = await flight.fetch(`/api/connection/1/layer/${layerId}`, {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { task: 'etl-test-v1.2.0' },
+        }, true);
+
+        assert.deepEqual(dropped.body.outgoing.subscriptions, []);
+
+        // Re-creating the outgoing config on an existing layer derives them again
+        await flight.fetch(`/api/connection/1/layer/${layerId}/outgoing`, {
+            method: 'DELETE',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        await flight.fetch(`/api/connection/1/layer/${layerId}`, {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { task: 'etl-test-v1.0.0' },
+        }, true);
+
+        const recreated = await flight.fetch(`/api/connection/1/layer/${layerId}/outgoing`, {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {},
+        }, true);
+
+        assert.deepEqual(recreated.body.subscriptions, ['feature:*', 'event:create']);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        if (layerId !== undefined) {
             await flight.config!.models.LayerOutgoing.delete(layerId);
             await flight.config!.models.Layer.delete(layerId);
         }

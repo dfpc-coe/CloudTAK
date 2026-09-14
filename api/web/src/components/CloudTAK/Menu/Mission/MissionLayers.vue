@@ -59,49 +59,80 @@
                     :err='error'
                 />
 
-                <div class='px-2 py-2'>
-                    <PathBreadcrumb
-                        :segments='crumbNames'
-                        :droppable='writable'
-                        @navigate='navigateToDepth'
-                        @segment-drop='onBreadcrumbDrop'
+                <div class='px-2 pt-2'>
+                    <TablerInput
+                        v-model='featureSearch'
+                        icon='search'
+                        placeholder='Search features by callsign...'
                     />
                 </div>
 
-                <TablerNone
-                    v-if='!currentFolders.length && !currentItems.length'
-                    :create='false'
-                    :compact='true'
-                    :label='pathStack.length ? "Folder is empty" : "No Layers"'
-                />
-                <template v-else>
-                    <PathBrowser
-                        v-if='currentFolders.length'
-                        :nodes='currentFolders'
-                        :renamable='writable'
-                        :deletable='writable'
-                        :visibility-toggle='true'
-                        :is-node-hidden='isMissionFolderHidden'
-                        @navigate='navigateToFolder'
-                        @delete='deleteLayer'
-                        @rename='openEdit'
-                        @folder-drop='onFolderDrop'
-                        @toggle-visibility='toggleMissionFolderVisibility'
+                <template v-if='featureSearch.trim()'>
+                    <TablerNone
+                        v-if='!searchResults.length'
+                        :create='false'
+                        :compact='true'
+                        label='No matching features'
                     />
                     <div
-                        ref='sortableItemsRef'
+                        v-else
                         class='mt-2'
                     >
                         <FeatureRow
-                            v-for='feat of currentItems'
+                            v-for='feat of searchResults'
                             :key='feat.id'
                             :delete-button='writable'
                             :info-button='true'
-                            :grip-handle='writable'
                             :visibility-toggle='true'
                             :feature='feat'
                         />
                     </div>
+                </template>
+                <template v-else>
+                    <div class='px-2 py-2'>
+                        <PathBreadcrumb
+                            :segments='crumbNames'
+                            :droppable='writable'
+                            @navigate='navigateToDepth'
+                            @segment-drop='onBreadcrumbDrop'
+                        />
+                    </div>
+
+                    <TablerNone
+                        v-if='!currentFolders.length && !currentItems.length'
+                        :create='false'
+                        :compact='true'
+                        :label='pathStack.length ? "Folder is empty" : "No Layers"'
+                    />
+                    <template v-else>
+                        <PathBrowser
+                            v-if='currentFolders.length'
+                            :nodes='currentFolders'
+                            :renamable='writable'
+                            :deletable='writable'
+                            :visibility-toggle='true'
+                            :is-node-hidden='isMissionFolderHidden'
+                            @navigate='navigateToFolder'
+                            @delete='deleteLayer'
+                            @rename='openEdit'
+                            @folder-drop='onFolderDrop'
+                            @toggle-visibility='toggleMissionFolderVisibility'
+                        />
+                        <div
+                            ref='sortableItemsRef'
+                            class='mt-2'
+                        >
+                            <FeatureRow
+                                v-for='feat of currentItems'
+                                :key='feat.id'
+                                :delete-button='writable'
+                                :info-button='true'
+                                :grip-handle='writable'
+                                :visibility-toggle='true'
+                                :feature='feat'
+                            />
+                        </div>
+                    </template>
                 </template>
             </template>
         </div>
@@ -120,6 +151,7 @@ import {
 import {
     TablerNone,
     TablerAlert,
+    TablerInput,
     TablerLoading,
     TablerIconButton,
     TablerRefreshButton,
@@ -148,6 +180,7 @@ const editLayer = ref<MissionLayer | undefined>();
 const error = ref<Error | undefined>();
 const refreshing = ref(false);
 const currentUid = ref<string | null>(null);
+const featureSearch = ref('');
 const pathStack = ref<Array<{ uid: string, name: string }>>([]);
 
 const sortableItemsRef = useTemplateRef<HTMLElement>('sortableItemsRef');
@@ -262,6 +295,15 @@ const orphanedFeats = computed<Feature[]>(() => {
     }
 
     return result;
+});
+
+const searchResults = computed<Feature[]>(() => {
+    const term = featureSearch.value.trim().toLowerCase();
+    if (!term) return [];
+
+    return Array.from(feats.value.values()).filter((feat) => {
+        return (feat.properties.callsign || '').toLowerCase().includes(term);
+    });
 });
 
 const currentFolders = computed<PathNode<Feature>[]>(() => {

@@ -307,4 +307,52 @@ test('PUT: api/profile/feature - Enabled Geofence', async () => {
     }
 });
 
+test('PUT: api/profile/feature - Reject User Puck', async () => {
+    const base = {
+        type: 'Feature',
+        path: '/',
+        geometry: {
+            type: 'Point',
+            coordinates: [123.3223, 123.0002, 123],
+        },
+    };
+
+    const properties = {
+        type: 'a-f-G-E-V-C',
+        how: 'm-g',
+        time: time,
+        start: time,
+        stale: time,
+        callsign: 'User Puck',
+        archived: true,
+        center: [123.3223, 123.0002],
+    };
+
+    for (const body of [
+        { ...base, id: 'ANDROID-CloudTAK-puck@example.com', properties },
+        { ...base, id: 'puck-group', properties: { ...properties, group: { name: 'Cyan', role: 'Team Member' } } },
+        { ...base, id: 'puck-takv', properties: { ...properties, takv: { device: 'Pixel', platform: 'ATAK', os: '34', version: '5.0' } } },
+    ]) {
+        const res = await flight.fetch('/api/profile/feature', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body,
+        }, false);
+
+        assert.equal(res.status, 400, `expected 400 for ${body.id}`);
+        assert.equal(res.body.message, 'User markers cannot be saved as features');
+    }
+
+    const list = await flight.fetch('/api/profile/feature', {
+        method: 'GET',
+        auth: {
+            bearer: flight.token.admin,
+        },
+    }, true);
+
+    assert.ok(!list.body.items.some((f: { id: string }) => f.id.startsWith('puck') || f.id.startsWith('ANDROID-')));
+});
+
 flight.landing();

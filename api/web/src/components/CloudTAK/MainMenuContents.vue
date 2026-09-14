@@ -88,6 +88,16 @@
                                     />
                                     <span class='ps-2'>Event Board</span>
                                 </div>
+                                <div
+                                    class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
+                                    @click.stop='external("/forms")'
+                                >
+                                    <IconForms
+                                        :size='25'
+                                        stroke='1'
+                                    />
+                                    <span class='ps-2'>Forms</span>
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -288,6 +298,7 @@ import {
     IconWorld,
     IconDeviceTv,
     IconLayoutKanban,
+    IconForms,
     IconLayoutGrid,
     IconLayoutList,
     IconPencil, 

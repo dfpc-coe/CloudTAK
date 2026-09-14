@@ -10,6 +10,8 @@ import CloudFormation from '../aws/cloudformation.js';
 import Config from '../../../common/config.js';
 import { LayerResponse, LayerUpdateManagementItemResponse } from '../../../common/types.js';
 import { Layer, LayerIncoming, LayerOutgoing } from '../../../common/schema.js';
+import CommonLayerControl from '../../../common/control/layer.js';
+import type { StaticCapabilitiesDocument } from '@tak-ps/etl';
 
 export default class LayerControl {
     config: Config;
@@ -70,6 +72,17 @@ export default class LayerControl {
         return items;
     }
 
+    /**
+     * The Capabilities document embedded in the container image of a
+     * `name-v<major>.<minor>.<patch>` task - null if the task or document is absent
+     */
+    async capabilities(task: string): Promise<StaticCapabilitiesDocument | null> {
+        const match = task.match(/^(.+)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
+        if (!match) return null;
+
+        return await ECR.capabilities(match[1], match[2]);
+    }
+
     async generate(
         input: InferInsertModel<typeof Layer>,
         opts?: {
@@ -95,8 +108,11 @@ export default class LayerControl {
         }
 
         if (opts && opts.outgoing) {
+            const capabilities = await this.capabilities(input.task);
+
             await this.config.models.LayerOutgoing.generate({
                 ...opts.outgoing,
+                ...(capabilities ? { subscriptions: CommonLayerControl.outgoingSubscriptions(capabilities) } : {}),
                 layer: base.id,
             });
         }

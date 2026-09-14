@@ -6,23 +6,17 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import S3 from '../../common/aws/s3.js';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
+import IconsetControl from '../../common/control/iconset.js';
+import ProfileFileControl from '../../common/control/profile-file.js';
 import { ProfileFile, ProfileFileChannel } from '../../common/schema.js';
 import type ConfigStateless from '../config.js';
-import activeChannels from '../lib/tak-channels.js';
+import { userChannels } from '../lib/tak-channels.js';
 import { profileAssetTileJSON } from '../lib/tilejson.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
-    async function ensureIconsetPermission(iconset: string | null | undefined, email: string) {
-        if (iconset === undefined || iconset === null || iconset === '') return;
-
-        const iconsetRes = await config.models.Iconset.from(iconset);
-
-        if (iconsetRes.username !== email) {
-            throw new Err(403, null, `You do not have permission to associate iconset '${iconset}'`);
-        }
-    }
+    const iconsetControl = new IconsetControl(config);
+    const profileFileControl = new ProfileFileControl(config);
 
     await schema.get('/profile/asset', {
         name: 'List Files',
@@ -54,9 +48,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            const profile = await config.models.Profile.from(user.email);
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
-            const channels = [...await activeChannels(api)];
+            const channels = [...await userChannels(config, user.email)];
             const where = channels.length
                 ? sql`
                     name ~* ${req.query.filter}
@@ -114,6 +106,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 throw new Err(403, null, 'You do not have permission to delete this asset');
             }
 
+            const files = [file];
+            for (let index = 0; index < files.length; index++) {
+                files.push(...await config.pg.select().from(ProfileFile)
+                    .where(eq(ProfileFile.parent, files[index].id)));
+            }
+
             await config.models.ProfileFile.delete(req.params.asset);
 
             if (file.iconset) {
@@ -133,9 +131,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
             }
 
-            await S3.del(`profile/${user.email}/${req.params.asset}`, {
+            await Promise.all(files.map(child => S3.del(`profile/${child.username}/${child.id}`, {
                 recurse: true,
-            });
+            })));
 
             res.json({
                 status: 200,
@@ -155,6 +153,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 description: 'Random UUID v4 of uploaded asset',
             }),
             name: Type.String(),
+            parent: Type.Optional(Type.Union([Type.Null(), Type.String({ format: 'uuid' })])),
             path: Type.String({
                 default: '/',
             }),
@@ -180,11 +179,16 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 });
             }
 
-            await ensureIconsetPermission(req.body.iconset, user.email);
+            if (req.body.parent) {
+                await profileFileControl.ensureParentPermission(req.body.parent, user.email, req.body.id);
+            }
+
+            await iconsetControl.ensurePermission(req.body.iconset, user.email);
 
             const file = await config.models.ProfileFile.generate({
                 id: req.body.id,
                 username: user.email,
+                parent: req.body.parent ?? null,
                 name: req.body.name,
                 path: req.body.path,
                 iconset: req.body.iconset ?? null,
@@ -209,6 +213,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         body: Type.Object({
             path: Type.Optional(Type.String()),
+            parent: Type.Optional(Type.Union([Type.Null(), Type.String({ format: 'uuid' })])),
             artifacts: Type.Optional(Type.Array(Type.Object({
                 ext: Type.String(),
             }))),
@@ -225,6 +230,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             if (file.username !== user.email) {
                 throw new Err(403, null, 'You do not have permission to modify this asset');
+            }
+
+            if (req.body.parent) {
+                await profileFileControl.ensureParentPermission(req.body.parent, user.email, file.id);
             }
 
             if (req.body.artifacts) {
@@ -246,9 +255,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 iconsetValue = req.body.iconset;
             }
 
-            await ensureIconsetPermission(iconsetValue, user.email);
+            await iconsetControl.ensurePermission(iconsetValue, user.email);
 
             file = await config.models.ProfileFile.commit(req.params.asset, {
+                parent: req.body.parent,
                 name: req.body.name,
                 path: req.body.path,
                 iconset: iconsetValue,
@@ -290,15 +300,16 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req, { token: true });
 
-            const file = await config.models.ProfileFile.from(req.params.asset);
+            const file = await config.models.ProfileFile.augmented_from(req.params.asset);
 
-            if (file.username !== user.email) {
-                throw new Err(403, null, 'You do not have permission to download this asset');
-            }
+            await profileFileControl.ensureReadPermission(file, user.email);
 
-            const stream = await S3.get(`profile/${user.email}/${req.params.asset}.${req.params.ext}`);
+            const object = await S3.getObject(`profile/${file.username}/${req.params.asset}.${req.params.ext}`);
 
-            stream.pipe(res);
+            if (object.contentLength !== undefined) res.set('Content-Length', String(object.contentLength));
+            if (object.contentType) res.set('Content-Type', object.contentType);
+
+            object.body.pipe(res);
         } catch (err) {
             Err.respond(err, res);
         }
@@ -320,20 +331,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const file = await config.models.ProfileFile.augmented_from(req.params.asset);
 
-            if (file.username !== user.email) {
-                const fileChannels = (file.channels || []).map(c => Number(c));
-                if (fileChannels.length === 0) {
-                    throw new Err(403, null, 'You do not have permission to view this asset');
-                }
-
-                const profile = await config.models.Profile.from(user.email);
-                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
-                const active = await activeChannels(api);
-
-                if (!fileChannels.some(bp => active.has(bp))) {
-                    throw new Err(403, null, 'You do not have permission to view this asset');
-                }
-            }
+            await profileFileControl.ensureReadPermission(file, user.email);
 
             if (!await S3.exists(`profile/${file.username}/${req.params.asset}.pmtiles`)) {
                 throw new Err(404, null, 'Asset does not exist');

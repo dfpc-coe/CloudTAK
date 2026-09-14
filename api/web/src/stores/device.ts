@@ -67,6 +67,17 @@ export const useDeviceStore = defineStore('device', () => {
     const network = markRaw(new NetworkStatus());
     const battery = markRaw(new BatteryStatus());
 
+    const REQUIRED_PERMISSIONS: BrowserPermissionType[] = ['location', 'notification'];
+
+    function isPermissionSatisfied(type: BrowserPermissionType): boolean {
+        const state = permissions[type];
+        return state === 'granted' || state === 'when_in_use' || state === 'unsupported';
+    }
+
+    function hasRequiredPermissions(): boolean {
+        return REQUIRED_PERMISSIONS.every(isPermissionSatisfied);
+    }
+
     async function refreshPermissionStatuses(): Promise<void> {
         await Promise.all([
             geolocation.refreshStatus(),
@@ -100,6 +111,9 @@ export const useDeviceStore = defineStore('device', () => {
         wakeLock,
         fileSystem,
         setPermissionStatus,
+        requiredPermissions: REQUIRED_PERMISSIONS,
+        isPermissionSatisfied,
+        hasRequiredPermissions,
         refreshPermissionStatuses,
         initializePermissionSubscriptions,
         hasOrientationSupport: () => orientation.hasSupport(),

@@ -11,7 +11,7 @@
                 class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 flex-shrink-0'
                 style='width: 36px; height: 36px;'
             >
-                <IconAmbulance
+                <IconCloudPin
                     v-if='imp.source === "Mission"'
                     :size='20'
                     stroke='1'
@@ -79,7 +79,7 @@ import StatusDot from '../../util/StatusDot.vue';
 import { TablerIconButton } from '@tak-ps/vue-tabler';
 import {
     IconFile,
-    IconAmbulance,
+    IconCloudPin,
     IconPackages,
     IconRestore,
     IconDownload,

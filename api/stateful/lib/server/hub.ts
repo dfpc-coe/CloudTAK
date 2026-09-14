@@ -134,7 +134,7 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
                 let created = false;
                 if (!config.conns.has(parsedParams.connection)) {
                     const profile = await config.models.Profile.from(parsedParams.connection);
-                    if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
+                    if (!profile.auth || !profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
 
                     client = await config.conns.add(new ProfileConnConfig(config, parsedParams.connection, profile.auth));
                     created = true;

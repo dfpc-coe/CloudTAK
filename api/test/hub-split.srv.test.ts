@@ -6,10 +6,9 @@ import ConfigStateful from '../stateful/config.js';
 import ConfigStateless from '../stateless/config.js';
 import server from '../index.js';
 import type ServerManager from '../common/server.js';
+import { testDatabase } from './db.js';
 
 process.env.HUB_RPC_PORT = '0';
-
-const POSTGRES = process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test';
 
 const flight = new Flight();
 
@@ -23,10 +22,10 @@ let apiBase = '';
 
 test('Split: boot a hub-mode server', async () => {
     const config = await ConfigStateful.env({
-        postgres: POSTGRES,
+        postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
-        nosinks: true,
+        noetlevents: true,
         nocache: true,
         mode: 'hub',
     });
@@ -42,10 +41,10 @@ test('Split: boot an api-mode server pointed at the hub', async () => {
     if (!rpcAddress || typeof rpcAddress !== 'object') throw new Error('Could not determine Hub RPC port');
 
     const config = await ConfigStateless.env({
-        postgres: POSTGRES,
+        postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
-        nosinks: true,
+        noetlevents: true,
         nocache: true,
         mode: 'api',
         hubUrl: `http://localhost:${rpcAddress.port}`,
@@ -66,10 +65,10 @@ test('Split: boot an api-mode server pointed at the hub', async () => {
 
 test('Split: api mode requires a hub URL', async () => {
     await assert.rejects(ConfigStateless.env({
-        postgres: POSTGRES,
+        postgres: await testDatabase({ reset: false }),
         silent: true,
         noevents: true,
-        nosinks: true,
+        noetlevents: true,
         nocache: true,
         mode: 'api',
     }), /CLOUDTAK_Hub_URL must be set/);
