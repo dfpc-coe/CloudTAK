@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v13.87.2 - 2026-09-14
+
+- :rocket: Show `read-only` state in the CoTView UI if the CoT is part of a READONLY mission
+- :rocket: Performance improvements to Maplibre CoT Rendering pipeline
+
 ### v13.87.1 - 2026-09-14
 
 - :bug: Clear our user pucks from the ProfileFeature database
