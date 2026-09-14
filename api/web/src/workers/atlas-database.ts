@@ -24,7 +24,6 @@ import type {
     Feature as GeoJSONFeature,
     Geometry as GeoJSONGeometry,
 } from 'geojson';
-import ProfileConfig from '../base/profile.ts';
 import * as Comlink from 'comlink';
 import AtlasBreadcrumb from './atlas-breadcrumb.ts';
 
@@ -153,7 +152,7 @@ export default class AtlasDatabase {
         diff.update = [];
         const staleDelete = new Set<string>();
 
-        const display_stale = (await ProfileConfig.get('display_stale'))?.value || 'Immediate';
+        const display_stale = this.displayStale();
 
         for (const cot of this.cots.values()) {
             // The user's own position is drawn by the GeolocateControl puck
@@ -165,16 +164,7 @@ export default class AtlasDatabase {
             if (this.pendingHidden.has(String(cot.id))) {
                 diff.remove.push(cot.vectorId())
                 this.pendingHidden.delete(cot.id);
-            } else if (
-                !['Never'].includes(display_stale)
-                && !cot.properties.archived
-                && (
-                    display_stale === 'Immediate'       && now > stale
-                    || display_stale === '10 Minutes'   && now > stale + 600000
-                    || display_stale === '30 Minutes'   && now > stale + 600000 * 3
-                    || display_stale === '1 Hour'       && now > stale + 600000 * 6
-                )
-            ) {
+            } else if (!cot.properties.archived && AtlasDatabase.staleElapsed(display_stale, stale, now)) {
                 diff.remove.push(cot.vectorId())
                 staleDelete.add(cot.id);
             } else if (!cot.properties.archived) {
@@ -264,6 +254,11 @@ export default class AtlasDatabase {
         return diff;
     }
 
+    /** Current display_stale setting from the in-memory profile cache */
+    displayStale(): string {
+        return String(this.atlas.profile.display_stale?.value || 'Immediate');
+    }
+
     /**
      * Has a CoT's stale time exceeded the user's configured display window
      */
@@ -285,7 +280,7 @@ export default class AtlasDatabase {
      */
     async snapshot(): Promise<Array<GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>>>> {
         const now = +new Date();
-        const display_stale = String((await ProfileConfig.get('display_stale'))?.value || 'Immediate');
+        const display_stale = this.displayStale();
 
         // Queue consumption and the cots iteration happen synchronously
         // (no awaits) so a feature added mid-snapshot can never be dropped
@@ -937,19 +932,8 @@ export default class AtlasDatabase {
             } else {
                 // Don't add already-stale CoTs to the map
                 if (!feat.properties.archived) {
-                    const display_stale = (await ProfileConfig.get('display_stale'))?.value || 'Immediate';
                     const stale = new Date(feat.properties.stale).getTime();
-                    const now = Date.now();
-
-                    if (
-                        !['Never'].includes(display_stale)
-                        && (
-                            display_stale === 'Immediate'       && now > stale
-                            || display_stale === '10 Minutes'   && now > stale + 600000
-                            || display_stale === '30 Minutes'   && now > stale + 600000 * 3
-                            || display_stale === '1 Hour'       && now > stale + 600000 * 6
-                        )
-                    ) {
+                    if (AtlasDatabase.staleElapsed(this.displayStale(), stale, Date.now())) {
                         return;
                     }
                 }
