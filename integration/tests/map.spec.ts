@@ -171,3 +171,96 @@ test.describe('Map: smoke, page shell', () => {
         }
     });
 });
+
+test.describe('Map: zoom and scale bar', () => {
+    let map: MapPage;
+ 
+    test.beforeEach(async ({ page }) => {
+        map = new MapPage(page);
+        await map.goto();
+        await map.waitUntilLoaded();
+        await skipPermissionsModal(page);
+        await map.expectMapIdle();
+    });
+ 
+    test('MAP-10 Zoom In button zooms one level and shrinks the scale', async () => {
+        const before = await map.scale();
+        const zoom = await map.zoom();
+ 
+        await map.zoomIn.click();
+ 
+        await map.expectZoom(zoom + 1);
+        await map.expectHashZoom(zoom + 1);
+        expect(map.hash()?.zoom).toBeCloseTo(zoom + 1, 1);
+        await expect.poll(async () => (await map.scale()).meters).toBeLessThan(before.meters);
+    });
+ 
+    test('MAP-11 Zoom Out button restores the previous level and scale', async () => {
+        const start = await map.scale();
+        const zoom = await map.zoom();
+ 
+        await map.zoomIn.click();
+        await map.expectZoom(zoom + 1);
+        await map.zoomOut.click();
+ 
+        await map.expectZoom(zoom);
+        await map.expectHashZoom(zoom);
+        expect(map.hash()?.zoom).toBeCloseTo(zoom, 1);
+        await expect.poll(async () => (await map.scale()).text).toBe(start.text);
+    });
+ 
+    test('MAP-12 mouse wheel zooms in and shrinks the scale', async () => {
+        const before = await map.scale();
+        const zoom = await map.zoom();
+ 
+        await map.wheel(-300);
+ 
+        // Wheel zoom is continuous, so assert direction, not a fixed step.
+        await expect.poll(() => map.zoom()).toBeGreaterThan(zoom);
+        await expect.poll(() => map.hash()?.zoom).toBeGreaterThan(zoom);
+        await expect.poll(async () => (await map.scale()).meters).toBeLessThan(before.meters);
+    });
+ 
+    test('MAP-13 mouse wheel zooms out and grows the scale', async () => {
+        const before = await map.scale();
+        const zoom = await map.zoom();
+ 
+        await map.wheel(300);
+ 
+        await expect.poll(() => map.zoom()).toBeLessThan(zoom);
+        await expect.poll(() => map.hash()?.zoom).toBeLessThan(zoom);
+        await expect.poll(async () => (await map.scale()).meters).toBeGreaterThan(before.meters);
+    });
+ 
+    test('MAP-14 scale bar switches to the small unit at close zoom', async () => {
+        const far = await map.scale();
+        expect(['mi', 'km']).toContain(far.unit);
+ 
+        // Zoom 18 is street level; the bar drops below 1 mi / 1 km and changes unit.
+        await map.gotoView(18, 40, -100);
+        await map.waitUntilLoaded();
+        await map.expectZoom(18);
+ 
+        const near = await map.scale();
+        expect(['ft', 'm']).toContain(near.unit);
+        expect(near.meters).toBeLessThan(far.meters);
+    });
+ 
+    test('MAP-15 zoom stays bounded at max and min zoom', async () => {
+        // Walk to each limit with the button, then confirm one more click is a no-op.
+        const max = await map.zoomToLimit(map.zoomIn);
+        await map.zoomIn.click();
+        await map.expectZoom(max);
+        await map.expectHashZoom(max);
+        expect(map.hash()?.zoom).toBeCloseTo(max, 1);
+        await expect(map.scaleBar).toHaveText('3 ft');
+
+        const min = await map.zoomToLimit(map.zoomOut);
+        await map.zoomOut.click();
+        await map.expectZoom(min);
+        await map.expectHashZoom(min);
+        expect(map.hash()?.zoom).toBeCloseTo(min, 1);
+        expect(min).toBeLessThan(max);
+        await expect(map.scaleBar).toHaveText('10000 mi');
+    });
+});

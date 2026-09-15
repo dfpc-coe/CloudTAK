@@ -257,4 +257,45 @@ export class MapPage {
 
         return { value, unit, meters: value * (factor[unit] as number), text };
     }
+
+    /** Current zoom from the MapLibre instance; throws if the map is not ready. */
+    async zoom(): Promise<number> {
+        const state = await this.state();
+        if (!state) throw new Error('MapLibre instance not reachable yet');
+        return state.zoom;
+    }
+
+    /** Poll until the map zoom settles at `expected` (within 0.01). */
+    async expectZoom(expected: number, timeout = 10_000): Promise<void> {
+        await expect.poll(() => this.zoom(), { timeout }).toBeCloseTo(expected, 2);
+    }
+
+    /** Load the map at a specific view via the URL hash (#zoom/lat/lng). */
+    async gotoView(zoom: number, lat: number, lng: number): Promise<void> {
+        await this.page.goto(`/#${zoom}/${lat}/${lng}`);
+    }
+
+    /** Scroll the mouse wheel over the map centre; negative deltaY zooms in. */
+    async wheel(deltaY: number): Promise<void> {
+        const box = await this.canvas.first().boundingBox();
+        if (!box) throw new Error('map canvas has no bounding box');
+        await this.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+        await this.page.mouse.wheel(0, deltaY);
+    }
+
+    async zoomToLimit(button: Locator, maxClicks = 40): Promise<number> {
+        let zoom = await this.zoom();
+        for (let i = 0; i < maxClicks; i++) {
+            await button.click();
+            const next = await this.zoom();
+            if (Math.abs(next - zoom) < 0.001) return next;
+            zoom = next;
+        }
+        throw new Error(`zoom did not settle after ${maxClicks} clicks`);
+    }
+
+    /** Poll until the URL hash zoom settles at `expected` (hash updates are throttled). */
+    async expectHashZoom(expected: number, timeout = 10_000): Promise<void> {
+        await expect.poll(() => this.hash()?.zoom, { timeout }).toBeCloseTo(expected, 1);
+    }
 }
