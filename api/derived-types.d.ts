@@ -51245,7 +51245,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Let Admins list login sessions for a given user */
+        /** List login sessions for a given user - users may list their own sessions, Admins may list any user */
         get: {
             parameters: {
                 query: {

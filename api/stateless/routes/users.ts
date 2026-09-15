@@ -188,7 +188,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/user/:username/session', {
         name: 'List User Sessions',
         group: 'User',
-        description: 'Let Admins list login sessions for a given user',
+        description: 'List login sessions for a given user - users may list their own sessions, Admins may list any user',
         params: Type.Object({
             username: Type.String(),
         }),
@@ -217,7 +217,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            const user = await Auth.as_user(config, req);
+
+            if (!user.is_admin() && req.params.username !== user.email) {
+                throw new Err(403, null, 'Only a System Administrator can list login sessions for another user');
+            }
 
             const list = await config.models.ProfileSession.list({
                 limit: req.query.limit,
