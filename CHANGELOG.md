@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+### v13.88.1 - 2026-09-15
+
 - :rocket: Replace the custom Layer Environment schema form with the generic `TablerSchema` component, gaining multi-select and primitive array support
 
 ### v13.88.0 - 2026-09-14
