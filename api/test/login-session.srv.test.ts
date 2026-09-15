@@ -7,6 +7,7 @@ const flight = new Flight();
 flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
+flight.user({ username: 'user', admin: false });
 flight.server('admin@example.com', 'password123');
 
 let session: string;
@@ -116,6 +117,40 @@ test('GET: api/login - Terminating the session invalidates its token', async () 
         assert.deepEqual(res.body, {
             status: 401,
             message: 'Session does not exist',
+            messages: [],
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: api/user/user@example.com/session - non-admin can list their own sessions', async () => {
+    try {
+        const res = await flight.fetch('/api/user/user@example.com/session', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.user,
+            },
+        }, true);
+
+        assert.deepEqual(res.body, { total: 0, items: [] });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: api/user/admin@example.com/session - non-admin cannot list another user\'s sessions', async () => {
+    try {
+        const res = await flight.fetch('/api/user/admin@example.com/session', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.user,
+            },
+        }, false);
+
+        assert.deepEqual(res.body, {
+            status: 403,
+            message: 'Only a System Administrator can list login sessions for another user',
             messages: [],
         });
     } catch (err) {
