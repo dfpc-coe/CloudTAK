@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+### v13.88.3 - 2026-09-15
+
 - :bug: Allow non-admin users to list their own login sessions from the Settings menu, `GET /api/user/:username/session` now permits a user to view their own sessions while still requiring System Administrator to view other users' sessions
 
 ### v13.88.2 - 2026-09-15
