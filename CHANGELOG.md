@@ -18,6 +18,10 @@
 
 ### Pending Release
 
+### v13.88.2 - 2026-09-15
+
+- :rocket: Introduce parity in CloudWatch Alarms between stateless and stateful API
+
 ### v13.88.1 - 2026-09-15
 
 - :rocket: Replace the custom Layer Environment schema form with the generic `TablerSchema` component, gaining multi-select and primitive array support
