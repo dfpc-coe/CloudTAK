@@ -103,7 +103,7 @@ services:
             - POSTGRES_PASSWORD=docker
 
     store:
-        image: minio/minio:RELEASE.2024-08-17T01-24-54Z
+        image: quay.io/minio/minio:RELEASE.2024-08-17T01-24-54Z
         entrypoint: sh
         command: -c 'mkdir -p /data/cloudtak && /usr/bin/minio server /data --console-address ":9002"'
         restart: 'always'
