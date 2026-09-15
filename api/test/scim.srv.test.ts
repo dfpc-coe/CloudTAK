@@ -119,7 +119,7 @@ test('POST: api/scim/v2/Users', async () => {
         id: 'scim.user@example.com',
         userName: 'scim.user@example.com',
         name: { formatted: 'Scim User' },
-        displayName: 'SCIM1',
+        displayName: 'Scim User',
         emails: [{ value: 'scim.user@example.com', type: 'work', primary: true }],
         active: true,
         meta: {
@@ -234,7 +234,7 @@ test('PATCH: api/scim/v2/Users/:id - deactivate', async () => {
     }, true);
 
     assert.equal(res.body.active, false);
-    assert.equal(res.body.displayName, 'SCIM2');
+    assert.equal(res.body.displayName, 'Scim User', 'displayName is ignored - it never touches the callsign');
 
     const sessions = await flight.config!.models.ProfileSession.count({
         where: eq(ProfileSession.username, 'scim.user@example.com'),
@@ -306,7 +306,7 @@ test('PUT: api/scim/v2/Users/:id', async () => {
     }, true);
 
     assert.equal(res.body.name.formatted, 'Scim Replaced');
-    assert.equal(res.body.displayName, 'SCIM3');
+    assert.equal(res.body.displayName, 'Scim Replaced');
     assert.equal(res.body.active, true);
 
     const rename = await flight.fetch('/api/scim/v2/Users/scim.user%40example.com', {
@@ -342,7 +342,7 @@ test('DELETE: api/scim/v2/Users/:id', async () => {
     }, true);
 
     assert.equal(admin.body.disabled, true);
-    assert.equal(admin.body.tak_callsign, 'SCIM3');
+    assert.equal(admin.body.tak_callsign, 'CloudTAK User', 'SCIM never sets the callsign');
 });
 
 const groupId = Buffer.from('Firefighters', 'utf8').toString('base64url');
@@ -516,7 +516,7 @@ test('POST: api/scim/v2/Users - application/scim+json', async () => {
     assert.equal(res.status, 201);
     assert.equal(res.headers.get('content-type'), 'application/scim+json; charset=utf-8');
     assert.equal(res.body.userName, 'scim.json@example.com');
-    assert.equal(res.body.displayName, 'SCIM JSON');
+    assert.equal(res.body.displayName, 'Unknown');
 });
 
 test('PATCH: api/scim/v2/Users/:id - application/scim+json', async () => {
