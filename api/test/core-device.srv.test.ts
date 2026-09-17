@@ -444,6 +444,59 @@ test('POST: api/core/device - connection token', async () => {
     }
 });
 
+test('POST: api/core/device - 400 for an external_id already used by the Connection', async () => {
+    try {
+        const res = await flight.fetch('/api/core/device', {
+            method: 'POST',
+            auth: {
+                bearer: connectionToken,
+            },
+            body: {
+                name: 'Duplicate Sensor',
+                type: '10031000001213000000',
+                external_id: 'SENSOR-1',
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/core/device/:device - 400 for an external_id already used by the Connection', async () => {
+    try {
+        const created = await flight.fetch('/api/core/device', {
+            method: 'POST',
+            auth: {
+                bearer: connectionToken,
+            },
+            body: {
+                name: 'Second Sensor',
+                type: '10031000001213000000',
+                external_id: 'SENSOR-2',
+            },
+        }, true);
+
+        const res = await flight.fetch(`/api/core/device/${created.body.id}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: connectionToken,
+            },
+            body: {
+                external_id: 'SENSOR-1',
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'external_id is already used by another Device of the Connection');
+
+        await flight.config!.models.CoreDevice.delete(created.body.id);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: api/core/device - connection token scoped to own devices', async () => {
     try {
         const res = await flight.fetch('/api/core/device', {

@@ -495,6 +495,14 @@ export const ProfileResponse = Type.Composite([
     Profile,
 ]);
 
+export const LayerMappingResponse = createSelectSchema(schemas.LayerMapping, {
+    id: Type.Integer(),
+    layer: Type.Integer(),
+    destination: Type.Enum(LayerMapping_Destination),
+    query: Type.Union([Type.Null(), Type.String()]),
+    mapping: Type.Record(Type.String(), Type.Unknown()),
+});
+
 export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
     id: Type.Integer(),
     ephemeral: Type.Boolean(),

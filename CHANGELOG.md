@@ -18,6 +18,31 @@
 
 ### Pending Release
 
+- :rocket: Rename the Layer Incoming `Styling` tab to `Legacy Styling` - the existing `Layer.styles` object and `/api/layer/:layerid/cot` submission behaviour are unchanged
+- :tada: Add the `layer_mapping` table - each row ties a Layer to a named Output schema and a `destination` (`CoreFeature`, `CoreEvent` or `CoreDevice`) with an optional JSONata `query` and a `mapping` object
+- :tada: Add a `Field Mapping` section to Layer Incoming listing the Task's named Output schemas - mapped schemas are shown first with a solid border and unmapped schemas follow with a dashed border, selecting a schema lists its fields
+- :tada: Add `GET`, `POST`, `GET/:mappingid`, `PATCH/:mappingid` & `DELETE/:mappingid` under `/api/connection/:connectionid/layer/:layerid/incoming/mapping` for managing Layer Maps - JSONata `query` values are validated on write
+- :tada: Field Mapping queries can now be created, edited & deleted from the UI - the mapping object is built by a `CoreFeature`, `CoreEvent` or `CoreDevice` form matching the query's destination and JSONata queries are validated as they are typed
+- :tada: Add `POST /api/connection/:connectionid/submit` accepting a GeoJSON-like FeatureCollection with a named `schema` - Features with a geometry are delivered as CoT and archived, Features without a geometry are accepted and returned as `skipped`. Accepts user, Connection token or Layer token auth
+- :tada: Add `common/mapping.ts`, a data-driven fork of the legacy style library - each Map destination is described by a list of fields (key, kind & target) that the engine walks for the Map matching a Feature, rendering templates against `properties.metadata`. `/api/layer/:layerid/cot` and the legacy `Style` class are unchanged
+- :tada: `POST /api/connection/:connectionid/submit` applies the Layer Maps for the named `schema` when submitted with a Layer token - `CoreFeature` Maps style the CoT, `CoreEvent` Maps create or update Core Events (matched by `external_id`, defaulting to the Feature ID, with a Point derived from LineString & Polygon Features) and `CoreDevice` Maps create or update Core Devices. The response now carries `events` & `devices` counts and per-Feature `errors`
+- :rocket: Mapping objects are validated against the fields of their destination when a Map is created or updated - templates, enums, booleans, numbers & zoom levels
+- :rocket: The mapping engine and the Field Mapping `CoreEvent` & `CoreDevice` forms are both generated from the `common/core-schema.ts` JSON Schemas
+- :rocket: Field Mapping queries are mutually exclusive rather than additive like Legacy Styling - per destination a record is converted by the first query it matches in insertion order, the default (null query) Mapping only applies when no query matched
+- :rocket: `POST /api/connection/:connectionid/submit` UPSERTs Core Events & Core Devices on `external_id` - a partial unique index on `(connection, external_id)` is added to `core_event` & `core_device`, existing rows sharing an `external_id` on a Connection have it cleared on all but the most recently updated row. Creating or updating an Event or Device with an `external_id` already used by the Connection now returns a `400`
+- :tada: `CoreEvent` Mappings can set `channels`, `active`, `style` (icon, marker colour & opacity) & `links`, `CoreDevice` Mappings can set `channels` and assign the Device to a Core Event of the Connection by its `external_id` (`event_external_id`) - every Event of a submission is persisted before the first Device so a Device can be assigned to an Event of the same submission
+- :rocket: Mapping enums & booleans accept a Handlebars template in place of a fixed value - ie: `priority: '{{severity}}'`, values that do not render to an option or boolean are left unset
+- :rocket: The mapping engine & Field Mapping form support nested objects, arrays of objects and an `@widget` hint (`channels`, `icon`, `color`) on `common/core-schema.ts` properties
+- :tada: A Mapping field can be given as `{ value, update }` - `update: false` only applies the field when the CoreEvent or CoreDevice is first created so later edits by users survive resubmission. Object columns such as `style` are merged into the existing value rather than replaced
+- :rocket: CoreEvents & CoreDevices submitted through a Mapping that defines no `channels` inherit the active Channels of the Connection - applied when the record is created or has no Channels, records that are already shared are left alone
+- :rocket: `POST /api/connection/:connectionid/submit` requires a Layer token to hold the `event:create` & `event:update` permissions when the schema has `CoreEvent` Mappings and `device:create` & `device:update` when it has `CoreDevice` Mappings
+- :bug: `POST /api/connection/:connectionid/submit` to a paused Connection no longer creates or updates Core Events & Core Devices
+- :rocket: Only a single default (null query) Mapping can exist per Layer, schema & destination - enforced by a partial unique index on `layer_mapping`, existing duplicates are removed keeping the first created which was the one applied
+- :bug: Duplicate items of a Mapping array such as `channels` are removed when the Mapping is rendered
+- :bug: Changing the Destination of a Field Mapping query resets the mapping object rather than carrying the fields of the previous destination over
+- :rocket: Move the handlebars helpers shared by styling & mapping to `common/handlebars.ts`
+- :rocket: Move the legacy style editor to `ETL/Layer/Mapping/CoreFeature.vue`
+
 ### v13.89.0 - 2026-09-17
 
 - :tada: Add `GET /api/core/schema` & `GET /api/core/schema/:id` listing the record types supported by the Server (`CoreFeature`, `CoreEvent` & `CoreDevice`) as JSON Schemas defined in `common/core-schema.ts`. Properties carry an `@icon` hint naming the Tabler icon shown next to the property in a form & an optional `@widget` hint (`channels`, `icon`, `color`)

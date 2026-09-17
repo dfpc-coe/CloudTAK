@@ -287,6 +287,20 @@
                                                         role='menuitem'
                                                         class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                         :class='{
+                                                            "active": String(route.name).startsWith("layer-incoming-mapping"),
+                                                            "cursor-pointer": !String(route.name).startsWith("layer-incoming-mapping")
+                                                        }'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || 0}/layer/${route.params.layerid}/incoming/mapping`)'
+                                                        @click='router.push(`/connection/${route.params.connectionid || 0}/layer/${route.params.layerid}/incoming/mapping`)'
+                                                    ><IconArrowsExchange
+                                                        :size='32'
+                                                        stroke='1'
+                                                    /><span class='mx-3'>Field Mapping</span></span>
+                                                    <span
+                                                        tabindex='0'
+                                                        role='menuitem'
+                                                        class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                        :class='{
                                                             "active": route.name === "layer-incoming-styles",
                                                             "cursor-pointer": route.name !== "layer-incoming-styles"
                                                         }'
@@ -295,7 +309,7 @@
                                                     ><IconPaint
                                                         :size='32'
                                                         stroke='1'
-                                                    /><span class='mx-3'>Styling</span></span>
+                                                    /><span class='mx-3'>Legacy Styling</span></span>
                                                     <div
                                                         class='list-group-item d-flex align-items-center justify-content-center'
                                                     >
@@ -412,6 +426,7 @@ import {
     IconAdjustments,
     IconBeach,
     IconSchema,
+    IconArrowsExchange,
     IconPaint,
     IconLock,
 } from '@tabler/icons-vue'

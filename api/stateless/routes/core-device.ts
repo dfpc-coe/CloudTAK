@@ -8,6 +8,7 @@ import { CoreDevice, CoreDeviceChannel } from '../../common/schema.js';
 import type ConfigStateless from '../config.js';
 import { userChannels } from '../lib/tak-channels.js';
 import DeviceControl from '../lib/control/device.js';
+import { uniqueViolation } from '../lib/pg-error.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
@@ -318,7 +319,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 await config.models.CoreDevice.commit(req.params.device, {
                     ...body,
                     updated: sql`Now()`,
-                });
+                }).catch(uniqueViolation('external_id is already used by another Device of the Connection'));
             }
 
             if (channels !== undefined) {

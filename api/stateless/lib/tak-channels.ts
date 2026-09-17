@@ -33,3 +33,15 @@ export async function userChannels(config: Config, email: string): Promise<Set<n
 
     return await activeChannels(api);
 }
+
+/**
+ * Resolve the active channel bitpos set of a Connection through its own certificate
+ */
+export async function connectionChannels(config: Config, connection: { auth: { cert: string; key: string } }): Promise<Set<number>> {
+    const api = await TAKAPI.init(
+        new URL(String(config.server.api)),
+        new APIAuthCertificate(connection.auth.cert, connection.auth.key),
+    );
+
+    return await activeChannels(api);
+}

@@ -2,7 +2,7 @@
     <div>
         <div class='card-header sticky-top cloudtak-header'>
             <h3 class='card-title'>
-                Style Overrides
+                Legacy Style Overrides
             </h3>
             <div class='ms-auto btn-list'>
                 <TablerIconButton
@@ -65,7 +65,7 @@
         />
         <template v-else>
             <div class='card-body'>
-                <StyleSingle
+                <CoreFeature
                     v-model='style'
                     :schema='outputSchema ?? { properties: {} }'
                     :disabled='disabled'
@@ -213,7 +213,7 @@
                         />
                     </template>
                     <template v-else>
-                        <StyleSingle
+                        <CoreFeature
                             v-model='queries[query!].styles'
                             :schema='outputSchema ?? {}'
                             :disabled='disabled'
@@ -250,7 +250,7 @@ import {
     TablerIconButton,
     TablerPillGroup
 } from '@tak-ps/vue-tabler';
-import StyleSingle from './utils/StyleSingle.vue';
+import CoreFeature from './Mapping/CoreFeature.vue';
 import { defaultOutputSchema } from './utils/namedSchemas.ts';
 import QueryInput from './utils/QueryInput.vue';
 
