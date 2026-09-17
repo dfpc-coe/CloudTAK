@@ -12,7 +12,7 @@ const Channels = Type.Array(Type.Integer({ minimum: 0 }), {
     'title': 'Channels',
     '@icon': 'IconAffiliate',
     '@widget': 'channels',
-    'description': 'TAK Server Channels the record is shared with',
+    'description': 'TAK Server Channels the record is shared with - a submitted record without any inherits the active Channels of its Connection',
     'uniqueItems': true,
 });
 

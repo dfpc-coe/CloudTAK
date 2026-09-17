@@ -35,6 +35,7 @@
 - :rocket: Mapping enums & booleans accept a Handlebars template in place of a fixed value - ie: `priority: '{{severity}}'`, values that do not render to an option or boolean are left unset
 - :rocket: The mapping engine & Field Mapping form support nested objects, arrays of objects and an `@widget` hint (`channels`, `icon`, `color`) on `common/core-schema.ts` properties
 - :tada: A Mapping field can be given as `{ value, update }` - `update: false` only applies the field when the CoreEvent or CoreDevice is first created so later edits by users survive resubmission. Object columns such as `style` are merged into the existing value rather than replaced
+- :rocket: CoreEvents & CoreDevices submitted through a Mapping that defines no `channels` inherit the active Channels of the Connection - applied when the record is created or has no Channels, records that are already shared are left alone
 - :rocket: Move the handlebars helpers shared by styling & mapping to `common/handlebars.ts`
 - :rocket: Move the legacy style editor to `ETL/Layer/Mapping/CoreFeature.vue`
 

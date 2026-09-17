@@ -10621,7 +10621,7 @@ export interface paths {
                         destination: "CoreFeature" | "CoreEvent" | "CoreDevice";
                         /** @description JSONata query evaluated against each record - null matches every record */
                         query?: null | string;
-                        /** @description Mapping object applied to records matched by the query */
+                        /** @description Mapping object applied to records matched by the query - a field is either its bare value or `{ value, update }` where `update: false` only applies the field when a CoreEvent or CoreDevice is first created */
                         mapping?: {
                             [key: string]: unknown;
                         };
@@ -10976,7 +10976,7 @@ export interface paths {
                         destination?: "CoreFeature" | "CoreEvent" | "CoreDevice";
                         /** @description JSONata query evaluated against each record - null matches every record */
                         query?: null | string;
-                        /** @description Mapping object applied to records matched by the query */
+                        /** @description Mapping object applied to records matched by the query - a field is either its bare value or `{ value, update }` where `update: false` only applies the field when a CoreEvent or CoreDevice is first created */
                         mapping?: {
                             [key: string]: unknown;
                         };
@@ -20112,7 +20112,7 @@ export interface paths {
                                 remarks: string;
                                 /**
                                  * Channels
-                                 * @description TAK Server Channels the record is shared with
+                                 * @description TAK Server Channels the record is shared with - a submitted record without any inherits the active Channels of its Connection
                                  */
                                 channels: number[];
                                 id: string;
@@ -20337,7 +20337,7 @@ export interface paths {
                             remarks: string;
                             /**
                              * Channels
-                             * @description TAK Server Channels the record is shared with
+                             * @description TAK Server Channels the record is shared with - a submitted record without any inherits the active Channels of its Connection
                              */
                             channels: number[];
                             id: string;
@@ -20514,7 +20514,7 @@ export interface paths {
                             remarks: string;
                             /**
                              * Channels
-                             * @description TAK Server Channels the record is shared with
+                             * @description TAK Server Channels the record is shared with - a submitted record without any inherits the active Channels of its Connection
                              */
                             channels: number[];
                             id: string;
@@ -20805,7 +20805,7 @@ export interface paths {
                             remarks: string;
                             /**
                              * Channels
-                             * @description TAK Server Channels the record is shared with
+                             * @description TAK Server Channels the record is shared with - a submitted record without any inherits the active Channels of its Connection
                              */
                             channels: number[];
                             id: string;
@@ -21695,7 +21695,7 @@ export interface paths {
                                     editable: boolean;
                                     /**
                                      * Channels
-                                     * @description TAK Server Channels the record is shared with
+                                     * @description TAK Server Channels the record is shared with - a submitted record without any inherits the active Channels of its Connection
                                      */
                                     channels: number[];
                                     /** Style */
@@ -21945,7 +21945,7 @@ export interface paths {
                                 editable: boolean;
                                 /**
                                  * Channels
-                                 * @description TAK Server Channels the record is shared with
+                                 * @description TAK Server Channels the record is shared with - a submitted record without any inherits the active Channels of its Connection
                                  */
                                 channels: number[];
                                 /** Style */
@@ -22303,7 +22303,7 @@ export interface paths {
                                 editable: boolean;
                                 /**
                                  * Channels
-                                 * @description TAK Server Channels the record is shared with
+                                 * @description TAK Server Channels the record is shared with - a submitted record without any inherits the active Channels of its Connection
                                  */
                                 channels: number[];
                                 /** Style */
@@ -22868,7 +22868,7 @@ export interface paths {
                                 editable: boolean;
                                 /**
                                  * Channels
-                                 * @description TAK Server Channels the record is shared with
+                                 * @description TAK Server Channels the record is shared with - a submitted record without any inherits the active Channels of its Connection
                                  */
                                 channels: number[];
                                 /** Style */
@@ -23171,7 +23171,7 @@ export interface paths {
                             editable: boolean;
                             /**
                              * Channels
-                             * @description TAK Server Channels the record is shared with
+                             * @description TAK Server Channels the record is shared with - a submitted record without any inherits the active Channels of its Connection
                              */
                             channels: number[];
                             /** Style */
@@ -23402,7 +23402,7 @@ export interface paths {
                             editable: boolean;
                             /**
                              * Channels
-                             * @description TAK Server Channels the record is shared with
+                             * @description TAK Server Channels the record is shared with - a submitted record without any inherits the active Channels of its Connection
                              */
                             channels: number[];
                             /** Style */
@@ -23785,7 +23785,7 @@ export interface paths {
                             editable: boolean;
                             /**
                              * Channels
-                             * @description TAK Server Channels the record is shared with
+                             * @description TAK Server Channels the record is shared with - a submitted record without any inherits the active Channels of its Connection
                              */
                             channels: number[];
                             /** Style */

@@ -10,6 +10,7 @@ import type { MappingRow } from '../../common/mapping.js';
 import { LayerMapping } from '../../common/schema.js';
 import { LayerMapping_Destination } from '../../common/enums.js';
 import SubmitControl from '../lib/control/submit.js';
+import { connectionChannels } from '../lib/tak-channels.js';
 import { archiveCots } from '../lib/control/feature.js';
 import type ConfigStateless from '../config.js';
 
@@ -104,6 +105,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const cots = [];
 
+            // Resolved at most once per submission & only when a Mapping defines no channels
+            let inherited: Promise<number[]> | undefined;
+            const inherit = () => inherited ??= connectionChannels(config, connection)
+                .then(channels => Array.from(channels))
+                .catch((err) => {
+                    console.error(`not ok - failed to resolve the Channels of Connection ${connection.id}:`, err);
+                    return [];
+                });
+
             const features = req.body.features.map(feature => ({ ...feature, properties: feature.properties ?? {} }));
             const mapped = new Set<number>();
 
@@ -114,7 +124,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                         const row = await mapping.match(destination, feature);
                         if (!row) continue;
 
-                        await control[kind](connection.id, feature, mapping.render(row, feature), Mapping.createOnly(row));
+                        await control[kind](connection.id, feature, mapping.render(row, feature), { createOnly: Mapping.createOnly(row), inherit });
                         counts[kind]++;
                         mapped.add(i);
                     } catch (err) {

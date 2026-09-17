@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import jwt from 'jsonwebtoken';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import Flight from './flight.js';
 import { ConnectionFeature, CoreEvent, CoreEventChannel, CoreDevice } from '../common/schema.js';
 import { LayerMapping_Destination } from '../common/enums.js';
@@ -770,6 +771,82 @@ test('POST: api/connection/1/submit - update: false fields are only applied when
         assert.ok(updated.ended, 'ended is derived from a create only active so is left alone');
         assert.deepEqual(updated.style, { 'icon': 'abc:Fire/custom.png', 'marker-color': '#00ff00', 'marker-opacity': 0.5 });
         assert.deepEqual((await models.CoreEvent.augmented_from(created.id)).channels, [3, 9]);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('POST: api/connection/1/submit - records inherit the Channels of the Connection when the Mapping defines none', async () => {
+    try {
+        const models = flight.config!.models;
+
+        let groups = [
+            { name: 'Ops', direction: 'IN', created: '2026-01-01', type: 'SYSTEM', bitpos: 4, active: true },
+            { name: 'Ops', direction: 'OUT', created: '2026-01-01', type: 'SYSTEM', bitpos: 4, active: true },
+            { name: 'Inactive', direction: 'IN', created: '2026-01-01', type: 'SYSTEM', bitpos: 6, active: false },
+        ];
+
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
+            if (request.method !== 'GET' || request.url !== '/Marti/api/groups/all?useCache=true') return false;
+
+            response.setHeader('Content-Type', 'application/json');
+            response.write(JSON.stringify({ version: '3', type: 'com.bbn.marti.remote.groups.Group', data: groups }));
+            response.end();
+            return true;
+        });
+
+        for (const destination of [LayerMapping_Destination.COREEVENT, LayerMapping_Destination.COREDEVICE]) {
+            await models.LayerMapping.generate({
+                layer: 1,
+                schema: 'inherit',
+                destination,
+                name: 'No Channels',
+                query: null,
+                mapping: { name: '{{title}}', type: '10031000001211000000' },
+            });
+        }
+
+        const submit = async () => {
+            const res = await flight.fetch('/api/connection/1/submit', {
+                method: 'POST',
+                auth: {
+                    bearer: layerToken,
+                },
+                body: {
+                    type: 'FeatureCollection',
+                    schema: 'inherit',
+                    features: [{
+                        id: 'inherit-1',
+                        type: 'Feature',
+                        properties: { metadata: { title: 'Inherited' } },
+                        geometry: { type: 'Point', coordinates: [-105, 39] },
+                    }],
+                },
+            }, true);
+
+            assert.equal(res.status, 200);
+            assert.deepEqual(res.body.errors, []);
+
+            const [event] = (await flight.config!.pg.select().from(CoreEvent)).filter(e => e.external_id === 'inherit-1');
+            const [device] = (await flight.config!.pg.select().from(CoreDevice)).filter(d => d.external_id === 'inherit-1');
+
+            return {
+                event: (await models.CoreEvent.augmented_from(event.id)).channels,
+                device: (await models.CoreDevice.augmented_from(device.id)).channels,
+            };
+        };
+
+        assert.deepEqual(await submit(), { event: [4], device: [4] });
+
+        // Records that are already shared keep their Channels when the Connection's change
+        groups = [{ name: 'Other', direction: 'IN', created: '2026-01-01', type: 'SYSTEM', bitpos: 8, active: true }];
+        assert.deepEqual(await submit(), { event: [4], device: [4] });
+
+        // A record left without any Channels inherits them again
+        await flight.config!.pg.delete(CoreEventChannel);
+        assert.deepEqual(await submit(), { event: [8], device: [4] });
+
+        flight.tak.mockMarti.shift();
     } catch (err) {
         assert.ifError(err);
     }

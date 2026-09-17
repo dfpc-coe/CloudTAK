@@ -8,6 +8,13 @@ import { ETLEventAction } from '../../../common/etl-events.js';
 import { notifyCoreEvent } from '../core-event.js';
 import type ConfigStateless from '../../config.js';
 
+export interface SubmitOptions {
+    /** Fields only applied when the record is created */
+    createOnly?: Set<string>;
+    /** Channels of the Connection - shared with records whose Mapping defines no channels & that are not shared yet */
+    inherit?: () => Promise<number[]>;
+}
+
 const HAS_EXTERNAL_ID = sql`external_id <> ''`;
 
 // xmax is only set on a row version produced by the conflict UPDATE
@@ -26,7 +33,7 @@ export default class SubmitControl {
         this.config = config;
     }
 
-    async event(connection: number, feature: MappingFeature, mapped: MappedEvent, createOnly: Set<string> = new Set()): Promise<void> {
+    async event(connection: number, feature: MappingFeature, mapped: MappedEvent, opts: SubmitOptions = {}): Promise<void> {
         const geometry = this.eventGeometry(feature);
         if (!geometry) throw new Err(400, null, 'CoreEvent requires a Feature geometry');
 
@@ -38,11 +45,12 @@ export default class SubmitControl {
         if (columns.ended === undefined && columns.active === true) columns.ended = null;
 
         // A value derived from a create only field is itself create only
-        createOnly = new Set(createOnly);
+        const createOnly = new Set(opts.createOnly);
         if (createOnly.has('active') && mapped.ended === undefined) createOnly.add('ended');
         if (createOnly.has('ended') && mapped.active === undefined) createOnly.add('active');
 
         const record = this.#record(CoreEvent, connection, feature, { ...columns, geometry }, createOnly);
+        const inherited = channels ? [] : await opts.inherit?.() ?? [];
 
         const { id, inserted } = await this.config.pg.transaction(async (tx) => {
             const [row] = await tx.insert(CoreEvent)
@@ -57,6 +65,8 @@ export default class SubmitControl {
             if (channels && (row.inserted || !createOnly.has('channels'))) {
                 await tx.delete(CoreEventChannel).where(eq(CoreEventChannel.event, row.id));
                 await tx.insert(CoreEventChannel).values(channels.map(channel => ({ event: row.id, channel: BigInt(channel) })));
+            } else if (inherited.length && (row.inserted || !(await tx.$count(CoreEventChannel, eq(CoreEventChannel.event, row.id))))) {
+                await tx.insert(CoreEventChannel).values(inherited.map(channel => ({ event: row.id, channel: BigInt(channel) })));
             }
 
             return row;
@@ -71,16 +81,18 @@ export default class SubmitControl {
         });
     }
 
-    async device(connection: number, feature: MappingFeature, mapped: MappedDevice, createOnly: Set<string> = new Set()): Promise<void> {
+    async device(connection: number, feature: MappingFeature, mapped: MappedDevice, opts: SubmitOptions = {}): Promise<void> {
         const { channels, event_external_id, ...columns } = mapped;
 
-        createOnly = new Set(createOnly);
+        const createOnly = new Set(opts.createOnly);
         if (createOnly.has('event_external_id')) createOnly.add('event');
 
         const record = this.#record(CoreDevice, connection, feature, {
             ...columns,
             ...(event_external_id === undefined ? {} : { event: await this.#eventId(connection, event_external_id) }),
         }, createOnly);
+
+        const inherited = channels ? [] : await opts.inherit?.() ?? [];
 
         await this.config.pg.transaction(async (tx) => {
             const [row] = await tx.insert(CoreDevice)
@@ -91,6 +103,8 @@ export default class SubmitControl {
             if (channels && (row.inserted || !createOnly.has('channels'))) {
                 await tx.delete(CoreDeviceChannel).where(eq(CoreDeviceChannel.device, row.id));
                 await tx.insert(CoreDeviceChannel).values(channels.map(channel => ({ device: row.id, channel: BigInt(channel) })));
+            } else if (inherited.length && (row.inserted || !(await tx.$count(CoreDeviceChannel, eq(CoreDeviceChannel.device, row.id))))) {
+                await tx.insert(CoreDeviceChannel).values(inherited.map(channel => ({ device: row.id, channel: BigInt(channel) })));
             }
         });
     }
