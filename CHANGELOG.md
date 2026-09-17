@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+- :rocket: Speed up ECR builds with a persistent BuildKit cache, a single build pushed to every environment per account, and cache friendlier layer ordering in the API Dockerfile
+
 ### v13.88.3 - 2026-09-15
 
 - :bug: Allow non-admin users to list their own login sessions from the Settings menu, `GET /api/user/:username/session` now permits a user to view their own sessions while still requiring System Administrator to view other users' sessions
