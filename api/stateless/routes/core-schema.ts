@@ -3,25 +3,9 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import { CoreSchemas } from '../../common/core-schema.js';
+import { CoreSchemaSummary, CoreSchemaResponse } from '../../common/types.js';
 import { LayerMapping_Destination } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
-
-const CoreSchemaSummary = Type.Object({
-    id: Type.Enum(LayerMapping_Destination),
-    title: Type.String(),
-    description: Type.String(),
-});
-
-const CoreSchemaResponse = Type.Object({
-    $id: Type.Enum(LayerMapping_Destination),
-    title: Type.String(),
-    description: Type.String(),
-    type: Type.Literal('object'),
-    required: Type.Array(Type.String()),
-    properties: Type.Record(Type.String(), Type.Record(Type.String(), Type.Unknown())),
-}, {
-    description: 'JSON Schema of a Server supported record type',
-});
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/core/schema', {

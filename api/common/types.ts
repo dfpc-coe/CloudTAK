@@ -3,7 +3,7 @@ import { Type, Static } from '@sinclair/typebox';
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text, Profile_Radiation_Dose, Profile_Wake_Lock } from './enums.js';
-import { VideoLease_SourceType, CoreEventBoardColumn_Type } from './enums.js';
+import { VideoLease_SourceType, CoreEventBoardColumn_Type, LayerMapping_Destination } from './enums.js';
 import { Capabilities, InvocationType } from '@tak-ps/etl';
 import { CoreEventSchema, CoreDeviceSchema, CoreEventLinkSchema, CoreEventStyleSchema, withoutHints } from './core-schema.js';
 import { AugmentedData } from './models/Data.js';
@@ -273,6 +273,23 @@ export const CoreDeviceResponse = Type.Composite([
         metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Device metadata' }),
     }),
 ]);
+
+export const CoreSchemaSummary = Type.Object({
+    id: Type.Enum(LayerMapping_Destination),
+    title: Type.String(),
+    description: Type.String(),
+});
+
+export const CoreSchemaResponse = Type.Object({
+    $id: Type.Enum(LayerMapping_Destination),
+    title: Type.String(),
+    description: Type.String(),
+    type: Type.Literal('object'),
+    required: Type.Array(Type.String()),
+    properties: Type.Record(Type.String(), Type.Record(Type.String(), Type.Unknown())),
+}, {
+    description: 'JSON Schema of a Server supported record type',
+});
 
 /** A single named Output schema of a Task - tasks exposing a single unnamed schema are mapped to the `default` id */
 export const NamedSchema = Type.Object({
