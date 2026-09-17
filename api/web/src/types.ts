@@ -269,9 +269,6 @@ export type ETLLayerMapping = paths["/api/connection/{:connectionid}/layer/{:lay
 export type CoreSchemaList = paths["/api/core/schema"]["get"]["responses"]["200"]["content"]["application/json"]
 export type CoreSchema = paths["/api/core/schema/{:id}"]["get"]["responses"]["200"]["content"]["application/json"]
 
-export type CoreSchemaList = paths["/api/core/schema"]["get"]["responses"]["200"]["content"]["application/json"]
-export type CoreSchema = paths["/api/core/schema/{:id}"]["get"]["responses"]["200"]["content"]["application/json"]
-
 export type ETLData = paths["/api/connection/{:connectionid}/data/{:dataid}"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type VideoService = paths["/api/video/service"]["get"]["responses"]["200"]["content"]["application/json"];
