@@ -22,12 +22,6 @@
             :create='false'
         />
         <template v-else>
-            <TablerInlineAlert
-                class='px-2 my-2'
-                title='Field Mapping is read-only'
-                description='The API to create and edit Maps is pending. Records posted by this Layer are currently handled by Legacy Styling.'
-            />
-
             <div class='px-2 pb-2 d-flex flex-column gap-2'>
                 <StandardItem
                     v-for='entry in entries'
@@ -94,7 +88,6 @@ import type { ETLLayer, ETLLayerTaskCapabilities } from '../../../types.ts';
 import {
     TablerNone,
     TablerAlert,
-    TablerInlineAlert
 } from '@tak-ps/vue-tabler';
 import { IconSchema, IconCaretRightFilled } from '@tabler/icons-vue';
 import StandardItem from '../../CloudTAK/util/StandardItem.vue';

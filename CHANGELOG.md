@@ -21,7 +21,15 @@
 - :rocket: Rename the Layer Incoming `Styling` tab to `Legacy Styling` - the existing `Layer.styles` object and `/api/layer/:layerid/cot` submission behaviour are unchanged
 - :tada: Add the `layer_mapping` table - each row ties a Layer to a named Output schema and a `destination` (`CoreFeature`, `CoreEvent` or `CoreDevice`) with an optional JSONata `query` and a `mapping` object
 - :tada: Layer Incoming responses now carry a `maps` array - one `{ schema, destination, queries: [{ query, map }] }` entry per schema & destination pair, `POST` & `PATCH /api/connection/:connectionid/layer/:layerid/incoming` return the augmented Layer Incoming including `maps`
-- :tada: Add a `Field Mapping` section to Layer Incoming listing the Task's named Output schemas - mapped schemas are shown first with a solid border and unmapped schemas follow with a dashed border, selecting a schema lists its fields. Maps are read-only pending the write API
+- :tada: Add a `Field Mapping` section to Layer Incoming listing the Task's named Output schemas - mapped schemas are shown first with a solid border and unmapped schemas follow with a dashed border, selecting a schema lists its fields
+- :tada: Add `GET`, `POST`, `GET/:mappingid`, `PATCH/:mappingid` & `DELETE/:mappingid` under `/api/connection/:connectionid/layer/:layerid/incoming/mapping` for managing Layer Maps - JSONata `query` values are validated on write
+- :tada: Field Mapping queries can now be created, edited & deleted from the UI - the mapping object is built by a `CoreFeature`, `CoreEvent` or `CoreDevice` form matching the query's destination and JSONata queries are validated as they are typed
+- :tada: Add `POST /api/connection/:connectionid/submit` accepting a GeoJSON-like FeatureCollection with a named `schema` and an optional `uids` list - Features with a geometry are delivered as CoT and archived, Features without a geometry are accepted and returned as `skipped`. Accepts user, Connection token or Layer token auth
+- :tada: Add `common/mapping.ts`, a data-driven fork of the legacy style library - each Map destination is described by a list of fields (key, kind & target) that the engine walks for every Map matching a Feature, in insertion order, rendering templates against `properties.metadata`. `/api/layer/:layerid/cot` and the legacy `Style` class are unchanged
+- :tada: `POST /api/connection/:connectionid/submit` applies the Layer Maps for the named `schema` when submitted with a Layer token - `CoreFeature` Maps style the CoT, `CoreEvent` Maps create or update Core Events (matched by `external_id`, defaulting to the Feature ID, with a Point derived from LineString & Polygon Features) and `CoreDevice` Maps create or update Core Devices. The response now carries `events` & `devices` counts and per-Feature `errors`
+- :rocket: Mapping objects are validated against the fields of their destination when a Map is created or updated - templates, enums, booleans, numbers & zoom levels
+- :rocket: Move the handlebars helpers shared by styling & mapping to `common/handlebars.ts`
+- :rocket: Move the legacy style editor to `ETL/Layer/Mapping/CoreFeature.vue`
 
 ### v13.88.3 - 2026-09-15
 

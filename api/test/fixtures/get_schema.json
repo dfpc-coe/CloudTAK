@@ -234,6 +234,31 @@
         "query": false,
         "res": true
     },
+    "GET /connection/:connectionid/layer/:layerid/incoming/mapping": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /connection/:connectionid/layer/:layerid/incoming/mapping": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/layer/:layerid/incoming/mapping/:mappingid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /connection/:connectionid/layer/:layerid/incoming/mapping/:mappingid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/layer/:layerid/incoming/mapping/:mappingid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid/layer/:layerid/task": {
         "body": false,
         "query": false,
@@ -332,6 +357,11 @@
     "DELETE /connection/:connectionid/layer/:layerid": {
         "body": false,
         "query": false,
+        "res": true
+    },
+    "POST /connection/:connectionid/submit": {
+        "body": true,
+        "query": true,
         "res": true
     },
     "GET /connection/:connectionid/token": {

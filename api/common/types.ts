@@ -3,7 +3,7 @@ import { Type, Static } from '@sinclair/typebox';
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text, Profile_Radiation_Dose, Profile_Wake_Lock } from './enums.js';
-import { VideoLease_SourceType, CoreEvent_Priority, CoreEventBoardColumn_Type } from './enums.js';
+import { VideoLease_SourceType, CoreEvent_Priority, CoreEventBoardColumn_Type, LayerMapping_Destination } from './enums.js';
 import { Capabilities, InvocationType } from '@tak-ps/etl';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
@@ -514,6 +514,14 @@ export const ProfileResponse = Type.Composite([
     }),
     Profile,
 ]);
+
+export const LayerMappingResponse = createSelectSchema(schemas.LayerMapping, {
+    id: Type.Integer(),
+    layer: Type.Integer(),
+    destination: Type.Enum(LayerMapping_Destination),
+    query: Type.Union([Type.Null(), Type.String()]),
+    mapping: Type.Record(Type.String(), Type.Unknown()),
+});
 
 export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
     id: Type.Integer(),

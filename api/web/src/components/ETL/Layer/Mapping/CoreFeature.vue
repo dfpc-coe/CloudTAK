@@ -788,7 +788,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { humanSeconds } from '../../../../std.js';
 import HandleForm from '../../../util/HandleForm.vue';
-import StyleMarti from './StyleMarti.vue';
+import StyleMarti from '../utils/StyleMarti.vue';
 import {
     IconLink,
     IconServer,
@@ -808,7 +808,7 @@ import {
     IconLicense,
 } from '@tabler/icons-vue'
 import IconSelect from '../../../util/IconSelect.vue';
-import StyleLinks from './StyleLinks.vue';
+import StyleLinks from '../utils/StyleLinks.vue';
 import {
     TablerRange,
     TablerInput,

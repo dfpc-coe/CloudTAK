@@ -13,11 +13,21 @@
             <h3 class='card-title mx-2'>
                 {{ isNew ? 'New Query' : 'Edit Query' }}
             </h3>
-            <div class='ms-auto btn-list'>
+            <div
+                v-if='!loading'
+                class='ms-auto btn-list'
+            >
+                <TablerDelete
+                    v-if='!isNew'
+                    displaytype='icon'
+                    title='Delete Query'
+                    @delete='remove'
+                />
                 <button
                     class='btn btn-primary btn-icon px-2'
                     title='Save Query'
-                    disabled
+                    :disabled='!valid'
+                    @click='save'
                 >
                     <IconDeviceFloppy
                         :size='32'
@@ -27,18 +37,16 @@
             </div>
         </div>
 
+        <TablerLoading
+            v-if='loading'
+            :desc='loading'
+        />
         <TablerNone
-            v-if='!isNew && !existing'
+            v-else-if='!isNew && !existing'
             label='Query'
             :create='false'
         />
         <template v-else>
-            <TablerInlineAlert
-                class='px-2 my-2'
-                title='Queries are read-only'
-                description='The API to create and edit Queries is pending - changes made here are not saved.'
-            />
-
             <div class='row g-2 px-2 pb-2'>
                 <div class='col-12'>
                     <TablerInput
@@ -66,7 +74,7 @@
                     v-if='!isDefault'
                     class='col-12'
                 >
-                    <TablerInput
+                    <QueryInput
                         v-model='query.query'
                         label='Query'
                         description='JSONata query evaluated against each record - records it matches are mapped'
@@ -74,12 +82,10 @@
                     />
                 </div>
                 <div class='col-12'>
-                    <TablerInput
+                    <component
+                        :is='mappers[query.destination]'
                         v-model='mapping'
-                        label='Mapping'
-                        description='Mapping object applied to records matched by the query'
-                        :error='mappingError'
-                        :rows='8'
+                        :schema='outputSchema ?? { properties: {} }'
                     />
                 </div>
             </div>
@@ -89,17 +95,25 @@
 
 <script setup lang='ts'>
 import { ref, computed, watch } from 'vue';
+import type { Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { server } from '../../../std.ts';
 import type { ETLLayer, ETLLayerTaskCapabilities } from '../../../types.ts';
 import {
     TablerNone,
     TablerEnum,
     TablerInput,
     TablerToggle,
+    TablerDelete,
+    TablerLoading,
     TablerIconButton,
-    TablerInlineAlert,
 } from '@tak-ps/vue-tabler';
 import { IconArrowLeft, IconDeviceFloppy } from '@tabler/icons-vue';
+import { outputSchemas } from './utils/namedSchemas.ts';
+import QueryInput from './utils/QueryInput.vue';
+import CoreFeature from './Mapping/CoreFeature.vue';
+import CoreEvent from './Mapping/CoreEvent.vue';
+import CoreDevice from './Mapping/CoreDevice.vue';
 
 type LayerMap = NonNullable<ETLLayer['incoming']>['maps'][number];
 type Destination = LayerMap['destination'];
@@ -115,12 +129,20 @@ const props = defineProps<{
     capabilities: ETLLayerTaskCapabilities;
 }>();
 
+const emit = defineEmits<{
+    (e: 'refresh'): void;
+}>();
+
 const route = useRoute();
 const router = useRouter();
 
+const loading = ref<string | false>(false);
+
 const destinations: Destination[] = ['CoreFeature', 'CoreEvent', 'CoreDevice'];
+const mappers: Record<Destination, Component> = { CoreFeature, CoreEvent, CoreDevice };
 
 const schema = computed(() => String(route.params.schema));
+const outputSchema = computed(() => outputSchemas(props.capabilities).find((s) => s.id === schema.value)?.schema);
 const isNew = computed(() => route.name === 'layer-incoming-mapping-query-new');
 
 /** The query addressed by the route along with the destination of its Map */
@@ -147,21 +169,68 @@ const query = ref<QueryForm>({
 
 const isDefault = ref(existing.value ? existing.value.query === null : true);
 
-const mapping = ref(JSON.stringify(existing.value?.map ?? {}, null, 4));
+const mapping = ref<Record<string, unknown>>(JSON.parse(JSON.stringify(existing.value?.map ?? {})));
 
-const mappingError = computed(() => {
-    try {
-        const parsed = JSON.parse(mapping.value);
-        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return 'Mapping must be a JSON object';
-        return '';
-    } catch (err) {
-        return err instanceof Error ? err.message : String(err);
-    }
-});
+const valid = computed(() => query.value.name.trim().length > 0 && (isDefault.value || query.value.query.trim().length > 0));
 
 watch(isDefault, (value) => {
     if (value) query.value.query = '';
 });
+
+function pathParams() {
+    return {
+        ':connectionid': Number(route.params.connectionid),
+        ':layerid': Number(route.params.layerid),
+    };
+}
+
+async function save() {
+    loading.value = 'Saving Query';
+
+    try {
+        const body = {
+            name: query.value.name,
+            destination: query.value.destination,
+            query: isDefault.value ? null : query.value.query,
+            mapping: mapping.value,
+        };
+
+        if (isNew.value) {
+            const res = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/incoming/mapping', {
+                params: { path: pathParams() },
+                body: { ...body, schema: schema.value },
+            });
+            if (res.error) throw new Error(res.error.message);
+        } else {
+            const res = await server.PATCH('/api/connection/{:connectionid}/layer/{:layerid}/incoming/mapping/{:mappingid}', {
+                params: { path: { ...pathParams(), ':mappingid': Number(route.params.query) } },
+                body,
+            });
+            if (res.error) throw new Error(res.error.message);
+        }
+
+        emit('refresh');
+        back();
+    } finally {
+        loading.value = false;
+    }
+}
+
+async function remove() {
+    loading.value = 'Deleting Query';
+
+    try {
+        const res = await server.DELETE('/api/connection/{:connectionid}/layer/{:layerid}/incoming/mapping/{:mappingid}', {
+            params: { path: { ...pathParams(), ':mappingid': Number(route.params.query) } },
+        });
+        if (res.error) throw new Error(res.error.message);
+
+        emit('refresh');
+        back();
+    } finally {
+        loading.value = false;
+    }
+}
 
 function back() {
     router.push({
