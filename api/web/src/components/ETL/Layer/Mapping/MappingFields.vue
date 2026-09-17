@@ -268,6 +268,11 @@ function isTemplate(value: unknown): boolean {
     return typeof value === 'string' && value.includes('{{');
 }
 
+// structuredClone throws on the reactive proxies of the schema & model
+function clone<T>(value: T): T {
+    return JSON.parse(JSON.stringify(value));
+}
+
 function getPath(obj: unknown, path: string): unknown {
     return path.split('.').reduce<unknown>((current, part) => {
         return current !== null && typeof current === 'object' ? (current as Record<string, unknown>)[part] : undefined;
@@ -293,7 +298,7 @@ const emit = defineEmits<{
 const enabled = ref<Record<string, boolean>>(Object.fromEntries(fields.value.map((f) => [f.key, false])));
 const update = ref<Record<string, boolean>>(Object.fromEntries(fields.value.map((f) => [f.key, true])));
 const templated = ref<Record<string, boolean>>(Object.fromEntries(fields.value.map((f) => [f.key, false])));
-const values = ref<Record<string, MappingFieldValue>>(Object.fromEntries(fields.value.map((f) => [f.key, structuredClone(f.default)])));
+const values = ref<Record<string, MappingFieldValue>>(Object.fromEntries(fields.value.map((f) => [f.key, clone(f.default)])));
 
 watch([enabled, update, values], format, { deep: true });
 
@@ -301,7 +306,7 @@ watch([enabled, update, values], format, { deep: true });
 watch(templated, (current) => {
     for (const field of fields.value) {
         if (!field.templatable || current[field.key] === isTemplate(values.value[field.key])) continue;
-        values.value[field.key] = current[field.key] ? '' : structuredClone(field.default);
+        values.value[field.key] = current[field.key] ? '' : clone(field.default);
     }
 }, { deep: true });
 
@@ -317,7 +322,7 @@ onMounted(() => {
 
         if (value === undefined || value === null) continue;
 
-        values.value[field.key] = structuredClone(value) as MappingFieldValue;
+        values.value[field.key] = clone(value as MappingFieldValue);
         templated.value[field.key] = field.templatable && isTemplate(value);
         enabled.value[field.key] = true;
     }
