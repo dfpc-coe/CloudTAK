@@ -42,6 +42,12 @@ export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'login::background::enabled': false,
     'login::background::color': '#03384f',
     'login::brand::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../web/public/CloudTAKLogoText.svg', import.meta.url)).toString('base64')}`,
+    'oidc::enabled': false,
+    'oidc::enforced': false,
+    'oidc::name': '',
+    'oidc::discovery': '',
+    'oidc::logo': '',
+    'passkey::enabled': true,
     'external::applications': [],
     'core::event::types': [],
 };

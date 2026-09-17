@@ -686,7 +686,7 @@ export const useMapStore = defineStore('cloudtak', {
                     if (overlay.mode_id !== mission.meta.guid && overlay.active) {
                         // The API call to make active will disable all active overlays on the backend so no need for networkIO
                         overlay.active = false;
-                    } else if (overlay.mode_id === mission.meta.guid) {
+                    } else if (overlay.mode_id === mission.meta.guid && !overlay.active) {
                         overlay.active = true;
 
                         await overlay.save();
