@@ -265,6 +265,9 @@ export type ETLLayerTaskCapabilities = paths["/api/connection/{:connectionid}/la
 export type ETLLayerIncoming = paths["/api/connection/{:connectionid}/layer/{:layerid}/incoming"]["post"]["responses"]["200"]["content"]["application/json"]
 export type ETLLayerOutgoing = paths["/api/connection/{:connectionid}/layer/{:layerid}/outgoing"]["post"]["responses"]["200"]["content"]["application/json"]
 
+export type CoreSchemaList = paths["/api/core/schema"]["get"]["responses"]["200"]["content"]["application/json"]
+export type CoreSchema = paths["/api/core/schema/{:id}"]["get"]["responses"]["200"]["content"]["application/json"]
+
 export type ETLData = paths["/api/connection/{:connectionid}/data/{:dataid}"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type VideoService = paths["/api/video/service"]["get"]["responses"]["200"]["content"]["application/json"];
