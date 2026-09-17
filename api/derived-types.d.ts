@@ -20110,6 +20110,11 @@ export interface paths {
                                  * @description Free text remarks about the Device
                                  */
                                 remarks: string;
+                                /**
+                                 * Channels
+                                 * @description TAK Server Channels the record is shared with
+                                 */
+                                channels: number[];
                                 id: string;
                                 created: string;
                                 updated: string;
@@ -20123,8 +20128,6 @@ export interface paths {
                                 metadata: {
                                     [key: string]: unknown;
                                 };
-                                /** @description TAK Server Channels the Device is shared with */
-                                channels: number[];
                             }[];
                         };
                     };
@@ -20332,6 +20335,11 @@ export interface paths {
                              * @description Free text remarks about the Device
                              */
                             remarks: string;
+                            /**
+                             * Channels
+                             * @description TAK Server Channels the record is shared with
+                             */
+                            channels: number[];
                             id: string;
                             created: string;
                             updated: string;
@@ -20345,8 +20353,6 @@ export interface paths {
                             metadata: {
                                 [key: string]: unknown;
                             };
-                            /** @description TAK Server Channels the Device is shared with */
-                            channels: number[];
                         };
                     };
                 };
@@ -20506,6 +20512,11 @@ export interface paths {
                              * @description Free text remarks about the Device
                              */
                             remarks: string;
+                            /**
+                             * Channels
+                             * @description TAK Server Channels the record is shared with
+                             */
+                            channels: number[];
                             id: string;
                             created: string;
                             updated: string;
@@ -20519,8 +20530,6 @@ export interface paths {
                             metadata: {
                                 [key: string]: unknown;
                             };
-                            /** @description TAK Server Channels the Device is shared with */
-                            channels: number[];
                         };
                     };
                 };
@@ -20794,6 +20803,11 @@ export interface paths {
                              * @description Free text remarks about the Device
                              */
                             remarks: string;
+                            /**
+                             * Channels
+                             * @description TAK Server Channels the record is shared with
+                             */
+                            channels: number[];
                             id: string;
                             created: string;
                             updated: string;
@@ -20807,8 +20821,6 @@ export interface paths {
                             metadata: {
                                 [key: string]: unknown;
                             };
-                            /** @description TAK Server Channels the Device is shared with */
-                            channels: number[];
                         };
                     };
                 };
@@ -21665,6 +21677,12 @@ export interface paths {
                                      */
                                     remarks: string;
                                     /**
+                                     * Active
+                                     * @description Is the Event currently active
+                                     * @default true
+                                     */
+                                    active: boolean;
+                                    /**
                                      * External ID
                                      * @description ID of the Event in an external system
                                      */
@@ -21675,13 +21693,50 @@ export interface paths {
                                      * @default true
                                      */
                                     editable: boolean;
+                                    /**
+                                     * Channels
+                                     * @description TAK Server Channels the record is shared with
+                                     */
+                                    channels: number[];
+                                    /** Style */
+                                    style: {
+                                        /**
+                                         * Icon
+                                         * @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>
+                                         */
+                                        icon?: string;
+                                        /**
+                                         * Marker Color
+                                         * @description Hex colour of the Event marker - ie: #00ff00
+                                         */
+                                        "marker-color"?: string;
+                                        /**
+                                         * Marker Opacity
+                                         * @description Opacity of the Event marker
+                                         */
+                                        "marker-opacity"?: number;
+                                    };
+                                    /**
+                                     * Links
+                                     * @description Named URLs associated with the Event
+                                     */
+                                    links: {
+                                        /**
+                                         * Name
+                                         * @description Human readable name of the Link
+                                         */
+                                        name: string;
+                                        /**
+                                         * URL
+                                         * @description URL the Link points at
+                                         */
+                                        url: string;
+                                    }[];
                                     id: string;
                                     /** @description GUID of the TAK Server Mission associated with the Event */
                                     mission_guid: null | string;
                                     created: string;
                                     updated: string;
-                                    /** @description Is the Event currently active */
-                                    active: boolean;
                                     /** @description Time at which the Event ended */
                                     ended: null | string;
                                     username: null | string;
@@ -21691,21 +21746,6 @@ export interface paths {
                                     metadata: {
                                         [key: string]: unknown;
                                     };
-                                    /** @description Named URLs associated with the Event */
-                                    links: {
-                                        /** @description Human readable name of the Link */
-                                        name: string;
-                                        /** @description URL the Link points at */
-                                        url: string;
-                                    }[];
-                                    style: {
-                                        /** @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path> */
-                                        icon?: string;
-                                        /** @description Hex colour of the Event marker - ie: #00ff00 */
-                                        "marker-color"?: string;
-                                        /** @description Opacity of the Event marker */
-                                        "marker-opacity"?: number;
-                                    };
                                     geometry: {
                                         /** @constant */
                                         type: "Point";
@@ -21714,8 +21754,6 @@ export interface paths {
                                             number
                                         ];
                                     };
-                                    /** @description TAK Server Channels the Event is shared with */
-                                    channels: number[];
                                     /** @description Boards of every Channel the Event is shared with, along with the Column the Event is placed in on each */
                                     boards: {
                                         id: string;
@@ -21889,6 +21927,12 @@ export interface paths {
                                  */
                                 remarks: string;
                                 /**
+                                 * Active
+                                 * @description Is the Event currently active
+                                 * @default true
+                                 */
+                                active: boolean;
+                                /**
                                  * External ID
                                  * @description ID of the Event in an external system
                                  */
@@ -21899,13 +21943,50 @@ export interface paths {
                                  * @default true
                                  */
                                 editable: boolean;
+                                /**
+                                 * Channels
+                                 * @description TAK Server Channels the record is shared with
+                                 */
+                                channels: number[];
+                                /** Style */
+                                style: {
+                                    /**
+                                     * Icon
+                                     * @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>
+                                     */
+                                    icon?: string;
+                                    /**
+                                     * Marker Color
+                                     * @description Hex colour of the Event marker - ie: #00ff00
+                                     */
+                                    "marker-color"?: string;
+                                    /**
+                                     * Marker Opacity
+                                     * @description Opacity of the Event marker
+                                     */
+                                    "marker-opacity"?: number;
+                                };
+                                /**
+                                 * Links
+                                 * @description Named URLs associated with the Event
+                                 */
+                                links: {
+                                    /**
+                                     * Name
+                                     * @description Human readable name of the Link
+                                     */
+                                    name: string;
+                                    /**
+                                     * URL
+                                     * @description URL the Link points at
+                                     */
+                                    url: string;
+                                }[];
                                 id: string;
                                 /** @description GUID of the TAK Server Mission associated with the Event */
                                 mission_guid: null | string;
                                 created: string;
                                 updated: string;
-                                /** @description Is the Event currently active */
-                                active: boolean;
                                 /** @description Time at which the Event ended */
                                 ended: null | string;
                                 username: null | string;
@@ -21915,21 +21996,6 @@ export interface paths {
                                 metadata: {
                                     [key: string]: unknown;
                                 };
-                                /** @description Named URLs associated with the Event */
-                                links: {
-                                    /** @description Human readable name of the Link */
-                                    name: string;
-                                    /** @description URL the Link points at */
-                                    url: string;
-                                }[];
-                                style: {
-                                    /** @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path> */
-                                    icon?: string;
-                                    /** @description Hex colour of the Event marker - ie: #00ff00 */
-                                    "marker-color"?: string;
-                                    /** @description Opacity of the Event marker */
-                                    "marker-opacity"?: number;
-                                };
                                 geometry: {
                                     /** @constant */
                                     type: "Point";
@@ -21938,8 +22004,6 @@ export interface paths {
                                         number
                                     ];
                                 };
-                                /** @description TAK Server Channels the Event is shared with */
-                                channels: number[];
                                 /** @description Boards of every Channel the Event is shared with, along with the Column the Event is placed in on each */
                                 boards: {
                                     id: string;
@@ -22221,6 +22285,12 @@ export interface paths {
                                  */
                                 remarks: string;
                                 /**
+                                 * Active
+                                 * @description Is the Event currently active
+                                 * @default true
+                                 */
+                                active: boolean;
+                                /**
                                  * External ID
                                  * @description ID of the Event in an external system
                                  */
@@ -22231,13 +22301,50 @@ export interface paths {
                                  * @default true
                                  */
                                 editable: boolean;
+                                /**
+                                 * Channels
+                                 * @description TAK Server Channels the record is shared with
+                                 */
+                                channels: number[];
+                                /** Style */
+                                style: {
+                                    /**
+                                     * Icon
+                                     * @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>
+                                     */
+                                    icon?: string;
+                                    /**
+                                     * Marker Color
+                                     * @description Hex colour of the Event marker - ie: #00ff00
+                                     */
+                                    "marker-color"?: string;
+                                    /**
+                                     * Marker Opacity
+                                     * @description Opacity of the Event marker
+                                     */
+                                    "marker-opacity"?: number;
+                                };
+                                /**
+                                 * Links
+                                 * @description Named URLs associated with the Event
+                                 */
+                                links: {
+                                    /**
+                                     * Name
+                                     * @description Human readable name of the Link
+                                     */
+                                    name: string;
+                                    /**
+                                     * URL
+                                     * @description URL the Link points at
+                                     */
+                                    url: string;
+                                }[];
                                 id: string;
                                 /** @description GUID of the TAK Server Mission associated with the Event */
                                 mission_guid: null | string;
                                 created: string;
                                 updated: string;
-                                /** @description Is the Event currently active */
-                                active: boolean;
                                 /** @description Time at which the Event ended */
                                 ended: null | string;
                                 username: null | string;
@@ -22247,21 +22354,6 @@ export interface paths {
                                 metadata: {
                                     [key: string]: unknown;
                                 };
-                                /** @description Named URLs associated with the Event */
-                                links: {
-                                    /** @description Human readable name of the Link */
-                                    name: string;
-                                    /** @description URL the Link points at */
-                                    url: string;
-                                }[];
-                                style: {
-                                    /** @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path> */
-                                    icon?: string;
-                                    /** @description Hex colour of the Event marker - ie: #00ff00 */
-                                    "marker-color"?: string;
-                                    /** @description Opacity of the Event marker */
-                                    "marker-opacity"?: number;
-                                };
                                 geometry: {
                                     /** @constant */
                                     type: "Point";
@@ -22270,8 +22362,6 @@ export interface paths {
                                         number
                                     ];
                                 };
-                                /** @description TAK Server Channels the Event is shared with */
-                                channels: number[];
                                 /** @description Boards of every Channel the Event is shared with, along with the Column the Event is placed in on each */
                                 boards: {
                                     id: string;
@@ -22760,6 +22850,12 @@ export interface paths {
                                  */
                                 remarks: string;
                                 /**
+                                 * Active
+                                 * @description Is the Event currently active
+                                 * @default true
+                                 */
+                                active: boolean;
+                                /**
                                  * External ID
                                  * @description ID of the Event in an external system
                                  */
@@ -22770,13 +22866,50 @@ export interface paths {
                                  * @default true
                                  */
                                 editable: boolean;
+                                /**
+                                 * Channels
+                                 * @description TAK Server Channels the record is shared with
+                                 */
+                                channels: number[];
+                                /** Style */
+                                style: {
+                                    /**
+                                     * Icon
+                                     * @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>
+                                     */
+                                    icon?: string;
+                                    /**
+                                     * Marker Color
+                                     * @description Hex colour of the Event marker - ie: #00ff00
+                                     */
+                                    "marker-color"?: string;
+                                    /**
+                                     * Marker Opacity
+                                     * @description Opacity of the Event marker
+                                     */
+                                    "marker-opacity"?: number;
+                                };
+                                /**
+                                 * Links
+                                 * @description Named URLs associated with the Event
+                                 */
+                                links: {
+                                    /**
+                                     * Name
+                                     * @description Human readable name of the Link
+                                     */
+                                    name: string;
+                                    /**
+                                     * URL
+                                     * @description URL the Link points at
+                                     */
+                                    url: string;
+                                }[];
                                 id: string;
                                 /** @description GUID of the TAK Server Mission associated with the Event */
                                 mission_guid: null | string;
                                 created: string;
                                 updated: string;
-                                /** @description Is the Event currently active */
-                                active: boolean;
                                 /** @description Time at which the Event ended */
                                 ended: null | string;
                                 username: null | string;
@@ -22786,21 +22919,6 @@ export interface paths {
                                 metadata: {
                                     [key: string]: unknown;
                                 };
-                                /** @description Named URLs associated with the Event */
-                                links: {
-                                    /** @description Human readable name of the Link */
-                                    name: string;
-                                    /** @description URL the Link points at */
-                                    url: string;
-                                }[];
-                                style: {
-                                    /** @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path> */
-                                    icon?: string;
-                                    /** @description Hex colour of the Event marker - ie: #00ff00 */
-                                    "marker-color"?: string;
-                                    /** @description Opacity of the Event marker */
-                                    "marker-opacity"?: number;
-                                };
                                 geometry: {
                                     /** @constant */
                                     type: "Point";
@@ -22809,8 +22927,6 @@ export interface paths {
                                         number
                                     ];
                                 };
-                                /** @description TAK Server Channels the Event is shared with */
-                                channels: number[];
                                 /** @description Boards of every Channel the Event is shared with, along with the Column the Event is placed in on each */
                                 boards: {
                                     id: string;
@@ -22961,9 +23077,15 @@ export interface paths {
                          * @default []
                          */
                         links: {
-                            /** @description Human readable name of the Link */
+                            /**
+                             * Name
+                             * @description Human readable name of the Link
+                             */
                             name: string;
-                            /** @description URL the Link points at */
+                            /**
+                             * URL
+                             * @description URL the Link points at
+                             */
                             url: string;
                         }[];
                         /**
@@ -22971,11 +23093,20 @@ export interface paths {
                          * @default {}
                          */
                         style: {
-                            /** @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path> */
+                            /**
+                             * Icon
+                             * @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>
+                             */
                             icon?: string;
-                            /** @description Hex colour of the Event marker - ie: #00ff00 */
+                            /**
+                             * Marker Color
+                             * @description Hex colour of the Event marker - ie: #00ff00
+                             */
                             "marker-color"?: string;
-                            /** @description Opacity of the Event marker */
+                            /**
+                             * Marker Opacity
+                             * @description Opacity of the Event marker
+                             */
                             "marker-opacity"?: number;
                         };
                         /**
@@ -23022,6 +23153,12 @@ export interface paths {
                              */
                             remarks: string;
                             /**
+                             * Active
+                             * @description Is the Event currently active
+                             * @default true
+                             */
+                            active: boolean;
+                            /**
                              * External ID
                              * @description ID of the Event in an external system
                              */
@@ -23032,13 +23169,50 @@ export interface paths {
                              * @default true
                              */
                             editable: boolean;
+                            /**
+                             * Channels
+                             * @description TAK Server Channels the record is shared with
+                             */
+                            channels: number[];
+                            /** Style */
+                            style: {
+                                /**
+                                 * Icon
+                                 * @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>
+                                 */
+                                icon?: string;
+                                /**
+                                 * Marker Color
+                                 * @description Hex colour of the Event marker - ie: #00ff00
+                                 */
+                                "marker-color"?: string;
+                                /**
+                                 * Marker Opacity
+                                 * @description Opacity of the Event marker
+                                 */
+                                "marker-opacity"?: number;
+                            };
+                            /**
+                             * Links
+                             * @description Named URLs associated with the Event
+                             */
+                            links: {
+                                /**
+                                 * Name
+                                 * @description Human readable name of the Link
+                                 */
+                                name: string;
+                                /**
+                                 * URL
+                                 * @description URL the Link points at
+                                 */
+                                url: string;
+                            }[];
                             id: string;
                             /** @description GUID of the TAK Server Mission associated with the Event */
                             mission_guid: null | string;
                             created: string;
                             updated: string;
-                            /** @description Is the Event currently active */
-                            active: boolean;
                             /** @description Time at which the Event ended */
                             ended: null | string;
                             username: null | string;
@@ -23048,21 +23222,6 @@ export interface paths {
                             metadata: {
                                 [key: string]: unknown;
                             };
-                            /** @description Named URLs associated with the Event */
-                            links: {
-                                /** @description Human readable name of the Link */
-                                name: string;
-                                /** @description URL the Link points at */
-                                url: string;
-                            }[];
-                            style: {
-                                /** @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path> */
-                                icon?: string;
-                                /** @description Hex colour of the Event marker - ie: #00ff00 */
-                                "marker-color"?: string;
-                                /** @description Opacity of the Event marker */
-                                "marker-opacity"?: number;
-                            };
                             geometry: {
                                 /** @constant */
                                 type: "Point";
@@ -23071,8 +23230,6 @@ export interface paths {
                                     number
                                 ];
                             };
-                            /** @description TAK Server Channels the Event is shared with */
-                            channels: number[];
                             /** @description Boards of every Channel the Event is shared with, along with the Column the Event is placed in on each */
                             boards: {
                                 id: string;
@@ -23227,6 +23384,12 @@ export interface paths {
                              */
                             remarks: string;
                             /**
+                             * Active
+                             * @description Is the Event currently active
+                             * @default true
+                             */
+                            active: boolean;
+                            /**
                              * External ID
                              * @description ID of the Event in an external system
                              */
@@ -23237,13 +23400,50 @@ export interface paths {
                              * @default true
                              */
                             editable: boolean;
+                            /**
+                             * Channels
+                             * @description TAK Server Channels the record is shared with
+                             */
+                            channels: number[];
+                            /** Style */
+                            style: {
+                                /**
+                                 * Icon
+                                 * @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>
+                                 */
+                                icon?: string;
+                                /**
+                                 * Marker Color
+                                 * @description Hex colour of the Event marker - ie: #00ff00
+                                 */
+                                "marker-color"?: string;
+                                /**
+                                 * Marker Opacity
+                                 * @description Opacity of the Event marker
+                                 */
+                                "marker-opacity"?: number;
+                            };
+                            /**
+                             * Links
+                             * @description Named URLs associated with the Event
+                             */
+                            links: {
+                                /**
+                                 * Name
+                                 * @description Human readable name of the Link
+                                 */
+                                name: string;
+                                /**
+                                 * URL
+                                 * @description URL the Link points at
+                                 */
+                                url: string;
+                            }[];
                             id: string;
                             /** @description GUID of the TAK Server Mission associated with the Event */
                             mission_guid: null | string;
                             created: string;
                             updated: string;
-                            /** @description Is the Event currently active */
-                            active: boolean;
                             /** @description Time at which the Event ended */
                             ended: null | string;
                             username: null | string;
@@ -23253,21 +23453,6 @@ export interface paths {
                             metadata: {
                                 [key: string]: unknown;
                             };
-                            /** @description Named URLs associated with the Event */
-                            links: {
-                                /** @description Human readable name of the Link */
-                                name: string;
-                                /** @description URL the Link points at */
-                                url: string;
-                            }[];
-                            style: {
-                                /** @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path> */
-                                icon?: string;
-                                /** @description Hex colour of the Event marker - ie: #00ff00 */
-                                "marker-color"?: string;
-                                /** @description Opacity of the Event marker */
-                                "marker-opacity"?: number;
-                            };
                             geometry: {
                                 /** @constant */
                                 type: "Point";
@@ -23276,8 +23461,6 @@ export interface paths {
                                     number
                                 ];
                             };
-                            /** @description TAK Server Channels the Event is shared with */
-                            channels: number[];
                             /** @description Boards of every Channel the Event is shared with, along with the Column the Event is placed in on each */
                             boards: {
                                 id: string;
@@ -23515,18 +23698,33 @@ export interface paths {
                         };
                         /** @description Named URLs associated with the Event - replaces the existing links array */
                         links?: {
-                            /** @description Human readable name of the Link */
+                            /**
+                             * Name
+                             * @description Human readable name of the Link
+                             */
                             name: string;
-                            /** @description URL the Link points at */
+                            /**
+                             * URL
+                             * @description URL the Link points at
+                             */
                             url: string;
                         }[];
                         /** @description Point styling for the Event - replaces the existing style object */
                         style?: {
-                            /** @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path> */
+                            /**
+                             * Icon
+                             * @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>
+                             */
                             icon?: string;
-                            /** @description Hex colour of the Event marker - ie: #00ff00 */
+                            /**
+                             * Marker Color
+                             * @description Hex colour of the Event marker - ie: #00ff00
+                             */
                             "marker-color"?: string;
-                            /** @description Opacity of the Event marker */
+                            /**
+                             * Marker Opacity
+                             * @description Opacity of the Event marker
+                             */
                             "marker-opacity"?: number;
                         };
                         channels?: number[];
@@ -23569,6 +23767,12 @@ export interface paths {
                              */
                             remarks: string;
                             /**
+                             * Active
+                             * @description Is the Event currently active
+                             * @default true
+                             */
+                            active: boolean;
+                            /**
                              * External ID
                              * @description ID of the Event in an external system
                              */
@@ -23579,13 +23783,50 @@ export interface paths {
                              * @default true
                              */
                             editable: boolean;
+                            /**
+                             * Channels
+                             * @description TAK Server Channels the record is shared with
+                             */
+                            channels: number[];
+                            /** Style */
+                            style: {
+                                /**
+                                 * Icon
+                                 * @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>
+                                 */
+                                icon?: string;
+                                /**
+                                 * Marker Color
+                                 * @description Hex colour of the Event marker - ie: #00ff00
+                                 */
+                                "marker-color"?: string;
+                                /**
+                                 * Marker Opacity
+                                 * @description Opacity of the Event marker
+                                 */
+                                "marker-opacity"?: number;
+                            };
+                            /**
+                             * Links
+                             * @description Named URLs associated with the Event
+                             */
+                            links: {
+                                /**
+                                 * Name
+                                 * @description Human readable name of the Link
+                                 */
+                                name: string;
+                                /**
+                                 * URL
+                                 * @description URL the Link points at
+                                 */
+                                url: string;
+                            }[];
                             id: string;
                             /** @description GUID of the TAK Server Mission associated with the Event */
                             mission_guid: null | string;
                             created: string;
                             updated: string;
-                            /** @description Is the Event currently active */
-                            active: boolean;
                             /** @description Time at which the Event ended */
                             ended: null | string;
                             username: null | string;
@@ -23595,21 +23836,6 @@ export interface paths {
                             metadata: {
                                 [key: string]: unknown;
                             };
-                            /** @description Named URLs associated with the Event */
-                            links: {
-                                /** @description Human readable name of the Link */
-                                name: string;
-                                /** @description URL the Link points at */
-                                url: string;
-                            }[];
-                            style: {
-                                /** @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path> */
-                                icon?: string;
-                                /** @description Hex colour of the Event marker - ie: #00ff00 */
-                                "marker-color"?: string;
-                                /** @description Opacity of the Event marker */
-                                "marker-opacity"?: number;
-                            };
                             geometry: {
                                 /** @constant */
                                 type: "Point";
@@ -23618,8 +23844,6 @@ export interface paths {
                                     number
                                 ];
                             };
-                            /** @description TAK Server Channels the Event is shared with */
-                            channels: number[];
                             /** @description Boards of every Channel the Event is shared with, along with the Column the Event is placed in on each */
                             boards: {
                                 id: string;

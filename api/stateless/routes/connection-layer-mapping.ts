@@ -17,7 +17,7 @@ const MappingQuery = Type.Union([Type.Null(), Type.String({ minLength: 1 })], {
 });
 
 const MappingObject = Type.Record(Type.String(), Type.Unknown(), {
-    description: 'Mapping object applied to records matched by the query',
+    description: 'Mapping object applied to records matched by the query - a field is either its bare value or `{ value, update }` where `update: false` only applies the field when a CoreEvent or CoreDevice is first created',
 });
 
 function validateQuery(query: string | null | undefined): void {

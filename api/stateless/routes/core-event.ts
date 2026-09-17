@@ -10,6 +10,7 @@ import type ConfigStateless from '../config.js';
 import { userChannels } from '../lib/tak-channels.js';
 import { notifyCoreEvent } from '../lib/core-event.js';
 import { ETLEventAction } from '../../common/etl-events.js';
+import { uniqueViolation } from '../lib/pg-error.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
@@ -373,7 +374,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     ...body,
                     ...(ended === undefined ? {} : { ended }),
                     updated: sql`Now()`,
-                });
+                }).catch(uniqueViolation('external_id is already used by another Event of the Connection'));
             }
 
             if (channels !== undefined) {

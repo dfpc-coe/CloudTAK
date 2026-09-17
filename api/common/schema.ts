@@ -19,7 +19,7 @@ import {
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
     ProfileChatStatus, CoreEvent_Priority, CoreEventBoardColumn_Type, LayerMapping_Destination,
 } from './enums.js';
-import { bigint, boolean, uuid, numeric, integer, doublePrecision, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
+import { bigint, boolean, uuid, numeric, integer, doublePrecision, timestamp, pgTable, serial, varchar, text, unique, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
@@ -51,6 +51,10 @@ export const CoreEvent = pgTable('core_event', {
     links: jsonb().$type<Array<Static<typeof CoreEventLink>>>().notNull().default([]),
     style: jsonb().$type<Static<typeof CoreEventStyle>>().notNull().default({}),
     geometry: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>().notNull(),
+}, (table) => {
+    return {
+        external_idx: uniqueIndex('core_event_connection_external_id_idx').on(table.connection, table.external_id).where(sql`external_id <> ''`),
+    };
 });
 
 export const CoreEventChannel = pgTable('core_event_channel', {
@@ -187,6 +191,10 @@ export const CoreDevice = pgTable('core_device', {
     external_id: text().notNull().default(''),
     remarks: text().notNull().default(''),
     metadata: jsonb().$type<Record<string, unknown>>().notNull().default({}),
+}, (table) => {
+    return {
+        external_idx: uniqueIndex('core_device_connection_external_id_idx').on(table.connection, table.external_id).where(sql`external_id <> ''`),
+    };
 });
 
 export const CoreDeviceChannel = pgTable('core_device_channel', {

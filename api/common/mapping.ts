@@ -1,4 +1,4 @@
-import type { Static, TObject } from '@sinclair/typebox';
+import type { Static, TObject, TSchema } from '@sinclair/typebox';
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import jsonata from 'jsonata';
 import Err from '@openaddresses/batch-error';
@@ -15,18 +15,30 @@ export type MappingFeature = Omit<Static<typeof Feature.InputFeature>, 'geometry
 
 export type MappingRow = Pick<InferSelectModel<typeof LayerMapping>, 'destination' | 'query' | 'mapping'>;
 
-export type MappedEvent = Partial<Pick<InferInsertModel<typeof CoreEvent>, keyof Static<typeof CoreEventSchema>>>;
-export type MappedDevice = Partial<Pick<InferInsertModel<typeof CoreDevice>, keyof Static<typeof CoreDeviceSchema>>>;
+type EventColumns = InferInsertModel<typeof CoreEvent>;
+type DeviceColumns = InferInsertModel<typeof CoreDevice>;
+
+export type MappedEvent = Partial<Pick<EventColumns, Extract<keyof typeof CoreEventSchema.properties, keyof EventColumns>>> & {
+    channels?: number[];
+};
+
+export type MappedDevice = Partial<Pick<DeviceColumns, Extract<keyof typeof CoreDeviceSchema.properties, keyof DeviceColumns>>> & {
+    channels?: number[];
+    event_external_id?: string;
+};
 
 /**
  * - template:  Handlebars template rendered against the Feature metadata
  * - number:    Number, or a template rendering to a number
+ * - boolean:   Boolean, or a template rendering to true or false
+ * - enum:      One of a list of options, or a template rendering to one
  * - seconds:   Seconds as a number, or a template rendering to seconds or a timestamp
  * - timestamp: Template rendering to a date-time - an empty result clears the value
  * - links:     Array of { url, remarks } templates appended as CoT links
+ * - objects:   Array of objects whose properties are templates
  * - array:     Non-empty array copied as-is
  */
-export type MapFieldKind = 'template' | 'number' | 'boolean' | 'enum' | 'seconds' | 'timestamp' | 'links' | 'array';
+export type MapFieldKind = 'template' | 'number' | 'boolean' | 'enum' | 'seconds' | 'timestamp' | 'links' | 'objects' | 'array';
 
 export interface MapField {
     /** Dot path of the value in the Map object */
@@ -39,6 +51,10 @@ export interface MapField {
     options?: string[];
     min?: number;
     max?: number;
+    /** Items of an `array` must be integers */
+    integers?: boolean;
+    /** Properties of the items of an `objects` field along with the pattern a rendered value has to match */
+    items?: Record<string, { pattern?: string }>;
 }
 
 type Render = {
@@ -52,16 +68,35 @@ function prop(key: string, kind: MapFieldKind, extra: Partial<MapField> = {}): M
     return { key, kind, target: `properties.${key}`, ...extra };
 }
 
-/** Fields of a flat JSON Schema - the kind of each is derived from its property definition */
-function schemaFields(schema: TObject): MapField[] {
-    return Object.entries(schema.properties).map(([key, property]) => {
-        let kind: MapFieldKind = 'template';
-        if (property.type === 'boolean') kind = 'boolean';
-        else if (property.type === 'number' || property.type === 'integer') kind = 'number';
-        else if (property.enum) kind = 'enum';
-        else if (property.format === 'date-time') kind = 'timestamp';
+/** Fields of a JSON Schema - the kind of each is derived from its property definition, nested objects become dot paths */
+function schemaFields(schema: TObject, prefix = ''): MapField[] {
+    return Object.entries(schema.properties).flatMap(([name, property]): MapField[] => {
+        const key = `${prefix}${name}`;
 
-        return { key, kind, target: key, options: property.enum, min: property.minimum, max: property.maximum };
+        if (property.type === 'object') return schemaFields(property as TObject, `${key}.`);
+
+        const field: MapField = { key, kind: 'template', target: key };
+
+        if (property.type === 'boolean') {
+            field.kind = 'boolean';
+        } else if (property.type === 'number' || property.type === 'integer') {
+            field.kind = 'number';
+            field.min = property.minimum;
+            field.max = property.maximum;
+        } else if (property.type === 'array' && property.items.type === 'object') {
+            field.kind = 'objects';
+            field.items = Object.fromEntries(Object.entries<TSchema>(property.items.properties).map(([item, def]) => [item, { pattern: def.pattern }]));
+        } else if (property.type === 'array') {
+            field.kind = 'array';
+            field.integers = property.items.type === 'integer';
+        } else if (property.enum) {
+            field.kind = 'enum';
+            field.options = property.enum;
+        } else if (property.format === 'date-time') {
+            field.kind = 'timestamp';
+        }
+
+        return [field];
     });
 }
 
@@ -137,6 +172,20 @@ function setPath(obj: Record<string, unknown>, path: string, value: unknown): vo
     current[parts[parts.length - 1]] = value;
 }
 
+/**
+ * Value of a field in a Map object - either the bare value or `{ value, update }`
+ * where `update: false` only applies the field when the record is first created
+ */
+function entry(map: unknown, field: MapField): { value: unknown; update: unknown } {
+    const raw = getPath(map, field.key);
+
+    if (raw !== null && typeof raw === 'object' && !Array.isArray(raw) && 'value' in raw) {
+        return { value: raw.value, update: 'update' in raw ? raw.update : true };
+    }
+
+    return { value: raw, update: true };
+}
+
 function label(field: MapField): string {
     const parts = field.key.split('.');
     const name = parts[parts.length - 1]
@@ -153,6 +202,10 @@ function isEmpty(value: unknown): boolean {
 
 function isNumeric(value: unknown): boolean {
     return typeof value === 'number' || (typeof value === 'string' && value.trim() !== '' && !isNaN(Number(value)));
+}
+
+function isTemplate(value: unknown): value is string {
+    return typeof value === 'string' && value.includes('{{');
 }
 
 function invalid(err: unknown, message: string): Err {
@@ -229,22 +282,34 @@ const KINDS: Record<MapFieldKind, {
     },
     boolean: {
         validate: (value, field, name) => {
-            if (typeof value !== 'boolean' && value !== 'true' && value !== 'false') {
+            if (isTemplate(value)) {
+                assertTemplate(value, `Invalid ${name} Template: ${value}`);
+            } else if (typeof value !== 'boolean' && value !== 'true' && value !== 'false') {
                 throw invalid(null, `Invalid ${name}: ${value} - Expected a boolean`);
             }
         },
-        render: (raw) => {
+        render: (raw, { compile }) => {
             if (typeof raw === 'boolean') return raw;
-            return raw === 'true' || raw === 'false' ? raw === 'true' : undefined;
+            if (typeof raw !== 'string') return undefined;
+
+            const rendered = compile(raw).trim().toLowerCase();
+            return rendered === 'true' || rendered === 'false' ? rendered === 'true' : undefined;
         },
     },
     enum: {
         validate: (value, field, name) => {
-            if (typeof value !== 'string' || !field.options?.includes(value)) {
+            if (isTemplate(value)) {
+                assertTemplate(value, `Invalid ${name} Template: ${value}`);
+            } else if (typeof value !== 'string' || !field.options?.includes(value)) {
                 throw invalid(null, `Invalid ${name}: ${value} - Expected one of ${field.options?.join(', ')}`);
             }
         },
-        render: (raw, { field }) => typeof raw === 'string' && field.options?.includes(raw) ? raw : undefined,
+        render: (raw, { field, compile }) => {
+            if (typeof raw !== 'string') return undefined;
+
+            const rendered = compile(raw).trim();
+            return field.options?.find(option => option === rendered || option.toLowerCase() === rendered.toLowerCase());
+        },
     },
     links: {
         validate: (value, field, name) => {
@@ -272,9 +337,33 @@ const KINDS: Record<MapFieldKind, {
             ];
         },
     },
+    objects: {
+        validate: (value, field, name) => {
+            if (!Array.isArray(value)) throw invalid(null, `Invalid ${name}: Expected an array`);
+
+            for (const item of value) {
+                for (const key of Object.keys(field.items ?? {})) {
+                    assertTemplate(item?.[key], `Invalid ${name} ${key} Template: ${item?.[key]}`);
+                }
+            }
+        },
+        render: (raw, { field, compile }) => {
+            if (!Array.isArray(raw)) return undefined;
+
+            const items = Object.entries(field.items ?? {});
+
+            return raw
+                .map(item => Object.fromEntries(items.map(([key]) => [key, compile(String(item?.[key] ?? '')).trim()])))
+                .filter(item => items.every(([key, { pattern }]) => !pattern || new RegExp(pattern).test(item[key])));
+        },
+    },
     array: {
         validate: (value, field, name) => {
             if (!Array.isArray(value)) throw invalid(null, `Invalid ${name}: Expected an array`);
+
+            if (field.integers && !value.every(item => Number.isInteger(item) && item >= 0)) {
+                throw invalid(null, `Invalid ${name}: Expected an array of positive integers`);
+            }
         },
         render: raw => Array.isArray(raw) && raw.length ? raw : undefined,
     },
@@ -304,7 +393,8 @@ export default class Mapping {
      */
     static validate(destination: LayerMapping_Destination, map: Record<string, unknown>): true {
         for (const field of MAP_FIELDS[destination]) {
-            const value = getPath(map, field.key);
+            const { value, update } = entry(map, field);
+            if (typeof update !== 'boolean') throw invalid(null, `Invalid ${label(field)}: update must be a boolean`);
             if (!isEmpty(value)) KINDS[field.kind].validate(value, field, label(field));
         }
 
@@ -335,6 +425,16 @@ export default class Mapping {
     }
 
     /**
+     * Fields of a Mapping marked `update: false` - applied when a record is
+     * created but left alone when the record already exists
+     */
+    static createOnly(row: MappingRow): Set<string> {
+        return new Set(MAP_FIELDS[row.destination]
+            .filter(field => entry(row.mapping, field).update === false)
+            .map(field => field.target));
+    }
+
+    /**
      * Render a Mapping against a Feature - a CoreFeature Mapping styles the
      * Feature in place, other destinations produce the fields of a new record
      */
@@ -353,7 +453,7 @@ export default class Mapping {
             for (const field of MAP_FIELDS[row.destination]) {
                 if (field.geometry && feature.geometry?.type !== field.geometry) continue;
 
-                const raw = getPath(row.mapping, field.key);
+                const raw = entry(row.mapping, field).value;
                 if (isEmpty(raw)) continue;
 
                 const value = KINDS[field.kind].render(raw, { field, feature, target, compile });

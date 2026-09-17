@@ -104,29 +104,32 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const cots = [];
 
-            for (const feature of req.body.features) {
-                const feat = { ...feature, properties: feature.properties ?? {} };
-                let mapped = false;
+            const features = req.body.features.map(feature => ({ ...feature, properties: feature.properties ?? {} }));
+            const mapped = new Set<number>();
 
-                for (const [destination, kind] of RECORDS) {
+            // Every Event is persisted before the first Device so a Device can be assigned to an Event of the same submission
+            for (const [destination, kind] of RECORDS) {
+                for (const [i, feature] of features.entries()) {
                     try {
-                        const row = await mapping.match(destination, feat);
+                        const row = await mapping.match(destination, feature);
                         if (!row) continue;
 
-                        await control[kind](connection.id, feat, mapping.render(row, feat));
+                        await control[kind](connection.id, feature, mapping.render(row, feature), Mapping.createOnly(row));
                         counts[kind]++;
-                        mapped = true;
+                        mapped.add(i);
                     } catch (err) {
-                        errors.push({ error: err instanceof Error ? err.message : String(err), feature: feat });
+                        errors.push({ error: err instanceof Error ? err.message : String(err), feature });
                     }
                 }
+            }
 
+            for (const [i, feature] of features.entries()) {
                 if (!feature.geometry) {
-                    if (!mapped) skipped.push({ reason: 'Feature has no geometry', feature });
+                    if (!mapped.has(i)) skipped.push({ reason: 'Feature has no geometry', feature: req.body.features[i] });
                     continue;
                 }
 
-                const styled = { ...feat, geometry: feature.geometry };
+                const styled = { ...feature, geometry: feature.geometry };
 
                 try {
                     const row = await mapping.match(LayerMapping_Destination.COREFEATURE, styled);

@@ -204,6 +204,84 @@ test('Mapping: match - one Mapping per destination', async () => {
     assert.equal(await mapping.match(LayerMapping_Destination.COREEVENT, point({ kind: 'other' })), null);
 });
 
+test('Mapping: CoreEvent - templated enums & booleans, nested style, links & channels', async () => {
+    const mapping = new Mapping(rows(LayerMapping_Destination.COREEVENT, [{
+        query: null,
+        mapping: {
+            name: '{{title}}',
+            type: '10031000001211000000',
+            priority: '{{severity}}',
+            active: '{{open}}',
+            editable: false,
+            channels: [3, 7],
+            style: { 'icon': 'abc:Fire/fire.png', 'marker-color': '{{colour}}', 'marker-opacity': '{{opacity}}' },
+            links: [
+                { name: 'Incident {{number}}', url: 'https://example.com/{{number}}' },
+                { name: 'Not a URL', url: '{{number}}' },
+            ],
+        },
+    }]));
+
+    assert.deepEqual(await convert(mapping, point({ title: 'Fire', severity: 'HIGH', open: 'False', colour: '#ff0000', opacity: '0.5', number: 12 })), {
+        name: 'Fire',
+        type: '10031000001211000000',
+        priority: CoreEvent_Priority.HIGH,
+        active: false,
+        editable: false,
+        channels: [3, 7],
+        style: { 'icon': 'abc:Fire/fire.png', 'marker-color': '#ff0000', 'marker-opacity': 0.5 },
+        links: [{ name: 'Incident 12', url: 'https://example.com/12' }],
+    });
+
+    // Values that do not render to an option, a boolean or a number in range are left unset
+    const unknown = await convert(mapping, point({ title: 'Flood', severity: 'extreme', open: 'unsure', opacity: '7', number: 13 }));
+    assert.equal(unknown.priority, undefined);
+    assert.equal(unknown.active, undefined);
+    assert.deepEqual(unknown.style, { 'icon': 'abc:Fire/fire.png', 'marker-color': '' });
+});
+
+test('Mapping: CoreDevice - event_external_id & channels', async () => {
+    const mapping = new Mapping(rows(LayerMapping_Destination.COREDEVICE, [{
+        query: null,
+        mapping: { name: '{{unit}}', type: '10031000001211000000', simulated: '{{sim}}', event_external_id: 'inc-{{incident}}', channels: [3] },
+    }]));
+
+    assert.deepEqual(await convert(mapping, point({ unit: 'Engine 1', sim: true, incident: 12 })), {
+        name: 'Engine 1',
+        type: '10031000001211000000',
+        simulated: true,
+        event_external_id: 'inc-12',
+        channels: [3],
+    });
+});
+
+test('Mapping: createOnly - { value, update } fields', async () => {
+    const [row] = rows(LayerMapping_Destination.COREEVENT, [{
+        query: null,
+        mapping: {
+            name: { value: '{{title}}', update: false },
+            type: { value: '10031000001211000000' },
+            priority: 'low',
+            channels: { value: [3], update: false },
+            style: { 'icon': { value: 'abc:fire.png', update: false }, 'marker-color': { value: '#ff0000', update: true } },
+        },
+    }]);
+
+    assert.deepEqual(Mapping.createOnly(row), new Set(['name', 'channels', 'style.icon']));
+
+    assert.deepEqual(await convert(new Mapping([row]), point({ title: 'Fire' })), {
+        name: 'Fire',
+        type: '10031000001211000000',
+        priority: CoreEvent_Priority.LOW,
+        channels: [3],
+        style: { 'icon': 'abc:fire.png', 'marker-color': '#ff0000' },
+    });
+
+    assert.equal(Mapping.validate(LayerMapping_Destination.COREEVENT, row.mapping), true);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { name: { value: '{{title}}', update: 'no' } }), /Invalid Name: update must be a boolean/);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { name: { value: '{{#if}}', update: false } }), /Invalid Name Template/);
+});
+
 test('Mapping: validate', () => {
     assert.equal(Mapping.validate(LayerMapping_Destination.COREFEATURE, {
         callsign: '{{name}}',
@@ -226,6 +304,18 @@ test('Mapping: validate', () => {
     throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { editable: 'maybe' }), /Invalid Editable/);
     throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { external_id: '{{#each' }), /Invalid External ID Template/);
 
-    assert.equal(Mapping.validate(LayerMapping_Destination.COREDEVICE, { battery: '{{battery}}', simulated: false }), true);
+    assert.equal(Mapping.validate(LayerMapping_Destination.COREEVENT, {
+        priority: '{{severity}}',
+        active: '{{open}}',
+        channels: [1, 2],
+        style: { 'marker-color': '#ff0000', 'marker-opacity': 0.5 },
+        links: [{ name: 'Page', url: 'https://example.com/{{id}}' }],
+    }), true);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { priority: '{{#if}}' }), /Invalid Priority Template/);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { channels: ['one'] }), /Invalid Channels/);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { style: { 'marker-opacity': 2 } }), /Invalid \(style\) Marker Opacity: 2 - Greater than 1/);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { links: [{ name: 'Page', url: '{{#if}}' }] }), /Invalid Links url Template/);
+
+    assert.equal(Mapping.validate(LayerMapping_Destination.COREDEVICE, { battery: '{{battery}}', simulated: false, event_external_id: 'inc-{{incident}}' }), true);
     throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREDEVICE, { battery: { pct: 1 } }), /Invalid Battery/);
 });

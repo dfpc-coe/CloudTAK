@@ -5,7 +5,7 @@ import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text, Profile_Radiation_Dose, Profile_Wake_Lock } from './enums.js';
 import { VideoLease_SourceType, CoreEventBoardColumn_Type, LayerMapping_Destination } from './enums.js';
 import { Capabilities, InvocationType } from '@tak-ps/etl';
-import { CoreEventSchema, CoreDeviceSchema, withoutHints } from './core-schema.js';
+import { CoreEventSchema, CoreDeviceSchema, CoreEventLinkSchema, CoreEventStyleSchema, withoutHints } from './core-schema.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
 import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, BasemapTerrain_Encoding } from './enums.js';
@@ -148,30 +148,8 @@ export const PaletteFeatureResponse = createSelectSchema(schemas.PaletteFeature,
 });
 
 /** A named URL on a Core Event - submitted as a CoT `r-u` (refinement url) link */
-export const CoreEventLink = Type.Object({
-    name: Type.String({
-        description: 'Human readable name of the Link',
-    }),
-    url: Type.String({
-        description: 'URL the Link points at',
-        pattern: '^(https?:\\/\\/.+|)$',
-    }),
-});
-
-/** Point styling overrides - property names match node-cot's CoT GeoJSON representation */
-export const CoreEventStyle = Type.Object({
-    'icon': Type.Optional(Type.String({
-        description: 'Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>',
-    })),
-    'marker-color': Type.Optional(Type.String({
-        description: 'Hex colour of the Event marker - ie: #00ff00',
-    })),
-    'marker-opacity': Type.Optional(Type.Number({
-        minimum: 0,
-        maximum: 1,
-        description: 'Opacity of the Event marker',
-    })),
-});
+export const CoreEventLink = withoutHints(CoreEventLinkSchema);
+export const CoreEventStyle = withoutHints(CoreEventStyleSchema);
 
 /** Enough of a Column to render its name & badge styling inline */
 export const CoreEventBoardColumnSummary = Type.Object({
@@ -200,15 +178,11 @@ export const CoreEventResponse = Type.Composite([
         mission_guid: Type.Union([Type.Null(), Type.String()], { description: 'GUID of the TAK Server Mission associated with the Event' }),
         created: Type.String(),
         updated: Type.String(),
-        active: Type.Boolean({ description: 'Is the Event currently active' }),
         ended: Type.Union([Type.Null(), Type.String()], { description: CoreEventSchema.properties.ended.description }),
         username: Type.Union([Type.Null(), Type.String()]),
         connection: Type.Union([Type.Null(), Type.Integer()], { description: 'Connection that created the Event if created by a Connection or Layer token' }),
         metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Event metadata' }),
-        links: Type.Array(CoreEventLink, { description: 'Named URLs associated with the Event' }),
-        style: CoreEventStyle,
         geometry: GeoJSONFeatureGeometryPoint,
-        channels: Type.Array(Type.Integer(), { description: 'TAK Server Channels the Event is shared with' }),
         boards: Type.Array(CoreEventBoardSummary, {
             description: 'Boards of every Channel the Event is shared with, along with the Column the Event is placed in on each',
         }),
@@ -287,7 +261,7 @@ export const CoreFormColumnResponse = Type.Object({
 });
 
 export const CoreDeviceResponse = Type.Composite([
-    Type.Required(Type.Omit(withoutHints(CoreDeviceSchema), ['battery'])),
+    Type.Required(Type.Omit(withoutHints(CoreDeviceSchema), ['battery', 'event_external_id'])),
     Type.Object({
         id: Type.String(),
         created: Type.String(),
@@ -297,7 +271,6 @@ export const CoreDeviceResponse = Type.Composite([
         event: Type.Union([Type.Null(), Type.String()], { description: 'Core Event the Device is currently assigned to' }),
         battery: Type.Union([Type.Null(), withoutHints(CoreDeviceSchema).properties.battery]),
         metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Device metadata' }),
-        channels: Type.Array(Type.Integer(), { description: 'TAK Server Channels the Device is shared with' }),
     }),
 ]);
 
