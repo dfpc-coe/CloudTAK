@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+- :tada: Add `GET /api/core/schema` & `GET /api/core/schema/:id` listing the record types supported by the Server (`CoreFeature`, `CoreEvent` & `CoreDevice`) as JSON Schemas defined in `common/core-schema.ts`. Properties carry an `@icon` hint naming the Tabler icon shown next to the property in a form & an optional `@widget` hint (`channels`, `icon`, `color`)
+- :rocket: `CoreEventResponse` & `CoreDeviceResponse` are composed from the `common/core-schema.ts` JSON Schemas
 - :rocket: Speed up ECR builds with a persistent BuildKit cache, a single build pushed to every environment per account, and cache friendlier layer ordering in the API Dockerfile
 
 ### v13.88.3 - 2026-09-15
