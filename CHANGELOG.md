@@ -27,9 +27,8 @@
 - :tada: Add `common/mapping.ts`, a data-driven fork of the legacy style library - each Map destination is described by a list of fields (key, kind & target) that the engine walks for the Map matching a Feature, rendering templates against `properties.metadata`. `/api/layer/:layerid/cot` and the legacy `Style` class are unchanged
 - :tada: `POST /api/connection/:connectionid/submit` applies the Layer Maps for the named `schema` when submitted with a Layer token - `CoreFeature` Maps style the CoT, `CoreEvent` Maps create or update Core Events (matched by `external_id`, defaulting to the Feature ID, with a Point derived from LineString & Polygon Features) and `CoreDevice` Maps create or update Core Devices. The response now carries `events` & `devices` counts and per-Feature `errors`
 - :rocket: Mapping objects are validated against the fields of their destination when a Map is created or updated - templates, enums, booleans, numbers & zoom levels
-- :tada: Add `GET /api/core/schema` & `GET /api/core/schema/:id` listing the record types supported by the Server (`CoreFeature`, `CoreEvent` & `CoreDevice`) as JSON Schemas defined in `common/core-schema.ts` - the mapping engine and the Field Mapping `CoreEvent` & `CoreDevice` forms are both generated from them. Properties carry an `@icon` hint naming the Tabler icon shown next to the property in the form
+- :rocket: The mapping engine and the Field Mapping `CoreEvent` & `CoreDevice` forms are both generated from the `common/core-schema.ts` JSON Schemas
 - :rocket: Field Mapping queries are mutually exclusive rather than additive like Legacy Styling - per destination a record is converted by the first query it matches in insertion order, the default (null query) Mapping only applies when no query matched
-- :rocket: `CoreEventResponse` & `CoreDeviceResponse` are composed from the `common/core-schema.ts` JSON Schemas
 - :rocket: `POST /api/connection/:connectionid/submit` UPSERTs Core Events & Core Devices on `external_id` - a partial unique index on `(connection, external_id)` is added to `core_event` & `core_device`, existing rows sharing an `external_id` on a Connection have it cleared on all but the most recently updated row. Creating or updating an Event or Device with an `external_id` already used by the Connection now returns a `400`
 - :tada: `CoreEvent` Mappings can set `channels`, `active`, `style` (icon, marker colour & opacity) & `links`, `CoreDevice` Mappings can set `channels` and assign the Device to a Core Event of the Connection by its `external_id` (`event_external_id`) - every Event of a submission is persisted before the first Device so a Device can be assigned to an Event of the same submission
 - :rocket: Mapping enums & booleans accept a Handlebars template in place of a fixed value - ie: `priority: '{{severity}}'`, values that do not render to an option or boolean are left unset
@@ -43,6 +42,11 @@
 - :bug: Changing the Destination of a Field Mapping query resets the mapping object rather than carrying the fields of the previous destination over
 - :rocket: Move the handlebars helpers shared by styling & mapping to `common/handlebars.ts`
 - :rocket: Move the legacy style editor to `ETL/Layer/Mapping/CoreFeature.vue`
+
+### v13.89.0 - 2026-09-17
+
+- :tada: Add `GET /api/core/schema` & `GET /api/core/schema/:id` listing the record types supported by the Server (`CoreFeature`, `CoreEvent` & `CoreDevice`) as JSON Schemas defined in `common/core-schema.ts`. Properties carry an `@icon` hint naming the Tabler icon shown next to the property in a form & an optional `@widget` hint (`channels`, `icon`, `color`)
+- :rocket: `CoreEventResponse` & `CoreDeviceResponse` are composed from the `common/core-schema.ts` JSON Schemas
 - :rocket: Speed up ECR builds with a persistent BuildKit cache, a single build pushed to every environment per account, and cache friendlier layer ordering in the API Dockerfile
 
 ### v13.88.3 - 2026-09-15

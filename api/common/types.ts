@@ -274,6 +274,23 @@ export const CoreDeviceResponse = Type.Composite([
     }),
 ]);
 
+export const CoreSchemaSummary = Type.Object({
+    id: Type.Enum(LayerMapping_Destination),
+    title: Type.String(),
+    description: Type.String(),
+});
+
+export const CoreSchemaResponse = Type.Object({
+    $id: Type.Enum(LayerMapping_Destination),
+    title: Type.String(),
+    description: Type.String(),
+    type: Type.Literal('object'),
+    required: Type.Array(Type.String()),
+    properties: Type.Record(Type.String(), Type.Record(Type.String(), Type.Unknown())),
+}, {
+    description: 'JSON Schema of a Server supported record type',
+});
+
 /** A single named Output schema of a Task - tasks exposing a single unnamed schema are mapped to the `default` id */
 export const NamedSchema = Type.Object({
     id: Type.String(),
