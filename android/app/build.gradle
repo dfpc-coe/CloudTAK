@@ -7,8 +7,8 @@ android {
         applicationId "io.cloudtak.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 13088003
-        versionName "13.88.3"
+        versionCode 13089000
+        versionName "13.89.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
