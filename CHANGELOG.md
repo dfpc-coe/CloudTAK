@@ -43,6 +43,7 @@
 - :bug: Changing the Destination of a Field Mapping query resets the mapping object rather than carrying the fields of the previous destination over
 - :rocket: Move the handlebars helpers shared by styling & mapping to `common/handlebars.ts`
 - :rocket: Move the legacy style editor to `ETL/Layer/Mapping/CoreFeature.vue`
+- :rocket: Speed up ECR builds with a persistent BuildKit cache, a single build pushed to every environment per account, and cache friendlier layer ordering in the API Dockerfile
 
 ### v13.88.3 - 2026-09-15
 
