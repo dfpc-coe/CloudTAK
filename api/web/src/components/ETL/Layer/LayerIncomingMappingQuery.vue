@@ -14,7 +14,7 @@
                 {{ isNew ? 'New Query' : 'Edit Query' }}
             </h3>
             <div
-                v-if='!loading'
+                v-if='!loading && !error'
                 class='ms-auto btn-list'
             >
                 <TablerDelete
@@ -41,66 +41,73 @@
             v-if='loading'
             :desc='loading'
         />
-        <TablerNone
-            v-else-if='!isNew && !existing'
-            label='Query'
-            :create='false'
+        <TablerAlert
+            v-else-if='error'
+            title='Query Error'
+            :err='error'
         />
-        <template v-else>
-            <div class='row g-2 px-2 pb-2'>
-                <div class='col-12'>
-                    <TablerInput
-                        v-model='query.name'
-                        label='Name'
-                        description='Human readable name of the query'
-                    />
-                </div>
-                <div class='col-12'>
-                    <TablerEnum
-                        v-model='query.destination'
-                        label='Destination'
-                        description='CloudTAK type the matched records are converted into'
-                        :options='destinations'
-                    />
-                </div>
-                <div class='col-12'>
-                    <TablerToggle
-                        v-model='isDefault'
-                        label='Default Query'
-                        description='Match every record of the schema instead of filtering with a JSONata query'
-                    />
-                </div>
-                <div
-                    v-if='!isDefault'
-                    class='col-12'
-                >
-                    <QueryInput
-                        v-model='query.query'
-                        label='Query'
-                        description='JSONata query evaluated against each record - records it matches are mapped'
-                        placeholder='status = "offline"'
-                    />
-                </div>
-                <div class='col-12'>
-                    <component
-                        :is='mappers[query.destination]'
-                        v-model='mapping'
-                        :schema='outputSchema ?? { properties: {} }'
-                    />
-                </div>
+        <div
+            v-else
+            class='row g-2 px-2 pb-2'
+        >
+            <div class='col-12'>
+                <TablerInput
+                    v-model='form.name'
+                    label='Name'
+                    description='Human readable name of the query'
+                />
             </div>
-        </template>
+            <div class='col-12'>
+                <TablerEnum
+                    v-model='form.destination'
+                    label='Destination'
+                    description='CloudTAK type the matched records are converted into'
+                    :options='destinations'
+                />
+            </div>
+            <div class='col-12'>
+                <TablerToggle
+                    v-model='isDefault'
+                    label='Default Query'
+                    description='Fallback applied to records that match no other query of the same Destination'
+                />
+            </div>
+            <div
+                v-if='!isDefault'
+                class='col-12'
+            >
+                <QueryInput
+                    v-model='form.query'
+                    label='Query'
+                    description='JSONata query evaluated against each record - queries are mutually exclusive, a record is mapped by the first query it matches'
+                    placeholder='status = "offline"'
+                />
+            </div>
+            <div class='col-12'>
+                <CoreFeature
+                    v-if='form.destination === "CoreFeature"'
+                    v-model='mapping'
+                    :schema='outputSchema ?? { properties: {} }'
+                />
+                <MappingFields
+                    v-else-if='definition'
+                    :key='form.destination'
+                    v-model='mapping'
+                    :definition='definition'
+                    :schema='outputSchema ?? { properties: {} }'
+                />
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch } from 'vue';
-import type { Component } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { server } from '../../../std.ts';
-import type { ETLLayer, ETLLayerTaskCapabilities } from '../../../types.ts';
+import type { CoreSchema, ETLLayerMapping, ETLLayerTaskCapabilities } from '../../../types.ts';
 import {
-    TablerNone,
+    TablerAlert,
     TablerEnum,
     TablerInput,
     TablerToggle,
@@ -112,11 +119,9 @@ import { IconArrowLeft, IconDeviceFloppy } from '@tabler/icons-vue';
 import { outputSchemas } from './utils/namedSchemas.ts';
 import QueryInput from './utils/QueryInput.vue';
 import CoreFeature from './Mapping/CoreFeature.vue';
-import CoreEvent from './Mapping/CoreEvent.vue';
-import CoreDevice from './Mapping/CoreDevice.vue';
+import MappingFields from './Mapping/MappingFields.vue';
 
-type LayerMap = NonNullable<ETLLayer['incoming']>['maps'][number];
-type Destination = LayerMap['destination'];
+type Destination = ETLLayerMapping['destination'];
 
 type QueryForm = {
     name: string;
@@ -125,91 +130,107 @@ type QueryForm = {
 };
 
 const props = defineProps<{
-    layer: ETLLayer;
     capabilities: ETLLayerTaskCapabilities;
-}>();
-
-const emit = defineEmits<{
-    (e: 'refresh'): void;
 }>();
 
 const route = useRoute();
 const router = useRouter();
 
 const loading = ref<string | false>(false);
+const error = ref<Error | undefined>();
 
-const destinations: Destination[] = ['CoreFeature', 'CoreEvent', 'CoreDevice'];
-const mappers: Record<Destination, Component> = { CoreFeature, CoreEvent, CoreDevice };
+const destinations = ref<Destination[]>([]);
+const definitions = ref<Partial<Record<Destination, CoreSchema>>>({});
 
 const schema = computed(() => String(route.params.schema));
 const outputSchema = computed(() => outputSchemas(props.capabilities).find((s) => s.id === schema.value)?.schema);
-const isNew = computed(() => route.name === 'layer-incoming-mapping-query-new');
+const isNew = computed(() => route.params.query === 'new');
+const queryId = computed(() => Number(route.params.query));
 
-/** The query addressed by the route along with the destination of its Map */
-const existing = computed(() => {
-    if (isNew.value) return undefined;
+const pathParams = computed(() => ({
+    ':connectionid': Number(route.params.connectionid),
+    ':layerid': Number(route.params.layerid),
+}));
 
-    const id = Number(route.params.query);
+const form = ref<QueryForm>({
+    name: '',
+    destination: 'CoreFeature',
+    query: '',
+});
 
-    for (const map of props.layer.incoming?.maps ?? []) {
-        if (map.schema !== schema.value) continue;
+const isDefault = ref(true);
 
-        const match = map.queries.find((q) => q.id === id);
-        if (match) return { ...match, destination: map.destination };
+const mapping = ref<Record<string, unknown>>({});
+
+onMounted(async () => {
+    loading.value = 'Loading Query';
+
+    try {
+        await fetchSchemas();
+
+        if (isNew.value) return;
+
+        const res = await server.GET('/api/connection/{:connectionid}/layer/{:layerid}/incoming/mapping/{:mappingid}', {
+            params: { path: { ...pathParams.value, ':mappingid': queryId.value } },
+        });
+        if (res.error) throw new Error(res.error.message);
+
+        form.value = {
+            name: res.data.name,
+            destination: res.data.destination,
+            query: res.data.query ?? '',
+        };
+        isDefault.value = res.data.query === null;
+        mapping.value = res.data.mapping;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        loading.value = false;
     }
-
-    return undefined;
 });
 
-const query = ref<QueryForm>({
-    name: existing.value?.name ?? '',
-    destination: existing.value?.destination ?? 'CoreFeature',
-    query: existing.value?.query ?? '',
-});
+async function fetchSchemas() {
+    const list = await server.GET('/api/core/schema');
+    if (list.error) throw new Error(list.error.message);
 
-const isDefault = ref(existing.value ? existing.value.query === null : true);
+    destinations.value = list.data.items.map((item) => item.id);
 
-const mapping = ref<Record<string, unknown>>(JSON.parse(JSON.stringify(existing.value?.map ?? {})));
+    await Promise.all(destinations.value.map(async (id) => {
+        const res = await server.GET('/api/core/schema/{:id}', {
+            params: { path: { ':id': id } },
+        });
+        if (res.error) throw new Error(res.error.message);
 
-const valid = computed(() => query.value.name.trim().length > 0 && (isDefault.value || query.value.query.trim().length > 0));
-
-watch(isDefault, (value) => {
-    if (value) query.value.query = '';
-});
-
-function pathParams() {
-    return {
-        ':connectionid': Number(route.params.connectionid),
-        ':layerid': Number(route.params.layerid),
-    };
+        definitions.value[id] = res.data;
+    }));
 }
+
+const definition = computed(() => definitions.value[form.value.destination]);
+
+const valid = computed(() => form.value.name.trim().length > 0 && (isDefault.value || form.value.query.trim().length > 0));
 
 async function save() {
     loading.value = 'Saving Query';
 
     try {
         const body = {
-            name: query.value.name,
-            destination: query.value.destination,
-            query: isDefault.value ? null : query.value.query,
+            name: form.value.name,
+            destination: form.value.destination,
+            query: isDefault.value ? null : form.value.query,
             mapping: mapping.value,
         };
 
-        if (isNew.value) {
-            const res = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/incoming/mapping', {
-                params: { path: pathParams() },
+        const res = isNew.value
+            ? await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/incoming/mapping', {
+                params: { path: pathParams.value },
                 body: { ...body, schema: schema.value },
-            });
-            if (res.error) throw new Error(res.error.message);
-        } else {
-            const res = await server.PATCH('/api/connection/{:connectionid}/layer/{:layerid}/incoming/mapping/{:mappingid}', {
-                params: { path: { ...pathParams(), ':mappingid': Number(route.params.query) } },
+            })
+            : await server.PATCH('/api/connection/{:connectionid}/layer/{:layerid}/incoming/mapping/{:mappingid}', {
+                params: { path: { ...pathParams.value, ':mappingid': queryId.value } },
                 body,
             });
-            if (res.error) throw new Error(res.error.message);
-        }
+        if (res.error) throw new Error(res.error.message);
 
-        emit('refresh');
         back();
     } finally {
         loading.value = false;
@@ -221,11 +242,10 @@ async function remove() {
 
     try {
         const res = await server.DELETE('/api/connection/{:connectionid}/layer/{:layerid}/incoming/mapping/{:mappingid}', {
-            params: { path: { ...pathParams(), ':mappingid': Number(route.params.query) } },
+            params: { path: { ...pathParams.value, ':mappingid': queryId.value } },
         });
         if (res.error) throw new Error(res.error.message);
 
-        emit('refresh');
         back();
     } finally {
         loading.value = false;
@@ -233,13 +253,6 @@ async function remove() {
 }
 
 function back() {
-    router.push({
-        name: 'layer-incoming-mapping-schema',
-        params: {
-            connectionid: route.params.connectionid,
-            layerid: route.params.layerid,
-            schema: schema.value,
-        },
-    });
+    router.push({ name: 'layer-incoming-mapping-schema' });
 }
 </script>

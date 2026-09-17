@@ -644,6 +644,16 @@
         "query": false,
         "res": true
     },
+    "GET /core/schema": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /core/schema/:id": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /error": {
         "body": false,
         "query": true,

@@ -1,12 +1,16 @@
 import { Static, Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
-import { GenerateUpsert } from '@openaddresses/batch-generic';
+import { GenericListOrder } from '@openaddresses/batch-generic';
+import { eq, and } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import { CoTParser, Feature } from '@tak-ps/node-cot';
 import Auth, { AuthResourceAccess } from '../../common/auth.js';
 import Mapping from '../../common/mapping.js';
-import { ConnectionFeature } from '../../common/schema.js';
+import type { MappingRow } from '../../common/mapping.js';
+import { LayerMapping } from '../../common/schema.js';
+import { LayerMapping_Destination } from '../../common/enums.js';
 import SubmitControl from '../lib/control/submit.js';
+import { archiveCots } from '../lib/control/feature.js';
 import type ConfigStateless from '../config.js';
 
 const SubmitFeature = Type.Object({
@@ -18,6 +22,11 @@ const SubmitFeature = Type.Object({
         description: 'Features without a geometry cannot be delivered as CoT or mapped to a CoreEvent but can still be mapped to a CoreDevice',
     })),
 });
+
+const RECORDS = [
+    [LayerMapping_Destination.COREEVENT, 'event'],
+    [LayerMapping_Destination.COREDEVICE, 'device'],
+] as const;
 
 const SubmitError = Type.Object({
     error: Type.String(),
@@ -33,8 +42,8 @@ const ConnectionSubmitResponse = Type.Object({
     status: Type.Integer(),
     message: Type.String(),
     submitted: Type.Integer({ description: 'Number of Features delivered as CoT' }),
-    events: Type.Integer({ description: 'Number of CoreEvents created or updated by CoreEvent Maps' }),
-    devices: Type.Integer({ description: 'Number of CoreDevices created or updated by CoreDevice Maps' }),
+    events: Type.Integer({ description: 'Number of CoreEvents created or updated by CoreEvent Mappings' }),
+    devices: Type.Integer({ description: 'Number of CoreDevices created or updated by CoreDevice Mappings' }),
     errors: Type.Array(SubmitError),
     skipped: Type.Array(SubmitSkipped),
 });
@@ -45,7 +54,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.post('/connection/:connectionid/submit', {
         name: 'Submit Features',
         group: 'Connection',
-        description: 'Submit a GeoJSON-like FeatureCollection conforming to a named Output schema to a Connection - the Layer Maps for that schema style Features delivered to the TAK Server as CoT (CoreFeature) and create or update CoreEvents & CoreDevices',
+        description: 'Submit a GeoJSON-like FeatureCollection conforming to a named Output schema to a Connection - the Layer Mappings for that schema style Features delivered to the TAK Server as CoT (CoreFeature) and create or update CoreEvents & CoreDevices. Queries are mutually exclusive - per destination a Feature is converted by the first query it matches, falling back to the default Mapping',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
         }),
@@ -58,17 +67,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         body: Type.Object({
             type: Type.Literal('FeatureCollection'),
             schema: Type.String({ minLength: 1, description: 'Named Output schema of the Task the Features conform to' }),
-            uids: Type.Optional(Type.Array(Type.String(), {
-                description: 'IDs of every Feature in the full submission, including Features in other posts of a batched submission - reserved for mission diff support',
-            })),
             features: Type.Array(SubmitFeature),
         }),
         res: ConnectionSubmitResponse,
     }, async (req, res) => {
         const errors: Array<Static<typeof SubmitError>> = [];
         const skipped: Array<Static<typeof SubmitSkipped>> = [];
-        let events = 0;
-        let devices = 0;
+        const counts = { event: 0, device: 0 };
+
+        const respond = (message: string, submitted = 0, status = errors.length ? 400 : 200) => {
+            res.status(status).json({ status, message, submitted, events: counts.event, devices: counts.device, errors, skipped });
+        };
 
         try {
             const { connection, layer } = await Auth.is_connection(config, req, {
@@ -81,8 +90,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             if (!req.headers['content-type']) throw new Err(400, null, 'Content-Type not set');
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            const incoming = layer ? (await config.models.Layer.augmented_from(layer.id)).incoming : undefined;
-            const mapping = incoming ? new Mapping(incoming.maps, req.body.schema) : undefined;
+            let rows: MappingRow[] = [];
+            if (layer) {
+                rows = (await config.models.LayerMapping.list({
+                    limit: Number.MAX_SAFE_INTEGER,
+                    order: GenericListOrder.ASC,
+                    sort: 'id',
+                    where: and(eq(LayerMapping.layer, layer.id), eq(LayerMapping.schema, req.body.schema)),
+                })).items;
+            }
+
+            const mapping = new Mapping(rows);
 
             const cots = [];
 
@@ -90,25 +108,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 const feat = { ...feature, properties: feature.properties ?? {} };
                 let mapped = false;
 
-                if (mapping) {
+                for (const [destination, kind] of RECORDS) {
                     try {
-                        const event = await mapping.event(feat);
-                        if (event) {
-                            await control.event(connection.id, feat, event);
-                            events++;
-                            mapped = true;
-                        }
-                    } catch (err) {
-                        errors.push({ error: err instanceof Error ? err.message : String(err), feature: feat });
-                    }
+                        const row = await mapping.match(destination, feat);
+                        if (!row) continue;
 
-                    try {
-                        const device = await mapping.device(feat);
-                        if (device) {
-                            await control.device(connection.id, feat, device);
-                            devices++;
-                            mapped = true;
-                        }
+                        await control[kind](connection.id, feat, mapping.render(row, feat));
+                        counts[kind]++;
+                        mapped = true;
                     } catch (err) {
                         errors.push({ error: err instanceof Error ? err.message : String(err), feature: feat });
                     }
@@ -119,10 +126,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     continue;
                 }
 
-                const geom = { ...feat, geometry: feature.geometry };
+                const styled = { ...feat, geometry: feature.geometry };
 
                 try {
-                    const styled = mapping ? await mapping.feature(geom) : geom;
+                    const row = await mapping.match(LayerMapping_Destination.COREFEATURE, styled);
+                    if (row) mapping.render(row, styled);
 
                     if (!styled.properties.flow) styled.properties.flow = {};
                     styled.properties.flow[`CloudTAK-Connection-${connection.id}`] = new Date().toISOString();
@@ -130,50 +138,16 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                     cots.push(await CoTParser.from_geojson(styled));
                 } catch (err) {
-                    errors.push({ error: err instanceof Error ? err.message : String(err), feature: geom });
+                    errors.push({ error: err instanceof Error ? err.message : String(err), feature: styled });
                 }
             }
 
-            if (!cots.length) {
-                res.status(errors.length ? 400 : 200).json({
-                    status: errors.length ? 400 : 200,
-                    message: events || devices ? 'Submitted' : 'No features found',
-                    submitted: 0,
-                    events,
-                    devices,
-                    errors,
-                    skipped,
-                });
-                return;
-            }
-
-            if (!connection.enabled) throw new Err(200, null, 'Received but Connection Paused');
+            if (!cots.length) return respond(counts.event || counts.device ? 'Submitted' : 'No features found');
+            if (!connection.enabled) return respond('Received but Connection Paused', 0, 200);
 
             const live = cots.filter(cot => !cot.is_stale());
 
-            if (req.query.archive && live.length) {
-                const insertValues = [];
-                for (const cot of live) {
-                    insertValues.push({
-                        path: '/',
-                        connection: connection.id,
-                        layer: layer ? layer.id : null,
-                        ...(await CoTParser.to_geojson(cot)),
-                    });
-                }
-
-                try {
-                    const INSERT_BATCH = 10000;
-                    for (let i = 0; i < insertValues.length; i += INSERT_BATCH) {
-                        await config.models.ConnectionFeature.generate(insertValues.slice(i, i + INSERT_BATCH), {
-                            upsert: GenerateUpsert.UPDATE,
-                            upsertTarget: [ConnectionFeature.connection, ConnectionFeature.id],
-                        });
-                    }
-                } catch (err) {
-                    console.error(err);
-                }
-            }
+            if (req.query.archive) await archiveCots(config, live, connection.id, layer ? layer.id : null);
 
             await config.hub.submitCots({
                 connection: connection.id,
@@ -181,29 +155,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 broadcast: true,
             });
 
-            res.status(errors.length ? 400 : 200).json({
-                status: errors.length ? 400 : 200,
-                message: 'Submitted',
-                submitted: live.length,
-                events,
-                devices,
-                errors,
-                skipped,
-            });
+            respond('Submitted', live.length);
         } catch (err) {
-            if (err instanceof Err && err.status === 200) {
-                res.json({
-                    status: 200,
-                    message: err.message,
-                    submitted: 0,
-                    events,
-                    devices,
-                    errors,
-                    skipped,
-                });
-            } else {
-                Err.respond(err, res);
-            }
+            Err.respond(err, res);
         }
     });
 }

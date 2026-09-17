@@ -50,10 +50,6 @@ const router = VueRouter.createRouter({
                 name: `layer-incoming-mapping-schema`,
                 component: () => import('../../components/ETL/Layer/LayerIncomingMappingSchema.vue')
             },{
-                path: 'incoming/mapping/:schema/query/new',
-                name: `layer-incoming-mapping-query-new`,
-                component: () => import('../../components/ETL/Layer/LayerIncomingMappingQuery.vue')
-            },{
                 path: 'incoming/mapping/:schema/query/:query',
                 name: `layer-incoming-mapping-query`,
                 component: () => import('../../components/ETL/Layer/LayerIncomingMappingQuery.vue')

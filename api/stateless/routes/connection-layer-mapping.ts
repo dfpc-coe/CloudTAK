@@ -30,11 +30,14 @@ function validateQuery(query: string | null | undefined): void {
     }
 }
 
-function validateMapping(destination: LayerMapping_Destination, mapping: Record<string, unknown> | undefined): void {
-    if (!mapping) return;
+const LayerParams = Type.Object({
+    connectionid: Type.Integer({ minimum: 1 }),
+    layerid: Type.Integer({ minimum: 1 }),
+});
 
-    Mapping.validate(destination, mapping);
-}
+const MappingParams = Type.Composite([LayerParams, Type.Object({
+    mappingid: Type.Integer({ minimum: 1 }),
+})]);
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     async function layerAccess(req: Parameters<typeof Auth.is_connection>[1], connectionid: number, layerid: number) {
@@ -72,10 +75,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         name: 'List Mappings',
         group: 'LayerMapping',
         description: 'List the Mappings of an incoming layer configuration',
-        params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
-            layerid: Type.Integer({ minimum: 1 }),
-        }),
+        params: LayerParams,
         query: Type.Object({
             schema: Type.Optional(Type.String({ description: 'Only return Mappings for this named Output schema' })),
             destination: Type.Optional(Type.Enum(LayerMapping_Destination)),
@@ -109,10 +109,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         name: 'Create Mapping',
         group: 'LayerMapping',
         description: 'Create a Mapping on an incoming layer configuration',
-        params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
-            layerid: Type.Integer({ minimum: 1 }),
-        }),
+        params: LayerParams,
         body: Type.Object({
             schema: Type.String({ minLength: 1, description: 'Named Output schema of the Task the Mapping applies to' }),
             name: Default.NameField,
@@ -126,7 +123,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             await layerAccess(req, req.params.connectionid, req.params.layerid);
 
             validateQuery(req.body.query);
-            validateMapping(req.body.destination, req.body.mapping);
+            Mapping.validate(req.body.destination, req.body.mapping ?? {});
 
             const mapping = await config.models.LayerMapping.generate({
                 layer: req.params.layerid,
@@ -147,11 +144,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         name: 'Get Mapping',
         group: 'LayerMapping',
         description: 'Get a Mapping of an incoming layer configuration',
-        params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
-            layerid: Type.Integer({ minimum: 1 }),
-            mappingid: Type.Integer({ minimum: 1 }),
-        }),
+        params: MappingParams,
         res: LayerMappingResponse,
     }, async (req, res) => {
         try {
@@ -167,11 +160,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         name: 'Update Mapping',
         group: 'LayerMapping',
         description: 'Update a Mapping of an incoming layer configuration',
-        params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
-            layerid: Type.Integer({ minimum: 1 }),
-            mappingid: Type.Integer({ minimum: 1 }),
-        }),
+        params: MappingParams,
         body: Type.Object({
             schema: Type.Optional(Type.String({ minLength: 1 })),
             name: Type.Optional(Default.NameField),
@@ -186,7 +175,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const existing = await mappingFrom(req.params.layerid, req.params.mappingid);
 
             validateQuery(req.body.query);
-            validateMapping(req.body.destination ?? existing.destination, req.body.mapping ?? existing.mapping);
+            Mapping.validate(req.body.destination ?? existing.destination, req.body.mapping ?? existing.mapping);
 
             const mapping = await config.models.LayerMapping.commit(req.params.mappingid, {
                 updated: sql`Now()`,
@@ -203,11 +192,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         name: 'Delete Mapping',
         group: 'LayerMapping',
         description: 'Delete a Mapping of an incoming layer configuration',
-        params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
-            layerid: Type.Integer({ minimum: 1 }),
-            mappingid: Type.Integer({ minimum: 1 }),
-        }),
+        params: MappingParams,
         res: StandardResponse,
     }, async (req, res) => {
         try {

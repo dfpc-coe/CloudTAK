@@ -221,7 +221,7 @@ test('POST: api/connection/1/submit - features with geometry are archived with a
     }
 });
 
-test('POST: api/connection/1/submit - archive=false with a user token & uids', async () => {
+test('POST: api/connection/1/submit - archive=false with a user token', async () => {
     try {
         const res = await flight.fetch('/api/connection/1/submit?archive=false', {
             method: 'POST',
@@ -231,7 +231,6 @@ test('POST: api/connection/1/submit - archive=false with a user token & uids', a
             body: {
                 type: 'FeatureCollection',
                 schema: 'unit',
-                uids: ['point-2', 'point-in-another-batch'],
                 features: [{
                     id: 'point-2',
                     type: 'Feature',
@@ -276,6 +275,7 @@ test('POST: api/connection/1/submit - CoreFeature maps for the schema style the 
             name: 'Offline',
             query: 'properties.metadata.status = "offline"',
             mapping: {
+                callsign: '{{name}}',
                 remarks: 'OFFLINE',
                 point: { 'marker-color': '#ff0000' },
             },
@@ -339,7 +339,8 @@ test('POST: api/connection/1/submit - CoreFeature maps for the schema style the 
         assert.equal(String(online.properties['marker-color']).toLowerCase(), '#00ff00');
 
         const offline = byId.get('unit-offline')!;
-        assert.equal(offline.properties.callsign, 'Bravo (offline)');
+        // Queries are mutually exclusive - the Offline Mapping replaces the default rather than layering over it
+        assert.equal(offline.properties.callsign, 'Bravo');
         assert.equal(offline.properties.remarks, 'OFFLINE');
         assert.equal(String(offline.properties['marker-color']).toLowerCase(), '#ff0000');
 
@@ -390,6 +391,23 @@ test('POST: api/connection/1/submit - CoreEvent & CoreDevice maps create records
     try {
         const models = flight.config!.models;
 
+        // The first matching query in insertion order wins so the most specific is created first
+        await models.LayerMapping.generate({
+            layer: 1,
+            schema: 'incident',
+            destination: LayerMapping_Destination.COREEVENT,
+            name: 'Severe',
+            query: 'properties.metadata.severity > 3',
+            mapping: {
+                name: '{{title}}',
+                type: '10031000001211000000',
+                priority: 'critical',
+                location: '{{address}}',
+                remarks: 'Incident {{number}}',
+                external_id: 'inc-{{number}}',
+            },
+        });
+
         await models.LayerMapping.generate({
             layer: 1,
             schema: 'incident',
@@ -404,15 +422,6 @@ test('POST: api/connection/1/submit - CoreEvent & CoreDevice maps create records
                 remarks: 'Incident {{number}}',
                 external_id: 'inc-{{number}}',
             },
-        });
-
-        await models.LayerMapping.generate({
-            layer: 1,
-            schema: 'incident',
-            destination: LayerMapping_Destination.COREEVENT,
-            name: 'Severe',
-            query: 'properties.metadata.severity > 3',
-            mapping: { priority: 'critical' },
         });
 
         await models.LayerMapping.generate({

@@ -1,5 +1,5 @@
 {
-  "id": "688ed1c5-f4b5-411f-999f-928405d61f84",
+  "id": "3a3584bc-d5da-49df-a7d7-6a71491dfb10",
   "prevId": "112e3317-d34f-411d-8cdc-6a54903b0128",
   "version": "7",
   "dialect": "postgresql",
@@ -2844,6 +2844,20 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "destination": {
+          "name": "destination",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'CoreFeature'"
         },
         "query": {
           "name": "query",

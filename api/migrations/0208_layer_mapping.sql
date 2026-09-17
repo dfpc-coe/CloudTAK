@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS "layer_mapping" (
 	"updated" timestamp with time zone DEFAULT Now() NOT NULL,
 	"layer" integer NOT NULL,
 	"schema" text NOT NULL,
+	"name" text DEFAULT '' NOT NULL,
+	"destination" text DEFAULT 'CoreFeature' NOT NULL,
 	"query" text,
 	"mapping" jsonb DEFAULT '{}'::jsonb NOT NULL
 );

@@ -31,8 +31,17 @@
             </div>
         </div>
 
+        <TablerLoading
+            v-if='loading'
+            desc='Loading Queries'
+        />
+        <TablerAlert
+            v-else-if='error'
+            title='Queries Error'
+            :err='error'
+        />
         <TablerNone
-            v-if='!queries.length'
+            v-else-if='!queries.length'
             label='No Named Queries'
             :create='false'
         />
@@ -59,7 +68,7 @@
                             :class='{ "font-monospace": query.query !== null }'
                             :title='query.query ?? undefined'
                         >
-                            {{ query.query ?? 'Matches every record' }}
+                            {{ query.query ?? 'Default - records matching no other query' }}
                         </div>
                     </div>
                     <span class='badge bg-blue-lt'>{{ query.destination }}</span>
@@ -72,17 +81,19 @@
 <script setup lang='ts'>
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { ETLLayer, ETLLayerTaskCapabilities } from '../../../types.ts';
+import type { ETLLayerTaskCapabilities } from '../../../types.ts';
 import {
     TablerNone,
+    TablerAlert,
+    TablerLoading,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 import { IconArrowLeft, IconFilter, IconPlus } from '@tabler/icons-vue';
 import StandardItem from '../../CloudTAK/util/StandardItem.vue';
 import { outputSchemas } from './utils/namedSchemas.ts';
+import { useLayerMappings } from './utils/layerMappings.ts';
 
 const props = defineProps<{
-    layer: ETLLayer;
     capabilities: ETLLayerTaskCapabilities;
 }>();
 
@@ -91,34 +102,18 @@ const router = useRouter();
 
 const schema = computed(() => String(route.params.schema));
 
-const inSchema = computed(() => outputSchemas(props.capabilities).some((s) => s.id === schema.value));
+const { mappings: queries, loading, error } = useLayerMappings(schema.value);
 
-/** Every query of every Map for this schema, tagged with the Map's destination */
-const queries = computed(() => {
-    return (props.layer.incoming?.maps ?? [])
-        .filter((map) => map.schema === schema.value)
-        .flatMap((map) => map.queries.map((query) => ({ ...query, destination: map.destination })));
-});
+const inSchema = computed(() => outputSchemas(props.capabilities).some((s) => s.id === schema.value));
 
 function openQuery(query: number | 'new') {
     router.push({
-        name: query === 'new' ? 'layer-incoming-mapping-query-new' : 'layer-incoming-mapping-query',
-        params: {
-            connectionid: route.params.connectionid,
-            layerid: route.params.layerid,
-            schema: schema.value,
-            ...(query === 'new' ? {} : { query }),
-        },
+        name: 'layer-incoming-mapping-query',
+        params: { query },
     });
 }
 
 function back() {
-    router.push({
-        name: 'layer-incoming-mapping',
-        params: {
-            connectionid: route.params.connectionid,
-            layerid: route.params.layerid,
-        },
-    });
+    router.push({ name: 'layer-incoming-mapping' });
 }
 </script>

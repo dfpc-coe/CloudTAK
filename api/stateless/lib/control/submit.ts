@@ -1,18 +1,16 @@
-import type { Static } from '@sinclair/typebox';
 import { sql } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import pointOnFeature from '@turf/point-on-feature';
 import type { Feature as GeoJSONFeature, Geometry } from 'geojson';
-import Mapping from '../../../common/mapping.js';
 import type { MappingFeature, MappedEvent, MappedDevice } from '../../../common/mapping.js';
-import { LayerMapping_Destination } from '../../../common/enums.js';
 import { ETLEventAction } from '../../../common/etl-events.js';
+import { notifyCoreEvent } from '../core-event.js';
 import type ConfigStateless from '../../config.js';
 
-export type SubmitAction = 'create' | 'update';
+type Models = ConfigStateless['models'];
 
 /**
- * Persist CoreEvents & CoreDevices produced by the Layer Maps of a submission
+ * Persist CoreEvents & CoreDevices produced by the Layer Mappings of a submission
  *
  * Records are matched to an existing row of the same Connection by
  * `external_id` - the mapped value, falling back to the Feature ID - and
@@ -25,98 +23,70 @@ export default class SubmitControl {
         this.config = config;
     }
 
-    async event(connection: number, feature: MappingFeature, mapped: Static<typeof MappedEvent>): Promise<{ id: string; action: SubmitAction }> {
+    async event(connection: number, feature: MappingFeature, mapped: MappedEvent): Promise<void> {
         const geometry = this.eventGeometry(feature);
         if (!geometry) throw new Err(400, null, 'CoreEvent requires a Feature geometry');
 
-        const external_id = mapped.external_id ?? (feature.id ? String(feature.id) : '');
-
-        const fields = {
+        const { id, action } = await this.#upsert(this.config.models.CoreEvent, 'CoreEvent', connection, feature, {
             ...mapped,
             ...(mapped.ended === undefined ? {} : { active: !mapped.ended }),
-            external_id,
             geometry,
-            metadata: feature.properties?.metadata ?? {},
-        };
-
-        const existing = await this.existing(this.config.models.CoreEvent, connection, external_id);
-
-        let id: string;
-        let action: SubmitAction;
-
-        if (existing) {
-            await this.config.models.CoreEvent.commit(existing, {
-                ...fields,
-                updated: sql`Now()`,
-            });
-
-            id = existing;
-            action = 'update';
-        } else {
-            const name = mapped.name ?? (feature.properties?.callsign || (feature.id ? String(feature.id) : undefined));
-            const missing = Mapping.missing(LayerMapping_Destination.COREEVENT, { ...fields, name });
-            if (missing.length) throw new Err(400, null, `CoreEvent Map did not produce: ${missing.join(', ')}`);
-
-            const event = await this.config.models.CoreEvent.generate({
-                ...fields,
-                name: name as string,
-                type: fields.type as string,
-                username: null,
-                connection,
-            });
-
-            id = event.id;
-            action = 'create';
-        }
-
-        // Best effort - a failed immediate submit is recovered by the
-        // Admin Connection's next scheduled submit cycle
-        this.config.hub.coreEventSubmit(id).catch((err) => {
-            console.error(`not ok - failed to immediately submit Core Event ${id}:`, err);
         });
 
         this.config.models.CoreEvent.augmented_from(id).then((event) => {
-            return this.config.etlEvents.event(action === 'create' ? ETLEventAction.Create : ETLEventAction.Update, event);
+            notifyCoreEvent(this.config, action, event);
         }).catch((err) => {
-            console.error(`not ok - failed to deliver ${action} ETL Event for Core Event ${id}:`, err);
+            console.error(`not ok - failed to notify ${action} of Core Event ${id}:`, err);
         });
-
-        return { id, action };
     }
 
-    async device(connection: number, feature: MappingFeature, mapped: Static<typeof MappedDevice>): Promise<{ id: string; action: SubmitAction }> {
-        const external_id = mapped.external_id ?? (feature.id ? String(feature.id) : '');
+    async device(connection: number, feature: MappingFeature, mapped: MappedDevice): Promise<void> {
+        await this.#upsert(this.config.models.CoreDevice, 'CoreDevice', connection, feature, mapped);
+    }
+
+    async #upsert(
+        model: Models['CoreEvent'] | Models['CoreDevice'],
+        label: string,
+        connection: number,
+        feature: MappingFeature,
+        mapped: (MappedEvent | MappedDevice) & Record<string, unknown>,
+    ): Promise<{ id: string; action: ETLEventAction }> {
+        const featureId = feature.id ? String(feature.id) : undefined;
 
         const fields = {
             ...mapped,
-            external_id,
+            external_id: mapped.external_id ?? featureId ?? '',
             metadata: feature.properties?.metadata ?? {},
         };
 
-        const existing = await this.existing(this.config.models.CoreDevice, connection, external_id);
-
-        if (existing) {
-            await this.config.models.CoreDevice.commit(existing, {
-                ...fields,
-                updated: sql`Now()`,
-            });
-
-            return { id: existing, action: 'update' };
+        let existing: { id: string } | undefined;
+        if (fields.external_id) {
+            existing = (await model.list({
+                limit: 1,
+                where: sql`connection = ${connection} AND external_id = ${fields.external_id}`,
+            })).items[0];
         }
 
-        const name = mapped.name ?? (feature.properties?.callsign || (feature.id ? String(feature.id) : undefined));
-        const missing = Mapping.missing(LayerMapping_Destination.COREDEVICE, { ...fields, name });
-        if (missing.length) throw new Err(400, null, `CoreDevice Map did not produce: ${missing.join(', ')}`);
+        if (existing) {
+            await model.commit(existing.id, { ...fields, updated: sql`Now()` });
 
-        const device = await this.config.models.CoreDevice.generate({
+            return { id: existing.id, action: ETLEventAction.Update };
+        }
+
+        const name = mapped.name ?? (feature.properties?.callsign || featureId);
+        const missing = [!name && 'name', !mapped.type && 'type'].filter(Boolean);
+        if (missing.length) throw new Err(400, null, `${label} Map did not produce: ${missing.join(', ')}`);
+
+        // @ts-expect-error generate() is not callable across the model union
+        const created = await model.generate({
             ...fields,
-            name: name as string,
-            type: fields.type as string,
+            name,
+            type: mapped.type,
             username: null,
             connection,
         });
 
-        return { id: device.id, action: 'create' };
+        return { id: created.id, action: ETLEventAction.Create };
     }
 
     /**
@@ -126,31 +96,14 @@ export default class SubmitControl {
     eventGeometry(feature: MappingFeature): { type: 'Point'; coordinates: [number, number] } | null {
         if (!feature.geometry) return null;
 
-        if (feature.geometry.type === 'Point') {
-            return { type: 'Point', coordinates: [feature.geometry.coordinates[0], feature.geometry.coordinates[1]] };
-        }
+        const { coordinates } = feature.geometry.type === 'Point'
+            ? feature.geometry
+            : pointOnFeature({
+                type: 'Feature',
+                properties: {},
+                geometry: feature.geometry as Geometry,
+            } as GeoJSONFeature).geometry;
 
-        const point = pointOnFeature({
-            type: 'Feature',
-            properties: {},
-            geometry: feature.geometry as Geometry,
-        } as GeoJSONFeature);
-
-        return { type: 'Point', coordinates: [point.geometry.coordinates[0], point.geometry.coordinates[1]] };
-    }
-
-    async existing(
-        model: ConfigStateless['models']['CoreEvent'] | ConfigStateless['models']['CoreDevice'],
-        connection: number,
-        external_id: string,
-    ): Promise<string | null> {
-        if (!external_id) return null;
-
-        const list = await model.list({
-            limit: 1,
-            where: sql`connection = ${connection} AND external_id = ${external_id}`,
-        });
-
-        return list.items.length ? list.items[0].id : null;
+        return { type: 'Point', coordinates: [coordinates[0], coordinates[1]] };
     }
 }

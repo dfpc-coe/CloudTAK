@@ -6,8 +6,17 @@
             </h3>
         </div>
 
+        <TablerLoading
+            v-if='loading'
+            desc='Loading Mappings'
+        />
         <TablerAlert
-            v-if='!props.capabilities'
+            v-else-if='error'
+            title='Mappings Error'
+            :err='error'
+        />
+        <TablerAlert
+            v-else-if='!props.capabilities'
             title='Missing Capabilities'
             :err='new Error("Layer failed to return an incoming output schema on the Capabilities object")'
         />
@@ -21,77 +30,79 @@
             label='No Schema'
             :create='false'
         />
-        <template v-else>
-            <div class='px-2 pb-2 d-flex flex-column gap-2'>
-                <StandardItem
-                    v-for='entry in entries'
-                    :key='entry.id'
-                    :class='{ "mapping-unmapped": !entry.mapped }'
-                    :style='entry.mapped ? "" : "border-style: dashed;"'
-                    @click='open(entry.id)'
-                >
-                    <div class='px-2 py-2 d-flex align-items-center'>
-                        <IconSchema
-                            :size='32'
-                            stroke='1'
-                        />
-                        <div class='mx-3'>
-                            <div class='fw-bold'>
-                                {{ entry.id }}
-                            </div>
-                            <div
-                                v-if='!entry.mapped'
-                                class='text-muted small'
-                            >
-                                Not mapped
-                            </div>
-                            <div
-                                v-else
-                                class='text-muted small'
-                            >
-                                {{ entry.queryCount }} {{ entry.queryCount === 1 ? 'query' : 'queries' }}
-                            </div>
+        <div
+            v-else
+            class='px-2 pb-2 d-flex flex-column gap-2'
+        >
+            <StandardItem
+                v-for='entry in entries'
+                :key='entry.id'
+                :class='{ "mapping-unmapped": !entry.mapped }'
+                @click='open(entry.id)'
+            >
+                <div class='px-2 py-2 d-flex align-items-center'>
+                    <IconSchema
+                        :size='32'
+                        stroke='1'
+                    />
+                    <div class='mx-3'>
+                        <div class='fw-bold'>
+                            {{ entry.id }}
                         </div>
-                        <div class='ms-auto d-flex align-items-center gap-1'>
-                            <span
-                                v-if='!entry.mapped'
-                                class='mapping-create text-white d-flex align-items-center'
-                            >
-                                Create Mapping
-                                <IconCaretRightFilled
-                                    :size='32'
-                                    stroke='1'
-                                />
-                            </span>
-                            <span
-                                v-if='!entry.inSchema'
-                                class='badge bg-yellow-lt'
-                                title='The Task does not expose an Output schema with this name'
-                            >Unknown Schema</span>
-                            <span
-                                v-for='destination in entry.destinations'
-                                :key='destination'
-                                class='badge bg-blue-lt'
-                            >{{ destination }}</span>
+                        <div
+                            v-if='!entry.mapped'
+                            class='text-muted small'
+                        >
+                            Not mapped
+                        </div>
+                        <div
+                            v-else
+                            class='text-muted small'
+                        >
+                            {{ entry.queryCount }} {{ entry.queryCount === 1 ? 'query' : 'queries' }}
                         </div>
                     </div>
-                </StandardItem>
-            </div>
-        </template>
+                    <div class='ms-auto d-flex align-items-center gap-1'>
+                        <span
+                            v-if='!entry.mapped'
+                            class='mapping-create text-white d-flex align-items-center'
+                        >
+                            Create Mapping
+                            <IconCaretRightFilled
+                                :size='32'
+                                stroke='1'
+                            />
+                        </span>
+                        <span
+                            v-if='!entry.inSchema'
+                            class='badge bg-yellow-lt'
+                            title='The Task does not expose an Output schema with this name'
+                        >Unknown Schema</span>
+                        <span
+                            v-for='destination in entry.destinations'
+                            :key='destination'
+                            class='badge bg-blue-lt'
+                        >{{ destination }}</span>
+                    </div>
+                </div>
+            </StandardItem>
+        </div>
     </div>
 </template>
 
 <script setup lang='ts'>
 import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import type { ETLLayer, ETLLayerTaskCapabilities } from '../../../types.ts';
+import { useRouter } from 'vue-router';
+import type { ETLLayerTaskCapabilities } from '../../../types.ts';
 import {
     TablerNone,
     TablerAlert,
+    TablerLoading,
 } from '@tak-ps/vue-tabler';
 import { IconSchema, IconCaretRightFilled } from '@tabler/icons-vue';
 import StandardItem from '../../CloudTAK/util/StandardItem.vue';
 import { outputSchemas } from './utils/namedSchemas.ts';
+import { useLayerMappings } from './utils/layerMappings.ts';
 
 type SchemaEntry = {
     id: string;
@@ -102,50 +113,49 @@ type SchemaEntry = {
 };
 
 const props = defineProps<{
-    layer: ETLLayer;
     capabilities: ETLLayerTaskCapabilities;
 }>();
 
-const route = useRoute();
 const router = useRouter();
+const { mappings, loading, error } = useLayerMappings();
 
-const schemas = computed(() => outputSchemas(props.capabilities));
-const maps = computed(() => props.layer.incoming?.maps ?? []);
+function blank(id: string, inSchema: boolean): SchemaEntry {
+    return { id, mapped: false, inSchema, destinations: [], queryCount: 0 };
+}
 
 /** Mapped schemas first, then the Task's unmapped schemas, each in name order */
 const entries = computed<SchemaEntry[]>(() => {
     const byId = new Map<string, SchemaEntry>();
 
-    for (const s of schemas.value) {
-        byId.set(s.id, { id: s.id, mapped: false, inSchema: true, destinations: [], queryCount: 0 });
+    for (const s of outputSchemas(props.capabilities)) {
+        byId.set(s.id, blank(s.id, true));
     }
 
-    for (const map of maps.value) {
-        const entry = byId.get(map.schema) ?? { id: map.schema, mapped: false, inSchema: false, destinations: [], queryCount: 0 };
+    for (const mapping of mappings.value) {
+        const entry = byId.get(mapping.schema) ?? blank(mapping.schema, false);
         entry.mapped = true;
-        if (!entry.destinations.includes(map.destination)) entry.destinations.push(map.destination);
-        entry.queryCount += map.queries.length;
-        byId.set(map.schema, entry);
+        if (!entry.destinations.includes(mapping.destination)) entry.destinations.push(mapping.destination);
+        entry.queryCount++;
+        byId.set(mapping.schema, entry);
     }
 
-    const all = Array.from(byId.values()).sort((a, b) => a.id.localeCompare(b.id));
-
-    return [...all.filter((e) => e.mapped), ...all.filter((e) => !e.mapped)];
+    return Array.from(byId.values())
+        .sort((a, b) => Number(b.mapped) - Number(a.mapped) || a.id.localeCompare(b.id));
 });
 
 function open(schema: string) {
     router.push({
         name: 'layer-incoming-mapping-schema',
-        params: {
-            connectionid: route.params.connectionid,
-            layerid: route.params.layerid,
-            schema,
-        },
+        params: { schema },
     });
 }
 </script>
 
 <style scoped>
+.standard-item.mapping-unmapped {
+    border-style: dashed;
+}
+
 .mapping-create {
     opacity: 0;
     transition: opacity 0.15s ease-in-out;

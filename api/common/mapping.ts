@@ -1,38 +1,32 @@
-import { Type } from '@sinclair/typebox';
-import type { Static } from '@sinclair/typebox';
+import type { Static, TObject } from '@sinclair/typebox';
+import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import jsonata from 'jsonata';
 import Err from '@openaddresses/batch-error';
 import type { Feature } from '@tak-ps/node-cot';
 import handlebars from './handlebars.js';
-import { LayerMapping_Destination, CoreEvent_Priority } from './enums.js';
-import type { LayerMap } from './layer-mapping.js';
+import type { CoreEvent, CoreDevice, LayerMapping } from './schema.js';
+import { LayerMapping_Destination } from './enums.js';
+import { CoreEventSchema, CoreDeviceSchema } from './core-schema.js';
 
 /** A submitted Feature - the geometry is optional as CoreEvent & CoreDevice Maps do not require one */
 export type MappingFeature = Omit<Static<typeof Feature.InputFeature>, 'geometry'> & {
     geometry?: Static<typeof Feature.InputFeature>['geometry'] | null;
 };
 
-export enum MapFieldKind {
-    /** Handlebars template rendered against the Feature metadata */
-    TEMPLATE = 'template',
-    /** String copied as-is - colours, icons, stroke styles */
-    LITERAL = 'literal',
-    /** Number, or a template rendering to a number */
-    NUMBER = 'number',
-    BOOLEAN = 'boolean',
-    /** String restricted to a list of options */
-    ENUM = 'enum',
-    /** Seconds until stale as a number, or a template rendering to seconds or a timestamp */
-    SECONDS = 'seconds',
-    /** Zoom level 0-24 as a number, or a template rendering to one */
-    ZOOM = 'zoom',
-    /** Template rendering to a date-time - an empty result clears the value */
-    TIMESTAMP = 'timestamp',
-    /** Array of { url, remarks } templates appended as CoT links */
-    LINKS = 'links',
-    /** { archive, dest } TAK Server routing */
-    MARTI = 'marti',
-}
+export type MappingRow = Pick<InferSelectModel<typeof LayerMapping>, 'destination' | 'query' | 'mapping'>;
+
+export type MappedEvent = Partial<Pick<InferInsertModel<typeof CoreEvent>, keyof Static<typeof CoreEventSchema>>>;
+export type MappedDevice = Partial<Pick<InferInsertModel<typeof CoreDevice>, keyof Static<typeof CoreDeviceSchema>>>;
+
+/**
+ * - template:  Handlebars template rendered against the Feature metadata
+ * - number:    Number, or a template rendering to a number
+ * - seconds:   Seconds as a number, or a template rendering to seconds or a timestamp
+ * - timestamp: Template rendering to a date-time - an empty result clears the value
+ * - links:     Array of { url, remarks } templates appended as CoT links
+ * - array:     Non-empty array copied as-is
+ */
+export type MapFieldKind = 'template' | 'number' | 'boolean' | 'enum' | 'seconds' | 'timestamp' | 'links' | 'array';
 
 export interface MapField {
     /** Dot path of the value in the Map object */
@@ -43,65 +37,46 @@ export interface MapField {
     /** Only applied to Features of this geometry type */
     geometry?: 'Point' | 'LineString' | 'Polygon';
     options?: string[];
-    /** Must be present when a new record is created from the Map */
-    required?: boolean;
+    min?: number;
+    max?: number;
 }
 
-export const MapLink = Type.Object({
-    remarks: Type.String(),
-    url: Type.String(),
-});
+type Render = {
+    field: MapField;
+    feature: MappingFeature;
+    target: Record<string, unknown>;
+    compile: (template: string) => string;
+};
 
-export const MapMartiDest = Type.Object({
-    group: Type.Optional(Type.String()),
-    mission: Type.Optional(Type.String()),
-    uid: Type.Optional(Type.String()),
-    callsign: Type.Optional(Type.String()),
-});
+function prop(key: string, kind: MapFieldKind, extra: Partial<MapField> = {}): MapField {
+    return { key, kind, target: `properties.${key}`, ...extra };
+}
 
-export const MapMarti = Type.Object({
-    archive: Type.Optional(Type.Boolean()),
-    dest: Type.Optional(Type.Array(MapMartiDest)),
-});
+/** Fields of a flat JSON Schema - the kind of each is derived from its property definition */
+function schemaFields(schema: TObject): MapField[] {
+    return Object.entries(schema.properties).map(([key, property]) => {
+        let kind: MapFieldKind = 'template';
+        if (property.type === 'boolean') kind = 'boolean';
+        else if (property.type === 'number' || property.type === 'integer') kind = 'number';
+        else if (property.enum) kind = 'enum';
+        else if (property.format === 'date-time') kind = 'timestamp';
 
-export const MappedEvent = Type.Object({
-    name: Type.Optional(Type.String()),
-    type: Type.Optional(Type.String()),
-    priority: Type.Optional(Type.Enum(CoreEvent_Priority)),
-    location: Type.Optional(Type.String()),
-    remarks: Type.Optional(Type.String()),
-    ended: Type.Optional(Type.Union([Type.Null(), Type.String()])),
-    external_id: Type.Optional(Type.String()),
-    editable: Type.Optional(Type.Boolean()),
-});
-
-export const MappedDevice = Type.Object({
-    name: Type.Optional(Type.String()),
-    type: Type.Optional(Type.String()),
-    manufacturer: Type.Optional(Type.String()),
-    model: Type.Optional(Type.String()),
-    serial: Type.Optional(Type.String()),
-    firmware: Type.Optional(Type.String()),
-    status: Type.Optional(Type.String()),
-    battery: Type.Optional(Type.Number()),
-    simulated: Type.Optional(Type.Boolean()),
-    external_id: Type.Optional(Type.String()),
-    remarks: Type.Optional(Type.String()),
-});
-
-const { TEMPLATE, LITERAL, NUMBER, BOOLEAN, ENUM, SECONDS, ZOOM, TIMESTAMP, LINKS, MARTI } = MapFieldKind;
+        return { key, kind, target: key, options: property.enum, min: property.minimum, max: property.maximum };
+    });
+}
 
 /** Fields shared by the top level of a CoreFeature Map and each of its geometry blocks */
 const FEATURE_COMMON: MapField[] = [
-    { key: 'id', kind: TEMPLATE, target: 'id' },
-    { key: 'callsign', kind: TEMPLATE, target: 'properties.callsign' },
-    { key: 'remarks', kind: TEMPLATE, target: 'properties.remarks' },
-    { key: 'phone', kind: TEMPLATE, target: 'properties.contact.phone' },
-    { key: 'stale', kind: SECONDS, target: 'properties.stale' },
-    { key: 'minzoom', kind: ZOOM, target: 'properties.minzoom' },
-    { key: 'maxzoom', kind: ZOOM, target: 'properties.maxzoom' },
-    { key: 'links', kind: LINKS, target: 'properties.links' },
-    { key: 'marti', kind: MARTI, target: 'properties' },
+    { key: 'id', kind: 'template', target: 'id' },
+    prop('callsign', 'template'),
+    prop('remarks', 'template'),
+    prop('phone', 'template', { target: 'properties.contact.phone' }),
+    prop('stale', 'seconds'),
+    prop('minzoom', 'number', { min: 0, max: 24 }),
+    prop('maxzoom', 'number', { min: 0, max: 24 }),
+    prop('links', 'links'),
+    prop('marti.archive', 'boolean', { target: 'properties.marti_archive' }),
+    prop('marti.dest', 'array', { target: 'properties.dest' }),
 ];
 
 function geometryBlock(block: string, geometry: MapField['geometry'], extra: MapField[]): MapField[] {
@@ -112,55 +87,35 @@ function geometryBlock(block: string, geometry: MapField['geometry'], extra: Map
     }));
 }
 
+const STROKE: MapField[] = [
+    prop('stroke', 'template'),
+    prop('stroke-style', 'template'),
+    prop('stroke-opacity', 'number'),
+    prop('stroke-width', 'number'),
+];
+
 export const MAP_FIELDS: Record<LayerMapping_Destination, MapField[]> = {
     [LayerMapping_Destination.COREFEATURE]: [
         ...FEATURE_COMMON,
         ...geometryBlock('point', 'Point', [
-            { key: 'type', kind: TEMPLATE, target: 'properties.type' },
-            { key: 'marker-color', kind: LITERAL, target: 'properties.marker-color' },
-            { key: 'marker-opacity', kind: NUMBER, target: 'properties.marker-opacity' },
-            { key: 'rotate', kind: BOOLEAN, target: 'properties.rotate' },
-            { key: 'icon', kind: LITERAL, target: 'properties.icon' },
+            prop('type', 'template'),
+            prop('marker-color', 'template'),
+            prop('marker-opacity', 'number'),
+            prop('rotate', 'boolean'),
+            prop('icon', 'template'),
         ]),
         ...geometryBlock('line', 'LineString', [
-            { key: 'type', kind: ENUM, target: 'properties.type', options: ['u-d-f', 'b-m-r'] },
-            { key: 'stroke', kind: LITERAL, target: 'properties.stroke' },
-            { key: 'stroke-style', kind: LITERAL, target: 'properties.stroke-style' },
-            { key: 'stroke-opacity', kind: NUMBER, target: 'properties.stroke-opacity' },
-            { key: 'stroke-width', kind: NUMBER, target: 'properties.stroke-width' },
+            prop('type', 'enum', { options: ['u-d-f', 'b-m-r'] }),
+            ...STROKE,
         ]),
         ...geometryBlock('polygon', 'Polygon', [
-            { key: 'stroke', kind: LITERAL, target: 'properties.stroke' },
-            { key: 'stroke-style', kind: LITERAL, target: 'properties.stroke-style' },
-            { key: 'stroke-opacity', kind: NUMBER, target: 'properties.stroke-opacity' },
-            { key: 'stroke-width', kind: NUMBER, target: 'properties.stroke-width' },
-            { key: 'fill', kind: LITERAL, target: 'properties.fill' },
-            { key: 'fill-opacity', kind: NUMBER, target: 'properties.fill-opacity' },
+            ...STROKE,
+            prop('fill', 'template'),
+            prop('fill-opacity', 'number'),
         ]),
     ],
-    [LayerMapping_Destination.COREEVENT]: [
-        { key: 'name', kind: TEMPLATE, target: 'name', required: true },
-        { key: 'type', kind: TEMPLATE, target: 'type', required: true },
-        { key: 'priority', kind: ENUM, target: 'priority', options: Object.values(CoreEvent_Priority) },
-        { key: 'location', kind: TEMPLATE, target: 'location' },
-        { key: 'remarks', kind: TEMPLATE, target: 'remarks' },
-        { key: 'ended', kind: TIMESTAMP, target: 'ended' },
-        { key: 'external_id', kind: TEMPLATE, target: 'external_id' },
-        { key: 'editable', kind: BOOLEAN, target: 'editable' },
-    ],
-    [LayerMapping_Destination.COREDEVICE]: [
-        { key: 'name', kind: TEMPLATE, target: 'name', required: true },
-        { key: 'type', kind: TEMPLATE, target: 'type', required: true },
-        { key: 'manufacturer', kind: TEMPLATE, target: 'manufacturer' },
-        { key: 'model', kind: TEMPLATE, target: 'model' },
-        { key: 'serial', kind: TEMPLATE, target: 'serial' },
-        { key: 'firmware', kind: TEMPLATE, target: 'firmware' },
-        { key: 'status', kind: TEMPLATE, target: 'status' },
-        { key: 'battery', kind: NUMBER, target: 'battery' },
-        { key: 'simulated', kind: BOOLEAN, target: 'simulated' },
-        { key: 'external_id', kind: TEMPLATE, target: 'external_id' },
-        { key: 'remarks', kind: TEMPLATE, target: 'remarks' },
-    ],
+    [LayerMapping_Destination.COREEVENT]: schemaFields(CoreEventSchema),
+    [LayerMapping_Destination.COREDEVICE]: schemaFields(CoreDeviceSchema),
 };
 
 function getPath(obj: unknown, path: string): unknown {
@@ -189,11 +144,15 @@ function label(field: MapField): string {
         .replace(/\b\w/g, c => c.toUpperCase())
         .replace(/\bId\b/, 'ID');
 
-    return parts.length > 1 ? `(${parts[0]}) ${name}` : name;
+    return parts.length > 1 ? `(${parts.slice(0, -1).join('.')}) ${name}` : name;
+}
+
+function isEmpty(value: unknown): boolean {
+    return value === undefined || value === null || value === '';
 }
 
 function isNumeric(value: unknown): boolean {
-    return typeof value === 'string' && value.trim() !== '' && !isNaN(Number(value));
+    return typeof value === 'number' || (typeof value === 'string' && value.trim() !== '' && !isNaN(Number(value)));
 }
 
 function invalid(err: unknown, message: string): Err {
@@ -210,30 +169,134 @@ function assertTemplate(value: unknown, message: string): void {
     }
 }
 
+/** A number, a numeric string or a template rendering to one */
+function renderNumber(raw: unknown, compile: Render['compile']): number | undefined {
+    if (isNumeric(raw)) return Number(raw);
+    if (typeof raw !== 'string') return undefined;
+
+    const rendered = compile(raw);
+    return isNumeric(rendered) ? Number(rendered) : undefined;
+}
+
+/** How each kind validates a Map value & renders it for a Feature - undefined leaves the target untouched */
+const KINDS: Record<MapFieldKind, {
+    validate: (value: unknown, field: MapField, name: string) => void;
+    render: (raw: unknown, ctx: Render) => unknown;
+}> = {
+    template: {
+        validate: (value, field, name) => assertTemplate(value, `Invalid ${name} Template: ${value}`),
+        render: (raw, { compile }) => typeof raw === 'string' ? compile(raw) : undefined,
+    },
+    number: {
+        validate: (value, field, name) => {
+            if (isNumeric(value)) {
+                if (field.min !== undefined && Number(value) < field.min) throw invalid(null, `Invalid ${name}: ${value} - Less than ${field.min}`);
+                if (field.max !== undefined && Number(value) > field.max) throw invalid(null, `Invalid ${name}: ${value} - Greater than ${field.max}`);
+            } else if (typeof value === 'string') {
+                assertTemplate(value, `Invalid ${name} Template: ${value}`);
+            } else {
+                throw invalid(null, `Invalid ${name}: ${value} - Expected a number`);
+            }
+        },
+        render: (raw, { field, compile }) => {
+            const number = renderNumber(raw, compile);
+            if (number === undefined) return undefined;
+            if (field.min !== undefined && number < field.min) return undefined;
+            if (field.max !== undefined && number > field.max) return undefined;
+
+            return number;
+        },
+    },
+    seconds: {
+        validate: (value, field, name) => KINDS.number.validate(value, field, name),
+        render: (raw, { compile }) => {
+            const seconds = renderNumber(raw, compile);
+            if (seconds !== undefined) return seconds * 1000;
+
+            return typeof raw === 'string' ? compile(raw).trim() || undefined : undefined;
+        },
+    },
+    timestamp: {
+        validate: (value, field, name) => assertTemplate(value, `Invalid ${name} Template: ${value}`),
+        render: (raw, { compile }) => {
+            if (typeof raw !== 'string') return undefined;
+
+            const rendered = compile(raw).trim();
+            if (!rendered) return null;
+
+            return isNaN(new Date(rendered).getTime()) ? undefined : new Date(rendered).toISOString();
+        },
+    },
+    boolean: {
+        validate: (value, field, name) => {
+            if (typeof value !== 'boolean' && value !== 'true' && value !== 'false') {
+                throw invalid(null, `Invalid ${name}: ${value} - Expected a boolean`);
+            }
+        },
+        render: (raw) => {
+            if (typeof raw === 'boolean') return raw;
+            return raw === 'true' || raw === 'false' ? raw === 'true' : undefined;
+        },
+    },
+    enum: {
+        validate: (value, field, name) => {
+            if (typeof value !== 'string' || !field.options?.includes(value)) {
+                throw invalid(null, `Invalid ${name}: ${value} - Expected one of ${field.options?.join(', ')}`);
+            }
+        },
+        render: (raw, { field }) => typeof raw === 'string' && field.options?.includes(raw) ? raw : undefined,
+    },
+    links: {
+        validate: (value, field, name) => {
+            if (!Array.isArray(value)) throw invalid(null, `Invalid ${name}: Expected an array`);
+
+            for (const link of value) {
+                assertTemplate(link?.url, `Invalid Link URL: ${link?.url}`);
+                assertTemplate(link?.remarks, `Invalid Link Remarks: ${link?.remarks}`);
+            }
+        },
+        render: (raw, { field, feature, target, compile }) => {
+            if (!Array.isArray(raw)) return undefined;
+
+            const existing = getPath(target, field.target);
+
+            return [
+                ...(Array.isArray(existing) ? existing : []),
+                ...raw.map(link => ({
+                    uid: feature.id,
+                    relation: 'r-u',
+                    mime: 'text/html',
+                    url: compile(String(link.url ?? '')),
+                    remarks: compile(String(link.remarks ?? '')),
+                })),
+            ];
+        },
+    },
+    array: {
+        validate: (value, field, name) => {
+            if (!Array.isArray(value)) throw invalid(null, `Invalid ${name}: Expected an array`);
+        },
+        render: raw => Array.isArray(raw) && raw.length ? raw : undefined,
+    },
+};
+
 /**
- * Apply the Layer Maps of a named Output schema to submitted Features
+ * Convert submitted Features with the Layer Mappings of a named Output schema
  *
- * Each destination is described by a list of MapFields - the engine walks the
- * fields of every Map whose JSONata query matches the Feature, in insertion
- * order, rendering templates against `properties.metadata` and writing the
- * result to the field's target
+ * A Feature is converted by at most one Mapping per destination - each
+ * destination is described by a list of MapFields which the engine walks,
+ * rendering templates against `properties.metadata` and writing the result to
+ * the field's target
  */
 export default class Mapping {
-    schema: string;
-    maps: Array<Static<typeof LayerMap>>;
+    rows: MappingRow[];
     templates: Map<string, HandlebarsTemplateDelegate>;
     expressions: Map<string, jsonata.Expression>;
 
-    constructor(maps: Array<Static<typeof LayerMap>>, schema: string) {
-        this.schema = schema;
-        this.maps = maps.filter(map => map.schema === schema);
+    constructor(rows: MappingRow[]) {
+        this.rows = rows;
         this.templates = new Map();
         this.expressions = new Map();
-    }
-
-    /** Does the schema have at least one Map for the destination */
-    has(destination: LayerMapping_Destination): boolean {
-        return this.maps.some(map => map.destination === destination && map.queries.length > 0);
     }
 
     /**
@@ -242,64 +305,7 @@ export default class Mapping {
     static validate(destination: LayerMapping_Destination, map: Record<string, unknown>): true {
         for (const field of MAP_FIELDS[destination]) {
             const value = getPath(map, field.key);
-            if (value === undefined || value === null || value === '') continue;
-
-            const name = label(field);
-
-            switch (field.kind) {
-                case TEMPLATE:
-                case TIMESTAMP:
-                    assertTemplate(value, `Invalid ${name} Template: ${value}`);
-                    break;
-                case LITERAL:
-                    if (typeof value !== 'string') throw invalid(null, `Invalid ${name}: ${value} - Expected a string`);
-                    break;
-                case NUMBER:
-                case SECONDS:
-                    if (typeof value === 'string' && !isNumeric(value)) {
-                        assertTemplate(value, `Invalid ${name} Template: ${value}`);
-                    } else if (typeof value !== 'number' && typeof value !== 'string') {
-                        throw invalid(null, `Invalid ${name}: ${value} - Expected a number`);
-                    }
-                    break;
-                case ZOOM:
-                    if (typeof value === 'number' || isNumeric(value)) {
-                        const zoom = Number(value);
-                        if (zoom < 0) throw invalid(null, `Invalid ${name}: ${zoom} - Less than 0`);
-                        if (zoom > 24) throw invalid(null, `Invalid ${name}: ${zoom} - Greater than 24`);
-                    } else {
-                        assertTemplate(value, `Invalid ${name} Template: ${value}`);
-                    }
-                    break;
-                case BOOLEAN:
-                    if (typeof value !== 'boolean' && value !== 'true' && value !== 'false') {
-                        throw invalid(null, `Invalid ${name}: ${value} - Expected a boolean`);
-                    }
-                    break;
-                case ENUM:
-                    if (typeof value !== 'string' || !field.options?.includes(value)) {
-                        throw invalid(null, `Invalid ${name}: ${value} - Expected one of ${field.options?.join(', ')}`);
-                    }
-                    break;
-                case LINKS:
-                    if (!Array.isArray(value)) throw invalid(null, `Invalid ${name}: Expected an array`);
-                    for (const link of value as Array<Record<string, unknown>>) {
-                        assertTemplate(link?.url, `Invalid Link URL: ${link?.url}`);
-                        assertTemplate(link?.remarks, `Invalid Link Remarks: ${link?.remarks}`);
-                    }
-                    break;
-                case MARTI: {
-                    if (typeof value !== 'object') throw invalid(null, `Invalid ${name}: Expected an object`);
-                    const marti = value as Record<string, unknown>;
-                    if (marti.archive !== undefined && typeof marti.archive !== 'boolean') {
-                        throw invalid(null, `Invalid ${name} Archive: Expected a boolean`);
-                    }
-                    if (marti.dest !== undefined && !Array.isArray(marti.dest)) {
-                        throw invalid(null, `Invalid ${name} Destinations: Expected an array`);
-                    }
-                    break;
-                }
-            }
+            if (!isEmpty(value)) KINDS[field.kind].validate(value, field, label(field));
         }
 
         for (const block of ['', 'point.', 'line.', 'polygon.']) {
@@ -314,83 +320,54 @@ export default class Mapping {
     }
 
     /**
-     * Apply CoreFeature Maps to a Feature in place
+     * The single Mapping of a destination that applies to a Feature - queries
+     * are mutually exclusive, the first matching query in insertion order wins
+     * and the default (null query) Mapping only applies when no query matched
      */
-    async feature(feature: Static<typeof Feature.InputFeature>): Promise<Static<typeof Feature.InputFeature>> {
+    async match(destination: LayerMapping_Destination, feature: MappingFeature): Promise<MappingRow | null> {
+        const rows = this.rows.filter(row => row.destination === destination);
+
+        for (const row of rows) {
+            if (row.query !== null && await this.#matches(row.query, feature)) return row;
+        }
+
+        return rows.find(row => row.query === null) ?? null;
+    }
+
+    /**
+     * Render a Mapping against a Feature - a CoreFeature Mapping styles the
+     * Feature in place, other destinations produce the fields of a new record
+     */
+    render(row: MappingRow, feature: MappingFeature): Record<string, unknown> {
         if (!feature.properties) feature.properties = {};
         if (!feature.properties.metadata) feature.properties.metadata = {};
 
-        await this.#apply(LayerMapping_Destination.COREFEATURE, feature, feature as unknown as Record<string, unknown>);
+        const metadata = feature.properties.metadata;
+        const compile = (template: string) => this.compile(template, metadata);
 
-        return feature;
-    }
-
-    /**
-     * CoreEvent fields produced by the Maps matching a Feature - null when no Map matched
-     */
-    async event(feature: MappingFeature): Promise<null | Static<typeof MappedEvent>> {
-        const target: Record<string, unknown> = {};
-        const matched = await this.#apply(LayerMapping_Destination.COREEVENT, feature, target);
-        return matched ? target as Static<typeof MappedEvent> : null;
-    }
-
-    /**
-     * CoreDevice fields produced by the Maps matching a Feature - null when no Map matched
-     */
-    async device(feature: MappingFeature): Promise<null | Static<typeof MappedDevice>> {
-        const target: Record<string, unknown> = {};
-        const matched = await this.#apply(LayerMapping_Destination.COREDEVICE, feature, target);
-        return matched ? target as Static<typeof MappedDevice> : null;
-    }
-
-    /**
-     * Fields of a destination that must be present when creating a record
-     * but are missing from the mapped output
-     */
-    static missing(destination: LayerMapping_Destination, mapped: Record<string, unknown>): string[] {
-        return MAP_FIELDS[destination]
-            .filter(field => field.required && !mapped[field.target])
-            .map(field => field.target);
-    }
-
-    async #apply(
-        destination: LayerMapping_Destination,
-        feature: MappingFeature,
-        target: Record<string, unknown>,
-    ): Promise<boolean> {
-        const metadata = feature.properties?.metadata || {};
-        let matched = false;
+        const target: Record<string, unknown> = row.destination === LayerMapping_Destination.COREFEATURE
+            ? feature as unknown as Record<string, unknown>
+            : {};
 
         try {
-            for (const map of this.maps) {
-                if (map.destination !== destination) continue;
+            for (const field of MAP_FIELDS[row.destination]) {
+                if (field.geometry && feature.geometry?.type !== field.geometry) continue;
 
-                for (const q of map.queries) {
-                    if (!await this.#matches(q.query, feature)) continue;
+                const raw = getPath(row.mapping, field.key);
+                if (isEmpty(raw)) continue;
 
-                    matched = true;
-
-                    for (const field of MAP_FIELDS[destination]) {
-                        if (field.geometry && feature.geometry?.type !== field.geometry) continue;
-
-                        const raw = getPath(q.map, field.key);
-                        if (raw === undefined || raw === null || raw === '') continue;
-
-                        this.#write(field, raw, feature, target, metadata);
-                    }
-                }
+                const value = KINDS[field.kind].render(raw, { field, feature, target, compile });
+                if (value !== undefined) setPath(target, field.target, value);
             }
         } catch (err) {
             if (err instanceof Err) throw err;
             throw invalid(err, err instanceof Error ? err.message : String(err));
         }
 
-        return matched;
+        return target;
     }
 
-    async #matches(query: string | null, feature: MappingFeature): Promise<boolean> {
-        if (query === null) return true;
-
+    async #matches(query: string, feature: MappingFeature): Promise<boolean> {
         try {
             let expression = this.expressions.get(query);
             if (!expression) {
@@ -403,93 +380,6 @@ export default class Mapping {
             // Queries that fail to evaluate against a Feature simply don't match
             return false;
         }
-    }
-
-    #write(
-        field: MapField,
-        raw: unknown,
-        feature: MappingFeature,
-        target: Record<string, unknown>,
-        metadata: Record<string, unknown>,
-    ): void {
-        switch (field.kind) {
-            case TEMPLATE:
-                if (typeof raw === 'string') setPath(target, field.target, this.compile(raw, metadata));
-                break;
-            case LITERAL:
-                if (typeof raw === 'string') setPath(target, field.target, raw);
-                break;
-            case ENUM:
-                if (typeof raw === 'string' && field.options?.includes(raw)) setPath(target, field.target, raw);
-                break;
-            case BOOLEAN:
-                if (typeof raw === 'boolean') setPath(target, field.target, raw);
-                else if (raw === 'true' || raw === 'false') setPath(target, field.target, raw === 'true');
-                break;
-            case NUMBER:
-            case ZOOM: {
-                const number = this.#number(raw, metadata);
-                if (number !== undefined) setPath(target, field.target, number);
-                break;
-            }
-            case SECONDS: {
-                if (typeof raw === 'number') {
-                    setPath(target, field.target, raw * 1000);
-                } else if (isNumeric(raw)) {
-                    setPath(target, field.target, Number(raw) * 1000);
-                } else if (typeof raw === 'string') {
-                    const rendered = this.compile(raw, metadata);
-                    if (isNumeric(rendered)) {
-                        setPath(target, field.target, Number(rendered) * 1000);
-                    } else if (rendered.trim()) {
-                        setPath(target, field.target, rendered);
-                    }
-                }
-                break;
-            }
-            case TIMESTAMP: {
-                if (typeof raw !== 'string') break;
-                const rendered = this.compile(raw, metadata).trim();
-                if (!rendered) {
-                    setPath(target, field.target, null);
-                } else if (!isNaN(new Date(rendered).getTime())) {
-                    setPath(target, field.target, new Date(rendered).toISOString());
-                }
-                break;
-            }
-            case LINKS: {
-                if (!Array.isArray(raw)) break;
-                const existing = getPath(target, field.target);
-                const links = Array.isArray(existing) ? existing : [];
-                for (const link of raw as Array<Static<typeof MapLink>>) {
-                    links.push({
-                        uid: feature.id,
-                        relation: 'r-u',
-                        mime: 'text/html',
-                        url: this.compile(String(link.url ?? ''), metadata),
-                        remarks: this.compile(String(link.remarks ?? ''), metadata),
-                    });
-                }
-                setPath(target, field.target, links);
-                break;
-            }
-            case MARTI: {
-                if (raw === null || typeof raw !== 'object') break;
-                const marti = raw as Static<typeof MapMarti>;
-                if (marti.archive !== undefined) setPath(target, `${field.target}.marti_archive`, marti.archive);
-                if (marti.dest !== undefined && marti.dest.length > 0) setPath(target, `${field.target}.dest`, marti.dest);
-                break;
-            }
-        }
-    }
-
-    #number(raw: unknown, metadata: Record<string, unknown>): number | undefined {
-        if (typeof raw === 'number') return raw;
-        if (typeof raw !== 'string') return undefined;
-        if (isNumeric(raw)) return Number(raw);
-
-        const rendered = this.compile(raw, metadata);
-        return isNumeric(rendered) ? Number(rendered) : undefined;
     }
 
     /**

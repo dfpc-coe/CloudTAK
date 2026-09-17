@@ -1,11 +1,10 @@
 import { Static, Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
-import { GenerateUpsert } from '@openaddresses/batch-generic';
 import crypto from 'node:crypto';
 import Err from '@openaddresses/batch-error';
-import { ConnectionFeature } from '../../common/schema.js';
 import Auth, { AuthResourceAccess } from '../../common/auth.js';
 import Style from '../../common/style.js';
+import { archiveCots } from '../lib/control/feature.js';
 import type ConfigStateless from '../config.js';
 import { HistoryOptions } from '@tak-ps/node-tak/lib/api/query';
 import { CoTParser, Feature } from '@tak-ps/node-cot';
@@ -238,31 +237,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             } else {
                 cots = cots.filter(cot => !cot.is_stale());
 
-                const insertValues = [];
-                for (const cot of cots) {
-                    insertValues.push({
-                        path: '/',
-                        connection: layer.connection,
-                        layer: layer.id,
-                        ...(await CoTParser.to_geojson(cot)),
-                    });
-                }
-
-                try {
-                    if (insertValues.length && req.query.archive) {
-                        const INSERT_BATCH = 10000;
-
-                        for (let i = 0; i < insertValues.length; i += INSERT_BATCH) {
-                            await config.models.ConnectionFeature.generate(insertValues.slice(i, i + INSERT_BATCH), {
-                                upsert: GenerateUpsert.UPDATE,
-                                upsertTarget: [ConnectionFeature.connection, ConnectionFeature.id],
-                            });
-                        }
-                    }
-                } catch (err) {
-                    // We don't throw as priority is TAK Server Delivery
-                    console.error(err);
-                }
+                if (req.query.archive) await archiveCots(config, cots, layer.connection, layer.id);
             }
 
             if (cots.length === 0 && !errors.length) {

@@ -1,7 +1,7 @@
 <template>
     <div class='row g-2'>
         <div class='col-12'>
-            <span class='text-muted subheader'>Event Properties</span>
+            <span class='text-muted subheader'>{{ definition.title }} Properties</span>
         </div>
 
         <div
@@ -43,7 +43,7 @@
                     :model-value='String(values[field.key])'
                     :placeholder='field.placeholder'
                     :disabled='disabled'
-                    :schema='props.schema'
+                    :schema='schema'
                     @update:model-value='(v: string | number) => values[field.key] = v'
                 />
             </template>
@@ -52,49 +52,62 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import type { Component } from 'vue';
+import type { CoreSchema } from '../../../../types.ts';
 import HandleForm from '../../../util/HandleForm.vue';
 import {
     IconTag,
+    IconBox,
     IconFlag,
+    IconLock,
     IconMapPin,
+    IconBarcode,
+    IconBattery,
     IconLicense,
     IconCategory,
+    IconTestPipe,
+    IconVersions,
+    IconHeartbeat,
     IconBlockquote,
     IconCalendarOff,
-    IconLock,
+    IconBuildingFactory2,
 } from '@tabler/icons-vue';
 import { TablerEnum, TablerToggle } from '@tak-ps/vue-tabler';
 
-type FieldValue = string | number | boolean;
+type MappingFieldValue = string | number | boolean;
 
-interface Field {
+interface MappingField {
     key: string;
     label: string;
     icon: Component;
     placeholder: string;
-    kind?: 'template' | 'boolean' | 'enum';
+    kind: 'template' | 'boolean' | 'number' | 'enum';
     options?: string[];
+    default?: MappingFieldValue;
 }
 
-const fields: Field[] = [
-    { key: 'name', label: 'Name', icon: IconTag, placeholder: 'Name Field' },
-    { key: 'type', label: 'Type', icon: IconCategory, placeholder: 'MIL-STD-2525E Symbol ID' },
-    { key: 'priority', label: 'Priority', icon: IconFlag, placeholder: 'Priority', kind: 'enum', options: ['none', 'low', 'medium', 'high', 'critical'] },
-    { key: 'location', label: 'Location', icon: IconMapPin, placeholder: 'Human readable location' },
-    { key: 'remarks', label: 'Remarks', icon: IconBlockquote, placeholder: 'Remarks Field' },
-    { key: 'ended', label: 'Ended', icon: IconCalendarOff, placeholder: 'Ended timestamp' },
-    { key: 'external_id', label: 'External ID', icon: IconLicense, placeholder: 'ID in an external system' },
-    { key: 'editable', label: 'Editable', icon: IconLock, placeholder: 'Others can edit the Event', kind: 'boolean' },
-];
-
-const defaults: Record<string, FieldValue> = {
-    priority: 'none',
-    editable: true,
+/** Tabler icons a JSON Schema property can name with its `@icon` hint */
+const icons: Record<string, Component> = {
+    IconTag,
+    IconBox,
+    IconFlag,
+    IconLock,
+    IconMapPin,
+    IconBarcode,
+    IconBattery,
+    IconLicense,
+    IconCategory,
+    IconTestPipe,
+    IconVersions,
+    IconHeartbeat,
+    IconBlockquote,
+    IconCalendarOff,
+    IconBuildingFactory2,
 };
 
 const props = withDefaults(defineProps<{
+    definition: CoreSchema;
     modelValue?: Record<string, unknown>;
     schema: Record<string, unknown>;
     disabled?: boolean;
@@ -103,22 +116,41 @@ const props = withDefaults(defineProps<{
     disabled: false,
 });
 
+/** Form fields described by the properties of the JSON Schema */
+const fields = computed<MappingField[]>(() => {
+    return Object.entries(props.definition.properties).map(([key, property]) => {
+        let kind: MappingField['kind'] = 'template';
+        if (property.type === 'boolean') kind = 'boolean';
+        else if (property.type === 'number' || property.type === 'integer') kind = 'number';
+        else if (Array.isArray(property.enum)) kind = 'enum';
+
+        return {
+            key,
+            kind,
+            label: String(property.title ?? key),
+            icon: icons[String(property['@icon'])] ?? IconTag,
+            placeholder: String(property.description ?? ''),
+            options: property.enum as string[] | undefined,
+            default: property.default as MappingFieldValue | undefined,
+        };
+    });
+});
+
 const emit = defineEmits<{
     (e: 'update:modelValue', value: Record<string, unknown>): void;
 }>();
 
-const enabled = ref<Record<string, boolean>>(Object.fromEntries(fields.map((f) => [f.key, false])));
-const values = ref<Record<string, FieldValue>>(Object.fromEntries(fields.map((f) => [f.key, defaults[f.key] ?? ''])));
+const enabled = ref<Record<string, boolean>>(Object.fromEntries(fields.value.map((f) => [f.key, false])));
+const values = ref<Record<string, MappingFieldValue>>(Object.fromEntries(fields.value.map((f) => [f.key, f.default ?? ''])));
 
-watch(enabled, format, { deep: true });
-watch(values, format, { deep: true });
+watch([enabled, values], format, { deep: true });
 
 onMounted(() => {
-    for (const field of fields) {
+    for (const field of fields.value) {
         const value = props.modelValue[field.key];
         if (value === undefined || value === null) continue;
 
-        values.value[field.key] = value as FieldValue;
+        values.value[field.key] = value as MappingFieldValue;
         enabled.value[field.key] = true;
     }
 
@@ -128,9 +160,15 @@ onMounted(() => {
 function format() {
     const res: Record<string, unknown> = {};
 
-    for (const field of fields) {
+    for (const field of fields.value) {
         if (!enabled.value[field.key]) continue;
-        res[field.key] = values.value[field.key];
+
+        const value = values.value[field.key];
+        if (field.kind === 'number' && value !== '' && !isNaN(Number(value))) {
+            res[field.key] = Number(value);
+        } else {
+            res[field.key] = value;
+        }
     }
 
     emit('update:modelValue', res);

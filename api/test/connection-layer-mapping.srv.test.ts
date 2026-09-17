@@ -326,40 +326,6 @@ test('PATCH: api/connection/1/layer/1/incoming/mapping/2 - invalid JSONata query
     }
 });
 
-test('GET: api/connection/1/layer/1 - incoming maps reflect stored Mappings', async () => {
-    try {
-        const res = await flight.fetch('/api/connection/1/layer/1', {
-            method: 'GET',
-            auth: {
-                bearer: flight.token.admin,
-            },
-        }, true);
-
-        assert.equal(res.status, 200);
-        assert.deepEqual(res.body.incoming.maps, [{
-            schema: 'incident',
-            destination: 'CoreEvent',
-            queries: [{
-                id: 2,
-                name: 'Open Incidents',
-                query: null,
-                map: { name: '{{summary}}', priority: 'high' },
-            }],
-        }, {
-            schema: 'unit',
-            destination: 'CoreFeature',
-            queries: [{
-                id: 1,
-                name: 'Callsign',
-                query: null,
-                map: { callsign: 'unit.name' },
-            }],
-        }]);
-    } catch (err) {
-        assert.ifError(err);
-    }
-});
-
 test('DELETE: api/connection/1/layer/2/incoming/mapping/1 - mapping belongs to another layer', async () => {
     try {
         await flight.config!.models.LayerIncoming.generate({
@@ -397,6 +363,18 @@ test('DELETE: api/connection/1/layer/1/incoming/mapping/1', async () => {
 
         const remaining = await flight.config!.models.LayerMapping.count();
         assert.equal(Number(remaining), 1);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('Layer delete cascades to its Mappings', async () => {
+    try {
+        await flight.config!.models.LayerIncoming.delete(1);
+        await flight.config!.models.Layer.delete(1);
+
+        const remaining = await flight.config!.models.LayerMapping.count();
+        assert.equal(Number(remaining), 0);
     } catch (err) {
         assert.ifError(err);
     }

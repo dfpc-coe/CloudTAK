@@ -8,6 +8,7 @@ import { CoreEvent, CoreEventChannel } from '../../common/schema.js';
 import { CoreEvent_Priority } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
 import { userChannels } from '../lib/tak-channels.js';
+import { notifyCoreEvent } from '../lib/core-event.js';
 import { ETLEventAction } from '../../common/etl-events.js';
 import * as Default from '../lib/limits.js';
 
@@ -272,17 +273,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     })));
             }
 
-            // Best effort - a failed immediate submit is recovered by the
-            // Admin Connection's next scheduled submit cycle
-            config.hub.coreEventSubmit(event.id).catch((err) => {
-                console.error(`not ok - failed to immediately submit Core Event ${event.id}:`, err);
-            });
-
             const created = await config.models.CoreEvent.augmented_from(event.id);
 
-            config.etlEvents.event(ETLEventAction.Create, created).catch((err) => {
-                console.error(`not ok - failed to deliver create ETL Event for Core Event ${created.id}:`, err);
-            });
+            notifyCoreEvent(config, ETLEventAction.Create, created);
 
             res.json(created);
         } catch (err) {
@@ -399,15 +392,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const updated = await config.models.CoreEvent.augmented_from(req.params.event);
 
             if (Object.keys(body).length > 0 || channels !== undefined) {
-                // Best effort - a failed immediate submit is recovered by the
-                // next scheduled cycle; an ended Event ages out via stale
-                config.hub.coreEventSubmit(req.params.event).catch((err) => {
-                    console.error(`not ok - failed to immediately submit Core Event ${req.params.event}:`, err);
-                });
-
-                config.etlEvents.event(ETLEventAction.Update, updated).catch((err) => {
-                    console.error(`not ok - failed to deliver update ETL Event for Core Event ${updated.id}:`, err);
-                });
+                notifyCoreEvent(config, ETLEventAction.Update, updated);
             }
 
             res.json(updated);
