@@ -2,7 +2,7 @@
     <div>
         <div class='card-header sticky-top cloudtak-header'>
             <h3 class='card-title'>
-                Style Overrides
+                Legacy Style Overrides
             </h3>
             <div class='ms-auto btn-list'>
                 <TablerIconButton

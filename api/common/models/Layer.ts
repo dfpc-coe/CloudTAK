@@ -7,6 +7,7 @@ import { Layer_Priority } from '../enums.js';
 import { Static, Type } from '@sinclair/typebox';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Connection, Layer, LayerIncoming, LayerOutgoing } from '../schema.js';
+import { LayerMap, layerMapsSQL } from '../layer-mapping.js';
 import { sql, eq, asc, desc, is, SQL } from 'drizzle-orm';
 
 export const Layer_Config = Type.Object({
@@ -34,6 +35,7 @@ export const AugmentedLayerIncoming = Type.Object({
     webhooks: Type.Boolean(),
     enabled_styles: Type.Boolean(),
     styles: StyleContainer,
+    maps: Type.Array(LayerMap, { description: 'Layer Maps converting records of a named Output schema into their destination type' }),
     environment: Type.Any(),
     ephemeral: Type.Record(Type.String(), Type.Any()),
     data: Type.Union([Type.Null(), Type.Integer()]),
@@ -116,6 +118,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
         if (l.incoming && l.incoming.layer) {
             if (typeof l.incoming.config === 'string') l.incoming.config = JSON.parse(l.incoming.config);
             if (typeof l.incoming.styles === 'string') l.incoming.styles = JSON.parse(l.incoming.styles);
+            if (typeof l.incoming.maps === 'string') l.incoming.maps = JSON.parse(l.incoming.maps);
             if (typeof l.incoming.ephemeral === 'string') l.incoming.ephemeral = JSON.parse(l.incoming.ephemeral);
             if (typeof l.incoming.environment === 'string') l.incoming.environment = JSON.parse(l.incoming.environment);
         } else {
@@ -196,6 +199,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     data: LayerIncoming.data,
                     enabled_styles: LayerIncoming.enabled_styles,
                     styles: LayerIncoming.styles,
+                    maps: layerMapsSQL(Layer.id),
                 }),
 
                 outgoing: jsonBuildObject({
@@ -279,6 +283,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     data: LayerIncoming.data,
                     enabled_styles: LayerIncoming.enabled_styles,
                     styles: LayerIncoming.styles,
+                    maps: layerMapsSQL(Layer.id),
                 }),
 
                 outgoing: jsonBuildObject({

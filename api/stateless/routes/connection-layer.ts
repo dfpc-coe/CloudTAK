@@ -346,6 +346,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             layer = await layerControl.from(connection, req.params.layerid);
 
+            if (!layer.incoming) throw new Err(500, null, 'Layer incoming config failed to register');
+
             await config.hub.eventSet(layer.id, incoming.cron && !Schedule.is_aws(incoming.cron) && layer.enabled ? incoming.cron : null);
 
             try {
@@ -366,7 +368,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
             }
 
-            res.json(incoming);
+            res.json(layer.incoming);
         } catch (err) {
             Err.respond(err, res);
         }
@@ -491,7 +493,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 await Lambda.invoke(config, layer.id, 'environment:incoming');
             }
 
-            res.json(incoming);
+            const updatedLayer = await config.models.Layer.augmented_from(layer.id);
+
+            if (!updatedLayer.incoming) throw new Err(500, null, 'Layer incoming config failed to update');
+
+            res.json(updatedLayer.incoming);
         } catch (err) {
             Err.respond(err, res);
         }

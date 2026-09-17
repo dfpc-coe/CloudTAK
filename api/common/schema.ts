@@ -17,7 +17,7 @@ import {
     BasemapTerrain_Encoding,
     ProfilePaging_Type,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
-    ProfileChatStatus, CoreEvent_Priority, CoreEventBoardColumn_Type,
+    ProfileChatStatus, CoreEvent_Priority, CoreEventBoardColumn_Type, LayerMapping_Destination,
 } from './enums.js';
 import { bigint, boolean, uuid, numeric, integer, doublePrecision, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
@@ -654,6 +654,23 @@ export const LayerIncoming = pgTable('layers_incoming', {
 
     // Data Destinations
     data: integer().references(() => Data.id),
+});
+
+export const LayerMapping = pgTable('layer_mapping', {
+    id: serial().primaryKey(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+
+    layer: integer().notNull().references(() => Layer.id, { onDelete: 'cascade' }),
+    schema: text().notNull(),
+    name: text().notNull().default(''),
+    destination: text().$type<LayerMapping_Destination>().notNull().default(LayerMapping_Destination.COREFEATURE),
+    query: text(),
+    mapping: jsonb().$type<Record<string, unknown>>().notNull().default({}),
+}, (table) => {
+    return {
+        layer_idx: index('layer_mapping_layer_idx').on(table.layer),
+    };
 });
 
 export const Setting = pgTable('settings', {

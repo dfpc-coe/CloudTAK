@@ -18,6 +18,11 @@
 
 ### Pending Release
 
+- :rocket: Rename the Layer Incoming `Styling` tab to `Legacy Styling` - the existing `Layer.styles` object and `/api/layer/:layerid/cot` submission behaviour are unchanged
+- :tada: Add the `layer_mapping` table - each row ties a Layer to a named Output schema and a `destination` (`CoreFeature`, `CoreEvent` or `CoreDevice`) with an optional JSONata `query` and a `mapping` object
+- :tada: Layer Incoming responses now carry a `maps` array - one `{ schema, destination, queries: [{ query, map }] }` entry per schema & destination pair, `POST` & `PATCH /api/connection/:connectionid/layer/:layerid/incoming` return the augmented Layer Incoming including `maps`
+- :tada: Add a `Field Mapping` section to Layer Incoming listing the Task's named Output schemas - mapped schemas are shown first with a solid border and unmapped schemas follow with a dashed border, selecting a schema lists its fields. Maps are read-only pending the write API
+
 ### v13.88.3 - 2026-09-15
 
 - :bug: Allow non-admin users to list their own login sessions from the Settings menu, `GET /api/user/:username/session` now permits a user to view their own sessions while still requiring System Administrator to view other users' sessions

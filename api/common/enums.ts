@@ -164,6 +164,12 @@ export enum Basemap_Type {
     VECTOR = 'vector',
 }
 
+export enum LayerMapping_Destination {
+    COREFEATURE = 'CoreFeature',
+    COREEVENT = 'CoreEvent',
+    COREDEVICE = 'CoreDevice',
+}
+
 export enum Layer_Priority {
     HIGH = 'high',
     LOW = 'low',
