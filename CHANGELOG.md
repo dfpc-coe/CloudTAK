@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+### v13.90.0 - 2026-09-17
+
 - :rocket: Rename the Layer Incoming `Styling` tab to `Legacy Styling` - the existing `Layer.styles` object and `/api/layer/:layerid/cot` submission behaviour are unchanged
 - :tada: Add the `layer_mapping` table - each row ties a Layer to a named Output schema and a `destination` (`CoreFeature`, `CoreEvent` or `CoreDevice`) with an optional JSONata `query` and a `mapping` object
 - :tada: Add a `Field Mapping` section to Layer Incoming listing the Task's named Output schemas - mapped schemas are shown first with a solid border and unmapped schemas follow with a dashed border, selecting a schema lists its fields
