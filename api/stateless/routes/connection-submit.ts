@@ -4,7 +4,7 @@ import { GenericListOrder } from '@openaddresses/batch-generic';
 import { eq, and } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import { CoTParser, Feature } from '@tak-ps/node-cot';
-import Auth, { AuthResourceAccess } from '../../common/auth.js';
+import Auth, { AuthResourceAccess, hasScope } from '../../common/auth.js';
 import Mapping from '../../common/mapping.js';
 import type { MappingRow } from '../../common/mapping.js';
 import { LayerMapping } from '../../common/schema.js';
@@ -101,6 +101,19 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 })).items;
             }
 
+            // An UPSERT can create or update so the Layer token has to hold both permissions of a mapped record type
+            for (const [destination, kind] of RECORDS) {
+                if (!layer || !rows.some(row => row.destination === destination)) continue;
+
+                for (const scope of [`${kind}:create`, `${kind}:update`]) {
+                    if (!hasScope(layer.permissions, scope)) {
+                        throw new Err(403, null, `Layer token does not have the ${scope} permission required by its ${destination} Mappings`);
+                    }
+                }
+            }
+
+            if (!connection.enabled) return respond('Received but Connection Paused', 0, 200);
+
             const mapping = new Mapping(rows);
 
             const cots = [];
@@ -156,8 +169,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (!cots.length) return respond(counts.event || counts.device ? 'Submitted' : 'No features found');
-            if (!connection.enabled) return respond('Received but Connection Paused', 0, 200);
-
             const live = cots.filter(cot => !cot.is_stale());
 
             if (req.query.archive) await archiveCots(config, live, connection.id, layer ? layer.id : null);

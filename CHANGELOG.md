@@ -36,6 +36,11 @@
 - :rocket: The mapping engine & Field Mapping form support nested objects, arrays of objects and an `@widget` hint (`channels`, `icon`, `color`) on `common/core-schema.ts` properties
 - :tada: A Mapping field can be given as `{ value, update }` - `update: false` only applies the field when the CoreEvent or CoreDevice is first created so later edits by users survive resubmission. Object columns such as `style` are merged into the existing value rather than replaced
 - :rocket: CoreEvents & CoreDevices submitted through a Mapping that defines no `channels` inherit the active Channels of the Connection - applied when the record is created or has no Channels, records that are already shared are left alone
+- :rocket: `POST /api/connection/:connectionid/submit` requires a Layer token to hold the `event:create` & `event:update` permissions when the schema has `CoreEvent` Mappings and `device:create` & `device:update` when it has `CoreDevice` Mappings
+- :bug: `POST /api/connection/:connectionid/submit` to a paused Connection no longer creates or updates Core Events & Core Devices
+- :rocket: Only a single default (null query) Mapping can exist per Layer, schema & destination - enforced by a partial unique index on `layer_mapping`, existing duplicates are removed keeping the first created which was the one applied
+- :bug: Duplicate items of a Mapping array such as `channels` are removed when the Mapping is rendered
+- :bug: Changing the Destination of a Field Mapping query resets the mapping object rather than carrying the fields of the previous destination over
 - :rocket: Move the handlebars helpers shared by styling & mapping to `common/handlebars.ts`
 - :rocket: Move the legacy style editor to `ETL/Layer/Mapping/CoreFeature.vue`
 

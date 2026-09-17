@@ -36,7 +36,7 @@ export type MappedDevice = Partial<Pick<DeviceColumns, Extract<keyof typeof Core
  * - timestamp: Template rendering to a date-time - an empty result clears the value
  * - links:     Array of { url, remarks } templates appended as CoT links
  * - objects:   Array of objects whose properties are templates
- * - array:     Non-empty array copied as-is
+ * - array:     Non-empty array copied without duplicate items
  */
 export type MapFieldKind = 'template' | 'number' | 'boolean' | 'enum' | 'seconds' | 'timestamp' | 'links' | 'objects' | 'array';
 
@@ -365,7 +365,7 @@ const KINDS: Record<MapFieldKind, {
                 throw invalid(null, `Invalid ${name}: Expected an array of positive integers`);
             }
         },
-        render: raw => Array.isArray(raw) && raw.length ? raw : undefined,
+        render: raw => Array.isArray(raw) && raw.length ? Array.from(new Set(raw)) : undefined,
     },
 };
 

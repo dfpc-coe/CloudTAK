@@ -326,6 +326,56 @@ test('PATCH: api/connection/1/layer/1/incoming/mapping/2 - invalid JSONata query
     }
 });
 
+test('POST & PATCH: api/connection/1/layer/1/incoming/mapping - a single default per schema & destination', async () => {
+    try {
+        const message = 'A default Mapping already exists for this schema & destination';
+
+        const created = await flight.fetch('/api/connection/1/layer/1/incoming/mapping', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                schema: 'unit',
+                name: 'Second Default',
+            },
+        }, false);
+
+        assert.equal(created.status, 400);
+        assert.equal(created.body.message, message);
+
+        const moved = await flight.fetch('/api/connection/1/layer/1/incoming/mapping/2', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                schema: 'unit',
+                destination: 'CoreFeature',
+            },
+        }, false);
+
+        assert.equal(moved.status, 400);
+        assert.equal(moved.body.message, message);
+
+        // A default Mapping does not conflict with itself
+        const renamed = await flight.fetch('/api/connection/1/layer/1/incoming/mapping/2', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                name: 'Open Incidents',
+                query: null,
+            },
+        }, true);
+
+        assert.equal(renamed.status, 200);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('DELETE: api/connection/1/layer/2/incoming/mapping/1 - mapping belongs to another layer', async () => {
     try {
         await flight.config!.models.LayerIncoming.generate({

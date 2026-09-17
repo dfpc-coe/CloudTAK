@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import jwt from 'jsonwebtoken';
+import { eq } from 'drizzle-orm';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import Flight from './flight.js';
 import { ConnectionFeature, CoreEvent, CoreEventChannel, CoreDevice } from '../common/schema.js';
@@ -23,6 +24,7 @@ test('Setup: Create Layers', async () => {
             name: 'Submit Layer',
             task: 'test-task-v1.0.0',
             connection: 1,
+            permissions: ['event:*', 'device:*'],
         });
 
         await flight.config!.models.LayerIncoming.generate({
@@ -896,6 +898,82 @@ test('POST: api/connection/1/submit - a CoreEvent map that cannot produce a type
         assert.equal(res.body.errors[1].feature.id, 'alert-2');
         assert.equal(res.body.skipped.length, 1);
         assert.equal(res.body.skipped[0].feature.id, 'alert-2');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('POST: api/connection/1/submit - a Layer token needs the permissions of its mapped record types', async () => {
+    try {
+        const models = flight.config!.models;
+
+        await models.Layer.commit(1, { permissions: ['event:*', 'device:create'] });
+
+        const body = {
+            type: 'FeatureCollection',
+            schema: 'incident',
+            features: [{
+                id: 'incident-unpermitted',
+                type: 'Feature',
+                properties: { type: 'a-f-G', stale: 3600, metadata: { title: 'Fire', number: 50, severity: 5, sensor: 'Sensor Z' } },
+                geometry: { type: 'Point', coordinates: [-105, 39] },
+            }],
+        };
+
+        const res = await flight.fetch('/api/connection/1/submit', {
+            method: 'POST',
+            auth: { bearer: layerToken },
+            body,
+        }, false);
+
+        assert.equal(res.status, 403);
+        assert.equal(res.body.message, 'Layer token does not have the device:update permission required by its CoreDevice Mappings');
+        assert.equal(await models.CoreEvent.count({ where: eq(CoreEvent.external_id, 'inc-50') }), 0);
+
+        // Schemas without CoreEvent or CoreDevice Mappings need no permissions
+        await models.Layer.commit(1, { permissions: [] });
+
+        const unmapped = await flight.fetch('/api/connection/1/submit', {
+            method: 'POST',
+            auth: { bearer: layerToken },
+            body: { ...body, schema: 'unmapped' },
+        }, true);
+
+        assert.equal(unmapped.status, 200);
+
+        await models.Layer.commit(1, { permissions: ['event:*', 'device:*'] });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('POST: api/connection/1/submit - a paused Connection does not persist mapped records', async () => {
+    try {
+        const models = flight.config!.models;
+
+        await models.Connection.commit(1, { enabled: false });
+
+        const res = await flight.fetch('/api/connection/1/submit', {
+            method: 'POST',
+            auth: { bearer: layerToken },
+            body: {
+                type: 'FeatureCollection',
+                schema: 'incident',
+                features: [{
+                    id: 'incident-paused',
+                    type: 'Feature',
+                    properties: { type: 'a-f-G', stale: 3600, metadata: { title: 'Fire', number: 51, severity: 5 } },
+                    geometry: { type: 'Point', coordinates: [-105, 39] },
+                }],
+            },
+        }, true);
+
+        assert.equal(res.status, 200);
+        assert.equal(res.body.message, 'Received but Connection Paused');
+        assert.equal(res.body.events, 0);
+        assert.equal(await models.CoreEvent.count({ where: eq(CoreEvent.external_id, 'inc-51') }), 0);
+
+        await models.Connection.commit(1, { enabled: true });
     } catch (err) {
         assert.ifError(err);
     }

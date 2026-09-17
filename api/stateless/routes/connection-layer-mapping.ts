@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import jsonata from 'jsonata';
-import { sql, eq, and } from 'drizzle-orm';
+import { sql, eq, ne, and, isNull } from 'drizzle-orm';
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import Auth, { AuthResourceAccess } from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
@@ -10,6 +10,7 @@ import { LayerMapping } from '../../common/schema.js';
 import { LayerMapping_Destination } from '../../common/enums.js';
 import { StandardResponse, LayerMappingResponse } from '../../common/types.js';
 import Mapping from '../../common/mapping.js';
+import { uniqueViolation } from '../lib/pg-error.js';
 import * as Default from '../lib/limits.js';
 
 const MappingQuery = Type.Union([Type.Null(), Type.String({ minLength: 1 })], {
@@ -71,6 +72,25 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         return mapping;
     }
 
+    const DEFAULT_EXISTS = 'A default Mapping already exists for this schema & destination';
+
+    /** Only a single default (null query) Mapping can exist per schema & destination of a Layer */
+    async function ensureSingleDefault(row: { layer: number; schema: string; destination: LayerMapping_Destination; query: string | null }, mappingid?: number) {
+        if (row.query !== null) return;
+
+        const existing = await config.models.LayerMapping.count({
+            where: and(
+                eq(LayerMapping.layer, row.layer),
+                eq(LayerMapping.schema, row.schema),
+                eq(LayerMapping.destination, row.destination),
+                isNull(LayerMapping.query),
+                mappingid === undefined ? undefined : ne(LayerMapping.id, mappingid),
+            ),
+        });
+
+        if (existing) throw new Err(400, null, DEFAULT_EXISTS);
+    }
+
     await schema.get('/connection/:connectionid/layer/:layerid/incoming/mapping', {
         name: 'List Mappings',
         group: 'LayerMapping',
@@ -125,6 +145,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             validateQuery(req.body.query);
             Mapping.validate(req.body.destination, req.body.mapping ?? {});
 
+            await ensureSingleDefault({
+                layer: req.params.layerid,
+                schema: req.body.schema,
+                destination: req.body.destination,
+                query: req.body.query ?? null,
+            });
+
             const mapping = await config.models.LayerMapping.generate({
                 layer: req.params.layerid,
                 schema: req.body.schema,
@@ -177,10 +204,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             validateQuery(req.body.query);
             Mapping.validate(req.body.destination ?? existing.destination, req.body.mapping ?? existing.mapping);
 
+            await ensureSingleDefault({
+                layer: existing.layer,
+                schema: req.body.schema ?? existing.schema,
+                destination: req.body.destination ?? existing.destination,
+                query: req.body.query === undefined ? existing.query : req.body.query,
+            }, existing.id);
+
             const mapping = await config.models.LayerMapping.commit(req.params.mappingid, {
                 updated: sql`Now()`,
                 ...req.body,
-            });
+            }).catch(uniqueViolation(DEFAULT_EXISTS));
 
             res.json(mapping);
         } catch (err) {

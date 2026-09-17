@@ -213,7 +213,7 @@ test('Mapping: CoreEvent - templated enums & booleans, nested style, links & cha
             priority: '{{severity}}',
             active: '{{open}}',
             editable: false,
-            channels: [3, 7],
+            channels: [3, 7, 3],
             style: { 'icon': 'abc:Fire/fire.png', 'marker-color': '{{colour}}', 'marker-opacity': '{{opacity}}' },
             links: [
                 { name: 'Incident {{number}}', url: 'https://example.com/{{number}}' },

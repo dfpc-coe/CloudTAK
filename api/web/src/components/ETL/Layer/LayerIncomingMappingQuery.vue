@@ -59,10 +59,11 @@
             </div>
             <div class='col-12'>
                 <TablerEnum
-                    v-model='form.destination'
+                    :model-value='form.destination'
                     label='Destination'
                     description='CloudTAK type the matched records are converted into'
                     :options='destinations'
+                    @update:model-value='setDestination'
                 />
             </div>
             <div class='col-12'>
@@ -206,6 +207,14 @@ async function fetchSchemas() {
 }
 
 const definition = computed(() => definitions.value[form.value.destination]);
+
+// The fields of one destination mean nothing to another so the mapping starts over
+function setDestination(destination: Destination) {
+    if (destination === form.value.destination) return;
+
+    mapping.value = {};
+    form.value.destination = destination;
+}
 
 const valid = computed(() => form.value.name.trim().length > 0 && (isDefault.value || form.value.query.trim().length > 0));
 

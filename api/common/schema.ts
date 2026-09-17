@@ -678,6 +678,7 @@ export const LayerMapping = pgTable('layer_mapping', {
 }, (table) => {
     return {
         layer_idx: index('layer_mapping_layer_idx').on(table.layer),
+        default_idx: uniqueIndex('layer_mapping_default_idx').on(table.layer, table.schema, table.destination).where(sql`query IS NULL`),
     };
 });
 
