@@ -16,7 +16,7 @@ const rows = (destination: LayerMapping_Destination, queries: Array<{ query: str
 };
 
 const convert = async (mapping: Mapping, feature: MappingFeature) => {
-    const row = await mapping.match(mapping.rows[0].destination, feature);
+    const row = await mapping.match(feature);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return row ? mapping.render(row, feature) as any : null;
 };
@@ -156,7 +156,7 @@ test('Mapping: CoreEvent - fields rendered against metadata', async () => {
 
     assert.deepEqual(closed, { priority: CoreEvent_Priority.CRITICAL, ended: '2026-09-01T12:00:00.000Z' });
 
-    assert.equal(await mapping.match(LayerMapping_Destination.COREDEVICE, point({})), null);
+    assert.equal(await new Mapping([]).match(point({})), null);
 });
 
 test('Mapping: CoreDevice - number templates & booleans', async () => {
@@ -188,20 +188,23 @@ test('Mapping: CoreDevice - number templates & booleans', async () => {
     });
 });
 
-test('Mapping: match - one Mapping per destination', async () => {
+test('Mapping: match - a Feature is directed to the destination of the first Mapping it matches', async () => {
     const mapping = new Mapping([
         { destination: LayerMapping_Destination.COREFEATURE, query: null, mapping: { callsign: 'Default' } },
         { destination: LayerMapping_Destination.COREEVENT, query: '$bogus(', mapping: { name: 'Invalid' } },
         { destination: LayerMapping_Destination.COREEVENT, query: 'properties.metadata.kind = "incident"', mapping: { name: 'First' } },
         { destination: LayerMapping_Destination.COREEVENT, query: 'properties.metadata.kind = "incident"', mapping: { name: 'Second' } },
+        { destination: LayerMapping_Destination.COREDEVICE, query: 'properties.metadata.kind = "unit"', mapping: { name: 'Unit' } },
+        { destination: LayerMapping_Destination.COREDEVICE, query: null, mapping: { name: 'Default Device' } },
     ]);
 
-    const incident = point({ kind: 'incident' });
+    assert.deepEqual((await mapping.match(point({ kind: 'incident' })))?.mapping, { name: 'First' });
+    assert.deepEqual((await mapping.match(point({ kind: 'unit' })))?.mapping, { name: 'Unit' });
 
-    assert.deepEqual((await mapping.match(LayerMapping_Destination.COREEVENT, incident))?.mapping, { name: 'First' });
-    assert.deepEqual((await mapping.match(LayerMapping_Destination.COREFEATURE, incident))?.mapping, { callsign: 'Default' });
-    assert.equal(await mapping.match(LayerMapping_Destination.COREDEVICE, incident), null);
-    assert.equal(await mapping.match(LayerMapping_Destination.COREEVENT, point({ kind: 'other' })), null);
+    // No query matched - the first Default Query in insertion order wins whatever its destination
+    assert.deepEqual((await mapping.match(point({ kind: 'other' })))?.mapping, { callsign: 'Default' });
+
+    assert.equal(await new Mapping([]).match(point({})), null);
 });
 
 test('Mapping: CoreEvent - templated enums & booleans, nested style, links & channels', async () => {

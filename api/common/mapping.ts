@@ -372,8 +372,8 @@ const KINDS: Record<MapFieldKind, {
 /**
  * Convert submitted Features with the Layer Mappings of a named Output schema
  *
- * A Feature is converted by at most one Mapping per destination - each
- * destination is described by a list of MapFields which the engine walks,
+ * A Feature is directed to a single destination by the one Mapping it matches -
+ * each destination is described by a list of MapFields which the engine walks,
  * rendering templates against `properties.metadata` and writing the result to
  * the field's target
  */
@@ -410,18 +410,17 @@ export default class Mapping {
     }
 
     /**
-     * The single Mapping of a destination that applies to a Feature - queries
-     * are mutually exclusive, the first matching query in insertion order wins
-     * and the default (null query) Mapping only applies when no query matched
+     * The single Mapping that applies to a Feature, whatever its destination -
+     * queries are mutually exclusive, the first matching query in insertion
+     * order wins and the first default (null query) Mapping only applies when
+     * no query matched
      */
-    async match(destination: LayerMapping_Destination, feature: MappingFeature): Promise<MappingRow | null> {
-        const rows = this.rows.filter(row => row.destination === destination);
-
-        for (const row of rows) {
+    async match(feature: MappingFeature): Promise<MappingRow | null> {
+        for (const row of this.rows) {
             if (row.query !== null && await this.#matches(row.query, feature)) return row;
         }
 
-        return rows.find(row => row.query === null) ?? null;
+        return this.rows.find(row => row.query === null) ?? null;
     }
 
     /**

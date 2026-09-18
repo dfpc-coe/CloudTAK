@@ -70,7 +70,7 @@
                 <TablerToggle
                     v-model='isDefault'
                     label='Default Query'
-                    description='Fallback applied to records that match no other query of the same Destination'
+                    description='Fallback applied to records that match no query - the first Default Query in creation order wins, whatever its Destination'
                 />
             </div>
             <div
@@ -80,7 +80,7 @@
                 <QueryInput
                     v-model='form.query'
                     label='Query'
-                    description='JSONata query evaluated against each record - queries are mutually exclusive, a record is mapped by the first query it matches'
+                    description='JSONata query evaluated against each record - queries are mutually exclusive, a record is directed to the Destination of the first query it matches'
                     placeholder='status = "offline"'
                 />
             </div>
