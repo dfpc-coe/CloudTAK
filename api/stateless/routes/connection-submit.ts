@@ -55,7 +55,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.post('/connection/:connectionid/submit', {
         name: 'Submit Features',
         group: 'Connection',
-        description: 'Submit a GeoJSON-like FeatureCollection conforming to a named Output schema to a Connection - the Layer Mappings for that schema style Features delivered to the TAK Server as CoT (CoreFeature) and create or update CoreEvents & CoreDevices. Queries are mutually exclusive - per destination a Feature is converted by the first query it matches, falling back to the default Mapping',
+        description: 'Submit a GeoJSON-like FeatureCollection conforming to a named Output schema to a Connection - the Layer Mappings for that schema style Features delivered to the TAK Server as CoT (CoreFeature) and create or update CoreEvents & CoreDevices. Queries are mutually exclusive - a Feature is directed to the single destination of the first Mapping it matches, falling back to the default Mapping, and unmapped Features are delivered as CoT',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
         }),
@@ -128,18 +128,20 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 });
 
             const features = req.body.features.map(feature => ({ ...feature, properties: feature.properties ?? {} }));
-            const mapped = new Set<number>();
+
+            // A Feature is directed to the single destination of the Mapping it matches
+            const matched: Array<MappingRow | null> = [];
+            for (const feature of features) matched.push(await mapping.match(feature));
 
             // Every Event is persisted before the first Device so a Device can be assigned to an Event of the same submission
             for (const [destination, kind] of RECORDS) {
                 for (const [i, feature] of features.entries()) {
-                    try {
-                        const row = await mapping.match(destination, feature);
-                        if (!row) continue;
+                    const row = matched[i];
+                    if (!row || row.destination !== destination) continue;
 
+                    try {
                         await control[kind](connection.id, feature, mapping.render(row, feature), { createOnly: Mapping.createOnly(row), inherit });
                         counts[kind]++;
-                        mapped.add(i);
                     } catch (err) {
                         errors.push({ error: err instanceof Error ? err.message : String(err), feature });
                     }
@@ -147,15 +149,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             for (const [i, feature] of features.entries()) {
+                const row = matched[i];
+                if (row && row.destination !== LayerMapping_Destination.COREFEATURE) continue;
+
                 if (!feature.geometry) {
-                    if (!mapped.has(i)) skipped.push({ reason: 'Feature has no geometry', feature: req.body.features[i] });
+                    skipped.push({ reason: 'Feature has no geometry', feature: req.body.features[i] });
                     continue;
                 }
 
                 const styled = { ...feature, geometry: feature.geometry };
 
                 try {
-                    const row = await mapping.match(LayerMapping_Destination.COREFEATURE, styled);
                     if (row) mapping.render(row, styled);
 
                     if (!styled.properties.flow) styled.properties.flow = {};

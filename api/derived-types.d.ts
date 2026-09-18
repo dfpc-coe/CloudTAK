@@ -15842,7 +15842,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Submit a GeoJSON-like FeatureCollection conforming to a named Output schema to a Connection - the Layer Mappings for that schema style Features delivered to the TAK Server as CoT (CoreFeature) and create or update CoreEvents & CoreDevices. Queries are mutually exclusive - per destination a Feature is converted by the first query it matches, falling back to the default Mapping */
+        /** Submit a GeoJSON-like FeatureCollection conforming to a named Output schema to a Connection - the Layer Mappings for that schema style Features delivered to the TAK Server as CoT (CoreFeature) and create or update CoreEvents & CoreDevices. Queries are mutually exclusive - a Feature is directed to the single destination of the first Mapping it matches, falling back to the default Mapping, and unmapped Features are delivered as CoT */
         post: {
             parameters: {
                 query: {

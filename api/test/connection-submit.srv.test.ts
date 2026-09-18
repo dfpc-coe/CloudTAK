@@ -289,7 +289,7 @@ test('POST: api/connection/1/submit - CoreFeature maps for the schema style the 
             schema: 'unit',
             destination: LayerMapping_Destination.COREDEVICE,
             name: 'Device',
-            query: null,
+            query: 'properties.metadata.status = "sensor"',
             mapping: { name: '{{name}}', type: '10031000001211000000', status: '{{status}}' },
         });
 
@@ -320,6 +320,11 @@ test('POST: api/connection/1/submit - CoreFeature maps for the schema style the 
                     type: 'Feature',
                     properties: { type: 'a-f-G', stale: 3600, metadata: { name: 'Bravo', status: 'offline' } },
                     geometry: { type: 'Point', coordinates: [-105, 39] },
+                }, {
+                    id: 'unit-sensor',
+                    type: 'Feature',
+                    properties: { type: 'a-f-G', stale: 3600, metadata: { name: 'Charlie', status: 'sensor' } },
+                    geometry: { type: 'Point', coordinates: [-105, 39] },
                 }],
             },
         }, true);
@@ -328,7 +333,7 @@ test('POST: api/connection/1/submit - CoreFeature maps for the schema style the 
         assert.deepEqual(res.body.errors, []);
         assert.equal(res.body.submitted, 2);
         assert.equal(res.body.events, 0);
-        assert.equal(res.body.devices, 2);
+        assert.equal(res.body.devices, 1);
 
         const features = await flight.config!.pg
             .select()
@@ -347,10 +352,12 @@ test('POST: api/connection/1/submit - CoreFeature maps for the schema style the 
         assert.equal(offline.properties.remarks, 'OFFLINE');
         assert.equal(String(offline.properties['marker-color']).toLowerCase(), '#ff0000');
 
+        // A Feature directed to a CoreDevice is not styled or delivered as CoT
+        assert.equal(byId.get('unit-sensor'), undefined);
+
         const devices = await flight.config!.pg.select().from(CoreDevice);
-        assert.deepEqual(devices.map(d => [d.external_id, d.name, d.status]).sort(), [
-            ['unit-offline', 'Bravo', 'offline'],
-            ['unit-online', 'Alpha', 'online'],
+        assert.deepEqual(devices.map(d => [d.external_id, d.name, d.status]), [
+            ['unit-sensor', 'Charlie', 'sensor'],
         ]);
     } catch (err) {
         assert.ifError(err);
@@ -473,7 +480,8 @@ test('POST: api/connection/1/submit - CoreEvent & CoreDevice maps create records
         assert.deepEqual(res.body.errors, []);
         assert.deepEqual(res.body.skipped, []);
         assert.equal(res.body.events, 2);
-        assert.equal(res.body.devices, 2);
+        assert.equal(res.body.devices, 1);
+        assert.equal(res.body.submitted, 0, 'mapped Features are not delivered as CoT');
 
         const events = await flight.config!.pg.select().from(CoreEvent);
         const byExternal = new Map(events.map(e => [e.external_id, e]));
@@ -496,18 +504,17 @@ test('POST: api/connection/1/submit - CoreEvent & CoreDevice maps create records
         assert.equal(flood.geometry.type, 'Point');
 
         const devices = await flight.config!.pg.select().from(CoreDevice);
-        assert.equal(devices.length, 4);
+        assert.equal(devices.length, 2);
 
-        const a = devices.find(d => d.external_id === 'incident-1')!;
-        assert.equal(a.name, 'Sensor A');
-        assert.equal(a.manufacturer, 'Acme');
-        assert.equal(a.battery, 80);
-        assert.equal(a.simulated, false);
-        assert.equal(a.connection, 1);
+        // incident-1 matched the CoreEvent query first so is not also a Device
+        assert.equal(devices.find(d => d.external_id === 'incident-1'), undefined);
 
         const b = devices.find(d => d.external_id === 'sensor-only')!;
         assert.equal(b.name, 'Sensor B');
+        assert.equal(b.manufacturer, 'Acme');
         assert.equal(b.battery, 20);
+        assert.equal(b.simulated, false);
+        assert.equal(b.connection, 1);
     } catch (err) {
         assert.ifError(err);
     }
@@ -526,8 +533,13 @@ test('POST: api/connection/1/submit - resubmitting updates the mapped records in
                 features: [{
                     id: 'incident-1',
                     type: 'Feature',
-                    properties: { type: 'a-f-G', stale: 3600, metadata: { title: 'Fire Contained', address: '1 Main St', number: 1, severity: 2, sensor: 'Sensor A', battery: '65' } },
+                    properties: { type: 'a-f-G', stale: 3600, metadata: { title: 'Fire Contained', address: '1 Main St', number: 1, severity: 2 } },
                     geometry: { type: 'Point', coordinates: [-105.5, 39.5] },
+                }, {
+                    id: 'sensor-only',
+                    type: 'Feature',
+                    properties: { metadata: { number: 3, sensor: 'Sensor B', battery: '65' } },
+                    geometry: null,
                 }],
             },
         }, true);
@@ -546,8 +558,8 @@ test('POST: api/connection/1/submit - resubmitting updates the mapped records in
         assert.deepEqual(fire.geometry.coordinates, [-105.5, 39.5]);
 
         const devices = await flight.config!.pg.select().from(CoreDevice);
-        assert.equal(devices.length, 4);
-        assert.equal(devices.find(d => d.external_id === 'incident-1')!.battery, 65);
+        assert.equal(devices.length, 2);
+        assert.equal(devices.find(d => d.external_id === 'sensor-only')!.battery, 65);
     } catch (err) {
         assert.ifError(err);
     }
@@ -797,16 +809,23 @@ test('POST: api/connection/1/submit - records inherit the Channels of the Connec
             return true;
         });
 
-        for (const destination of [LayerMapping_Destination.COREEVENT, LayerMapping_Destination.COREDEVICE]) {
-            await models.LayerMapping.generate({
-                layer: 1,
-                schema: 'inherit',
-                destination,
-                name: 'No Channels',
-                query: null,
-                mapping: { name: '{{title}}', type: '10031000001211000000' },
-            });
-        }
+        await models.LayerMapping.generate({
+            layer: 1,
+            schema: 'inherit',
+            destination: LayerMapping_Destination.COREEVENT,
+            name: 'No Channels',
+            query: null,
+            mapping: { name: '{{title}}', type: '10031000001211000000' },
+        });
+
+        await models.LayerMapping.generate({
+            layer: 1,
+            schema: 'inherit',
+            destination: LayerMapping_Destination.COREDEVICE,
+            name: 'No Channels',
+            query: 'properties.metadata.kind = "device"',
+            mapping: { name: '{{title}}', type: '10031000001211000000' },
+        });
 
         const submit = async () => {
             const res = await flight.fetch('/api/connection/1/submit', {
@@ -822,6 +841,11 @@ test('POST: api/connection/1/submit - records inherit the Channels of the Connec
                         type: 'Feature',
                         properties: { metadata: { title: 'Inherited' } },
                         geometry: { type: 'Point', coordinates: [-105, 39] },
+                    }, {
+                        id: 'inherit-2',
+                        type: 'Feature',
+                        properties: { metadata: { title: 'Inherited', kind: 'device' } },
+                        geometry: null,
                     }],
                 },
             }, true);
@@ -830,7 +854,7 @@ test('POST: api/connection/1/submit - records inherit the Channels of the Connec
             assert.deepEqual(res.body.errors, []);
 
             const [event] = (await flight.config!.pg.select().from(CoreEvent)).filter(e => e.external_id === 'inherit-1');
-            const [device] = (await flight.config!.pg.select().from(CoreDevice)).filter(d => d.external_id === 'inherit-1');
+            const [device] = (await flight.config!.pg.select().from(CoreDevice)).filter(d => d.external_id === 'inherit-2');
 
             return {
                 event: (await models.CoreEvent.augmented_from(event.id)).channels,
@@ -889,15 +913,14 @@ test('POST: api/connection/1/submit - a CoreEvent map that cannot produce a type
         }, false);
 
         assert.equal(res.status, 400);
-        assert.equal(res.body.submitted, 1);
+        assert.equal(res.body.submitted, 0, 'a Feature directed to a CoreEvent is not delivered as CoT');
         assert.equal(res.body.events, 0);
         assert.equal(res.body.errors.length, 2);
         assert.equal(res.body.errors[0].error, 'CoreEvent Map did not produce: type');
         assert.equal(res.body.errors[0].feature.id, 'alert-1');
         assert.equal(res.body.errors[1].error, 'CoreEvent requires a Feature geometry');
         assert.equal(res.body.errors[1].feature.id, 'alert-2');
-        assert.equal(res.body.skipped.length, 1);
-        assert.equal(res.body.skipped[0].feature.id, 'alert-2');
+        assert.deepEqual(res.body.skipped, []);
     } catch (err) {
         assert.ifError(err);
     }
