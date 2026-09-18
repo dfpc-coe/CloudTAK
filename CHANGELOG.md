@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+### v13.90.1 - 2026-09-17
+
 - :bug: `POST /api/connection/:connectionid/submit` directs a Feature to the single destination of the Mapping it matches - a Feature mapped to a `CoreEvent` or `CoreDevice` is no longer also delivered as CoT, queries are matched across destinations in creation order and the first Default Query is the fallback
 
 ### v13.90.0 - 2026-09-17
