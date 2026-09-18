@@ -7,6 +7,16 @@ import type { Page } from '@playwright/test';
 export async function getStoredToken(page: Page): Promise<string | undefined> {
     return page.evaluate(() => new Promise<string | undefined>((resolve) => {
         try {
+            const fromPreferences = localStorage.getItem('CapacitorStorage.token');
+            if (fromPreferences) {
+                resolve(fromPreferences);
+                return;
+            }
+        } catch {
+            // fall through to IndexedDB
+        }
+ 
+        try {
             const open = indexedDB.open('CloudTAK');
             open.onerror = () => resolve(undefined);
             open.onsuccess = () => {

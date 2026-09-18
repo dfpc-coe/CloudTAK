@@ -49,6 +49,7 @@ export class MapPage {
     readonly geometryEditing: Locator;
     readonly openMenu: Locator;
     readonly closeMenu: Locator;
+    readonly panelTitle: Locator;
     // Left-top navigation stack
     readonly search: Locator;
     readonly snapToNorth: Locator;
@@ -74,6 +75,14 @@ export class MapPage {
     // "A new version of CloudTAK is ready" banner (App.vue); absent most of the time
     readonly updateBanner: Locator;
     readonly updateBannerClose: Locator;
+    // Search modal
+    readonly searchTitle: Locator;
+    readonly searchClose: Locator;
+    readonly searchInput: Locator;
+    // Manual location pane
+    readonly setLocationPane: Locator;
+    readonly useGps: Locator;
+    readonly cancelManualLocation: Locator;
 
     static readonly DEFAULT_MENU_TOOLTIPS = [
         'Your Features',
@@ -93,6 +102,25 @@ export class MapPage {
         'Display Settings',
     ];
 
+    // Right-side entries: tooltip -> route and panel title (menu.ts + Menu*.vue).
+    static readonly MENU_PANELS: Record<string, { route: string; title: string }> = {
+        'Your Features': { route: '/menu/features', title: 'Saved Features' },
+        'Overlays': { route: '/menu/overlays', title: 'Overlays' },
+        'Contacts': { route: '/menu/contacts', title: 'Contacts' },
+        'Basemaps': { route: '/menu/basemaps', title: 'Basemaps' },
+        'Data Sync': { route: '/menu/missions', title: 'Data Syncs' },
+        'Data Packages': { route: '/menu/packages', title: 'Data Packages' },
+        'Channels': { route: '/menu/channels', title: 'Channels' },
+        'Videos': { route: '/menu/videos', title: 'Videos' },
+        'Chats': { route: '/menu/chats', title: 'Chats' },
+        'Routes': { route: '/menu/routes', title: 'Routes' },
+        'Files': { route: '/menu/files', title: 'Files' },
+        'Imports': { route: '/menu/imports', title: 'Data Imports' },
+        'Iconsets': { route: '/menu/iconsets', title: 'Iconsets' },
+        'History': { route: '/menu/history', title: 'History' },
+        'Display Settings': { route: '/menu/settings', title: 'Settings' },
+    };
+
     private tileResponses: Response[] = [];
     private tileTemplate: RegExp | null = null;
 
@@ -105,7 +133,7 @@ export class MapPage {
         this.notifications = page.getByTitle('Notifications Icon');
         this.geometryEditing = page.getByTitle('Geometry Editing');
         this.openMenu = page.getByTitle('Open Menu');
-        this.closeMenu = page.getByTitle('Close Menu');
+        this.closeMenu = page.locator('[title="Close Menu"]:not([role="menubar"] *)');
 
         this.search = page.getByTitle('Search Button');
         this.snapToNorth = page.getByTitle(/^(Snap to North|Orient North)$/);
@@ -131,6 +159,16 @@ export class MapPage {
 
         this.updateBanner = page.getByText('A new version of CloudTAK is ready');
         this.updateBannerClose = this.updateBanner.locator('..').locator('.btn-close');
+
+        this.panelTitle = page.locator('[role="menubar"] .cloudtak-header .strong');
+
+        this.searchTitle = page.locator('.modal-title', { hasText: /^\s*Search\s*$/ });
+        this.searchClose = page.locator('.modal-header').filter({ has: this.searchTitle }).locator('.btn-close');
+        this.searchInput = page.getByPlaceholder('Search...');
+
+        this.setLocationPane = page.getByText(/Click on the map to (set|update) your location/);
+        this.useGps = page.getByRole('button', { name: 'Use GPS' });
+        this.cancelManualLocation = page.getByTitle('Cancel Manual Location');
     }
 
     menuBadge(tooltip: string): Locator {
@@ -187,12 +225,9 @@ export class MapPage {
         ).toBe(true);
     }
 
-    /**
-     * Read live view state from the MapLibre instance via the Pinia map store:
-     * #app.__vue_app__ -> $pinia -> store 'cloudtak' (stores/map.ts) -> _map.
-     * Returns null until the map exists. `_s` is a Pinia internal; if it
-     * changes, this is the only place to fix.
-     */
+    // Live view state from the MapLibre instance via the Pinia map store:
+    // #app.__vue_app__ -> $pinia -> store 'cloudtak' (stores/map.ts) -> _map.
+    // Returns null until the map exists. `_s` is a Pinia internal; if it changes, fix it here.
     async state(): Promise<MapState | null> {
         return this.page.evaluate(() => {
             const root = document.querySelector('#app') as (Element & { __vue_app__?: unknown }) | null;
@@ -258,24 +293,24 @@ export class MapPage {
         return { value, unit, meters: value * (factor[unit] as number), text };
     }
 
-    /** Current zoom from the MapLibre instance; throws if the map is not ready. */
+    // Current zoom from the MapLibre instance; throws if the map is not ready.
     async zoom(): Promise<number> {
         const state = await this.state();
         if (!state) throw new Error('MapLibre instance not reachable yet');
         return state.zoom;
     }
 
-    /** Poll until the map zoom settles at `expected` (within 0.01). */
+    // Poll until the map zoom settles at `expected` (within 0.01).
     async expectZoom(expected: number, timeout = 10_000): Promise<void> {
         await expect.poll(() => this.zoom(), { timeout }).toBeCloseTo(expected, 2);
     }
 
-    /** Load the map at a specific view via the URL hash (#zoom/lat/lng). */
+    // Load the map at a specific view via the URL hash (#zoom/lat/lng).
     async gotoView(zoom: number, lat: number, lng: number): Promise<void> {
         await this.page.goto(`/#${zoom}/${lat}/${lng}`);
     }
 
-    /** Scroll the mouse wheel over the map centre; negative deltaY zooms in. */
+    // Scroll the mouse wheel over the map centre; negative deltaY zooms in.
     async wheel(deltaY: number): Promise<void> {
         const box = await this.canvas.first().boundingBox();
         if (!box) throw new Error('map canvas has no bounding box');
@@ -294,8 +329,46 @@ export class MapPage {
         throw new Error(`zoom did not settle after ${maxClicks} clicks`);
     }
 
-    /** Poll until the URL hash zoom settles at `expected` (hash updates are throttled). */
+    // Poll until the URL hash zoom settles at `expected` (hash updates are throttled).
     async expectHashZoom(expected: number, timeout = 10_000): Promise<void> {
         await expect.poll(() => this.hash()?.zoom, { timeout }).toBeCloseTo(expected, 1);
+    }
+
+    // Poll until the MapLibre bearing settles at `expected` (within 0.5 degrees).
+    async expectBearing(expected: number, timeout = 10_000): Promise<void> {
+        await expect.poll(async () => {
+            const bearing = (await this.state())?.bearing ?? Number.NaN;
+            return Math.abs(((bearing - expected + 540) % 360) - 180);
+        }, { timeout }).toBeLessThan(0.5);
+    }
+
+    // Centre of the map canvas in page coordinates.
+    async canvasCenter(): Promise<{ x: number; y: number }> {
+        const box = await this.canvas.first().boundingBox();
+        if (!box) throw new Error('map canvas has no bounding box');
+        return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    }
+
+    // Drag on the map from its centre by (dx, dy). Right button rotates, Ctrl+left rotates/pitches.
+    async drag(dx: number, dy: number, opts: { button?: 'left' | 'right'; ctrl?: boolean; shift?: boolean } = {}): Promise<void> {
+        const { x, y } = await this.canvasCenter();
+        const button = opts.button ?? 'left';
+        if (opts.ctrl) await this.page.keyboard.down('Control');
+        if (opts.shift) await this.page.keyboard.down('Shift');
+        await this.page.mouse.move(x, y);
+        await this.page.mouse.down({ button });
+        await this.page.mouse.move(x + dx / 2, y + dy / 2, { steps: 10 });
+        await this.page.mouse.move(x + dx, y + dy, { steps: 10 });
+        await this.page.mouse.up({ button });
+        if (opts.shift) await this.page.keyboard.up('Shift');
+        if (opts.ctrl) await this.page.keyboard.up('Control');
+    }
+
+    // View subset (zoom/lat/lng/bearing/pitch) for before/after comparisons; throws if the map is not ready.
+    async view(): Promise<{ zoom: number; lat: number; lng: number; bearing: number; pitch: number }> {
+        const s = await this.state();
+        if (!s) throw new Error('MapLibre instance not reachable via the Pinia store');
+        const { zoom, lat, lng, bearing, pitch } = s;
+        return { zoom, lat, lng, bearing, pitch };
     }
 }

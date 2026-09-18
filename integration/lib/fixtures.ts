@@ -10,13 +10,15 @@ export async function skipPermissionsModal(page: Page): Promise<void> {
     }
 }
 
-type AuthFixtures = {
+type Fixtures = {
     loginPage: LoginPage;
     map: MapPage;
     authedMap: MapPage;
+    pageErrors: Error[];
+    readyMap: MapPage;
 };
 
-export const test = base.extend<AuthFixtures>({
+export const test = base.extend<Fixtures>({
     // Unauthenticated LoginPage, already on /login.
     loginPage: async ({ page }, use) => {
         const login = new LoginPage(page);
@@ -37,6 +39,24 @@ export const test = base.extend<AuthFixtures>({
         const map = new MapPage(page);
         await map.waitUntilLoaded();
         await skipPermissionsModal(page);
+        await use(map);
+    },
+
+    // Uncaught exceptions and unhandled rejections, collected from before the first navigation.
+    pageErrors: async ({ page }, use) => {
+        const errors: Error[] = [];
+        page.on('pageerror', (err) => errors.push(err));
+        await use(errors);
+    },
+
+    // Map opened from the saved storage state, loaded, permissions modal skipped, tiles idle.
+    // Depends on pageErrors so the listener is attached before goto().
+    readyMap: async ({ page, pageErrors: _pageErrors }, use) => {
+        const map = new MapPage(page);
+        await map.goto();
+        await map.waitUntilLoaded();
+        await skipPermissionsModal(page);
+        await map.expectMapIdle();
         await use(map);
     },
 });

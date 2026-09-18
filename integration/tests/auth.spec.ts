@@ -75,7 +75,6 @@ test.describe('Auth: smoke and happy path', () => {
         expect(token, 'should be logged in before Back').toBeTruthy();
 
         await page.goBack();
-        await page.waitForLoadState('networkidle');
 
         // The session must survive Back: the server still accepts the token.
         const res = await page.request.get('/api/login', {
@@ -140,41 +139,57 @@ test.describe('Auth: passkey enrollment and login', () => {
         await page.getByTitle('New Passkey').click();
         await page.getByPlaceholder('Passkey Name').fill(passkeyName);
         await page.getByRole('button', { name: 'Create' }).click();
-        await expect(page.getByText(passkeyName)).toBeVisible({ timeout: 15_000 });
 
-        // 3. Force a truly logged-out state (see header note), then let the
-        // conditional-UI passkey sign-in complete automatically.
-        await page.evaluate(() => {
-            localStorage.clear();
-            sessionStorage.clear();
-            return new Promise<void>((resolve) => {
-                try {
-                    const del = indexedDB.deleteDatabase('CloudTAK');
-                    del.onsuccess = () => resolve();
-                    del.onerror = () => resolve();
-                    del.onblocked = () => resolve();
-                } catch {
-                    resolve();
-                }
+        // From here on the server may hold a QA-TEST credential, so the
+        // cleanup in `finally` runs whatever happens to the assertions.
+        try {
+            await expect(page.getByText(passkeyName)).toBeVisible({ timeout: 15_000 });
+
+            // 3. Force a truly logged-out state (see header note), then let the
+            // conditional-UI passkey sign-in complete automatically.
+            await page.evaluate(() => {
+                localStorage.clear();
+                sessionStorage.clear();
+                return new Promise<void>((resolve) => {
+                    try {
+                        const del = indexedDB.deleteDatabase('CloudTAK');
+                        del.onsuccess = () => resolve();
+                        del.onerror = () => resolve();
+                        del.onblocked = () => resolve();
+                    } catch {
+                        resolve();
+                    }
+                });
             });
-        });
-        await page.goto('/login');
-        await page.reload();
-        await map.waitUntilLoaded();
-        await skipPermissionsModal(page);
+            await page.goto('/login');
+            await page.reload();
+            await map.waitUntilLoaded();
+            await skipPermissionsModal(page);
+        } finally {
+            // 4. Cleanup: remove the enrolled passkey (mandatory). If the
+            // passkey sign-in did not complete we are still on /login, so
+            // fall back to a password login to reach the settings page.
+            const login = new LoginPage(page);
+            if (await login.password.first().isVisible().catch(() => false)) {
+                await login.login(cloudtakUsername(), cloudtakPassword());
+                await map.waitUntilLoaded();
+                await skipPermissionsModal(page);
+            }
 
-        // 4. Cleanup: remove the enrolled passkey (mandatory).
-        await page.getByLabel('Open Menu').click();
-        await page.getByRole('menuitem').filter({ hasText: 'Settings' }).click();
-        await page.getByText('Login Passkeys').click();
-        // open Passkey Details
-        await page.getByText(passkeyName).click();
-        await page.getByTitle('Delete').click();
-        // Confirm in the "Deletion Confirmation" modal
-        await page.locator('.btn-danger').filter({ hasText: 'Delete' }).click();
-        await expect(page.getByText(passkeyName)).toBeHidden({ timeout: 15_000 });
+            await page.getByLabel('Open Menu').click();
+            await page.getByRole('menuitem').filter({ hasText: 'Settings' }).click();
+            await page.getByText('Login Passkeys').click();
 
-        await cdp.send('WebAuthn.removeVirtualAuthenticator', { authenticatorId });
+            const entry = page.getByText(passkeyName);
+            if (await entry.isVisible({ timeout: 5_000 }).catch(() => false)) {
+                await entry.click(); // open Passkey Details
+                await page.getByTitle('Delete').click();
+                await page.locator('.btn-danger').filter({ hasText: 'Delete' }).click(); // "Deletion Confirmation" modal
+                await expect(entry).toBeHidden({ timeout: 15_000 });
+            }
+
+            await cdp.send('WebAuthn.removeVirtualAuthenticator', { authenticatorId });
+        }
     });
 });
 
@@ -325,7 +340,6 @@ test.describe('Auth: access control', () => {
         // client protection - a bystander pressing Back on the device should
         // not land back on the map.)
         await page.goBack();
-        await page.waitForLoadState('networkidle');
 
         // Still on login, no map canvas exposed.
         await expect(login.password).toBeVisible({ timeout: 30_000 });
