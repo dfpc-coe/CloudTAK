@@ -58,10 +58,11 @@
                     </div>
 
                     <div class='col-12'>
-                        <TablerInput
+                        <label class='form-label'>Remarks</label>
+                        <TablerMarkdownEditor
                             v-model='config.remarks'
                             label='Remarks'
-                            :rows='3'
+                            @submit='submit'
                         />
                     </div>
 
@@ -108,6 +109,7 @@ import {
     TablerInput,
     TablerModal,
     TablerLoading,
+    TablerMarkdownEditor,
 } from '@tak-ps/vue-tabler';
 
 const props = withDefaults(defineProps<{
@@ -169,7 +171,7 @@ onMounted(async () => {
 });
 
 async function submit(): Promise<void> {
-    if (!config.value.type) return;
+    if (!config.value.name.trim() || !config.value.type) return;
 
     try {
         loading.value = true;

@@ -19770,6 +19770,242 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/connection/{:connectionid}/channel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the channels that the Machine User backing the connection is a member of */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":connectionid": number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @description Is the connection backed by a Machine User whose channels can be managed */
+                            managed: boolean;
+                            total: number;
+                            items: {
+                                id: number;
+                                rdn: string;
+                                name: string;
+                                description: unknown;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update the channels that the Machine User backing the connection is a member of.
+         *
+         *                 Include a channel in both "attach" and "detach" to change the access type of an existing membership.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":connectionid": number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @default [] */
+                        attach: {
+                            id: number;
+                            access: "write" | "read" | "duplex";
+                        }[];
+                        /** @default [] */
+                        detach: number[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                rdn: string;
+                                name: string;
+                                description: unknown;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/api/connection/{:connectionid}/auth": {
         parameters: {
             query?: never;

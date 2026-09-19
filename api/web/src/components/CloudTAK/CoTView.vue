@@ -584,6 +584,7 @@
                             <CopyField
                                 :model-value='cot.properties.remarks'
                                 :rows='10'
+                                :markdown='true'
                                 :edit='is_editable'
                                 :hover='is_editable'
                                 @submit='updateProperty("remarks", $event)'

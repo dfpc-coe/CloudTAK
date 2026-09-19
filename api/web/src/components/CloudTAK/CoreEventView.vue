@@ -219,6 +219,7 @@
                             <CopyField
                                 :model-value='event.remarks'
                                 :rows='10'
+                                :markdown='true'
                                 :edit='is_editable'
                                 :hover='is_editable'
                                 @submit='patch({ remarks: String($event) })'

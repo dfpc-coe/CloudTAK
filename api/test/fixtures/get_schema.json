@@ -444,6 +444,16 @@
         "query": false,
         "res": true
     },
+    "GET /connection/:connectionid/channel": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /connection/:connectionid/channel": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid/auth": {
         "body": false,
         "query": true,
