@@ -18,6 +18,11 @@
 
 ### Pending Release
 
+- :tada: Add a `Connection Channels` section to the Connection edit page for Connections backed by a Machine User - channels can be added, removed or have their access type changed and are submitted when the Connection is saved
+- :tada: Add `GET` & `PATCH /api/connection/:connectionid/channel` for listing and updating the channels of the Machine User backing a Connection - a channel in both `attach` and `detach` has its access type changed and the Machine User must remain a member of at least one channel
+- :tada: CoT & CoreEvent Remarks render block level Markdown - tables, lists & headings - line breaks were previously flattened into a single paragraph which broke any multi-line Markdown. Plain text line breaks are preserved, text indented by a template literal is no longer treated as a code block and existing Markdown links are no longer double linked
+- :tada: Edit CoT & CoreEvent Remarks with the WYSIWYG `TablerMarkdownEditor` - the editor shares the stylesheet of the rendered Remarks, is only downloaded when Remarks are first edited and is opt in per `CopyField` via the `markdown` prop as text fields are also used to edit JSON
+
 ### v13.90.1 - 2026-09-17
 
 - :bug: `POST /api/connection/:connectionid/submit` directs a Feature to the single destination of the Mapping it matches - a Feature mapped to a `CoreEvent` or `CoreDevice` is no longer also delivered as CoT, queries are matched across destinations in creation order and the first Default Query is the fallback
