@@ -122,6 +122,7 @@
         "@vueuse/rxjs": "^14.1.0",
         "eslint": "^10.0.0",
         "eslint-plugin-vue": "^10.0.0",
+        "fake-indexeddb": "^6.2.5",
         "globals": "^17.3.0",
         "happy-dom": "^20.0.0",
         "jsdom": "^30.0.0",

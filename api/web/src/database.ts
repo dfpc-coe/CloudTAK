@@ -156,6 +156,12 @@ export interface DBSubscriptionFeature {
     mission: string;
     properties: Feature["properties"];
     geometry: Feature["geometry"];
+    /** False while a local change has not been confirmed by the server */
+    synced: boolean;
+    /** Tombstone for a local delete that has not been confirmed by the server */
+    deleted: boolean;
+    attempts: number;
+    error?: string;
 }
 
 export interface DBSubscriptionLayer {
@@ -295,7 +301,7 @@ export type DatabaseType = Dexie & {
 
 export const db = new Dexie('CloudTAK') as DatabaseType;
 
-db.version(3).stores({
+db.version(4).stores({
     kv: 'key',
 
     server: '_id',
@@ -332,6 +338,12 @@ db.version(3).stores({
 
     mission_template: 'id, name',
     mission_template_log: 'id, template, [template+id]',
+}).upgrade(async (tx) => {
+    await tx.table('subscription_feature').toCollection().modify({
+        synced: true,
+        deleted: false,
+        attempts: 0,
+    });
 });
 
 let reopenPromise: Promise<void> | null = null;
