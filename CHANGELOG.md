@@ -18,6 +18,10 @@
 
 ### Pending Release
 
+### v13.91.1 - 2026-09-19
+
+- :rocket: UX improvements to draw tools on mobile
+
 ### v13.91.0 - 2026-09-19
 
 - :tada: Add a `Connection Channels` section to the Connection edit page for Connections backed by a Machine User - channels can be added, removed or have their access type changed and are submitted when the Connection is saved
