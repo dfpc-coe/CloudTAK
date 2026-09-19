@@ -22,6 +22,7 @@
 - :tada: Add `GET` & `PATCH /api/connection/:connectionid/channel` for listing and updating the channels of the Machine User backing a Connection - a channel in both `attach` and `detach` has its access type changed and the Machine User must remain a member of at least one channel
 - :tada: CoT & CoreEvent Remarks render block level Markdown - tables, lists & headings - line breaks were previously flattened into a single paragraph which broke any multi-line Markdown. Plain text line breaks are preserved, text indented by a template literal is no longer treated as a code block and existing Markdown links are no longer double linked
 - :tada: Edit CoT & CoreEvent Remarks with the WYSIWYG `TablerMarkdownEditor` - the editor shares the stylesheet of the rendered Remarks, is only downloaded when Remarks are first edited and is opt in per `CopyField` via the `markdown` prop as text fields are also used to edit JSON
+- :tada: The `Create Event` modal writes Remarks with the WYSIWYG `TablerMarkdownEditor` so a new CoreEvent is authored the same way its Remarks are later edited & rendered - `Ctrl/Cmd + Enter` in the editor creates the Event once it has a Name & Type
 
 ### v13.90.1 - 2026-09-17
 
