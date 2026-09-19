@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+### v13.91.0 - 2026-09-19
+
 - :tada: Add a `Connection Channels` section to the Connection edit page for Connections backed by a Machine User - channels can be added, removed or have their access type changed and are submitted when the Connection is saved
 - :tada: Add `GET` & `PATCH /api/connection/:connectionid/channel` for listing and updating the channels of the Machine User backing a Connection - a channel in both `attach` and `detach` has its access type changed and the Machine User must remain a member of at least one channel
 - :tada: CoT & CoreEvent Remarks render block level Markdown - tables, lists & headings - line breaks were previously flattened into a single paragraph which broke any multi-line Markdown. Plain text line breaks are preserved, text indented by a template literal is no longer treated as a code block and existing Markdown links are no longer double linked
