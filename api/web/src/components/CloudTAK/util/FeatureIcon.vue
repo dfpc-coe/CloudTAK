@@ -1,76 +1,89 @@
 <template>
-    <canvas
-        v-if='supportedIcon'
-        ref='imgCanvas'
-        :width='props.size'
-        :height='props.size'
-    />
-    <!-- Military symbols render without the map (Event Board) via milsymbol -->
-    <img
-        v-else-if='standaloneIcon'
-        :src='standaloneIcon'
-        alt='Feature Icon'
-        :width='props.size'
-        :height='props.size'
-        style='object-fit: contain;'
-    >
-    <!-- Icons are in order of most preferred display => Least-->
-    <IconPointFilled
-        v-else-if='feature.properties && feature.properties.type === "u-d-p"'
-        :size='props.size'
-        :color='feature.properties["marker-color"]'
-    />
-    <IconPointFilled
-        v-else-if='feature.properties && feature.properties.type === "b-m-p-s-m"'
-        :size='props.size'
-        :color='feature.properties["marker-color"] || "currentColor"'
-    />
-    <IconCircle
-        v-else-if='feature.properties && feature.properties.type === "u-d-c-c"'
-        :size='props.size'
-        :color='feature.properties.stroke || "currentColor"'
-        stroke='1'
-    />
-    <IconVideo
-        v-else-if='feature.properties && feature.properties.type === "b-m-p-s-p-loc"'
-        :size='props.size'
-        :color='feature.properties.stroke || "currentColor"'
-        stroke='1'
-    />
-    <IconRoute
-        v-else-if='feature.properties && feature.properties.type === "b-m-r"'
-        :size='props.size'
-        :color='feature.properties.stroke || "currentColor"'
-        stroke='1'
-    />
-    <IconLine
-        v-else-if='feature.geometry && feature.geometry.type === "LineString"'
-        :size='props.size'
-        :color='(feature.properties && feature.properties.stroke) || "currentColor"'
-        stroke='1'
-    />
-    <IconCone
-        v-else-if='feature.properties && feature.properties.sensor'
-        :size='props.size'
-        :color='feature.properties.stroke || "currentColor"'
-        stroke='1'
-    />
-    <IconPolygon
-        v-else-if='feature.geometry && feature.geometry.type === "Polygon"'
-        :size='props.size'
-        :color='(feature.properties && feature.properties.fill) || "currentColor"'
-        stroke='1'
-    />
-    <ContactPuck
-        v-else-if='feature.properties && feature.properties.group'
-        :size='props.size'
-        :team='feature.properties.group.name'
-    />
-    <IconMapPin
-        v-else
-        :size='props.size'
-        stroke='1'
-    />
+    <span class='feature-icon position-relative d-inline-flex flex-shrink-0'>
+        <canvas
+            v-if='supportedIcon'
+            ref='imgCanvas'
+            :width='props.size'
+            :height='props.size'
+        />
+        <!-- Military symbols render without the map (Event Board) via milsymbol -->
+        <img
+            v-else-if='standaloneIcon'
+            :src='standaloneIcon'
+            alt='Feature Icon'
+            :width='props.size'
+            :height='props.size'
+            style='object-fit: contain;'
+        >
+        <!-- Icons are in order of most preferred display => Least-->
+        <IconPointFilled
+            v-else-if='feature.properties && feature.properties.type === "u-d-p"'
+            :size='props.size'
+            :color='feature.properties["marker-color"]'
+        />
+        <IconPointFilled
+            v-else-if='feature.properties && feature.properties.type === "b-m-p-s-m"'
+            :size='props.size'
+            :color='feature.properties["marker-color"] || "currentColor"'
+        />
+        <IconCircle
+            v-else-if='feature.properties && feature.properties.type === "u-d-c-c"'
+            :size='props.size'
+            :color='feature.properties.stroke || "currentColor"'
+            stroke='1'
+        />
+        <IconVideo
+            v-else-if='feature.properties && feature.properties.type === "b-m-p-s-p-loc"'
+            :size='props.size'
+            :color='feature.properties.stroke || "currentColor"'
+            stroke='1'
+        />
+        <IconRoute
+            v-else-if='feature.properties && feature.properties.type === "b-m-r"'
+            :size='props.size'
+            :color='feature.properties.stroke || "currentColor"'
+            stroke='1'
+        />
+        <IconLine
+            v-else-if='feature.geometry && feature.geometry.type === "LineString"'
+            :size='props.size'
+            :color='(feature.properties && feature.properties.stroke) || "currentColor"'
+            stroke='1'
+        />
+        <IconCone
+            v-else-if='feature.properties && feature.properties.sensor'
+            :size='props.size'
+            :color='feature.properties.stroke || "currentColor"'
+            stroke='1'
+        />
+        <IconPolygon
+            v-else-if='feature.geometry && feature.geometry.type === "Polygon"'
+            :size='props.size'
+            :color='(feature.properties && feature.properties.fill) || "currentColor"'
+            stroke='1'
+        />
+        <ContactPuck
+            v-else-if='feature.properties && feature.properties.group'
+            :size='props.size'
+            :team='feature.properties.group.name'
+        />
+        <IconMapPin
+            v-else
+            :size='props.size'
+            stroke='1'
+        />
+
+        <span
+            v-if='props.error'
+            class='feature-icon__error position-absolute d-flex align-items-center justify-content-center rounded-circle'
+            :style='{ width: `${errorSize}px`, height: `${errorSize}px` }'
+        >
+            <IconExclamationMark
+                :size='errorSize'
+                stroke='3'
+            />
+        </span>
+    </span>
 </template>
 
 <script lang='ts'>
@@ -110,6 +123,7 @@ import {
     IconLine,
     IconCone,
     IconPolygon,
+    IconExclamationMark,
 } from '@tabler/icons-vue';
 import { renderedIcon } from '../../../base/cot.ts';
 import { useMapStore } from '../../../stores/map.ts';
@@ -123,8 +137,15 @@ const props = defineProps({
     size: {
         type: Number,
         default: 20
+    },
+    /** Overlay a red exclamation mark on the lower right corner of the icon */
+    error: {
+        type: Boolean,
+        default: false
     }
 });
+
+const errorSize = computed<number>(() => Math.max(12, Math.round(props.size * 0.6)));
 
 const canvas = useTemplateRef<HTMLCanvasElement>('imgCanvas');
 
@@ -206,3 +227,13 @@ watch([canvas, supportedIcon, () => props.size], async () => {
     );
 })
 </script>
+
+<style scoped>
+.feature-icon__error {
+    right: -25%;
+    bottom: -25%;
+    color: #ffffff;
+    background-color: #d63939;
+    pointer-events: none;
+}
+</style>

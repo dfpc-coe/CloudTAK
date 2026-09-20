@@ -116,8 +116,7 @@
                             :info-button='true'
                             :visibility-toggle='true'
                             :feature='feat'
-                            :not-synced='pending.has(feat.id)'
-                            :not-synced-error='pending.get(feat.id)?.error'
+                            :error='pending.has(feat.id)'
                         />
                     </div>
                 </template>
@@ -163,8 +162,7 @@
                                 :grip-handle='writable'
                                 :visibility-toggle='true'
                                 :feature='feat'
-                                :not-synced='pending.has(feat.id)'
-                                :not-synced-error='pending.get(feat.id)?.error'
+                                :error='pending.has(feat.id)'
                             />
                         </div>
                     </template>
@@ -526,7 +524,7 @@ async function deleteLayer(node: PathNode<Feature>): Promise<void> {
 async function push(): Promise<void> {
     pushing.value = true;
     try {
-        // Failures are recorded on the rows, which the Not Synced badges surface
+        // Failures are recorded on the rows, which the row error markers surface
         // Held in a local as vue/no-mutating-props mistakes push() for Array.push
         const { feature } = props.subscription;
         await feature.push();

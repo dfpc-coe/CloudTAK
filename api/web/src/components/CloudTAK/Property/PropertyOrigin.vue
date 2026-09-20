@@ -18,6 +18,10 @@
                 <NotSyncedBadge
                     v-if='pending'
                     :error='pending.error'
+                    :loading='syncing'
+                    :retry='true'
+                    :class='{ "cursor-pointer": !syncing }'
+                    @click='sync'
                 />
 
                 <TablerBadge
@@ -41,7 +45,7 @@
 </template>
 
 <script setup lang='ts'>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { IconCloudPin, IconLock } from '@tabler/icons-vue';
 import { TablerBadge } from '@tak-ps/vue-tabler';
@@ -68,7 +72,23 @@ const pending = useObservable<DBSubscriptionFeature | undefined>(
     }))
 );
 
+const syncing = ref(false);
+
 const readonly = computed<boolean>(() => {
     return !props.subscription.role?.permissions.includes('MISSION_WRITE');
 });
+
+async function sync(): Promise<void> {
+    if (syncing.value) return;
+
+    syncing.value = true;
+    try {
+        // Failures are recorded on the row, which the Not Synced badge surfaces
+        // Held in a local as vue/no-mutating-props mistakes push() for Array.push
+        const { feature } = props.subscription;
+        await feature.push();
+    } finally {
+        syncing.value = false;
+    }
+}
 </script>

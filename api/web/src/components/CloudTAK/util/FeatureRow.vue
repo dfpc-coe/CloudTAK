@@ -45,9 +45,11 @@
                 :class='{
                     "ms-2": !props.gripHandle
                 }'
+                :title='props.error ? "This change is saved on this device and has not reached the server yet" : undefined'
             >
                 <FeatureIcon
                     :feature='feature'
+                    :error='props.error'
                 />
             </div>
 
@@ -65,11 +67,6 @@
                         v-else
                         class='fw-semibold text-truncate fst-italic text-muted'
                     >No Callsign</span>
-
-                    <NotSyncedBadge
-                        v-if='notSynced'
-                        :error='notSyncedError'
-                    />
                 </div>
             </div>
 
@@ -130,7 +127,6 @@ import { FeatureVisibility } from '../../../stores/modules/feature-visibility.ts
 import FeatureIcon from './FeatureIcon.vue';
 import Contact from './Contact.vue';
 import StandardItem from './StandardItem.vue';
-import NotSyncedBadge from './NotSyncedBadge.vue';
 import {
     TablerDelete,
     TablerIconButton
@@ -174,13 +170,9 @@ const props = defineProps({
         type: Boolean,
         default: false
     },
-    notSynced: {
+    error: {
         type: Boolean,
         default: false
-    },
-    notSyncedError: {
-        type: String,
-        default: undefined
     },
     hover: {
         type: Boolean,
