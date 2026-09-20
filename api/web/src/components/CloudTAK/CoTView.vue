@@ -417,7 +417,9 @@
                 <div class='row g-0'>
                     <PropertyOrigin
                         v-if='subscription'
+                        :key='cot.id'
                         :subscription='subscription'
+                        :uid='cot.id'
                     />
 
                     <div class='pt-2 col-12 px-2'>

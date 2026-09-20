@@ -65,6 +65,11 @@
                         v-else
                         class='fw-semibold text-truncate fst-italic text-muted'
                     >No Callsign</span>
+
+                    <NotSyncedBadge
+                        v-if='notSynced'
+                        :error='notSyncedError'
+                    />
                 </div>
             </div>
 
@@ -125,6 +130,7 @@ import { FeatureVisibility } from '../../../stores/modules/feature-visibility.ts
 import FeatureIcon from './FeatureIcon.vue';
 import Contact from './Contact.vue';
 import StandardItem from './StandardItem.vue';
+import NotSyncedBadge from './NotSyncedBadge.vue';
 import {
     TablerDelete,
     TablerIconButton
@@ -167,6 +173,14 @@ const props = defineProps({
     visibilityToggle: {
         type: Boolean,
         default: false
+    },
+    notSynced: {
+        type: Boolean,
+        default: false
+    },
+    notSyncedError: {
+        type: String,
+        default: undefined
     },
     hover: {
         type: Boolean,

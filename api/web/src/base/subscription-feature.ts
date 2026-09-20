@@ -212,6 +212,20 @@ export default class SubscriptionFeature {
             .toArray();
     }
 
+    /**
+     * The unconfirmed local change to a single feature, if there is one
+     */
+    async pendingFrom(uid: string): Promise<DBSubscriptionFeature | undefined> {
+        const row = await db.subscription_feature
+            .where("[mission+id]")
+            .equals([this.parent.guid, uid])
+            .first();
+
+        if (!row || !isPending(row)) return;
+
+        return row;
+    }
+
     async collection(raw = true): Promise<FeatureCollection> {
         const features = await this.list();
 
