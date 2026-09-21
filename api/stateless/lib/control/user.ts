@@ -1,4 +1,3 @@
-import crypto from 'node:crypto';
 import path from 'node:path';
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import { sql, eq, or, inArray } from 'drizzle-orm';
@@ -9,7 +8,7 @@ import {
     Basemap, BasemapVector, Profile, ProfileSession, ProfileSetting, ProfileFile, ProfileChatroom, ProfileChat,
     ProfileVideo, ProfileFeature, ProfileFusionSource, ProfileToken, ProfileInterest, ProfilePaging,
     ProfilePasskey, ProfilePasskeyChallenge, ProfileOverlay, VideoLease, Errors, Import, Iconset, Icon,
-    CoreEvent, CoreDevice, CoreForm, CoreFormResponse,
+    CoreEvent, CoreDevice, CoreForm, CoreFormResponse, Connection, Layer, Data,
 } from '../../../common/schema.js';
 import { ProfileConfigDefaults } from './profile.js';
 import VideoServiceControl from './video-service.js';
@@ -90,20 +89,17 @@ export default class UserControl {
     }
 
     /**
-     * Irreversibly erase a user's personal data
+     * Irreversibly erase a user and their personal data
      *
      * Everything the user owns is deleted - settings, credentials, files, chats, features,
      * overlays, video leases, imports, basemaps, iconsets and the CoreForms, CoreFormResponses,
-     * CoreEvents & CoreDevices they authored. The Profile is then stripped and renamed to a
-     * random identifier - the rename cascades to the Connections, Layers & Data Syncs the user
-     * created, which are operational resources that are retained under the anonymous identifier.
+     * CoreEvents & CoreDevices they authored - followed by the Profile itself. Connections,
+     * Layers & Data Syncs are operational resources that are retained with their author cleared.
      *
      * Stored objects are removed before the database so that a failure part way through can
      * be resolved by erasing the user again.
-     *
-     * @returns The anonymous identifier that replaced the username
      */
-    async erase(username: string): Promise<string> {
+    async erase(username: string): Promise<void> {
         await this.disable(username, true);
 
         const leases = await this.config.models.VideoLease.list({
@@ -134,8 +130,6 @@ export default class UserControl {
         while ((await S3.list(`profile/${username}/`)).length) {
             await S3.del(`profile/${username}/`, { recurse: true });
         }
-
-        const erased = `erased-${crypto.randomUUID()}`;
 
         await this.config.pg.transaction(async (tx) => {
             const iconsets = (await tx.select({ uid: Iconset.uid }).from(Iconset).where(eq(Iconset.username, username)))
@@ -182,20 +176,12 @@ export default class UserControl {
             await tx.delete(CoreDevice).where(eq(CoreDevice.username, username));
             await tx.delete(CoreEvent).where(eq(CoreEvent.username, username));
 
-            await tx.update(Profile).set({
-                username: erased,
-                name: 'Erased User',
-                id: null,
-                auth: null,
-                last_login: null,
-                system_admin: false,
-                agency_admin: [],
-                disabled: true,
-                updated: new Date().toISOString(),
-            }).where(eq(Profile.username, username));
-        });
+            await tx.update(Connection).set({ username: null }).where(eq(Connection.username, username));
+            await tx.update(Layer).set({ username: null }).where(eq(Layer.username, username));
+            await tx.update(Data).set({ username: null }).where(eq(Data.username, username));
 
-        return erased;
+            await tx.delete(Profile).where(eq(Profile.username, username));
+        });
     }
 
     /**

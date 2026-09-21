@@ -3,7 +3,7 @@ import { sql, eq, asc, desc, getTableColumns } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
-import { ProfileResponse, ProfileListResponse, CertificateResponse } from '../../common/types.js';
+import { StandardResponse, ProfileResponse, ProfileListResponse, CertificateResponse } from '../../common/types.js';
 import type ConfigStateless from '../config.js';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types';
 import { Profile, ProfileSession } from '../../common/schema.js';
@@ -207,8 +207,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         description: `
             Irreversibly erase the personal data of a user.
 
-            Everything the user owns is deleted and the account is disabled & renamed to a random identifier.
-            Connections, Layers & Data Syncs created by the user are retained under that identifier.
+            Everything the user owns is deleted, followed by the user itself.
+            Connections, Layers & Data Syncs created by the user are retained with their author cleared.
             The username must be repeated as a query parameter to confirm the action.
         `,
         params: Type.Object({
@@ -219,13 +219,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 description: 'Must match the username being erased',
             }),
         }),
-        res: Type.Object({
-            status: Type.Integer(),
-            message: Type.String(),
-            username: Type.String({
-                description: 'Anonymous identifier that replaced the username',
-            }),
-        }),
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { admin: true });
@@ -238,12 +232,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             await config.models.Profile.from(req.params.username);
 
-            const username = await userControl.erase(req.params.username);
+            await userControl.erase(req.params.username);
 
             res.json({
                 status: 200,
                 message: 'User Erased',
-                username,
             });
         } catch (err) {
             Err.respond(err, res);

@@ -98,10 +98,9 @@
                         Erase User Data
                     </div>
                     <div class='text-muted small py-2'>
-                        Irreversibly deletes everything the user owns - settings, credentials, files, chats, features,
-                        overlays, video leases, imports, basemaps, iconsets, forms, form responses, events &amp; devices -
-                        then disables the account and replaces the username &amp; name with a random identifier.
-                        Connections, Layers &amp; Data Syncs created by the user are retained under that identifier.
+                        Irreversibly deletes the user and everything they own - settings, credentials, files, chats, features,
+                        overlays, video leases, imports, basemaps, iconsets, forms, form responses, events &amp; devices.
+                        Connections, Layers &amp; Data Syncs created by the user are retained with their author cleared.
                     </div>
                     <TablerInput
                         v-model='eraseConfirm'

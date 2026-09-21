@@ -55162,8 +55162,8 @@ export interface paths {
         /**
          * Irreversibly erase the personal data of a user.
          *
-         *                 Everything the user owns is deleted and the account is disabled & renamed to a random identifier.
-         *                 Connections, Layers & Data Syncs created by the user are retained under that identifier.
+         *                 Everything the user owns is deleted, followed by the user itself.
+         *                 Connections, Layers & Data Syncs created by the user are retained with their author cleared.
          *                 The username must be repeated as a query parameter to confirm the action.
          */
         delete: {
@@ -55190,8 +55190,8 @@ export interface paths {
                         "application/json": {
                             status: number;
                             message: string;
-                            /** @description Anonymous identifier that replaced the username */
-                            username: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
                         };
                     };
                 };

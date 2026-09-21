@@ -353,32 +353,25 @@ test('DELETE: api/user/:username', async () => {
             auth: { bearer: flight.token.admin },
         }, true);
 
-        assert.equal(res.body.message, 'User Erased');
-        assert.match(res.body.username, /^erased-[0-9a-f-]{36}$/);
+        assert.deepEqual(res.body, { status: 200, message: 'User Erased' });
 
         assert.ok(listed, 'stored objects are listed');
         assert.deepEqual(deleted, [`profile/${username}/file.kml`]);
 
-        await assert.rejects(models.Profile.from(username), 'the username no longer exists');
-
-        const erased = await models.Profile.from(res.body.username);
-        assert.equal(erased.name, 'Erased User');
-        assert.equal(erased.disabled, true);
-        assert.equal(erased.auth, null);
+        await assert.rejects(models.Profile.from(username), 'the user no longer exists');
 
         for (const model of [models.ProfileToken, models.ProfileChat, models.ProfileFile]) {
             assert.equal(await model.count({
-                where: sql`username IN (${username}, ${res.body.username})`,
+                where: sql`username = ${username}`,
             }), 0);
         }
 
-        assert.deepEqual(await models.ProfileConfig.from(res.body.username), {});
+        assert.deepEqual(await models.ProfileConfig.from(username), {});
 
-        // Operational resources are retained under the anonymous identifier
-        assert.equal((await models.Connection.from(connection.id)).username, res.body.username);
+        // Operational resources are retained with their author cleared
+        assert.equal((await models.Connection.from(connection.id)).username, null);
 
         await models.Connection.delete(connection.id);
-        await models.Profile.delete(res.body.username);
     } finally {
         stub.restore();
         Sinon.restore();
