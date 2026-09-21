@@ -1,5 +1,5 @@
-import { db } from '../database.ts';
-import { liveQuery, type Observable } from 'dexie';
+import { db, liveQuery } from '../database.ts';
+import type { Observable } from 'dexie';
 import { server as apiServer } from '../std.ts';
 import type { Server, Server_Update } from '../types.ts';
 import type { DBServer } from '../database.ts';

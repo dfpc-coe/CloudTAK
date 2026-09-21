@@ -1,5 +1,5 @@
-import { liveQuery, type Observable } from 'dexie';
-import { db, type DBIconset } from '../database.ts';
+import type { Observable } from 'dexie';
+import { db, type DBIconset, liveQuery } from '../database.ts';
 import type { paths } from '@cloudtak/api-types';
 import type { Iconset, IconsetList } from '../types.ts';
 import { downloadUrl, getRuntimeToken, server } from '../std.ts';

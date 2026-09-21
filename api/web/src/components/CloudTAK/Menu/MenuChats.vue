@@ -151,7 +151,7 @@ import {
     IconArrowsSort,
 } from '@tabler/icons-vue';
 import { useRouter } from 'vue-router';
-import { liveQuery } from "dexie";
+import { liveQuery } from '../../../database.ts';
 import timeDiff from '../../../timediff.ts';
 
 const select = useTemplateRef<ComponentExposed<typeof GenericSelect>>('select');

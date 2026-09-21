@@ -11,7 +11,6 @@ import { v4 as randomUUID } from 'uuid';
 import { Preferences } from '@capacitor/preferences';
 import { defineStore } from 'pinia'
 import { markRaw } from 'vue';
-import { liveQuery } from 'dexie';
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import IconManager from './modules/icons.ts';
 import MenuManager from './modules/menu.ts';
@@ -43,7 +42,7 @@ import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
 import { isNativePlatform, whenForegrounded } from '../utils/capacitor.ts';
 import { withTimeout } from '../utils/async.ts';
-import { db, suspendDatabase, resumeDatabase } from '../database.ts';
+import { db, suspendDatabase, resumeDatabase, liveQuery } from '../database.ts';
 import { serializeWorkerBootConfig } from '../utils/worker-boot.ts';
 
 import type { ProfileOverlay, Feature } from '../types.ts';

@@ -286,7 +286,6 @@
 
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
-import { liveQuery } from 'dexie';
 import { useRoute, useRouter } from 'vue-router';
 import {
     TablerNone,
@@ -325,7 +324,7 @@ import PropertyCoreEventTimes from './Property/PropertyCoreEventTimes.vue';
 import FormWizard from './util/FormWizard.vue';
 import type { CoreForm, CoreEvent, CoreEventStyle, CoreEventBoardSummary } from '../../types.ts';
 import { server } from '../../std.ts';
-import { db } from '../../database.ts';
+import { db, liveQuery } from '../../database.ts';
 import { missingRequiredForms } from '../../utils/column-forms.ts';
 import { useMapStore } from '../../stores/map.ts';
 import ProfileConfig from '../../base/profile.ts';

@@ -1,5 +1,5 @@
-import { liveQuery, type Observable } from 'dexie';
-import { db, type DBKV } from '../database.ts';
+import type { Observable } from 'dexie';
+import { db, type DBKV, liveQuery } from '../database.ts';
 import BaseInterface from './interface.ts';
 
 export default class KV extends BaseInterface {

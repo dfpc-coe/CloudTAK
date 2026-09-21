@@ -1,5 +1,5 @@
-import { db, NotificationType } from '../database.ts'
-import { liveQuery, type Observable } from 'dexie';
+import { db, NotificationType, liveQuery } from '../database.ts'
+import type { Observable } from 'dexie';
 import type { DBNotification } from '../database.ts';
 import { v4 as randomUUID } from 'uuid';
 import BaseInterface from './interface.ts';

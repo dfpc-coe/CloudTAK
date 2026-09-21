@@ -1,5 +1,5 @@
-import { db } from '../database.ts';
-import { liveQuery, type Observable } from 'dexie';
+import { db, liveQuery } from '../database.ts';
+import type { Observable } from 'dexie';
 import type { Contact as TAKContact } from '../types.ts';
 import { server } from '../std.ts';
 import BaseInterface from './interface.ts';

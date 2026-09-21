@@ -128,7 +128,7 @@
 <script setup lang='ts'>
 import { from } from 'rxjs';
 import { ref, computed } from 'vue';
-import { liveQuery } from 'dexie';
+import { liveQuery } from '../../database.ts';
 import { useRouter } from 'vue-router';
 import { useObservable } from '@vueuse/rxjs';
 import TAKNotification_, { NotificationType } from '../../base/notification.ts';

@@ -7,8 +7,8 @@
  * alongside cot.ts or atlas-database.ts to ensure re-rendering happens.
  */
 
-import { liveQuery, type Observable } from 'dexie';
-import { db, type DBFeature } from '../database.ts';
+import type { Observable } from 'dexie';
+import { db, type DBFeature, liveQuery } from '../database.ts';
 import type { paths } from '@cloudtak/api-types';
 import { server, downloadUrl } from '../std.ts';
 import BaseInterface from './interface.ts';

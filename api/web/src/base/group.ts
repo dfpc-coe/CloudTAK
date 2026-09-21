@@ -1,5 +1,5 @@
-import { db } from '../database.ts';
-import { liveQuery, type Observable } from 'dexie';
+import { db, liveQuery } from '../database.ts';
+import type { Observable } from 'dexie';
 import { server } from '../std.ts';
 import type { Group, GroupChannel } from '../types.ts';
 import BaseInterface from './interface.ts';

@@ -124,7 +124,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import type { Ref } from 'vue';
-import { liveQuery } from 'dexie';
+import { liveQuery } from '../../../database.ts';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
 import Config from '../../../base/config.ts';

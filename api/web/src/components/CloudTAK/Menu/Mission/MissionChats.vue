@@ -29,7 +29,7 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { from } from 'rxjs';
-import { liveQuery } from 'dexie';
+import { liveQuery } from '../../../../database.ts';
 import type { Ref } from 'vue';
 import { useObservable } from '@vueuse/rxjs';
 import ProfileConfig from '../../../../base/profile.ts';

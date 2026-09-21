@@ -49,7 +49,7 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { IconCloudPin, IconLock } from '@tabler/icons-vue';
 import { TablerBadge } from '@tak-ps/vue-tabler';
-import { liveQuery } from 'dexie';
+import { liveQuery } from '../../../database.ts';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
 import NotSyncedBadge from '../util/NotSyncedBadge.vue';

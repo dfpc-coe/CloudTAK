@@ -1,8 +1,8 @@
-import { db } from '../database.ts'
+import { db, liveQuery } from '../database.ts'
 import type { DBProfileConfig } from '../database.ts';
 import { server } from '../std.ts';
 import type { Profile } from '../types.ts';
-import { liveQuery, type Subscription } from 'dexie';
+import type { Subscription } from 'dexie';
 
 export default class ProfileConfig<K extends keyof Profile = keyof Profile> {
     key: K;

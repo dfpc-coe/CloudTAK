@@ -231,7 +231,7 @@ import {
     IconArrowDown,
     IconArrowsSort,
 } from '@tabler/icons-vue';
-import { liveQuery } from "dexie";
+import { liveQuery } from '../../../../database.ts';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import Subscription from '../../../../base/subscription.ts';
 import { useObservable } from "@vueuse/rxjs";

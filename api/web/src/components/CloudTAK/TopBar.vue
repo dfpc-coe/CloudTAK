@@ -94,7 +94,7 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { from } from 'rxjs';
-import { liveQuery } from 'dexie';
+import { liveQuery } from '../../database.ts';
 import { useObservable } from '@vueuse/rxjs';
 import { TablerIconButton, TablerDropdown } from '@tak-ps/vue-tabler';
 import {

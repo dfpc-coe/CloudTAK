@@ -1,8 +1,7 @@
 import { v4 as randomUUID } from 'uuid';
 import Type2525 from '@tak-ps/node-cot/2525';
 import { std } from '../std.ts';
-import { db, withDbRetry, isDatabaseSuspended, deferFeaturePersist } from '../database.ts';
-import { liveQuery } from 'dexie';
+import { db, withDbRetry, isDatabaseSuspended, deferFeaturePersist, liveQuery } from '../database.ts';
 import { bbox } from '@turf/bbox'
 import { length } from '@turf/length'
 import { isEqual } from '@ver0/deep-equal';

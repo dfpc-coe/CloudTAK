@@ -87,7 +87,6 @@
 <script setup lang='ts'>
 import { ref, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { liveQuery } from 'dexie';
 import {
     IconRoute,
     IconListDetails,
@@ -101,7 +100,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
-import { db, type DBBreadcrumb } from '../../../database.ts';
+import { db, type DBBreadcrumb, liveQuery } from '../../../database.ts';
 import { useMapStore } from '../../../stores/map.ts';
 
 const mapStore = useMapStore();

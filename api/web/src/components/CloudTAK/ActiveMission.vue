@@ -143,8 +143,7 @@
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
 import { useMapStore } from '../../stores/map.ts';
-import { db } from '../../database.ts';
-import { liveQuery } from 'dexie';
+import { db, liveQuery } from '../../database.ts';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
 import { TablerIconButton } from '@tak-ps/vue-tabler';

@@ -117,7 +117,7 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { from } from 'rxjs';
-import { liveQuery } from "dexie";
+import { liveQuery } from '../../../../database.ts';
 import { useObservable } from "@vueuse/rxjs";
 import type { Ref } from 'vue';
 import Subscription from '../../../../base/subscription.ts';

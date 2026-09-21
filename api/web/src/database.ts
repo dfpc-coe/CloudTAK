@@ -1,4 +1,4 @@
-import Dexie, { type EntityTable } from 'dexie';
+import Dexie, { liveQuery as dexieLiveQuery, RangeSet, type EntityTable, type Observable } from 'dexie';
 import { withTimeout, TimeoutError } from './utils/async.ts';
 import type {
     Feature,
@@ -461,6 +461,30 @@ export function isDatabaseSuspended(): boolean {
     return suspended;
 }
 
+// Matched by name - the class does not survive the Comlink boundary
+export function isDatabaseSuspendedError(err: unknown): boolean {
+    return (err as { name?: string } | null)?.name === 'DatabaseSuspendedError';
+}
+
+let liveQueryDropped = false;
+
+/**
+ * Dexie liveQuery that survives suspension. Any other rejection ends the
+ * subscription for good; Dexie discards an AbortError and keeps listening,
+ * and resumeDatabase() re-runs what was skipped.
+ */
+export function liveQuery<T>(querier: () => T | Promise<T>): Observable<T> {
+    return dexieLiveQuery(async () => {
+        try {
+            return await querier();
+        } catch (err) {
+            if (!isDatabaseSuspendedError(err)) throw err;
+            liveQueryDropped = true;
+            throw new DOMException('liveQuery skipped while suspended', 'AbortError');
+        }
+    });
+}
+
 /**
  * Reject every IndexedDB transaction synchronously, before an
  * IDBTransaction is opened, so nothing is ever in flight while the app is
@@ -477,6 +501,11 @@ export function resumeDatabase(): void {
     if (closedWhileSuspended && !shuttingDown) {
         closedWhileSuspended = false;
         void ensureDatabase();
+    }
+
+    if (liveQueryDropped) {
+        liveQueryDropped = false;
+        Dexie.on.storagemutated.fire({ all: new RangeSet(-Infinity, [[]]) });
     }
 }
 

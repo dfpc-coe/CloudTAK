@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia';
-import { liveQuery, type Subscription } from 'dexie';
+import type { Subscription } from 'dexie';
 import { Preferences } from '@capacitor/preferences';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import KV from '../base/kv.ts';
-import { db } from '../database.ts';
+import { db, liveQuery } from '../database.ts';
 import { withTimeout } from '../utils/async.ts';
 import Config from '../base/config.ts';
 import ServerManager from '../base/server.ts';

@@ -94,8 +94,7 @@
 <script setup lang='ts'>
 import CopyField from './components/CloudTAK/util/CopyField.vue';
 import { ref, computed, onErrorCaptured, onMounted, onUnmounted } from 'vue'
-import { liveQuery } from 'dexie';
-import { isTransientDbError } from './database.ts';
+import { isTransientDbError, isDatabaseSuspendedError, liveQuery } from './database.ts';
 import { useRoute, useRouter } from 'vue-router';
 // Tabler's stylesheet is loaded from src/style.scss via the <head> of each
 // HTML entry point - only its JS behaviours are pulled in here.
@@ -196,7 +195,7 @@ function checkSessionExpiry() {
 onErrorCaptured((err) => {
     const e = err instanceof Error ? err : new Error(String(err));
 
-    if (isTransientDbError(e)) {
+    if (isTransientDbError(e) || isDatabaseSuspendedError(e)) {
         return false;
     }
 
@@ -221,7 +220,7 @@ onMounted(async () => {
     // Register before any awaits so early promise rejections are captured
     window.addEventListener('unhandledrejection', (e) => {
         const err = e.reason instanceof Error ? e.reason : new Error(String(e.reason));
-        if (isTransientDbError(err)) {
+        if (isTransientDbError(err) || isDatabaseSuspendedError(err)) {
             return;
         }
         error.value = err;

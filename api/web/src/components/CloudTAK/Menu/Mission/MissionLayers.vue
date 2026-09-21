@@ -174,7 +174,7 @@
 
 <script setup lang='ts'>
 import { ref, computed, watch, useTemplateRef, onBeforeUnmount } from 'vue';
-import { liveQuery } from 'dexie';
+import { liveQuery } from '../../../../database.ts';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
 import Sortable from 'sortablejs';

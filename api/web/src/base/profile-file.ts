@@ -1,5 +1,5 @@
-import { liveQuery, type Observable } from 'dexie';
-import { db, type DBProfileFile } from '../database.ts';
+import type { Observable } from 'dexie';
+import { db, type DBProfileFile, liveQuery } from '../database.ts';
 import BaseInterface from './interface.ts';
 import type { BaseInterface_ListOptions } from './interface.ts';
 

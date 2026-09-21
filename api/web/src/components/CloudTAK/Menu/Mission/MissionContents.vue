@@ -207,7 +207,7 @@
 import { ref, computed, useTemplateRef, onMounted } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import { from } from 'rxjs';
-import { liveQuery } from 'dexie';
+import { liveQuery } from '../../../../database.ts';
 import { useObservable } from '@vueuse/rxjs';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';

@@ -1,6 +1,6 @@
-import { liveQuery, type Observable } from 'dexie';
+import type { Observable } from 'dexie';
 import { shallowReactive } from 'vue';
-import { db, type DBOverlay } from '../database.ts';
+import { db, type DBOverlay, liveQuery } from '../database.ts';
 import type { paths } from '@cloudtak/api-types';
 import { server } from '../std.ts';
 import BaseInterface from './interface.ts';
