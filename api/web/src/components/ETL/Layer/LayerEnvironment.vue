@@ -78,7 +78,7 @@
                 :err='new Error("Layer failed to return a Capabilities object")'
             />
             <TablerAlert
-                v-else-if='!props.capabilities?.incoming?.schema?.input'
+                v-else-if='!(props.capabilities[direction] as DirectionCapability)?.schema?.input'
                 title='Missing Input Schema'
                 :err='new Error("Layer failed to return an input schema on the Capabilities object")'
             />

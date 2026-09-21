@@ -18,6 +18,10 @@
 
 ### Pending Release
 
+### v13.93.2 - 2026-09-21
+
+- :bug: Fix Environment tab on outgoing ETLs with no incoming environment
+
 ### v13.93.1 - 2026-09-21
 
 - :tada: `PUT /api/profile/feature` accepts `submit=true` to write the feature to the TAK Server on the user's connection & `archive=false` to skip the database save, allowing live features (ie: UAS positions from CloudTAK-DJI) to be streamed as the user without being persisted
