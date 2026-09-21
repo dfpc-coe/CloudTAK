@@ -18,6 +18,11 @@
 
 ### Pending Release
 
+### v13.92.0 - 2026-09-20
+
+- :rocket: Add sync state tracking to Data Sync Frontend
+- :bug: Fix bug related to incorrect layer ordering on basemaps - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1810
+
 ### v13.91.1 - 2026-09-19
 
 - :rocket: UX improvements to draw tools on mobile
