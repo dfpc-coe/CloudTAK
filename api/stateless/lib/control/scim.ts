@@ -2,11 +2,11 @@ import crypto from 'node:crypto';
 import type { Request, Response } from 'express';
 import { Type, Static } from '@sinclair/typebox';
 import type { TSchema } from '@sinclair/typebox';
-import { sql, eq, count } from 'drizzle-orm';
+import { eq, count } from 'drizzle-orm';
 import type { InferSelectModel } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import type Config from '../../../common/config.js';
-import { Profile, ProfileSession } from '../../../common/schema.js';
+import { Profile } from '../../../common/schema.js';
 import UserControl from './user.js';
 
 export const SCIM_USER_SCHEMA = 'urn:ietf:params:scim:schemas:core:2.0:User';
@@ -616,6 +616,6 @@ export default class ScimControl {
     }
 
     async revokeSessions(username: string): Promise<void> {
-        await this.config.models.ProfileSession.delete(sql`${ProfileSession.username} = ${username}`);
+        await this.userControl.revokeSessions(username);
     }
 }
