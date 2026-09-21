@@ -65,6 +65,16 @@
                     />
                 </div>
 
+                <div class='col-12 pb-4'>
+                    <TablerToggle
+                        v-model='user.disabled'
+                        label='Disabled'
+                    />
+                    <div class='text-muted small'>
+                        A disabled user keeps their data but can no longer log in - all of their login sessions are removed
+                    </div>
+                </div>
+
                 <div class='col-12 d-flex align-items-center'>
                     <button
                         class='btn btn-secondary'
@@ -80,6 +90,34 @@
                         >
                             Save
                         </button>
+                    </div>
+                </div>
+
+                <div class='col-12 border border-danger rounded p-3 mt-4'>
+                    <div class='subheader text-danger'>
+                        Erase User Data
+                    </div>
+                    <div class='text-muted small py-2'>
+                        Irreversibly deletes everything the user owns - settings, credentials, files, chats, features,
+                        overlays, video leases, imports, basemaps, iconsets, forms, form responses, events &amp; devices -
+                        then disables the account and replaces the username &amp; name with a random identifier.
+                        Connections, Layers &amp; Data Syncs created by the user are retained under that identifier.
+                    </div>
+                    <TablerInput
+                        v-model='eraseConfirm'
+                        label='Type the username to confirm'
+                        :placeholder='String(route.params.user)'
+                    />
+                    <div class='d-flex pt-2'>
+                        <div class='ms-auto'>
+                            <button
+                                class='btn btn-danger'
+                                :disabled='eraseConfirm !== String(route.params.user)'
+                                @click='eraseUser'
+                            >
+                                Erase User Data
+                            </button>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -254,6 +292,7 @@ import CertificateBadge from '../util/CertificateBadge.vue';
 import CertificateInfo from '../util/CertificateInfo.vue';
 import AdminUserSession from './AdminUserSession.vue';
 import {
+    TablerInput,
     TablerLoading,
     TablerToggle,
     TablerIconButton,
@@ -292,6 +331,7 @@ const opened = ref<Set<string>>(new Set());
 const loading = ref(false);
 const error = ref<Error | undefined>();
 const edit = ref(false);
+const eraseConfirm = ref('');
 const user = ref<User>(await fetchUser());
 
 const getRemainingKeys = <T extends object>(obj: T) => Object.keys(obj).filter((key) => {
@@ -318,7 +358,8 @@ async function saveUser(): Promise<void> {
             }
         },
         body: {
-            system_admin: user.value.system_admin
+            system_admin: user.value.system_admin,
+            disabled: user.value.disabled
         }
     });
 
@@ -332,9 +373,35 @@ async function saveUser(): Promise<void> {
     loading.value = false;
 }
 
+async function eraseUser(): Promise<void> {
+    loading.value = true;
+    error.value = undefined;
+
+    const res = await server.DELETE(`/api/user/{:username}`, {
+        params: {
+            path: {
+                ":username": String(route.params.user)
+            },
+            query: {
+                username: eraseConfirm.value
+            }
+        }
+    });
+
+    loading.value = false;
+
+    if (res.error) {
+        error.value = new Error(res.error.message);
+        return;
+    }
+
+    router.push('/admin/user');
+}
+
 async function fetchUserLoading(): Promise<void> {
     error.value = undefined;
     edit.value = false;
+    eraseConfirm.value = '';
     loading.value = true;
     user.value = await fetchUser();
     loading.value = false;

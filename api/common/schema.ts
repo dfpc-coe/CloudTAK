@@ -38,7 +38,7 @@ export const CoreEvent = pgTable('core_event', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     active: boolean().notNull().default(true),
     ended: timestamp({ withTimezone: true, mode: 'string' }),
-    username: text().references(() => Profile.username),
+    username: text().references(() => Profile.username, { onUpdate: 'cascade' }),
     connection: integer().references(() => Connection.id, { onDelete: 'set null' }),
     priority: text().$type<CoreEvent_Priority>().notNull().default(CoreEvent_Priority.NONE),
     type: text().notNull(), // MIL-STD-2525E Symbol ID
@@ -115,7 +115,7 @@ export const CoreForm = pgTable('core_form', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    username: text().references(() => Profile.username), // Author of the Form
+    username: text().references(() => Profile.username, { onUpdate: 'cascade' }), // Author of the Form
     name: text().notNull(),
     description: text().notNull().default(''),
     schema: jsonb().$type<Record<string, unknown>>().notNull(),
@@ -148,7 +148,7 @@ export const CoreFormResponse = pgTable('core_form_response', {
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     form: uuid().notNull().references(() => CoreForm.id, { onDelete: 'cascade' }),
-    username: text().references(() => Profile.username), // User that submitted the Response
+    username: text().references(() => Profile.username, { onUpdate: 'cascade' }), // User that submitted the Response
     response: jsonb().$type<Record<string, unknown>>().notNull().default({}),
 }, (table) => {
     return {
@@ -176,7 +176,7 @@ export const CoreDevice = pgTable('core_device', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    username: text().references(() => Profile.username),
+    username: text().references(() => Profile.username, { onUpdate: 'cascade' }),
     connection: integer().references(() => Connection.id, { onDelete: 'set null' }),
     event: uuid().references(() => CoreEvent.id, { onDelete: 'set null' }), // Event the Device is currently assigned to
     type: text().notNull(), // MIL-STD-2525E Symbol ID
@@ -267,7 +267,7 @@ export const Profile = pgTable('profile', {
 
 export const ProfileSetting = pgTable('profile_settings',
     {
-        username: text().notNull().references(() => Profile.username),
+        username: text().notNull().references(() => Profile.username, { onUpdate: 'cascade' }),
         updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
         key: text().notNull(),
         value: text().notNull().default(''),
@@ -283,7 +283,7 @@ export const ProfileFile = pgTable('profile_files', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    username: text().notNull().references(() => Profile.username),
+    username: text().notNull().references(() => Profile.username, { onUpdate: 'cascade' }),
     parent: uuid().references((): AnyPgColumn => ProfileFile.id, { onDelete: 'cascade' }),
     path: text().notNull().default('/'),
     name: text().notNull(),
@@ -311,14 +311,14 @@ export const ProfileChatroom = pgTable('profile_chatroom', {
     name: text().notNull(),
     icon: text().notNull(),
 
-    username: text().notNull().references(() => Profile.username),
+    username: text().notNull().references(() => Profile.username, { onUpdate: 'cascade' }),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
 
 export const ProfileChat = pgTable('profile_chats', {
     id: serial().primaryKey(),
-    username: text().notNull().references(() => Profile.username),
+    username: text().notNull().references(() => Profile.username, { onUpdate: 'cascade' }),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 
@@ -339,7 +339,7 @@ export const VideoLease = pgTable('video_lease', {
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 
-    username: text().references(() => Profile.username),
+    username: text().references(() => Profile.username, { onUpdate: 'cascade' }),
     connection: integer().references(() => Connection.id),
     layer: integer().references(() => Layer.id),
 
@@ -373,7 +373,7 @@ export const ProfileVideo = pgTable('profile_videos', {
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     lease: integer().notNull().references(() => VideoLease.id),
-    username: text().notNull().references(() => Profile.username),
+    username: text().notNull().references(() => Profile.username, { onUpdate: 'cascade' }),
 
     position: jsonb().$type<Static<typeof ProfileVideoPosition>>().notNull().default({ x: 0, y: 0, w: 4, h: 6 }),
 }, (table) => {
@@ -386,7 +386,7 @@ export const ProfileFeature = pgTable('profile_features', {
     id: text().notNull(),
     path: text().notNull().default('/'),
     deleted: boolean().notNull().default(false),
-    username: text().notNull().references(() => Profile.username),
+    username: text().notNull().references(() => Profile.username, { onUpdate: 'cascade' }),
     enabled_geofence: boolean().notNull().default(false),
     properties: jsonb().$type<Static<typeof Feature.Properties>>().notNull().default(sql`'{}'::JSONB`),
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull(),
@@ -427,7 +427,7 @@ export const Basemap = pgTable('basemaps', {
     type: text().$type<Basemap_Type>().notNull().default(Basemap_Type.RASTER),
 
     // Permissions
-    username: text().references(() => Profile.username),
+    username: text().references(() => Profile.username, { onUpdate: 'cascade' }),
     sharing_enabled: boolean().notNull().default(false),
     sharing_token: text(),
     hidden: boolean().notNull().default(false),
@@ -478,7 +478,7 @@ export const Errors = pgTable('errors', {
     id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    username: text().notNull().references(() => Profile.username),
+    username: text().notNull().references(() => Profile.username, { onUpdate: 'cascade' }),
     session_id: uuid().references(() => ProfileSession.id, { onDelete: 'set null' }),
     message: text().notNull(),
     trace: text(),
@@ -491,7 +491,7 @@ export const Import = pgTable('imports', {
     name: text().notNull(),
     status: text().notNull().default(Import_Status.PENDING),
     error: text(),
-    username: text().notNull().references(() => Profile.username),
+    username: text().notNull().references(() => Profile.username, { onUpdate: 'cascade' }),
     source: text().notNull().default('Upload'),
     source_id: text(),
     config: jsonb().notNull().default({}),
@@ -527,7 +527,7 @@ export const Iconset = pgTable('iconsets', {
     version: integer().notNull(),
     name: text().notNull(),
 
-    username: text().references(() => Profile.username),
+    username: text().references(() => Profile.username, { onUpdate: 'cascade' }),
     username_internal: boolean().notNull().default(false),
 
     default_group: text(),
@@ -565,7 +565,7 @@ export const Connection = pgTable('connections', {
     agency: integer(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    username: text().references(() => Profile.username),
+    username: text().references(() => Profile.username, { onUpdate: 'cascade' }),
     name: text().notNull().unique(),
     description: text().notNull().default(''),
     enabled: boolean().notNull().default(true),
@@ -595,7 +595,7 @@ export const Data = pgTable('data', {
     id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    username: text().references(() => Profile.username),
+    username: text().references(() => Profile.username, { onUpdate: 'cascade' }),
     name: text().notNull(),
     description: text().notNull().default(''),
     mission_sync: boolean().notNull().default(false),
@@ -613,7 +613,7 @@ export const Layer = pgTable('layers', {
     uuid: uuid().notNull().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    username: text().references(() => Profile.username),
+    username: text().references(() => Profile.username, { onUpdate: 'cascade' }),
     name: text().notNull(),
     enabled: boolean().notNull().default(true),
     protected: boolean().notNull().default(false),
@@ -721,7 +721,7 @@ export const FusionType = pgTable('fusion_type', {
 
 export const ProfileFusionSource = pgTable('profile_fusion', {
     id: serial().primaryKey(),
-    username: text().notNull().references(() => Profile.username),
+    username: text().notNull().references(() => Profile.username, { onUpdate: 'cascade' }),
     fusion: integer().notNull().references(() => FusionType.id),
     value: jsonb().$type<Record<string, string>>().notNull().default({}),
 });
@@ -730,7 +730,7 @@ export const ProfileToken = pgTable('profile_tokens', {
     id: serial().notNull(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    username: text().notNull().references(() => Profile.username),
+    username: text().notNull().references(() => Profile.username, { onUpdate: 'cascade' }),
     name: text().notNull(),
     token: text().primaryKey(),
 });
@@ -738,7 +738,7 @@ export const ProfileToken = pgTable('profile_tokens', {
 export const ProfileInterest = pgTable('profile_interests', {
     id: serial().primaryKey(),
     name: text().notNull(),
-    username: text().notNull().references(() => Profile.username),
+    username: text().notNull().references(() => Profile.username, { onUpdate: 'cascade' }),
     bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>().notNull(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
@@ -746,7 +746,7 @@ export const ProfileInterest = pgTable('profile_interests', {
 
 export const ProfilePaging = pgTable('profile_paging', {
     id: serial().primaryKey(),
-    username: text().notNull().references(() => Profile.username),
+    username: text().notNull().references(() => Profile.username, { onUpdate: 'cascade' }),
     seed: text().notNull(),
     verified: boolean().notNull().default(false),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
@@ -758,7 +758,7 @@ export const ProfilePaging = pgTable('profile_paging', {
 
 export const ProfileSession = pgTable('profile_sessions', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
-    username: text().notNull().references(() => Profile.username),
+    username: text().notNull().references(() => Profile.username, { onUpdate: 'cascade' }),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     ip: text().notNull(),
     device_type: text().notNull().default('Unknown'),
@@ -769,7 +769,7 @@ export const ProfileSession = pgTable('profile_sessions', {
 
 export const ProfilePasskey = pgTable('profile_passkeys', {
     id: serial().primaryKey(),
-    username: text().notNull().references(() => Profile.username),
+    username: text().notNull().references(() => Profile.username, { onUpdate: 'cascade' }),
     credential_id: text().notNull().unique(),
     public_key: text().notNull(),
     counter: integer().notNull().default(0),
@@ -789,7 +789,7 @@ export const ProfileOverlay = pgTable('profile_overlays', {
     id: serial().primaryKey(),
     name: text().notNull(),
     active: boolean().notNull().default(false),
-    username: text().notNull().references(() => Profile.username),
+    username: text().notNull().references(() => Profile.username, { onUpdate: 'cascade' }),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     pos: integer().notNull().default(5),

@@ -18,6 +18,11 @@
 
 ### Pending Release
 
+- :tada: Add `DELETE /api/user/:username` & an `Erase User Data` action on the Admin User page to honour data subject erasure requests - everything the user owns is deleted (settings, credentials, files & their stored objects, chats, features, overlays, video leases, imports, basemaps, iconsets, forms, form responses, events & devices), the account is disabled and the username & name are replaced by a random `erased-<uuid>` identifier. Connections, Layers & Data Syncs created by the user are retained under that identifier. The action is never triggered by SCIM, requires the username to be repeated as confirmation and an Administrator cannot erase their own account - Ref: https://github.com/dfpc-coe/CloudTAK/issues/1799
+- :pencil2: Erasure is limited to CloudTAK - the user's TAK Server certificate, mission content & CoT history, database backups and request logs that include the username are outside of its reach and persist until they are removed or age out under the operator's own retention policy
+- :rocket: Foreign Keys onto `profile.username` are now `ON UPDATE CASCADE` so that a username can be changed in place
+- :tada: System Administrators can disable or re-enable a user from the Admin User page without a SCIM connected Identity Provider - `PATCH /api/user/:username` accepts `disabled`, disabling removes all of the user's login sessions and an Administrator cannot disable their own account
+
 ### v13.92.0 - 2026-09-20
 
 - :rocket: Add sync state tracking to Data Sync Frontend

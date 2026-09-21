@@ -1654,6 +1654,11 @@
         "query": false,
         "res": true
     },
+    "DELETE /user/:username": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /user/:username/session": {
         "body": false,
         "query": true,

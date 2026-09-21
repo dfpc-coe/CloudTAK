@@ -1,5 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert';
+import Sinon from 'sinon';
+import { sql } from 'drizzle-orm';
+import {
+    S3Client,
+    ListObjectsV2Command,
+    DeleteObjectsCommand,
+} from '@aws-sdk/client-s3';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -230,6 +237,151 @@ test('GET: api/user/admin@example.com', async () => {
         });
     } catch (err) {
         assert.ifError(err);
+    }
+});
+
+test('PATCH: api/user/:username - disabled', async () => {
+    await flight.config!.models.Profile.generate({
+        username: 'toggle@example.com',
+        auth: null,
+        last_login: null,
+    });
+
+    const session = await flight.config!.models.ProfileSession.generate({
+        username: 'toggle@example.com',
+        ip: '127.0.0.1',
+        device_type: 'desktop',
+        browser: 'Test',
+        os: 'Test',
+        user_agent: 'Test',
+    });
+
+    const disabled = await flight.fetch('/api/user/toggle@example.com', {
+        method: 'PATCH',
+        auth: { bearer: flight.token.admin },
+        body: { disabled: true },
+    }, true);
+
+    assert.equal(disabled.body.disabled, true);
+
+    await assert.rejects(
+        flight.config!.models.ProfileSession.from(session.id),
+        'login sessions are removed when a user is disabled',
+    );
+
+    const enabled = await flight.fetch('/api/user/toggle@example.com', {
+        method: 'PATCH',
+        auth: { bearer: flight.token.admin },
+        body: { disabled: false },
+    }, true);
+
+    assert.equal(enabled.body.disabled, false);
+
+    const self = await flight.fetch('/api/user/admin@example.com', {
+        method: 'PATCH',
+        auth: { bearer: flight.token.admin },
+        body: { disabled: true },
+    }, false);
+
+    assert.equal(self.status, 400);
+    assert.equal(self.body.message, 'A System Administrator cannot disable their own account');
+
+    await flight.config!.models.Profile.delete('toggle@example.com');
+});
+
+test('DELETE: api/user/:username', async () => {
+    const username = 'erase@example.com';
+    const models = flight.config!.models;
+
+    await models.Profile.generate({ username, name: 'Erase Me', auth: null, last_login: null });
+    await models.ProfileConfig.commit(username, { 'tak::callsign': 'Erase Me' });
+    await models.ProfileToken.generate({ username, name: 'Token', token: 'etl.erase' });
+    await models.ProfileChat.generate({
+        username,
+        chatroom: 'Room',
+        sender_callsign: 'Erase Me',
+        sender_uid: 'ANDROID-erase',
+        message_id: 'erase-message',
+        message: 'Personal Message',
+    });
+    await models.ProfileFile.generate({ username, name: 'file.kml', size: 1 });
+
+    const connection = await models.Connection.generate({
+        name: 'Erased User Connection',
+        description: '',
+        username,
+        auth: { cert: 'cert', key: 'key' },
+    });
+
+    const mismatch = await flight.fetch(`/api/user/${username}?username=other@example.com`, {
+        method: 'DELETE',
+        auth: { bearer: flight.token.admin },
+    }, false);
+
+    assert.equal(mismatch.status, 400);
+
+    const self = await flight.fetch('/api/user/admin@example.com?username=admin@example.com', {
+        method: 'DELETE',
+        auth: { bearer: flight.token.admin },
+    }, false);
+
+    assert.equal(self.status, 400);
+    assert.equal(self.body.message, 'A System Administrator cannot erase their own account');
+
+    const deleted: string[] = [];
+    let listed = false;
+
+    const stub = Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
+        if (command instanceof ListObjectsV2Command) {
+            assert.equal(command.input.Prefix, `profile/${username}/`);
+
+            // The first listing returns the stored object and later listings are empty once it is deleted
+            if (deleted.length) return Promise.resolve({ Contents: [] });
+            listed = true;
+            return Promise.resolve({ Contents: [{ Key: `profile/${username}/file.kml` }] });
+        } else if (command instanceof DeleteObjectsCommand) {
+            deleted.push(...(command.input.Delete?.Objects || []).map(object => String(object.Key)));
+            return Promise.resolve({});
+        }
+
+        throw new Error(`Unknown S3 Command: ${command.constructor.name}`);
+    });
+
+    try {
+        const res = await flight.fetch(`/api/user/${username}?username=${username}`, {
+            method: 'DELETE',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.equal(res.body.message, 'User Erased');
+        assert.match(res.body.username, /^erased-[0-9a-f-]{36}$/);
+
+        assert.ok(listed, 'stored objects are listed');
+        assert.deepEqual(deleted, [`profile/${username}/file.kml`]);
+
+        await assert.rejects(models.Profile.from(username), 'the username no longer exists');
+
+        const erased = await models.Profile.from(res.body.username);
+        assert.equal(erased.name, 'Erased User');
+        assert.equal(erased.disabled, true);
+        assert.equal(erased.auth, null);
+
+        for (const model of [models.ProfileToken, models.ProfileChat, models.ProfileFile]) {
+            assert.equal(await model.count({
+                where: sql`username IN (${username}, ${res.body.username})`,
+            }), 0);
+        }
+
+        assert.deepEqual(await models.ProfileConfig.from(res.body.username), {});
+
+        // Operational resources are retained under the anonymous identifier
+        assert.equal((await models.Connection.from(connection.id)).username, res.body.username);
+
+        await models.Connection.delete(connection.id);
+        await models.Profile.delete(res.body.username);
+    } finally {
+        stub.restore();
+        Sinon.restore();
     }
 });
 
