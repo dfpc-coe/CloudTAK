@@ -230,8 +230,8 @@ watch([canvas, supportedIcon, () => props.size], async () => {
 
 <style scoped>
 .feature-icon__error {
-    right: -25%;
-    bottom: -25%;
+    right: -10%;
+    bottom: -10%;
     color: #ffffff;
     background-color: #d63939;
     pointer-events: none;
