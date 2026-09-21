@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+- :tada: `PUT /api/profile/feature` accepts `submit=true` to write the feature to the TAK Server on the user's connection & `archive=false` to skip the database save, allowing live features (ie: UAS positions from CloudTAK-DJI) to be streamed as the user without being persisted
+
 ### v13.93.0 - 2026-09-20
 
 - :tada: Add `DELETE /api/user/:username` & an `Erase User Data` action on the Admin User page to honour data subject erasure requests - everything the user owns is deleted (settings, credentials, files & their stored objects, chats, features, overlays, video leases, imports, basemaps, iconsets, forms, form responses, events & devices), followed by the user itself. Connections, Layers & Data Syncs created by the user are retained with their author cleared. The action is never triggered by SCIM, requires the username to be repeated as confirmation and an Administrator cannot erase their own account - Ref: https://github.com/dfpc-coe/CloudTAK/issues/1799

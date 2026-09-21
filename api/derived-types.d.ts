@@ -44515,6 +44515,13 @@ export interface paths {
                      *                         Used primarily by the Events Task for importing DataPackage CoTs
                      */
                     broadcast: boolean;
+                    /** @description Submit the feature as a CoT to the TAK Server on the user's connection */
+                    submit: boolean;
+                    /**
+                     * @description Save the feature to the database
+                     *                         Disable for live/ephemeral features that are only submitted and/or broadcast
+                     */
+                    archive: boolean;
                 };
                 header?: never;
                 path?: never;
