@@ -257,6 +257,8 @@
 
             <TablerModal
                 v-if='searchBoxShown'
+                :dismissable='true'
+                @close='searchBoxShown = false'
                 size='lg'
             >
                 <div class='modal-header'>
