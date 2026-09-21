@@ -59,6 +59,37 @@
                     :err='error'
                 />
 
+                <div
+                    v-if='pendingCount'
+                    class='d-flex align-items-center py-2 px-2 mt-2 mx-2 rounded cloudtak-accent'
+                >
+                    <IconCloudOff
+                        :size='24'
+                        stroke='1'
+                        class='flex-shrink-0'
+                    />
+                    <span
+                        class='mx-2'
+                        v-text='pendingLabel'
+                    />
+                    <div class='ms-auto flex-shrink-0'>
+                        <TablerLoading
+                            v-if='pushing'
+                            :inline='true'
+                        />
+                        <TablerIconButton
+                            v-else
+                            title='Retry Sync'
+                            @click='push'
+                        >
+                            <IconCloudUpload
+                                :size='20'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                    </div>
+                </div>
+
                 <div class='px-2 pt-2'>
                     <TablerInput
                         v-model='featureSearch'
@@ -85,6 +116,7 @@
                             :info-button='true'
                             :visibility-toggle='true'
                             :feature='feat'
+                            :error='pending.has(feat.id)'
                         />
                     </div>
                 </template>
@@ -130,6 +162,7 @@
                                 :grip-handle='writable'
                                 :visibility-toggle='true'
                                 :feature='feat'
+                                :error='pending.has(feat.id)'
                             />
                         </div>
                     </template>
@@ -146,6 +179,8 @@ import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
 import Sortable from 'sortablejs';
 import {
+    IconCloudOff,
+    IconCloudUpload,
     IconFolderPlus,
 } from '@tabler/icons-vue';
 import {
@@ -164,6 +199,7 @@ import type { PathNode } from '../../../../utils/path-manager.ts';
 import PathManager from '../../../../utils/path-manager.ts';
 import { FeatureVisibility } from '../../../../stores/modules/feature-visibility.ts';
 import Subscription from '../../../../base/subscription.ts';
+import type { DBSubscriptionFeature } from '../../../../database.ts';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import PathBrowser from '../../util/PathBrowser.vue';
 import PathBreadcrumb from '../../util/PathBreadcrumb.vue';
@@ -179,6 +215,7 @@ const createLayer = ref(false);
 const editLayer = ref<MissionLayer | undefined>();
 const error = ref<Error | undefined>();
 const refreshing = ref(false);
+const pushing = ref(false);
 const currentUid = ref<string | null>(null);
 const featureSearch = ref('');
 const pathStack = ref<Array<{ uid: string, name: string }>>([]);
@@ -194,6 +231,13 @@ const writable = computed<boolean>(() => {
 const featList = useObservable<Array<Feature> | undefined>(
     from(liveQuery(async () => {
         return await props.subscription.feature.list();
+    }))
+);
+
+/** Local changes, including deletes, that have not been confirmed by the server */
+const pendingList = useObservable<Array<DBSubscriptionFeature> | undefined>(
+    from(liveQuery(async () => {
+        return await props.subscription.feature.pending();
     }))
 );
 
@@ -219,6 +263,29 @@ const feats = computed<Map<string, Feature>>(() => {
         map.set(String(feat.id), feat);
     }
     return map;
+});
+
+/** Unsynced features by id - unconfirmed deletes are no longer listed so are only counted */
+const pending = computed<Map<string, DBSubscriptionFeature>>(() => {
+    const map = new Map<string, DBSubscriptionFeature>();
+    for (const row of pendingList.value || []) {
+        if (!row.deleted) map.set(row.id, row);
+    }
+    return map;
+});
+
+const pendingCount = computed<number>(() => {
+    return (pendingList.value || []).length;
+});
+
+const pendingLabel = computed<string>(() => {
+    const deletes = pendingCount.value - pending.value.size;
+
+    const parts: string[] = [];
+    if (pending.value.size) parts.push(`${pending.value.size} ${pending.value.size === 1 ? 'feature' : 'features'}`);
+    if (deletes) parts.push(`${deletes} ${deletes === 1 ? 'delete' : 'deletes'}`);
+
+    return `${parts.join(' & ')} not synced`;
 });
 
 /** Adapt the recursive Mission Layer tree into PathBrowser's PathNode tree; a sidecar map preserves the original layer for mutation handlers. */
@@ -452,6 +519,18 @@ function openEdit(node: PathNode<Feature>): void {
 
 async function deleteLayer(node: PathNode<Feature>): Promise<void> {
     await props.subscription.layer.delete(node.id);
+}
+
+async function push(): Promise<void> {
+    pushing.value = true;
+    try {
+        // Failures are recorded on the rows, which the row error markers surface
+        // Held in a local as vue/no-mutating-props mistakes push() for Array.push
+        const { feature } = props.subscription;
+        await feature.push();
+    } finally {
+        pushing.value = false;
+    }
 }
 
 async function refresh() {

@@ -107,7 +107,7 @@
                     <router-view
                         v-if='subscription'
                         :subscription='subscription'
-                        @refresh='fetchMission(true)'
+                        @subscribed='subscribedChanged'
                     />
 
                     <template #fallback>
@@ -127,7 +127,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted } from 'vue';
+import { ref, triggerRef, onMounted } from 'vue';
 import { std } from '../../../std.ts';
 import type { Feature } from '../../../types.ts';
 import type { Component } from 'vue';
@@ -207,6 +207,10 @@ const subscription = ref<Subscription | undefined>(undefined)
 onMounted(async () => {
     await fetchMission();
 })
+
+function subscribedChanged(): void {
+    triggerRef(subscription);
+}
 
 async function shareToPackageSetup(): Promise<void> {
     if (!subscription.value) return;

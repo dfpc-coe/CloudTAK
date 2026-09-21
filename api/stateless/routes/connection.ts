@@ -8,6 +8,7 @@ import { Type } from '@sinclair/typebox';
 import { StandardResponse, ConnectionResponse } from '../../common/types.js';
 import { Connection } from '../../common/schema.js';
 import { ConnectionAuth } from '../../common/connection-config.js';
+import { Channel, ChannelAccess } from '../lib/interface-user.js';
 import Schema from '@openaddresses/batch-schema';
 import * as Default from '../lib/limits.js';
 import { generateClientP12, generateTrustP12 } from '../lib/certificate.js';
@@ -350,6 +351,115 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 status: (await config.hub.connectionStatus([connection.id]))[String(connection.id)],
                 certificate: { validFrom, validTo, subject },
                 ...connection,
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/connection/:connectionid/channel', {
+        name: 'List Connection Channels',
+        group: 'Connection',
+        description: 'List the channels that the Machine User backing the connection is a member of',
+        params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
+        }),
+        res: Type.Object({
+            managed: Type.Boolean({
+                description: 'Is the connection backed by a Machine User whose channels can be managed',
+            }),
+            total: Type.Integer(),
+            items: Type.Array(Channel),
+        }),
+    }, async (req, res) => {
+        try {
+            await Auth.is_connection(config, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
+            }, req.params.connectionid);
+
+            const profile = await Auth.as_profile(config, req);
+
+            const cotak = config.user?.get('cotak');
+
+            if (!cotak || !cotak.configured) {
+                res.json({ managed: false, total: 0, items: [] });
+                return;
+            }
+
+            if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
+
+            try {
+                const { channels } = await cotak.fetchMachineUserChannels(profile.id, req.params.connectionid);
+
+                res.json({
+                    managed: true,
+                    total: channels.length,
+                    items: channels,
+                });
+            } catch (err) {
+                // Connections created with an uploaded certificate or user login have no Machine User
+                if (!(err instanceof Err) || err.status !== 404) throw err;
+
+                res.json({
+                    managed: false,
+                    total: 0,
+                    items: [],
+                });
+            }
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/connection/:connectionid/channel', {
+        name: 'Update Connection Channels',
+        group: 'Connection',
+        description: `
+            Update the channels that the Machine User backing the connection is a member of.
+
+            Include a channel in both "attach" and "detach" to change the access type of an existing membership.
+        `,
+        params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
+        }),
+        body: Type.Object({
+            attach: Type.Array(Type.Object({
+                id: Type.Integer(),
+                access: ChannelAccess,
+            }), { default: [] }),
+            detach: Type.Array(Type.Integer(), { default: [] }),
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(Channel),
+        }),
+    }, async (req, res) => {
+        try {
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
+            }, req.params.connectionid);
+
+            const profile = await Auth.as_profile(config, req);
+
+            const cotak = config.user?.get('cotak');
+
+            if (!cotak || !cotak.configured) {
+                throw new Err(400, null, 'External LDAP API not configured - Contact your administrator');
+            }
+
+            if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
+
+            const { channels } = await cotak.updateMachineUserChannels(profile.id, req.params.connectionid, {
+                attach: req.body.attach,
+                detach: req.body.detach,
+            });
+
+            // TAK Server only evaluates group membership at connect time
+            await config.hub.connectionSync(connection.id, { force: true });
+
+            res.json({
+                total: channels.length,
+                items: channels,
             });
         } catch (err) {
             Err.respond(err, res);

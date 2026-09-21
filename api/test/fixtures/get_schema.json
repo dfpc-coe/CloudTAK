@@ -234,6 +234,31 @@
         "query": false,
         "res": true
     },
+    "GET /connection/:connectionid/layer/:layerid/incoming/mapping": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /connection/:connectionid/layer/:layerid/incoming/mapping": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/layer/:layerid/incoming/mapping/:mappingid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /connection/:connectionid/layer/:layerid/incoming/mapping/:mappingid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/layer/:layerid/incoming/mapping/:mappingid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid/layer/:layerid/task": {
         "body": false,
         "query": false,
@@ -334,6 +359,11 @@
         "query": false,
         "res": true
     },
+    "POST /connection/:connectionid/submit": {
+        "body": true,
+        "query": true,
+        "res": true
+    },
     "GET /connection/:connectionid/token": {
         "body": false,
         "query": true,
@@ -411,6 +441,16 @@
     },
     "GET /connection/:connectionid": {
         "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/channel": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /connection/:connectionid/channel": {
+        "body": true,
         "query": false,
         "res": true
     },
@@ -610,6 +650,16 @@
         "res": true
     },
     "DELETE /core/form/:form": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /core/schema": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /core/schema/:id": {
         "body": false,
         "query": false,
         "res": true
@@ -1602,6 +1652,11 @@
     "GET /user/:username": {
         "body": false,
         "query": false,
+        "res": true
+    },
+    "DELETE /user/:username": {
+        "body": false,
+        "query": true,
         "res": true
     },
     "GET /user/:username/session": {

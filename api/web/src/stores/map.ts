@@ -686,7 +686,7 @@ export const useMapStore = defineStore('cloudtak', {
                     if (overlay.mode_id !== mission.meta.guid && overlay.active) {
                         // The API call to make active will disable all active overlays on the backend so no need for networkIO
                         overlay.active = false;
-                    } else if (overlay.mode_id === mission.meta.guid) {
+                    } else if (overlay.mode_id === mission.meta.guid && !overlay.active) {
                         overlay.active = true;
 
                         await overlay.save();
@@ -1683,7 +1683,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (!this._map) return;
 
             const desired = (await db.overlay.toArray())
-                .sort((a, b) => a.pos - b.pos || a.name.localeCompare(b.name));
+                .sort(OverlayManager.compareStack);
             const desiredIds = new Set(desired.map((item) => item.id));
 
             for (const overlay of [...OverlayManager.loaded]) {
@@ -1757,7 +1757,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (!this._map) return;
 
-            OverlayManager.loaded.sort((a, b) => a.pos - b.pos);
+            OverlayManager.loaded.sort(OverlayManager.compareStack);
             if (posChanged) OverlayManager.applyLoadedOrder();
 
             this.updateBackground();

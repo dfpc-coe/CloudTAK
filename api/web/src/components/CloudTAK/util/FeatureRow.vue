@@ -45,9 +45,11 @@
                 :class='{
                     "ms-2": !props.gripHandle
                 }'
+                :title='props.error ? "This change is saved on this device and has not reached the server yet" : undefined'
             >
                 <FeatureIcon
                     :feature='feature'
+                    :error='props.error'
                 />
             </div>
 
@@ -165,6 +167,10 @@ const props = defineProps({
         default: false
     },
     visibilityToggle: {
+        type: Boolean,
+        default: false
+    },
+    error: {
         type: Boolean,
         default: false
     },

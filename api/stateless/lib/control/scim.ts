@@ -2,11 +2,11 @@ import crypto from 'node:crypto';
 import type { Request, Response } from 'express';
 import { Type, Static } from '@sinclair/typebox';
 import type { TSchema } from '@sinclair/typebox';
-import { sql, eq, count } from 'drizzle-orm';
+import { eq, count } from 'drizzle-orm';
 import type { InferSelectModel } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import type Config from '../../../common/config.js';
-import { Profile, ProfileSession } from '../../../common/schema.js';
+import { Profile } from '../../../common/schema.js';
 import UserControl from './user.js';
 
 export const SCIM_USER_SCHEMA = 'urn:ietf:params:scim:schemas:core:2.0:User';
@@ -131,7 +131,6 @@ export const ScimError = Type.Object({
 
 export type ScimUserInput = {
     name?: Static<typeof ScimName>;
-    displayName?: string;
     active?: boolean;
 };
 
@@ -235,9 +234,7 @@ export default class ScimControl {
         return `${this.config.API_URL}/api/scim/v2/Users/${encodeURIComponent(username)}`;
     }
 
-    async serialize(profile: InferSelectModel<typeof Profile>): Promise<Static<typeof ScimUser>> {
-        const settings = await this.config.models.ProfileConfig.from(profile.username);
-
+    serialize(profile: InferSelectModel<typeof Profile>): Static<typeof ScimUser> {
         return {
             schemas: [SCIM_USER_SCHEMA],
             id: profile.username,
@@ -245,7 +242,7 @@ export default class ScimControl {
             name: {
                 formatted: profile.name || '',
             },
-            displayName: String(settings['tak::callsign'] ?? ''),
+            displayName: profile.name || '',
             emails: [{
                 value: profile.username,
                 type: 'work',
@@ -317,7 +314,7 @@ export default class ScimControl {
             totalResults: Number(total),
             startIndex: opts.startIndex,
             itemsPerPage: profiles.length,
-            Resources: await Promise.all(profiles.map(profile => this.serialize(profile))),
+            Resources: profiles.map(profile => this.serialize(profile)),
         };
     }
 
@@ -344,12 +341,6 @@ export default class ScimControl {
             disabled: body.active === false,
         });
 
-        if (body.displayName) {
-            await this.config.models.ProfileConfig.commit(username, {
-                'tak::callsign': body.displayName,
-            });
-        }
-
         return profile;
     }
 
@@ -371,12 +362,6 @@ export default class ScimControl {
             });
         }
 
-        if (input.displayName !== undefined) {
-            await this.config.models.ProfileConfig.commit(profile.username, {
-                'tak::callsign': input.displayName,
-            });
-        }
-
         if (input.active === false) {
             await this.revokeSessions(profile.username);
         }
@@ -385,8 +370,9 @@ export default class ScimControl {
     }
 
     /**
-     * Apply RFC 7644 PatchOp operations - unsupported paths are ignored so that
-     * Identity Providers sending their full attribute mapping do not fail
+     * Apply RFC 7644 PatchOp operations - unsupported paths (including displayName,
+     * which never touches the user's callsign) are ignored so that Identity
+     * Providers sending their full attribute mapping do not fail
      */
     static patchInput(operations: Static<typeof ScimPatchBody>['Operations'], id: string): ScimUserInput {
         const input: ScimUserInput = {};
@@ -396,8 +382,6 @@ export default class ScimControl {
 
             if (key === 'active') {
                 input.active = typeof value === 'string' ? value.toLowerCase() === 'true' : Boolean(value);
-            } else if (key === 'displayname') {
-                input.displayName = value === null || value === undefined ? '' : String(value);
             } else if (key === 'name.formatted' || key === 'name.givenname' || key === 'name.familyname') {
                 input.name = input.name || {};
                 const field = key.split('.')[1] === 'formatted' ? 'formatted' : key.split('.')[1] === 'givenname' ? 'givenName' : 'familyName';
@@ -632,6 +616,6 @@ export default class ScimControl {
     }
 
     async revokeSessions(username: string): Promise<void> {
-        await this.config.models.ProfileSession.delete(sql`${ProfileSession.username} = ${username}`);
+        await this.userControl.revokeSessions(username);
     }
 }

@@ -281,7 +281,7 @@ const deviceStore = useDeviceStore();
 const appStore = useAppStore();
 const isOffline = computed(() => !deviceStore.network.isOnline);
 
-const emit = defineEmits(['refresh']);
+const emit = defineEmits(['subscribed']);
 
 const props = defineProps<{
     subscription: Subscription
@@ -447,19 +447,17 @@ async function subscribe(subscribe: boolean) {
         })
 
         await mapStore.loadMission(props.subscription.guid);
-
-        emit('refresh');
     } else if (subscribe === false && overlay) {
         if (mapStore.mission && mapStore.mission.meta.guid === props.subscription.meta.guid) {
             await mapStore.makeActiveMission();
         }
 
         await OverlayManager.deleteLoaded(overlay);
-
-        emit('refresh');
     }
 
     await props.subscription.update({ subscribed: subscribe });
+
+    emit('subscribed');
 
     if (!subscribe && props.subscription.meta.passwordProtected) {
         await router.push({ name: 'home-menu-missions' });

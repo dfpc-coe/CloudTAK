@@ -326,12 +326,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             if (req.body.active && overlay.mode !== 'mission') {
                 throw new Err(400, null, 'Only mission overlays can be made active');
-            } else if (req.body.active) {
-                await config.models.ProfileOverlay.commit(sql`
-                    username = ${user.email}
-                `, {
-                    active: false,
-                });
+            } else if (req.body.active && !overlay.active) {
+                await config.pg.update(ProfileOverlay)
+                    .set({ active: false })
+                    .where(sql`
+                        username = ${user.email}
+                        AND active
+                        AND id != ${overlay.id}
+                    `);
             }
 
             overlay = await config.models.ProfileOverlay.commit(req.params.overlay, {
@@ -396,11 +398,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             if (req.body.active && req.body.mode !== 'mission') {
                 throw new Err(400, null, 'Only mission overlays can be made active');
             } else if (req.body.active) {
-                await config.models.ProfileOverlay.commit(sql`
-                    username = ${user.email}
-                `, {
-                    active: false,
-                });
+                await config.pg.update(ProfileOverlay)
+                    .set({ active: false })
+                    .where(sql`
+                        username = ${user.email}
+                        AND active
+                    `);
             }
 
             let overlay;

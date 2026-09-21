@@ -172,26 +172,151 @@ export default class CoTAKUser implements UserInterface {
         const user = mus.data[0];
 
         for (const channel of body.channels) {
-            const url = new URL(`api/v1/proxy/channels/${channel.id}/machine-users/attach/${user.id}`, this.provider.url);
-            url.searchParams.append('proxy_user_id', String(uid));
-
-            url.searchParams.append('sync', 'true');
-            url.searchParams.append('access_type', channel.access);
-
-            const userres = await fetch(url, {
-                method: 'GET',
-                safeUrlAllow: [this.provider.url],
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${creds.token}`,
-                },
-            });
-
-            if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Attachment Error');
+            await this.attachMachineUserChannel(uid, user.id, channel);
         }
 
         return user;
+    }
+
+    async attachMachineUserChannel(uid: number, user_id: number, channel: {
+        id: number;
+        access: ChannelAccessEnum;
+    }): Promise<void> {
+        const creds = await this.auth();
+
+        const url = new URL(`api/v1/proxy/channels/${channel.id}/machine-users/attach/${user_id}`, this.provider.url);
+        url.searchParams.append('proxy_user_id', String(uid));
+
+        url.searchParams.append('sync', 'true');
+        url.searchParams.append('access_type', channel.access);
+
+        const userres = await fetch(url, {
+            method: 'GET',
+            safeUrlAllow: [this.provider.url],
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${creds.token}`,
+            },
+        });
+
+        if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Attachment Error');
+    }
+
+    async detachMachineUserChannel(uid: number, user_id: number, channel_id: number): Promise<void> {
+        const creds = await this.auth();
+
+        const url = new URL(`api/v1/proxy/channels/${channel_id}/machine-users/detach/${user_id}`, this.provider.url);
+        url.searchParams.append('proxy_user_id', String(uid));
+
+        url.searchParams.append('sync', 'true');
+
+        const userres = await fetch(url, {
+            method: 'GET',
+            safeUrlAllow: [this.provider.url],
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${creds.token}`,
+            },
+        });
+
+        if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Detachment Error');
+    }
+
+    async fetchMachineUserChannels(uid: number, connection_id: number): Promise<{
+        user: Static<typeof MachineUser>;
+        channels: Array<Static<typeof Channel>>;
+    }> {
+        const creds = await this.auth();
+
+        const url = new URL(`api/v1/proxy/integrations/etl/identifier/${connection_id}`, this.provider.url);
+        url.searchParams.append('proxy_user_id', String(uid));
+
+        const intres = await fetch(url, {
+            safeUrlAllow: [this.provider.url],
+            headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${creds.token}`,
+            },
+        });
+
+        if (intres.status === 404) throw new Err(404, null, 'Connection is not managed by a Machine User');
+        if (!intres.ok) throw new Err(500, new Error(await intres.text()), 'External Integration Fetch Error');
+
+        const integration = await intres.typed(Type.Object({
+            data: Type.Object({
+                id: Type.Integer(),
+                name: Type.String(),
+                machineUsers: Type.Array(Type.Object({
+                    id: Type.Number(),
+                    email: Type.String(),
+                    channels: Type.Array(Channel),
+                })),
+            }),
+        }));
+
+        const user = integration.data.machineUsers[0];
+        if (!user) throw new Err(404, null, 'Connection is not managed by a Machine User');
+
+        return {
+            user: {
+                id: user.id,
+                email: user.email,
+                integrations: [{
+                    id: integration.data.id,
+                    name: integration.data.name,
+                }],
+            },
+            channels: user.channels,
+        };
+    }
+
+    async updateMachineUserChannels(uid: number, connection_id: number, body: {
+        attach: Array<{
+            id: number;
+            access: ChannelAccessEnum;
+        }>;
+        detach: Array<number>;
+    }): Promise<{
+        user: Static<typeof MachineUser>;
+        channels: Array<Static<typeof Channel>>;
+    }> {
+        const { user, channels } = await this.fetchMachineUserChannels(uid, connection_id);
+
+        const current = new Set(channels.map(channel => channel.id));
+        const detach = new Set(body.detach);
+        const attach = new Map(body.attach.map(channel => [channel.id, channel]));
+
+        if (attach.size !== body.attach.length) throw new Err(400, null, 'Channels can only be attached once');
+
+        for (const id of detach) {
+            if (!current.has(id)) throw new Err(400, null, `Machine User is not a member of Channel ${id}`);
+        }
+
+        // A channel present in both lists is a request to change the access type of an existing membership
+        for (const id of attach.keys()) {
+            if (current.has(id) && !detach.has(id)) throw new Err(400, null, `Machine User is already a member of Channel ${id}`);
+        }
+
+        const remaining = new Set([...current].filter(id => !detach.has(id)));
+        for (const id of attach.keys()) remaining.add(id);
+        if (!remaining.size) throw new Err(400, null, 'Machine User must remain a member of at least one Channel');
+
+        // New channels are attached first so a failure part way through cannot leave the user without any channels
+        for (const channel of attach.values()) {
+            if (detach.has(channel.id)) continue;
+            await this.attachMachineUserChannel(uid, user.id, channel);
+        }
+
+        for (const id of detach) {
+            await this.detachMachineUserChannel(uid, user.id, id);
+
+            const channel = attach.get(id);
+            if (channel) await this.attachMachineUserChannel(uid, user.id, channel);
+        }
+
+        return await this.fetchMachineUserChannels(uid, connection_id);
     }
 
     async fetchMachineUser(uid: number, email: string): Promise<Static<typeof MachineUser>> {

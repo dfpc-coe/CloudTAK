@@ -17,9 +17,9 @@ import {
     BasemapTerrain_Encoding,
     ProfilePaging_Type,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
-    ProfileChatStatus, CoreEvent_Priority, CoreEventBoardColumn_Type,
+    ProfileChatStatus, CoreEvent_Priority, CoreEventBoardColumn_Type, LayerMapping_Destination,
 } from './enums.js';
-import { bigint, boolean, uuid, numeric, integer, doublePrecision, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
+import { bigint, boolean, uuid, numeric, integer, doublePrecision, timestamp, pgTable, serial, varchar, text, unique, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
@@ -51,6 +51,10 @@ export const CoreEvent = pgTable('core_event', {
     links: jsonb().$type<Array<Static<typeof CoreEventLink>>>().notNull().default([]),
     style: jsonb().$type<Static<typeof CoreEventStyle>>().notNull().default({}),
     geometry: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>().notNull(),
+}, (table) => {
+    return {
+        external_idx: uniqueIndex('core_event_connection_external_id_idx').on(table.connection, table.external_id).where(sql`external_id <> ''`),
+    };
 });
 
 export const CoreEventChannel = pgTable('core_event_channel', {
@@ -187,6 +191,10 @@ export const CoreDevice = pgTable('core_device', {
     external_id: text().notNull().default(''),
     remarks: text().notNull().default(''),
     metadata: jsonb().$type<Record<string, unknown>>().notNull().default({}),
+}, (table) => {
+    return {
+        external_idx: uniqueIndex('core_device_connection_external_id_idx').on(table.connection, table.external_id).where(sql`external_id <> ''`),
+    };
 });
 
 export const CoreDeviceChannel = pgTable('core_device_channel', {
@@ -654,6 +662,24 @@ export const LayerIncoming = pgTable('layers_incoming', {
 
     // Data Destinations
     data: integer().references(() => Data.id),
+});
+
+export const LayerMapping = pgTable('layer_mapping', {
+    id: serial().primaryKey(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+
+    layer: integer().notNull().references(() => Layer.id, { onDelete: 'cascade' }),
+    schema: text().notNull(),
+    name: text().notNull().default(''),
+    destination: text().$type<LayerMapping_Destination>().notNull().default(LayerMapping_Destination.COREFEATURE),
+    query: text(),
+    mapping: jsonb().$type<Record<string, unknown>>().notNull().default({}),
+}, (table) => {
+    return {
+        layer_idx: index('layer_mapping_layer_idx').on(table.layer),
+        default_idx: uniqueIndex('layer_mapping_default_idx').on(table.layer, table.schema, table.destination).where(sql`query IS NULL`),
+    };
 });
 
 export const Setting = pgTable('settings', {

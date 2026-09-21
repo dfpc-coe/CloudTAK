@@ -169,7 +169,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                                 attribute('familyName', 'string'),
                             ],
                         }),
-                        attribute('displayName', 'string'),
+                        attribute('displayName', 'string', { mutability: 'readOnly' }),
                         attribute('emails', 'complex', { multiValued: true, mutability: 'readOnly' }),
                         attribute('active', 'boolean'),
                     ],
@@ -244,7 +244,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const profile = await scim.create(req.body as Static<typeof ScimUserBody>);
 
-            res.status(201).type(SCIM_CONTENT_TYPE).json(await scim.serialize(profile));
+            res.status(201).type(SCIM_CONTENT_TYPE).json(scim.serialize(profile));
         } catch (err) {
             scimRespond(err, res);
         }
@@ -265,7 +265,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const profile = await scim.from(req.params.id);
 
-            res.type(SCIM_CONTENT_TYPE).json(await scim.serialize(profile));
+            res.type(SCIM_CONTENT_TYPE).json(scim.serialize(profile));
         } catch (err) {
             scimRespond(err, res);
         }
@@ -294,11 +294,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             profile = await scim.update(profile, {
                 name: body.name,
-                displayName: body.displayName,
                 active: body.active ?? true,
             });
 
-            res.type(SCIM_CONTENT_TYPE).json(await scim.serialize(profile));
+            res.type(SCIM_CONTENT_TYPE).json(scim.serialize(profile));
         } catch (err) {
             scimRespond(err, res);
         }
@@ -308,7 +307,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         name: 'SCIM Patch User',
         group: 'SCIM',
         security,
-        description: 'Patch a User - supports add/replace of active, displayName & name',
+        description: 'Patch a User - supports add/replace of active & name',
         params: Type.Object({
             id: Type.String(),
         }),
@@ -324,7 +323,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             profile = await scim.update(profile, input);
 
-            res.type(SCIM_CONTENT_TYPE).json(await scim.serialize(profile));
+            res.type(SCIM_CONTENT_TYPE).json(scim.serialize(profile));
         } catch (err) {
             scimRespond(err, res);
         }

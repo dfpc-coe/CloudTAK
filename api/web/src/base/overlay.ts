@@ -96,25 +96,58 @@ export default class OverlayManager extends BaseInterface {
         const overlay = this.loadedFrom(overlayId);
         if (!overlay) throw new Error('Could not find Overlay');
 
-        const movedIndex = orderedIds.indexOf(overlayId);
-        if (movedIndex === -1) throw new Error('Could not find Overlay in order');
+        if (this.isPinned(overlay)) throw new Error('Overlay position is fixed');
+        if (!orderedIds.includes(overlayId)) throw new Error('Could not find Overlay in order');
 
-        const postId = orderedIds[movedIndex + 1];
-        const post = postId === undefined ? undefined : this.loadedFrom(postId);
-        overlay.moveBefore(post);
-
+        // Pinned overlays keep their sentinel `pos` - only ordinary overlays
+        // take part in drag order bookkeeping
         const changed = this.loaded.filter((current) => {
+            if (this.isPinned(current)) return false;
+
             const pos = orderedIds.indexOf(current.id);
             if (pos === -1 || pos === current.pos) return false;
             current.pos = pos;
             return true;
         });
 
-        this.loaded.sort((a, b) => a.pos - b.pos);
+        this.loaded.sort(OverlayManager.compareStack);
+
+        // Anchor against the resolved stack rather than the dragged list so a
+        // drop beyond a pinned overlay cannot leave the map out of step
+        overlay.moveBefore(this.loaded[this.loaded.indexOf(overlay) + 1]);
 
         const results = await Promise.allSettled(changed.map((current) => current.save()));
         const failed = results.find((result): result is PromiseRejectedResult => result.status === 'rejected');
         if (failed) throw failed.reason;
+    }
+
+    /**
+     * Basemaps are pinned to the bottom of the stack and internal overlays
+     * (e.g. "Map Features") to the top - their `pos` is a sentinel and is
+     * never driven by drag order
+     */
+    static isPinned(overlay: { mode: string; _internal?: boolean }): boolean {
+        return this.stackRank(overlay) !== 0;
+    }
+
+    /**
+     * Stack comparator (bottom first) - pinned placement is decided from the
+     * overlay itself so a stale or corrupted `pos` cannot misplace it
+     */
+    static compareStack(
+        this: void,
+        a: { mode: string; pos: number; name: string; _internal?: boolean },
+        b: { mode: string; pos: number; name: string; _internal?: boolean }
+    ): number {
+        return OverlayManager.stackRank(a) - OverlayManager.stackRank(b)
+            || a.pos - b.pos
+            || a.name.localeCompare(b.name);
+    }
+
+    private static stackRank(overlay: { mode: string; _internal?: boolean }): number {
+        if (overlay._internal || overlay.mode === 'internal') return 1;
+        if (overlay.mode === 'basemap') return -1;
+        return 0;
     }
 
     /**
@@ -367,7 +400,7 @@ export default class OverlayManager extends BaseInterface {
             });
         }
 
-        return overlays.sort((first, second) => first.pos - second.pos || first.name.localeCompare(second.name));
+        return overlays.sort(OverlayManager.compareStack);
     }
 
     private static overlayId(id: string | number): number {

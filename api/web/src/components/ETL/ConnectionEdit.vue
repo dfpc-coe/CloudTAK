@@ -123,6 +123,13 @@
                                     </div>
                                 </div>
 
+                                <CertificateChannels
+                                    v-if='route.params.connectionid'
+                                    :key='channelsKey'
+                                    v-model='channels'
+                                    :connection='connection'
+                                />
+
                                 <template v-if='isNextReady || route.params.connectionid'>
                                     <div class='card-header'>
                                         <h3 class='card-title'>
@@ -223,7 +230,7 @@
 
                                                     <div class='ms-auto'>
                                                         <button
-                                                            :disabled='!route.params.connectionid && !isReady'
+                                                            :disabled='(!route.params.connectionid && !isReady) || !channels.valid'
                                                             class='cursor-pointer btn btn-primary'
                                                             @click='create'
                                                         >
@@ -257,6 +264,8 @@ import CertificateP12 from './Connection/CertificateP12.vue';
 import CertificateLogin from './Connection/CertificateLogin.vue';
 import CertificateRaw from './Connection/CertificateRaw.vue';
 import CertificateMachineUser from './Connection/CertificateMachineUser.vue';
+import CertificateChannels from './Connection/CertificateChannels.vue';
+import type { ChannelChanges } from './Connection/CertificateChannels.vue';
 import {
     IconLock,
     IconCloud,
@@ -311,6 +320,15 @@ const errors = ref<Record<string, string>>({
 });
 
 const agencyDisabled = ref(false);
+
+// Incremented to reload channel membership once pending changes have been submitted
+const channelsKey = ref(0);
+
+const channels = ref<ChannelChanges>({
+    attach: [],
+    detach: [],
+    valid: true
+});
 
 const certTypeOptions = computed(() => {
     const opts: { value: string; label: string }[] = [];
@@ -409,6 +427,25 @@ async function create() {
     }
 
     if (route.params.connectionid) {
+        if (channels.value.attach.length || channels.value.detach.length) {
+            const chres = await server.PATCH('/api/connection/{:connectionid}/channel', {
+                params: {
+                    path: {
+                        ':connectionid': Number(route.params.connectionid)
+                    }
+                },
+                body: {
+                    attach: channels.value.attach,
+                    detach: channels.value.detach
+                }
+            });
+
+            if (chres.error) throw new Error(chres.error.message);
+
+            channels.value = { attach: [], detach: [], valid: true };
+            channelsKey.value++;
+        }
+
         const res = await server.PATCH('/api/connection/{:connectionid}', {
             params: {
                 path: {

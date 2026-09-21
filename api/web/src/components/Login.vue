@@ -512,25 +512,27 @@ const certRenewal = reactive<{
     password: '',
 });
 
-onMounted(async () => {
-    const config = await Config.list([
-        'login::name',
-        'login::logo',
-        'login::signup',
-        'login::forgot',
-        'login::username',
-        'login::brand::enabled',
-        'login::brand::logo',
-        'login::background::enabled',
-        'login::background::color',
-        'oidc::enforced',
-        'oidc::enabled',
-        'oidc::discovery',
-        'oidc::name',
-        'oidc::logo',
-        'passkey::enabled' as keyof FullConfig,
-    ]);
+const configKeys: (keyof FullConfig)[] = [
+    'login::name',
+    'login::logo',
+    'login::signup',
+    'login::forgot',
+    'login::username',
+    'login::brand::enabled',
+    'login::brand::logo',
+    'login::background::enabled',
+    'login::background::color',
+    'oidc::enforced',
+    'oidc::enabled',
+    'oidc::discovery',
+    'oidc::name',
+    'oidc::logo',
+    'passkey::enabled' as keyof FullConfig,
+];
 
+let passkeyStarted = false;
+
+function applyConfig(config: Partial<FullConfig>): void {
     brandStore.login = {
         name: config['login::name'],
         logo: config['login::logo'],
@@ -554,9 +556,26 @@ onMounted(async () => {
     brandStore.passkey.enabled = (config as Record<string, unknown>)['passkey::enabled'] !== false;
     brandStore.loaded = true;
 
-    if (brandStore.passkey.enabled && !isNativePlatform()) {
+    if (brandStore.passkey.enabled && !isNativePlatform() && !passkeyStarted) {
+        passkeyStarted = true;
         startConditionalPasskey();
     }
+}
+
+onMounted(async () => {
+    let config: Partial<FullConfig> = {};
+    try {
+        config = await Config.list(configKeys);
+    } catch (err) {
+        console.error('Failed to load login config, using defaults', err);
+    }
+
+    applyConfig(config);
+
+    // Cached values may be stale - pick up server-side changes in the background
+    Config.refresh(configKeys)
+        .then((fresh) => applyConfig({ ...config, ...fresh }))
+        .catch((err) => console.warn('Failed to refresh login config', err));
 
     // The database is intentionally kept until an explicit sign-out or a
     // different user logs in, avoiding a costly resync on token expiry.

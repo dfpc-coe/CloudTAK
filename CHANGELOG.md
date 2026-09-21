@@ -14,8 +14,84 @@
 
 - `GET /api/search/reverse/:long/:lat` endpoint is deprecated and will be removed in v14, use `GET /api/search/reverse/:long/:lat/<type>` instead
 - `Layer.template` is deprecated and will be removed
+- ETLs in v14 will be required to declare Named Schemas, single schema support will be removed
 
 ### Pending Release
+
+- :tada: Add `DELETE /api/user/:username` & an `Erase User Data` action on the Admin User page to honour data subject erasure requests - everything the user owns is deleted (settings, credentials, files & their stored objects, chats, features, overlays, video leases, imports, basemaps, iconsets, forms, form responses, events & devices), followed by the user itself. Connections, Layers & Data Syncs created by the user are retained with their author cleared. The action is never triggered by SCIM, requires the username to be repeated as confirmation and an Administrator cannot erase their own account - Ref: https://github.com/dfpc-coe/CloudTAK/issues/1799
+- :pencil2: Erasure is limited to CloudTAK - the user's TAK Server certificate, mission content & CoT history, database backups and request logs that include the username are outside of its reach and persist until they are removed or age out under the operator's own retention policy
+- :tada: System Administrators can disable or re-enable a user from the Admin User page without a SCIM connected Identity Provider - `PATCH /api/user/:username` accepts `disabled`, disabling removes all of the user's login sessions and an Administrator cannot disable their own account
+
+### v13.92.0 - 2026-09-20
+
+- :rocket: Add sync state tracking to Data Sync Frontend
+- :bug: Fix bug related to incorrect layer ordering on basemaps - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1810
+
+### v13.91.1 - 2026-09-19
+
+- :rocket: UX improvements to draw tools on mobile
+
+### v13.91.0 - 2026-09-19
+
+- :tada: Add a `Connection Channels` section to the Connection edit page for Connections backed by a Machine User - channels can be added, removed or have their access type changed and are submitted when the Connection is saved
+- :tada: Add `GET` & `PATCH /api/connection/:connectionid/channel` for listing and updating the channels of the Machine User backing a Connection - a channel in both `attach` and `detach` has its access type changed and the Machine User must remain a member of at least one channel
+- :tada: CoT & CoreEvent Remarks render block level Markdown - tables, lists & headings - line breaks were previously flattened into a single paragraph which broke any multi-line Markdown. Plain text line breaks are preserved, text indented by a template literal is no longer treated as a code block and existing Markdown links are no longer double linked
+- :tada: Edit CoT & CoreEvent Remarks with the WYSIWYG `TablerMarkdownEditor` - the editor shares the stylesheet of the rendered Remarks, is only downloaded when Remarks are first edited and is opt in per `CopyField` via the `markdown` prop as text fields are also used to edit JSON
+- :tada: The `Create Event` modal writes Remarks with the WYSIWYG `TablerMarkdownEditor` so a new CoreEvent is authored the same way its Remarks are later edited & rendered - `Ctrl/Cmd + Enter` in the editor creates the Event once it has a Name & Type
+
+### v13.90.1 - 2026-09-17
+
+- :bug: `POST /api/connection/:connectionid/submit` directs a Feature to the single destination of the Mapping it matches - a Feature mapped to a `CoreEvent` or `CoreDevice` is no longer also delivered as CoT, queries are matched across destinations in creation order and the first Default Query is the fallback
+
+### v13.90.0 - 2026-09-17
+
+- :rocket: Rename the Layer Incoming `Styling` tab to `Legacy Styling` - the existing `Layer.styles` object and `/api/layer/:layerid/cot` submission behaviour are unchanged
+- :tada: Add the `layer_mapping` table - each row ties a Layer to a named Output schema and a `destination` (`CoreFeature`, `CoreEvent` or `CoreDevice`) with an optional JSONata `query` and a `mapping` object
+- :tada: Add a `Field Mapping` section to Layer Incoming listing the Task's named Output schemas - mapped schemas are shown first with a solid border and unmapped schemas follow with a dashed border, selecting a schema lists its fields
+- :tada: Add `GET`, `POST`, `GET/:mappingid`, `PATCH/:mappingid` & `DELETE/:mappingid` under `/api/connection/:connectionid/layer/:layerid/incoming/mapping` for managing Layer Maps - JSONata `query` values are validated on write
+- :tada: Field Mapping queries can now be created, edited & deleted from the UI - the mapping object is built by a `CoreFeature`, `CoreEvent` or `CoreDevice` form matching the query's destination and JSONata queries are validated as they are typed
+- :tada: Add `POST /api/connection/:connectionid/submit` accepting a GeoJSON-like FeatureCollection with a named `schema` - Features with a geometry are delivered as CoT and archived, Features without a geometry are accepted and returned as `skipped`. Accepts user, Connection token or Layer token auth
+- :tada: Add `common/mapping.ts`, a data-driven fork of the legacy style library - each Map destination is described by a list of fields (key, kind & target) that the engine walks for the Map matching a Feature, rendering templates against `properties.metadata`. `/api/layer/:layerid/cot` and the legacy `Style` class are unchanged
+- :tada: `POST /api/connection/:connectionid/submit` applies the Layer Maps for the named `schema` when submitted with a Layer token - `CoreFeature` Maps style the CoT, `CoreEvent` Maps create or update Core Events (matched by `external_id`, defaulting to the Feature ID, with a Point derived from LineString & Polygon Features) and `CoreDevice` Maps create or update Core Devices. The response now carries `events` & `devices` counts and per-Feature `errors`
+- :rocket: Mapping objects are validated against the fields of their destination when a Map is created or updated - templates, enums, booleans, numbers & zoom levels
+- :rocket: The mapping engine and the Field Mapping `CoreEvent` & `CoreDevice` forms are both generated from the `common/core-schema.ts` JSON Schemas
+- :rocket: Field Mapping queries are mutually exclusive rather than additive like Legacy Styling - per destination a record is converted by the first query it matches in insertion order, the default (null query) Mapping only applies when no query matched
+- :rocket: `POST /api/connection/:connectionid/submit` UPSERTs Core Events & Core Devices on `external_id` - a partial unique index on `(connection, external_id)` is added to `core_event` & `core_device`, existing rows sharing an `external_id` on a Connection have it cleared on all but the most recently updated row. Creating or updating an Event or Device with an `external_id` already used by the Connection now returns a `400`
+- :tada: `CoreEvent` Mappings can set `channels`, `active`, `style` (icon, marker colour & opacity) & `links`, `CoreDevice` Mappings can set `channels` and assign the Device to a Core Event of the Connection by its `external_id` (`event_external_id`) - every Event of a submission is persisted before the first Device so a Device can be assigned to an Event of the same submission
+- :rocket: Mapping enums & booleans accept a Handlebars template in place of a fixed value - ie: `priority: '{{severity}}'`, values that do not render to an option or boolean are left unset
+- :rocket: The mapping engine & Field Mapping form support nested objects, arrays of objects and an `@widget` hint (`channels`, `icon`, `color`) on `common/core-schema.ts` properties
+- :tada: A Mapping field can be given as `{ value, update }` - `update: false` only applies the field when the CoreEvent or CoreDevice is first created so later edits by users survive resubmission. Object columns such as `style` are merged into the existing value rather than replaced
+- :rocket: CoreEvents & CoreDevices submitted through a Mapping that defines no `channels` inherit the active Channels of the Connection - applied when the record is created or has no Channels, records that are already shared are left alone
+- :rocket: `POST /api/connection/:connectionid/submit` requires a Layer token to hold the `event:create` & `event:update` permissions when the schema has `CoreEvent` Mappings and `device:create` & `device:update` when it has `CoreDevice` Mappings
+- :bug: `POST /api/connection/:connectionid/submit` to a paused Connection no longer creates or updates Core Events & Core Devices
+- :rocket: Only a single default (null query) Mapping can exist per Layer, schema & destination - enforced by a partial unique index on `layer_mapping`, existing duplicates are removed keeping the first created which was the one applied
+- :bug: Duplicate items of a Mapping array such as `channels` are removed when the Mapping is rendered
+- :bug: Changing the Destination of a Field Mapping query resets the mapping object rather than carrying the fields of the previous destination over
+- :rocket: Move the handlebars helpers shared by styling & mapping to `common/handlebars.ts`
+- :rocket: Move the legacy style editor to `ETL/Layer/Mapping/CoreFeature.vue`
+
+### v13.89.0 - 2026-09-17
+
+- :tada: Add `GET /api/core/schema` & `GET /api/core/schema/:id` listing the record types supported by the Server (`CoreFeature`, `CoreEvent` & `CoreDevice`) as JSON Schemas defined in `common/core-schema.ts`. Properties carry an `@icon` hint naming the Tabler icon shown next to the property in a form & an optional `@widget` hint (`channels`, `icon`, `color`)
+- :rocket: `CoreEventResponse` & `CoreDeviceResponse` are composed from the `common/core-schema.ts` JSON Schemas
+- :rocket: Speed up ECR builds with a persistent BuildKit cache, a single build pushed to every environment per account, and cache friendlier layer ordering in the API Dockerfile
+
+### v13.88.3 - 2026-09-15
+
+- :bug: Allow non-admin users to list their own login sessions from the Settings menu, `GET /api/user/:username/session` now permits a user to view their own sessions while still requiring System Administrator to view other users' sessions
+
+### v13.88.2 - 2026-09-15
+
+- :rocket: Introduce parity in CloudWatch Alarms between stateless and stateful API
+
+### v13.88.1 - 2026-09-15
+
+- :rocket: Replace the custom Layer Environment schema form with the generic `TablerSchema` component, gaining multi-select and primitive array support
+
+### v13.88.0 - 2026-09-14
+
+- :tada: Introduce API & UI support for named ETL Schemas allowing multiple data shapes from ETLs
+- :rocket: Update Android App to drop 30s reload to match iOS behavior
 
 ### v13.87.2 - 2026-09-14
 

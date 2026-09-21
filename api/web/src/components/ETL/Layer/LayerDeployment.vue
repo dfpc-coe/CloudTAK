@@ -104,24 +104,17 @@
                         />
                     </div>
 
-                    <div class='col-md-6'>
-                        <TablerInput
-                            v-model='config.memory'
-                            label='Memory (Mb)'
+                    <div class='col-md-12'>
+                        <LayerAlarmSelect
+                            v-model='config'
                             :disabled='disabled'
-                            type='number'
-                            min='1'
-                            step='1'
                         />
                     </div>
-                    <div class='col-md-6'>
-                        <TablerInput
-                            v-model='config.timeout'
-                            label='Timeout (s)'
+
+                    <div class='col-md-12'>
+                        <LayerInfrastructureSelect
+                            v-model='config'
                             :disabled='disabled'
-                            type='number'
-                            min='1'
-                            step='1'
                         />
                     </div>
 
@@ -144,12 +137,48 @@
                             </button>
                         </div>
                     </div>
-                    <div v-else>
-                        <label class='subheader'>Stack Status</label>
-                        <pre v-text='stack.status' />
-                        <label class='subheader'>Layer Runtime Logs</label>
-                        <pre v-text='logs' />
-                    </div>
+                    <template v-else>
+                        <div class='col-md-12'>
+                            <CollapsibleCard
+                                label='Stack Status'
+                                :summary='stack.status'
+                            >
+                                <template #icon>
+                                    <IconStack2
+                                        :size='32'
+                                        stroke='1'
+                                        class='text-muted'
+                                    />
+                                </template>
+
+                                <pre
+                                    class='mb-0'
+                                    v-text='stack.status'
+                                />
+                            </CollapsibleCard>
+                        </div>
+
+                        <div class='col-md-12'>
+                            <CollapsibleCard
+                                label='Layer Runtime Logs'
+                                :summary='logs ? `${logs.split("\n").length} Log Lines` : "No Logs"'
+                                :open='true'
+                            >
+                                <template #icon>
+                                    <IconFileText
+                                        :size='32'
+                                        stroke='1'
+                                        class='text-muted'
+                                    />
+                                </template>
+
+                                <pre
+                                    class='mb-0'
+                                    v-text='logs'
+                                />
+                            </CollapsibleCard>
+                        </div>
+                    </template>
                 </div>
             </template>
         </div>
@@ -170,17 +199,21 @@ import { useRoute } from 'vue-router';
 import LayerTaskSelect from '../../util/LayerTaskSelect.vue';
 import type { TaskUpdate } from '../../util/LayerTaskSelect.vue';
 import LayerTaskUpdateModal from '../../util/LayerTaskUpdateModal.vue';
+import LayerAlarmSelect from '../../util/LayerAlarmSelect.vue';
+import LayerInfrastructureSelect from '../../util/LayerInfrastructureSelect.vue';
+import CollapsibleCard from '../../util/CollapsibleCard.vue';
 import { server } from '../../../std.ts';
 import type { ETLLayer, ETLLayerTask } from '../../../types.ts';
 import {
     TablerAlert,
     TablerIconButton,
-    TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
     IconPencil,
     IconRefresh,
+    IconStack2,
+    IconFileText,
     IconCloudUpload,
 } from '@tabler/icons-vue';
 

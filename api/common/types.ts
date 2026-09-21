@@ -3,7 +3,9 @@ import { Type, Static } from '@sinclair/typebox';
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text, Profile_Radiation_Dose, Profile_Wake_Lock } from './enums.js';
-import { VideoLease_SourceType, CoreEvent_Priority, CoreEventBoardColumn_Type } from './enums.js';
+import { VideoLease_SourceType, CoreEventBoardColumn_Type, LayerMapping_Destination } from './enums.js';
+import { Capabilities, InvocationType } from '@tak-ps/etl';
+import { CoreEventSchema, CoreDeviceSchema, CoreEventLinkSchema, CoreEventStyleSchema, withoutHints } from './core-schema.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
 import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, BasemapTerrain_Encoding } from './enums.js';
@@ -146,30 +148,8 @@ export const PaletteFeatureResponse = createSelectSchema(schemas.PaletteFeature,
 });
 
 /** A named URL on a Core Event - submitted as a CoT `r-u` (refinement url) link */
-export const CoreEventLink = Type.Object({
-    name: Type.String({
-        description: 'Human readable name of the Link',
-    }),
-    url: Type.String({
-        description: 'URL the Link points at',
-        pattern: '^(https?:\\/\\/.+|)$',
-    }),
-});
-
-/** Point styling overrides - property names match node-cot's CoT GeoJSON representation */
-export const CoreEventStyle = Type.Object({
-    'icon': Type.Optional(Type.String({
-        description: 'Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>',
-    })),
-    'marker-color': Type.Optional(Type.String({
-        description: 'Hex colour of the Event marker - ie: #00ff00',
-    })),
-    'marker-opacity': Type.Optional(Type.Number({
-        minimum: 0,
-        maximum: 1,
-        description: 'Opacity of the Event marker',
-    })),
-});
+export const CoreEventLink = withoutHints(CoreEventLinkSchema);
+export const CoreEventStyle = withoutHints(CoreEventStyleSchema);
 
 /** Enough of a Column to render its name & badge styling inline */
 export const CoreEventBoardColumnSummary = Type.Object({
@@ -191,31 +171,23 @@ export const CoreEventBoardSummary = Type.Object({
     columns: Type.Array(CoreEventBoardColumnSummary, { description: 'Columns of the Board' }),
 });
 
-export const CoreEventResponse = Type.Object({
-    id: Type.String(),
-    mission_guid: Type.Union([Type.Null(), Type.String()], { description: 'GUID of the TAK Server Mission associated with the Event' }),
-    created: Type.String(),
-    updated: Type.String(),
-    active: Type.Boolean({ description: 'Is the Event currently active' }),
-    ended: Type.Union([Type.Null(), Type.String()], { description: 'Time at which the Event ended' }),
-    username: Type.Union([Type.Null(), Type.String()]),
-    connection: Type.Union([Type.Null(), Type.Integer()], { description: 'Connection that created the Event if created by a Connection or Layer token' }),
-    priority: Type.Enum(CoreEvent_Priority),
-    type: Type.String({ description: 'MIL-STD-2525E Symbol ID' }),
-    name: Type.String(),
-    external_id: Type.String({ description: 'ID of the Event in an external system' }),
-    editable: Type.Boolean({ description: 'Can users other than the creator edit the Event' }),
-    location: Type.String({ description: 'Human readable location - ie: an address' }),
-    remarks: Type.String(),
-    metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Event metadata' }),
-    links: Type.Array(CoreEventLink, { description: 'Named URLs associated with the Event' }),
-    style: CoreEventStyle,
-    geometry: GeoJSONFeatureGeometryPoint,
-    channels: Type.Array(Type.Integer(), { description: 'TAK Server Channels the Event is shared with' }),
-    boards: Type.Array(CoreEventBoardSummary, {
-        description: 'Boards of every Channel the Event is shared with, along with the Column the Event is placed in on each',
+export const CoreEventResponse = Type.Composite([
+    Type.Required(Type.Omit(withoutHints(CoreEventSchema), ['ended'])),
+    Type.Object({
+        id: Type.String(),
+        mission_guid: Type.Union([Type.Null(), Type.String()], { description: 'GUID of the TAK Server Mission associated with the Event' }),
+        created: Type.String(),
+        updated: Type.String(),
+        ended: Type.Union([Type.Null(), Type.String()], { description: CoreEventSchema.properties.ended.description }),
+        username: Type.Union([Type.Null(), Type.String()]),
+        connection: Type.Union([Type.Null(), Type.Integer()], { description: 'Connection that created the Event if created by a Connection or Layer token' }),
+        metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Event metadata' }),
+        geometry: GeoJSONFeatureGeometryPoint,
+        boards: Type.Array(CoreEventBoardSummary, {
+            description: 'Boards of every Channel the Event is shared with, along with the Column the Event is placed in on each',
+        }),
     }),
-});
+]);
 
 export const CoreEventBoardResponse = Type.Object({
     id: Type.String(),
@@ -288,26 +260,64 @@ export const CoreFormColumnResponse = Type.Object({
     form: CoreFormResponse,
 });
 
-export const CoreDeviceResponse = Type.Object({
+export const CoreDeviceResponse = Type.Composite([
+    Type.Required(Type.Omit(withoutHints(CoreDeviceSchema), ['battery', 'event_external_id'])),
+    Type.Object({
+        id: Type.String(),
+        created: Type.String(),
+        updated: Type.String(),
+        username: Type.Union([Type.Null(), Type.String()]),
+        connection: Type.Union([Type.Null(), Type.Integer()], { description: 'Connection that created the Device if created by a Connection or Layer token' }),
+        event: Type.Union([Type.Null(), Type.String()], { description: 'Core Event the Device is currently assigned to' }),
+        battery: Type.Union([Type.Null(), withoutHints(CoreDeviceSchema).properties.battery]),
+        metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Device metadata' }),
+    }),
+]);
+
+export const CoreSchemaSummary = Type.Object({
+    id: Type.Enum(LayerMapping_Destination),
+    title: Type.String(),
+    description: Type.String(),
+});
+
+export const CoreSchemaResponse = Type.Object({
+    $id: Type.Enum(LayerMapping_Destination),
+    title: Type.String(),
+    description: Type.String(),
+    type: Type.Literal('object'),
+    required: Type.Array(Type.String()),
+    properties: Type.Record(Type.String(), Type.Record(Type.String(), Type.Unknown())),
+}, {
+    description: 'JSON Schema of a Server supported record type',
+});
+
+/** A single named Output schema of a Task - tasks exposing a single unnamed schema are mapped to the `default` id */
+export const NamedSchema = Type.Object({
     id: Type.String(),
-    created: Type.String(),
-    updated: Type.String(),
-    username: Type.Union([Type.Null(), Type.String()]),
-    connection: Type.Union([Type.Null(), Type.Integer()], { description: 'Connection that created the Device if created by a Connection or Layer token' }),
-    event: Type.Union([Type.Null(), Type.String()], { description: 'Core Event the Device is currently assigned to' }),
-    type: Type.String({ description: 'MIL-STD-2525E Symbol ID' }),
-    name: Type.String({ description: 'Human readable name/callsign of the Device' }),
-    manufacturer: Type.String({ description: 'Manufacturer of the Device - ie: Ortec, Nucsafe, DJI' }),
-    model: Type.String({ description: 'Model of the Device - ie: Micro Detective, IdentiFINDER 2' }),
-    serial: Type.String({ description: 'Manufacturer assigned Serial Number' }),
-    firmware: Type.String({ description: 'Firmware/Software revision reported by the Device' }),
-    status: Type.String({ description: 'General Device health status - ie: Full, Reduced, Unknown' }),
-    battery: Type.Union([Type.Null(), Type.Number()], { description: 'Battery level as a percentage (0-100) at last report' }),
-    simulated: Type.Boolean({ description: 'Is the Device a simulated data source' }),
-    external_id: Type.String({ description: 'ID of the Device in an external system' }),
-    remarks: Type.String(),
-    metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Device metadata' }),
-    channels: Type.Array(Type.Integer(), { description: 'TAK Server Channels the Device is shared with' }),
+    schema: Type.Record(Type.String(), Type.Unknown()),
+});
+
+export const DEFAULT_SCHEMA_ID = 'default';
+
+const TaskCapabilitiesSchema = Type.Object({
+    input: Type.Unknown(),
+    inputError: Type.Optional(Capabilities.properties.incoming.properties.schema.properties.inputError),
+    output: Type.Array(NamedSchema, { description: 'Named Output schemas the Task submits records against' }),
+    outputError: Type.Optional(Capabilities.properties.incoming.properties.schema.properties.outputError),
+});
+
+/** Live Task Capabilities with Output schemas normalized to named schemas */
+export const TaskCapabilitiesResponse = Type.Object({
+    name: Type.String(),
+    version: Type.String(),
+    incoming: Type.Optional(Type.Object({
+        invocation: Type.Array(Type.Enum(InvocationType)),
+        invocationDefaults: Capabilities.properties.incoming.properties.invocationDefaults,
+        schema: TaskCapabilitiesSchema,
+    })),
+    outgoing: Type.Optional(Type.Object({
+        schema: TaskCapabilitiesSchema,
+    })),
 });
 
 export const MissionTemplateResponse = Type.Object({
@@ -484,6 +494,14 @@ export const ProfileResponse = Type.Composite([
     }),
     Profile,
 ]);
+
+export const LayerMappingResponse = createSelectSchema(schemas.LayerMapping, {
+    id: Type.Integer(),
+    layer: Type.Integer(),
+    destination: Type.Enum(LayerMapping_Destination),
+    query: Type.Union([Type.Null(), Type.String()]),
+    mapping: Type.Record(Type.String(), Type.Unknown()),
+});
 
 export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
     id: Type.Integer(),

@@ -7,7 +7,42 @@
         />
 
         <div
-            v-if='editing'
+            v-if='editing && wysiwyg'
+            class='rounded'
+        >
+            <TablerMarkdownEditor
+                :model-value='String(text ?? "")'
+                :label='label || "Editor"'
+                :autofocus='true'
+                @update:model-value='validUpdate($event)'
+                @submit='validUpdate($event, {
+                    submit: true,
+                    editing: false
+                })'
+            />
+            <div
+                v-if='error'
+                class='text-danger small mt-1'
+                v-text='error'
+            />
+            <div class='d-flex justify-content-end mt-1'>
+                <TablerIconButton
+                    v-if='!error'
+                    title='Done Editing'
+                    @click.stop.prevent='validUpdate(text, {
+                        submit: true,
+                        editing: false
+                    })'
+                >
+                    <IconCheck
+                        :size='20'
+                        stroke='1.5'
+                    />
+                </TablerIconButton>
+            </div>
+        </div>
+        <div
+            v-else-if='editing'
             class='rounded'
         >
             <TablerInput
@@ -64,7 +99,9 @@
                 <TablerMarkdown
                     v-if='mode === "text"'
                     style='min-height: 32px'
-                    :markdown='markdown'
+                    :autowrap='false'
+                    :breaks='true'
+                    :markdown='rendered'
                 />
                 <pre
                     v-else
@@ -160,10 +197,12 @@ import { ref, watch, computed, useTemplateRef } from 'vue';
 
 defineOptions({ inheritAttrs: false });
 import CopyButton from './CopyButton.vue';
+import { textToMarkdown } from '../../../utils/text-markdown.ts';
 import {
     TablerInput,
     TablerDelete,
     TablerMarkdown,
+    TablerMarkdownEditor,
     TablerIconButton
 } from '@tak-ps/vue-tabler'
 import {
@@ -189,6 +228,12 @@ const props = defineProps({
     modelValue: {
         type: [String, Number],
         required: true
+    },
+    markdown: {
+        // Edit multi-row text with the WYSIWYG Markdown editor instead of a textarea
+        // Opt in as text fields are also used to edit JSON & other exact text
+        type: Boolean,
+        default: false
     },
     display: {
         // Rendered in place of modelValue; copy and edit still use modelValue
@@ -236,11 +281,12 @@ const error = ref<string | undefined>()
 
 const infoboxRef = useTemplateRef<HTMLElement>('infobox');
 
-const markdown = computed(() => {
-    return String(props.display ?? (props.modelValue || ''))
-        .replace(/\n/g, '</br>')
-        .replace(/(?<![="'])(https?:\/\/[a-z-]+[:.].*?)(?=[\s"]|$)/g, '[$1]($1)')
-        .trim()
+const wysiwyg = computed(() => {
+    return props.markdown && props.mode === 'text' && props.rows > 1;
+});
+
+const rendered = computed(() => {
+    return textToMarkdown(props.display ?? (props.modelValue || ''));
 });
 
 watch(infoboxRef, () => {

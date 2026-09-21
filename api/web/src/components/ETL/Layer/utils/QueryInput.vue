@@ -2,6 +2,7 @@
     <TablerInput
         :model-value='modelValue'
         :label='label'
+        :description='description'
         :placeholder='placeholder'
         :disabled='disabled'
         :error='error_str'
@@ -26,6 +27,10 @@ const props = defineProps({
     label: {
         type: String,
         default: 'JSONata Query'
+    },
+    description: {
+        type: String,
+        default: undefined
     },
     placeholder: {
         type: String,

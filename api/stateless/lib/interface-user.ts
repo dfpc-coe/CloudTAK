@@ -70,6 +70,22 @@ export interface UserInterface {
         }
     ): Promise<Static<typeof MachineUser>>;
 
+    fetchMachineUserChannels(uid: number, connection_id: number): Promise<{
+        user: Static<typeof MachineUser>;
+        channels: Array<Static<typeof Channel>>;
+    }>;
+
+    updateMachineUserChannels(uid: number, connection_id: number, body: {
+        attach: Array<{
+            id: number;
+            access: ChannelAccessEnum;
+        }>;
+        detach: Array<number>;
+    }): Promise<{
+        user: Static<typeof MachineUser>;
+        channels: Array<Static<typeof Channel>>;
+    }>;
+
     deleteMachineUser(uid: number, body: {
         connection_id: number;
     }): Promise<void>;

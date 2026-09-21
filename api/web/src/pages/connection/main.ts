@@ -30,10 +30,6 @@ const router = VueRouter.createRouter({
                 name: `layer-deployment`,
                 component: () => import('../../components/ETL/Layer/LayerDeployment.vue')
             },{
-                path: 'alarm',
-                name: `layer-alarm`,
-                component: () => import('../../components/ETL/Layer/LayerAlarm.vue')
-            },{
                 path: 'incoming/config',
                 name: `layer-incoming-config`,
                 component: () => import('../../components/ETL/Layer/LayerIncomingConfig.vue')
@@ -45,6 +41,18 @@ const router = VueRouter.createRouter({
                 path: 'incoming/schema',
                 name: `layer-incoming-schema`,
                 component: () => import('../../components/ETL/Layer/LayerIncomingSchema.vue')
+            },{
+                path: 'incoming/mapping',
+                name: `layer-incoming-mapping`,
+                component: () => import('../../components/ETL/Layer/LayerIncomingMapping.vue')
+            },{
+                path: 'incoming/mapping/:schema',
+                name: `layer-incoming-mapping-schema`,
+                component: () => import('../../components/ETL/Layer/LayerIncomingMappingSchema.vue')
+            },{
+                path: 'incoming/mapping/:schema/query/:query',
+                name: `layer-incoming-mapping-query`,
+                component: () => import('../../components/ETL/Layer/LayerIncomingMappingQuery.vue')
             },{
                 path: 'incoming/styles',
                 name: `layer-incoming-styles`,

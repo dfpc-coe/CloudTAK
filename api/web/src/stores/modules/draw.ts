@@ -255,6 +255,12 @@ export default class DrawTool {
             }
         });
 
+        // Touch input emits no pointer moves between taps, so a tap in a click-move
+        // draw gives no preview and leaves Freehand stuck - only allow drag to draw
+        const drawInteraction = window.matchMedia('(pointer: coarse)').matches
+            ? 'click-drag'
+            : 'click-move-or-drag';
+
         this.draw = new terraDraw.TerraDraw({
             adapter: new TerraDrawMapLibreGLAdapter({
                 map: this.mapStore.map,
@@ -277,6 +283,7 @@ export default class DrawTool {
                 }),
                 new terraDraw.TerraDrawLineStringMode({
                     editable: true,
+                    showCoordinatePoints: true,
                     snapping: { toCustom }
                 }),
                 new terraDraw.TerraDrawPolygonMode({
@@ -285,13 +292,17 @@ export default class DrawTool {
                     snapping: { toCustom }
                 }),
                 routeSnapMode,
-                new terraDraw.TerraDrawAngledRectangleMode(),
-                new terraDraw.TerraDrawFreehandMode({
-                    drawInteraction: 'click-move-or-drag',
+                new terraDraw.TerraDrawAngledRectangleMode({
+                    showCoordinatePoints: true
                 }),
-                new terraDraw.TerraDrawSectorMode(),
+                new terraDraw.TerraDrawFreehandMode({
+                    drawInteraction
+                }),
+                new terraDraw.TerraDrawSectorMode({
+                    showCoordinatePoints: true
+                }),
                 new terraDraw.TerraDrawCircleMode({
-                    drawInteraction: 'click-move-or-drag',
+                    drawInteraction
                 }),
                 new terraDraw.TerraDrawSelectMode({
                     flags: {

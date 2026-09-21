@@ -119,11 +119,16 @@
     >
         <template #buttons>
             <TablerIconButton
-                v-if='preferredLayout !== "list"'
-                title='List View'
-                @click='mapStore.menu.setLayout("list")'
+                :title='preferredLayout === "list" ? "Tile View" : "List View"'
+                @click='mapStore.menu.setLayout(preferredLayout === "list" ? "tiles" : "list")'
             >
+                <IconLayoutGrid
+                    v-if='preferredLayout === "list"'
+                    :size='32'
+                    stroke='1'
+                />
                 <IconLayoutList
+                    v-else
                     :size='32'
                     stroke='1'
                 />
@@ -141,16 +146,6 @@
                 />
                 <IconPencilCheck
                     v-else
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
-            <TablerIconButton
-                v-if='preferredLayout !== "tiles"'
-                title='Tile View'
-                @click='mapStore.menu.setLayout("tiles")'
-            >
-                <IconLayoutGrid
                     :size='32'
                     stroke='1'
                 />
