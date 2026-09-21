@@ -395,7 +395,7 @@ test('PUT: api/profile/feature?archive=false&submit=true - submitted to TAK Serv
                 id: 'live-uas',
                 type: 'Feature',
                 path: '/',
-                properties: { type: 'a-f-A-M-H-Q', how: 'm-g', time, start: time, stale: time, callsign: 'Live UAS', center: [1, 1] },
+                properties: { type: 'a-f-A-M-H-Q', how: 'm-g', time, start: time, stale: time, callsign: 'Live UAS', center: [1, 1], remarks: 'DJI UAS - SN: 123', course: 270, speed: 5 },
                 geometry: { type: 'Point', coordinates: [1, 1, 1] },
             },
         }, true);
