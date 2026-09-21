@@ -1683,7 +1683,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (!this._map) return;
 
             const desired = (await db.overlay.toArray())
-                .sort((a, b) => a.pos - b.pos || a.name.localeCompare(b.name));
+                .sort(OverlayManager.compareStack);
             const desiredIds = new Set(desired.map((item) => item.id));
 
             for (const overlay of [...OverlayManager.loaded]) {
@@ -1757,7 +1757,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (!this._map) return;
 
-            OverlayManager.loaded.sort((a, b) => a.pos - b.pos);
+            OverlayManager.loaded.sort(OverlayManager.compareStack);
             if (posChanged) OverlayManager.applyLoadedOrder();
 
             this.updateBackground();

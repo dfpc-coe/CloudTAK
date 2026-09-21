@@ -68,7 +68,8 @@
                             :key='card.overlay.id'
                             class='p-3'
                             :class='{
-                                "border-primary": isDraggable
+                                "border-primary": isDraggable,
+                                "overlay-pinned": OverlayManager.isPinned(card.overlay)
                             }'
                             :hover='!isDraggable && card.overlay.id !== 0 && hasOverlayDetails(card.overlay)'
                             @click='handleCardClick(card.overlay)'
@@ -81,7 +82,7 @@
                                     :aria-disabled='isDraggable || card.overlay.id === 0'
                                 >
                                     <span
-                                        v-if='isDraggable'
+                                        v-if='isDraggable && !OverlayManager.isPinned(card.overlay)'
                                         title='Drag to reorder'
                                     >
                                         <IconGripVertical
@@ -374,11 +375,11 @@ const overlayCards = computed<OverlayCard[]>(() => {
     return cards.sort((a, b) => OverlayManager.loaded.indexOf(a.overlay) - OverlayManager.loaded.indexOf(b.overlay));
 });
 
-const overlayCount = computed(() => overlayCards.value.length);
+const sortableCount = computed(() => overlayCards.value.filter((card) => !OverlayManager.isPinned(card.overlay)).length);
 
-const canEditOrder = computed(() => !hasSearchTerm.value && overlayCount.value > 1);
+const canEditOrder = computed(() => !hasSearchTerm.value && sortableCount.value > 1);
 
-const showDragHint = computed(() => overlayCount.value > 1 && !isDraggable.value && !canEditOrder.value);
+const showDragHint = computed(() => sortableCount.value > 1 && !isDraggable.value && !canEditOrder.value);
 
 const dragHintCopy = computed(() => {
     if (!showDragHint.value) return '';
@@ -388,7 +389,7 @@ const dragHintCopy = computed(() => {
 const reorderButtonTitle = computed(() => {
     if (isDraggable.value) return 'Save Order';
     if (!canEditOrder.value) {
-        if (overlayCount.value <= 1) return 'Add another overlay to reorder';
+        if (sortableCount.value <= 1) return 'Add another overlay to reorder';
         return 'Clear the search to reorder overlays';
     }
     return 'Edit Order';
@@ -436,6 +437,8 @@ watch(
                 sort: true,
                 handle: '.drag-handle',
                 dataIdAttr: 'id',
+                // Basemap & Map Features are pinned to the ends of the stack
+                onMove: (ev) => !ev.related.classList.contains('overlay-pinned'),
                 onEnd: saveOrder
             });
         } else if (sortable) {

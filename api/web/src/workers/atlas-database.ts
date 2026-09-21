@@ -446,6 +446,7 @@ export default class AtlasDatabase {
             const feats = await db.subscription_feature
                 .where('mission')
                 .equals(opts.mission)
+                .filter((f) => !f.deleted)
                 .toArray();
 
             for (const feat of feats) {
@@ -1092,7 +1093,7 @@ export default class AtlasDatabase {
             // subscribed mission's store
             const feat = await db.subscription_feature.get(id);
 
-            if (!feat) return;
+            if (!feat || feat.deleted) return;
 
             const sub = await db.subscription.get(feat.mission);
 
