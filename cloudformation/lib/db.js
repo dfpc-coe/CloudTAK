@@ -50,7 +50,7 @@ export default {
             Type: 'AWS::RDS::DBCluster',
             Properties: {
                 Engine: 'aurora-postgresql',
-                EngineVersion: '17.5',
+                EngineVersion: '18.6',
                 EngineMode: 'provisioned',
                 DatabaseName: 'tak_ps_etl',
                 Port: 5432,
