@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+### v13.94.0 - 2026-09-22
+
 - :bug: Allow Connection & Layer tokens to read and update a CoreEvent shared with a channel their Connection has active, matching the rule Outgoing Layers receive it under
 - :rocket: Declare the Android app as satellite-data optimized so it can use T-Satellite and other constrained satellite networks
 
