@@ -144,15 +144,11 @@
                     :err='error'
                 />
             </div>
-            <div
+            <Landing
                 v-else-if='channel === undefined'
-                class='d-flex align-items-center justify-content-center h-100'
-            >
-                <TablerNone
-                    label='Select a Channel to view its Event Board'
-                    :create='false'
-                />
-            </div>
+                :channels='channels'
+                @select='channel = $event'
+            />
             <ViewBoard
                 v-else-if='mode === "board"'
                 v-model:columns='columns'
@@ -247,6 +243,7 @@ import NominateModal from './NominateModal.vue';
 import EditBoardModal from './EditBoardModal.vue';
 import ViewBoard from './ViewBoard.vue';
 import ViewList from './ViewList.vue';
+import Landing from './Landing.vue';
 import {
     IconPlus,
     IconList,
@@ -257,7 +254,6 @@ import {
     IconLayoutKanban,
 } from '@tabler/icons-vue';
 import {
-    TablerNone,
     TablerAlert,
     TablerModal,
     TablerDelete,
@@ -269,10 +265,44 @@ import {
 const route = useRoute();
 const router = useRouter();
 
+const STORAGE_KEY = 'cloudtak-event-board';
+
+type StoredSelection = { channel: number; board: string };
+
+function readStored(): StoredSelection | undefined {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+
+        const parsed = JSON.parse(raw) as Partial<StoredSelection>;
+        if (typeof parsed.channel !== 'number' || typeof parsed.board !== 'string') return;
+
+        return { channel: parsed.channel, board: parsed.board };
+    } catch {
+        return;
+    }
+}
+
+function writeStored(selection?: StoredSelection): void {
+    try {
+        if (selection) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(selection));
+        } else {
+            localStorage.removeItem(STORAGE_KEY);
+        }
+    } catch {
+        // Storage can be unavailable (private mode) - the URL still works
+    }
+}
+
+/** Set while the Channel came from storage - a missing Board then resets */
+let restoring = false;
+
 const loading = ref(true);
 const error = ref<Error | undefined>();
 
 const channel = ref<number | undefined>();
+const channels = ref<Array<GroupSelectChannel>>([]);
 
 const boards = ref<Array<CoreEventBoard>>([]);
 const board = ref<string | undefined>();
@@ -313,15 +343,22 @@ const nominatedColumn = computed<BoardColumn | undefined>(() => {
 
 /**
  * The Channel selector owns the Channel fetch - the initial selection can only
- * be resolved once it hands the list over
+ * be resolved once it hands the list over. The URL wins over the last
+ * selection remembered in storage
  */
 function onChannels(list: Array<GroupSelectChannel>): void {
+    channels.value = list;
+
     if (channel.value !== undefined) return;
 
     const query = parseInt(String(route.query.channel), 10);
+    const stored = readStored();
 
     if (!isNaN(query) && list.some((ch) => ch.bitpos === query)) {
         channel.value = query;
+    } else if (stored && list.some((ch) => ch.bitpos === stored.channel)) {
+        restoring = true;
+        channel.value = stored.channel;
     } else if (list.length === 1) {
         channel.value = list[0].bitpos;
     } else {
@@ -331,8 +368,8 @@ function onChannels(list: Array<GroupSelectChannel>): void {
 
 // The Board selector watches the Channel itself and calls back through
 // `onBoards` once it has re-listed
-watch(channel, () => {
-    loading.value = true;
+watch(channel, (value) => {
+    loading.value = value !== undefined;
 });
 
 /**
@@ -343,11 +380,22 @@ function onBoards(list: Array<CoreEventBoard>): void {
     boards.value = list;
 
     const query = String(route.query.board || '');
+    const stored = restoring ? readStored() : undefined;
+    restoring = false;
 
     if (board.value && list.some((b) => b.id === board.value)) {
         // The current selection survived the re-list
     } else if (list.some((b) => b.id === query)) {
         board.value = query;
+    } else if (stored) {
+        if (list.some((b) => b.id === stored.board)) {
+            board.value = stored.board;
+        } else {
+            // The remembered Board is gone - back to the Channel prompt
+            channel.value = undefined;
+            board.value = undefined;
+            writeStored();
+        }
     } else {
         board.value = list.length ? list[0].id : undefined;
     }
@@ -381,6 +429,10 @@ function syncQuery(): void {
     if (mode.value !== 'board') query.view = mode.value;
 
     void router.replace({ query });
+
+    if (channel.value !== undefined && board.value !== undefined) {
+        writeStored({ channel: channel.value, board: board.value });
+    }
 }
 
 /** Re-listing the Boards cascades into the Columns via `onBoards` */
