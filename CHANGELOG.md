@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+- :rocket: Declare the Android app as satellite-data optimized so it can use T-Satellite and other constrained satellite networks
+
 ### v13.93.3 - 2026-09-22
 
 - :bug: Only deliver streaming CoT features to Outgoing Layers subscribed to `feature:*`
