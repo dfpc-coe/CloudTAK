@@ -3,8 +3,10 @@ import assert from 'node:assert';
 import Sinon from 'sinon';
 import { SQSClient, SendMessageBatchCommand } from '@aws-sdk/client-sqs';
 import { setTimeout as delay } from 'node:timers/promises';
+import { CoTParser } from '@tak-ps/node-cot';
 import Flight from './flight.js';
 import ETLEvents from '../common/etl-events.js';
+import type ConnectionConfig from '../common/connection-config.js';
 
 const flight = new Flight();
 
@@ -560,6 +562,40 @@ test('ETLEvents: a Board on a Channel the Connection does not have is not delive
         await delay(200);
 
         assert.equal(delivered.length, 0);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('ETLEvents: features only reach Layers subscribed to feature:*', async () => {
+    try {
+        delivered.length = 0;
+
+        const cot = await CoTParser.from_geojson({
+            id: 'streamed-cot',
+            type: 'Feature',
+            properties: {
+                callsign: 'STREAM',
+                type: 'a-f-G',
+                how: 'm-g',
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [-105.1, 39.9],
+            },
+        });
+
+        await flight.config!.etlEvents.features({ id: 1 } as ConnectionConfig, [cot]);
+
+        assert.deepEqual(delivered.map(d => d.queue).sort(), [queueOf(1), queueOf(3)]);
+
+        for (const message of delivered) {
+            const body = message.body as Record<string, unknown>;
+            assert.equal(message.group, `${message.queue.includes('layer-1') ? 1 : 3}-streamed-cot`);
+            assert.equal(body.type, 'feature');
+            assert.ok(body.xml);
+            assert.ok(body.geojson);
+        }
     } catch (err) {
         assert.ifError(err);
     }

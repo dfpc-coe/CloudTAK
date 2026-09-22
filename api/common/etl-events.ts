@@ -29,10 +29,10 @@ type Message = {
  * is invoked with, in the `OutgoingMessage` envelope of @tak-ps/etl
  *
  * Feature events are the streaming CoTs of a Connection, delivered to every
- * enabled Outgoing Layer of that Connection. Every other type is a lifecycle
- * change of a Channel scoped resource, delivered to Outgoing Layers subscribed
- * to `<type>:<action>` whose Connection has one of the resource's Channels
- * active
+ * enabled Outgoing Layer of that Connection subscribed to `feature:*`. Every
+ * other type is a lifecycle change of a Channel scoped resource, delivered to
+ * Outgoing Layers subscribed to `<type>:<action>` whose Connection has one of
+ * the resource's Channels active
  */
 export default class ETLEvents {
     config: Config;
@@ -51,14 +51,18 @@ export default class ETLEvents {
     async features(conn: ConnectionConfig, cots: CoT[]): Promise<boolean> {
         if (this.config.noetlevents || cots.length === 0) return true;
 
+        const resource = `${OutgoingMessageType.Feature}:*`;
+
         for await (const layer of this.config.models.Layer.augmented_iter({
             where: sql`
                 layers.connection = ${conn.id}
                 AND layers.enabled IS True
                 AND layers_outgoing.layer IS NOT NULL
+                AND layers_outgoing.subscriptions && ARRAY[${resource}]::TEXT[]
             `,
         })) {
             if (!layer.outgoing) continue;
+            if (!StaticCapabilities.isSubscribedOutgoingType(layer.outgoing.subscriptions, resource)) continue;
 
             const messages: Message[] = [];
             for (const cot of cots) {
