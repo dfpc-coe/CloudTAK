@@ -632,6 +632,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             conn.destroy();
             super.delete(id);
 
+            if (typeof id === 'number') this.config.etlEvents.featureRefresh(id);
+
             return true;
         } else {
             return false;

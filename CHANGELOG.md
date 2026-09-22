@@ -21,6 +21,7 @@
 ### v13.93.3 - 2026-09-22
 
 - :bug: Only deliver streaming CoT features to Outgoing Layers subscribed to `feature:*`
+- :rocket: Cache the Outgoing Layers receiving streaming CoT per Connection in the stateful process instead of querying per CoT batch
 
 ### v13.93.2 - 2026-09-21
 

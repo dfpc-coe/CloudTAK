@@ -72,6 +72,8 @@ export interface HubClient {
 
     eventSet(layerid: number, cron: string | null): Promise<void>;
 
+    featureRefresh(connection: number): Promise<void>;
+
     coreEventSubmit(event: string): Promise<void>;
 
     geofenceRefresh(): Promise<void>;

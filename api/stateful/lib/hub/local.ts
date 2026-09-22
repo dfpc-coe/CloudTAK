@@ -168,6 +168,10 @@ export default class LocalHub implements HubClient {
         }
     }
 
+    async featureRefresh(connection: number): Promise<void> {
+        this.config.etlEvents.featureRefresh(connection);
+    }
+
     async coreEventSubmit(event: string): Promise<void> {
         if (this.config.noconnections) return;
 

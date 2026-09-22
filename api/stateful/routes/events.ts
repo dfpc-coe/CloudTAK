@@ -23,4 +23,22 @@ export default async function router(schema: Schema, config: ConfigStateful) {
             Err.respond(err, res);
         }
     });
+
+    await schema.post('/feature/refresh', {
+        name: 'Refresh Feature Listeners',
+        group: 'HubEvent',
+        description: 'Drop the cached Outgoing Layers receiving streaming CoT for a Connection so they are reloaded',
+        body: Type.Object({
+            connection: Type.Integer(),
+        }),
+        res: StandardResponse,
+    }, async (req, res) => {
+        try {
+            await config.hub.featureRefresh(req.body.connection);
+
+            res.json({ status: 200, message: 'Feature Listeners Refreshed' });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
 }

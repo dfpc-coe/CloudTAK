@@ -48,6 +48,8 @@ test('ETLEvents: setup subscribed Outgoing Layers', async () => {
     try {
         flight.config!.noetlevents = false;
         flight.config!.arnPrefix = 'arn:aws:sqs:us-east-1:123456789012';
+        flight.stateful!.noetlevents = false;
+        flight.stateful!.arnPrefix = 'arn:aws:sqs:us-east-1:123456789012';
 
         Sinon.stub(SQSClient.prototype, 'send').callsFake((command) => {
             if (!(command instanceof SendMessageBatchCommand)) throw new Error('Unexpected SQS command');
@@ -567,25 +569,30 @@ test('ETLEvents: a Board on a Channel the Connection does not have is not delive
     }
 });
 
+async function streamCot(): Promise<void> {
+    delivered.length = 0;
+
+    const cot = await CoTParser.from_geojson({
+        id: 'streamed-cot',
+        type: 'Feature',
+        properties: {
+            callsign: 'STREAM',
+            type: 'a-f-G',
+            how: 'm-g',
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [-105.1, 39.9],
+        },
+    });
+
+    // The stateful process streams CoT, so its ETLEvents owns the listener cache
+    await flight.stateful!.etlEvents.features({ id: 1 } as ConnectionConfig, [cot]);
+}
+
 test('ETLEvents: features only reach Layers subscribed to feature:*', async () => {
     try {
-        delivered.length = 0;
-
-        const cot = await CoTParser.from_geojson({
-            id: 'streamed-cot',
-            type: 'Feature',
-            properties: {
-                callsign: 'STREAM',
-                type: 'a-f-G',
-                how: 'm-g',
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [-105.1, 39.9],
-            },
-        });
-
-        await flight.config!.etlEvents.features({ id: 1 } as ConnectionConfig, [cot]);
+        await streamCot();
 
         assert.deepEqual(delivered.map(d => d.queue).sort(), [queueOf(1), queueOf(3)]);
 
@@ -596,6 +603,49 @@ test('ETLEvents: features only reach Layers subscribed to feature:*', async () =
             assert.ok(body.xml);
             assert.ok(body.geojson);
         }
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('ETLEvents: feature listeners are cached per Connection', async () => {
+    try {
+        const iter = Sinon.spy(flight.stateful!.models.Layer, 'augmented_iter');
+
+        await streamCot();
+        await streamCot();
+
+        assert.equal(iter.callCount, 0);
+        assert.deepEqual(delivered.map(d => d.queue).sort(), [queueOf(1), queueOf(3)]);
+
+        flight.stateful!.etlEvents.featureRefresh(1);
+
+        await streamCot();
+
+        assert.equal(iter.callCount, 1);
+        assert.deepEqual(delivered.map(d => d.queue).sort(), [queueOf(1), queueOf(3)]);
+
+        iter.restore();
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('ETLEvents: changing an outgoing config refreshes the feature listeners', async () => {
+    try {
+        await flight.fetch('/api/connection/1/layer/3/outgoing', {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: {
+                filters: {
+                    queries: [{ query: 'properties.callsign = "STREAM"' }],
+                },
+            },
+        }, true);
+
+        await streamCot();
+
+        assert.deepEqual(delivered.map(d => d.queue), [queueOf(1)]);
     } catch (err) {
         assert.ifError(err);
     }

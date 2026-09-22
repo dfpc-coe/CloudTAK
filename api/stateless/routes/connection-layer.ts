@@ -273,6 +273,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 await config.hub.eventSet(layer.id, layer.incoming.cron && !Schedule.is_aws(layer.incoming.cron) && layer.enabled ? layer.incoming.cron : null);
             }
 
+            if (layer.outgoing && layer.connection !== null) {
+                await config.hub.featureRefresh(layer.connection);
+            }
+
             res.json(layer);
         } catch (err) {
             Err.respond(err, res);
@@ -598,6 +602,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ...(capabilities ? { subscriptions: CommonLayerControl.outgoingSubscriptions(capabilities) } : {}),
             });
 
+            if (layer.connection !== null) {
+                await config.hub.featureRefresh(layer.connection);
+            }
+
             layer = await layerControl.from(connection, req.params.layerid);
 
             try {
@@ -657,6 +665,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const outgoing = await config.models.LayerOutgoing.commit(layer.id, updated);
 
+            if (layer.connection !== null) {
+                await config.hub.featureRefresh(layer.connection);
+            }
+
             if (req.body.environment) {
                 await Lambda.invoke(config, layer.id, 'environment:outgoing');
             }
@@ -705,6 +717,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before deleting');
 
             await config.models.LayerOutgoing.delete(layer.id);
+
+            if (layer.connection !== null) {
+                await config.hub.featureRefresh(layer.connection);
+            }
 
             layer = await layerControl.from(connection, req.params.layerid);
 
@@ -845,6 +861,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             if (layer.incoming) {
                 await config.hub.eventSet(layer.id, layer.incoming.cron && !Schedule.is_aws(layer.incoming.cron) && layer.enabled ? layer.incoming.cron : null);
+            }
+
+            if (layer.outgoing && layer.connection !== null) {
+                await config.hub.featureRefresh(layer.connection);
             }
 
             let status = 'unknown';
@@ -1015,6 +1035,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             if (layer.outgoing) {
                 await config.models.LayerOutgoing.delete(req.params.layerid);
+
+                if (layer.connection !== null) {
+                    await config.hub.featureRefresh(layer.connection);
+                }
             }
 
             await config.hub.eventSet(layer.id, null);

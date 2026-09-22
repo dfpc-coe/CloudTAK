@@ -128,6 +128,10 @@ test('Hub RPC: eventSet delete round trip', async () => {
     await hub.eventSet(999999, null);
 });
 
+test('Hub RPC: featureRefresh round trip', async () => {
+    await hub.featureRefresh(999999);
+});
+
 test('Hub RPC: stop server', async () => {
     await new Promise((resolve) => {
         rpc.closeAllConnections();

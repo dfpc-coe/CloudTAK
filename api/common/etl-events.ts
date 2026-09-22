@@ -15,6 +15,7 @@ import type {
     CoreEventBoardEventResponse,
 } from './types.js';
 import Filter from './filter.js';
+import type { FilterContainer } from './filter.js';
 import Queue from './aws/queue.js';
 
 export { OutgoingAction as ETLEventAction };
@@ -24,23 +25,33 @@ type Message = {
     body: Record<string, unknown>;
 };
 
+type FeatureListener = {
+    layer: number;
+    filters: Static<typeof FilterContainer>;
+};
+
 /**
  * Delivery of Outgoing ETL Events - the SQS messages a Layer's Outgoing Task
  * is invoked with, in the `OutgoingMessage` envelope of @tak-ps/etl
  *
  * Feature events are the streaming CoTs of a Connection, delivered to every
- * enabled Outgoing Layer of that Connection subscribed to `feature:*`. Every
- * other type is a lifecycle change of a Channel scoped resource, delivered to
- * Outgoing Layers subscribed to `<type>:<action>` whose Connection has one of
- * the resource's Channels active
+ * enabled Outgoing Layer of that Connection subscribed to `feature:*`. The
+ * listeners of a Connection are cached per process and dropped via
+ * `featureRefresh` whenever the API changes a Layer's outgoing config, so the
+ * per-CoT path never touches the database. Every other type is a lifecycle
+ * change of a Channel scoped resource, delivered to Outgoing Layers subscribed
+ * to `<type>:<action>` whose Connection has one of the resource's Channels
+ * active
  */
 export default class ETLEvents {
     config: Config;
     queue: Queue;
+    listeners: Map<number, Promise<FeatureListener[]>>;
 
     constructor(config: Config) {
         this.config = config;
         this.queue = new Queue();
+        this.listeners = new Map();
     }
 
     async queueUrl(layer: number): Promise<string> {
@@ -48,14 +59,30 @@ export default class ETLEvents {
         return `https://sqs.${arnPrefix[3]}.amazonaws.com/${arnPrefix[4]}/${this.config.StackName}-layer-${layer}-outgoing.fifo`;
     }
 
-    async features(conn: ConnectionConfig, cots: CoT[]): Promise<boolean> {
-        if (this.config.noetlevents || cots.length === 0) return true;
+    /** Drop the cached feature listeners of a Connection so the next batch reloads them */
+    featureRefresh(connection: number): void {
+        this.listeners.delete(connection);
+    }
 
+    async featureListeners(connection: number): Promise<FeatureListener[]> {
+        let listeners = this.listeners.get(connection);
+
+        if (!listeners) {
+            listeners = this.loadFeatureListeners(connection);
+            this.listeners.set(connection, listeners);
+            listeners.catch(() => this.listeners.delete(connection));
+        }
+
+        return await listeners;
+    }
+
+    async loadFeatureListeners(connection: number): Promise<FeatureListener[]> {
         const resource = `${OutgoingMessageType.Feature}:*`;
+        const listeners: FeatureListener[] = [];
 
         for await (const layer of this.config.models.Layer.augmented_iter({
             where: sql`
-                layers.connection = ${conn.id}
+                layers.connection = ${connection}
                 AND layers.enabled IS True
                 AND layers_outgoing.layer IS NOT NULL
                 AND layers_outgoing.subscriptions && ARRAY[${resource}]::TEXT[]
@@ -64,12 +91,25 @@ export default class ETLEvents {
             if (!layer.outgoing) continue;
             if (!StaticCapabilities.isSubscribedOutgoingType(layer.outgoing.subscriptions, resource)) continue;
 
+            listeners.push({ layer: layer.id, filters: layer.outgoing.filters });
+        }
+
+        return listeners;
+    }
+
+    async features(conn: ConnectionConfig, cots: CoT[]): Promise<boolean> {
+        if (this.config.noetlevents || cots.length === 0) return true;
+
+        // Only Machine Connections (numeric ids) can own Outgoing Layers
+        if (typeof conn.id !== 'number') return true;
+
+        for (const listener of await this.featureListeners(conn.id)) {
             const messages: Message[] = [];
             for (const cot of cots) {
-                if (await Filter.test(layer.outgoing.filters, cot)) continue;
+                if (await Filter.test(listener.filters, cot)) continue;
 
                 messages.push({
-                    group: `${layer.id}-${cot.uid()}`,
+                    group: `${listener.layer}-${cot.uid()}`,
                     body: {
                         type: OutgoingMessageType.Feature,
                         xml: await CoTParser.to_xml(cot),
@@ -78,7 +118,7 @@ export default class ETLEvents {
                 });
             }
 
-            await this.submit(layer.id, messages);
+            await this.submit(listener.layer, messages);
         }
 
         return true;
