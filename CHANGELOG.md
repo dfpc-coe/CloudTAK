@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+### v13.93.3 - 2026-09-22
+
 - :bug: Only deliver streaming CoT features to Outgoing Layers subscribed to `feature:*`
 
 ### v13.93.2 - 2026-09-21
