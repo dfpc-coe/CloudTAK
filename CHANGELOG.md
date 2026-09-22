@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+- :bug: Only deliver streaming CoT features to Outgoing Layers subscribed to `feature:*`
+
 ### v13.93.2 - 2026-09-21
 
 - :bug: Fix Environment tab on outgoing ETLs with no incoming environment
