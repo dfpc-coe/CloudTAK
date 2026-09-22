@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import jwt from 'jsonwebtoken';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -655,6 +656,93 @@ test('PATCH: api/core/event/:event - 403 for connection token on user event', as
             },
             body: {
                 remarks: 'Machine Edit',
+            },
+        }, false);
+
+        assert.equal(res.status, 403);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+// The mock TAK Server reports no channels by default - report channel 7 active
+// for every certificate so Connection 1 shares a channel with the user Event
+const channelSeven = async (request: IncomingMessage, response: ServerResponse): Promise<boolean> => {
+    if (request.method !== 'GET' || request.url !== '/Marti/api/groups/all?useCache=true') return false;
+
+    response.setHeader('Content-Type', 'application/json');
+    response.write(JSON.stringify({
+        version: '3',
+        type: 'com.bbn.marti.remote.groups.Group',
+        data: [{ name: 'SAR', direction: 'IN', created: '2026-01-01', type: 'SYSTEM', bitpos: 7, active: true, description: '' }],
+    }));
+    response.end();
+    return true;
+};
+
+let sharedEventId: string;
+
+test('GET: api/core/event/:event - connection token with a shared channel active', async () => {
+    try {
+        flight.tak.mockMarti.unshift(channelSeven);
+
+        // Created by a user, not the Connection, and shared with channel 7
+        const created = await flight.fetch('/api/core/event', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                name: 'Missing Hunter',
+                type: '13031100001110000000',
+                geometry: { type: 'Point', coordinates: [-108.4357, 38.5663] },
+                channels: [7],
+            },
+        }, true);
+
+        sharedEventId = created.body.id;
+
+        const res = await flight.fetch(`/api/core/event/${sharedEventId}`, {
+            method: 'GET',
+            auth: {
+                bearer: connectionToken,
+            },
+        }, true);
+
+        assert.equal(res.body.id, sharedEventId);
+        assert.equal(res.body.connection, null);
+        assert.deepEqual(res.body.channels, [7]);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/core/event/:event - connection token with a shared channel active', async () => {
+    try {
+        const res = await flight.fetch(`/api/core/event/${sharedEventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: connectionToken,
+            },
+            body: {
+                links: [{ name: 'Slack: #sar-incident', url: 'https://example.slack.com/archives/C0123' }],
+            },
+        }, true);
+
+        assert.deepEqual(res.body.links, [{ name: 'Slack: #sar-incident', url: 'https://example.slack.com/archives/C0123' }]);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        flight.tak.mockMarti.splice(flight.tak.mockMarti.indexOf(channelSeven), 1);
+    }
+});
+
+test('GET: api/core/event/:event - 403 for connection token once the shared channel is inactive', async () => {
+    try {
+        const res = await flight.fetch(`/api/core/event/${sharedEventId}`, {
+            method: 'GET',
+            auth: {
+                bearer: connectionToken,
             },
         }, false);
 

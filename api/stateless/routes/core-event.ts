@@ -7,7 +7,7 @@ import Auth, { AuthUser, AuthResource, AuthResourceAccess } from '../../common/a
 import { CoreEvent, CoreEventChannel } from '../../common/schema.js';
 import { CoreEvent_Priority } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
-import { userChannels } from '../lib/tak-channels.js';
+import { userChannels, connectionChannels } from '../lib/tak-channels.js';
 import { notifyCoreEvent } from '../lib/core-event.js';
 import { ETLEventAction } from '../../common/etl-events.js';
 import { uniqueViolation } from '../lib/pg-error.js';
@@ -46,17 +46,24 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     /**
      * An Event is visible to its creator, System Admins, any user with an
      * active channel the Event has been shared with, and Connection/Layer
-     * tokens belonging to the Connection that created it
+     * tokens belonging to the Connection that created it or whose Connection
+     * has an active channel the Event has been shared with - the same rule
+     * under which Outgoing Layers are delivered the Event
      */
     async function ensureEventAccess(auth: AuthUser | AuthResource, event: Static<typeof CoreEventResponse>, connection: number | null): Promise<void> {
         if (isEventCreator(auth, event, connection)) return;
 
-        if (auth instanceof AuthUser) {
-            const shared = (event.channels || []).map(c => Number(c));
-            if (shared.length) {
-                const active = await userChannels(config, auth.email);
-                if (shared.some(c => active.has(c))) return;
+        const shared = (event.channels || []).map(c => Number(c));
+        if (shared.length) {
+            let active: Set<number> | null = null;
+
+            if (auth instanceof AuthUser) {
+                active = await userChannels(config, auth.email);
+            } else if (connection !== null) {
+                active = await connectionChannels(config, await config.models.Connection.from(connection));
             }
+
+            if (active && shared.some(c => active.has(c))) return;
         }
 
         throw new Err(403, null, 'You do not have permission to access this Event');
