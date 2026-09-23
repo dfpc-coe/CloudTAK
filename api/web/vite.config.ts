@@ -4,7 +4,7 @@ import path from 'node:path';
 import vue from '@vitejs/plugin-vue'
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
-const milsymbolBrowserBundle = path.resolve(__dirname, 'node_modules/milsymbol/dist/milsymbol.js');
+const milsymbolBrowserBundle = path.resolve(import.meta.dirname, 'node_modules/milsymbol/dist/milsymbol.js');
 
 /**
  * Vite compiles `?worker&url` bundles (Atlas + MapLibre workers) and their
@@ -98,9 +98,9 @@ export default defineConfig(({ mode }) => {
         resolve: {
             alias: {
                 'milsymbol': milsymbolBrowserBundle,
-                '@tak-ps/cloudtak': path.resolve(__dirname, './plugin.ts'),
-                '@': path.resolve(__dirname, './src'),
-                '@cloudtak/api-types': path.resolve(__dirname, '../derived-types.d.ts'),
+                '@tak-ps/cloudtak': path.resolve(import.meta.dirname, './plugin.ts'),
+                '@': path.resolve(import.meta.dirname, './src'),
+                '@cloudtak/api-types': path.resolve(import.meta.dirname, '../derived-types.d.ts'),
             }
         },
         build: {
@@ -108,14 +108,14 @@ export default defineConfig(({ mode }) => {
             target: 'esnext',
             rolldownOptions: {
                 input: {
-                    main: path.resolve(__dirname, 'index.html'),
-                    docs: path.resolve(__dirname, 'docs.html'),
-                    video: path.resolve(__dirname, 'video.html'),
-                    board: path.resolve(__dirname, 'board.html'),
-                    forms: path.resolve(__dirname, 'forms.html'),
-                    admin: path.resolve(__dirname, 'admin.html'),
-                    connection: path.resolve(__dirname, 'connection.html'),
-                    setup: path.resolve(__dirname, 'setup.html'),
+                    main: path.resolve(import.meta.dirname, 'index.html'),
+                    docs: path.resolve(import.meta.dirname, 'docs.html'),
+                    video: path.resolve(import.meta.dirname, 'video.html'),
+                    board: path.resolve(import.meta.dirname, 'board.html'),
+                    forms: path.resolve(import.meta.dirname, 'forms.html'),
+                    admin: path.resolve(import.meta.dirname, 'admin.html'),
+                    connection: path.resolve(import.meta.dirname, 'connection.html'),
+                    setup: path.resolve(import.meta.dirname, 'setup.html'),
                 },
             },
         },
