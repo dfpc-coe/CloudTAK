@@ -18,6 +18,10 @@
 
 ### Pending Release
 
+### v13.94.2 - 2026-09-23
+
+- :bug: Disable Main Menu autofocus in native apps - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1782
+
 ### v13.94.1 - 2026-09-22
 
 - :arrow_up: Update Aurora Postgres @ 18.6
