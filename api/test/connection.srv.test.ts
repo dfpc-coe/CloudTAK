@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert';
 import Flight from './flight.js';
 import fs from 'fs';
-import CP from 'node:child_process';
 import Sinon from 'sinon';
 import S3 from '../common/aws/s3.js';
 
@@ -244,27 +243,7 @@ let enabledConnId: number = 0;
 
 test('Creating Enabled Connection', async () => {
     try {
-        CP.execSync(`
-            openssl req \
-                -newkey rsa:4096 \
-                -keyout /tmp/cloudtak-test-alice.key \
-                -out /tmp/cloudtak-test-alice.csr \
-                -nodes \
-                -subj "/CN=Alice" \
-                2> /dev/null
-        `);
-
-        CP.execSync(`
-           openssl x509 \
-                -req \
-                -in /tmp/cloudtak-test-alice.csr \
-                -CA ${flight.tak.keys.cert} \
-                -CAkey ${flight.tak.keys.key} \
-                -out /tmp/cloudtak-test-alice.cert \
-                -set_serial 01 \
-                -days 365 \
-                2> /dev/null
-        `);
+        flight.clientCert('alice', '/CN=Alice');
 
         const conn = await flight.fetch('/api/connection', {
             method: 'POST',

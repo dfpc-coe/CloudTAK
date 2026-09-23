@@ -158,7 +158,7 @@
             <TablerInput
                 v-model='menuFilter'
                 placeholder='Search...'
-                :autofocus='!appStore.isMobileDetected'
+                :autofocus='searchAutofocus'
                 icon='search'
                 class='mb-0'
             />
@@ -310,7 +310,7 @@ import {
     TablerInput,
     TablerNone,
 } from '@tak-ps/vue-tabler';
-import { openSecondaryView } from '../../utils/capacitor.ts';
+import { openSecondaryView, isNativePlatform } from '../../utils/capacitor.ts';
 import { version } from '../../../package.json';
 import { useMapStore } from '../../stores/map.ts';
 import { useAppStore } from '../../stores/app.ts';
@@ -326,6 +326,8 @@ const router = useRouter();
 
 const mapStore = useMapStore();
 const appStore = useAppStore();
+
+const searchAutofocus = computed(() => !isNativePlatform() && !appStore.isMobileDetected);
 
 type AppSwitcherApplication = {
     name: string;
