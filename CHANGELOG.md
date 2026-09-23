@@ -18,6 +18,11 @@
 
 ### Pending Release
 
+### v13.94.3 - 2026-09-23
+
+- :rocket: Automatically refresh the CAD board every 30 seconds
+- :rocket: Remove custom `contextmenu` implementation now that MapLibre supports it natively
+
 ### v13.94.2 - 2026-09-23
 
 - :bug: Disable Main Menu autofocus in native apps - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1782
