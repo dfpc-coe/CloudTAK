@@ -178,7 +178,7 @@ export const CoreEventResponse = Type.Composite([
         mission_guid: Type.Union([Type.Null(), Type.String()], { description: 'GUID of the TAK Server Mission associated with the Event' }),
         created: Type.String(),
         updated: Type.String(),
-        ended: Type.Union([Type.Null(), Type.String()], { description: CoreEventSchema.properties.ended.description }),
+        ended: Type.Union([Type.Null(), Type.String()], { description: 'Time at which the Event ends - a future time keeps the Event active until then' }),
         username: Type.Union([Type.Null(), Type.String()]),
         connection: Type.Union([Type.Null(), Type.Integer()], { description: 'Connection that created the Event if created by a Connection or Layer token' }),
         metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Event metadata' }),

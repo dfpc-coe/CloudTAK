@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+- :tada: Core Events mirror CoT times with `started` & `ended` - a future `ended` keeps the Event active until then so a feed can push it out like a stale time, Layer Mappings can give `ended` as a number of seconds from submission & `active` is now derived from `ended` rather than stored
+
 ### v13.94.3 - 2026-09-23
 
 - :rocket: Automatically refresh the CAD board every 30 seconds

@@ -33,8 +33,8 @@
                         <div class='d-flex align-items-center gap-2'>
                             <StatusDot
                                 class='flex-shrink-0'
-                                :status='row.placement.event.ended ? "Unknown" : "Success"'
-                                :title='row.placement.event.ended ? "Ended" : "Active"'
+                                :status='row.placement.event.active ? "Success" : "Unknown"'
+                                :title='row.placement.event.active ? "Active" : "Ended"'
                             />
                             <span
                                 class='fw-semibold text-truncate event-board-list-name'

@@ -21973,7 +21973,8 @@ export interface paths {
                                     mission_guid: null | string;
                                     created: string;
                                     updated: string;
-                                    /** @description Time at which the Event ended */
+                                    started: string;
+                                    /** @description Time at which the Event ends - a future time keeps the Event active until then */
                                     ended: null | string;
                                     username: null | string;
                                     /** @description Connection that created the Event if created by a Connection or Layer token */
@@ -22223,7 +22224,8 @@ export interface paths {
                                 mission_guid: null | string;
                                 created: string;
                                 updated: string;
-                                /** @description Time at which the Event ended */
+                                started: string;
+                                /** @description Time at which the Event ends - a future time keeps the Event active until then */
                                 ended: null | string;
                                 username: null | string;
                                 /** @description Connection that created the Event if created by a Connection or Layer token */
@@ -22581,7 +22583,8 @@ export interface paths {
                                 mission_guid: null | string;
                                 created: string;
                                 updated: string;
-                                /** @description Time at which the Event ended */
+                                started: string;
+                                /** @description Time at which the Event ends - a future time keeps the Event active until then */
                                 ended: null | string;
                                 username: null | string;
                                 /** @description Connection that created the Event if created by a Connection or Layer token */
@@ -23146,7 +23149,8 @@ export interface paths {
                                 mission_guid: null | string;
                                 created: string;
                                 updated: string;
-                                /** @description Time at which the Event ended */
+                                started: string;
+                                /** @description Time at which the Event ends - a future time keeps the Event active until then */
                                 ended: null | string;
                                 username: null | string;
                                 /** @description Connection that created the Event if created by a Connection or Layer token */
@@ -23291,6 +23295,7 @@ export interface paths {
                         /** @default  */
                         remarks: string;
                         ended?: null | string;
+                        started?: string;
                         /**
                          * @description ID of the Event in an external system
                          * @default
@@ -23449,7 +23454,8 @@ export interface paths {
                             mission_guid: null | string;
                             created: string;
                             updated: string;
-                            /** @description Time at which the Event ended */
+                            started: string;
+                            /** @description Time at which the Event ends - a future time keeps the Event active until then */
                             ended: null | string;
                             username: null | string;
                             /** @description Connection that created the Event if created by a Connection or Layer token */
@@ -23680,7 +23686,8 @@ export interface paths {
                             mission_guid: null | string;
                             created: string;
                             updated: string;
-                            /** @description Time at which the Event ended */
+                            started: string;
+                            /** @description Time at which the Event ends - a future time keeps the Event active until then */
                             ended: null | string;
                             username: null | string;
                             /** @description Connection that created the Event if created by a Connection or Layer token */
@@ -23926,6 +23933,7 @@ export interface paths {
                         /** @description Set to false to end the Event - the ended timestamp is set automatically */
                         active?: boolean;
                         ended?: null | string;
+                        started?: string;
                         external_id?: string;
                         editable?: boolean;
                         /** @description User defined key/value Event metadata - replaces the existing metadata object */
@@ -24063,7 +24071,8 @@ export interface paths {
                             mission_guid: null | string;
                             created: string;
                             updated: string;
-                            /** @description Time at which the Event ended */
+                            started: string;
+                            /** @description Time at which the Event ends - a future time keeps the Event active until then */
                             ended: null | string;
                             username: null | string;
                             /** @description Connection that created the Event if created by a Connection or Layer token */

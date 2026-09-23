@@ -1,4 +1,5 @@
 import { sql, eq, and, getTableName } from 'drizzle-orm';
+import type { PgUpdateSetSource } from 'drizzle-orm/pg-core';
 import Err from '@openaddresses/batch-error';
 import pointOnFeature from '@turf/point-on-feature';
 import type { Feature as GeoJSONFeature, Geometry } from 'geojson';
@@ -16,6 +17,9 @@ export interface SubmitOptions {
 }
 
 const HAS_EXTERNAL_ID = sql`external_id <> ''`;
+
+// Ending an Event never moves an end time that has already passed
+const END_NOW = sql`LEAST(COALESCE(${CoreEvent.ended}, Now()), Now())`;
 
 // xmax is only set on a row version produced by the conflict UPDATE
 const INSERTED = sql<boolean>`(xmax = 0)`;
@@ -37,20 +41,21 @@ export default class SubmitControl {
         const geometry = this.eventGeometry(feature);
         if (!geometry) throw new Err(400, null, 'CoreEvent requires a Feature geometry');
 
-        const { channels, ...columns } = mapped;
+        const { channels, active, ...columns } = mapped;
 
-        // active & ended are kept consistent the way PATCH /core/event keeps them - an explicit value always wins
-        const closing = columns.ended === undefined && columns.active === false;
-        if (columns.ended !== undefined && columns.active === undefined) columns.active = !columns.ended;
-        if (columns.ended === undefined && columns.active === true) columns.ended = null;
+        // active is a convenience over ended the way it is on PATCH /core/event - an explicit ended always wins
+        const closing = columns.ended === undefined && active === false;
+        if (columns.ended === undefined && active === true) columns.ended = null;
 
         // A value derived from a create only field is itself create only
         const createOnly = new Set(opts.createOnly);
         if (createOnly.has('active') && mapped.ended === undefined) createOnly.add('ended');
-        if (createOnly.has('ended') && mapped.active === undefined) createOnly.add('active');
 
         const record = this.#record(CoreEvent, connection, feature, { ...columns, geometry }, createOnly);
         const inherited = channels ? [] : await opts.inherit?.() ?? [];
+
+        const set: PgUpdateSetSource<typeof CoreEvent> = { ...record.set };
+        if (closing && !createOnly.has('ended')) set.ended = END_NOW;
 
         const { id, inserted } = await this.config.pg.transaction(async (tx) => {
             const [row] = await tx.insert(CoreEvent)
@@ -58,7 +63,7 @@ export default class SubmitControl {
                 .onConflictDoUpdate({
                     target: [CoreEvent.connection, CoreEvent.external_id],
                     targetWhere: HAS_EXTERNAL_ID,
-                    set: closing && !createOnly.has('ended') ? { ...record.set, ended: sql`COALESCE(${CoreEvent.ended}, Now())` } : record.set,
+                    set,
                 })
                 .returning({ id: CoreEvent.id, inserted: INSERTED });
 

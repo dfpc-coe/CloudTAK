@@ -16,8 +16,8 @@
             <div class='flex-grow-1 overflow-hidden'>
                 <div class='d-flex align-items-center gap-2'>
                     <StatusDot
-                        :status='event.ended ? "Unknown" : "Success"'
-                        :title='event.ended ? "Ended" : "Active"'
+                        :status='event.active ? "Success" : "Unknown"'
+                        :title='event.active ? "Active" : "Ended"'
                     />
                     <span class='fw-semibold text-truncate flex-grow-1'>{{ event.name }}</span>
                     <span
@@ -60,7 +60,10 @@
                         </div>
                         <div class='text-muted small text-truncate'>
                             {{ creator }}
-                            <template v-if='event.ended'>
+                            <template v-if='event.ended && event.active'>
+                                &middot; Ends {{ timediff(event.ended) }}
+                            </template>
+                            <template v-else-if='event.ended'>
                                 &middot; Ended {{ new Date(event.ended).toLocaleString() }}
                             </template>
                         </div>
@@ -152,6 +155,7 @@ import {
     IconCalendarEvent,
 } from '@tabler/icons-vue';
 import type { CoreEvent } from '../../../types.ts';
+import timediff from '../../../timediff';
 
 const props = withDefaults(defineProps<{
     event: CoreEvent;

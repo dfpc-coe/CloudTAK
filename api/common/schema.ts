@@ -36,8 +36,8 @@ export const CoreEvent = pgTable('core_event', {
     mission_guid: uuid(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    active: boolean().notNull().default(true),
-    ended: timestamp({ withTimezone: true, mode: 'string' }),
+    started: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    ended: timestamp({ withTimezone: true, mode: 'string' }), // A future time keeps the Event active until then
     username: text().references(() => Profile.username),
     connection: integer().references(() => Connection.id, { onDelete: 'set null' }),
     priority: text().$type<CoreEvent_Priority>().notNull().default(CoreEvent_Priority.NONE),

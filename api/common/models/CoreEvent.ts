@@ -47,6 +47,9 @@ const BOARDS = sql`COALESCE((
     ) brd
 ), '[]'::JSON)`;
 
+/** An Event is active until its ended time - a future ended keeps it active until then */
+export const ACTIVE = sql<boolean>`(${CoreEvent.ended} IS NULL OR ${CoreEvent.ended} > Now())`;
+
 export default class CoreEventModel extends Modeler<typeof CoreEvent> {
     constructor(
         pool: PostgresJsDatabase<Record<string, unknown>>,
@@ -67,6 +70,7 @@ export default class CoreEventModel extends Modeler<typeof CoreEvent> {
         const pgres = await this.pool
             .select({
                 event: CoreEvent,
+                active: ACTIVE.as('active'),
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
                 boards: BOARDS.as('boards'),
             })
@@ -79,6 +83,7 @@ export default class CoreEventModel extends Modeler<typeof CoreEvent> {
 
         return {
             ...pgres[0].event,
+            active: pgres[0].active,
             geometry: pgres[0].event.geometry as Static<typeof GeoJSONFeatureGeometryPoint>,
             channels: pgres[0].channels as number[],
             boards: pgres[0].boards as Static<typeof CoreEventResponse>['boards'],
@@ -129,6 +134,7 @@ export default class CoreEventModel extends Modeler<typeof CoreEvent> {
             .select({
                 count: sql<string>`count(*) OVER()`.as('count'),
                 event: CoreEvent,
+                active: ACTIVE.as('active'),
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
                 boards: (query.boards === false ? sql`'[]'::JSON` : BOARDS).as('boards'),
             })
@@ -147,6 +153,7 @@ export default class CoreEventModel extends Modeler<typeof CoreEvent> {
                 items: pgres.map((t) => {
                     return {
                         ...t.event,
+                        active: t.active,
                         geometry: t.event.geometry as Static<typeof GeoJSONFeatureGeometryPoint>,
                         channels: t.channels as number[],
                         boards: t.boards as Static<typeof CoreEventResponse>['boards'],

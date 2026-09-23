@@ -13,7 +13,7 @@
             />
             <div class='ms-auto d-flex align-items-center me-2'>
                 <span
-                    v-if='!props.active && props.ended'
+                    v-if='props.ended'
                     class='mx-2 text-muted cursor-pointer'
                     @click='relative = !relative'
                     v-text='relative ? timediff(props.ended) : props.ended'
@@ -94,7 +94,7 @@ const props = defineProps<{
     modelValue: string;
     /** Whether the Event is currently Active */
     active: boolean;
-    /** Time at which the Event ended */
+    /** Time at which the Event ends - a future time keeps the Event active until then */
     ended: string | null;
     edit?: boolean;
 }>();

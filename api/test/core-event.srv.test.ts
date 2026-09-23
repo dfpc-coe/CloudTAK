@@ -70,9 +70,11 @@ test('POST: api/core/event', async () => {
         eventId = res.body.id;
         assert.ok(res.body.created, 'has created');
         assert.ok(res.body.updated, 'has updated');
+        assert.ok(res.body.started, 'has started');
         delete res.body.id;
         delete res.body.created;
         delete res.body.updated;
+        delete res.body.started;
 
         assert.deepEqual(res.body, {
             mission_guid: null,
@@ -496,6 +498,50 @@ test('PATCH: api/core/event/:event - active false sets ended', async () => {
         }, true);
 
         assert.ok(String(explicit.body.ended).startsWith('2026-07-20'), 'explicit ended wins');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/core/event/:event - a future ended keeps the Event active until then', async () => {
+    try {
+        const patch = async (body: Record<string, unknown>) => {
+            const res = await flight.fetch(`/api/core/event/${eventId}`, {
+                method: 'PATCH',
+                auth: { bearer: flight.token.admin },
+                body,
+            }, true);
+
+            assert.equal(res.status, 200);
+            return res.body;
+        };
+
+        const scheduled = await patch({ ended: new Date(Date.now() + 60 * 60 * 1000).toISOString() });
+        assert.equal(scheduled.active, true, 'active until ended');
+        assert.ok(scheduled.ended);
+
+        const pushed = await patch({ ended: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString() });
+        assert.equal(pushed.active, true);
+        assert.ok(new Date(pushed.ended).getTime() > new Date(scheduled.ended).getTime(), 'ended pushed out');
+
+        // Ending now moves a future ended back to now
+        const ended = await patch({ active: false });
+        assert.equal(ended.active, false);
+        assert.ok(new Date(ended.ended).getTime() < new Date(pushed.ended).getTime(), 'ended moved to now');
+
+        const again = await patch({ active: false, remarks: 'Still ended' });
+        assert.equal(again.ended, ended.ended, 'a past ended is preserved');
+
+        const past = await patch({ ended: '2026-07-20T12:00:00.000Z' });
+        assert.equal(past.active, false, 'a past ended ends the Event');
+
+        const started = await patch({ started: '2026-07-01T12:00:00.000Z' });
+        assert.notEqual(started.started, past.started, 'started updated');
+        assert.ok(String(started.started).startsWith('2026-0'));
+
+        const reopened = await patch({ active: true });
+        assert.equal(reopened.active, true);
+        assert.equal(reopened.ended, null, 'reactivating leaves the Event open ended');
     } catch (err) {
         assert.ifError(err);
     }

@@ -224,9 +224,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             remarks: Type.String({
                 default: '',
             }),
+            started: Type.Optional(Type.String({
+                format: 'date-time',
+                description: 'Time at which the Event started - defaults to the time of creation',
+            })),
             ended: Type.Optional(Type.Union([Type.Null(), Type.String({
                 format: 'date-time',
-                description: 'Time at which the Event ended',
+                description: 'Time at which the Event ends - a future time keeps the Event active until then, omit for an open ended Event',
             })])),
             external_id: Type.String({
                 default: '',
@@ -314,10 +318,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             location: Type.Optional(Type.String()),
             remarks: Type.Optional(Type.String()),
             active: Type.Optional(Type.Boolean({
-                description: 'Set to false to end the Event - the ended timestamp is set automatically',
+                description: 'Convenience over ended - false ends the Event now, true clears ended',
+            })),
+            started: Type.Optional(Type.String({
+                format: 'date-time',
             })),
             ended: Type.Optional(Type.Union([Type.Null(), Type.String({
                 format: 'date-time',
+                description: 'Time at which the Event ends - push a future time out to keep the Event active, null leaves it open ended',
             })])),
             external_id: Type.Optional(Type.String()),
             editable: Type.Optional(Type.Boolean()),
@@ -366,19 +374,21 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (Object.keys(body).length > 0) {
-                // An explicit ended in the body wins; an existing ended is
-                // preserved so re-ending doesn't move the original end time
+                const { active, ...columns } = body;
+
+                // An explicit ended in the body wins - ending an Event never
+                // moves an end time that has already passed
                 let ended: typeof body.ended | ReturnType<typeof sql> = body.ended;
                 if (body.ended === undefined) {
-                    if (body.active === false && !event.ended) {
-                        ended = sql`Now()`;
-                    } else if (body.active === true) {
+                    if (active === false) {
+                        ended = sql`LEAST(COALESCE(ended, Now()), Now())`;
+                    } else if (active === true) {
                         ended = null;
                     }
                 }
 
                 await config.models.CoreEvent.commit(req.params.event, {
-                    ...body,
+                    ...columns,
                     ...(ended === undefined ? {} : { ended }),
                     updated: sql`Now()`,
                 }).catch(uniqueViolation('external_id is already used by another Event of the Connection'));
