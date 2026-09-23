@@ -86,7 +86,6 @@ import {
     TablerNone,
     TablerInput,
     TablerLoading,
-    TablerIconButton
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import {

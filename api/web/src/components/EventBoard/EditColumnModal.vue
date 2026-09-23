@@ -132,7 +132,7 @@ import { openSecondaryView } from '../../utils/capacitor.ts';
 import type { CoreEventBoardColumn } from '../../types.ts';
 import FormSelect from '../CloudTAK/util/FormSelect.vue';
 import type { FormAttachment } from '../CloudTAK/util/FormSelect.vue';
-import { IconCheck, IconRefresh, IconSettings } from '@tabler/icons-vue';
+import { IconCheck, IconSettings } from '@tabler/icons-vue';
 import {
     TablerAlert,
     TablerBadge,

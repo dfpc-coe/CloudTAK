@@ -126,7 +126,7 @@ import {
     TablerInput,
     TablerAlert,
     TablerIconButton,
-    TablerLoading
+    TablerLoading,
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import {

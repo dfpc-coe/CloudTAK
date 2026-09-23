@@ -150,7 +150,6 @@ import {
     IconPlus,
     IconMap,
     IconMapOff,
-    IconRefresh,
     IconDownload,
 } from '@tabler/icons-vue';
 import Upload from '../../util/Upload.vue';
@@ -161,7 +160,7 @@ import {
     TablerIconButton,
     TablerLoading,
     TablerBytes,
-    TablerEpoch
+    TablerEpoch,
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import { openExternalUrl } from '../../../utils/capacitor.ts';
