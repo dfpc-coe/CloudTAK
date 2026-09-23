@@ -26,7 +26,8 @@
                 </TablerIconButton>
                 <TablerIconButton
                     v-else-if='props.edit'
-                    title='Save Channels'
+                    :title='canSave ? "Save Channels" : "An Event must be shared with at least one Channel"'
+                    :disabled='!canSave'
                     class='me-2'
                     @click.stop='save'
                 >
@@ -59,6 +60,12 @@
                     style='max-height: 250px;'
                 >
                     <GroupSelect v-model='selected' />
+                    <div
+                        v-if='!canSave'
+                        class='form-hint text-warning'
+                    >
+                        Select at least one Channel to share the Event with
+                    </div>
                 </div>
                 <template v-else>
                     <TablerNone
@@ -195,6 +202,13 @@ const shared = computed(() => {
     });
 });
 
+// Channels the user can't see aren't in the selector but still count
+const canSave = computed(() => {
+    return selected.value.length > 0 || props.modelValue.some((channel) => {
+        return !channels.value.some((c) => c.bitpos === channel);
+    });
+});
+
 onMounted(async () => {
     channels.value = await GroupManager.list();
     loading.value = false;
@@ -242,6 +256,8 @@ function startEditing(): void {
 }
 
 function save(): void {
+    if (!canSave.value) return;
+
     const bitpos = channels.value
         .filter((channel) => selected.value.includes(channel.name))
         .map((channel) => channel.bitpos);
