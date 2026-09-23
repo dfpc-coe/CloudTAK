@@ -39,15 +39,12 @@
                         Channels
                     </h3>
                     <div class='ms-auto btn-list'>
-                        <TablerIconButton
+                        <TablerRefreshButton
                             title='Refresh Channels'
+                            :size='20'
+                            :loading='loading'
                             @click.stop='listChannels'
-                        >
-                            <IconRefresh
-                                :size='20'
-                                stroke='1'
-                            />
-                        </TablerIconButton>
+                        />
                     </div>
                 </div>
 
@@ -128,11 +125,10 @@ import {
     TablerInput,
     TablerLoading,
     TablerDropdown,
-    TablerIconButton,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import {
     IconCheck,
-    IconRefresh,
     IconUsersGroup,
 } from '@tabler/icons-vue';
 

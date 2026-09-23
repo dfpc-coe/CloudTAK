@@ -41,15 +41,12 @@
                                         Forms
                                     </h3>
                                     <div class='ms-auto btn-list'>
-                                        <TablerIconButton
+                                        <TablerRefreshButton
                                             title='Refresh Forms'
+                                            :size='20'
+                                            :loading='loading'
                                             @click.stop='listForms(true)'
-                                        >
-                                            <IconRefresh
-                                                :size='20'
-                                                stroke='1'
-                                            />
-                                        </TablerIconButton>
+                                        />
                                     </div>
                                 </div>
 
@@ -219,11 +216,11 @@ import {
     TablerLoading,
     TablerDropdown,
     TablerIconButton,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
     IconForms,
-    IconRefresh,
     IconChevronUp,
     IconChevronDown,
 } from '@tabler/icons-vue';

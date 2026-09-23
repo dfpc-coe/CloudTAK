@@ -86,15 +86,12 @@
                 />
             </TablerIconButton>
 
-            <TablerIconButton
+            <TablerRefreshButton
                 title='Refresh Board'
+                :size='24'
+                :loading='loading || refreshing'
                 @click='refresh'
-            >
-                <IconRefresh
-                    :size='24'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
 
             <div
                 class='btn-group flex-shrink-0'
@@ -151,6 +148,7 @@
             />
             <ViewBoard
                 v-else-if='mode === "board"'
+                ref='view'
                 v-model:columns='columns'
                 :board='board'
                 :channel='channel'
@@ -160,6 +158,7 @@
             />
             <ViewList
                 v-else
+                ref='view'
                 v-model:columns='columns'
                 @error='error = $event'
                 @open-event='openEvent'
@@ -226,7 +225,7 @@
  * switcher in the header.
  */
 
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { server } from '../../std.ts';
 import type { CoreForm, CoreEvent, CoreEventBoard, CoreEventBoardEvent } from '../../types.ts';
@@ -248,7 +247,6 @@ import {
     IconPlus,
     IconList,
     IconPencil,
-    IconRefresh,
     IconStackPush,
     IconDotsVertical,
     IconLayoutKanban,
@@ -260,6 +258,7 @@ import {
     TablerLoading,
     TablerDropdown,
     TablerIconButton,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 
 const route = useRoute();
@@ -299,6 +298,8 @@ function writeStored(selection?: StoredSelection): void {
 let restoring = false;
 
 const loading = ref(true);
+/** A silent background refresh is in flight - shown on the refresh button only */
+const refreshing = ref(false);
 const error = ref<Error | undefined>();
 
 const channel = ref<number | undefined>();
@@ -310,6 +311,7 @@ const boardSelect = ref<InstanceType<typeof BoardSelectDropdown> | null>(null);
 const columns = ref<Array<BoardColumn>>([]);
 
 const mode = ref<'board' | 'list'>(route.query.view === 'list' ? 'list' : 'board');
+const view = ref<InstanceType<typeof ViewBoard> | InstanceType<typeof ViewList> | null>(null);
 
 const nominate = ref(false);
 const createEvent = ref(false);
@@ -633,6 +635,34 @@ async function closeEvent(): Promise<void> {
 
     await listColumns();
 }
+
+const POLL_MS = 30 * 1000;
+const poll = ref<ReturnType<typeof setInterval> | undefined>();
+
+/** Modals and in-flight interactions hold state a silent refresh would discard */
+const modalOpen = computed<boolean>(() => {
+    return !!(nominate.value || createEvent.value || formWizard.value || addBoard.value || editBoard.value || viewEvent.value);
+});
+
+async function pollColumns(): Promise<void> {
+    if (refreshing.value || loading.value || document.hidden) return;
+    if (!board.value || modalOpen.value || view.value?.busy) return;
+
+    refreshing.value = true;
+    try {
+        await listColumns();
+    } finally {
+        refreshing.value = false;
+    }
+}
+
+onMounted(() => {
+    poll.value = setInterval(pollColumns, POLL_MS);
+});
+
+onUnmounted(() => {
+    if (poll.value) clearInterval(poll.value);
+});
 </script>
 
 <style>

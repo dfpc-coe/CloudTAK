@@ -15,15 +15,12 @@
                         stroke='1'
                     />
                 </TablerIconButton>
-                <TablerIconButton
+                <TablerRefreshButton
                     title='Refresh'
+                    :size='32'
+                    :loading='loading'
                     @click='fetchList'
-                >
-                    <IconRefresh
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                />
             </div>
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
@@ -129,11 +126,11 @@ import {
     TablerInput,
     TablerAlert,
     TablerIconButton,
-    TablerLoading
+    TablerLoading,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
-    IconRefresh,
 } from '@tabler/icons-vue'
 
 type Header = { name: keyof MissionTemplateList['items'][0], display: boolean };

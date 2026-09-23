@@ -86,15 +86,12 @@
                             Forms
                         </h3>
                         <div class='ms-auto btn-list'>
-                            <TablerIconButton
+                            <TablerRefreshButton
                                 title='Refresh Forms'
+                                :size='20'
+                                :loading='loading'
                                 @click.stop='listForms'
-                            >
-                                <IconRefresh
-                                    :size='20'
-                                    stroke='1'
-                                />
-                            </TablerIconButton>
+                            />
                         </div>
                     </div>
 
@@ -178,12 +175,12 @@ import {
     TablerLoading,
     TablerDropdown,
     TablerIconButton,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
     IconForms,
     IconTrash,
-    IconRefresh,
 } from '@tabler/icons-vue';
 
 export type FormAttachment = {
@@ -292,7 +289,7 @@ function remove(attachment: FormAttachment): void {
     }));
 }
 
-defineExpose({ refresh: listForms });
+defineExpose({ refresh: listForms, loading });
 </script>
 
 <style>

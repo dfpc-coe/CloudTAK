@@ -46,16 +46,13 @@
                                     class='d-flex align-items-center'
                                 >
                                     <span class='small text-muted'>Up to date</span>
-                                    <TablerIconButton
+                                    <TablerRefreshButton
                                         title='Check for Updates'
                                         class='ms-1'
+                                        :size='20'
+                                        :loading='loading.update'
                                         @click='checkUpdates'
-                                    >
-                                        <IconRefresh
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                    </TablerIconButton>
+                                    />
                                 </div>
                                 <button
                                     v-else-if='latestVersion'
@@ -249,6 +246,7 @@ import {
     TablerInput,
     TablerPager,
     TablerNone,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 
 interface Task {

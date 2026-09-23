@@ -13,15 +13,12 @@
                         stroke='1'
                     />
                 </TablerIconButton>
-                <TablerIconButton
+                <TablerRefreshButton
                     title='Refresh'
+                    :size='32'
+                    :loading='loading'
                     @click='listData'
-                >
-                    <IconRefresh
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                />
             </div>
         </div>
 
@@ -128,13 +125,13 @@ import {
     TablerAlert,
     TablerInput,
     TablerLoading,
-    TablerIconButton
+    TablerIconButton,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler'
 import {
     IconAccessPoint,
     IconAccessPointOff,
     IconDatabase,
-    IconRefresh,
     IconPlus
 } from '@tabler/icons-vue';
 
