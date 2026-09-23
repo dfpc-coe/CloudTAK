@@ -49,16 +49,13 @@
                     </h1>
 
                     <div class='ms-auto btn-list mx-3'>
-                        <TablerIconButton
-                            v-if='!disabled && !err && !loading.main'
+                        <TablerRefreshButton
+                            v-if='!disabled && !err'
                             title='Refresh'
+                            :size='32'
+                            :loading='loading.main'
                             @click='generateToken'
-                        >
-                            <IconRefresh
-                                :size='32'
-                                stroke='1'
-                            />
-                        </TablerIconButton>
+                        />
 
                         <TablerIconButton
                             v-if='!readonly && !disabled && !err && !loading.main'
@@ -240,12 +237,12 @@ import {
     TablerLoading,
     TablerInput,
     TablerIconButton,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import {
     IconX,
     IconPlus,
     IconMap,
-    IconRefresh,
 } from '@tabler/icons-vue';
 import EsriServer from './EsriServer.vue';
 import EsriPortalCreate from './EsriPortalCreate.vue';

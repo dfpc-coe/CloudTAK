@@ -29,15 +29,12 @@
                     />
                 </TablerIconButton>
 
-                <TablerIconButton
+                <TablerRefreshButton
                     title='Refresh Forms'
+                    :size='24'
+                    :loading='loading'
                     @click='listForms'
-                >
-                    <IconRefresh
-                        :size='24'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                />
             </template>
         </NavHeader>
 
@@ -233,7 +230,6 @@ import {
     IconPlus,
     IconForms,
     IconPencil,
-    IconRefresh,
     IconCircleArrowLeft,
 } from '@tabler/icons-vue';
 import {
@@ -243,6 +239,7 @@ import {
     TablerDelete,
     TablerLoading,
     TablerIconButton,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 
 const mode = ref<'list' | 'editor'>('list');

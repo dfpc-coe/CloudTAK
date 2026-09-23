@@ -15,15 +15,12 @@
                         stroke='1'
                     />
                 </TablerIconButton>
-                <TablerIconButton
+                <TablerRefreshButton
                     title='Refresh'
+                    :size='32'
+                    :loading='loading.list'
                     @click='fetchList'
-                >
-                    <IconRefresh
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                />
             </div>
         </div>
 
@@ -165,6 +162,7 @@ import {
     TablerLoading,
     TablerBytes,
     TablerEpoch
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import { openExternalUrl } from '../../../utils/capacitor.ts';
 

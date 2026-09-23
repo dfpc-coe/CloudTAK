@@ -6,15 +6,12 @@
             </h1>
 
             <div class='ms-auto btn-list'>
-                <TablerIconButton
+                <TablerRefreshButton
                     title='Refresh'
+                    :size='32'
+                    :loading='loading'
                     @click='fetchList'
-                >
-                    <IconRefresh
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                />
             </div>
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
@@ -90,9 +87,9 @@ import {
     TablerInput,
     TablerLoading,
     TablerIconButton
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import {
-    IconRefresh,
 } from '@tabler/icons-vue';
 
 const loading = ref<boolean>(true);

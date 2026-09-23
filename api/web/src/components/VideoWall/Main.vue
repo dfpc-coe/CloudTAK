@@ -1,15 +1,12 @@
 <template>
     <div class='h-full w-full cloudtak-page d-flex flex-column video-wall'>
         <NavHeader title='Video Wall'>
-            <TablerIconButton
+            <TablerRefreshButton
                 title='Refresh Videos'
+                :size='32'
+                :loading='loading'
                 @click='refresh'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
         </NavHeader>
 
         <div class='flex-grow-1 overflow-auto'>
@@ -113,7 +110,6 @@ import NavHeader from '../util/NavHeader.vue';
 import VideoPlayer from '../util/VideoPlayer.vue';
 import {
     IconX,
-    IconRefresh,
     IconGripVertical,
 } from '@tabler/icons-vue';
 import {
@@ -121,6 +117,7 @@ import {
     TablerAlert,
     TablerLoading,
     TablerIconButton,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 
 const loading = ref(true);

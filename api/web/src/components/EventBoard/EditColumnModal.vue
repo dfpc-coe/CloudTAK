@@ -83,15 +83,12 @@
                                 :channel='props.channel'
                                 class='flex-grow-1'
                             />
-                            <TablerIconButton
+                            <TablerRefreshButton
                                 title='Refresh Forms'
+                                :size='24'
+                                :loading='formSelect?.loading'
                                 @click='formSelect?.refresh()'
-                            >
-                                <IconRefresh
-                                    :size='24'
-                                    stroke='1'
-                                />
-                            </TablerIconButton>
+                            />
                             <TablerIconButton
                                 title='Manage Forms'
                                 @click='manageForms'
@@ -143,6 +140,7 @@ import {
     TablerModal,
     TablerLoading,
     TablerIconButton,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 
 const props = defineProps<{

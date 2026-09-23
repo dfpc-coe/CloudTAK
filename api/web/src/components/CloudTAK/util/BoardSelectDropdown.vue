@@ -39,15 +39,12 @@
                         Boards
                     </h3>
                     <div class='ms-auto btn-list'>
-                        <TablerIconButton
+                        <TablerRefreshButton
                             title='Refresh Boards'
+                            :size='20'
+                            :loading='loading'
                             @click.stop='listBoards'
-                        >
-                            <IconRefresh
-                                :size='20'
-                                stroke='1'
-                            />
-                        </TablerIconButton>
+                        />
                     </div>
                 </div>
 
@@ -134,11 +131,10 @@ import {
     TablerInput,
     TablerLoading,
     TablerDropdown,
-    TablerIconButton,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import {
     IconCheck,
-    IconRefresh,
     IconLayoutKanban,
 } from '@tabler/icons-vue';
 
