@@ -24,6 +24,7 @@ const EVENT = {
         type: 'Point',
         coordinates: [-105.2705, 40.015],
     },
+    channels: [7],
 };
 
 test('POST: api/core/event & api/core/device - admin', async () => {

@@ -18,6 +18,7 @@
 
 ### Pending Release
 
+- :rocket: `POST /core/event` & `PATCH /core/event/:event` require at least one Channel - an Event can no longer be created or left without being shared with a Channel
 - :tada: Core Events gain Assignments (people managing the Event in a role - ie: IC, JAG) & Effects (Devices acting on the Event - ie: loiter) under `/core/event/:event/assignment` & `/core/event/:event/effect` - tokens need the Event scope plus the new `assignment` or `effect` scope, which `GET /scope` now lists
 - :bug: `PUT /connection/:connectionid/layer/:layerid/outgoing/ephemeral` rejected its own response when a stored value was not a string, matching the incoming route & the JSONB column by allowing any JSON value
 - :rocket: Deleting a Core Event now delivers a `board:event:delete` ETL Event for each Board it was placed on, as the deletion removes it from those Boards

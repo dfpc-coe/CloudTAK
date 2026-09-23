@@ -547,7 +547,7 @@ test('PATCH: api/core/event/:event - a future ended keeps the Event active until
     }
 });
 
-test('PATCH: api/core/event/:event - clear channels', async () => {
+test('PATCH: api/core/event/:event - channels cannot be cleared', async () => {
     try {
         const res = await flight.fetch(`/api/core/event/${eventId}`, {
             method: 'PATCH',
@@ -557,9 +557,26 @@ test('PATCH: api/core/event/:event - clear channels', async () => {
             body: {
                 channels: [],
             },
-        }, true);
+        }, false);
 
-        assert.deepEqual(res.body.channels, []);
+        assert.equal(res.status, 400);
+
+        const create = await flight.fetch('/api/core/event', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                name: 'Unshared Event',
+                type: '10031000001213000000',
+                geometry: {
+                    type: 'Point',
+                    coordinates: [-105.2705, 40.015],
+                },
+            },
+        }, false);
+
+        assert.equal(create.status, 400);
     } catch (err) {
         assert.ifError(err);
     }

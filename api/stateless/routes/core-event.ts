@@ -206,8 +206,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
             channels: Type.Array(Type.Integer({ minimum: 0 }), {
                 uniqueItems: true,
-                default: [],
-                description: 'TAK Server Channels to share the Event with',
+                minItems: 1,
+                description: 'TAK Server Channels to share the Event with - at least one is required',
             }),
         }),
         res: CoreEventResponse,
@@ -290,7 +290,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             style: Type.Optional(Type.Object(CoreEventStyle.properties, {
                 description: 'Point styling for the Event - replaces the existing style object',
             })),
-            channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), { uniqueItems: true })),
+            channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), {
+                uniqueItems: true,
+                minItems: 1,
+                description: 'TAK Server Channels to share the Event with - replaces the existing Channels, an Event must always be shared with at least one',
+            })),
         }),
         res: CoreEventResponse,
     }, async (req, res) => {
