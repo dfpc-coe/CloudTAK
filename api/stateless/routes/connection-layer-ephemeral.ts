@@ -55,7 +55,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             layerid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Record(Type.String(), Type.Any()),
-        res: Type.Record(Type.String(), Type.String()),
+        res: Type.Record(Type.String(), Type.Any()),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {

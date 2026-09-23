@@ -455,6 +455,57 @@ test('ETLEvents: board:event:delete carries the removed placement', async () => 
     }
 });
 
+test('ETLEvents: deleting a placed Event also delivers board:event:delete', async () => {
+    try {
+        delivered.length = 0;
+
+        const placed = await flight.fetch('/api/board/event', {
+            method: 'PUT',
+            auth: { bearer: flight.token.admin },
+            body: { column: columnId, event: placedEventId, position: 0 },
+        }, true);
+
+        await waitFor(1);
+        delivered.length = 0;
+
+        const before = await flight.fetch(`/api/core/event/${placedEventId}`, {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        await flight.fetch(`/api/core/event/${placedEventId}`, {
+            method: 'DELETE',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        await waitFor(2);
+        await delay(200);
+
+        assert.equal(delivered.length, 2);
+
+        const messages = delivered.sort((a, b) => a.body.type.localeCompare(b.body.type));
+
+        assert.equal(messages[0].queue, queueOf(5));
+        assert.equal(messages[0].group, `5-${placed.body.id}`);
+        assert.deepEqual(messages[0].body, {
+            type: 'board:event',
+            action: 'delete',
+            channels: [7],
+            data: { ...placed.body, event: before.body },
+        });
+
+        assert.equal(messages[1].queue, queueOf(1));
+        assert.deepEqual(messages[1].body, {
+            type: 'event',
+            action: 'delete',
+            channels: [7],
+            data: before.body,
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('ETLEvents: board:column:delete carries the deleted Column', async () => {
     try {
         delivered.length = 0;

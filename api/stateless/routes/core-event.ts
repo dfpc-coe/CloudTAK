@@ -9,6 +9,7 @@ import { CoreEvent_Priority } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
 import { userChannels, connectionChannels } from '../lib/tak-channels.js';
 import { notifyCoreEvent } from '../lib/core-event.js';
+import { placementResponse } from '../lib/control/board.js';
 import { ETLEventAction } from '../../common/etl-events.js';
 import { uniqueViolation } from '../lib/pg-error.js';
 import * as Default from '../lib/limits.js';
@@ -439,11 +440,20 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 throw new Err(403, null, 'Only the Event creator can delete this Event');
             }
 
+            // Deleting the Event cascades its Board placements, which subscribers see as removals
+            const placements = await config.models.CoreEventBoardEvent.placements(req.params.event);
+
             await config.models.CoreEvent.delete(req.params.event);
 
             config.etlEvents.event(ETLEventAction.Delete, event).catch((err) => {
                 console.error(`not ok - failed to deliver delete ETL Event for Core Event ${event.id}:`, err);
             });
+
+            for (const { placement, channel } of placements) {
+                config.etlEvents.boardEvent(ETLEventAction.Delete, channel, placementResponse(placement, event)).catch((err) => {
+                    console.error(`not ok - failed to deliver delete ETL Event for Placement ${placement.id}:`, err);
+                });
+            }
 
             res.json({ status: 200, message: 'Core Event Deleted' });
         } catch (err) {
