@@ -103,13 +103,13 @@ export default class Auth {
      * @param opts.token        - Should URL query tokens be allowed (usually only for downloads)
      * @param opts.anyResources - Any Resource token can use this endpoint
      * @param resources         - Array of resource types that can use this endpoint
-     * @param opts.scope        - `<permission>:<level>` a Layer or Connection token must hold in its `permissions`
+     * @param opts.scope        - `<permission>:<level>` scope(s) a Layer or Connection token must hold in its `permissions` - every scope given is required
      */
     static async is_auth(config: Config, req: Request<any, any, any, any>, opts: {
         token?: boolean;
         anyResources?: boolean;
         resources?: Array<AuthResourceAccepted>;
-        scope?: string;
+        scope?: string | Array<string>;
     } = {}): Promise<AuthResource | AuthUser> {
         if (!opts.token) opts.token = false;
         if (!opts.resources) opts.resources = [];
@@ -153,17 +153,23 @@ export default class Auth {
                 throw new Err(403, null, 'Resource token cannot access this resource');
             }
 
-            if (opts.scope && auth_resource.access === AuthResourceAccess.LAYER) {
+            const scopes = opts.scope === undefined ? [] : Array.isArray(opts.scope) ? opts.scope : [opts.scope];
+
+            if (scopes.length && auth_resource.access === AuthResourceAccess.LAYER) {
                 if (auth_resource.id === undefined) throw new Err(401, null, 'Layer Resource Token must contain a Layer ID');
 
                 const layer = await config.models.Layer.from(auth_resource.id);
 
-                if (!hasScope(layer.permissions, opts.scope)) {
-                    throw new Err(403, null, `Layer token does not have the ${opts.scope} permission`);
+                for (const scope of scopes) {
+                    if (!hasScope(layer.permissions, scope)) {
+                        throw new Err(403, null, `Layer token does not have the ${scope} permission`);
+                    }
                 }
-            } else if (opts.scope && auth_resource.access === AuthResourceAccess.CONNECTION && connectionToken) {
-                if (!hasScope(connectionToken.permissions, opts.scope)) {
-                    throw new Err(403, null, `Connection token does not have the ${opts.scope} permission`);
+            } else if (scopes.length && auth_resource.access === AuthResourceAccess.CONNECTION && connectionToken) {
+                for (const scope of scopes) {
+                    if (!hasScope(connectionToken.permissions, scope)) {
+                        throw new Err(403, null, `Connection token does not have the ${scope} permission`);
+                    }
                 }
             }
         }
@@ -267,12 +273,12 @@ export default class Auth {
     /**
      * OpenAPI Security Requirements for a route guarded by `as_user_or_scope`
      */
-    static security(scope: string, opts: {
+    static security(scope: string | Array<string>, opts: {
         connection?: boolean;
     } = {}): Array<Record<string, Array<string>>> {
         const security: Array<Record<string, Array<string>>> = [
             { bearerAuth: [] },
-            { layerAuth: [scope] },
+            { layerAuth: Array.isArray(scope) ? scope : [scope] },
         ];
 
         if (opts.connection) security.push({ connectionAuth: [] });

@@ -17,7 +17,7 @@ import {
     BasemapTerrain_Encoding,
     ProfilePaging_Type,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
-    ProfileChatStatus, CoreEvent_Priority, CoreEventBoardColumn_Type, LayerMapping_Destination,
+    ProfileChatStatus, CoreEvent_Priority, CoreEventBoardColumn_Type, CoreEventEffect_Status, LayerMapping_Destination,
 } from './enums.js';
 import { bigint, boolean, uuid, numeric, integer, doublePrecision, timestamp, pgTable, serial, varchar, text, unique, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
@@ -110,6 +110,36 @@ export const CoreEventBoardEvent = pgTable('core_event_board_event', {
     board_event_idx: unique().on(table.board, table.event),
 }));
 
+/** A person assigned to manage a Core Event in some capacity - ie: IC, JAG */
+export const CoreEventAssignment = pgTable('core_event_assignment', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    event: uuid().notNull().references(() => CoreEvent.id, { onDelete: 'cascade' }),
+    uid: text().references(() => Profile.username, { onDelete: 'set null' }), // Set when the person has a Profile
+    name: text().notNull(),
+    role: text().notNull().default(''),
+    remarks: text().notNull().default(''),
+}, (table) => {
+    return {
+        event_uid_idx: uniqueIndex('core_event_assignment_event_uid_idx').on(table.event, table.uid).where(sql`uid IS NOT NULL`),
+    };
+});
+
+/** A Device acting on a Core Event - ie: navigate to, loiter around */
+export const CoreEventEffect = pgTable('core_event_effect', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    started: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    ended: timestamp({ withTimezone: true, mode: 'string' }),
+    event: uuid().notNull().references(() => CoreEvent.id, { onDelete: 'cascade' }),
+    device: uuid().notNull().references((): AnyPgColumn => CoreDevice.id, { onDelete: 'cascade' }),
+    action: text().notNull(),
+    status: text().$type<CoreEventEffect_Status>().notNull().default(CoreEventEffect_Status.TASKED),
+    metadata: jsonb().$type<Record<string, unknown>>().notNull().default({}), // Action specific parameters - ie: loiter radius
+});
+
 /** A user defined Form - schema holds the JSON Schema the Form input is generated & validated from */
 export const CoreForm = pgTable('core_form', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
@@ -178,7 +208,7 @@ export const CoreDevice = pgTable('core_device', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     username: text().references(() => Profile.username),
     connection: integer().references(() => Connection.id, { onDelete: 'set null' }),
-    event: uuid().references(() => CoreEvent.id, { onDelete: 'set null' }), // Event the Device is currently assigned to
+    event: uuid().references(() => CoreEvent.id, { onDelete: 'set null' }), // Current primary Event assignment - CoreEventEffect holds the full record
     type: text().notNull(), // MIL-STD-2525E Symbol ID
     name: text().notNull(), // Human readable name/callsign of the Device
     manufacturer: text().notNull().default(''), // ie: Ortec, Nucsafe, DJI

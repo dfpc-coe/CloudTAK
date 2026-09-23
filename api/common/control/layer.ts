@@ -1,12 +1,22 @@
 import Err from '@openaddresses/batch-error';
 import type { StaticCapabilitiesDocument } from '@tak-ps/etl';
-import { PERMISSIONS } from '@tak-ps/etl';
+import { PERMISSIONS as ETL_PERMISSIONS } from '@tak-ps/etl';
+
+/**
+ * Permissions grantable to Layer & Connection tokens - the upstream ETL
+ * catalogue plus permissions for resources only CloudTAK manages
+ */
+export const PERMISSIONS: Record<string, Array<string>> = {
+    ...ETL_PERMISSIONS,
+    assignment: ['create', 'read', 'update', 'delete'],
+    effect: ['create', 'read', 'update', 'delete'],
+};
 
 export default class LayerControl {
     /**
      * Ensure every requested Layer permission is a known `<permission>:<level>`
-     * pair from the upstream PERMISSIONS object - `<permission>:*` is valid
-     * for every permission
+     * pair from the PERMISSIONS object - `<permission>:*` is valid for every
+     * permission
      */
     static isValidPermission(resource: string): boolean {
         const separator = resource.indexOf(':');

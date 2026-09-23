@@ -1478,6 +1478,13 @@
       "when": 1790192397114,
       "tag": "0211_core_event_started_ended",
       "breakpoints": true
+    },
+    {
+      "idx": 212,
+      "version": "7",
+      "when": 1790202011344,
+      "tag": "0212_core_event_assignment_effect",
+      "breakpoints": true
     }
   ]
 }

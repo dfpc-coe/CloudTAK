@@ -494,6 +494,31 @@
         "query": false,
         "res": true
     },
+    "GET /core/event/:event/assignment": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /core/event/:event/assignment/:assignment": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /core/event/:event/assignment": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /core/event/:event/assignment/:assignment": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /core/event/:event/assignment/:assignment": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /board": {
         "body": false,
         "query": true,
@@ -555,6 +580,31 @@
         "res": true
     },
     "DELETE /board/:board": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /core/event/:event/effect": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /core/event/:event/effect/:effect": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /core/event/:event/effect": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /core/event/:event/effect/:effect": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /core/event/:event/effect/:effect": {
         "body": false,
         "query": false,
         "res": true
