@@ -179,6 +179,11 @@ const formWizard = ref<{
 /** Re-keying the Column selects snaps a cancelled move's select back to the real Column */
 const selectEpoch = ref(0);
 
+/** True while a move is held in the FormWizard - a background refresh would discard it */
+const busy = computed<boolean>(() => !!formWizard.value);
+
+defineExpose({ busy });
+
 async function moveEvent(row: { column: BoardColumn; placement: CoreEventBoardEvent }, name: string): Promise<void> {
     const target = columns.value.find((column) => column.name === name);
 

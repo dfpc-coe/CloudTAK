@@ -242,7 +242,7 @@
  * via the `refresh` emit when a mutation here needs a full resync.
  */
 
-import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { server } from '../../std.ts';
 import type { CoreForm, CoreEventBoardEvent } from '../../types.ts';
 import type { BoardColumn } from './types.ts';
@@ -309,6 +309,13 @@ const columnDrag = ref<{ column: string } | undefined>();
 const columnDropIndex = ref<number | undefined>();
 
 const scroller = ref<HTMLElement | undefined>();
+
+/** True while an interaction holds state a background refresh would discard */
+const busy = computed<boolean>(() => {
+    return !!(drag.value || columnDrag.value || formWizard.value || editColumn.value || adding.value !== undefined);
+});
+
+defineExpose({ busy });
 
 let touch: {
     timer: ReturnType<typeof setTimeout> | undefined;

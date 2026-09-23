@@ -7,16 +7,13 @@
             />
 
             <div class='ms-auto btn-list mx-3'>
-                <TablerIconButton
-                    v-if='!disabled && !err && !loading'
+                <TablerRefreshButton
+                    v-if='!disabled && !err'
                     title='Refresh'
+                    :size='32'
+                    :loading='loading'
                     @click='getList'
-                >
-                    <IconRefresh
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                />
 
                 <TablerIconButton
                     v-if='!disabled && !err && !loading'
@@ -213,12 +210,12 @@ import {
     TablerLoading,
     TablerDelete,
     TablerIconButton,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import {
     IconX,
     IconMap,
     IconFolder,
-    IconRefresh,
     IconCheck,
     IconArrowBack,
     IconMapPin,

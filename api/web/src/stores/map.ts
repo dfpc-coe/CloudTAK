@@ -46,7 +46,7 @@ import { db, suspendDatabase, resumeDatabase, liveQuery } from '../database.ts';
 import { serializeWorkerBootConfig } from '../utils/worker-boot.ts';
 
 import type { ProfileOverlay, Feature } from '../types.ts';
-import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource, LayerSpecification, PropertyValueSpecification } from 'maplibre-gl';
+import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource, LayerSpecification, PropertyValueSpecification } from 'maplibre-gl';
 import type { Position } from '@capacitor/geolocation';
 import type { Position as GeoJSONPosition } from 'geojson';
 
@@ -1470,86 +1470,6 @@ export const useMapStore = defineStore('cloudtak', {
                     point: e.point,
                     lngLat
                 });
-            });
-
-            let pressTimer: number | undefined;
-            let pressEvent: MapTouchEvent | undefined;
-            let pressStartPoint: Point | undefined;
-
-            map.on('touchstart', (e) => {
-                if (this.draw.editing) return;
-
-                // Only handle single-touch (avoid interfering with multi-touch gestures like pinch-to-zoom)
-                if (e.originalEvent && e.originalEvent.touches.length !== 1) return;
-
-                pressEvent = e;
-                pressStartPoint = e.point;
-
-                pressTimer = window.setTimeout(() => {
-                    if (pressEvent) {
-                        if (pressEvent.originalEvent) {
-                            pressEvent.originalEvent.preventDefault();
-                        }
-
-                        const lngLat = pressEvent.lngLat.wrap();
-                        const id = randomUUID();
-                        this.radialClick({
-                            id,
-                            type: 'Feature',
-                            path: '/',
-                            properties: {
-                                id,
-                                callsign: 'New Feature',
-                                archived: true,
-                                type: this.defaultPointType,
-                                how: 'm-g',
-                                time: new Date().toISOString(),
-                                start: new Date().toISOString(),
-                                stale: new Date(Date.now() + 2 * (60 * 60 * 1000)).toISOString(),
-                                center: [ lngLat.lng, lngLat.lat ],
-                                'marker-color': '#00ff00',
-                                'marker-opacity': 1
-                            },
-                            geometry: {
-                                type: 'Point',
-                                coordinates: [lngLat.lng, lngLat.lat]
-                            }
-                        }, {
-                            mode: 'context',
-                            point: pressEvent.point,
-                            lngLat
-                        });
-
-                        pressEvent = undefined;
-                        pressStartPoint = undefined;
-                    }
-                }, 500);
-            });
-
-            map.on('touchend', () => {
-                if (pressTimer) {
-                    clearTimeout(pressTimer);
-                    pressTimer = undefined;
-                }
-                pressEvent = undefined;
-                pressStartPoint = undefined;
-            });
-
-            map.on('touchmove', (e) => {
-                if (pressTimer && pressStartPoint) {
-                    // Squared distance avoids an expensive sqrt
-                    const deltaX = e.point.x - pressStartPoint.x;
-                    const deltaY = e.point.y - pressStartPoint.y;
-                    const distanceSquared = deltaX * deltaX + deltaY * deltaY;
-
-                    // Ignore minor finger tremors; trigger only past 10px (10^2 = 100)
-                    if (distanceSquared > 100) {
-                        clearTimeout(pressTimer);
-                        pressTimer = undefined;
-                        pressEvent = undefined;
-                        pressStartPoint = undefined;
-                    }
-                }
             });
 
             OverlayManager.clearLoaded();
