@@ -50,12 +50,16 @@
                             <td v-text='format(props.created)' />
                         </tr>
                         <tr>
+                            <td>Started</td>
+                            <td v-text='format(props.started)' />
+                        </tr>
+                        <tr>
                             <td>Updated</td>
                             <td v-text='format(props.updated)' />
                         </tr>
                         <tr>
                             <td>Ended</td>
-                            <td v-text='props.ended ? format(props.ended) : "None"' />
+                            <td v-text='props.ended ? format(props.ended) : "Open Ended"' />
                         </tr>
                     </tbody>
                 </table>
@@ -72,6 +76,7 @@ import timediff from '../../../timediff';
 
 const props = defineProps<{
     created: string;
+    started: string;
     updated: string;
     ended: string | null;
 }>();

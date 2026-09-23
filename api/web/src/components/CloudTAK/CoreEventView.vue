@@ -170,6 +170,26 @@
                     </div>
 
                     <div class='col-12 pt-2'>
+                        <PropertyCoreEventTime
+                            label='Started'
+                            :model-value='event.started'
+                            :edit='is_editable'
+                            @update:model-value='patch({ started: $event })'
+                        />
+                    </div>
+
+                    <div class='col-12 pt-2'>
+                        <PropertyCoreEventTime
+                            label='Ended'
+                            :model-value='event.ended'
+                            :edit='is_editable'
+                            nullable
+                            :presets='true'
+                            @update:model-value='patch({ ended: $event })'
+                        />
+                    </div>
+
+                    <div class='col-12 pt-2'>
                         <PropertyCoreEventLocation
                             :model-value='event.location'
                             :edit='is_editable'
@@ -266,6 +286,7 @@
 
                 <PropertyCoreEventTimes
                     :created='event.created'
+                    :started='event.started'
                     :updated='event.updated'
                     :ended='event.ended'
                 />
@@ -314,6 +335,7 @@ import PropertyStyle from './Property/PropertyStyle.vue';
 import PropertyEmail from './Property/PropertyEmail.vue';
 import PropertyCoreEventPriority from './Property/PropertyCoreEventPriority.vue';
 import PropertyCoreEventLocation from './Property/PropertyCoreEventLocation.vue';
+import PropertyCoreEventTime from './Property/PropertyCoreEventTime.vue';
 import PropertyCoreEventExternalId from './Property/PropertyCoreEventExternalId.vue';
 import PropertyCoreEventLinks from './Property/PropertyCoreEventLinks.vue';
 import PropertyCoreEventChannels from './Property/PropertyCoreEventChannels.vue';

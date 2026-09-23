@@ -148,6 +148,14 @@
                             </div>
                             <div class='datagrid-item'>
                                 <div class='datagrid-title'>
+                                    Started
+                                </div>
+                                <div class='datagrid-content'>
+                                    {{ new Date(event.started).toLocaleString() }}
+                                </div>
+                            </div>
+                            <div class='datagrid-item'>
+                                <div class='datagrid-title'>
                                     Updated
                                 </div>
                                 <div class='datagrid-content'>
@@ -156,10 +164,10 @@
                             </div>
                             <div class='datagrid-item'>
                                 <div class='datagrid-title'>
-                                    Ended
+                                    {{ event.active ? "Ends" : "Ended" }}
                                 </div>
                                 <div class='datagrid-content'>
-                                    {{ event.ended ? new Date(event.ended).toLocaleString() : "Active" }}
+                                    {{ event.ended ? new Date(event.ended).toLocaleString() : "Open Ended" }}
                                 </div>
                             </div>
                             <div class='datagrid-item'>

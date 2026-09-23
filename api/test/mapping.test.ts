@@ -322,3 +322,19 @@ test('Mapping: validate', () => {
     assert.equal(Mapping.validate(LayerMapping_Destination.COREDEVICE, { battery: '{{battery}}', simulated: false, event_external_id: 'inc-{{incident}}' }), true);
     throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREDEVICE, { battery: { pct: 1 } }), /Invalid Battery/);
 });
+
+test('Mapping: CoreEvent - ended as seconds from now', async () => {
+    const mapping = new Mapping(rows(LayerMapping_Destination.COREEVENT, [{
+        query: null,
+        mapping: { name: 'Call', type: '10031000001211000000', ended: 1800 },
+    }]));
+
+    const before = Date.now();
+    const event = await convert(mapping, point({}));
+    const offset = new Date(event.ended).getTime() - before;
+    assert.ok(offset >= 1800 * 1000 - 1000 && offset <= 1800 * 1000 + 1000, `ended ${offset}ms from now`);
+
+    assert.equal(Mapping.validate(LayerMapping_Destination.COREEVENT, { ended: 1800 }), true);
+    assert.equal(Mapping.validate(LayerMapping_Destination.COREEVENT, { ended: '{{closed}}' }), true);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { ended: '{{#if' }), /Invalid Ended Template/);
+});

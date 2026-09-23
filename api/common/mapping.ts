@@ -20,6 +20,7 @@ type DeviceColumns = InferInsertModel<typeof CoreDevice>;
 
 export type MappedEvent = Partial<Pick<EventColumns, Extract<keyof typeof CoreEventSchema.properties, keyof EventColumns>>> & {
     channels?: number[];
+    active?: boolean;
 };
 
 export type MappedDevice = Partial<Pick<DeviceColumns, Extract<keyof typeof CoreDeviceSchema.properties, keyof DeviceColumns>>> & {
@@ -34,11 +35,12 @@ export type MappedDevice = Partial<Pick<DeviceColumns, Extract<keyof typeof Core
  * - enum:      One of a list of options, or a template rendering to one
  * - seconds:   Seconds as a number, or a template rendering to seconds or a timestamp
  * - timestamp: Template rendering to a date-time - an empty result clears the value
+ * - expiry:    Seconds from now as a number, or a template rendering to seconds or a date-time - an empty result clears the value
  * - links:     Array of { url, remarks } templates appended as CoT links
  * - objects:   Array of objects whose properties are templates
  * - array:     Non-empty array copied without duplicate items
  */
-export type MapFieldKind = 'template' | 'number' | 'boolean' | 'enum' | 'seconds' | 'timestamp' | 'links' | 'objects' | 'array';
+export type MapFieldKind = 'template' | 'number' | 'boolean' | 'enum' | 'seconds' | 'timestamp' | 'expiry' | 'links' | 'objects' | 'array';
 
 export interface MapField {
     /** Dot path of the value in the Map object */
@@ -93,7 +95,7 @@ function schemaFields(schema: TObject, prefix = ''): MapField[] {
             field.kind = 'enum';
             field.options = property.enum;
         } else if (property.format === 'date-time') {
-            field.kind = 'timestamp';
+            field.kind = property['@relative'] ? 'expiry' : 'timestamp';
         }
 
         return [field];
@@ -267,6 +269,17 @@ const KINDS: Record<MapFieldKind, {
             if (seconds !== undefined) return seconds * 1000;
 
             return typeof raw === 'string' ? compile(raw).trim() || undefined : undefined;
+        },
+    },
+    expiry: {
+        validate: (value, field, name) => {
+            if (!isNumeric(value)) assertTemplate(value, `Invalid ${name} Template: ${value}`);
+        },
+        render: (raw, ctx) => {
+            const seconds = renderNumber(raw, ctx.compile);
+            if (seconds !== undefined) return new Date(Date.now() + seconds * 1000).toISOString();
+
+            return KINDS.timestamp.render(raw, ctx);
         },
     },
     timestamp: {

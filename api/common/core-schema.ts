@@ -34,6 +34,7 @@ export const CoreEventStyleSchema = Type.Object({
  * Properties carry form hints, stripped by `withoutHints` when composing API types
  * - `@icon`: name of the Tabler icon shown next to the property
  * - `@widget`: input used in place of the one implied by the property type
+ * - `@relative`: a date-time a Map may also give as a number of seconds from now
  */
 export const CoreEventSchema = Type.Object({
     name: Type.String({ 'title': 'Name', '@icon': 'IconTag', 'description': 'Human readable name of the Event' }),
@@ -41,8 +42,9 @@ export const CoreEventSchema = Type.Object({
     priority: Type.Optional(Type.Unsafe<CoreEvent_Priority>({ 'type': 'string', 'title': 'Priority', '@icon': 'IconFlag', 'description': 'Priority of the Event', 'enum': Object.values(CoreEvent_Priority), 'default': CoreEvent_Priority.NONE })),
     location: Type.Optional(Type.String({ 'title': 'Location', '@icon': 'IconMapPin', 'description': 'Human readable location - ie: an address' })),
     remarks: Type.Optional(Type.String({ 'title': 'Remarks', '@icon': 'IconBlockquote', 'description': 'Free text remarks about the Event' })),
-    ended: Type.Optional(Type.String({ 'title': 'Ended', '@icon': 'IconCalendarOff', 'description': 'Time at which the Event ended', 'format': 'date-time' })),
-    active: Type.Optional(Type.Boolean({ 'title': 'Active', '@icon': 'IconActivity', 'description': 'Is the Event currently active', 'default': true })),
+    started: Type.Optional(Type.String({ 'title': 'Started', '@icon': 'IconCalendarEvent', 'description': 'Time at which the Event started - defaults to the time of creation', 'format': 'date-time' })),
+    ended: Type.Optional(Type.String({ 'title': 'Ended', '@icon': 'IconCalendarOff', '@relative': true, 'description': 'Time at which the Event ends - a future time keeps the Event active until then, a Map value of a number of seconds ends the Event that far from submission', 'format': 'date-time' })),
+    active: Type.Optional(Type.Boolean({ 'title': 'Active', '@icon': 'IconActivity', 'description': 'Is the Event active - derived from ended, false ends the Event now & true clears ended', 'default': true })),
     external_id: Type.Optional(Type.String({ 'title': 'External ID', '@icon': 'IconLicense', 'description': 'ID of the Event in an external system' })),
     editable: Type.Optional(Type.Boolean({ 'title': 'Editable', '@icon': 'IconLock', 'description': 'Can users other than the creator edit the Event', 'default': true })),
     channels: Type.Optional(Channels),

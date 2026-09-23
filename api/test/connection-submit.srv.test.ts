@@ -689,26 +689,91 @@ test('POST: api/connection/1/submit - channels, style, links, active & Device as
         const opened = await submit(true, 77);
 
         assert.equal(opened.event.priority, 'high');
-        assert.equal(opened.event.active, true);
         assert.equal(opened.event.ended, null);
         assert.deepEqual(opened.event.style, { 'marker-color': '#ff0000', 'marker-opacity': 0.5 });
         assert.deepEqual(opened.event.links, [{ name: 'CAD 77', url: 'https://cad.example.com/77' }]);
         assert.equal(opened.device.event, opened.event.id);
 
         const augmented = await models.CoreEvent.augmented_from(opened.event.id);
+        assert.equal(augmented.active, true);
         assert.deepEqual(augmented.channels, [3, 7]);
         assert.deepEqual((await models.CoreDevice.augmented_from(opened.device.id)).channels, [3]);
 
         const closed = await submit(false, null);
 
         assert.equal(closed.event.id, opened.event.id);
-        assert.equal(closed.event.active, false);
+        assert.equal((await models.CoreEvent.augmented_from(closed.event.id)).active, false);
         assert.ok(closed.event.ended, 'closing an Event stamps ended');
         assert.equal(closed.device.event, null, 'an empty event_external_id unassigns the Device');
         assert.deepEqual((await models.CoreEvent.augmented_from(closed.event.id)).channels, [3, 7]);
 
         const reclosed = await submit(false, null);
         assert.equal(reclosed.event.ended, closed.event.ended, 'the original end time is preserved');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('POST: api/connection/1/submit - ended as seconds from submission is pushed out by every submission', async () => {
+    try {
+        const models = flight.config!.models;
+
+        await models.LayerMapping.generate({
+            layer: 1,
+            schema: 'cad',
+            destination: LayerMapping_Destination.COREEVENT,
+            name: 'CAD',
+            query: null,
+            mapping: {
+                name: '{{title}}',
+                type: '10031000001211000000',
+                external_id: 'cad-{{number}}',
+                ended: 1800,
+            },
+        });
+
+        const submit = async () => {
+            const res = await flight.fetch('/api/connection/1/submit', {
+                method: 'POST',
+                auth: {
+                    bearer: layerToken,
+                },
+                body: {
+                    type: 'FeatureCollection',
+                    schema: 'cad',
+                    features: [{
+                        id: 'cad-1',
+                        type: 'Feature',
+                        properties: { metadata: { title: 'Alarm', number: 1 } },
+                        geometry: { type: 'Point', coordinates: [-105, 39] },
+                    }],
+                },
+            }, true);
+
+            assert.equal(res.status, 200);
+            assert.deepEqual(res.body.errors, []);
+
+            const [event] = (await flight.config!.pg.select().from(CoreEvent)).filter(e => e.external_id === 'cad-1');
+            return event;
+        };
+
+        const created = await submit();
+        assert.ok(created.ended, 'ended set from submission time');
+        assert.equal((await models.CoreEvent.augmented_from(created.id)).active, true, 'active until ended');
+
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        const pushed = await submit();
+        assert.equal(pushed.id, created.id);
+        assert.ok(new Date(pushed.ended!).getTime() > new Date(created.ended!).getTime(), 'resubmitting pushes ended out');
+
+        // The feed goes quiet & the end time passes
+        await models.CoreEvent.commit(created.id, { ended: new Date(Date.now() - 1000).toISOString() });
+        assert.equal((await models.CoreEvent.augmented_from(created.id)).active, false, 'ended in the past');
+
+        // The feed resumes
+        await submit();
+        assert.equal((await models.CoreEvent.augmented_from(created.id)).active, true, 'a new ended reopens the Event');
     } catch (err) {
         assert.ifError(err);
     }
@@ -770,7 +835,6 @@ test('POST: api/connection/1/submit - update: false fields are only applied when
         // A user renames the Event, closes it, restyles it & shares it with another Channel
         await models.CoreEvent.commit(created.id, {
             name: 'Hydrant (Main St)',
-            active: false,
             ended: '2026-01-01T00:00:00.000Z',
             style: { 'icon': 'abc:Fire/custom.png', 'marker-color': '#0000ff', 'marker-opacity': 0.5 },
         });
@@ -781,7 +845,7 @@ test('POST: api/connection/1/submit - update: false fields are only applied when
         assert.equal(updated.id, created.id);
         assert.equal(updated.remarks, 'Flow tested', 'fields update by default');
         assert.equal(updated.name, 'Hydrant (Main St)');
-        assert.equal(updated.active, false);
+        assert.equal((await models.CoreEvent.augmented_from(updated.id)).active, false);
         assert.ok(updated.ended, 'ended is derived from a create only active so is left alone');
         assert.deepEqual(updated.style, { 'icon': 'abc:Fire/custom.png', 'marker-color': '#00ff00', 'marker-opacity': 0.5 });
         assert.deepEqual((await models.CoreEvent.augmented_from(created.id)).channels, [3, 9]);

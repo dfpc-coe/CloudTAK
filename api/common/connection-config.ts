@@ -8,6 +8,15 @@ import type ConfigStateful from '../stateful/config.js';
 import type TAK from '@tak-ps/node-tak';
 import type { TAKAPI } from '@tak-ps/node-tak';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
+import { ACTIVE } from './models/CoreEvent.js';
+
+const EVENT_STALE = 30 * 60 * 1000;
+
+/** CoT stale in ms - capped at the Event's ended time so clients drop the marker when the Event ends */
+function eventStale(ended: string | null): number {
+    if (!ended) return EVENT_STALE;
+    return Math.max(30 * 1000, Math.min(EVENT_STALE, new Date(ended).getTime() - Date.now()));
+}
 
 export const ConnectionAuth = Type.Object({
     ca: Type.Optional(Type.Array(Type.String())),
@@ -298,8 +307,8 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
                 // Broadcast CoTs carry Channels, never Board placements
                 boards: false,
                 where: opts && opts.event
-                    ? and(eq(CoreEvent.active, true), eq(CoreEvent.id, opts.event))
-                    : eq(CoreEvent.active, true),
+                    ? and(ACTIVE, eq(CoreEvent.id, opts.event))
+                    : ACTIVE,
             })) {
                 const dest = event.channels
                     .map(channel => groups.get(channel))
@@ -354,7 +363,8 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
                             how: 'm-g',
                             callsign: event.name,
                             remarks: remarks.join('\n\n'),
-                            stale: 30 * 60 * 1000,
+                            start: event.started,
+                            stale: eventStale(event.ended),
                             dest,
                             links,
                         },
