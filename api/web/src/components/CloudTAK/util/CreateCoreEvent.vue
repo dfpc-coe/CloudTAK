@@ -67,7 +67,7 @@
                     </div>
 
                     <div class='col-12'>
-                        <label class='form-label'>Share to Channels</label>
+                        <label class='form-label required'>Share to Channels</label>
                         <div
                             class='overflow-auto'
                             style='max-height: 250px;'
@@ -77,12 +77,18 @@
                                 :active='true'
                             />
                         </div>
+                        <div
+                            v-if='!config.channels.length'
+                            class='form-hint text-warning'
+                        >
+                            Select at least one Channel to share the Event with
+                        </div>
                     </div>
                 </div>
 
                 <button
                     class='btn btn-primary w-100 mt-3'
-                    :disabled='!config.name.trim() || !config.type'
+                    :disabled='!valid'
                     @click='submit'
                 >
                     Create Event
@@ -93,7 +99,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { server } from '../../../std.ts';
 import Coordinate from './Coordinate.vue';
@@ -158,6 +164,10 @@ const config = ref({
     ]
 });
 
+const valid = computed(() => {
+    return !!config.value.name.trim() && !!config.value.type && config.value.channels.length > 0;
+});
+
 onMounted(async () => {
     if (props.channel === undefined) return;
 
@@ -171,7 +181,7 @@ onMounted(async () => {
 });
 
 async function submit(): Promise<void> {
-    if (!config.value.name.trim() || !config.value.type) return;
+    if (!valid.value) return;
 
     try {
         loading.value = true;

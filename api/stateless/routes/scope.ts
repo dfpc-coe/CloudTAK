@@ -1,8 +1,8 @@
 import { Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import { PERMISSIONS } from '@tak-ps/etl';
 import Auth from '../../common/auth.js';
+import { PERMISSIONS } from '../../common/control/layer.js';
 import type ConfigStateless from '../config.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {

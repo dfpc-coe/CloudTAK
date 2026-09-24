@@ -311,6 +311,7 @@ test('PATCH: api/core/device/:device - assign and unassign event', async () => {
                     type: 'Point',
                     coordinates: [-105.2705, 40.015],
                 },
+                channels: [7],
             },
         }, true);
 

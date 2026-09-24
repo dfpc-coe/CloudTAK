@@ -190,6 +190,7 @@ test('POST: api/core/form/:form/response - linked to an Event', async () => {
                     type: 'Point',
                     coordinates: [-105.2705, 40.015],
                 },
+                channels: [7],
             },
         }, true);
 
@@ -513,6 +514,7 @@ test('GET: api/core/event/:event/response - linked Responses with embedded Form'
                     type: 'Point',
                     coordinates: [-105.2705, 40.015],
                 },
+                channels: [7],
             },
         }, true);
 

@@ -40,6 +40,13 @@ export enum CoreEvent_Priority {
     CRITICAL = 'critical',
 }
 
+export enum CoreEventEffect_Status {
+    TASKED = 'tasked',
+    ACTIVE = 'active',
+    COMPLETE = 'complete',
+    CANCELLED = 'cancelled',
+}
+
 export enum CoreEventBoardColumn_Type {
     NOMINATED = 'nominated',
     CUSTOM = 'custom',

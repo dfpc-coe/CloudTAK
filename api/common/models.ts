@@ -1,6 +1,7 @@
 import Modeler, { Pool } from '@openaddresses/batch-generic';
 import CoreDevice from './models/CoreDevice.js';
 import CoreEvent from './models/CoreEvent.js';
+import CoreEventBoardEvent from './models/CoreEventBoardEvent.js';
 import CoreForm from './models/CoreForm.js';
 import CoreFormResponse from './models/CoreFormResponse.js';
 import Data from './models/Data.js';
@@ -31,7 +32,9 @@ export default class Models {
     CoreEvent: CoreEvent;
     CoreEventBoard: Modeler<typeof pgtypes.CoreEventBoard>;
     CoreEventBoardColumn: Modeler<typeof pgtypes.CoreEventBoardColumn>;
-    CoreEventBoardEvent: Modeler<typeof pgtypes.CoreEventBoardEvent>;
+    CoreEventBoardEvent: CoreEventBoardEvent;
+    CoreEventAssignment: Modeler<typeof pgtypes.CoreEventAssignment>;
+    CoreEventEffect: Modeler<typeof pgtypes.CoreEventEffect>;
     CoreForm: CoreForm;
     CoreFormChannel: Modeler<typeof pgtypes.CoreFormChannel>;
     CoreFormColumn: Modeler<typeof pgtypes.CoreFormColumn>;
@@ -83,7 +86,9 @@ export default class Models {
         this.CoreEvent = new CoreEvent(pg);
         this.CoreEventBoard = new Modeler(pg, pgtypes.CoreEventBoard);
         this.CoreEventBoardColumn = new Modeler(pg, pgtypes.CoreEventBoardColumn);
-        this.CoreEventBoardEvent = new Modeler(pg, pgtypes.CoreEventBoardEvent);
+        this.CoreEventBoardEvent = new CoreEventBoardEvent(pg);
+        this.CoreEventAssignment = new Modeler(pg, pgtypes.CoreEventAssignment);
+        this.CoreEventEffect = new Modeler(pg, pgtypes.CoreEventEffect);
         this.CoreForm = new CoreForm(pg);
         this.CoreFormChannel = new Modeler(pg, pgtypes.CoreFormChannel);
         this.CoreFormColumn = new Modeler(pg, pgtypes.CoreFormColumn);

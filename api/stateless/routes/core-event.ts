@@ -1,4 +1,4 @@
-import { Type, Static } from '@sinclair/typebox';
+import { Type } from '@sinclair/typebox';
 import { StandardResponse, CoreEventResponse, CoreEventLink, CoreEventStyle, GeoJSONFeatureGeometryPoint } from '../../common/types.js';
 import { sql, eq } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
@@ -7,67 +7,19 @@ import Auth, { AuthUser, AuthResource, AuthResourceAccess } from '../../common/a
 import { CoreEvent, CoreEventChannel } from '../../common/schema.js';
 import { CoreEvent_Priority } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
-import { userChannels, connectionChannels } from '../lib/tak-channels.js';
+import { userChannels } from '../lib/tak-channels.js';
 import { notifyCoreEvent } from '../lib/core-event.js';
+import EventControl from '../lib/control/event.js';
+import { placementResponse } from '../lib/control/board.js';
 import { ETLEventAction } from '../../common/etl-events.js';
 import { uniqueViolation } from '../lib/pg-error.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
-    /**
-     * Resolve the Connection a Connection or Layer resource token belongs to
-     */
-    async function resourceConnection(auth: AuthResource): Promise<number> {
-        if (auth.access === AuthResourceAccess.LAYER) {
-            if (auth.id === undefined) throw new Err(401, null, 'Layer Resource Token must contain a Layer ID');
-            const layer = await config.models.Layer.from(auth.id);
-            if (layer.connection === null) throw new Err(401, null, 'Layer is not associated with a Connection');
-            return layer.connection;
-        } else {
-            if (auth.id === undefined) throw new Err(401, null, 'Connection Resource Token must contain a Connection ID');
-            const connection = await config.models.Connection.from(auth.id);
-            return connection.id;
-        }
-    }
-
-    /**
-     * Is the requester the creator of the Event - the user that created it,
-     * a System Admin, or a Connection/Layer token belonging to the Connection
-     * that created it
-     */
-    function isEventCreator(auth: AuthUser | AuthResource, event: Static<typeof CoreEventResponse>, connection: number | null): boolean {
-        if (auth instanceof AuthUser) {
-            return auth.is_admin() || event.username === auth.email;
-        } else {
-            return connection !== null && event.connection === connection;
-        }
-    }
-
-    /**
-     * An Event is visible to its creator, System Admins, any user with an
-     * active channel the Event has been shared with, and Connection/Layer
-     * tokens belonging to the Connection that created it or whose Connection
-     * has an active channel the Event has been shared with - the same rule
-     * under which Outgoing Layers are delivered the Event
-     */
-    async function ensureEventAccess(auth: AuthUser | AuthResource, event: Static<typeof CoreEventResponse>, connection: number | null): Promise<void> {
-        if (isEventCreator(auth, event, connection)) return;
-
-        const shared = (event.channels || []).map(c => Number(c));
-        if (shared.length) {
-            let active: Set<number> | null = null;
-
-            if (auth instanceof AuthUser) {
-                active = await userChannels(config, auth.email);
-            } else if (connection !== null) {
-                active = await connectionChannels(config, await config.models.Connection.from(connection));
-            }
-
-            if (active && shared.some(c => active.has(c))) return;
-        }
-
-        throw new Err(403, null, 'You do not have permission to access this Event');
-    }
+    const eventControl = new EventControl(config);
+    const resourceConnection = eventControl.resourceConnection.bind(eventControl);
+    const isEventCreator = eventControl.isEventCreator.bind(eventControl);
+    const ensureEventAccess = eventControl.ensureEventAccess.bind(eventControl);
 
     await schema.get('/core/event', {
         name: 'List Events',
@@ -254,8 +206,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
             channels: Type.Array(Type.Integer({ minimum: 0 }), {
                 uniqueItems: true,
-                default: [],
-                description: 'TAK Server Channels to share the Event with',
+                minItems: 1,
+                description: 'TAK Server Channels to share the Event with - at least one is required',
             }),
         }),
         res: CoreEventResponse,
@@ -338,7 +290,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             style: Type.Optional(Type.Object(CoreEventStyle.properties, {
                 description: 'Point styling for the Event - replaces the existing style object',
             })),
-            channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), { uniqueItems: true })),
+            channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), {
+                uniqueItems: true,
+                minItems: 1,
+                description: 'TAK Server Channels to share the Event with - replaces the existing Channels, an Event must always be shared with at least one',
+            })),
         }),
         res: CoreEventResponse,
     }, async (req, res) => {
@@ -439,11 +395,20 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 throw new Err(403, null, 'Only the Event creator can delete this Event');
             }
 
+            // Deleting the Event cascades its Board placements, which subscribers see as removals
+            const placements = await config.models.CoreEventBoardEvent.placements(req.params.event);
+
             await config.models.CoreEvent.delete(req.params.event);
 
             config.etlEvents.event(ETLEventAction.Delete, event).catch((err) => {
                 console.error(`not ok - failed to deliver delete ETL Event for Core Event ${event.id}:`, err);
             });
+
+            for (const { placement, channel } of placements) {
+                config.etlEvents.boardEvent(ETLEventAction.Delete, channel, placementResponse(placement, event)).catch((err) => {
+                    console.error(`not ok - failed to deliver delete ETL Event for Placement ${placement.id}:`, err);
+                });
+            }
 
             res.json({ status: 200, message: 'Core Event Deleted' });
         } catch (err) {
