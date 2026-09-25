@@ -91,11 +91,25 @@
                 </div>
 
                 <div class='px-2 pt-2'>
-                    <TablerInput
+                    <SearchSortFilter
                         v-model='featureSearch'
-                        icon='search'
+                        v-model:sort='sort'
+                        :sort-options='sortOptions'
                         placeholder='Search features by callsign...'
-                    />
+                    >
+                        <template #sort-icon>
+                            <component
+                                :is='sortTypeIcon'
+                                :size='20'
+                                stroke='1'
+                            />
+                            <component
+                                :is='sortDirectionIcon'
+                                :size='20'
+                                stroke='1'
+                            />
+                        </template>
+                    </SearchSortFilter>
                 </div>
 
                 <template v-if='featureSearch.trim()'>
@@ -179,14 +193,17 @@ import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
 import Sortable from 'sortablejs';
 import {
+    IconClock,
+    IconArrowUp,
+    IconArrowDown,
     IconCloudOff,
+    IconLetterCase,
     IconCloudUpload,
     IconFolderPlus,
 } from '@tabler/icons-vue';
 import {
     TablerNone,
     TablerAlert,
-    TablerInput,
     TablerLoading,
     TablerIconButton,
     TablerRefreshButton,
@@ -204,6 +221,7 @@ import MenuTemplate from '../../util/MenuTemplate.vue';
 import PathBrowser from '../../util/PathBrowser.vue';
 import PathBreadcrumb from '../../util/PathBreadcrumb.vue';
 import FeatureRow from '../../util/FeatureRow.vue';
+import SearchSortFilter from '../../util/SearchSortFilter.vue';
 import MissionLayerCreate from './MissionLayerCreate.vue';
 import MissionLayerEdit from './MissionLayerEdit.vue';
 
@@ -218,6 +236,8 @@ const refreshing = ref(false);
 const pushing = ref(false);
 const currentUid = ref<string | null>(null);
 const featureSearch = ref('');
+const sortOptions = ['Newest → Oldest', 'Oldest → Newest', 'Alphabetical A→Z', 'Alphabetical Z→A'];
+const sort = ref('Newest → Oldest');
 const pathStack = ref<Array<{ uid: string, name: string }>>([]);
 
 const sortableItemsRef = useTemplateRef<HTMLElement>('sortableItemsRef');
@@ -364,13 +384,31 @@ const orphanedFeats = computed<Feature[]>(() => {
     return result;
 });
 
+const sortTypeIcon = computed(() => sort.value.startsWith('Alphabetical') ? IconLetterCase : IconClock);
+const sortDirectionIcon = computed(() => (sort.value === 'Oldest → Newest' || sort.value === 'Alphabetical A→Z') ? IconArrowUp : IconArrowDown);
+
+function sortFeatures(features: Feature[]): Feature[] {
+    const time = (feat: Feature): number => feat.properties.time ? new Date(feat.properties.time).getTime() : 0;
+    const callsign = (feat: Feature): string => (feat.properties.callsign ?? '').toLowerCase();
+
+    if (sort.value === 'Oldest → Newest') {
+        return features.sort((a, b) => time(a) - time(b));
+    } else if (sort.value === 'Alphabetical A→Z') {
+        return features.sort((a, b) => callsign(a).localeCompare(callsign(b)));
+    } else if (sort.value === 'Alphabetical Z→A') {
+        return features.sort((a, b) => callsign(b).localeCompare(callsign(a)));
+    } else {
+        return features.sort((a, b) => time(b) - time(a));
+    }
+}
+
 const searchResults = computed<Feature[]>(() => {
     const term = featureSearch.value.trim().toLowerCase();
     if (!term) return [];
 
-    return Array.from(feats.value.values()).filter((feat) => {
+    return sortFeatures(Array.from(feats.value.values()).filter((feat) => {
         return (feat.properties.callsign || '').toLowerCase().includes(term);
-    });
+    }));
 });
 
 const currentFolders = computed<PathNode<Feature>[]>(() => {
@@ -380,9 +418,9 @@ const currentFolders = computed<PathNode<Feature>[]>(() => {
 });
 
 const currentItems = computed<Feature[]>(() => {
-    if (!currentUid.value) return orphanedFeats.value;
+    if (!currentUid.value) return sortFeatures([...orphanedFeats.value]);
     const node = PathManager.findNodeById(tree.value.nodes, currentUid.value);
-    return node ? Array.from(node.items) : orphanedFeats.value;
+    return sortFeatures(node ? Array.from(node.items) : [...orphanedFeats.value]);
 });
 
 /** Collect every feature id within a mission folder node (recursing into children). Mission folders are server-defined layer groups, so visibility is toggled by contained ids. */

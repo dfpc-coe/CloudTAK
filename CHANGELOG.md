@@ -18,6 +18,10 @@
 
 ### Pending Release
 
+- :rocket: Mission Layers panel now uses the shared search/sort control with Newest → Oldest (default), Oldest → Newest & Alphabetical sort options applied to both folder contents & search results
+
+### v13.96.0 - 2026-09-25
+
 - :tada: Login tokens now last 8 days by default & `POST /login`, `POST /login/passkey/authenticate` return a `refresh` token which `POST /login/refresh` exchanges for a new token pair - the web client refreshes on every launch & each refresh extends the session by 30 days of inactivity, refresh tokens are single use, stored hashed & a replayed token revokes its session
 - :tada: `login::token::expiry` & `login::refresh::expiry` admin config values (hours) control the login token & session lifetimes
 - :tada: `DELETE /user/:username/session/:session` terminates a login session, revoking its login & refresh tokens - the web client calls it on logout & from the sessions list
