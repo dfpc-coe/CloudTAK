@@ -600,7 +600,7 @@ export const ErrorResponse = createSelectSchema(schemas.Errors, {
     updated: Type.String(),
 });
 
-export const TaskResponse = createSelectSchema(schemas.Task, {
+export const IntegrationResponse = createSelectSchema(schemas.Integration, {
     id: Type.Integer(),
     created: Type.String(),
     updated: Type.String(),

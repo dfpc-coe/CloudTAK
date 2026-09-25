@@ -64,10 +64,10 @@ async function fetchTask() {
         versions.value = [];
     } else {
         loading.task = true;
-        const taskRes = await server.GET('/api/task/raw/{:task}', {
+        const taskRes = await server.GET('/api/integration/raw/{:prefix}', {
             params: {
                 path: {
-                    ':task': current.value.prefix
+                    ':prefix': current.value.prefix
                 }
             }
         });
@@ -81,10 +81,10 @@ async function fetchTask() {
         }
 
         if (current.value.readme) {
-            const readmeRes = await server.GET('/api/task/{:task}/readme', {
+            const readmeRes = await server.GET('/api/integration/{:integrationid}/readme', {
                 params: {
                     path: {
-                        ':task': current.value.id
+                        ':integrationid': current.value.id
                     }
                 }
             });
@@ -99,7 +99,7 @@ async function fetchTask() {
 
 async function fetchTasks() {
     loading.tasks = true;
-    const res = await server.GET('/api/task', {
+    const res = await server.GET('/api/integration', {
         params: {
             query: {
                 filter: paging.filter,
@@ -130,7 +130,7 @@ async function fetchCurrent() {
 
     loading.task = true;
 
-    const res = await server.GET('/api/task', {
+    const res = await server.GET('/api/integration', {
         params: {
             query: {
                 filter: match[1],

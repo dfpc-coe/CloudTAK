@@ -27,6 +27,7 @@ flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
 flight.user({ username: 'user', admin: false });
+flight.integration('etl-test');
 
 flight.connection();
 
@@ -51,6 +52,27 @@ test('GET: api/connection/1/layer', async () => {
             total: 0,
             items: [],
         });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('POST: api/connection/1/layer - unregistered integration', async () => {
+    try {
+        const res = await flight.fetch('/api/connection/1/layer', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                name: 'Unregistered Layer',
+                description: 'Layer for an Integration that is not registered',
+                task: 'etl-unregistered-v1.0.0',
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'Integration etl-unregistered is not registered');
     } catch (err) {
         assert.ifError(err);
     }
@@ -139,6 +161,11 @@ test('POST: api/connection/1/layer', async () => {
             protected: false,
             logging: true,
             task: 'etl-test-v1.0.0',
+            version: '1.0.0',
+            integration: {
+                name: 'etl-test',
+                icon: null,
+            },
             connection: 1,
             memory: 256,
             timeout: 120,
@@ -192,6 +219,11 @@ test('GET: api/connection/1/layer/1', async () => {
             protected: false,
             logging: true,
             task: 'etl-test-v1.0.0',
+            version: '1.0.0',
+            integration: {
+                name: 'etl-test',
+                icon: null,
+            },
             connection: 1,
             memory: 256,
             timeout: 120,
@@ -248,6 +280,11 @@ test('PATCH: api/connection/1/layer/1 - set protected', async () => {
             protected: true,
             logging: true,
             task: 'etl-test-v1.0.0',
+            version: '1.0.0',
+            integration: {
+                name: 'etl-test',
+                icon: null,
+            },
             connection: 1,
             memory: 256,
             timeout: 120,
@@ -318,6 +355,11 @@ test('PATCH: api/connection/1/layer/1 - unset protected', async () => {
             protected: false,
             logging: true,
             task: 'etl-test-v1.0.0',
+            version: '1.0.0',
+            integration: {
+                name: 'etl-test',
+                icon: null,
+            },
             connection: 1,
             memory: 256,
             timeout: 120,
@@ -528,7 +570,8 @@ test('GET: api/layer/update-management', async () => {
         const stacklessLayer = await flight.config!.models.Layer.generate({
             name: 'Undeployed Layer',
             description: 'This layer has not been deployed',
-            task: 'etl-test-v1.1.0',
+            task: 1,
+            version: '1.1.0',
             connection: 1,
         });
 
@@ -693,7 +736,8 @@ test('DELETE: api/connection/1/layer/:id - layer with written COT features', asy
         const layer = await flight.config!.models.Layer.generate({
             name: 'Feature Layer',
             description: 'Layer that has written COT features to the map',
-            task: 'etl-test-v1.0.0',
+            task: 1,
+            version: '1.0.0',
             connection: 1,
         });
 

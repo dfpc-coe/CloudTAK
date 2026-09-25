@@ -9,6 +9,7 @@ const flight = new Flight();
 flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
+flight.integration('test-task');
 
 flight.connection();
 
@@ -134,7 +135,8 @@ test('GET: api/marti/group - Layer Token infers the Connection', async () => {
     try {
         await flight.config!.models.Layer.generate({
             name: 'Group Layer',
-            task: 'test-task-v1.0.0',
+            task: 1,
+            version: '1.0.0',
             connection: 1,
             permissions: ['group:read'],
         });
@@ -160,7 +162,8 @@ test('GET: api/marti/group - Layer Token without group:read is rejected', async 
     try {
         await flight.config!.models.Layer.generate({
             name: 'Unscoped Layer',
-            task: 'test-task-v1.0.0',
+            task: 1,
+            version: '1.0.0',
             connection: 1,
             permissions: [],
         });

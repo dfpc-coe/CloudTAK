@@ -8,6 +8,7 @@ const flight = new Flight();
 flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
+flight.integration('test-task');
 
 flight.connection();
 
@@ -55,7 +56,8 @@ test('Layer token: api/connection/1/video/lease - video:read only', async () => 
     try {
         await flight.config!.models.Layer.generate({
             name: 'Video Lease Layer',
-            task: 'test-task-v1.0.0',
+            task: 1,
+            version: '1.0.0',
             connection: 1,
             permissions: ['video:read'],
         });

@@ -9,6 +9,7 @@ const flight = new Flight();
 flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
+flight.integration('test-task');
 
 flight.connection();
 
@@ -16,7 +17,8 @@ test('Setup: Create Layer', async () => {
     try {
         await flight.config!.models.Layer.generate({
             name: 'Capabilities Layer',
-            task: 'test-task-v1.0.0',
+            task: 1,
+            version: '1.0.0',
             connection: 1,
         });
     } catch (err) {

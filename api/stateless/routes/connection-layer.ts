@@ -812,6 +812,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const task = req.body.task || layer.task;
             const taskChanged = req.body.task !== undefined && req.body.task !== layer.task;
 
+            const patch: Partial<InferInsertModel<typeof Layer>> = { ...req.body, task: undefined, version: undefined };
+            if (taskChanged) {
+                const resolved = await layerControl.resolve(task);
+                patch.task = resolved.integration.id;
+                patch.version = resolved.version;
+            }
+
             let capabilities = null;
             if (req.body.permissions !== undefined || (taskChanged && layer.outgoing)) {
                 capabilities = await layerControl.capabilities(task);
@@ -837,7 +844,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             await config.models.Layer.commit(layer.id, {
                 updated: sql`Now()`,
-                ...req.body,
+                ...patch,
             });
 
             if (taskChanged && layer.outgoing && capabilities) {

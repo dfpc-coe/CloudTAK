@@ -18,7 +18,7 @@ flight.takeoff();
 flight.user();
 flight.user({ admin: false, username: 'user' });
 
-test('GET: api/task - empty', async () => {
+test('GET: api/integration - empty', async () => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             assert.deepEqual(command.input, {
@@ -27,7 +27,7 @@ test('GET: api/task - empty', async () => {
             return Promise.resolve({ imageIds: [] });
         });
 
-        const res = await flight.fetch('/api/task', {
+        const res = await flight.fetch('/api/integration', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -45,7 +45,7 @@ test('GET: api/task - empty', async () => {
     Sinon.restore();
 });
 
-test('GET: api/task - empty', async () => {
+test('GET: api/integration - empty', async () => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             assert.deepEqual(command.input, {
@@ -67,7 +67,7 @@ test('GET: api/task - empty', async () => {
             });
         });
 
-        const res = await flight.fetch('/api/task/raw', {
+        const res = await flight.fetch('/api/integration/raw', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -88,7 +88,7 @@ test('GET: api/task - empty', async () => {
     Sinon.restore();
 });
 
-test('GET: api/task/raw/test/version/1.1.1 - capabilities annotation', async () => {
+test('GET: api/integration/raw/test/version/1.1.1 - capabilities annotation', async () => {
     try {
         const capabilities = {
             version: '1.0',
@@ -154,7 +154,7 @@ test('GET: api/task/raw/test/version/1.1.1 - capabilities annotation', async () 
             }
         });
 
-        const res = await flight.fetch('/api/task/raw/test/version/1.1.1', {
+        const res = await flight.fetch('/api/integration/raw/test/version/1.1.1', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -173,7 +173,7 @@ test('GET: api/task/raw/test/version/1.1.1 - capabilities annotation', async () 
     Sinon.restore();
 });
 
-test('GET: api/task/raw/test/version/1.1.1 - invalid capabilities annotation', async () => {
+test('GET: api/integration/raw/test/version/1.1.1 - invalid capabilities annotation', async () => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             if (command instanceof ListImagesCommand) {
@@ -201,7 +201,7 @@ test('GET: api/task/raw/test/version/1.1.1 - invalid capabilities annotation', a
             }
         });
 
-        const res = await flight.fetch('/api/task/raw/test/version/1.1.1', {
+        const res = await flight.fetch('/api/integration/raw/test/version/1.1.1', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -220,7 +220,7 @@ test('GET: api/task/raw/test/version/1.1.1 - invalid capabilities annotation', a
     Sinon.restore();
 });
 
-test('GET: api/task/raw/test/version/1.1.1 - no capabilities annotation', async () => {
+test('GET: api/integration/raw/test/version/1.1.1 - no capabilities annotation', async () => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             if (command instanceof ListImagesCommand) {
@@ -243,7 +243,7 @@ test('GET: api/task/raw/test/version/1.1.1 - no capabilities annotation', async 
             }
         });
 
-        const res = await flight.fetch('/api/task/raw/test/version/1.1.1', {
+        const res = await flight.fetch('/api/integration/raw/test/version/1.1.1', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -262,9 +262,9 @@ test('GET: api/task/raw/test/version/1.1.1 - no capabilities annotation', async 
     Sinon.restore();
 });
 
-test('POST: api/task - non-admin', async () => {
+test('POST: api/integration - non-admin', async () => {
     try {
-        const res = await flight.fetch('/api/task', {
+        const res = await flight.fetch('/api/integration', {
             method: 'POST',
             auth: {
                 bearer: flight.token.user,
@@ -282,9 +282,9 @@ test('POST: api/task - non-admin', async () => {
     }
 });
 
-test('POST: api/task', async () => {
+test('POST: api/integration', async () => {
     try {
-        const res = await flight.fetch('/api/task', {
+        const res = await flight.fetch('/api/integration', {
             method: 'POST',
             auth: {
                 bearer: flight.token.admin,
@@ -314,9 +314,9 @@ test('POST: api/task', async () => {
     }
 });
 
-test('GET: api/task - single registered task', async () => {
+test('GET: api/integration - single registered task', async () => {
     try {
-        const res = await flight.fetch('/api/task', {
+        const res = await flight.fetch('/api/integration', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -332,9 +332,9 @@ test('GET: api/task - single registered task', async () => {
     }
 });
 
-test('GET: api/task - prefix filter', async () => {
+test('GET: api/integration - prefix filter', async () => {
     try {
-        const match = await flight.fetch('/api/task?prefix=etl-test', {
+        const match = await flight.fetch('/api/integration?prefix=etl-test', {
             method: 'GET',
             auth: { bearer: flight.token.admin },
         }, true);
@@ -342,7 +342,7 @@ test('GET: api/task - prefix filter', async () => {
         assert.equal(match.body.total, 1);
         assert.equal(match.body.items[0].prefix, 'etl-test');
 
-        const miss = await flight.fetch('/api/task?prefix=etl-missing', {
+        const miss = await flight.fetch('/api/integration?prefix=etl-missing', {
             method: 'GET',
             auth: { bearer: flight.token.admin },
         }, true);
@@ -354,9 +354,9 @@ test('GET: api/task - prefix filter', async () => {
     }
 });
 
-test('GET: api/task/1', async () => {
+test('GET: api/integration/1', async () => {
     try {
-        const res = await flight.fetch('/api/task/1', {
+        const res = await flight.fetch('/api/integration/1', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -371,9 +371,9 @@ test('GET: api/task/1', async () => {
     }
 });
 
-test('PATCH: api/task/1', async () => {
+test('PATCH: api/integration/1', async () => {
     try {
-        const res = await flight.fetch('/api/task/1', {
+        const res = await flight.fetch('/api/integration/1', {
             method: 'PATCH',
             auth: {
                 bearer: flight.token.admin,
@@ -392,9 +392,9 @@ test('PATCH: api/task/1', async () => {
     }
 });
 
-test('GET: api/task/1/readme - no readme configured', async () => {
+test('GET: api/integration/1/readme - no readme configured', async () => {
     try {
-        const res = await flight.fetch('/api/task/1/readme', {
+        const res = await flight.fetch('/api/integration/1/readme', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -407,9 +407,33 @@ test('GET: api/task/1/readme - no readme configured', async () => {
     }
 });
 
-test('DELETE: api/task/1', async () => {
+test('DELETE: api/integration/1 - rejected while a Layer uses it', async () => {
     try {
-        const res = await flight.fetch('/api/task/1', {
+        const layer = await flight.config!.models.Layer.generate({
+            name: 'Integration Layer',
+            task: 1,
+            version: '1.0.0',
+        });
+
+        const res = await flight.fetch('/api/integration/1', {
+            method: 'DELETE',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'Cannot delete an Integration with an active Layer');
+
+        await flight.config!.models.Layer.delete(layer.id);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('DELETE: api/integration/1', async () => {
+    try {
+        const res = await flight.fetch('/api/integration/1', {
             method: 'DELETE',
             auth: {
                 bearer: flight.token.admin,
@@ -418,10 +442,10 @@ test('DELETE: api/task/1', async () => {
 
         assert.deepEqual(res.body, {
             status: 200,
-            message: 'Registered Task Deleted',
+            message: 'Integration Deleted',
         });
 
-        const list = await flight.fetch('/api/task', {
+        const list = await flight.fetch('/api/integration', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -434,7 +458,7 @@ test('DELETE: api/task/1', async () => {
     }
 });
 
-test('GET: api/task/raw/test - version list sorted, non-semver tags ignored', async () => {
+test('GET: api/integration/raw/test - version list sorted, non-semver tags ignored', async () => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake(() => {
             return Promise.resolve({
@@ -450,7 +474,7 @@ test('GET: api/task/raw/test - version list sorted, non-semver tags ignored', as
             });
         });
 
-        const res = await flight.fetch('/api/task/raw/test', {
+        const res = await flight.fetch('/api/integration/raw/test', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -477,7 +501,7 @@ test('GET: api/task/raw/test - version list sorted, non-semver tags ignored', as
     Sinon.restore();
 });
 
-test('GET: api/task/raw/unknown - no versions', async () => {
+test('GET: api/integration/raw/unknown - no versions', async () => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake(() => {
             return Promise.resolve({
@@ -487,7 +511,7 @@ test('GET: api/task/raw/unknown - no versions', async () => {
             });
         });
 
-        const res = await flight.fetch('/api/task/raw/unknown', {
+        const res = await flight.fetch('/api/integration/raw/unknown', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -505,7 +529,7 @@ test('GET: api/task/raw/unknown - no versions', async () => {
     Sinon.restore();
 });
 
-test('GET: api/task/raw/unknown/version/1.0.0 - unknown task', async () => {
+test('GET: api/integration/raw/unknown/version/1.0.0 - unknown task', async () => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake(() => {
             return Promise.resolve({
@@ -515,7 +539,7 @@ test('GET: api/task/raw/unknown/version/1.0.0 - unknown task', async () => {
             });
         });
 
-        const res = await flight.fetch('/api/task/raw/unknown/version/1.0.0', {
+        const res = await flight.fetch('/api/integration/raw/unknown/version/1.0.0', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -523,7 +547,7 @@ test('GET: api/task/raw/unknown/version/1.0.0 - unknown task', async () => {
         }, false);
 
         assert.equal(res.status, 404, 'http: 404');
-        assert.equal(res.body.message, 'Task does not exist');
+        assert.equal(res.body.message, 'Integration does not exist');
     } catch (err) {
         assert.ifError(err);
     }
@@ -531,7 +555,7 @@ test('GET: api/task/raw/unknown/version/1.0.0 - unknown task', async () => {
     Sinon.restore();
 });
 
-test('GET: api/task/raw/test/version/9.9.9 - unknown version', async () => {
+test('GET: api/integration/raw/test/version/9.9.9 - unknown version', async () => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake(() => {
             return Promise.resolve({
@@ -541,7 +565,7 @@ test('GET: api/task/raw/test/version/9.9.9 - unknown version', async () => {
             });
         });
 
-        const res = await flight.fetch('/api/task/raw/test/version/9.9.9', {
+        const res = await flight.fetch('/api/integration/raw/test/version/9.9.9', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -549,7 +573,7 @@ test('GET: api/task/raw/test/version/9.9.9 - unknown version', async () => {
         }, false);
 
         assert.equal(res.status, 404, 'http: 404');
-        assert.equal(res.body.message, 'Task Version does not exist');
+        assert.equal(res.body.message, 'Integration Version does not exist');
     } catch (err) {
         assert.ifError(err);
     }
@@ -557,7 +581,7 @@ test('GET: api/task/raw/test/version/9.9.9 - unknown version', async () => {
     Sinon.restore();
 });
 
-test('GET: api/task/raw/test/version/1.1.1 - capabilities via image index', async () => {
+test('GET: api/integration/raw/test/version/1.1.1 - capabilities via image index', async () => {
     try {
         const capabilities = {
             version: '1.0',
@@ -613,7 +637,7 @@ test('GET: api/task/raw/test/version/1.1.1 - capabilities via image index', asyn
             }
         });
 
-        const res = await flight.fetch('/api/task/raw/test/version/1.1.1', {
+        const res = await flight.fetch('/api/integration/raw/test/version/1.1.1', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -632,7 +656,7 @@ test('GET: api/task/raw/test/version/1.1.1 - capabilities via image index', asyn
     Sinon.restore();
 });
 
-test('GET: api/task/raw/test/version/1.1.1 - malformed capabilities annotation', async () => {
+test('GET: api/integration/raw/test/version/1.1.1 - malformed capabilities annotation', async () => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             if (command instanceof ListImagesCommand) {
@@ -658,7 +682,7 @@ test('GET: api/task/raw/test/version/1.1.1 - malformed capabilities annotation',
             }
         });
 
-        const res = await flight.fetch('/api/task/raw/test/version/1.1.1', {
+        const res = await flight.fetch('/api/integration/raw/test/version/1.1.1', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -677,7 +701,7 @@ test('GET: api/task/raw/test/version/1.1.1 - malformed capabilities annotation',
     Sinon.restore();
 });
 
-test('GET: api/task/raw/test/version/1.1.1 - ECR manifest fetch failure is tolerated', async () => {
+test('GET: api/integration/raw/test/version/1.1.1 - ECR manifest fetch failure is tolerated', async () => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             if (command instanceof ListImagesCommand) {
@@ -691,7 +715,7 @@ test('GET: api/task/raw/test/version/1.1.1 - ECR manifest fetch failure is toler
             }
         });
 
-        const res = await flight.fetch('/api/task/raw/test/version/1.1.1', {
+        const res = await flight.fetch('/api/integration/raw/test/version/1.1.1', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -710,7 +734,7 @@ test('GET: api/task/raw/test/version/1.1.1 - ECR manifest fetch failure is toler
     Sinon.restore();
 });
 
-test('DELETE: api/task/raw/test/version/1.0.0', async () => {
+test('DELETE: api/integration/raw/test/version/1.0.0', async () => {
     try {
         let deleted = false;
 
@@ -734,7 +758,7 @@ test('DELETE: api/task/raw/test/version/1.0.0', async () => {
             }
         });
 
-        const res = await flight.fetch('/api/task/raw/test/version/1.0.0', {
+        const res = await flight.fetch('/api/integration/raw/test/version/1.0.0', {
             method: 'DELETE',
             auth: {
                 bearer: flight.token.admin,
@@ -743,7 +767,7 @@ test('DELETE: api/task/raw/test/version/1.0.0', async () => {
 
         assert.deepEqual(res.body, {
             status: 200,
-            message: 'Deleted Task Version',
+            message: 'Deleted Integration Version',
         });
 
         assert.equal(deleted, true, 'BatchDeleteImage was called');
@@ -754,7 +778,7 @@ test('DELETE: api/task/raw/test/version/1.0.0', async () => {
     Sinon.restore();
 });
 
-test('DELETE: api/task/raw/test/version/9.9.9 - unknown version', async () => {
+test('DELETE: api/integration/raw/test/version/9.9.9 - unknown version', async () => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake(() => {
             return Promise.resolve({
@@ -764,7 +788,7 @@ test('DELETE: api/task/raw/test/version/9.9.9 - unknown version', async () => {
             });
         });
 
-        const res = await flight.fetch('/api/task/raw/test/version/9.9.9', {
+        const res = await flight.fetch('/api/integration/raw/test/version/9.9.9', {
             method: 'DELETE',
             auth: {
                 bearer: flight.token.admin,
@@ -772,7 +796,7 @@ test('DELETE: api/task/raw/test/version/9.9.9 - unknown version', async () => {
         }, false);
 
         assert.equal(res.status, 400, 'http: 400');
-        assert.equal(res.body.message, 'Task Version does not exist');
+        assert.equal(res.body.message, 'Integration Version does not exist');
     } catch (err) {
         assert.ifError(err);
     }

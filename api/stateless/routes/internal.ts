@@ -58,7 +58,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     layers.name ~* ${req.query.filter}
                     AND (${Param(req.query.connection)}::BIGINT IS NULL OR ${Param(req.query.connection)}::BIGINT = layers.connection)
                     AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers_incoming.data)
-                    AND (${Param(req.query.task)}::TEXT IS NULL OR Starts_With(layers.task, ${Param(req.query.task)}::TEXT))
+                    AND (${Param(req.query.task)}::TEXT IS NULL OR Starts_With(integrations.prefix || '-v' || layers.version, ${Param(req.query.task)}::TEXT))
                 `,
             });
 
