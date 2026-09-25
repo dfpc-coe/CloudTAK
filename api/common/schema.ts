@@ -536,7 +536,7 @@ export const ImportResult = pgTable('import_result', {
     type_id: text().notNull(),
 });
 
-export const Task = pgTable('tasks', {
+export const Integration = pgTable('integrations', {
     id: serial().primaryKey(),
     prefix: text().notNull(),
     favorite: boolean().notNull().default(false),
@@ -651,7 +651,8 @@ export const Layer = pgTable('layers', {
     priority: text().$type<Layer_Priority>().notNull().default(Layer_Priority.OFF),
     connection: integer().references(() => Connection.id),
     logging: boolean().notNull().default(true),
-    task: text().notNull(),
+    task: bigint({ mode: 'number' }).notNull().references(() => Integration.id),
+    version: text().notNull(),
     memory: integer().notNull().default(256),
     timeout: integer().notNull().default(120),
 

@@ -3,7 +3,7 @@
         <div class='card-header'>
             <TablerIconButton
                 title='Back'
-                @click='router.push("/admin/tasks")'
+                @click='router.push("/admin/integrations")'
             >
                 <IconCircleArrowLeft
                     :size='32'
@@ -19,14 +19,14 @@
                 />
                 <span
                     class='ms-2'
-                    v-text='task ? task.name : route.params.task'
+                    v-text='task ? task.name : route.params.integration'
                 />
             </h3>
 
             <div class='ms-auto btn-list'>
                 <template v-if='task && !edit'>
                     <TablerIconButton
-                        title='Download Task Settings'
+                        title='Download Integration Settings'
                         @click='downloadTask'
                     >
                         <IconDownload
@@ -35,7 +35,7 @@
                         />
                     </TablerIconButton>
                     <TablerIconButton
-                        title='Edit Task'
+                        title='Edit Integration'
                         @click='startEdit'
                     >
                         <IconPencil
@@ -68,7 +68,7 @@
                         <div class='col-md-6 col-12'>
                             <TablerInput
                                 v-model='edit.name'
-                                label='Task Name'
+                                label='Integration Name'
                             />
                         </div>
                         <div class='col-md-6 col-12'>
@@ -87,16 +87,16 @@
 
                         <TablerUploadLogo
                             v-model='edit.logo'
-                            label='Task Logo'
+                            label='Integration Logo'
                         />
                         <TablerInput
                             v-model='edit.repo'
-                            label='Task Code Repository URL'
+                            label='Integration Code Repository URL'
                         />
 
                         <TablerInput
                             v-model='edit.readme'
-                            label='Task Markdown Readme URL'
+                            label='Integration Markdown Readme URL'
                         />
 
                         <div class='col-12 d-flex py-2'>
@@ -168,7 +168,7 @@
                             <div class='datagrid-content'>
                                 <img
                                     :src='task.logo'
-                                    alt='Task Logo'
+                                    alt='Integration Logo'
                                     class='img-thumbnail'
                                     style='height: 50px;'
                                 >
@@ -328,10 +328,10 @@ async function fetch(): Promise<void> {
     loading.value = true;
     error.value = undefined;
     try {
-        const res = await server.GET('/api/task/{:task}', {
+        const res = await server.GET('/api/integration/{:integrationid}', {
             params: {
                 path: {
-                    ':task': Number(route.params.task)
+                    ':integrationid': Number(route.params.integration)
                 }
             }
         });
@@ -353,10 +353,10 @@ async function fetchVersions(): Promise<void> {
     expandedVersion.value = null;
     capabilities.value = null;
     try {
-        const res = await server.GET('/api/task/raw/{:task}', {
+        const res = await server.GET('/api/integration/raw/{:prefix}', {
             params: {
                 path: {
-                    ':task': task.value.prefix
+                    ':prefix': task.value.prefix
                 }
             }
         });
@@ -383,10 +383,10 @@ async function saveTask(): Promise<void> {
     if (!edit.value) return;
     loading.value = true;
     try {
-        const res = await server.PATCH('/api/task/{:task}', {
+        const res = await server.PATCH('/api/integration/{:integrationid}', {
             params: {
                 path: {
-                    ':task': String(edit.value.id)
+                    ':integrationid': Number(edit.value.id)
                 }
             },
             body: {
@@ -409,17 +409,17 @@ async function saveTask(): Promise<void> {
 
 async function deleteTask(): Promise<void> {
     if (!task.value) return;
-    const res = await server.DELETE('/api/task/{:taskid}', {
+    const res = await server.DELETE('/api/integration/{:integrationid}', {
         params: {
             path: {
-                ':taskid': task.value.id
+                ':integrationid': task.value.id
             }
         }
     });
 
     if (res.error) throw new Error(res.error.message);
 
-    router.push('/admin/tasks');
+    router.push('/admin/integrations');
 }
 
 async function downloadTask(): Promise<void> {
@@ -475,10 +475,10 @@ async function toggleVersion(version: string): Promise<void> {
     capabilities.value = null;
     loadingCapabilities.value = true;
     try {
-        const res = await server.GET('/api/task/raw/{:task}/version/{:version}', {
+        const res = await server.GET('/api/integration/raw/{:prefix}/version/{:version}', {
             params: {
                 path: {
-                    ':task': task.value.prefix,
+                    ':prefix': task.value.prefix,
                     ':version': version
                 }
             }
@@ -498,10 +498,10 @@ async function toggleVersion(version: string): Promise<void> {
 async function deleteVersion(version: string): Promise<void> {
     if (!task.value) return;
     loadingVersions.value = true;
-    const res = await server.DELETE('/api/task/raw/{:task}/version/{:version}', {
+    const res = await server.DELETE('/api/integration/raw/{:prefix}/version/{:version}', {
         params: {
             path: {
-                ':task': task.value.prefix,
+                ':prefix': task.value.prefix,
                 ':version': version
             }
         }

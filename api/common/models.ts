@@ -67,7 +67,7 @@ export default class Models {
 
     VideoLease: Modeler<typeof pgtypes.VideoLease>;
 
-    Task: Modeler<typeof pgtypes.Task>;
+    Integration: Modeler<typeof pgtypes.Integration>;
 
     Iconset: Modeler<typeof pgtypes.Iconset>;
     Icon: Icon;
@@ -125,7 +125,7 @@ export default class Models {
         this.Connection = new Modeler(pg, pgtypes.Connection);
         this.ConnectionToken = new Modeler(pg, pgtypes.ConnectionToken);
         this.ConnectionFeature = new Modeler(pg, pgtypes.ConnectionFeature);
-        this.Task = new Modeler(pg, pgtypes.Task);
+        this.Integration = new Modeler(pg, pgtypes.Integration);
         this.Data = new Data(pg);
         this.Iconset = new Modeler(pg, pgtypes.Iconset);
         this.Layer = new Layer(pg);

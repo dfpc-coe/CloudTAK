@@ -167,7 +167,7 @@ const sections: MenuSection[] = [{
         { label: 'Connections', to: '/admin/connection', match: 'admin-connection', icon: IconNetwork },
         { label: 'Core Data', to: '/admin/coredata', match: 'admin-coredata', icon: IconDatabaseCog },
         { label: 'Layers', to: '/admin/layer', match: 'admin-layer', icon: IconBuildingBroadcastTower },
-        { label: 'Integrations', to: '/admin/tasks', match: 'admin-task', icon: IconBrandDocker },
+        { label: 'Integrations', to: '/admin/integrations', match: 'admin-integration', icon: IconBrandDocker },
         { label: 'Data Syncs', to: '/admin/data', match: 'admin-data', icon: IconDatabase },
     ]
 }, {

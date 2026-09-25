@@ -1,7 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import { Static } from '@sinclair/typebox';
-import { InferSelectModel } from 'drizzle-orm';
-import { Connection } from '../../../common/schema.js';
+import { eq, InferSelectModel } from 'drizzle-orm';
+import { Connection, Integration } from '../../../common/schema.js';
 import Alarm from '../aws/alarm.js';
 import type { InferInsertModel } from 'drizzle-orm';
 import Lambda from '../aws/lambda.js';
@@ -83,22 +83,53 @@ export default class LayerControl {
         return await ECR.capabilities(match[1], match[2]);
     }
 
+    /**
+     * Resolve a `<prefix>-v<major>.<minor>.<patch>` container tag to the registered
+     * Integration it belongs to and the version it names
+     */
+    async resolve(task: string): Promise<{
+        integration: InferSelectModel<typeof Integration>;
+        version: string;
+    }> {
+        const match = task.match(/^(.+)-v(\d+\.\d+\.\d+)$/);
+        if (!match) {
+            throw new Err(400, null, 'Layer Task must be in the format name-v<major>.<minor>.<patch>');
+        }
+
+        const integrations = await this.config.models.Integration.list({
+            limit: 1,
+            where: eq(Integration.prefix, match[1]),
+        });
+
+        if (!integrations.items.length) {
+            throw new Err(400, null, `Integration ${match[1]} is not registered`);
+        }
+
+        return {
+            integration: integrations.items[0],
+            version: match[2],
+        };
+    }
+
     async generate(
-        input: InferInsertModel<typeof Layer>,
+        input: Omit<InferInsertModel<typeof Layer>, 'task' | 'version'> & { task: string },
         opts?: {
             alarms?: boolean;
             incoming?: Omit<InferInsertModel<typeof LayerIncoming>, 'layer'>;
             outgoing?: Omit<InferInsertModel<typeof LayerOutgoing>, 'layer'>;
         },
     ): Promise<Static<typeof LayerResponse>> {
-        const base = await this.config.models.Layer.generate(input);
+        const { integration, version } = await this.resolve(input.task);
 
-        // name-v<major>.<minor>.<patch>
-        if (!input.task || !input.task.match(/^(.+)-v(\d+)\.(\d+)\.(\d+)$/)) {
-            throw new Err(400, null, 'Layer Task must be in the format name-v<major>.<minor>.<patch>');
-        } else if (!await ECR.exists(input.task)) {
+        if (!await ECR.exists(input.task)) {
             throw new Err(400, null, `Layer Task ${input.task} does not exist in AWS Container Registry`);
         }
+
+        const base = await this.config.models.Layer.generate({
+            ...input,
+            task: integration.id,
+            version,
+        });
 
         if (opts && opts.incoming) {
             await this.config.models.LayerIncoming.generate({

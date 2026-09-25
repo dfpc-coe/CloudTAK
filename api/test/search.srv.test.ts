@@ -8,6 +8,7 @@ const flight = new Flight();
 flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
+flight.integration('test-task');
 flight.connection();
 
 const scopedLayerToken = 'etl.' + jwt.sign({ access: 'layer', id: 1, internal: true }, 'coe-wildland-fire');
@@ -16,14 +17,16 @@ const unscopedLayerToken = 'etl.' + jwt.sign({ access: 'layer', id: 2, internal:
 test('Setup: search layers', async () => {
     await flight.config!.models.Layer.generate({
         name: 'Search Scoped Layer',
-        task: 'test-task-v1.0.0',
+        task: 1,
+        version: '1.0.0',
         connection: 1,
         permissions: ['search:read'],
     });
 
     await flight.config!.models.Layer.generate({
         name: 'Search Unscoped Layer',
-        task: 'test-task-v1.0.0',
+        task: 1,
+        version: '1.0.0',
         connection: 1,
         permissions: ['feature:submit'],
     });

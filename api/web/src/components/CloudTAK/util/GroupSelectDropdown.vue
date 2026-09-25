@@ -135,6 +135,7 @@ import {
 export type GroupSelectChannel = {
     name: string;
     bitpos: number;
+    description?: string;
 };
 
 const props = withDefaults(defineProps<{
@@ -188,7 +189,7 @@ async function listChannels(): Promise<void> {
         const groups = await GroupManager.list(props.active ? { active: true } : {});
 
         channels.value = groups
-            .map((group) => ({ name: group.name, bitpos: group.bitpos }))
+            .map((group) => ({ name: group.name, bitpos: group.bitpos, description: group.description }))
             .sort((a, b) => a.name.localeCompare(b.name));
 
         emit('channels', channels.value);

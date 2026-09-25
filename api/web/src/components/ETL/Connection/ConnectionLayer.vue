@@ -45,64 +45,33 @@
             />
             <div
                 v-else
-                class='table-resposive'
+                class='row row-cards px-2'
             >
-                <table class='table card-table table-vcenter datatable table-hover'>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                        </tr>
-                    </thead>
-                    <tbody class='table-tbody'>
-                        <tr
-                            v-for='layer of list.items'
-                            :key='layer.id'
-                            class='cursor-pointer'
-                            @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}`)'
-                        >
-                            <td>
-                                <div class='d-flex align-items-center'>
-                                    <LayerStatus :layer='layer' /><div
-                                        class='mx-2'
-                                        v-text='layer.name'
-                                    />
-
-                                    <div class='ms-auto btn-list'>
-                                        <TablerIconButton
-                                            v-if='layer.incoming && layer.incoming.data'
-                                            title='Pushing to Data Sync'
-                                            @click.stop.prevent='router.push(`/connection/${route.params.connectionid}/data/${layer.incoming.data}`)'
-                                        >
-                                            <IconDatabase
-                                                :size='32'
-                                                stroke='1'
-                                            />
-                                        </TablerIconButton>
-
-                                        <IconExchange
-                                            v-if='layer.incoming && layer.outgoing'
-                                            title='Outgoing/Incoming'
-                                            size='32'
-                                            stroke='1'
-                                        />
-                                        <IconStackPop
-                                            v-else-if='layer.outgoing'
-                                            title='Outgoing'
-                                            size='32'
-                                            stroke='1'
-                                        />
-                                        <IconStackPush
-                                            v-else-if='layer.incoming'
-                                            title='Incoming'
-                                            size='32'
-                                            stroke='1'
-                                        />
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div
+                    v-for='layer of list.items'
+                    :key='layer.id'
+                    class='col-12 col-md-6'
+                >
+                    <StandardItemLayer
+                        :layer='layer'
+                        :connection='false'
+                        @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}`)'
+                    >
+                        <template #actions>
+                            <TablerIconButton
+                                v-if='layer.incoming && layer.incoming.data'
+                                title='Pushing to Data Sync'
+                                class='flex-shrink-0'
+                                @click.stop.prevent='router.push(`/connection/${route.params.connectionid}/data/${layer.incoming.data}`)'
+                            >
+                                <IconDatabase
+                                    :size='24'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                        </template>
+                    </StandardItemLayer>
+                </div>
             </div>
         </div>
         <div
@@ -126,10 +95,7 @@ import type { ETLLayerList } from '../../../types.ts';
 import TableFooter from '../../util/TableFooter.vue';
 import {
     IconPlus,
-    IconExchange,
-    IconStackPop,
-    IconStackPush,
-    IconDatabase
+    IconDatabase,
 } from '@tabler/icons-vue';
 import {
     TablerNone,
@@ -139,7 +105,7 @@ import {
     TablerIconButton,
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler'
-import LayerStatus from '../Layer/utils/StatusDot.vue';
+import StandardItemLayer from '../../CloudTAK/util/StandardItemLayer.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -149,7 +115,7 @@ const error = ref<Error>();
 
 const paging = ref({
     filter: '',
-    limit: 10,
+    limit: 12,
     page: 0
 })
 

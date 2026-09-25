@@ -373,6 +373,22 @@ export default class Flight {
         });
     }
 
+    /**
+     * Register an Integration so Layers can be created against `<prefix>-v<version>` tags
+     */
+    integration(prefix: string, opts: {
+        name?: string;
+    } = {}) {
+        test(`Create Integration ${prefix}`, async () => {
+            if (!this.config) throw new Error('TakeOff not completed');
+
+            await this.config.models.Integration.generate({
+                name: opts.name || prefix,
+                prefix,
+            });
+        });
+    }
+
     server(username: string, password: string) {
         test('Creating Server', async () => {
             await this.fetch('/api/server', {

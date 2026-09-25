@@ -1,49 +1,67 @@
 import { Type } from '@sinclair/typebox';
-import { sql, inArray } from 'drizzle-orm';
+import { sql, eq, and } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import ECR from '../lib/aws/ecr.js';
 import type ConfigStateless from '../config.js';
-import { Task } from '../../common/schema.js';
-import { Layer as LayerSchema } from '../../common/schema.js';
-import { StandardResponse, TaskResponse } from '../../common/types.js';
+import { Integration, Layer as LayerSchema } from '../../common/schema.js';
+import { StandardResponse, IntegrationResponse } from '../../common/types.js';
 import * as Default from '../lib/limits.js';
 import { isSafeUrl } from '@tak-ps/node-safeurl';
 import { StaticCapabilitiesSchema } from '@tak-ps/etl';
 
-export enum TaskSchemaEnum {
+export enum IntegrationSchemaEnum {
     OUTPUT = 'schema:output',
     INPUT = 'schema:input',
 }
 
 export default async function router(schema: Schema, config: ConfigStateless) {
-    await schema.get('/task', {
-        name: 'List Tasks',
-        group: 'Task',
-        description: 'List Tasks',
+    /** Whether any Layer runs the given version of a registered Integration */
+    async function deployed(prefix: string, version: string): Promise<boolean> {
+        const integrations = await config.models.Integration.list({
+            limit: 1,
+            where: eq(Integration.prefix, prefix),
+        });
+
+        if (!integrations.items.length) return false;
+
+        const layers = await config.models.Layer.count({
+            where: and(
+                eq(LayerSchema.task, integrations.items[0].id),
+                eq(LayerSchema.version, version),
+            ),
+        });
+
+        return layers !== 0;
+    }
+
+    await schema.get('/integration', {
+        name: 'List Integrations',
+        group: 'Integration',
+        description: 'List registered Integrations',
         query: Type.Object({
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
             sort: Type.String({
                 default: 'created',
-                enum: Object.keys(Task),
+                enum: Object.keys(Integration),
             }),
             filter: Default.Filter,
             prefix: Type.Optional(Type.String({
-                description: 'Only return the Task with this exact prefix',
+                description: 'Only return the Integration with this exact prefix',
             })),
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(TaskResponse),
+            items: Type.Array(IntegrationResponse),
         }),
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req);
 
-            const list = await config.models.Task.list({
+            const list = await config.models.Integration.list({
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
@@ -60,61 +78,67 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
-    await schema.post('/task', {
-        name: 'Create Task',
-        group: 'Task',
-        description: 'Create Registered Task',
+    await schema.post('/integration', {
+        name: 'Create Integration',
+        group: 'Integration',
+        description: 'Register a new Integration',
         body: Type.Object({
             name: Type.String(),
             prefix: Type.String(),
             favorite: Type.Boolean({
                 default: false,
-                description: 'Displayed first in the Task List',
+                description: 'Displayed first in the Integration List',
             }),
             logo: Type.Optional(Type.String()),
             repo: Type.Optional(Type.String()),
             readme: Type.Optional(Type.String()),
         }),
-        res: TaskResponse,
+        res: IntegrationResponse,
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            const task = await config.models.Task.generate(req.body);
+            const integration = await config.models.Integration.generate(req.body);
 
-            res.json(task);
+            res.json(integration);
         } catch (err) {
             Err.respond(err, res);
         }
     });
 
-    await schema.delete('/task/:taskid', {
-        name: 'Delete Task',
-        group: 'Task',
-        description: 'Create Registered Task',
+    await schema.delete('/integration/:integrationid', {
+        name: 'Delete Integration',
+        group: 'Integration',
+        description: 'Delete a registered Integration - fails if any Layer still uses it',
         params: Type.Object({
-            taskid: Type.Integer(),
+            integrationid: Type.Integer(),
         }),
         res: StandardResponse,
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            await config.models.Task.delete(req.params.taskid);
+            const layers = await config.models.Layer.count({
+                where: eq(LayerSchema.task, req.params.integrationid),
+            });
+
+            if (layers) throw new Err(400, null, 'Cannot delete an Integration with an active Layer');
+
+            await config.models.Integration.delete(req.params.integrationid);
 
             res.json({
                 status: 200,
-                message: 'Registered Task Deleted',
+                message: 'Integration Deleted',
             });
         } catch (err) {
             Err.respond(err, res);
         }
     });
 
-    await schema.get('/task/raw', {
-        name: 'List Tasks',
-        group: 'RawTask',
-        description: 'List Tasks',
+    await schema.get('/integration/raw', {
+        name: 'List Raw Integrations',
+        group: 'RawIntegration',
+        description: 'List container images & versions in the Registry',
         res: Type.Object({
             total: Type.Integer(),
             items: Type.Record(
@@ -137,13 +161,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
-    await schema.get('/task/raw/:task', {
-        name: 'Get Task',
-        group: 'RawTask',
+    await schema.get('/integration/raw/:prefix', {
+        name: 'Get Raw Integration',
+        group: 'RawIntegration',
         params: Type.Object({
-            task: Type.String(),
+            prefix: Type.String(),
         }),
-        description: 'List Version for a specific task',
+        description: 'List Versions for a specific container image prefix',
         res: Type.Object({
             total: Type.Integer(),
             versions: Type.Array(Type.Object({
@@ -157,19 +181,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const { tasks } = await ECR.versions();
 
-            const list = tasks.get(req.params.task) || [];
+            const list = tasks.get(req.params.prefix) || [];
 
             const deployedVersions = new Set<string>();
             if (list.length) {
-                const taskNames = list.map(v => `${req.params.task}-v${v}`);
-                const deployedLayers = await config.models.Layer.list({
-                    limit: list.length,
-                    where: inArray(LayerSchema.task, taskNames),
-                });
-
-                for (const layer of deployedLayers.items) {
-                    const match = layer.task.match(/-v([0-9]+\.[0-9]+\.[0-9]+)$/);
-                    if (match) deployedVersions.add(match[1]);
+                for await (const layer of config.models.Layer.iter({
+                    where: sql`task IN (SELECT id FROM integrations WHERE prefix = ${req.params.prefix}::TEXT)`,
+                })) {
+                    deployedVersions.add(layer.version);
                 }
             }
 
@@ -185,14 +204,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
-    await schema.get('/task/raw/:task/version/:version', {
+    await schema.get('/integration/raw/:prefix/version/:version', {
         name: 'Get Version',
-        group: 'RawTask',
+        group: 'RawIntegration',
         params: Type.Object({
-            task: Type.String(),
+            prefix: Type.String(),
             version: Type.String(),
         }),
-        description: 'Get a single Task Version, including the Capabilities document embedded in the OCI Image Manifest at build time',
+        description: 'Get a single Integration Version, including the Capabilities document embedded in the OCI Image Manifest at build time',
         res: Type.Object({
             version: Type.String(),
             deployed: Type.Boolean(),
@@ -204,23 +223,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const { tasks } = await ECR.versions();
 
-            const versions = tasks.get(req.params.task);
-            if (!versions) throw new Err(404, null, 'Task does not exist');
-            if (!versions.includes(req.params.version)) throw new Err(404, null, 'Task Version does not exist');
+            const versions = tasks.get(req.params.prefix);
+            if (!versions) throw new Err(404, null, 'Integration does not exist');
+            if (!versions.includes(req.params.version)) throw new Err(404, null, 'Integration Version does not exist');
 
-            const task = `${req.params.task}-v${req.params.version}`;
-            const layers = await config.models.Layer.list({
-                limit: 1,
-                where: sql`
-                    task = ${task}::TEXT
-                `,
-            });
-
-            const capabilities = await ECR.capabilities(req.params.task, req.params.version);
+            const capabilities = await ECR.capabilities(req.params.prefix, req.params.version);
 
             res.json({
                 version: req.params.version,
-                deployed: layers.total !== 0,
+                deployed: await deployed(req.params.prefix, req.params.version),
                 capabilities,
             });
         } catch (err) {
@@ -228,14 +239,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
-    await schema.delete('/task/raw/:task/version/:version', {
+    await schema.delete('/integration/raw/:prefix/version/:version', {
         name: 'Delete Version',
-        group: 'RawTask',
+        group: 'RawIntegration',
         params: Type.Object({
-            task: Type.String(),
+            prefix: Type.String(),
             version: Type.String(),
         }),
-        description: 'Delete a given task version',
+        description: 'Delete a given Integration version from the Registry',
         res: StandardResponse,
     }, async (req, res) => {
         try {
@@ -243,57 +254,51 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const { tasks } = await ECR.versions();
 
-            const versions = tasks.get(req.params.task);
-            if (!versions) throw new Err(400, null, 'Task does not exist');
-            if (!versions.includes(req.params.version)) throw new Err(400, null, 'Task Version does not exist');
+            const versions = tasks.get(req.params.prefix);
+            if (!versions) throw new Err(400, null, 'Integration does not exist');
+            if (!versions.includes(req.params.version)) throw new Err(400, null, 'Integration Version does not exist');
 
-            const task = `${req.params.task}-v${req.params.version}`;
-            const layers = await config.models.Layer.list({
-                limit: 1,
-                where: sql`
-                    task = ${task}::TEXT
-                `,
-            });
+            if (await deployed(req.params.prefix, req.params.version)) {
+                throw new Err(400, null, 'Cannot delete an Integration version with an active Layer');
+            }
 
-            if (layers.total !== 0) throw new Err(400, null, 'Cannot delete a task with an active Layer');
-
-            await ECR.delete(req.params.task, req.params.version);
+            await ECR.delete(req.params.prefix, req.params.version);
 
             res.json({
                 status: 200,
-                message: 'Deleted Task Version',
+                message: 'Deleted Integration Version',
             });
         } catch (err) {
             Err.respond(err, res);
         }
     });
 
-    await schema.get('/task/:task', {
-        name: 'Get Task',
-        group: 'Task',
-        description: 'Return a single Registered Task',
+    await schema.get('/integration/:integrationid', {
+        name: 'Get Integration',
+        group: 'Integration',
+        description: 'Return a single registered Integration',
         params: Type.Object({
-            task: Type.Integer(),
+            integrationid: Type.Integer(),
         }),
-        res: TaskResponse,
+        res: IntegrationResponse,
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req);
 
-            const task = await config.models.Task.from(req.params.task);
+            const integration = await config.models.Integration.from(req.params.integrationid);
 
-            res.json(task);
+            res.json(integration);
         } catch (err) {
             Err.respond(err, res);
         }
     });
 
-    await schema.patch('/task/:task', {
-        name: 'Update Task',
-        group: 'Task',
-        description: 'Update Registered Task',
+    await schema.patch('/integration/:integrationid', {
+        name: 'Update Integration',
+        group: 'Integration',
+        description: 'Update a registered Integration',
         params: Type.Object({
-            task: Type.String(),
+            integrationid: Type.Integer(),
         }),
         body: Type.Object({
             name: Type.Optional(Type.String()),
@@ -301,28 +306,28 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             logo: Type.Optional(Type.String()),
             readme: Type.Optional(Type.String()),
             favorite: Type.Optional(Type.Boolean({
-                description: 'Displayed first in the Task List',
+                description: 'Displayed first in the Integration List',
             })),
         }),
-        res: TaskResponse,
+        res: IntegrationResponse,
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            const task = await config.models.Task.commit(req.params.task, req.body);
+            const integration = await config.models.Integration.commit(req.params.integrationid, req.body);
 
-            res.json(task);
+            res.json(integration);
         } catch (err) {
             Err.respond(err, res);
         }
     });
 
-    await schema.get('/task/:task/readme', {
-        name: 'Task README',
-        group: 'Task',
+    await schema.get('/integration/:integrationid/readme', {
+        name: 'Integration README',
+        group: 'Integration',
         description: 'Return README Contents',
         params: Type.Object({
-            task: Type.Integer(),
+            integrationid: Type.Integer(),
         }),
         res: Type.Object({
             body: Type.String(),
@@ -331,15 +336,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             await Auth.as_user(config, req);
 
-            const task = await config.models.Task.from(req.params.task);
+            const integration = await config.models.Integration.from(req.params.integrationid);
 
-            if (task.readme) {
+            if (integration.readme) {
                 // Skip isSafeUrl check when StackName=test (test mode)
                 if (process.env.StackName !== 'test') {
-                    const { safe, reason } = await isSafeUrl(task.readme);
+                    const { safe, reason } = await isSafeUrl(integration.readme);
                     if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
                 }
-                const readmeres = await fetch(task.readme);
+                const readmeres = await fetch(integration.readme);
                 res.json({
                     body: await readmeres.text(),
                 });

@@ -39,30 +39,19 @@
                         :key='channel.bitpos'
                         class='col-12 col-sm-6 col-lg-4'
                     >
-                        <StandardItem
-                            class='h-100 d-flex align-items-center gap-3 p-2'
+                        <StandardItemChannel
+                            :channel='channel'
                             :title='`Open the ${channel.name} Event Board`'
                             @click='emit("select", channel.bitpos)'
                         >
-                            <div
-                                class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 flex-shrink-0'
-                                style='width: 3rem; height: 3rem;'
-                            >
-                                <IconAffiliate
-                                    :size='24'
+                            <template #actions>
+                                <IconChevronRight
+                                    :size='18'
                                     stroke='1'
+                                    class='flex-shrink-0 text-secondary'
                                 />
-                            </div>
-                            <div
-                                class='fw-bold text-truncate'
-                                v-text='channel.name'
-                            />
-                            <IconChevronRight
-                                :size='18'
-                                stroke='1'
-                                class='ms-auto flex-shrink-0 text-secondary'
-                            />
-                        </StandardItem>
+                            </template>
+                        </StandardItemChannel>
                     </div>
                 </div>
                 <TablerNone
@@ -111,8 +100,8 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import type { GroupSelectChannel } from '../CloudTAK/util/GroupSelectDropdown.vue';
 import StandardItem from '../CloudTAK/util/StandardItem.vue';
+import StandardItemChannel from '../CloudTAK/util/StandardItemChannel.vue';
 import {
-    IconAffiliate,
     IconAlertCircle,
     IconChevronRight,
     IconLayoutKanban,

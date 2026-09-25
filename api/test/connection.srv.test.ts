@@ -11,6 +11,7 @@ flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
 flight.user({ username: 'user', admin: false });
+flight.integration('test-task');
 
 test('GET: api/connection - No Auth', async () => {
     try {
@@ -728,7 +729,8 @@ test('GET: api/connection/:connectionid/auth - Readonly truststore P12 with down
 test('DELETE: api/connection/:connectionid - Fails with active Layer', async () => {
     const layer = await flight.config!.models.Layer.generate({
         name: 'Guard Layer',
-        task: 'test-task',
+        task: 1,
+        version: '1.0.0',
         connection: enabledConnId,
     });
 

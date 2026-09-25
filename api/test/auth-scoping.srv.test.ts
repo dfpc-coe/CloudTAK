@@ -9,6 +9,7 @@ flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
 flight.user({ username: 'user', admin: false });
+flight.integration('etl-test');
 
 flight.connection();
 
@@ -17,7 +18,8 @@ test('Create Layer', async () => {
         const layer = await flight.config!.models.Layer.generate({
             name: 'Test Layer',
             connection: 1,
-            task: 'etl-test:v1.0.0',
+            task: 1,
+            version: '1.0.0',
         });
 
         await flight.config!.models.LayerIncoming.generate({

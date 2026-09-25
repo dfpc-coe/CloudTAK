@@ -223,10 +223,10 @@ watch(() => layer.value.task, async (task) => {
     loading.value.capabilities = true;
 
     try {
-        const res = await server.GET('/api/task/raw/{:task}/version/{:version}', {
+        const res = await server.GET('/api/integration/raw/{:prefix}/version/{:version}', {
             params: {
                 path: {
-                    ':task': match[1],
+                    ':prefix': match[1],
                     ':version': match[2]
                 }
             }

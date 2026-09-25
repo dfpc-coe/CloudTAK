@@ -323,7 +323,7 @@ async function resolveTask(task: Task): Promise<Task> {
     const existing = list.value.items.find((item) => item.prefix === task.prefix);
     if (existing) return existing;
 
-    const res = await server.GET('/api/task', {
+    const res = await server.GET('/api/integration', {
         params: {
             query: {
                 filter: '',
@@ -360,10 +360,10 @@ watch(selected, () => {
 watch(infoModal, async function() {
     if (!infoModal.value) return;
 
-    const res = await server.GET('/api/task/{:task}/readme', {
+    const res = await server.GET('/api/integration/{:integrationid}/readme', {
         params: {
             path: {
-                ':task': Number(infoModal.value.id)
+                ':integrationid': Number(infoModal.value.id)
             }
         }
     });
@@ -405,10 +405,10 @@ async function select(task: Task, version?: string) {
     loading.value.task = true;
 
     const resolvedTask = await resolveTask(task);
-    const res = await server.GET('/api/task/raw/{:task}', {
+    const res = await server.GET('/api/integration/raw/{:prefix}', {
         params: {
             path: {
-                ':task': String(task.prefix)
+                ':prefix': String(task.prefix)
             }
         }
     });
@@ -431,10 +431,10 @@ async function checkUpdates() {
     loading.value.update = true;
 
     try {
-        const res = await server.GET('/api/task/raw/{:task}', {
+        const res = await server.GET('/api/integration/raw/{:prefix}', {
             params: {
                 path: {
-                    ':task': String(selected.value.prefix)
+                    ':prefix': String(selected.value.prefix)
                 }
             }
         });
@@ -454,7 +454,7 @@ async function checkUpdates() {
 
 async function listTasks() {
     loading.value.list = true;
-    const res = await server.GET('/api/task', {
+    const res = await server.GET('/api/integration', {
         params: {
             query: {
                 filter: paging.value.filter,

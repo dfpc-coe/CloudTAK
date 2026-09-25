@@ -12,6 +12,7 @@ const flight = new Flight();
 flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
+flight.integration('test-task');
 
 flight.connection();
 
@@ -22,7 +23,8 @@ test('Setup: Create Layers', async () => {
     try {
         await flight.config!.models.Layer.generate({
             name: 'Submit Layer',
-            task: 'test-task-v1.0.0',
+            task: 1,
+            version: '1.0.0',
             connection: 1,
             permissions: ['event:*', 'device:*'],
         });
@@ -39,7 +41,8 @@ test('Setup: Create Layers', async () => {
 
         await flight.config!.models.Layer.generate({
             name: 'Other Layer',
-            task: 'test-task-v1.0.0',
+            task: 1,
+            version: '1.0.0',
             connection: 2,
         });
     } catch (err) {

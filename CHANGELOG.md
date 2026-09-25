@@ -18,6 +18,9 @@
 
 ### Pending Release
 
+- :rocket: Rename the `tasks` table & `/api/task` routes to Integrations - `GET/POST /api/integration`, `GET/PATCH/DELETE /api/integration/:integrationid`, `GET /api/integration/:integrationid/readme` & `/api/integration/raw/:prefix[/version/:version]` - the Admin UI now lives at `/admin/integrations`
+- :rocket: `layers.task` is now a foreign key to `integrations.id` with the version stored in a new `layers.version` column - the Layer API still accepts & returns `task` as `<prefix>-v<version>` and additionally returns `version` & `integration: { name, icon }`; creating or updating a Layer now requires its Integration to be registered & deleting an Integration with active Layers is rejected
+
 ### v13.97.0 - 2026-09-25
 
 - :bug: Pin `@tabler/core` to 1.5.1 - 1.6.0 rewrote its color system & swapped the bundled dark palette from cool gray to neutral, which read as brownish

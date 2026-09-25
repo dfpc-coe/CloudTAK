@@ -12,6 +12,7 @@ flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
 flight.user({ username: 'user', admin: false });
+flight.integration('test-task');
 flight.connection();
 
 let eventId: string;
@@ -337,14 +338,16 @@ test('POST: api/core/event/:event/assignment - layer token needs both scopes', a
     try {
         await flight.config!.models.Layer.generate({
             name: 'Event Only Layer',
-            task: 'test-task-v1.0.0',
+            task: 1,
+            version: '1.0.0',
             connection: 1,
             permissions: ['event:update'],
         });
 
         await flight.config!.models.Layer.generate({
             name: 'Scoped Layer',
-            task: 'test-task-v1.0.0',
+            task: 1,
+            version: '1.0.0',
             connection: 1,
             permissions: ['event:update', 'assignment:create'],
         });

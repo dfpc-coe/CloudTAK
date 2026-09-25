@@ -9,6 +9,7 @@ flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
 flight.user({ username: 'user', admin: false });
+flight.integration('test-task');
 
 flight.connection();
 
@@ -573,14 +574,16 @@ test('PATCH: api/core/device/:device - layer token from same connection', async 
     try {
         await flight.config!.models.Layer.generate({
             name: 'Core Device Layer',
-            task: 'test-task-v1.0.0',
+            task: 1,
+            version: '1.0.0',
             connection: 1,
             permissions: ['device:update'],
         });
 
         await flight.config!.models.Layer.generate({
             name: 'Unscoped Layer',
-            task: 'test-task-v1.0.0',
+            task: 1,
+            version: '1.0.0',
             connection: 1,
             permissions: ['device:read'],
         });

@@ -117,13 +117,13 @@ const router = VueRouter.createRouter({
                 name: 'admin-mission-template-palette-feature',
                 component: () => import('../../components/Admin/AdminPaletteFeature.vue')
             },{
-                path: 'tasks',
-                name: 'admin-tasks',
-                component: () => import('../../components/Admin/Tasks/AdminTasks.vue')
+                path: 'integrations',
+                name: 'admin-integrations',
+                component: () => import('../../components/Admin/Integrations/AdminIntegrations.vue')
             },{
-                path: 'tasks/:task',
-                name: 'admin-task',
-                component: () => import('../../components/Admin/Tasks/AdminTask.vue')
+                path: 'integrations/:integration',
+                name: 'admin-integration',
+                component: () => import('../../components/Admin/Integrations/AdminIntegration.vue')
             },{
                 path: 'server',
                 name: 'admin-server',

@@ -2,13 +2,13 @@
     <div>
         <div class='card-header'>
             <h1 class='card-title'>
-                Registered Tasks
+                Registered Integrations
             </h1>
 
             <div class='ms-auto btn-list'>
                 <template v-if='!edit'>
                     <TablerIconButton
-                        title='Register New Task'
+                        title='Register New Integration'
                         @click='edit = {
                             "name": "",
                             "prefix": "",
@@ -22,7 +22,7 @@
                         />
                     </TablerIconButton>
                     <TablerIconButton
-                        title='Upload Task Settings'
+                        title='Upload Integration Settings'
                         @click='triggerUpload'
                     >
                         <IconUpload
@@ -49,14 +49,14 @@
             <template v-if='edit'>
                 <TablerLoading
                     v-if='loading'
-                    desc='Saving Tasks'
+                    desc='Saving Integrations'
                 />
                 <template v-else>
                     <div class='row g-2 py-2 px-2'>
                         <div class='col-md-6 col-12'>
                             <TablerInput
                                 v-model='edit.name'
-                                label='Task Name'
+                                label='Integration Name'
                             />
                         </div>
                         <div class='col-md-6 col-12'>
@@ -75,16 +75,16 @@
 
                         <TablerUploadLogo
                             v-model='edit.logo'
-                            label='Task Logo'
+                            label='Integration Logo'
                         />
                         <TablerInput
                             v-model='edit.repo'
-                            label='Task Code Repository URL'
+                            label='Integration Code Repository URL'
                         />
 
                         <TablerInput
                             v-model='edit.readme'
-                            label='Task Markdown Readme URL'
+                            label='Integration Markdown Readme URL'
                         />
 
                         <div class='col-12 d-flex py-2'>
@@ -115,7 +115,7 @@
                 />
                 <TablerLoading
                     v-if='loading'
-                    desc='Loading Tasks'
+                    desc='Loading Integrations'
                 />
                 <TablerAlert
                     v-else-if='error'
@@ -123,7 +123,7 @@
                 />
                 <TablerNone
                     v-else-if='!list.items.length'
-                    label='No Tasks'
+                    label='No Integrations'
                     :create='false'
                 />
                 <div
@@ -141,7 +141,7 @@
                                 v-for='layer in list.items'
                                 :key='layer.id'
                                 class='cursor-pointer'
-                                @click='router.push(`/admin/tasks/${layer.id}`)'
+                                @click='router.push(`/admin/integrations/${layer.id}`)'
                             >
                                 <template v-for='h in header'>
                                     <template v-if='h.display'>
@@ -265,7 +265,7 @@ async function listLayerSchema() {
         params: {
             query: {
                 method: 'GET',
-                url: '/task'
+                url: '/integration'
             }
         }
     });
@@ -296,7 +296,7 @@ async function saveTask() {
     loading.value = true;
 
     if (edit.value) {
-        const res = await server.POST('/api/task', {
+        const res = await server.POST('/api/integration', {
             body: {
                 name: String(edit.value.name || ''),
                 prefix: String(edit.value.prefix || ''),
@@ -374,7 +374,7 @@ async function handleUpload(event: Event): Promise<void> {
 
 async function fetchList() {
     loading.value = true;
-    const res = await server.GET('/api/task', {
+    const res = await server.GET('/api/integration', {
         params: {
             query: {
                 filter: paging.value.filter,

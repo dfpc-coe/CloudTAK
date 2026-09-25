@@ -267,10 +267,10 @@ async function fetchPermissions(): Promise<string[]> {
 }
 
 async function fetchCapabilities(version: string): Promise<ETLTaskCapabilities | null> {
-    const res = await server.GET('/api/task/raw/{:task}/version/{:version}', {
+    const res = await server.GET('/api/integration/raw/{:prefix}/version/{:version}', {
         params: {
             path: {
-                ':task': props.update.prefix,
+                ':prefix': props.update.prefix,
                 ':version': version
             }
         }
