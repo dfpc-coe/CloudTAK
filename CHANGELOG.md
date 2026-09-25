@@ -18,7 +18,7 @@
 
 ### Pending Release
 
-### v13.96.1 - 2026-09-25
+### v13.97.0 - 2026-09-25
 
 - :bug: Pin `@tabler/core` to 1.5.1 - 1.6.0 rewrote its color system & swapped the bundled dark palette from cool gray to neutral, which read as brownish
 - :rocket: Mission Layers panel now uses the shared search/sort control with Newest → Oldest (default), Oldest → Newest & Alphabetical sort options applied to both folder contents & search results
