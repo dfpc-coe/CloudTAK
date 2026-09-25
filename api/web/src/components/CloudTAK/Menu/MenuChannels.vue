@@ -102,62 +102,12 @@
                 v-else
                 class='col-12 d-flex flex-column gap-2 py-3'
             >
-                <StandardItem
+                <StandardItemChannel
                     v-for='ch in processChannels'
                     :key='ch.name'
-                    class='d-flex align-items-center gap-3 p-2'
+                    :channel='ch'
                     @click='setStatus(ch, !ch.active)'
-                >
-                    <div
-                        class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
-                        style='width: 3rem; height: 3rem; min-width: 3rem;'
-                    >
-                        <component
-                            :is='ch.active ? IconEye : IconEyeOff'
-                            :size='24'
-                            stroke='1'
-                        />
-                    </div>
-
-                    <div class='d-flex flex-column'>
-                        <div class='fw-bold'>
-                            {{ ch.name }}
-                        </div>
-                        <div class='text-secondary small'>
-                            {{ ch.description || "No Description" }}
-                        </div>
-                    </div>
-
-                    <div class='ms-auto'>
-                        <span
-                            v-if='ch.direction.length === 2'
-                            title='Bi-Directional'
-                        >
-                            <IconLocation
-                                :size='32'
-                                stroke='1'
-                            />
-                        </span>
-                        <span
-                            v-else-if='ch.direction.includes("IN")'
-                            title='Location Sharing'
-                        >
-                            <IconLocation
-                                :size='32'
-                                stroke='1'
-                            />
-                        </span>
-                        <span
-                            v-else-if='ch.direction.includes("OUT")'
-                            title='No Location Sharing'
-                        >
-                            <IconLocationOff
-                                :size='32'
-                                stroke='1'
-                            />
-                        </span>
-                    </div>
-                </StandardItem>
+                />
             </div>
         </template>
     </MenuTemplate>
@@ -177,15 +127,11 @@ import {
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import SearchSortFilter from '../util/SearchSortFilter.vue';
-import StandardItem from '../util/StandardItem.vue';
+import StandardItemChannel from '../util/StandardItemChannel.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
 import {
-    IconLocation,
-    IconLocationOff,
-    IconEye,
     IconEyeX,
     IconEyePlus,
-    IconEyeOff,
     IconLetterCase,
     IconArrowUp,
     IconArrowDown,
