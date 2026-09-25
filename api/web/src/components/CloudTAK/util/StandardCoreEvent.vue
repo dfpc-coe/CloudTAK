@@ -6,68 +6,58 @@
                 class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 mt-1 flex-shrink-0'
                 style='width: 36px; height: 36px;'
             >
-                <IconCalendarEvent
-                    :size='18'
-                    stroke='1.5'
-                    :class='priorityClass'
-                />
+                <img
+                    v-if='typeIcon'
+                    :src='typeIcon'
+                    alt='Event Type'
+                    style='width: 28px; height: 28px; object-fit: contain;'
+                >
             </div>
 
             <div class='flex-grow-1 overflow-hidden'>
                 <div class='d-flex align-items-center gap-2'>
-                    <StatusDot
-                        :status='event.active ? "Success" : "Unknown"'
-                        :title='event.active ? "Active" : "Ended"'
-                    />
                     <span class='fw-semibold text-truncate flex-grow-1'>{{ event.name }}</span>
                     <span
                         v-if='event.priority !== "none"'
                         class='badge flex-shrink-0 text-uppercase'
                         :class='priorityBadgeClass'
                     >{{ event.priority }}</span>
+                    <StatusDot
+                        :status='event.active ? "Success" : "Unknown"'
+                        :title='event.active ? "Active" : "Ended"'
+                    />
                 </div>
-                <div class='d-flex align-items-center gap-2 mt-1'>
-                    <img
-                        v-if='typeIcon'
-                        :src='typeIcon'
-                        alt='Event Type'
-                        class='flex-shrink-0'
-                        style='width: 40px; height: 40px; object-fit: contain;'
-                    >
-                    <div class='flex-grow-1 overflow-hidden'>
-                        <div
-                            v-if='event.location'
-                            class='small d-flex align-items-center'
-                            style='opacity: 0.85;'
-                        >
-                            <IconMapPin
-                                :size='14'
-                                stroke='1.5'
-                                class='me-1 flex-shrink-0'
-                            />
-                            <span
-                                class='text-truncate'
-                                v-text='event.location'
-                            />
-                        </div>
-                        <div class='text-muted small d-flex align-items-center'>
-                            <IconClock
-                                :size='14'
-                                stroke='1.5'
-                                class='me-1 flex-shrink-0'
-                            />
-                            {{ new Date(event.created).toLocaleString() }}
-                        </div>
-                        <div class='text-muted small text-truncate'>
-                            {{ creator }}
-                            <template v-if='event.ended && event.active'>
-                                &middot; Ends {{ timediff(event.ended) }}
-                            </template>
-                            <template v-else-if='event.ended'>
-                                &middot; Ended {{ new Date(event.ended).toLocaleString() }}
-                            </template>
-                        </div>
-                    </div>
+                <div
+                    v-if='event.location'
+                    class='small d-flex align-items-center mt-1'
+                    style='opacity: 0.85;'
+                >
+                    <IconMapPin
+                        :size='14'
+                        stroke='1.5'
+                        class='me-1 flex-shrink-0'
+                    />
+                    <span
+                        class='text-truncate'
+                        v-text='event.location'
+                    />
+                </div>
+                <div class='text-muted small d-flex align-items-center'>
+                    <IconClock
+                        :size='14'
+                        stroke='1.5'
+                        class='me-1 flex-shrink-0'
+                    />
+                    {{ new Date(event.created).toLocaleString() }}
+                </div>
+                <div class='text-muted small text-truncate'>
+                    {{ creator }}
+                    <template v-if='event.ended && event.active'>
+                        &middot; Ends {{ timediff(event.ended) }}
+                    </template>
+                    <template v-else-if='event.ended'>
+                        &middot; Ended {{ new Date(event.ended).toLocaleString() }}
+                    </template>
                 </div>
             </div>
 
@@ -152,7 +142,6 @@ import StatusDot from '../../util/StatusDot.vue';
 import {
     IconClock,
     IconMapPin,
-    IconCalendarEvent,
 } from '@tabler/icons-vue';
 import type { CoreEvent } from '../../../types.ts';
 import timediff from '../../../timediff';
@@ -181,16 +170,6 @@ const creator = computed(() => {
     if (props.event.username) return props.event.username;
     if (props.event.connection !== null) return `Connection #${props.event.connection}`;
     return 'Unknown Creator';
-});
-
-const priorityClass = computed(() => {
-    return {
-        critical: 'text-danger',
-        high: 'text-orange',
-        medium: 'text-yellow',
-        low: 'text-blue',
-        none: 'text-secondary',
-    }[props.event.priority] || 'text-secondary';
 });
 
 const priorityBadgeClass = computed(() => {

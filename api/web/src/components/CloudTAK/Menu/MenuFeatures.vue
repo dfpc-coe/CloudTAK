@@ -68,6 +68,8 @@
             </TablerDropdown>
         </template>
         <template #default>
+            <FeaturesTabs />
+
             <div class='my-2'>
                 <SearchSortFilter
                     v-model='query.filter'
@@ -257,6 +259,7 @@ import PathBrowser from '../util/PathBrowser.vue';
 import PathBreadcrumb from '../util/PathBreadcrumb.vue';
 import Feature from '../util/FeatureRow.vue';
 import StandardItem from '../util/StandardItem.vue';
+import FeaturesTabs from './Features/FeaturesTabs.vue';
 import {
     TablerNone,
     TablerInput,
