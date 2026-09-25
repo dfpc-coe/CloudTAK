@@ -138,22 +138,24 @@
                         :err='error'
                     />
                     <template v-else>
-                        <TablerNone
-                            v-if='!loading && !filteredList.length'
-                            :create='false'
-                            label='No data syncs match your filter'
-                        />
                         <TablerLoading v-if='loading' />
-                        <div
-                            v-if='filteredList.length && !loading'
-                            class='d-flex flex-column gap-3'
-                        >
+                        <template v-else>
                             <PendingInvites
                                 v-model:invites='invites'
                                 @open-mission='openMission($event, false)'
                                 @error='error = $event'
                             />
 
+                            <TablerNone
+                                v-if='!filteredList.length'
+                                :create='false'
+                                label='No data syncs match your filter'
+                            />
+                        </template>
+                        <div
+                            v-if='filteredList.length && !loading'
+                            class='d-flex flex-column gap-3'
+                        >
                             <StandardItem
                                 v-for='(mission, mission_it) in filteredList'
                                 :key='mission_it'

@@ -60,15 +60,7 @@
                                     <TablerBytes :bytes='offlineSize(file)' /> - <TablerEpoch :date='file.updated' />
                                 </span>
                                 <div class='ms-auto d-flex align-items-center gap-1 flex-shrink-0'>
-                                    <TablerBadge
-                                        class='small'
-                                        background-color='rgba(32, 107, 196, 0.15)'
-                                        border-color='rgba(32, 107, 196, 0.35)'
-                                        text-color='#206bc4'
-                                        title='Available offline on this device'
-                                    >
-                                        Offline
-                                    </TablerBadge>
+                                    <OfflineBadge />
                                 </div>
                             </div>
                         </div>
@@ -115,13 +107,13 @@ import type { DBProfileFile } from '../../../database.ts';
 import ProfileFileManager from '../../../base/profile-file.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import StandardItem from '../util/StandardItem.vue';
+import OfflineBadge from '../util/OfflineBadge.vue';
 import {
     TablerInput,
     TablerLoading,
     TablerNone,
     TablerDelete,
     TablerSlidedown,
-    TablerBadge,
     TablerIconButton,
     TablerBytes,
     TablerEpoch

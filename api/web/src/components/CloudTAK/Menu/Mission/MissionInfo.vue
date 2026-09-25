@@ -8,6 +8,12 @@
     >
         <div class='container-fluid px-2 px-sm-3'>
             <div class='row gy-3 gx-0 gx-lg-3'>
+                <div
+                    v-if='error'
+                    class='col-12'
+                >
+                    <TablerAlert :err='error' />
+                </div>
                 <div class='col-12'>
                     <TablerBorder
                         class='cloudtak-accent'
@@ -266,6 +272,7 @@ import {
     IconX,
 } from '@tabler/icons-vue';
 import {
+    TablerAlert,
     TablerBorder,
     TablerLoading,
     TablerModal,
@@ -287,6 +294,11 @@ const props = defineProps<{
     subscription: Subscription
 }>();
 const token = ref<string | null>(null);
+const error = ref<Error | undefined>(undefined);
+
+function fail(err: unknown): void {
+    error.value = err instanceof Error ? err : new Error(String(err));
+}
 
 const missionQRURL = computed(() => {
     return String(stdurl(`/api/marti/missions/${props.subscription.guid}/qr${token.value ? `?token=${encodeURIComponent(token.value)}` : ''}`));
@@ -334,13 +346,14 @@ function cancelEditingGroups(): void {
 async function saveGroups(nextGroups: string[]): Promise<void> {
     try {
         savingGroups.value = true;
+        error.value = undefined;
         groupDraft.value = [...nextGroups];
         await props.subscription.update({
             groups: nextGroups
         });
         editingGroups.value = false;
     } catch (err) {
-        console.error(err);
+        fail(err);
     } finally {
         savingGroups.value = false;
     }
@@ -358,6 +371,7 @@ function cancelEditingKeywords(): void {
 async function saveKeywords(nextKeywords: string[]): Promise<void> {
     try {
         savingKeywords.value = true;
+        error.value = undefined;
         keywordDraft.value = [...nextKeywords];
         // Preserve any non-user keywords (eg template:*) that the Keywords component filters out
         const preserved = (props.subscription.meta.keywords || []).filter((keyword) => {
@@ -368,7 +382,7 @@ async function saveKeywords(nextKeywords: string[]): Promise<void> {
         });
         editingKeywords.value = false;
     } catch (err) {
-        console.error(err);
+        fail(err);
     } finally {
         savingKeywords.value = false;
     }
@@ -425,45 +439,64 @@ async function fetchSubscriptions() {
 }
 
 async function updateDescription(description: string) {
+    error.value = undefined;
+
     try {
         await props.subscription.update({ description });
     } catch (err) {
-        console.error(err);
+        fail(err);
     }
 }
 
-async function subscribe(subscribe: boolean) {
+async function subscribe(next: boolean) {
     loading.value.subscribe = true;
-    const overlay = OverlayManager.loadedByMode('mission', props.subscription.guid);
+    error.value = undefined;
 
-    if (subscribe === true && !overlay) {
-        await OverlayManager.createLoaded({
-            name: props.subscription.name,
-            url: `/mission/${encodeURIComponent(props.subscription.guid)}`,
-            type: 'geojson',
-            mode: 'mission',
-            token: props.subscription.missiontoken,
-            mode_id: props.subscription.guid,
-        })
+    try {
+        const overlay = OverlayManager.loadedByMode('mission', props.subscription.guid);
 
-        await mapStore.loadMission(props.subscription.guid);
-    } else if (subscribe === false && overlay) {
-        if (mapStore.mission && mapStore.mission.meta.guid === props.subscription.meta.guid) {
-            await mapStore.makeActiveMission();
+        if (next === true && !overlay) {
+            const created = await OverlayManager.createLoaded({
+                name: props.subscription.name,
+                url: `/mission/${encodeURIComponent(props.subscription.guid)}`,
+                type: 'geojson',
+                mode: 'mission',
+                token: props.subscription.missiontoken,
+                mode_id: props.subscription.guid,
+            });
+
+            try {
+                // loadMission returns null on most failures
+                if (!await mapStore.loadMission(props.subscription.guid)) {
+                    throw new Error('Failed to load the Data Sync onto the map');
+                }
+
+                await props.subscription.update({ subscribed: true });
+            } catch (err) {
+                await OverlayManager.deleteLoaded(created).catch(() => undefined);
+                throw err;
+            }
+        } else if (next === false && overlay) {
+            if (mapStore.mission && mapStore.mission.meta.guid === props.subscription.meta.guid) {
+                await mapStore.makeActiveMission();
+            }
+
+            await OverlayManager.deleteLoaded(overlay);
+            await props.subscription.update({ subscribed: false });
+        } else {
+            await props.subscription.update({ subscribed: next });
         }
 
-        await OverlayManager.deleteLoaded(overlay);
+        emit('subscribed');
+
+        if (!next && props.subscription.meta.passwordProtected) {
+            await router.push({ name: 'home-menu-missions' });
+        }
+    } catch (err) {
+        fail(err);
+    } finally {
+        loading.value.subscribe = false;
     }
-
-    await props.subscription.update({ subscribed: subscribe });
-
-    emit('subscribed');
-
-    if (!subscribe && props.subscription.meta.passwordProtected) {
-        await router.push({ name: 'home-menu-missions' });
-    }
-
-    loading.value.subscribe = false;
 }
 </script>
 

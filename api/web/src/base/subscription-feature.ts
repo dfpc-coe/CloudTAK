@@ -19,6 +19,30 @@ const PUSH_BATCH = 100;
 
 const pushing = new Map<string, { promise: Promise<boolean>, again: boolean }>();
 
+class PushError extends Error {
+    status?: number;
+
+    constructor(message: string, status?: number) {
+        super(message);
+        this.status = status;
+    }
+}
+
+// node-tak also reports a TAK connection failure as a 400, hence the prefix check
+function isValidationRejection(err: unknown): boolean {
+    return err instanceof PushError && err.status === 400 && err.message.startsWith('Validation Error');
+}
+
+// Uids named in a confirm 502; the rest of the batch was confirmed
+function unconfirmedUids(err: unknown): Set<string> | undefined {
+    if (!(err instanceof PushError) || err.status !== 502) return;
+
+    const match = err.message.match(/did not confirm CoT: (.+)$/);
+    if (!match) return;
+
+    return new Set(match[1].split(', ').map((uid) => uid.trim()).filter((uid) => uid.length));
+}
+
 function asFeature(row: DBSubscriptionFeature): Feature {
     return {
         id: row.id,
@@ -467,22 +491,7 @@ export default class SubscriptionFeature {
         let ok = true;
 
         for (let i = 0; i < upserts.length; i += PUSH_BATCH) {
-            const batch = upserts.slice(i, i + PUSH_BATCH);
-
-            try {
-                const { error } = await server.PUT('/api/marti/missions/{:guid}/cot', {
-                    params: { path: { ':guid': this.parent.guid } },
-                    headers: this.headers(),
-                    body: { features: batch.map(asFeature) as SubmitFeature[] }
-                });
-
-                if (error) throw new Error(error.message);
-
-                await this.confirm(batch);
-            } catch (err) {
-                ok = false;
-                await this.failed(batch, err);
-            }
+            if (!await this.upsert(upserts.slice(i, i + PUSH_BATCH))) ok = false;
         }
 
         for (const row of removes) {
@@ -508,6 +517,43 @@ export default class SubscriptionFeature {
         }
 
         return ok;
+    }
+
+    // Split on a validation rejection, fail only the named uids on a 502
+    private async upsert(rows: Array<DBSubscriptionFeature>): Promise<boolean> {
+        try {
+            await this.submit(rows);
+            return true;
+        } catch (err) {
+            if (rows.length > 1 && isValidationRejection(err)) {
+                const mid = Math.ceil(rows.length / 2);
+                const head = await this.upsert(rows.slice(0, mid));
+                const tail = await this.upsert(rows.slice(mid));
+                return head && tail;
+            }
+
+            const missing = unconfirmedUids(err);
+            if (missing && missing.size) {
+                await this.confirm(rows.filter((row) => !missing.has(row.id)));
+                await this.failed(rows.filter((row) => missing.has(row.id)), err);
+                return false;
+            }
+
+            await this.failed(rows, err);
+            return false;
+        }
+    }
+
+    private async submit(rows: Array<DBSubscriptionFeature>): Promise<void> {
+        const { error, response } = await server.PUT('/api/marti/missions/{:guid}/cot', {
+            params: { path: { ':guid': this.parent.guid } },
+            headers: this.headers(),
+            body: { features: rows.map(asFeature) as SubmitFeature[] }
+        });
+
+        if (error) throw new PushError(error.message || 'Failed to submit features', response?.status);
+
+        await this.confirm(rows);
     }
 
     /**
