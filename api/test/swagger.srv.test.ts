@@ -48,7 +48,10 @@ test('GET: api/openapi - operation level security', async () => {
             { bearerAuth: [] },
             { layerAuth: ['search:read'] },
         ]);
-        assert.equal(res.body.paths['/api/search/suggest'].get.security, undefined);
+        assert.deepEqual(res.body.paths['/api/search/suggest'].get.security, [
+            { bearerAuth: [] },
+            { layerAuth: ['search:read'] },
+        ]);
     } catch (err) {
         assert.ifError(err);
     }

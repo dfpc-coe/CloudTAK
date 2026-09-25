@@ -457,6 +457,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/search/suggest', {
         name: 'Suggest',
         group: 'Search',
+        security: Auth.security('search:read'),
         description: 'Get information about a given string',
         query: Type.Object({
             provider: Type.Optional(Type.String()),
@@ -470,7 +471,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: SuggestResponse,
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req);
+            await Auth.as_user_or_scope(config, req, 'search:read');
 
             const response: Static<typeof SuggestResponse> = {
                 items: [],

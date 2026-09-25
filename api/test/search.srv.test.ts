@@ -216,14 +216,28 @@ test('GET /api/search/forward - layer token without search:read', async () => {
     }
 });
 
-test('GET /api/search/suggest - layer token rejected', async () => {
+test('GET /api/search/suggest - layer token with search:read', async () => {
+    try {
+        const res = await flight.fetch('/api/search/suggest?query=Denver&limit=1', {
+            method: 'GET',
+            auth: { bearer: scopedLayerToken },
+        }, true);
+
+        assert.ok(Array.isArray(res.body.items), 'Items is an array');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET /api/search/suggest - layer token without search:read', async () => {
     try {
         const res = await flight.fetch('/api/search/suggest?query=Denver', {
             method: 'GET',
-            auth: { bearer: scopedLayerToken },
+            auth: { bearer: unscopedLayerToken },
         }, false);
 
         assert.equal(res.status, 403);
+        assert.equal(res.body.message, 'Layer token does not have the search:read permission');
     } catch (err) {
         assert.ifError(err);
     }
