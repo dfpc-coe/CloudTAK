@@ -234,24 +234,58 @@ export default class AtlasDatabase {
 
         this.pendingUpdate.clear();
 
-        for (const id of staleDelete) {
-            this.cots.delete(id);
-            await withDbRetry(() => db.feature.delete(id));
-        }
+        // Memory is the source of truth for the map - drop removed features
+        // synchronously and let IndexedDB catch up off the render path
+        const removed = new Set<string>(staleDelete);
 
         for (const id of this.pendingDelete) {
-            const cot = await this.get(id);
+            const cot = this.cots.get(id);
             if (!cot) continue;
 
             diff.remove.push(cot.vectorId());
-
-            this.cots.delete(id);
-            await withDbRetry(() => db.feature.delete(id));
+            removed.add(id);
         }
 
         this.pendingDelete.clear();
 
+        for (const id of removed) this.cots.delete(id);
+        this.persistRemoval(removed);
+
         return diff;
+    }
+
+    /**
+     * Delete removed features from IndexedDB without blocking the caller.
+     * A feature re-created while the delete is queued is written back
+     * afterwards so the offline cache matches memory.
+     */
+    persistRemoval(ids: Set<string>): void {
+        if (!ids.size) return;
+
+        const removal = (async () => {
+            await withDbRetry(() => db.feature.bulkDelete([...ids]));
+
+            const revived: DBFeature[] = [];
+            for (const id of ids) {
+                const cot = this.cots.get(id);
+                if (!cot || cot.origin.mode !== OriginMode.CONNECTION) continue;
+
+                revived.push({
+                    id: cot.id,
+                    path: cot.path,
+                    properties: cot.properties,
+                    geometry: cot.geometry
+                });
+            }
+
+            if (revived.length) {
+                await withDbRetry(() => db.feature.bulkPut(revived));
+            }
+        })();
+
+        removal.catch((err: unknown) => {
+            console.error('Failed to persist feature removal', err);
+        });
     }
 
     /** Current display_stale setting from the in-memory profile cache */
@@ -317,10 +351,8 @@ export default class AtlasDatabase {
             features.push(cot.as_rendered());
         }
 
-        for (const id of deleted) {
-            this.cots.delete(id);
-            await withDbRetry(() => db.feature.delete(id));
-        }
+        for (const id of deleted) this.cots.delete(id);
+        this.persistRemoval(deleted);
 
         return features;
     }
