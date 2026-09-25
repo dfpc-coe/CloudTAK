@@ -17,13 +17,13 @@ export function isMilsymIcon(id: string): boolean {
     return MILSYM_PREFIX.test(id);
 }
 
-function symbol(id: string, size: number): ms.Symbol {
-    return new ms.Symbol(id.replace(MILSYM_PREFIX, ''), { size });
+function sidc(id: string): string {
+    return id.replace(MILSYM_PREFIX, '');
 }
 
 /** @param id A bare SIDC or a `2525<Variant>:<SIDC>` icon id */
-export function symbolCanvas(id: string, size = SYMBOL_SIZE): HTMLCanvasElement {
-    return symbol(id, size).asCanvas();
+export function symbolCanvas(id: string): HTMLCanvasElement {
+    return new ms.Symbol(sidc(id), { size: SYMBOL_SIZE }).asCanvas();
 }
 
 /**
@@ -33,12 +33,12 @@ export function symbolCanvas(id: string, size = SYMBOL_SIZE): HTMLCanvasElement 
  * @param id A bare SIDC or a `2525<Variant>:<SIDC>` icon id
  */
 export function symbolDataURL(id: string, size = SYMBOL_SIZE): string {
-    const key = `${id}:${size}`;
+    const key = `${sidc(id)}:${size}`;
 
     let url = dataURLs.get(key);
 
     if (!url) {
-        url = symbol(id, size).toDataURL();
+        url = new ms.Symbol(sidc(id), { size }).toDataURL();
         dataURLs.set(key, url);
     }
 

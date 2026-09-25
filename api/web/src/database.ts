@@ -101,6 +101,9 @@ export interface DBIconset {
     default_neutral: string | null;
     default_unknown: string | null;
     skip_resize: boolean;
+    /** version/updated of the iconset whose icons are cached in db.icon */
+    icons_version?: number;
+    icons_updated?: string;
 }
 
 export type DBOverlay = ProfileOverlayList["items"][number];

@@ -160,22 +160,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const { public: isPublic, ...body } = req.body;
 
-            let username: string | null | undefined = undefined;
-            if (typeof isPublic === 'boolean') {
-                if (user.access !== AuthUserAccess.ADMIN) {
-                    throw new Err(400, null, 'Only System Admins can change Iconset visibility');
-                }
-
-                if (isPublic && existing.username) {
-                    username = null;
-                } else if (!isPublic && !existing.username) {
-                    username = user.email;
-                }
+            if (isPublic !== undefined && user.access !== AuthUserAccess.ADMIN) {
+                throw new Err(400, null, 'Only System Admins can change Iconset visibility');
             }
 
             const iconset = await config.models.Iconset.commit(req.params.iconset, {
                 ...body,
-                ...(username !== undefined ? { username } : {}),
+                ...(isPublic === true ? { username: null } : {}),
+                ...(isPublic === false && !existing.username ? { username: user.email } : {}),
             });
 
             res.json(iconset);

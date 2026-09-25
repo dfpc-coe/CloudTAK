@@ -112,6 +112,12 @@ export default class IconsetManager extends BaseInterface {
         });
     }
 
+    /** Write a server row, keeping the icon sync marker set by base/icon.ts */
+    static async put(remote: Iconset): Promise<void> {
+        const cached = await db.iconset.get(remote.uid);
+        await db.iconset.put({ ...cached, ...remote });
+    }
+
     static async get(uid: string): Promise<Iconset> {
         const token = await getRuntimeToken();
         const res = await server.GET('/api/iconset/{:iconset}', {
@@ -126,7 +132,7 @@ export default class IconsetManager extends BaseInterface {
         if (res.error) throw new Error(res.error.message);
         if (!res.data) throw new Error('Failed to fetch iconset');
 
-        await db.iconset.put(res.data as DBIconset);
+        await this.put(res.data);
 
         return res.data;
     }
@@ -143,7 +149,7 @@ export default class IconsetManager extends BaseInterface {
         if (res.error) throw new Error(res.error.message);
         if (!res.data) throw new Error('Failed to create iconset');
 
-        await db.iconset.put(res.data as DBIconset);
+        await this.put(res.data);
 
         return res.data;
     }
@@ -167,7 +173,7 @@ export default class IconsetManager extends BaseInterface {
         if (res.error) throw new Error(res.error.message);
         if (!res.data) throw new Error('Failed to update iconset');
 
-        await db.iconset.put(res.data as DBIconset);
+        await this.put(res.data);
     }
 
     static async regenerate(uid: string): Promise<void> {
@@ -212,10 +218,11 @@ export default class IconsetManager extends BaseInterface {
         const list = res.data as IconsetList;
 
         await db.transaction('rw', db.iconset, db.cache, async () => {
+            const cached = new Map((await db.iconset.toArray()).map((iconset) => [iconset.uid, iconset]));
             await db.iconset.clear();
 
             if (list.items.length) {
-                await db.iconset.bulkPut(list.items);
+                await db.iconset.bulkPut(list.items.map((item) => ({ ...cached.get(item.uid), ...item })));
             }
 
             await db.cache.put({

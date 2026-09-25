@@ -168,13 +168,12 @@ watch(iconImage, async (iconId) => {
         || !mapStore._map
         || supportedIcon.value
         || resolveAttempted.has(iconId)
+        || !mapStore.icons.resolvable(iconId)
     ) return;
 
     resolveAttempted.add(iconId);
 
     try {
-        if (!mapStore.icons.resolvable(iconId)) return;
-
         await mapStore.icons.resolve(iconId);
         resolvedTick.value += 1;
     } catch {

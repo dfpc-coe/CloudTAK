@@ -507,7 +507,7 @@ test('POST: /api/iconset - user scoped', async () => {
     }
 });
 
-test('PATCH: /api/iconset/:iconset - public ignored by non-admin', async () => {
+test('PATCH: /api/iconset/:iconset - public rejected for non-admin', async () => {
     try {
         const res = await flight.fetch('/api/iconset/user-iconset', {
             method: 'PATCH',

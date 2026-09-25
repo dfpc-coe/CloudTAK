@@ -167,7 +167,13 @@ export default class IconManager {
     private async resolveImage(id: string): Promise<void> {
         if (this.map.hasImage(id)) return;
 
-        if (isMilsymIcon(id)) {
+        if (!this.resolvable(id)) {
+            this.logWarnOnce(
+                `unhandled:${id}`,
+                'Unhandled missing style image',
+                { imageId: id }
+            );
+        } else if (isMilsymIcon(id)) {
             this.addImage(id, await createImageBitmap(symbolCanvas(id)));
         } else if (id.includes('-colored-')) {
             const separator = id.lastIndexOf('-colored-');
@@ -179,14 +185,8 @@ export default class IconManager {
             if (!this.map.hasImage(baseId)) await this.resolve(baseId);
 
             this.addColoredImage(id, baseId, color);
-        } else if (id.includes(':')) {
-            await this.loadIconsetImage(id);
         } else {
-            this.logWarnOnce(
-                `unhandled:${id}`,
-                'Unhandled missing style image',
-                { imageId: id }
-            );
+            await this.loadIconsetImage(id);
         }
     }
 

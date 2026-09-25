@@ -121,12 +121,8 @@ export function renderedIcon(properties: Feature["properties"]): string | undefi
 }
 
 /**
- * The exact style image id the map's icon layer requests for a Feature: the
- * rendered icon, recoloured to the Feature's marker-color for everything but a
- * MIL-STD symbol. The Icon Manager generates the coloured variant on demand.
- *
- * The icon layer's `icon-image` expression in utils/styles.ts must agree with
- * this - cot-icon.spec.ts asserts that they do
+ * The style image id the map's icon layer requests for a Feature. Must agree
+ * with the `icon-image` expression in utils/styles.ts (cot-icon.spec.ts asserts it).
  */
 export function renderedIconImage(properties: Feature["properties"]): string | undefined {
     const icon = renderedIcon(properties);
