@@ -11,9 +11,9 @@
 * message over the WebSocket which AtlasConnection passes to this manager.
 *
 * Mission (Data Sync) change events received while the device was offline
-* or the socket was closed are not replayed, so every subscribed mission is
-* refreshed from the server when AtlasConnection reports connectivity
-* restored (device network or TAK socket).
+* or the socket was closed are not replayed, so every subscribed mission has
+* its pending local edits pushed and is then refreshed from the server when
+* AtlasConnection reports connectivity restored (device network or TAK socket).
 *
 * INVARIANT: Everything a sync triggers - the handlers in syncEvent()/
 * runFullSync() and any main-thread reaction to the Sync_* messages they
@@ -212,6 +212,11 @@ export default class AtlasSync {
         const results = await Promise.allSettled([...subscribed].map(async ({ guid }) => {
             const sub = await Subscription.from(guid, { subscribed: true });
             if (!sub) return;
+
+            // Submit edits made while offline first so the refresh that
+            // follows reflects them - push() never rejects, failures stay
+            // pending on their rows for the next trigger or a manual retry
+            await sub.feature.push();
 
             // SubscriptionFeature.refresh() posts Mission_Change_Feature so
             // the main thread repaints the mission overlay

@@ -19,6 +19,25 @@ const PUSH_BATCH = 100;
 
 const pushing = new Map<string, { promise: Promise<boolean>, again: boolean }>();
 
+class PushError extends Error {
+    status?: number;
+
+    constructor(message: string, status?: number) {
+        super(message);
+        this.status = status;
+    }
+}
+
+/**
+ * The server rejected the request itself rather than failing to reach TAK,
+ * so one bad feature may be poisoning its batch and the rest can still go
+ */
+function isRejection(err: unknown): boolean {
+    if (!(err instanceof PushError) || err.status === undefined) return false;
+    if (err.status === 401 || err.status === 403) return false;
+    return (err.status >= 400 && err.status < 500) || err.status === 502;
+}
+
 function asFeature(row: DBSubscriptionFeature): Feature {
     return {
         id: row.id,
@@ -467,22 +486,7 @@ export default class SubscriptionFeature {
         let ok = true;
 
         for (let i = 0; i < upserts.length; i += PUSH_BATCH) {
-            const batch = upserts.slice(i, i + PUSH_BATCH);
-
-            try {
-                const { error } = await server.PUT('/api/marti/missions/{:guid}/cot', {
-                    params: { path: { ':guid': this.parent.guid } },
-                    headers: this.headers(),
-                    body: { features: batch.map(asFeature) as SubmitFeature[] }
-                });
-
-                if (error) throw new Error(error.message);
-
-                await this.confirm(batch);
-            } catch (err) {
-                ok = false;
-                await this.failed(batch, err);
-            }
+            if (!await this.upsert(upserts.slice(i, i + PUSH_BATCH))) ok = false;
         }
 
         for (const row of removes) {
@@ -508,6 +512,39 @@ export default class SubscriptionFeature {
         }
 
         return ok;
+    }
+
+    /**
+     * Submit a batch, splitting it in half on a rejection so a single bad
+     * feature only fails itself instead of every row sent alongside it
+     */
+    private async upsert(rows: Array<DBSubscriptionFeature>): Promise<boolean> {
+        try {
+            await this.submit(rows);
+            return true;
+        } catch (err) {
+            if (rows.length > 1 && isRejection(err)) {
+                const mid = Math.ceil(rows.length / 2);
+                const head = await this.upsert(rows.slice(0, mid));
+                const tail = await this.upsert(rows.slice(mid));
+                return head && tail;
+            }
+
+            await this.failed(rows, err);
+            return false;
+        }
+    }
+
+    private async submit(rows: Array<DBSubscriptionFeature>): Promise<void> {
+        const { error, response } = await server.PUT('/api/marti/missions/{:guid}/cot', {
+            params: { path: { ':guid': this.parent.guid } },
+            headers: this.headers(),
+            body: { features: rows.map(asFeature) as SubmitFeature[] }
+        });
+
+        if (error) throw new PushError(error.message || 'Failed to submit features', response?.status);
+
+        await this.confirm(rows);
     }
 
     /**

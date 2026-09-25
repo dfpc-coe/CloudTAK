@@ -6,7 +6,7 @@
     >
         <template #buttons>
             <TablerDelete
-                v-if='!loading && subscription && subscription.role.permissions.includes("MISSION_WRITE")'
+                v-if='!loading && subscription && subscription.subscribed && subscription.role.permissions.includes("MISSION_DELETE")'
                 title='Delete'
                 :label='"Delete " + (subscription.meta.name || "Data Sync")'
                 displaytype='icon'
@@ -72,7 +72,7 @@
             </TablerDropdown>
             <TablerRefreshButton
                 :loading='(!subscription && !error) || loading'
-                @click='fetchMission'
+                @click='fetchMission(true)'
             />
         </template>
         <template #default>
@@ -127,7 +127,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, triggerRef, onMounted } from 'vue';
+import { ref, triggerRef, onMounted, onBeforeUnmount, watch } from 'vue';
 import { std } from '../../../std.ts';
 import type { Feature } from '../../../types.ts';
 import type { Component } from 'vue';
@@ -208,6 +208,29 @@ onMounted(async () => {
     await fetchMission();
 })
 
+onBeforeUnmount(() => {
+    setSubscription(undefined);
+});
+
+// The route is reused when moving between missions (Active Mission in the
+// top bar, Associated Mission buttons) so the panel must reload on param change
+watch(() => route.params.mission, async (guid, previous) => {
+    if (!guid || guid === previous) return;
+
+    setSubscription(undefined);
+    token.value = route.query.token ? String(route.query.token) : undefined;
+
+    await fetchMission();
+});
+
+// The panel's instance listens for changes made elsewhere, so the one it
+// replaces must stop listening or its channel is never collected
+function setSubscription(next: Subscription | undefined): void {
+    const previous = subscription.value;
+    subscription.value = next;
+    if (previous && previous !== next) previous.close();
+}
+
 function subscribedChanged(): void {
     triggerRef(subscription);
 }
@@ -219,47 +242,77 @@ async function shareToPackageSetup(): Promise<void> {
 }
 
 async function deleteMission() {
-    loading.value = true;
-
     if (!subscription.value) return;
 
-    if (mapStore.mission && mapStore.mission.guid === subscription.value.guid) {
-        await mapStore.makeActiveMission(undefined);
+    loading.value = true;
+    error.value = undefined;
+
+    try {
+        if (mapStore.mission && mapStore.mission.guid === subscription.value.guid) {
+            await mapStore.makeActiveMission(undefined);
+        }
+
+        await subscription.value.delete();
+
+        const overlay = OverlayManager.loadedByMode('mission', String(route.params.mission));
+        if (overlay) {
+            await OverlayManager.deleteLoaded(overlay);
+        }
+
+        router.replace('/menu/missions');
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        loading.value = false;
     }
-
-    await subscription.value.delete();
-
-    const overlay = OverlayManager.loadedByMode('mission', String(route.params.mission));
-    if (overlay) {
-        await OverlayManager.deleteLoaded(overlay);
-    }
-
-    router.replace('/menu/missions');
 }
 
 async function exportToPackage(format: string): Promise<void> {
     if (!subscription.value) return;
 
     loadingInline.value = 'Generating Archive'
-    await std(`/api/marti/missions/${encodeURIComponent(subscription.value.guid)}/archive?download=true&format=${format}`, {
-        download: true
-    })
-    loadingInline.value = undefined;
-}
-
-async function fetchMission(reload = false): Promise<void> {
-    loading.value = true;
 
     try {
-        subscription.value = await Subscription.load(String(route.params.mission), {
-            reload,
-            missiontoken: token.value,
-        });
-
-        loading.value = false;
+        await std(`/api/marti/missions/${encodeURIComponent(subscription.value.guid)}/archive?download=true&format=${format}`, {
+            download: true
+        })
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
-        loading.value = false;
+    } finally {
+        loadingInline.value = undefined;
+    }
+}
+
+// Incremented per load so a response for a mission the user has already
+// navigated away from is dropped instead of replacing the current one
+let fetchSeq = 0;
+
+async function fetchMission(reload = false): Promise<void> {
+    const seq = ++fetchSeq;
+    const guid = String(route.params.mission);
+
+    loading.value = true;
+    error.value = undefined;
+
+    try {
+        const sub = await Subscription.load(guid, {
+            reload,
+            missiontoken: token.value,
+            live: true,
+        });
+
+        if (seq !== fetchSeq) {
+            sub.close();
+            return;
+        }
+
+        setSubscription(sub);
+    } catch (err) {
+        if (seq !== fetchSeq) return;
+
+        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        if (seq === fetchSeq) loading.value = false;
     }
 }
 </script>

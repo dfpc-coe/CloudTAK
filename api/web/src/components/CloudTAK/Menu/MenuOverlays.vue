@@ -162,16 +162,10 @@
                                             >
                                                 {{ badge.label }}
                                             </span>
-                                            <TablerBadge
+                                            <OfflineBadge
                                                 v-if='card.offline'
-                                                class='small'
-                                                background-color='rgba(32, 107, 196, 0.15)'
-                                                border-color='rgba(32, 107, 196, 0.35)'
-                                                text-color='#206bc4'
                                                 title='Tiles are available offline on this device'
-                                            >
-                                                Offline
-                                            </TablerBadge>
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -278,8 +272,8 @@ import { ref, watch, useTemplateRef, computed, onMounted, onBeforeUnmount } from
 import { useRouter } from 'vue-router';
 import type { Subscription } from 'dexie';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import OfflineBadge from '../util/OfflineBadge.vue';
 import {
-    TablerBadge,
     TablerDelete,
     TablerIconButton,
     TablerInput,

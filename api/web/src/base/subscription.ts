@@ -31,6 +31,16 @@ export type SubscriptionEvent = {
     }
 }
 
+// Send-only channel shared by every instance in this context. A channel with
+// a message listener is never garbage collected, so instances only open a
+// listening channel when a caller asks for live updates and closes it after
+let bus: BroadcastChannel | undefined;
+
+function announce(event: SubscriptionEvent): void {
+    if (!bus) bus = new BroadcastChannel('subscription');
+    bus.postMessage(event);
+}
+
 /**
  * High Level Wrapper around the Data/Mission Sync API
  */
@@ -55,7 +65,7 @@ export default class Subscription {
 
     templateid: string | null;
 
-    _sync: BroadcastChannel
+    private _sync?: BroadcastChannel;
 
     constructor(
         mission: Mission,
@@ -63,16 +73,9 @@ export default class Subscription {
         opts: {
             subscribed: boolean,
             missiontoken?: string,
+            live?: boolean,
         }
     ) {
-        this._sync = new BroadcastChannel('subscription');
-
-        this._sync.onmessage = async (ev: MessageEvent<SubscriptionEvent>) => {
-            if (ev.data.guid === this.guid) {
-                await this.reload();
-            }
-        };
-
         this.log = new SubscriptionLog(mission.guid, {
             missiontoken: opts.missiontoken
         });
@@ -115,6 +118,35 @@ export default class Subscription {
         if (opts?.missiontoken) this.missiontoken = opts.missiontoken;
 
         this.dirty = false;
+
+        if (opts.live) this.listen();
+    }
+
+    /**
+     * Follow changes other instances (in this or another context) make to
+     * this mission's local record. Must be paired with close()
+     */
+    listen(): void {
+        if (this._sync) return;
+
+        this._sync = new BroadcastChannel('subscription');
+        this._sync.onmessage = async (ev: MessageEvent<SubscriptionEvent>) => {
+            if (ev.data.guid === this.guid) {
+                await this.reload();
+            }
+        };
+    }
+
+    get live(): boolean {
+        return this._sync !== undefined;
+    }
+
+    close(): void {
+        if (!this._sync) return;
+
+        this._sync.onmessage = null;
+        this._sync.close();
+        this._sync = undefined;
     }
 
     /**
@@ -123,7 +155,8 @@ export default class Subscription {
     static async from(
         guid: string,
         opts?: {
-            subscribed?: boolean
+            subscribed?: boolean,
+            live?: boolean,
         }
     ): Promise<Subscription | undefined> {
         const exists = await db.subscription
@@ -139,6 +172,7 @@ export default class Subscription {
             {
                 missiontoken: exists.token,
                 subscribed: opts?.subscribed !== undefined ? opts.subscribed : exists.subscribed,
+                live: opts?.live,
             }
         );
     }
@@ -152,10 +186,11 @@ export default class Subscription {
         opts: {
             reload?: boolean,
             missiontoken?: string,
-            subscribed?: boolean
+            subscribed?: boolean,
+            live?: boolean,
         } = {}
     ): Promise<Subscription> {
-        const exists = await this.from(guid);
+        const exists = await this.from(guid, { live: opts.live });
 
         if (exists) {
             if (opts.subscribed !== undefined || opts.missiontoken !== undefined) {
@@ -207,8 +242,9 @@ export default class Subscription {
                 mission as unknown as Mission,
                 role as unknown as MissionRole,
                 {
-                    subscribed: false,
-                    ...opts
+                    subscribed: opts.subscribed,
+                    missiontoken: opts.missiontoken,
+                    live: opts.live,
                 }
             );
 
@@ -258,10 +294,6 @@ export default class Subscription {
             this.setMissionToken(body.token);
         }
 
-        if (body.description !== undefined) {
-            this.meta.description = body.description;
-        }
-
         await db.subscription.update(this.guid, {
             dirty: this.dirty,
             subscribed: this.subscribed,
@@ -274,13 +306,15 @@ export default class Subscription {
             if (body.keywords !== undefined) patch.keywords = body.keywords;
             if (body.groups !== undefined) patch.groups = body.groups;
 
-            const { data } = await server.PATCH('/api/marti/missions/{:guid}', {
+            const { data, error } = await server.PATCH('/api/marti/missions/{:guid}', {
                 params: {
                     path: { ':guid': this.guid }
                 },
                 headers: Subscription.headers(this.missiontoken),
                 body: patch
             });
+
+            if (error) throw new Error(error.message || 'Failed to update mission');
 
             if (data) {
                 Object.assign(this.meta, data as unknown as Mission);
@@ -291,7 +325,7 @@ export default class Subscription {
             }
         }
 
-        this._sync.postMessage({
+        announce({
             guid: this.guid,
             type: SubscriptionEventType.UPDATE,
             state: {
@@ -313,7 +347,7 @@ export default class Subscription {
 
         await db.subscription.delete(this.meta.guid);
 
-        this._sync.postMessage({
+        announce({
             guid: this.guid,
             type: SubscriptionEventType.DELETE,
             state: {

@@ -46,16 +46,7 @@
                                 <TablerBytes :bytes='asset.size' /> - <TablerEpoch :date='asset.updated' />
                             </span>
                             <div class='ms-auto d-flex align-items-center gap-1 flex-shrink-0'>
-                                <TablerBadge
-                                    v-if='offlineIds.has(asset.id)'
-                                    class='small'
-                                    background-color='rgba(32, 107, 196, 0.15)'
-                                    border-color='rgba(32, 107, 196, 0.35)'
-                                    text-color='#206bc4'
-                                    title='Available offline on this device'
-                                >
-                                    Offline
-                                </TablerBadge>
+                                <OfflineBadge v-if='offlineIds.has(asset.id)' />
                                 <button
                                     v-if='hasSharedChannels(asset) && !isSharedAsset(asset)'
                                     type='button'
@@ -276,6 +267,7 @@
 import type { ProfileFile } from '../../../types.ts';
 import StandardItem from '../util/StandardItem.vue';
 import OfflineDownloader from '../util/OfflineDownloader.vue';
+import OfflineBadge from '../util/OfflineBadge.vue';
 import {
     TablerDelete,
     TablerSlidedown,
