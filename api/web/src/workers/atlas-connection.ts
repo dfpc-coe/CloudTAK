@@ -154,8 +154,12 @@ export default class AtlasConnection {
             url.protocol = 'wss:';
         }
 
+        // Any socket still open is superseded - its close handler sees it is
+        // no longer this.ws and stays quiet
+        const previous = this.ws;
         const ws = new WebSocket(url);
         this.ws = ws;
+        if (previous) previous.close();
 
         // A socket that closes without ever opening was rejected during the
         // HTTP upgrade (401) or never reached the server
@@ -220,6 +224,9 @@ export default class AtlasConnection {
 
                 console.warn('Warning: Validation Error: received Error from WebSocket:', JSON.stringify(body));
                 throw new Error(err.properties.message);
+            } else if (body.type === 'logout') {
+                this.handleRevoked((body as unknown as { properties?: { message?: string } }).properties?.message || 'Session revoked');
+                return;
             } else if (body.type === 'import') {
                 const imp = (body as unknown as {
                     properties: Import
@@ -518,6 +525,23 @@ export default class AtlasConnection {
         // thread must route the user to login
         this.atlas.postMessage({
             type: WorkerMessageType.Connection_AuthFailure,
+            body: { message }
+        });
+    }
+
+    /**
+     * The server terminated this login session - the main thread must log out
+     */
+    private handleRevoked(message: string): void {
+        if (this.authFailure) return;
+        this.authFailure = true;
+
+        console.warn(`WebSocket session revoked: ${message}`);
+
+        this.clearReconnectTimer();
+
+        this.atlas.postMessage({
+            type: WorkerMessageType.Connection_Revoked,
             body: { message }
         });
     }

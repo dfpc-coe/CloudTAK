@@ -43,4 +43,22 @@ export default async function router(schema: Schema, config: ConfigStateful) {
             Err.respond(err, res);
         }
     });
+
+    await schema.post('/ws/revoke', {
+        name: 'Revoke WebSocket Sessions',
+        group: 'HubWebSocket',
+        description: 'Tell every WebSocket client of the given login sessions to log out and close them',
+        body: Type.Object({
+            sessions: Type.Array(Type.String()),
+        }),
+        res: StandardResponse,
+    }, async (req, res) => {
+        try {
+            await config.hub.wsRevoke(req.body.sessions);
+
+            res.json({ status: 200, message: 'Revoked' });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
 }

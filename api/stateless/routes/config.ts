@@ -127,6 +127,20 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const updatedKeys = Object.keys(req.body) as (keyof Static<typeof FullConfig>)[];
             const refreshGeofence = updatedKeys.some(key => GeofenceConfigKeys.has(key));
 
+            if (req.body['login::token::expiry'] !== undefined || req.body['login::refresh::expiry'] !== undefined) {
+                const expiry = await config.models.Setting.typedMany({
+                    'login::token::expiry': 192,
+                    'login::refresh::expiry': 720,
+                });
+
+                const token = req.body['login::token::expiry'] ?? expiry['login::token::expiry'];
+                const refresh = req.body['login::refresh::expiry'] ?? expiry['login::refresh::expiry'];
+
+                if (token > refresh) {
+                    throw new Err(400, null, 'Login token lifetime cannot exceed the refresh token lifetime');
+                }
+            }
+
             if (req.body['map::basemap'] !== undefined && req.body['map::basemap'] !== null) {
                 let basemap;
                 try {

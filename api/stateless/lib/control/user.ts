@@ -12,6 +12,7 @@ import {
 } from '../../../common/schema.js';
 import { ProfileConfigDefaults } from './profile.js';
 import VideoServiceControl from './video-service.js';
+import { revokeSessions } from '../user/session.js';
 
 export default class UserControl {
     config: Config;
@@ -85,7 +86,11 @@ export default class UserControl {
     }
 
     async revokeSessions(username: string): Promise<void> {
-        await this.config.models.ProfileSession.delete(sql`${ProfileSession.username} = ${username}`);
+        const sessions = await this.config.pg.select({ id: ProfileSession.id })
+            .from(ProfileSession)
+            .where(eq(ProfileSession.username, username));
+
+        await revokeSessions(this.config, sessions.map(session => session.id));
     }
 
     /**

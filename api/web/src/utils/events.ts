@@ -26,6 +26,7 @@ export enum WorkerMessageType {
     Connection_Open = 'connection:open',
     Connection_Close = 'connection:close',
     Connection_AuthFailure = 'connection:authfailure',
+    Connection_Revoked = 'connection:revoked',
 
     Mission_Change_Feature = 'mission:change:feature',
     Mission_Invite = 'mission:invite',

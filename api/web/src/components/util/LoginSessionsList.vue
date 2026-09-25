@@ -18,6 +18,7 @@
                 v-for='session in list.items'
                 :key='session.id'
                 :session='session'
+                @terminate='terminateSession($event)'
             />
         </div>
         <TableFooter
@@ -75,6 +76,28 @@ onMounted(async () => {
 watch(paging.value, () => {
     void fetchSessions();
 });
+
+async function terminateSession(session: string): Promise<void> {
+    err.value = null;
+
+    try {
+        const res = await server.DELETE('/api/user/{:username}/session/{:session}', {
+            params: {
+                path: {
+                    ':username': props.username,
+                    ':session': session,
+                },
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+    } catch (error) {
+        err.value = error instanceof Error ? error : new Error(String(error));
+        return;
+    }
+
+    await fetchSessions();
+}
 
 async function fetchSessions(): Promise<void> {
     loading.value = true;

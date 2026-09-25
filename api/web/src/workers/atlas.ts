@@ -72,6 +72,18 @@ export default class Atlas {
         return this.channel.postMessage(msg);
     }
 
+    /**
+     * Swap in a refreshed login token and reconnect the WebSocket with it
+     */
+    async setToken(authToken: string): Promise<void> {
+        this.token = authToken;
+
+        if (!this.initialized) return;
+
+        await db.config.put({ key: 'token', value: authToken });
+        this.conn.connect(this.username);
+    }
+
     async init(authToken: string) {
         // Only skip if we know initialization has successfully completed before
         if (this.initialized) return;
