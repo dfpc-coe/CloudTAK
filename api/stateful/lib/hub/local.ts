@@ -160,6 +160,25 @@ export default class LocalHub implements HubClient {
         return presence;
     }
 
+    async wsRevoke(sessions: string[]): Promise<void> {
+        const revoked = new Set(sessions);
+        const raw = JSON.stringify({ type: 'logout', properties: { message: 'Session revoked' } });
+
+        for (const clients of this.config.wsClients.values()) {
+            for (const client of clients) {
+                if (!client.session || !revoked.has(client.session)) continue;
+                if (client.ws.readyState !== WebSocket.OPEN) continue;
+
+                try {
+                    client.ws.send(raw);
+                    client.ws.close();
+                } catch (err) {
+                    console.error(`Error: Failed to revoke session ${client.session}:`, err);
+                }
+            }
+        }
+    }
+
     async eventSet(layerid: number, cron: string | null): Promise<void> {
         if (cron) {
             await this.config.events.add(layerid, cron);

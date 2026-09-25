@@ -1,11 +1,9 @@
-import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthUserAccess } from '../../common/auth.js';
+import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox';
-import { UAParser } from 'ua-parser-js';
-import Provider from '../lib/provider.js';
+import { LoginResponse, issueSession, certificateStatus } from '../lib/user/session.js';
 import {
     generateRegistrationOptions,
     verifyRegistrationResponse,
@@ -283,18 +281,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         body: Type.Object({
             credential: AuthenticationResponseJSON,
         }),
-        res: Type.Object({
-            token: Type.String(),
-            access: Type.Enum(AuthUserAccess),
-            email: Type.String(),
-            session: Type.String(),
-            certRenewalRequired: Type.Optional(Type.Boolean({
-                description: 'The stored TAK certificate is missing, revoked, expired or about to expire - the client should collect a password and call POST /login to regenerate it',
-            })),
-            certExpired: Type.Optional(Type.Boolean({
-                description: 'The stored TAK certificate is unusable (missing, revoked or expired) - renewal cannot be skipped',
-            })),
-        }),
+        res: LoginResponse,
     }, async (req, res) => {
         try {
             await assertPasskeysEnabled();
@@ -359,61 +346,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             if (profile.disabled) throw new Err(403, null, 'User is disabled - Contact your administrator');
 
-            let access = AuthUserAccess.USER;
-            if (profile.system_admin) {
-                access = AuthUserAccess.ADMIN;
-            } else if (profile.agency_admin && profile.agency_admin.length) {
-                access = AuthUserAccess.AGENCY;
-            }
-
-            const userAgent = req.headers['user-agent'] || '';
-            const ua = UAParser(userAgent);
-
-            const session = await config.models.ProfileSession.generate({
-                username: profile.username,
-                created: new Date().toISOString(),
-                ip: String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'Unknown'),
-                device_type: ua.device.type || 'Desktop',
-                browser: [ua.browser.name, ua.browser.version].filter(Boolean).join(' ') || 'Unknown',
-                os: [ua.os.name, ua.os.version].filter(Boolean).join(' ') || 'Unknown',
-                user_agent: userAgent,
-            });
-
             await config.models.Profile.commit(profile.username, {
                 last_login: new Date().toISOString(),
             });
 
             // A passkey login has no password so the certificate cannot be regenerated here,
             // instead the client is told to collect a password and call POST /login
-            let certRenewalRequired = Provider.certificateRenewalRequired(profile.auth?.cert);
-            let certExpired = Provider.certificateExpired(profile.auth?.cert);
-
-            if (!certRenewalRequired && config.server.auth.key && config.server.auth.cert) {
-                try {
-                    // Certificate is within its validity period - ensure TAK Server hasn't revoked it
-                    await new Provider(config).valid(profile);
-                } catch (err) {
-                    if (err instanceof Err && err.status === 401) {
-                        certRenewalRequired = true;
-                        certExpired = true;
-                    } else {
-                        // TAK Server is unreachable - don't block login on a check we can't perform
-                        console.error(err);
-                    }
-                }
-            }
-
             res.json({
-                access,
-                email: profile.username,
-                session: session.id,
-                token: jwt.sign(
-                    { access, email: profile.username, s: session.id },
-                    config.SigningSecret,
-                    { expiresIn: '16h' },
-                ),
-                ...(certRenewalRequired ? { certRenewalRequired: true } : {}),
-                ...(certExpired ? { certExpired: true } : {}),
+                ...await issueSession(config, req, profile),
+                ...await certificateStatus(config, profile),
             });
         } catch (err) {
             Err.respond(err, res);

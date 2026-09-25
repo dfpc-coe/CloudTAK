@@ -909,6 +909,11 @@
         "query": false,
         "res": true
     },
+    "POST /login/refresh": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /login": {
         "body": false,
         "query": false,
@@ -1712,6 +1717,11 @@
     "GET /user/:username/session": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "DELETE /user/:username/session/:session": {
+        "body": false,
+        "query": false,
         "res": true
     },
     "POST /video/auth": {

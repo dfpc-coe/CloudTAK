@@ -795,6 +795,10 @@ export const ProfileSession = pgTable('profile_sessions', {
     browser: text().notNull().default('Unknown'),
     os: text().notNull().default('Unknown'),
     user_agent: text().notNull().default(''),
+    refresh_hash: text().unique(),
+    refresh_previous_hash: text(),
+    refresh_expires: timestamp({ withTimezone: true, mode: 'string' }),
+    last_refreshed: timestamp({ withTimezone: true, mode: 'string' }),
 });
 
 export const ProfilePasskey = pgTable('profile_passkeys', {

@@ -1,11 +1,10 @@
-import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox';
 import Provider from '../lib/provider.js';
-import { UAParser } from 'ua-parser-js';
+import { LoginResponse, issueSession, refreshSession } from '../lib/user/session.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.post('/login', {
@@ -17,12 +16,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
             password: Type.String(),
         }),
-        res: Type.Object({
-            token: Type.String(),
-            access: Type.Enum(AuthUserAccess),
-            email: Type.String(),
-            session: Type.String(),
-        }),
+        res: LoginResponse,
     }, async (req, res) => {
         try {
             const oidc = await config.models.Setting.typedMany({
@@ -74,32 +68,23 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 throw new Err(400, null, 'Server has not been configured');
             }
 
-            let access = AuthUserAccess.USER;
-            if (profile.system_admin) {
-                access = AuthUserAccess.ADMIN;
-            } else if (profile.agency_admin && profile.agency_admin.length) {
-                access = AuthUserAccess.AGENCY;
-            }
+            res.json(await issueSession(config, req, profile));
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
 
-            const userAgent = req.headers['user-agent'] || '';
-            const ua = UAParser(userAgent);
-
-            const session = await config.models.ProfileSession.generate({
-                username: profile.username,
-                created: new Date().toISOString(),
-                ip: String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'Unknown'),
-                device_type: ua.device.type || 'Desktop',
-                browser: [ua.browser.name, ua.browser.version].filter(Boolean).join(' ') || 'Unknown',
-                os: [ua.os.name, ua.os.version].filter(Boolean).join(' ') || 'Unknown',
-                user_agent: userAgent,
-            });
-
-            res.json({
-                access,
-                email: profile.username,
-                session: session.id,
-                token: jwt.sign({ access, email: profile.username, s: session.id }, config.SigningSecret, { expiresIn: '16h' }),
-            });
+    await schema.post('/login/refresh', {
+        name: 'Refresh Login',
+        group: 'Login',
+        description: 'Exchange a refresh token for a new login token - the refresh token is single use, a replacement is returned and the session expiry is extended',
+        body: Type.Object({
+            refresh: Type.String(),
+        }),
+        res: LoginResponse,
+    }, async (req, res) => {
+        try {
+            res.json(await refreshSession(config, req.body.refresh));
         } catch (err) {
             Err.respond(err, res);
         }

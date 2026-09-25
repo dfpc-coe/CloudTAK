@@ -17,6 +17,12 @@ export enum AuthUserAccess {
     USER = 'user',
 }
 
+export function accessFor(profile: { system_admin: boolean; agency_admin: Array<number> | null }): AuthUserAccess {
+    if (profile.system_admin) return AuthUserAccess.ADMIN;
+    if (profile.agency_admin && profile.agency_admin.length) return AuthUserAccess.AGENCY;
+    return AuthUserAccess.USER;
+}
+
 function castUserAccessEnum(str: string): AuthUserAccess | undefined {
     const value = AuthUserAccess[str.toUpperCase() as keyof typeof AuthUserAccess];
     return value;
@@ -306,11 +312,7 @@ export default class Auth {
 
         const imp = await config.models.Profile.from(impersonate);
 
-        let access = AuthUserAccess.USER;
-        if (imp.agency_admin) access = AuthUserAccess.AGENCY;
-        if (imp.system_admin) access = AuthUserAccess.ADMIN;
-
-        const resolved = new AuthUser(access, impersonate, adminUser.token);
+        const resolved = new AuthUser(accessFor(imp), impersonate, adminUser.token);
         resolved.impersonate = adminUser.email;
         return resolved;
     }
@@ -424,13 +426,7 @@ export async function tokenParser(
 
             if (profile.disabled) throw new Err(401, null, 'User is disabled');
 
-            if (profile.system_admin) {
-                return new AuthUser(AuthUserAccess.ADMIN, profile.username, `etl.${token}`);
-            } else if (profile.agency_admin.length) {
-                return new AuthUser(AuthUserAccess.AGENCY, profile.username, `etl.${token}`);
-            } else {
-                return new AuthUser(AuthUserAccess.USER, profile.username, `etl.${token}`);
-            }
+            return new AuthUser(accessFor(profile), profile.username, `etl.${token}`);
         } else {
             return new AuthResource(`etl.${token}`, access, decoded.id, decoded.internal);
         }
@@ -440,18 +436,26 @@ export async function tokenParser(
         if (!decoded.email || typeof decoded.email !== 'string') throw new Err(401, null, 'Invalid Token');
         if (!decoded.access || typeof decoded.access !== 'string') throw new Err(401, null, 'Invalid Token');
 
-        const access = castUserAccessEnum(decoded.access);
+        let access = castUserAccessEnum(decoded.access);
         if (!access) throw new Err(400, null, 'Invalid User Access Value');
 
         const session = typeof decoded.s === 'string' ? decoded.s : undefined;
 
         // Tokens without an `s` claim are server minted and have no session to check
         if (session) {
+            let profileSession;
             try {
-                await config.models.ProfileSession.from(session);
+                profileSession = await config.models.ProfileSession.from(session);
             } catch (err) {
                 throw new Err(401, err instanceof Error && err.name === 'PublicError' ? err : new Error(String(err)), 'Session does not exist');
             }
+
+            if (profileSession.username !== decoded.email) throw new Err(401, null, 'Session does not exist');
+
+            // Session tokens live long enough that the profile, not the claim, decides access
+            const profile = await config.models.Profile.from(decoded.email);
+            if (profile.disabled) throw new Err(401, null, 'User is disabled');
+            access = accessFor(profile);
         }
 
         return new AuthUser(access, decoded.email, token, session);

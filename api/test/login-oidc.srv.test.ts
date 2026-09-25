@@ -85,6 +85,8 @@ test('POST: api/login - allowed when OIDC enabled but not enforced', async () =>
         delete res.body.token;
         assert.ok(res.body.session);
         delete res.body.session;
+        assert.ok(res.body.refresh);
+        delete res.body.refresh;
 
         assert.deepEqual(res.body, {
             access: 'admin',

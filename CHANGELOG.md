@@ -18,6 +18,13 @@
 
 ### Pending Release
 
+- :tada: Login tokens now last 8 days by default & `POST /login`, `POST /login/passkey/authenticate` return a `refresh` token which `POST /login/refresh` exchanges for a new token pair - the web client refreshes on every launch & each refresh extends the session by 30 days of inactivity, refresh tokens are single use, stored hashed & a replayed token revokes its session
+- :tada: `login::token::expiry` & `login::refresh::expiry` admin config values (hours) control the login token & session lifetimes
+- :tada: `DELETE /user/:username/session/:session` terminates a login session, revoking its login & refresh tokens - the web client calls it on logout & from the sessions list
+- :rocket: Session tokens derive their access level & disabled state from the Profile on every request rather than from the token claim
+- :rocket: Terminating a session (logout, admin termination, user disable or refresh token reuse) sends a `logout` message to its open WebSocket clients & closes them - the web client wipes local state & returns to login
+- :bug: Editing a Connection that has no channel memberships no longer disables the Save button, which blocked saving a regenerated certificate
+
 ### v13.95.0 - 2026-09-23
 
 - :rocket: `POST /core/event` & `PATCH /core/event/:event` require at least one Channel - an Event can no longer be created or left without being shared with a Channel

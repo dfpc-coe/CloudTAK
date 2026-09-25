@@ -152,6 +152,9 @@ const error = ref<Error | undefined>();
 
 const SESSION_WARNING_MS = 30 * 60 * 1000;
 const SESSION_CHECK_INTERVAL_MS = 30 * 1000;
+// Refresh silently once this much of the token's life remains - the warning
+// banner is only reached when refreshing has failed
+const SESSION_REFRESH_MS = 24 * 60 * 60 * 1000;
 
 const sessionRemainingMs = ref<number | null>(null);
 const sessionWarningDismissed = ref(false);
@@ -182,6 +185,12 @@ function checkSessionExpiry() {
 
     const remaining = appStore.tokenExpiry - Date.now();
     sessionRemainingMs.value = remaining;
+
+    // Short lifetimes refresh at their halfway point instead
+    const refreshAt = Math.min(SESSION_REFRESH_MS, (appStore.tokenLifetime ?? SESSION_REFRESH_MS * 2) / 2);
+    if (remaining <= refreshAt) {
+        void appStore.refreshSession();
+    }
 
     if (remaining > SESSION_WARNING_MS) {
         // A fresh token was issued - re-arm the dismissed warning

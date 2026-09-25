@@ -154,6 +154,12 @@ export default class RemoteHub implements HubClient {
         });
     }
 
+    async wsRevoke(sessions: string[]): Promise<void> {
+        await this.#call('/ws/revoke', { sessions }, {
+            timeout: 5 * 1000,
+        });
+    }
+
     async eventSet(layerid: number, cron: string | null): Promise<void> {
         await this.#call('/event/set', { layerid, cron });
     }

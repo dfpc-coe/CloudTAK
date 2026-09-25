@@ -48,6 +48,8 @@ export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'oidc::discovery': '',
     'oidc::logo': '',
     'passkey::enabled': true,
+    'login::token::expiry': 192,
+    'login::refresh::expiry': 720,
     'external::applications': [],
     'core::event::types': [],
 };

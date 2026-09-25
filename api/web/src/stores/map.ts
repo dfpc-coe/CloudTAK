@@ -289,6 +289,12 @@ export const useMapStore = defineStore('cloudtak', {
         }
     },
     actions: {
+        // A refreshed login token - the worker reconnects its WebSocket with it
+        updateToken: async function(token: string): Promise<void> {
+            if (!this._worker) return;
+            await this.worker.setToken(token);
+        },
+
         startLocationWatch: async function() {
             const deviceStore = useDeviceStore();
 
@@ -1094,6 +1100,9 @@ export const useMapStore = defineStore('cloudtak', {
                 } else if (msg.type === WorkerMessageType.Connection_AuthFailure) {
                     this.isOpen = false;
                     await useAppStore().sessionExpired();
+                } else if (msg.type === WorkerMessageType.Connection_Revoked) {
+                    this.isOpen = false;
+                    await useAppStore().sessionRevoked();
                 } else if (msg.type === WorkerMessageType.Network_Change) {
                     this.isOnline = msg.body.online === true;
                 } else if (msg.type === WorkerMessageType.Sync_Trigger) {

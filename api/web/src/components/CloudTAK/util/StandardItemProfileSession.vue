@@ -23,6 +23,16 @@
                     {{ session.ip }} &middot; {{ new Date(session.created).toLocaleString() }}
                 </div>
             </div>
+            <TablerIconButton
+                title='Terminate Session'
+                class='flex-shrink-0'
+                @click.stop='emit("terminate", session.id)'
+            >
+                <IconTrash
+                    :size='18'
+                    stroke='1.5'
+                />
+            </TablerIconButton>
         </div>
     </StandardItem>
 </template>
@@ -31,11 +41,17 @@
 import { computed } from 'vue';
 import StandardItem from './StandardItem.vue';
 import StatusDot from '../../util/StatusDot.vue';
+import { TablerIconButton } from '@tak-ps/vue-tabler';
 import {
     IconDeviceDesktop,
     IconDeviceMobile,
     IconDeviceTablet,
+    IconTrash,
 } from '@tabler/icons-vue';
+
+const emit = defineEmits<{
+    terminate: [id: string];
+}>();
 
 const props = defineProps<{
     session: {

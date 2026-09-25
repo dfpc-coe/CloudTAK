@@ -70,6 +70,8 @@ export interface HubClient {
 
     wsPresence(keys: string[]): Promise<PresenceMap>;
 
+    wsRevoke(sessions: string[]): Promise<void>;
+
     eventSet(layerid: number, cron: string | null): Promise<void>;
 
     featureRefresh(connection: number): Promise<void>;

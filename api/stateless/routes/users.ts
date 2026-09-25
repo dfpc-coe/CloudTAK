@@ -3,6 +3,7 @@ import { sql, eq, asc, desc, getTableColumns } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
+import { revokeSessions } from '../lib/user/session.js';
 import { StandardResponse, ProfileResponse, ProfileListResponse, CertificateResponse } from '../../common/types.js';
 import type ConfigStateless from '../config.js';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types';
@@ -295,9 +296,47 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             res.json({
                 total: list.total,
                 items: list.items.map(item => ({
-                    ...item,
+                    id: item.id,
+                    username: item.username,
+                    created: item.created,
+                    ip: item.ip,
+                    device_type: item.device_type,
+                    browser: item.browser,
+                    os: item.os,
+                    user_agent: item.user_agent,
                     active: activeSessions.has(item.id),
                 })),
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/user/:username/session/:session', {
+        name: 'Delete User Session',
+        group: 'User',
+        description: 'Terminate a login session, revoking its login and refresh tokens - users may terminate their own sessions, Admins may terminate any',
+        params: Type.Object({
+            username: Type.String(),
+            session: Type.String(),
+        }),
+        res: StandardResponse,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            if (!user.is_admin() && req.params.username !== user.email) {
+                throw new Err(403, null, 'Only a System Administrator can terminate login sessions for another user');
+            }
+
+            const session = await config.models.ProfileSession.from(req.params.session);
+            if (session.username !== req.params.username) throw new Err(404, null, 'Session not found');
+
+            await revokeSessions(config, [session.id]);
+
+            res.json({
+                status: 200,
+                message: 'Session Terminated',
             });
         } catch (err) {
             Err.respond(err, res);

@@ -13,6 +13,14 @@ import { parseWorkerBootConfig } from './utils/worker-boot.ts';
 export const serverUrl = await getRuntimeServerUrl();
 export const server = await getServer();
 
+// Registered by the app store - exchanges the stored refresh token for a new
+// login token and returns it, or undefined when the session cannot be extended
+let sessionRefresher: (() => Promise<string | undefined>) | undefined;
+
+export function setSessionRefresher(fn: (() => Promise<string | undefined>) | undefined): void {
+    sessionRefresher = fn;
+}
+
 export async function getServer() {
     const server = createClient<paths>({
         baseUrl: serverUrl,
@@ -189,6 +197,12 @@ export async function std(
         const loginRes = await fetch(stdurl('/login'), { headers: loginHeaders });
 
         if (loginRes.status === 401 && !isWebWorker()) {
+            const refreshed = !opts.token && sessionRefresher ? await sessionRefresher() : undefined;
+
+            if (refreshed) {
+                return await std(url, { ...opts, token: refreshed, headers: { ...opts.headers, Authorization: `Bearer ${refreshed}` } });
+            }
+
             await Preferences.remove({ key: 'token' });
         }
 

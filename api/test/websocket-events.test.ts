@@ -7,10 +7,13 @@ import LocalHub from '../stateful/lib/hub/local.js';
 import { WebSocket_Event } from '../common/enums.js';
 import type ConfigStateful from '../stateful/config.js';
 
-function fakeSocket(sent: string[]): WebSocket {
+function fakeSocket(sent: string[], closed?: { count: number }): WebSocket {
     return {
         readyState: WebSocket.OPEN,
         send: (raw: string) => sent.push(raw),
+        close: () => {
+            if (closed) closed.count++;
+        },
     } as unknown as WebSocket;
 }
 
@@ -108,4 +111,34 @@ test('LocalHub.wsNotify: excludeSession still applies to event subscribers', asy
 
     assert.deepEqual(excludedSent, []);
     assert.deepEqual(includedSent, [JSON.stringify({ type: 'video' })]);
+});
+
+test('LocalHub.wsRevoke: only the revoked sessions are told to log out and closed', async () => {
+    const revokedSent: string[] = [];
+    const revokedClosed = { count: 0 };
+    const keptSent: string[] = [];
+    const keptClosed = { count: 0 };
+    const adminSent: string[] = [];
+    const adminClosed = { count: 0 };
+
+    const hub = new LocalHub({
+        wsClients: new Map([
+            ['user@example.com', [
+                new ConnectionWebSocket(fakeSocket(revokedSent, revokedClosed), 'geojson', [WebSocket_Event.MAP], undefined, 'session-a'),
+                new ConnectionWebSocket(fakeSocket(keptSent, keptClosed), 'geojson', [WebSocket_Event.MAP], undefined, 'session-b'),
+            ]],
+            ['admin', [
+                new ConnectionWebSocket(fakeSocket(adminSent, adminClosed), 'geojson', [WebSocket_Event.MAP], undefined, 'session-c'),
+            ]],
+        ]),
+    } as unknown as ConfigStateful);
+
+    await hub.wsRevoke(['session-a', 'session-c']);
+
+    assert.deepEqual(revokedSent, [JSON.stringify({ type: 'logout', properties: { message: 'Session revoked' } })]);
+    assert.equal(revokedClosed.count, 1);
+    assert.deepEqual(adminSent, [JSON.stringify({ type: 'logout', properties: { message: 'Session revoked' } })]);
+    assert.equal(adminClosed.count, 1);
+    assert.deepEqual(keptSent, []);
+    assert.equal(keptClosed.count, 0);
 });
