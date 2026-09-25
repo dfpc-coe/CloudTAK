@@ -47,6 +47,11 @@
                         class='text-truncate'
                         v-text='layer.integration.name'
                     />
+                    <span class='mx-1'>&middot;</span>
+                    <span
+                        class='flex-shrink-0'
+                        v-text='`v${layer.version}`'
+                    />
                 </div>
             </div>
 
