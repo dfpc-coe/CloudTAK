@@ -223,8 +223,10 @@ const filteredChannels = computed(() => {
     })
 });
 
+// Only a connection that had channels is held to keeping one - an empty
+// membership list is not a pending removal
 const isEmpty = computed(() => {
-    return current.value.every((cur) => cur.remove) && !selected.value.length;
+    return current.value.length > 0 && current.value.every((cur) => cur.remove) && !selected.value.length;
 });
 
 watch([current, selected], () => {

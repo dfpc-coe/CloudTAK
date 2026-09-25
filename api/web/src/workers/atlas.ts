@@ -73,7 +73,8 @@ export default class Atlas {
     }
 
     /**
-     * Swap in a refreshed login token and reconnect the WebSocket with it
+     * Swap in a refreshed login token - a socket that is already open was
+     * authenticated at upgrade and keeps running, only a closed one reconnects
      */
     async setToken(authToken: string): Promise<void> {
         this.token = authToken;
@@ -81,7 +82,7 @@ export default class Atlas {
         if (!this.initialized) return;
 
         await db.config.put({ key: 'token', value: authToken });
-        this.conn.connect(this.username);
+        if (!this.conn.isOpen) this.conn.connect(this.username);
     }
 
     async init(authToken: string) {

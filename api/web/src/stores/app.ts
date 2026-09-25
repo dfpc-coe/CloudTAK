@@ -227,7 +227,12 @@ export const useAppStore = defineStore('cloudtak-app', {
             return await refreshInflight;
         },
 
-        async refreshLogin(): Promise<void> {
+        /**
+         * Restore the stored login - with `extend` every launch also rotates
+         * the token pair in the background so the session's inactivity
+         * window restarts; boot only waits on it when the token has expired
+         */
+        async refreshLogin(opts: { extend?: boolean } = {}): Promise<void> {
             this.loading = true;
 
             try {
@@ -237,6 +242,7 @@ export const useAppStore = defineStore('cloudtak-app', {
                     if (!await this.refreshSession()) throw new Error(token ? 'Token expired' : 'No token found');
                 } else {
                     this.applyToken(token);
+                    if (opts.extend) void this.refreshSession();
                 }
 
                 setSessionRefresher(() => this.refreshSession());
@@ -381,7 +387,7 @@ export const useAppStore = defineStore('cloudtak-app', {
 
             if (token) {
                 this.loadingStage = 'Signing you in…';
-                await this.refreshLogin();
+                await this.refreshLogin({ extend: true });
             } else if (router.currentRoute.value.name !== 'login') {
                 await this.routeLogin();
             }
