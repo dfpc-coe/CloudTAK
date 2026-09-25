@@ -19,7 +19,7 @@ const ROTATION_GRACE_MS = 60 * 1000;
 
 export const LoginResponse = Type.Object({
     token: Type.String(),
-    refresh: Type.String({ description: 'Opaque token for POST /login/refresh - valid until the session expires' }),
+    refresh: Type.String({ description: 'Opaque token for POST /login/refresh - each use extends the session by the configured refresh lifetime' }),
     access: Type.Enum(AuthUserAccess),
     email: Type.String(),
     session: Type.String(),
@@ -118,7 +118,7 @@ export async function issueSession(
 
 /**
  * Exchange a refresh token for a new token pair - the refresh token is rotated
- * and its session's absolute expiry is never extended
+ * and the session's expiry slides forward by the configured refresh lifetime
  */
 export async function refreshSession(
     config: ConfigStateless,
@@ -166,6 +166,7 @@ export async function refreshSession(
     await config.models.ProfileSession.commit(session.id, {
         refresh_hash: hashRefresh(next),
         refresh_previous_hash: hash,
+        refresh_expires: new Date(Date.now() + hours.refresh * 3600 * 1000).toISOString(),
         last_refreshed: new Date().toISOString(),
     });
 

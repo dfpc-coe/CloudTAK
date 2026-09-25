@@ -77,7 +77,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.post('/login/refresh', {
         name: 'Refresh Login',
         group: 'Login',
-        description: 'Exchange a refresh token for a new login token - the refresh token is single use and a replacement is returned',
+        description: 'Exchange a refresh token for a new login token - the refresh token is single use, a replacement is returned and the session expiry is extended',
         body: Type.Object({
             refresh: Type.String(),
         }),

@@ -11,7 +11,9 @@ function fakeSocket(sent: string[], closed?: { count: number }): WebSocket {
     return {
         readyState: WebSocket.OPEN,
         send: (raw: string) => sent.push(raw),
-        close: () => { if (closed) closed.count++; },
+        close: () => {
+            if (closed) closed.count++;
+        },
     } as unknown as WebSocket;
 }
 

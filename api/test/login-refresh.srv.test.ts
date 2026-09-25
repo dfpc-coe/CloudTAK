@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert';
 import jwt from 'jsonwebtoken';
 import ws from 'ws';
+import { sql } from 'drizzle-orm';
+import { ProfileSession } from '../common/schema.js';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -162,6 +164,36 @@ test('POST: api/login/refresh - replay outside the grace window revokes the sess
         }, false);
 
         assert.equal(current.status, 401);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('POST: api/login/refresh - refreshing slides the session expiry forward', async () => {
+    try {
+        const login = await flight.fetch('/api/login', {
+            method: 'POST',
+            body: { username: 'user@example.com', password: 'password123' },
+        }, true);
+
+        // Nearly expired but still valid
+        await flight.config!.models.ProfileSession.commit(login.body.session, {
+            refresh_expires: new Date(Date.now() + 60 * 1000).toISOString(),
+        });
+
+        const res = await flight.fetch('/api/login/refresh', {
+            method: 'POST',
+            body: { refresh: login.body.refresh },
+        }, true);
+
+        assert.equal(res.status, 200);
+
+        const [row] = await flight.config!.pg
+            .select({ extended: sql<boolean>`${ProfileSession.refresh_expires} > Now() + interval '719 hours'` })
+            .from(ProfileSession)
+            .where(sql`${ProfileSession.id} = ${login.body.session}`);
+
+        assert.equal(row.extended, true);
     } catch (err) {
         assert.ifError(err);
     }

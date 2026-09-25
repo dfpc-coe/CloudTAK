@@ -2494,7 +2494,7 @@ export interface paths {
                             "passkey::enabled"?: boolean;
                             /** @description Lifetime of a login token in hours */
                             "login::token::expiry"?: number;
-                            /** @description Lifetime of a refresh token in hours - a session cannot be extended past this */
+                            /** @description Hours of inactivity after which a session expires - each refresh extends the session by this much */
                             "login::refresh::expiry"?: number;
                             /** @description Enable incoming SCIM 2.0 user provisioning at /api/scim/v2 */
                             "scim::enabled"?: boolean;
@@ -2770,7 +2770,7 @@ export interface paths {
                         "passkey::enabled"?: boolean;
                         /** @description Lifetime of a login token in hours */
                         "login::token::expiry"?: number;
-                        /** @description Lifetime of a refresh token in hours - a session cannot be extended past this */
+                        /** @description Hours of inactivity after which a session expires - each refresh extends the session by this much */
                         "login::refresh::expiry"?: number;
                         /** @description Enable incoming SCIM 2.0 user provisioning at /api/scim/v2 */
                         "scim::enabled"?: boolean;
@@ -2971,7 +2971,7 @@ export interface paths {
                             "passkey::enabled"?: boolean;
                             /** @description Lifetime of a login token in hours */
                             "login::token::expiry"?: number;
-                            /** @description Lifetime of a refresh token in hours - a session cannot be extended past this */
+                            /** @description Hours of inactivity after which a session expires - each refresh extends the session by this much */
                             "login::refresh::expiry"?: number;
                             /** @description Enable incoming SCIM 2.0 user provisioning at /api/scim/v2 */
                             "scim::enabled"?: boolean;
@@ -32250,7 +32250,7 @@ export interface paths {
                     content: {
                         "application/json": {
                             token: string;
-                            /** @description Opaque token for POST /login/refresh - valid until the session expires */
+                            /** @description Opaque token for POST /login/refresh - each use extends the session by the configured refresh lifetime */
                             refresh: string;
                             access: "admin" | "agency" | "user";
                             email: string;
@@ -32580,7 +32580,7 @@ export interface paths {
                     content: {
                         "application/json": {
                             token: string;
-                            /** @description Opaque token for POST /login/refresh - valid until the session expires */
+                            /** @description Opaque token for POST /login/refresh - each use extends the session by the configured refresh lifetime */
                             refresh: string;
                             access: "admin" | "agency" | "user";
                             email: string;
@@ -32679,7 +32679,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Exchange a refresh token for a new login token - the refresh token is single use and a replacement is returned */
+        /** Exchange a refresh token for a new login token - the refresh token is single use, a replacement is returned and the session expiry is extended */
         post: {
             parameters: {
                 query?: never;
@@ -32703,7 +32703,7 @@ export interface paths {
                     content: {
                         "application/json": {
                             token: string;
-                            /** @description Opaque token for POST /login/refresh - valid until the session expires */
+                            /** @description Opaque token for POST /login/refresh - each use extends the session by the configured refresh lifetime */
                             refresh: string;
                             access: "admin" | "agency" | "user";
                             email: string;

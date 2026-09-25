@@ -833,7 +833,7 @@ export const FullConfig = Type.Object({
     'oidc::logo': Type.String({ description: 'Base64 encoded PNG for OIDC Logo' }),
     'passkey::enabled': Type.Boolean({ description: 'Enable Passkey Authentication' }),
     'login::token::expiry': Type.Integer({ minimum: 1, description: 'Lifetime of a login token in hours' }),
-    'login::refresh::expiry': Type.Integer({ minimum: 1, description: 'Lifetime of a refresh token in hours - a session cannot be extended past this' }),
+    'login::refresh::expiry': Type.Integer({ minimum: 1, description: 'Hours of inactivity after which a session expires - each refresh extends the session by this much' }),
     'scim::enabled': Type.Boolean({ description: 'Enable incoming SCIM 2.0 user provisioning at /api/scim/v2' }),
     'scim::token': Type.String({ description: 'Bearer token an Identity Provider must present to the SCIM API' }),
     'provider::url': Type.String(),

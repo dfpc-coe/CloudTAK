@@ -190,8 +190,8 @@
                             v-model='config["login::refresh::expiry"]'
                             type='number'
                             :min='1'
-                            label='Session Lifetime (hours)'
-                            desc='How long a login session can be refreshed without re-entering credentials - default 720 (30 days)'
+                            label='Session Inactivity Timeout (hours)'
+                            desc='A session expires after this long without a refresh - each refresh extends it by this much - default 720 (30 days)'
                             :disabled='!edit'
                         />
                     </div>
