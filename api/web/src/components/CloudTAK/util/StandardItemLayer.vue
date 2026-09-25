@@ -1,7 +1,7 @@
 <template>
     <StandardItem
         class='h-100'
-        @click='$emit("click")'
+        @click='$emit("click", $event)'
     >
         <div class='d-flex align-items-center gap-3 px-3 py-2'>
             <img
@@ -23,6 +23,11 @@
             </div>
 
             <div class='flex-grow-1 overflow-hidden'>
+                <div
+                    v-if='connection'
+                    class='text-white-50 small text-truncate'
+                    v-text='layer.parent ? layer.parent.name : "Admin Layer"'
+                />
                 <div class='d-flex align-items-center'>
                     <LayerStatus :layer='layer' />
                     <span
@@ -63,12 +68,15 @@ import {
     IconBrandDocker,
 } from '@tabler/icons-vue';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     layer: ETLLayer;
-}>();
+    connection?: boolean;
+}>(), {
+    connection: true,
+});
 
 defineEmits<{
-    (e: 'click'): void;
+    (e: 'click', event: MouseEvent): void;
 }>();
 
 const type = computed(() => {

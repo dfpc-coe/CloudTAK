@@ -74,85 +74,18 @@
             />
             <div
                 v-else
-                class='table-responsive pb-5'
+                class='row row-cards px-2 pb-5'
             >
-                <table class='table card-table table-hover table-vcenter datatable'>
-                    <TableHeader
-                        v-model:sort='paging.sort'
-                        v-model:order='paging.order'
-                        v-model:header='header'
+                <div
+                    v-for='layer in list.items'
+                    :key='layer.id'
+                    class='col-12 col-md-6'
+                >
+                    <StandardItemLayer
+                        :layer='layer'
+                        @click='navTo(`/connection/${layer.connection || 0}/layer/${layer.id}`, $event)'
                     />
-                    <tbody
-                        role='menu'
-                    >
-                        <tr
-                            v-for='layer in list.items'
-                            :key='layer.id'
-                            class='cursor-pointer'
-                            role='menuitem'
-                            tabindex='0'
-                            @keyup.enter='navTo(`/connection/${layer.connection || 0}/layer/${layer.id}`, $event)'
-                            @click='navTo(`/connection/${layer.connection || 0}/layer/${layer.id}`, $event)'
-                        >
-                            <template v-for='h in header'>
-                                <template v-if='h.display && h.name === "name"'>
-                                    <td>
-                                        <div class='d-flex align-items-center'>
-                                            <Status :layer='layer' />
-                                            <div class='mx-2 row'>
-                                                <div
-                                                    class='subheader'
-                                                    v-text='layer.parent ? layer.parent.name : "Admin Layer"'
-                                                />
-                                                <div v-text='layer[h.name]' />
-                                            </div>
-                                        </div>
-                                    </td>
-                                </template>
-                                <template v-else-if='h.display && h.name === "task"'>
-                                    <td>
-                                        <div class='d-flex align-items-center'>
-                                            <div class='row'>
-                                                <span
-                                                    v-text='layer.task.replace(/\-v\d+\.\d+\.\d+$/, "")'
-                                                />
-                                                <span
-                                                    class='subheader'
-                                                    v-text='layer.task.replace(/.*-(?=v\d+\.\d+\.\d+)/, "")'
-                                                />
-                                            </div>
-                                            <div class='mx-2 ms-auto'>
-                                                <IconExchange
-                                                    v-if='layer.incoming && layer.outgoing'
-                                                    title='Outgoing/Incoming'
-                                                    size='32'
-                                                    stroke='1'
-                                                />
-                                                <IconStackPop
-                                                    v-else-if='layer.outgoing'
-                                                    title='Outgoing'
-                                                    size='32'
-                                                    stroke='1'
-                                                />
-                                                <IconStackPush
-                                                    v-else-if='layer.incoming'
-                                                    title='Incoming'
-                                                    size='32'
-                                                    stroke='1'
-                                                />
-                                            </div>
-                                        </div>
-                                    </td>
-                                </template>
-                                <template v-else-if='h.display'>
-                                    <td>
-                                        <span v-text='layer[h.name]' />
-                                    </td>
-                                </template>
-                            </template>
-                        </tr>
-                    </tbody>
-                </table>
+                </div>
             </div>
             <div
                 class='position-absolute bottom-0 w-100'
@@ -173,10 +106,9 @@ import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
 import { openSecondaryView } from '../../utils/capacitor.ts';
 import { server } from '../../std.ts';
-import type { ETLLayerList, ETLLayer } from '../../types.ts';
-import TableHeader from '../util/TableHeader.vue'
+import type { ETLLayerList } from '../../types.ts';
 import TableFooter from '../util/TableFooter.vue'
-import Status from '../ETL/Layer/utils/StatusDot.vue';
+import StandardItemLayer from '../CloudTAK/util/StandardItemLayer.vue';
 import TaskSelect from './TaskSelect.vue';
 import {
     TablerNone,
@@ -188,9 +120,6 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
-    IconExchange,
-    IconStackPop,
-    IconStackPush,
     IconCloudUpload,
     IconListDetails,
 } from '@tabler/icons-vue'
@@ -198,9 +127,6 @@ import {
 const router = useRouter();
 const error = ref<Error | undefined>();
 const loading = ref(true);
-
-type Header = { name: keyof ETLLayer, display: boolean };
-const header = ref<Array<Header>>([]);
 
 const paging = ref({
     filter: '',
@@ -227,7 +153,6 @@ watch(paging.value, async () => {
 });
 
 onMounted(async () => {
-    await listLayerSchema();
     await fetchList();
 });
 
@@ -249,44 +174,6 @@ async function redeploy() {
 }
 
 
-
-async function listLayerSchema() {
-    const res = await server.GET('/api/schema', {
-        params: {
-            query: {
-                method: 'GET',
-                url: '/layer'
-            }
-        }
-    });
-
-    if (res.error) {
-        error.value = new Error(res.error.message);
-        return;
-    }
-    if (!res.data) return;
-
-    const schema = res.data as { query?: { properties?: { sort?: { enum?: string[] } } } };
-
-    const defaults: Array<keyof ETLLayer> = ['id', 'name', 'task'];
-    header.value = defaults.map((h) => {
-        return { name: h, display: true };
-    });
-
-    if (schema?.query?.properties?.sort?.enum) {
-        header.value.push(...schema.query.properties.sort.enum.map((h: string) => {
-            return {
-                name: h as keyof ETLLayer,
-                display: false
-            }
-        }).filter((h: Header) => {
-            for (const hknown of header.value) {
-                if (hknown.name === h.name) return false;
-            }
-            return true;
-        }));
-    }
-}
 
 function navTo(path: string, event: MouseEvent | KeyboardEvent) {
     if (event?.ctrlKey) {

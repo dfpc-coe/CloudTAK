@@ -54,6 +54,7 @@
                 >
                     <StandardItemLayer
                         :layer='layer'
+                        :connection='false'
                         @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}`)'
                     >
                         <template #actions>
