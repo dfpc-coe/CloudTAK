@@ -57,6 +57,7 @@ import { ref, onMounted } from 'vue'
 import { server } from '../../../../std.ts';
 import type { Iconset } from '../../../../types.ts';
 import IconsetManager from '../../../../base/iconset.ts';
+import ProfileConfig from '../../../../base/profile.ts';
 import {
     TablerModal,
     TablerLoading,
@@ -83,8 +84,16 @@ const iconset = ref<Partial<Iconset> & {
     scope: 'user'
 });
 
+let initialPublic: boolean | undefined = undefined;
+
 onMounted(async () => {
     await fetchSchema();
+
+    const isSysAdmin = await ProfileConfig.get('system_admin');
+    if (!isSysAdmin?.value) {
+        const properties = schema.value.properties as Record<string, unknown> | undefined;
+        if (properties) delete properties.public;
+    }
 
     if (route.params.iconset) {
         await fetch();
@@ -95,14 +104,16 @@ onMounted(async () => {
 
 async function fetch() {
     loading.value.iconset = true;
-    iconset.value = await IconsetManager.get(String(route.params.iconset));
+    const existing = await IconsetManager.get(String(route.params.iconset));
+    initialPublic = existing.username === null;
+    iconset.value = { ...existing, public: initialPublic };
     loading.value.iconset = false;
 }
 
 async function submit() {
     if (route.params.iconset) {
         await IconsetManager.update(String(route.params.iconset), {
-            ...(iconset.value.public !== undefined ? { public: iconset.value.public } : {}),
+            ...(iconset.value.public !== undefined && iconset.value.public !== initialPublic ? { public: iconset.value.public } : {}),
             ...(iconset.value.default_group ? { default_group: iconset.value.default_group } : {}),
             ...(iconset.value.default_friendly ? { default_friendly: iconset.value.default_friendly } : {}),
             ...(iconset.value.default_hostile ? { default_hostile: iconset.value.default_hostile } : {}),

@@ -158,16 +158,25 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
-            if (typeof req.body.public === 'boolean' && user.access === AuthUserAccess.ADMIN) {
-                if (req.body.public === true) {
-                    await config.models.Iconset.commit(req.params.iconset, { username: null });
-                } else {
-                    await config.models.Iconset.commit(req.params.iconset, { username: user.email });
+            const { public: isPublic, ...body } = req.body;
+
+            let username: string | null | undefined = undefined;
+            if (typeof isPublic === 'boolean') {
+                if (user.access !== AuthUserAccess.ADMIN) {
+                    throw new Err(400, null, 'Only System Admins can change Iconset visibility');
+                }
+
+                if (isPublic && existing.username) {
+                    username = null;
+                } else if (!isPublic && !existing.username) {
+                    username = user.email;
                 }
             }
 
-            delete req.body.public;
-            const iconset = await config.models.Iconset.commit(req.params.iconset, req.body);
+            const iconset = await config.models.Iconset.commit(req.params.iconset, {
+                ...body,
+                ...(username !== undefined ? { username } : {}),
+            });
 
             res.json(iconset);
         } catch (err) {

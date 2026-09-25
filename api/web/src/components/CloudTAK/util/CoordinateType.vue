@@ -20,7 +20,7 @@
                     v-else
                     :width='size'
                     :height='size'
-                    :src='sidcIcon(option.value)'
+                    :src='symbolDataURL(option.value, props.size)'
                 >
             </span>
         </template>
@@ -29,12 +29,12 @@
 
 <script setup lang='ts'>
 import { ref, watch } from 'vue';
-import ms from 'milsymbol';
 import {
     IconPoint
 } from '@tabler/icons-vue';
 import { TablerPillGroup } from '@tak-ps/vue-tabler';
 import { LegacyPointTypes, normalizePointType } from '../../../utils/point-type.ts';
+import { symbolDataURL } from '../../../utils/milsymbol.ts';
 
 // Points are created as 2525E Land Unit SIDCs where possible - u-d-p (Custom
 // Point) has no 2525E equivalent and remains a traditional CoT type
@@ -62,21 +62,6 @@ const config = ref({
 })
 
 const emit = defineEmits([ 'update:modelValue' ])
-
-const iconCache = new Map<string, string>();
-
-function sidcIcon(sidc: string): string {
-    const key = `${sidc}:${props.size}`;
-
-    let icon = iconCache.get(key);
-
-    if (!icon) {
-        icon = new ms.Symbol(sidc, { size: props.size }).toDataURL();
-        iconCache.set(key, icon);
-    }
-
-    return icon;
-}
 
 watch(config.value, () => {
     emit('update:modelValue', config.value.mode);

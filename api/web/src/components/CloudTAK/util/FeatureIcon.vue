@@ -87,25 +87,6 @@
 </template>
 
 <script lang='ts'>
-import ms from 'milsymbol';
-
-/**
- * Generated symbols are deterministic per SIDC - module scope so a list of
- * Features sharing a symbol renders it once rather than once per instance
- */
-const standaloneCache = new Map<string, string>();
-
-function standaloneSymbol(iconId: string): string {
-    let icon = standaloneCache.get(iconId);
-
-    if (!icon) {
-        icon = new ms.Symbol(iconId.replace(/^2525[CDE]:/, ''), { size: 24 }).toDataURL();
-        standaloneCache.set(iconId, icon);
-    }
-
-    return icon;
-}
-
 export default {
     name: 'FeatureIcon'
 };
@@ -125,7 +106,8 @@ import {
     IconPolygon,
     IconExclamationMark,
 } from '@tabler/icons-vue';
-import { renderedIcon } from '../../../base/cot.ts';
+import { renderedIconImage } from '../../../base/cot.ts';
+import { isMilsymIcon, symbolDataURL } from '../../../utils/milsymbol.ts';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
@@ -153,10 +135,16 @@ const canvas = useTemplateRef<HTMLCanvasElement>('imgCanvas');
 const resolvedTick = ref(0);
 const resolveAttempted = new Set<string>();
 
+// The same image id the map's icon layer requests, so the DOM preview shows
+// exactly what the map draws - including the marker-color recolour
+const iconImage = computed<string | undefined>(() => {
+    return renderedIconImage(props.feature.properties ?? {});
+});
+
 const supportedIcon = computed<string | null>(() => {
     void resolvedTick.value;
 
-    const iconId = renderedIcon(props.feature.properties ?? {});
+    const iconId = iconImage.value;
     if (!iconId || !mapStore._map) return null;
 
     return mapStore.map.getImage(iconId) ? iconId : null;
@@ -165,26 +153,28 @@ const supportedIcon = computed<string | null>(() => {
 // Pages without a MapLibre instance (Event Board) can't use the map's image
 // registry - military symbols are generated directly instead
 const standaloneIcon = computed<string | null>(() => {
-    const iconId = renderedIcon(props.feature.properties ?? {});
-    if (!iconId || mapStore._map || !/^2525[CDE]:/.test(iconId)) return null;
+    const iconId = iconImage.value;
+    if (!iconId || mapStore._map || !isMilsymIcon(iconId)) return null;
 
-    return standaloneSymbol(iconId);
+    return symbolDataURL(iconId);
 });
 
-// Military symbols are generated on demand - they only exist in the map
-// once a map feature has requested them, so trigger resolution here
-watch(() => renderedIcon(props.feature.properties ?? {}), async (iconId) => {
+// Military symbols, iconset icons and coloured variants are generated on
+// demand - they only exist in the map once a map feature has requested them,
+// so trigger resolution here for Features that may not be on screen
+watch(iconImage, async (iconId) => {
     if (
         !iconId
         || !mapStore._map
         || supportedIcon.value
-        || !/^2525[CDE]:/.test(iconId)
         || resolveAttempted.has(iconId)
     ) return;
 
     resolveAttempted.add(iconId);
 
     try {
+        if (!mapStore.icons.resolvable(iconId)) return;
+
         await mapStore.icons.resolve(iconId);
         resolvedTick.value += 1;
     } catch {
