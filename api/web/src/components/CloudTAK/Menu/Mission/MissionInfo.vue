@@ -448,14 +448,14 @@ async function updateDescription(description: string) {
     }
 }
 
-async function subscribe(subscribe: boolean) {
+async function subscribe(next: boolean) {
     loading.value.subscribe = true;
     error.value = undefined;
 
     try {
         const overlay = OverlayManager.loadedByMode('mission', props.subscription.guid);
 
-        if (subscribe === true && !overlay) {
+        if (next === true && !overlay) {
             const created = await OverlayManager.createLoaded({
                 name: props.subscription.name,
                 url: `/mission/${encodeURIComponent(props.subscription.guid)}`,
@@ -463,7 +463,7 @@ async function subscribe(subscribe: boolean) {
                 mode: 'mission',
                 token: props.subscription.missiontoken,
                 mode_id: props.subscription.guid,
-            })
+            });
 
             try {
                 await mapStore.loadMission(props.subscription.guid);
@@ -473,7 +473,7 @@ async function subscribe(subscribe: boolean) {
                 await OverlayManager.deleteLoaded(created).catch(() => undefined);
                 throw err;
             }
-        } else if (subscribe === false && overlay) {
+        } else if (next === false && overlay) {
             if (mapStore.mission && mapStore.mission.meta.guid === props.subscription.meta.guid) {
                 await mapStore.makeActiveMission();
             }
@@ -481,12 +481,12 @@ async function subscribe(subscribe: boolean) {
             await OverlayManager.deleteLoaded(overlay);
             await props.subscription.update({ subscribed: false });
         } else {
-            await props.subscription.update({ subscribed: subscribe });
+            await props.subscription.update({ subscribed: next });
         }
 
         emit('subscribed');
 
-        if (!subscribe && props.subscription.meta.passwordProtected) {
+        if (!next && props.subscription.meta.passwordProtected) {
             await router.push({ name: 'home-menu-missions' });
         }
     } catch (err) {
