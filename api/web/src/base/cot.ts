@@ -120,6 +120,20 @@ export function renderedIcon(properties: Feature["properties"]): string | undefi
     return undefined;
 }
 
+/**
+ * The style image id the map's icon layer requests for a Feature. Must agree
+ * with the `icon-image` expression in utils/styles.ts (cot-icon.spec.ts asserts it).
+ */
+export function renderedIconImage(properties: Feature["properties"]): string | undefined {
+    const icon = renderedIcon(properties);
+    if (!icon) return undefined;
+
+    const color = properties['marker-color'];
+    if (typeof color !== 'string' || icon.startsWith('2525')) return icon;
+
+    return `${icon}-colored-${color.slice(1)}`;
+}
+
 const COT_MUTATIONS: COTMutation[] = [
     applyEllipseMutation
 ];

@@ -20,13 +20,13 @@
  * iconsets merely retry fallback placeholders.
  */
 import { Preferences } from '@capacitor/preferences';
-import ms from 'milsymbol'
 import * as mapgl from 'maplibre-gl'
 import Icon from '../../base/icon.ts'
 import IconsetManager from '../../base/iconset.ts';
 import type { Map as MapLibreMap } from 'maplibre-gl';
 import { stdurl } from '../../std.ts';
 import { db, type DBSprite } from '../../database.ts';
+import { isMilsymIcon, symbolCanvas } from '../../utils/milsymbol.ts';
 
 /** Target render width (px) used when rasterizing SVG iconset icons; height preserves the source aspect ratio. */
 const SVG_RENDER_WIDTH = 32;
@@ -156,14 +156,25 @@ export default class IconManager {
         return work;
     }
 
+    /**
+     * Whether an image id is one this manager generates on demand, as opposed
+     * to a built-in spritesheet icon the style loads up front
+     */
+    resolvable(id: string): boolean {
+        return isMilsymIcon(id) || id.includes('-colored-') || id.includes(':');
+    }
+
     private async resolveImage(id: string): Promise<void> {
         if (this.map.hasImage(id)) return;
 
-        if (id.startsWith('2525C:') || id.startsWith('2525D:') || id.startsWith('2525E:')) {
-            const sidc = id.replace(/^2525[CDE]:/, '');
-            const symbol = new ms.Symbol(sidc, { size: 24 }).asCanvas();
-
-            this.addImage(id, await createImageBitmap(symbol));
+        if (!this.resolvable(id)) {
+            this.logWarnOnce(
+                `unhandled:${id}`,
+                'Unhandled missing style image',
+                { imageId: id }
+            );
+        } else if (isMilsymIcon(id)) {
+            this.addImage(id, await createImageBitmap(symbolCanvas(id)));
         } else if (id.includes('-colored-')) {
             const separator = id.lastIndexOf('-colored-');
             const baseId = id.slice(0, separator);
@@ -174,14 +185,8 @@ export default class IconManager {
             if (!this.map.hasImage(baseId)) await this.resolve(baseId);
 
             this.addColoredImage(id, baseId, color);
-        } else if (id.includes(':')) {
-            await this.loadIconsetImage(id);
         } else {
-            this.logWarnOnce(
-                `unhandled:${id}`,
-                'Unhandled missing style image',
-                { imageId: id }
-            );
+            await this.loadIconsetImage(id);
         }
     }
 

@@ -77,7 +77,7 @@
 </template>
 
 <script lang='ts'>
-import ms from 'milsymbol';
+import { symbolDataURL } from '../../../utils/milsymbol.ts';
 import Type2525 from '@tak-ps/node-cot/2525';
 import { server } from '../../../std.ts';
 
@@ -114,12 +114,8 @@ function loadTypePresets(): Promise<Array<{ name: string; type: string; icon?: s
  * A custom icon on a matching preconfigured Event Type wins, otherwise
  * a numeric SIDC type renders its 2525E military symbol
  *
- * A generated symbol only depends on the Type, so a Board full of cards sharing
- * a Type renders its symbol once rather than once per card - the preset lookup
- * itself stays uncached so a failed config fetch can still be retried
+ * The preset lookup stays uncached so a failed config fetch can still be retried
  */
-const typeSymbols = new Map<string, string>();
-
 async function resolveTypeIcon(type: string): Promise<string | undefined> {
     if (!type) return undefined;
 
@@ -127,14 +123,7 @@ async function resolveTypeIcon(type: string): Promise<string | undefined> {
     if (preset && preset.icon) return preset.icon;
 
     if (Type2525.isNumericSIDCConvertable(type)) {
-        let symbol = typeSymbols.get(type);
-
-        if (!symbol) {
-            symbol = new ms.Symbol(type, { size: 24 }).toDataURL();
-            typeSymbols.set(type, symbol);
-        }
-
-        return symbol;
+        return symbolDataURL(type);
     }
 
     return undefined;

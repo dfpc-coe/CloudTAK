@@ -12,6 +12,8 @@ export interface IconHydrateResult {
     updated: string[];
     /** Iconsets that were removed locally because they no longer exist remotely. */
     removed: string[];
+    /** Iconsets whose icon fetch failed; they are retried on the next hydrate. */
+    failed: string[];
 }
 
 let inflight: Promise<IconHydrateResult> | null = null;
@@ -43,6 +45,20 @@ export default class Icon {
     }
 
     /**
+     * True when the icons cached for an iconset don't match `remote`
+     * (defaults to the cached metadata itself).
+     */
+    static stale(
+        cached: DBIconset | undefined,
+        remote: Pick<Iconset, 'version' | 'updated'> | undefined = cached
+    ): boolean {
+        return !cached
+            || !remote
+            || cached.icons_version !== remote.version
+            || cached.icons_updated !== remote.updated;
+    }
+
+    /**
      * Diff the server iconset list against Dexie and refetch icons for any
      * iconsets that are new or whose `version`/`updated` differs. Concurrent
      * calls coalesce onto the in-flight diff.
@@ -65,15 +81,7 @@ export default class Icon {
         const iconset = await std(`/api/iconset/${uid}`) as Iconset;
 
         const cached = await db.iconset.get(uid);
-        if (
-            !opts.force
-            &&
-            cached
-            && cached.version === iconset.version
-            && cached.updated === iconset.updated
-        ) {
-            return false;
-        }
+        if (!opts.force && !Icon.stale(cached, iconset)) return false;
 
         await syncIconset(iconset);
         return true;
@@ -123,16 +131,11 @@ async function runDiff(): Promise<IconHydrateResult> {
     const updated: string[] = [];
     for (const [uid, iconset] of remoteByUid) {
         const cached = localByUid.get(uid);
-        if (!cached) {
-            toSync.push(iconset);
-            added.push(uid);
-        } else if (
-            cached.version !== iconset.version
-            || cached.updated !== iconset.updated
-        ) {
-            toSync.push(iconset);
-            updated.push(uid);
-        }
+        if (!Icon.stale(cached, iconset)) continue;
+
+        toSync.push(iconset);
+        if (cached?.icons_version === undefined) added.push(uid);
+        else updated.push(uid);
     }
 
     const removed: string[] = [];
@@ -141,13 +144,20 @@ async function runDiff(): Promise<IconHydrateResult> {
     }
 
     await Promise.all(removed.map((uid) => IconsetCache.delete(uid, { localOnly: true })));
-    await Promise.all(toSync.map((iconset) => syncIconset(iconset)));
+
+    const failed: string[] = [];
+    await Promise.all(toSync.map((iconset) => syncIconset(iconset).catch((err) => {
+        console.error(`Failed to sync iconset '${iconset.uid}'`, err);
+        failed.push(iconset.uid);
+    })));
+
     await Promise.all(BUILTIN_SPRITES.map((id) => syncBuiltinSprite(id)));
 
     return {
         added,
         updated,
-        removed
+        removed,
+        failed
     };
 }
 
@@ -214,7 +224,11 @@ async function syncIconset(iconset: Iconset): Promise<void> {
     await db.transaction('rw', db.icon, db.iconset, async () => {
         await db.icon.where('iconset').equals(iconset.uid).delete();
         if (rows.length) await db.icon.bulkPut(rows);
-        await db.iconset.put(iconset);
+        await db.iconset.put({
+            ...iconset,
+            icons_version: iconset.version,
+            icons_updated: iconset.updated
+        });
     });
 }
 

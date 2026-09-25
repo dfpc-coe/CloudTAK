@@ -12,6 +12,7 @@ const flight = new Flight();
 flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
+flight.user({ username: 'user', admin: false });
 
 test('GET: /api/iconset', async () => {
     try {
@@ -480,6 +481,111 @@ test('DELETE: /api/iconset/:iconset - iconset referenced by other resources', as
         const vectors = await flight.config.pg
             .select().from(BasemapVector).where(eq(BasemapVector.id, vector.id));
         assert.equal(vectors[0].iconset, null);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('POST: /api/iconset - user scoped', async () => {
+    try {
+        const res = await flight.fetch('/api/iconset', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.user,
+            },
+            body: {
+                uid: 'user-iconset',
+                version: 1,
+                name: 'User Iconset',
+            },
+        }, true);
+
+        assert.equal(res.body.uid, 'user-iconset');
+        assert.equal(res.body.username, 'user@example.com');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: /api/iconset/:iconset - public rejected for non-admin', async () => {
+    try {
+        const res = await flight.fetch('/api/iconset/user-iconset', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.user,
+            },
+            body: {
+                public: true,
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'Only System Admins can change Iconset visibility');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: /api/iconset/:iconset - public: false keeps existing owner', async () => {
+    try {
+        const res = await flight.fetch('/api/iconset/user-iconset', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                public: false,
+                default_group: 'grp',
+            },
+        }, true);
+
+        assert.equal(res.body.username, 'user@example.com');
+        assert.equal(res.body.default_group, 'grp');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: /api/iconset/:iconset - public: true', async () => {
+    try {
+        const res = await flight.fetch('/api/iconset/user-iconset', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                public: true,
+            },
+        }, true);
+
+        assert.equal(res.body.username, null);
+
+        const get = await flight.fetch('/api/iconset/user-iconset', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.equal(get.body.username, null);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: /api/iconset/:iconset - public: false', async () => {
+    try {
+        const res = await flight.fetch('/api/iconset/user-iconset', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                public: false,
+            },
+        }, true);
+
+        assert.equal(res.body.username, 'admin@example.com');
     } catch (err) {
         assert.ifError(err);
     }

@@ -179,6 +179,8 @@ export default function styles(id: string, opts: {
                 ],
                 'icon-rotate': (opts.rotateIcons ?? true) ? ['get', 'course'] : 0,
                 'icon-allow-overlap': true,
+                // Must agree with renderedIconImage() in base/cot.ts, which
+                // DOM previews use to request the same image
                 'icon-image': [
                     'case',
                     ['all', ['has', 'marker-color'], ['!=', ['slice', ['get', 'icon'], 0, 4], '2525']],

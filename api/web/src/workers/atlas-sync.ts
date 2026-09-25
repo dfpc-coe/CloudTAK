@@ -281,6 +281,10 @@ export default class AtlasSync {
             purge: [...result.updated, ...result.removed],
             added: result.added
         });
+
+        if (result.failed.length) {
+            throw new Error(`Failed to sync iconsets: ${result.failed.join(', ')}`);
+        }
     }
 
     /**

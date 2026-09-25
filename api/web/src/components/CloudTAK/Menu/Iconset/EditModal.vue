@@ -57,6 +57,7 @@ import { ref, onMounted } from 'vue'
 import { server } from '../../../../std.ts';
 import type { Iconset } from '../../../../types.ts';
 import IconsetManager from '../../../../base/iconset.ts';
+import ProfileConfig from '../../../../base/profile.ts';
 import {
     TablerModal,
     TablerLoading,
@@ -84,20 +85,18 @@ const iconset = ref<Partial<Iconset> & {
 });
 
 onMounted(async () => {
-    await fetchSchema();
+    const [, isSysAdmin, existing] = await Promise.all([
+        fetchSchema(),
+        ProfileConfig.get('system_admin'),
+        route.params.iconset ? IconsetManager.get(String(route.params.iconset)) : undefined
+    ]);
 
-    if (route.params.iconset) {
-        await fetch();
-    } else {
-        loading.value.iconset = false;
-    }
-});
+    const admin = isSysAdmin?.value ?? false;
+    if (!admin) delete (schema.value.properties as Record<string, unknown> | undefined)?.public;
+    if (existing) iconset.value = admin ? { ...existing, public: existing.username === null } : existing;
 
-async function fetch() {
-    loading.value.iconset = true;
-    iconset.value = await IconsetManager.get(String(route.params.iconset));
     loading.value.iconset = false;
-}
+});
 
 async function submit() {
     if (route.params.iconset) {

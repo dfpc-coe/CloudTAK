@@ -79,6 +79,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import IconsetCache from '../../../base/iconset.ts';
+import IconCache from '../../../base/icon.ts';
 import CombinedIcons from '../util/Icons.vue';
 import { useMapStore } from '../../../stores/map.ts';
 import {
@@ -125,17 +126,25 @@ const iconset = ref<Iconset>({
 });
 
 onMounted(async () => {
-    await refresh();
+    await refresh({ autoSync: true });
     const isSysAdmin = await ProfileConfig.get('system_admin');
     isSystemAdmin.value = isSysAdmin?.value ?? false;
 });
 
-async function refresh(): Promise<void> {
+async function refresh(opts: { autoSync?: boolean } = {}): Promise<void> {
     loading.value = true;
     error.value = undefined;
     editIconsetModal.value = null;
 
     try {
+        if (opts.autoSync && IconCache.stale(await IconsetCache.from(String(route.params.iconset)))) {
+            try {
+                await mapStore.worker.sync.syncIconset(String(route.params.iconset));
+            } catch (err) {
+                syncError.value = err instanceof Error ? err : new Error(String(err));
+            }
+        }
+
         await fetchIconset();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { createExpression, featureFilter } from '@maplibre/maplibre-gl-style-spec';
+import type { SymbolLayerSpecification } from 'maplibre-gl';
 import type { Feature } from '../types.ts';
-import COT, { renderedIcon } from './cot.ts';
+import COT, { renderedIcon, renderedIconImage } from './cot.ts';
+import styles from '../utils/styles.ts';
 
 const SIDC = '13061500000000000000';
 
@@ -48,6 +51,88 @@ describe('renderedIcon', () => {
             type: 'a-f-G-U-C-I',
             group: { name: 'Cyan', role: 'Team Member' }
         }))).toBeUndefined();
+    });
+});
+
+describe('renderedIconImage', () => {
+    const ICONSET = 'f7f71666-8b28-4b57-9fbb-e38e61d33b79:Vehicle/Ambulance';
+
+    it('is the rendered icon when there is no marker-color', () => {
+        expect(renderedIconImage(properties({ type: 'a-f-G-U-C-I' }))).toEqual('a-f-G-U-C-I');
+        expect(renderedIconImage(properties({ icon: ICONSET }))).toEqual(ICONSET);
+    });
+
+    it('requests the marker-color variant of a spritesheet or Iconset icon', () => {
+        expect(renderedIconImage(properties({
+            type: 'a-f-G-U-C-I',
+            'marker-color': '#00FF00'
+        }))).toEqual('a-f-G-U-C-I-colored-00FF00');
+
+        expect(renderedIconImage(properties({
+            icon: ICONSET,
+            'marker-color': '#ff0000'
+        }))).toEqual(`${ICONSET}-colored-ff0000`);
+    });
+
+    it('never recolours a MIL-STD symbol', () => {
+        expect(renderedIconImage(properties({
+            type: SIDC,
+            'marker-color': '#00FF00'
+        }))).toEqual(`2525E:${SIDC}`);
+    });
+
+    it('is nothing when there is no icon', () => {
+        expect(renderedIconImage(properties({ type: 'u-d-p', 'marker-color': '#00FF00' }))).toBeUndefined();
+        expect(renderedIconImage(properties({
+            type: 'a-f-G-U-C-I',
+            'marker-color': '#00FF00',
+            group: { name: 'Cyan', role: 'Team Member' }
+        }))).toBeUndefined();
+    });
+
+    // The map style can't call renderedIconImage - it has its own expression
+    // that must request the very same image id for the same Feature
+    describe('agrees with the icon layer', () => {
+        const layer = styles('test', { icons: true })
+            .find((l) => l.id === 'test-icon') as SymbolLayerSpecification;
+
+        const filter = featureFilter(layer.filter!, 'layers[0].filter');
+        const image = createExpression(layer.layout!['icon-image'], 'layers[0].layout.icon-image');
+        if (image.result === 'error') throw new Error(JSON.stringify(image.value));
+        const expression = image.value;
+
+        const globals = { zoom: 10 };
+
+        function mapImage(props: Feature['properties']): string | undefined {
+            const rendered = COT.as_rendered({
+                id: 'agree',
+                type: 'Feature',
+                properties: props,
+                geometry: { type: 'Point', coordinates: [-104.99, 39.73] }
+            } as Feature);
+
+            const feature = { type: 'Point' as const, properties: rendered.properties! };
+
+            if (!filter.filter(globals, feature)) return undefined;
+
+            return expression.evaluate(globals, feature);
+        }
+
+        for (const [name, props] of Object.entries({
+            'spritesheet icon': properties({ type: 'a-f-G-U-C-I', callsign: 'A' }),
+            'coloured spritesheet icon': properties({ type: 'a-f-G-U-C-I', callsign: 'A', 'marker-color': '#00FF00' }),
+            'iconset icon': properties({ type: 'a-f-G', callsign: 'A', icon: ICONSET }),
+            'coloured iconset icon': properties({ type: 'a-f-G', callsign: 'A', icon: ICONSET, 'marker-color': '#123abc' }),
+            'MIL-STD symbol': properties({ type: SIDC, callsign: 'A' }),
+            'coloured MIL-STD symbol': properties({ type: SIDC, callsign: 'A', 'marker-color': '#00FF00' }),
+            'milicon': properties({ type: 'a-f-G', callsign: 'A', milicon: { id: SIDC }, 'marker-color': '#00FF00' }),
+            'iconless point': properties({ type: 'u-d-p', callsign: 'A', 'marker-color': '#00FF00' }),
+            'contact': properties({ type: 'a-f-G-U-C-I', callsign: 'A', 'marker-color': '#00FFFF', group: { name: 'Cyan', role: 'Team Member' } }),
+        })) {
+            it(name, () => {
+                expect(mapImage(props)).toEqual(renderedIconImage(props));
+            });
+        }
     });
 });
 
