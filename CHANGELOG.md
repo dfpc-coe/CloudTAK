@@ -18,6 +18,11 @@
 
 ### Pending Release
 
+### v13.98.1 - 2026-09-25
+
+- :bug: Fix bug related to public vs private iconset creation
+- :bug: Fix bug where FeatureIcon display would differ from the actual map icon display when colors were used
+
 ### v13.98.0 - 2026-09-25
 
 - :rocket: Rename the `tasks` table & `/api/task` routes to Integrations - `GET/POST /api/integration`, `GET/PATCH/DELETE /api/integration/:integrationid`, `GET /api/integration/:integrationid/readme` & `/api/integration/raw/:prefix[/version/:version]` - the Admin UI now lives at `/admin/integrations`
