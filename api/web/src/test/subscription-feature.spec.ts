@@ -227,9 +227,11 @@ describe('SubscriptionFeature', () => {
                 await seed(`f-${i}`, { time: OLD, synced: false });
             }
 
+            const rejection = 'Validation Error PUT /marti/missions/:guid/cot';
+
             server.PUT.mockImplementation(async (_path: string, opts: { body: { features: Array<Feature> } }) => {
                 if (opts.body.features.some((f) => f.id === 'f-3')) {
-                    return { error: { status: 400, message: 'Invalid geometry' }, response: { status: 400 } };
+                    return { error: { status: 400, message: rejection }, response: { status: 400 } };
                 }
 
                 return { data: { status: 200, message: 'CoTs Submitted', uids: opts.body.features.map((f) => f.id) } };
@@ -239,21 +241,41 @@ describe('SubscriptionFeature', () => {
 
             const rows = await db.subscription_feature.toArray();
             expect(rows.filter((r) => r.synced).map((r) => r.id).sort()).toEqual(['f-0', 'f-1', 'f-2', 'f-4', 'f-5']);
-            expect(await db.subscription_feature.get('f-3')).toMatchObject({ synced: false, error: 'Invalid geometry' });
+            expect(await db.subscription_feature.get('f-3')).toMatchObject({ synced: false, error: rejection });
             expect(server.PUT.mock.calls.length).toBeLessThan(12);
         });
 
-        it('fails the whole batch without splitting when the server is unreachable', async () => {
-            for (let i = 0; i < 4; i++) {
+        it('fails only the uids TAK Server did not confirm without resubmitting the rest', async () => {
+            for (let i = 0; i < 5; i++) {
                 await seed(`f-${i}`, { time: OLD, synced: false });
             }
 
-            server.PUT.mockResolvedValue({ error: { status: 500, message: 'TAK Server unavailable' }, response: { status: 500 } });
+            const message = 'TAK Server did not confirm CoT: f-1, f-4';
+            server.PUT.mockResolvedValue({ error: { status: 502, message }, response: { status: 502 } });
 
             expect(await feature.push()).toBe(false);
 
             expect(server.PUT).toHaveBeenCalledTimes(1);
-            expect((await feature.pending()).every((r) => r.error === 'TAK Server unavailable')).toBe(true);
+            expect((await feature.pending()).map((r) => r.id).sort()).toEqual(['f-1', 'f-4']);
+            expect(await db.subscription_feature.get('f-1')).toMatchObject({ synced: false, error: message, attempts: 1 });
+            expect(await db.subscription_feature.get('f-0')).toMatchObject({ synced: true, attempts: 0 });
+        });
+
+        it.each([
+            ['TAK Server is unreachable', 400, 'Failed to fetch: connect ECONNREFUSED'],
+            ['the API is down', 500, 'Internal Server Error'],
+            ['the mission is gone', 404, 'Mission not found'],
+        ])('fails the whole batch in one request when %s', async (_label, status, message) => {
+            for (let i = 0; i < 4; i++) {
+                await seed(`f-${i}`, { time: OLD, synced: false });
+            }
+
+            server.PUT.mockResolvedValue({ error: { status, message }, response: { status } });
+
+            expect(await feature.push()).toBe(false);
+
+            expect(server.PUT).toHaveBeenCalledTimes(1);
+            expect((await feature.pending()).every((r) => r.error === message)).toBe(true);
         });
 
         it('resubmits a row edited while its request was in flight', async () => {

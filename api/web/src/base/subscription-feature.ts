@@ -28,14 +28,19 @@ class PushError extends Error {
     }
 }
 
-/**
- * The server rejected the request itself rather than failing to reach TAK,
- * so one bad feature may be poisoning its batch and the rest can still go
- */
-function isRejection(err: unknown): boolean {
-    if (!(err instanceof PushError) || err.status === undefined) return false;
-    if (err.status === 401 || err.status === 403) return false;
-    return (err.status >= 400 && err.status < 500) || err.status === 502;
+// node-tak also reports a TAK connection failure as a 400, hence the prefix check
+function isValidationRejection(err: unknown): boolean {
+    return err instanceof PushError && err.status === 400 && err.message.startsWith('Validation Error');
+}
+
+// Uids named in a confirm 502; the rest of the batch was confirmed
+function unconfirmedUids(err: unknown): Set<string> | undefined {
+    if (!(err instanceof PushError) || err.status !== 502) return;
+
+    const match = err.message.match(/did not confirm CoT: (.+)$/);
+    if (!match) return;
+
+    return new Set(match[1].split(', ').map((uid) => uid.trim()).filter((uid) => uid.length));
 }
 
 function asFeature(row: DBSubscriptionFeature): Feature {
@@ -514,20 +519,24 @@ export default class SubscriptionFeature {
         return ok;
     }
 
-    /**
-     * Submit a batch, splitting it in half on a rejection so a single bad
-     * feature only fails itself instead of every row sent alongside it
-     */
+    // Split on a validation rejection, fail only the named uids on a 502
     private async upsert(rows: Array<DBSubscriptionFeature>): Promise<boolean> {
         try {
             await this.submit(rows);
             return true;
         } catch (err) {
-            if (rows.length > 1 && isRejection(err)) {
+            if (rows.length > 1 && isValidationRejection(err)) {
                 const mid = Math.ceil(rows.length / 2);
                 const head = await this.upsert(rows.slice(0, mid));
                 const tail = await this.upsert(rows.slice(mid));
                 return head && tail;
+            }
+
+            const missing = unconfirmedUids(err);
+            if (missing && missing.size) {
+                await this.confirm(rows.filter((row) => !missing.has(row.id)));
+                await this.failed(rows.filter((row) => missing.has(row.id)), err);
+                return false;
             }
 
             await this.failed(rows, err);

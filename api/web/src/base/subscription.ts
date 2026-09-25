@@ -25,15 +25,17 @@ export enum SubscriptionEventType {
 export type SubscriptionEvent = {
     guid: string;
     type: SubscriptionEventType;
+
+    // Instance that made the change
+    origin: string;
+
     state: {
         dirty: boolean;
         subscribed: boolean;
     }
 }
 
-// Send-only channel shared by every instance in this context. A channel with
-// a message listener is never garbage collected, so instances only open a
-// listening channel when a caller asks for live updates and closes it after
+// Send-only; a channel with a listener is never garbage collected
 let bus: BroadcastChannel | undefined;
 
 function announce(event: SubscriptionEvent): void {
@@ -66,6 +68,7 @@ export default class Subscription {
     templateid: string | null;
 
     private _sync?: BroadcastChannel;
+    private readonly _id = crypto.randomUUID();
 
     constructor(
         mission: Mission,
@@ -122,16 +125,13 @@ export default class Subscription {
         if (opts.live) this.listen();
     }
 
-    /**
-     * Follow changes other instances (in this or another context) make to
-     * this mission's local record. Must be paired with close()
-     */
+    // Pair with close()
     listen(): void {
         if (this._sync) return;
 
         this._sync = new BroadcastChannel('subscription');
         this._sync.onmessage = async (ev: MessageEvent<SubscriptionEvent>) => {
-            if (ev.data.guid === this.guid) {
+            if (ev.data.guid === this.guid && ev.data.origin !== this._id) {
                 await this.reload();
             }
         };
@@ -190,7 +190,8 @@ export default class Subscription {
             live?: boolean,
         } = {}
     ): Promise<Subscription> {
-        const exists = await this.from(guid, { live: opts.live });
+        // Listen only on the instance returned so a failed load can't leak a channel
+        const exists = await this.from(guid);
 
         if (exists) {
             if (opts.subscribed !== undefined || opts.missiontoken !== undefined) {
@@ -214,6 +215,8 @@ export default class Subscription {
                     console.error('Failed to load mission template', err);
                 }
             }
+
+            if (opts.live) exists.listen();
 
             return exists;
         } else {
@@ -244,7 +247,6 @@ export default class Subscription {
                 {
                     subscribed: opts.subscribed,
                     missiontoken: opts.missiontoken,
-                    live: opts.live,
                 }
             );
 
@@ -267,6 +269,8 @@ export default class Subscription {
                     console.error('Failed to load mission template', err);
                 }
             }
+
+            if (opts.live) sub.listen();
 
             return sub;
         }
@@ -300,39 +304,43 @@ export default class Subscription {
             token: this.missiontoken || ''
         });
 
-        if (body.description !== undefined || body.keywords !== undefined || body.groups !== undefined) {
-            const patch: { description?: string; keywords?: string[]; groups?: string[] } = {};
-            if (body.description !== undefined) patch.description = body.description;
-            if (body.keywords !== undefined) patch.keywords = body.keywords;
-            if (body.groups !== undefined) patch.groups = body.groups;
+        // Local state is already persisted, announce it even if the PATCH fails
+        try {
+            if (body.description !== undefined || body.keywords !== undefined || body.groups !== undefined) {
+                const patch: { description?: string; keywords?: string[]; groups?: string[] } = {};
+                if (body.description !== undefined) patch.description = body.description;
+                if (body.keywords !== undefined) patch.keywords = body.keywords;
+                if (body.groups !== undefined) patch.groups = body.groups;
 
-            const { data, error } = await server.PATCH('/api/marti/missions/{:guid}', {
-                params: {
-                    path: { ':guid': this.guid }
-                },
-                headers: Subscription.headers(this.missiontoken),
-                body: patch
-            });
-
-            if (error) throw new Error(error.message || 'Failed to update mission');
-
-            if (data) {
-                Object.assign(this.meta, data as unknown as Mission);
-
-                await db.subscription.update(this.guid, {
-                    meta: JSON.parse(JSON.stringify(this.meta)),
+                const { data, error } = await server.PATCH('/api/marti/missions/{:guid}', {
+                    params: {
+                        path: { ':guid': this.guid }
+                    },
+                    headers: Subscription.headers(this.missiontoken),
+                    body: patch
                 });
-            }
-        }
 
-        announce({
-            guid: this.guid,
-            type: SubscriptionEventType.UPDATE,
-            state: {
-                dirty: this.dirty,
-                subscribed: this.subscribed,
+                if (error) throw new Error(error.message || 'Failed to update mission');
+
+                if (data) {
+                    Object.assign(this.meta, data as unknown as Mission);
+
+                    await db.subscription.update(this.guid, {
+                        meta: JSON.parse(JSON.stringify(this.meta)),
+                    });
+                }
             }
-        });
+        } finally {
+            announce({
+                guid: this.guid,
+                type: SubscriptionEventType.UPDATE,
+                origin: this._id,
+                state: {
+                    dirty: this.dirty,
+                    subscribed: this.subscribed,
+                }
+            });
+        }
     }
 
     async delete(): Promise<void> {
@@ -350,6 +358,7 @@ export default class Subscription {
         announce({
             guid: this.guid,
             type: SubscriptionEventType.DELETE,
+            origin: this._id,
             state: {
                 dirty: this.dirty,
                 subscribed: this.subscribed,

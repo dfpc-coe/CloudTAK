@@ -204,16 +204,19 @@ const shareToPackage = ref<{
 const loadingInline = ref<string | undefined>(undefined);
 const subscription = ref<Subscription | undefined>(undefined)
 
+// Bumped per load and on unmount so a late response is closed, not adopted
+let fetchSeq = 0;
+
 onMounted(async () => {
     await fetchMission();
 })
 
 onBeforeUnmount(() => {
+    fetchSeq++;
     setSubscription(undefined);
 });
 
-// The route is reused when moving between missions (Active Mission in the
-// top bar, Associated Mission buttons) so the panel must reload on param change
+// The route is reused when moving between missions
 watch(() => route.params.mission, async (guid, previous) => {
     if (!guid || guid === previous) return;
 
@@ -223,8 +226,6 @@ watch(() => route.params.mission, async (guid, previous) => {
     await fetchMission();
 });
 
-// The panel's instance listens for changes made elsewhere, so the one it
-// replaces must stop listening or its channel is never collected
 function setSubscription(next: Subscription | undefined): void {
     const previous = subscription.value;
     subscription.value = next;
@@ -282,10 +283,6 @@ async function exportToPackage(format: string): Promise<void> {
         loadingInline.value = undefined;
     }
 }
-
-// Incremented per load so a response for a mission the user has already
-// navigated away from is dropped instead of replacing the current one
-let fetchSeq = 0;
 
 async function fetchMission(reload = false): Promise<void> {
     const seq = ++fetchSeq;
