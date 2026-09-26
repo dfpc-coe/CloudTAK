@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+- :tada: Add OpenStreetMap (Nominatim) search provider supporting forward, suggest & reverse geocoding - enable it & set the Nominatim URL from the Admin Config UI (`osm::enabled` & `osm::url`)
+
 ### v13.98.1 - 2026-09-25
 
 - :bug: Fix bug related to public vs private iconset creation

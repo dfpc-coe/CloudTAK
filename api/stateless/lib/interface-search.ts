@@ -87,20 +87,25 @@ export class SearchManager extends Map<string, Search> {
     static async init(config: Config): Promise<SearchManager> {
         const manager = new SearchManager();
 
-        const AGOLSearch = (await import('./search/agol.js')).default;
+        const providers = [
+            { name: 'AGOL', load: async () => (await import('./search/agol.js')).default.init(config) },
+            { name: 'OSM', load: async () => (await import('./search/osm.js')).default.init(config) },
+        ];
 
-        try {
-            const agol = await AGOLSearch.init(config);
+        for (const provider of providers) {
+            try {
+                const search = await provider.load();
 
-            if (agol) {
+                if (!search) continue;
+
                 if (!manager.defaultProvider) {
-                    manager.defaultProvider = agol._id;
+                    manager.defaultProvider = search._id;
                 }
 
-                manager.set(agol._id, agol);
+                manager.set(search._id, search);
+            } catch (err) {
+                console.error(`not ok - ${provider.name} Search Provider failed to initialize`, err);
             }
-        } catch (err) {
-            console.error('not ok - AGOL Search Provider failed to initialize', err);
         }
 
         return manager;
