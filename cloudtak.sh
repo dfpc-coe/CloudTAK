@@ -52,6 +52,23 @@ run_step() {
 
     rm -f "$log"
 }
+# ensure_env <KEY> <value>
+#   Appends KEY=value to .env when KEY is absent
+ensure_env() {
+    if ! grep -q "^$1=" .env; then
+        echo "$1=$2" >> .env
+        log_ok "Added $1 to .env"
+    fi
+}
+
+# Legacy MinIO data lives in .docker-store - refuse to start until it has been migrated to Garage
+check_legacy_store() {
+    if [[ -d .docker-store ]]; then
+        log_err "Legacy MinIO data found in .docker-store - the object store is now Garage"
+        log_info "Run './cloudtak.sh migrate-store' to copy your files into the new store before starting"
+        exit 1
+    fi
+}
 # ────────────────────────────────────────────────────────────────────────────────
 
 if [[ "$SUBCOMMAND" == "install" ]]; then
@@ -132,6 +149,8 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
         cp .env.example .env
         log_info "Generating random SigningSecret"
         sed -i "s/^SigningSecret=.*/SigningSecret=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32)/" .env
+        log_info "Generating random GARAGE_RPC_SECRET"
+        sed -i "s/^GARAGE_RPC_SECRET=.*/GARAGE_RPC_SECRET=$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')/" .env
         log_ok ".env created - please review it before starting"
     else
         log_ok ".env already exists - skipping creation"
@@ -304,6 +323,14 @@ elif [[ "$SUBCOMMAND" == "connect" ]]; then
     log_info "Connecting to PostgreSQL database..."
     docker exec -it cloudtak-postgis-1 psql -d "$DB_URL"
 elif [[ "$SUBCOMMAND" == "start" ]]; then
+    if [ ! -f .env ]; then
+        log_err ".env file not found - please run './cloudtak.sh install' first"
+        exit 1
+    fi
+
+    check_legacy_store
+    ensure_env GARAGE_RPC_SECRET "$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+
     if ! docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
         docker compose up -d postgis
     fi
@@ -346,6 +373,11 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
     docker compose build api --no-cache
     docker compose build events tiles media
 
+    if [[ -d .docker-store ]]; then
+        log_warn "Legacy MinIO store detected - migrating files to Garage"
+        $0 migrate-store
+    fi
+
     $0 start
 
     log_info "Verifying database integrity..."
@@ -381,7 +413,76 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
     if [[ "$CLEAN_CHOICE" == "y" || "$CLEAN_CHOICE" == "Y" ]]; then
         $0 clean
     fi
+elif [[ "$SUBCOMMAND" == "migrate-store" ]]; then
+    if [ ! -f .env ]; then
+        log_err ".env file not found - please run './cloudtak.sh install' first"
+        exit 1
+    fi
+
+    if [[ ! -d .docker-store ]]; then
+        log_ok "No legacy MinIO data in .docker-store - nothing to migrate"
+        exit 0
+    fi
+
+    if ! grep -q "^MINIO_ROOT_USER=" .env || ! grep -q "^MINIO_ROOT_PASSWORD=" .env; then
+        log_err "MINIO_ROOT_USER & MINIO_ROOT_PASSWORD must be set in .env to read the legacy store"
+        exit 1
+    fi
+
+    BUCKET=$(grep "^ASSET_BUCKET=" .env | cut -d= -f2-)
+    if [[ -z "$BUCKET" ]]; then
+        log_err "ASSET_BUCKET must be set in .env"
+        exit 1
+    fi
+
+    ensure_env GARAGE_RPC_SECRET "$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+    sed -i "s|^AWS_S3_Endpoint=.*|AWS_S3_Endpoint=http://store:3900|" .env
+    log_ok "AWS_S3_Endpoint now points at Garage (http://store:3900)"
+
+    # MinIO images can no longer be pulled - reuse the one the existing store container runs from
+    if [[ -z "${MINIO_LEGACY_IMAGE:-}" ]]; then
+        MINIO_LEGACY_IMAGE=$(docker compose ps -a --format json store 2>/dev/null | jq -r '.Image // empty' | head -n1)
+    fi
+    if [[ -z "$MINIO_LEGACY_IMAGE" ]]; then
+        MINIO_LEGACY_IMAGE=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep 'minio/minio:' | head -n1 || true)
+    fi
+    if [[ -z "$MINIO_LEGACY_IMAGE" ]]; then
+        log_err "No local MinIO image found to read the legacy store with"
+        log_info "Set MINIO_LEGACY_IMAGE=<image> and re-run './cloudtak.sh migrate-store'"
+        exit 1
+    fi
+    export MINIO_LEGACY_IMAGE
+    log_ok "Using legacy MinIO image $MINIO_LEGACY_IMAGE"
+
+    log_warn "CloudTAK services will be stopped while files are copied"
+    run_step "Stopping CloudTAK services" docker compose stop api events tiles retention
+
+    run_step "Starting Garage & legacy MinIO" docker compose --profile migrate up -d --remove-orphans --pull missing store minio-legacy
+
+    RCLONE="docker compose --profile migrate run --rm --quiet-pull migrate"
+
+    wait_for_store() {
+        for _ in $(seq 1 30); do
+            if $RCLONE lsd "$1:" > /dev/null 2>&1; then return 0; fi
+            sleep 2
+        done
+        return 1
+    }
+    run_step "Waiting for Garage" wait_for_store garage
+    run_step "Waiting for legacy MinIO" wait_for_store minio
+
+    run_step "Copying objects from MinIO to Garage" $RCLONE sync -v "minio:$BUCKET" "garage:$BUCKET"
+    run_step "Verifying copied objects" $RCLONE check --size-only "minio:$BUCKET" "garage:$BUCKET"
+
+    run_step "Stopping legacy MinIO" docker compose --profile migrate rm -sf minio-legacy
+
+    ARCHIVE=".docker-store-migrated-$(date +%Y%m%d_%H%M%S)"
+    mv .docker-store "$ARCHIVE"
+    log_ok "Legacy MinIO data moved to $ARCHIVE"
+    log_info "Once you have verified CloudTAK, reclaim the space with: sudo rm -rf $ARCHIVE"
+
+    $0 start
 else
-    log_info "Usage: $0 install|start|update|stop|backup|restore|clean|connect"
+    log_info "Usage: $0 install|start|update|stop|backup|restore|clean|connect|migrate-store"
     exit 0
 fi

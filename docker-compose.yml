@@ -103,16 +103,48 @@ services:
             - POSTGRES_PASSWORD=docker
 
     store:
-        image: quay.io/minio/minio:RELEASE.2024-08-17T01-24-54Z
-        entrypoint: sh
-        command: -c 'mkdir -p /data/cloudtak && /usr/bin/minio server /data --console-address ":9002"'
+        image: dxflrs/garage:v2.4.1
+        command: /garage server --single-node --default-bucket
         restart: 'always'
         volumes:
-            - .docker-store:/data
+            - ./garage.toml:/etc/garage.toml:ro
+            - .docker-garage/meta:/var/lib/garage/meta
+            - .docker-garage/data:/var/lib/garage/data
         ports:
-            - 127.0.0.1:9000:9000
-            - 127.0.0.1:9002:9002
+            - 127.0.0.1:3900:3900
         environment:
-            - MINIO_ROOT_USER=${MINIO_ROOT_USER}
-            - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
-            - MINIO_DEFAULT_BUCKETS=${ASSET_BUCKET}
+            - GARAGE_RPC_SECRET=${GARAGE_RPC_SECRET}
+            - GARAGE_DEFAULT_BUCKET=${ASSET_BUCKET}
+            - GARAGE_DEFAULT_ACCESS_KEY=${AWS_S3_AccessKeyId}
+            - GARAGE_DEFAULT_SECRET_KEY=${AWS_S3_SecretAccessKey}
+
+    # Legacy MinIO store - only used by `./cloudtak.sh migrate-store`
+    minio-legacy:
+        profiles: ['migrate']
+        image: ${MINIO_LEGACY_IMAGE:-quay.io/minio/minio:RELEASE.2024-08-17T01-24-54Z}
+        command: server /data
+        volumes:
+            - .docker-store:/data
+        environment:
+            - MINIO_ROOT_USER=${MINIO_ROOT_USER:-}
+            - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-}
+
+    migrate:
+        profiles: ['migrate']
+        image: rclone/rclone:1.75
+        depends_on:
+            - store
+            - minio-legacy
+        environment:
+            - RCLONE_CONFIG_MINIO_TYPE=s3
+            - RCLONE_CONFIG_MINIO_PROVIDER=Minio
+            - RCLONE_CONFIG_MINIO_ENDPOINT=http://minio-legacy:9000
+            - RCLONE_CONFIG_MINIO_REGION=us-east-1
+            - RCLONE_CONFIG_MINIO_ACCESS_KEY_ID=${MINIO_ROOT_USER:-}
+            - RCLONE_CONFIG_MINIO_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD:-}
+            - RCLONE_CONFIG_GARAGE_TYPE=s3
+            - RCLONE_CONFIG_GARAGE_PROVIDER=Other
+            - RCLONE_CONFIG_GARAGE_ENDPOINT=http://store:3900
+            - RCLONE_CONFIG_GARAGE_REGION=us-east-1
+            - RCLONE_CONFIG_GARAGE_ACCESS_KEY_ID=${AWS_S3_AccessKeyId}
+            - RCLONE_CONFIG_GARAGE_SECRET_ACCESS_KEY=${AWS_S3_SecretAccessKey}

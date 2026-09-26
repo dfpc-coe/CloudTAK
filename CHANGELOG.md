@@ -18,6 +18,9 @@
 
 ### Pending Release
 
+- :rocket: Docker Compose deployments now use [Garage](https://garagehq.deuxfleurs.fr/) as the object store instead of MinIO, whose community images & binaries are no longer published - `./cloudtak.sh migrate-store` (run automatically by `./cloudtak.sh update`) copies existing files out of the MinIO volume, `AWS_S3_Endpoint` moves to `http://store:3900` & a `GARAGE_RPC_SECRET` is added to `.env`
+- :bug: S3 clients only calculate & validate request/response checksums when required so multipart objects served by non-AWS S3 endpoints download correctly
+
 ### v13.98.1 - 2026-09-25
 
 - :bug: Fix bug related to public vs private iconset creation
