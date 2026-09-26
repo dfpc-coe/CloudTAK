@@ -779,6 +779,8 @@ export const FullConfig = Type.Object({
     'agol::token': Type.String({ description: 'AGOL Legacy Token' }),
     'agol::client_id': Type.String({ description: 'AGOL OAuth2 Client ID' }),
     'agol::client_secret': Type.String({ description: 'AGOL OAuth2 Client Secret' }),
+    'osm::enabled': Type.Boolean({ description: 'Enable OpenStreetMap (Nominatim) Search Provider' }),
+    'osm::url': Type.String({ description: 'Nominatim Base URL' }),
     'media::url': Type.String({ description: 'Base URL for Media Service' }),
     'media::proxy::allow': Type.Array(Type.String({ description: 'Trusted video proxy source hostname or origin (scheme + host + optional port) that is added to the SSRF allow-list' })),
     'coturn::url': Type.String({ description: 'COTURN Server URL' }),

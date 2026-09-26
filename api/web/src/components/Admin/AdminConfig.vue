@@ -8,6 +8,7 @@
         <div class='card-body row'>
             <ConfigLogin />
             <ConfigAgol />
+            <ConfigOsm />
             <ConfigMedia />
             <ConfigProxy />
             <ConfigRetention />
@@ -27,6 +28,7 @@
 <script setup lang="ts">
 import ConfigLogin from './AdminConfig/ConfigLogin.vue';
 import ConfigAgol from './AdminConfig/ConfigAgol.vue';
+import ConfigOsm from './AdminConfig/ConfigOsm.vue';
 import ConfigMedia from './AdminConfig/ConfigMedia.vue';
 import ConfigProxy from './AdminConfig/ConfigProxy.vue';
 import ConfigRetention from './AdminConfig/ConfigRetention.vue';

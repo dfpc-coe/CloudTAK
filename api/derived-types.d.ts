@@ -2419,6 +2419,10 @@ export interface paths {
                             "agol::client_id"?: string;
                             /** @description AGOL OAuth2 Client Secret */
                             "agol::client_secret"?: string;
+                            /** @description Enable OpenStreetMap (Nominatim) Search Provider */
+                            "osm::enabled"?: boolean;
+                            /** @description Nominatim Base URL */
+                            "osm::url"?: string;
                             /** @description Base URL for Media Service */
                             "media::url"?: string;
                             "media::proxy::allow"?: string[];
@@ -2695,6 +2699,10 @@ export interface paths {
                         "agol::client_id"?: string;
                         /** @description AGOL OAuth2 Client Secret */
                         "agol::client_secret"?: string;
+                        /** @description Enable OpenStreetMap (Nominatim) Search Provider */
+                        "osm::enabled"?: boolean;
+                        /** @description Nominatim Base URL */
+                        "osm::url"?: string;
                         /** @description Base URL for Media Service */
                         "media::url"?: string;
                         "media::proxy::allow"?: string[];
@@ -2896,6 +2904,10 @@ export interface paths {
                             "agol::client_id"?: string;
                             /** @description AGOL OAuth2 Client Secret */
                             "agol::client_secret"?: string;
+                            /** @description Enable OpenStreetMap (Nominatim) Search Provider */
+                            "osm::enabled"?: boolean;
+                            /** @description Nominatim Base URL */
+                            "osm::url"?: string;
                             /** @description Base URL for Media Service */
                             "media::url"?: string;
                             "media::proxy::allow"?: string[];
