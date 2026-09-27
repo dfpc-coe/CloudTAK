@@ -113,7 +113,7 @@ services:
         ports:
             - 127.0.0.1:3900:3900
         environment:
-            - GARAGE_RPC_SECRET=${GARAGE_RPC_SECRET}
+            - GARAGE_RPC_SECRET=${GARAGE_RPC_SECRET:?GARAGE_RPC_SECRET is not set - run ./cloudtak.sh start to generate one}
             - GARAGE_DEFAULT_BUCKET=${ASSET_BUCKET}
             - GARAGE_DEFAULT_ACCESS_KEY=${AWS_S3_AccessKeyId}
             - GARAGE_DEFAULT_SECRET_KEY=${AWS_S3_SecretAccessKey}

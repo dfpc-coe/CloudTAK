@@ -52,13 +52,24 @@ run_step() {
 
     rm -f "$log"
 }
-# ensure_env <KEY> <value>
-#   Appends KEY=value to .env when KEY is absent
-ensure_env() {
-    if ! grep -q "^$1=" .env; then
-        echo "$1=$2" >> .env
-        log_ok "Added $1 to .env"
+# Garage needs a 32 byte hex RPC secret - generate one when .env has none (missing, empty or placeholder)
+ensure_rpc_secret() {
+    local current
+    current=$(grep "^GARAGE_RPC_SECRET=" .env | cut -d= -f2-)
+
+    if [[ "$current" =~ ^[0-9a-fA-F]{64}$ && "$current" != "$(printf '0%.0s' {1..64})" ]]; then
+        return 0
     fi
+
+    local secret
+    secret=$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')
+
+    if grep -q "^GARAGE_RPC_SECRET=" .env; then
+        sed -i "s/^GARAGE_RPC_SECRET=.*/GARAGE_RPC_SECRET=$secret/" .env
+    else
+        echo "GARAGE_RPC_SECRET=$secret" >> .env
+    fi
+    log_ok "Generated GARAGE_RPC_SECRET in .env"
 }
 
 # Legacy MinIO data lives in .docker-store - refuse to start until it has been migrated to Garage
@@ -149,12 +160,12 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
         cp .env.example .env
         log_info "Generating random SigningSecret"
         sed -i "s/^SigningSecret=.*/SigningSecret=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32)/" .env
-        log_info "Generating random GARAGE_RPC_SECRET"
-        sed -i "s/^GARAGE_RPC_SECRET=.*/GARAGE_RPC_SECRET=$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')/" .env
         log_ok ".env created - please review it before starting"
     else
         log_ok ".env already exists - skipping creation"
     fi
+
+    ensure_rpc_secret
 
     read -p "Enter the API_URL (e.g. map.example.com): " API_URL
     if [[ -n "$API_URL" ]]; then
@@ -329,7 +340,7 @@ elif [[ "$SUBCOMMAND" == "start" ]]; then
     fi
 
     check_legacy_store
-    ensure_env GARAGE_RPC_SECRET "$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+    ensure_rpc_secret
 
     if ! docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
         docker compose up -d postgis
@@ -435,7 +446,7 @@ elif [[ "$SUBCOMMAND" == "migrate-store" ]]; then
         exit 1
     fi
 
-    ensure_env GARAGE_RPC_SECRET "$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+    ensure_rpc_secret
     sed -i "s|^AWS_S3_Endpoint=.*|AWS_S3_Endpoint=http://store:3900|" .env
     log_ok "AWS_S3_Endpoint now points at Garage (http://store:3900)"
 
