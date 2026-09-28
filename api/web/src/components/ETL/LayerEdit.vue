@@ -109,6 +109,7 @@
                                                 v-model='settings'
                                                 :capabilities='capabilities'
                                                 :disabled='false'
+                                                :errors='errors'
                                             />
                                         </div>
                                         <div
@@ -157,6 +158,7 @@ import { ref, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { server } from '../../std.ts';
 import { validateSchedule } from '../../utils/schedule.ts';
+import { validateSenders } from '../../utils/senders.ts';
 import type { CapabilitySettings } from '../../base/capabilities.ts';
 import { defaultCapabilitySettings } from '../../base/capabilities.ts';
 import type { ETLLayer, ETLTaskCapabilities } from '../../types.ts';
@@ -194,6 +196,7 @@ const errors = ref<Record<string, string>>({
     task: '',
     description: '',
     cron: '',
+    email_senders: '',
 })
 
 const capabilities = ref<ETLTaskCapabilities | null>(null);
@@ -301,6 +304,13 @@ async function create() {
         && settings.value.schedule
     ) ? (validateSchedule(settings.value.cron) || '') : '';
 
+    errors.value.email_senders = (
+        !route.params.layerid
+        && capabilities.value
+        && settings.value.incoming
+        && settings.value.email
+    ) ? validateSenders(settings.value.email_senders) : '';
+
     for (const e in errors.value) if (errors.value[e]) return;
 
     loading.value.layer = true;
@@ -340,7 +350,9 @@ async function create() {
                 if (settings.value.incoming && capabilities.value.invocations.incoming) {
                     body.incoming = {
                         cron: settings.value.schedule ? settings.value.cron : null,
-                        webhooks: settings.value.webhooks
+                        webhooks: settings.value.webhooks,
+                        email: settings.value.email,
+                        email_senders: settings.value.email_senders
                     };
                 }
 

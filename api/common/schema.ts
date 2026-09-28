@@ -684,6 +684,8 @@ export const LayerIncoming = pgTable('layers_incoming', {
 
     cron: text(),
     webhooks: boolean().notNull().default(false),
+    email: boolean().notNull().default(false),
+    email_senders: text().array().notNull().default([]),
 
     enabled_styles: boolean().notNull().default(false),
     styles: jsonb().$type<Static<typeof StyleContainer>>().notNull().default({}),

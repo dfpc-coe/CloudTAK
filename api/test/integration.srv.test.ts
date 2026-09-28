@@ -118,6 +118,13 @@ test('GET: api/integration/raw/test/version/1.1.1 - capabilities annotation', as
                             enabled: true,
                         },
                     },
+                    email: {
+                        description: 'Receive features via email',
+                        default: {
+                            enabled: true,
+                            senders: ['cad@county.gov', '@agency.org'],
+                        },
+                    },
                 },
                 outgoing: {
                     types: [{

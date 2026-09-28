@@ -31,6 +31,19 @@ import { Layer_Priority } from '../../common/enums.js';
 import { Layer } from '../../common/schema.js';
 import * as Default from '../lib/limits.js';
 
+const EmailSenders = Type.Array(Type.String({
+    maxLength: 128,
+    pattern: '^[^\\s@<>]*@[^\\s@<>]+$',
+}), {
+    maxItems: 25,
+    description: 'Addresses or @domains allowed to email the Layer - empty allows any sender',
+});
+
+function normalizeSenders(senders?: Array<string>): Array<string> | undefined {
+    if (!senders) return undefined;
+    return Array.from(new Set(senders.map(sender => sender.trim().toLowerCase())));
+}
+
 export default async function router(schema: Schema, config: ConfigStateless) {
     const alarm = new Alarm(config.StackName);
     const layerControl = new LayerControl(config);
@@ -227,6 +240,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             incoming: Type.Optional(Type.Object({
                 cron: Type.Optional(Type.Union([Type.Null(), Type.String()])),
                 webhooks: Type.Optional(Type.Boolean()),
+                email: Type.Optional(Type.Boolean()),
+                email_senders: Type.Optional(EmailSenders),
             }, {
                 description: 'Create an Incoming Config alongside the Layer',
             })),
@@ -258,6 +273,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             const { incoming, outgoing, ...body } = req.body;
+
+            if (incoming) incoming.email_senders = normalizeSenders(incoming.email_senders);
 
             const layer = await layerControl.generate({
                 ...body,
@@ -293,6 +310,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         body: Type.Object({
             webhooks: Type.Optional(Type.Boolean()),
+            email: Type.Optional(Type.Boolean()),
+            email_senders: Type.Optional(EmailSenders),
             cron: Type.Optional(Type.String()),
             stale: Type.Optional(Type.Integer()),
             data: Type.Optional(Type.Integer()),
@@ -346,6 +365,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const incoming = await config.models.LayerIncoming.generate({
                 layer: layer.id,
                 ...req.body,
+                email_senders: normalizeSenders(req.body.email_senders),
             });
 
             layer = await layerControl.from(connection, req.params.layerid);
@@ -386,6 +406,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         body: Type.Object({
             webhooks: Type.Optional(Type.Boolean()),
+            email: Type.Optional(Type.Boolean()),
+            email_senders: Type.Optional(EmailSenders),
             cron: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             enabled_styles: Type.Optional(Type.Boolean()),
             styles: Type.Optional(StyleContainer),
@@ -444,11 +466,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 Schedule.is_valid(req.body.cron);
             }
 
+            req.body.email_senders = normalizeSenders(req.body.email_senders);
+
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
-            for (const prop of ['cron', 'webhooks']) {
-                // @ts-expect-error Doesn't like indexed values
-                if (req.body[prop] !== undefined && req.body[prop] !== layer[prop]) changed = true;
+            for (const prop of ['cron', 'webhooks', 'email', 'email_senders'] as const) {
+                if (req.body[prop] === undefined) continue;
+                if (JSON.stringify(req.body[prop]) !== JSON.stringify(layer.incoming[prop])) changed = true;
             }
 
             if (changed) {
@@ -471,7 +495,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             if (changed) {
                 try {
-                    await deployLayer(layer);
+                    await deployLayer({ ...layer, incoming });
                 } catch (err) {
                     console.error(err);
                 }
