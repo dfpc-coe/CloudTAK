@@ -804,6 +804,7 @@ export const FullConfig = Type.Object({
         minItems: 1,
         maxItems: 3,
     })], { description: 'Favourite Basemaps (1-3) shown at the top of the Basemap Menu' }),
+    'ion::token': Type.String({ description: 'Cesium ion access token used by the server to issue 3D Tiles access (admin only)' }),
     'display::stale': Type.Enum(Profile_Stale),
     'display::distance': Type.Enum(Profile_Distance),
     'display::elevation': Type.Enum(Profile_Elevation),

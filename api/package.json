@@ -71,6 +71,7 @@
         "drizzle-kit": "^0.31.0",
         "drizzle-orm": "^0.45.0",
         "drizzle-typebox": "^0.3.0",
+        "egm96-universal": "^1.1.1",
         "esri-dump": "^6.1.1",
         "express": "^5.0.0",
         "geomagnetism": "^0.2.0",
