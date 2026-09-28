@@ -1,7 +1,12 @@
 import cf from '@openaddresses/cloudfriend';
+import fs from 'fs';
+import path from 'path';
+import url from 'url';
+
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 export default cf.merge({
-    Description: 'Inbound email paging via AWS SES Mail Manager for CloudTAK',
+    Description: 'Inbound email paging & ETL Layer delivery via AWS SES Mail Manager for CloudTAK',
     Parameters: {
         Environment: {
             Description: 'VPC/ECS Stack to deploy into',
@@ -17,6 +22,11 @@ export default cf.merge({
             Type: 'Number',
             Description: 'Maximum allowed inbound message size in bytes',
             Default: 10485760
+        },
+        MailExpirationDays: {
+            Type: 'Number',
+            Description: 'Days that raw email delivered to ETL Layers is retained in S3',
+            Default: 7
         },
         RetentionPeriod: {
             Type: 'String',
@@ -71,7 +81,177 @@ export default cf.merge({
         },
 
         /**
-         * Rule set — single catch-all rule that archives every message.
+         * Bucket — raw MIME of every received message, keyed by message ID,
+         * read by ETL Layers as the Lambda payload only contains headers.
+         */
+        MailBucket: {
+            Type: 'AWS::S3::Bucket',
+            Properties: {
+                BucketName: cf.join('-', [cf.stackName, cf.accountId, cf.region]),
+                PublicAccessBlockConfiguration: {
+                    BlockPublicAcls: true,
+                    BlockPublicPolicy: true,
+                    IgnorePublicAcls: true,
+                    RestrictPublicBuckets: true
+                },
+                BucketEncryption: {
+                    ServerSideEncryptionConfiguration: [{
+                        ServerSideEncryptionByDefault: {
+                            SSEAlgorithm: 'AES256'
+                        }
+                    }]
+                },
+                LifecycleConfiguration: {
+                    Rules: [{
+                        Id: 'ExpireMail',
+                        Status: 'Enabled',
+                        ExpirationInDays: cf.ref('MailExpirationDays'),
+                        AbortIncompleteMultipartUpload: {
+                            DaysAfterInitiation: 1
+                        }
+                    }]
+                }
+            }
+        },
+
+        /**
+         * Rule role — assumed by Mail Manager to execute rule actions.
+         */
+        MailRuleRole: {
+            Type: 'AWS::IAM::Role',
+            Properties: {
+                AssumeRolePolicyDocument: {
+                    Version: '2012-10-17',
+                    Statement: [{
+                        Effect: 'Allow',
+                        Principal: {
+                            Service: 'ses.amazonaws.com'
+                        },
+                        Action: 'sts:AssumeRole',
+                        Condition: {
+                            StringEquals: {
+                                'aws:SourceAccount': cf.accountId
+                            },
+                            ArnLike: {
+                                'aws:SourceArn': cf.join(['arn:', cf.partition, ':ses:', cf.region, ':', cf.accountId, ':mailmanager-rule-set/*'])
+                            }
+                        }
+                    }]
+                },
+                Policies: [{
+                    PolicyName: cf.join([cf.stackName, '-rule-actions']),
+                    PolicyDocument: {
+                        Version: '2012-10-17',
+                        Statement: [{
+                            Effect: 'Allow',
+                            Action: ['s3:PutObject'],
+                            Resource: [cf.join(['arn:', cf.partition, ':s3:::', cf.ref('MailBucket'), '/*'])]
+                        },{
+                            Effect: 'Allow',
+                            Action: ['s3:ListBucket'],
+                            Resource: [cf.join(['arn:', cf.partition, ':s3:::', cf.ref('MailBucket')])]
+                        },{
+                            Effect: 'Allow',
+                            Action: ['lambda:InvokeFunction'],
+                            Resource: [cf.getAtt('MailRouterFunction', 'Arn')]
+                        }]
+                    }
+                }]
+            }
+        },
+
+        /**
+         * Router — resolves each recipient to a registered ETL Layer and
+         * invokes it with the S3 location of the message.
+         */
+        MailRouterLogs: {
+            Type: 'AWS::Logs::LogGroup',
+            Properties: {
+                LogGroupName: cf.join(['/aws/lambda/', cf.stackName, '-router']),
+                RetentionInDays: 7
+            }
+        },
+        MailRouterFunction: {
+            Type: 'AWS::Lambda::Function',
+            DependsOn: ['MailRouterLogs'],
+            Properties: {
+                FunctionName: cf.join([cf.stackName, '-router']),
+                Description: 'Route inbound email to ETL Layers',
+                Handler: 'index.handler',
+                Runtime: 'nodejs24.x',
+                MemorySize: 128,
+                Timeout: 30,
+                Role: cf.getAtt('MailRouterFunctionRole', 'Arn'),
+                Environment: {
+                    Variables: {
+                        MAIL_BUCKET: cf.ref('MailBucket'),
+                        MAIL_DOMAIN: cf.join([
+                            cf.ref('SubdomainPrefix'),
+                            '.',
+                            cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))
+                        ]),
+                        LAYER_PREFIX: cf.join(['/', cf.stackName, '/layer/'])
+                    }
+                },
+                Code: {
+                    ZipFile: fs.readFileSync(path.join(__dirname, './lib/mail-lambda.js'), 'utf8')
+                }
+            }
+        },
+        MailRouterFunctionRole: {
+            Type: 'AWS::IAM::Role',
+            Properties: {
+                AssumeRolePolicyDocument: {
+                    Version: '2012-10-17',
+                    Statement: [{
+                        Effect: 'Allow',
+                        Principal: {
+                            Service: ['lambda.amazonaws.com']
+                        },
+                        Action: ['sts:AssumeRole']
+                    }]
+                },
+                Policies: [{
+                    PolicyName: cf.join([cf.stackName, '-router']),
+                    PolicyDocument: {
+                        Version: '2012-10-17',
+                        Statement: [{
+                            Effect: 'Allow',
+                            Action: ['ssm:GetParameter'],
+                            Resource: [cf.join(['arn:', cf.partition, ':ssm:', cf.region, ':', cf.accountId, ':parameter/', cf.stackName, '/layer/*'])]
+                        },{
+                            Effect: 'Allow',
+                            Action: ['lambda:InvokeFunction'],
+                            Resource: [cf.join(['arn:', cf.partition, ':lambda:', cf.region, ':', cf.accountId, ':function:tak-cloudtak-', cf.ref('Environment'), '-layer-*'])]
+                        }]
+                    }
+                }],
+                ManagedPolicyArns: [cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'])]
+            }
+        },
+
+        /**
+         * ETL policy — allow ETL Layers to read delivered messages.
+         */
+        MailETLPolicy: {
+            Type: 'AWS::IAM::Policy',
+            Properties: {
+                PolicyName: cf.join([cf.stackName, '-etl']),
+                Roles: [cf.join(['tak-cloudtak-', cf.ref('Environment')])],
+                PolicyDocument: {
+                    Version: '2012-10-17',
+                    Statement: [{
+                        Effect: 'Allow',
+                        Action: ['s3:GetObject'],
+                        Resource: [cf.join(['arn:', cf.partition, ':s3:::', cf.ref('MailBucket'), '/*'])]
+                    }]
+                }
+            }
+        },
+
+        /**
+         * Rule set — every message is archived, then written to S3 and
+         * handed to the router for delivery to ETL Layers.
          */
         PagingRuleSet: {
             Type: 'AWS::SES::MailManagerRuleSet',
@@ -83,6 +263,23 @@ export default cf.merge({
                     Actions: [{
                         Archive: {
                             TargetArchive: cf.getAtt('PagingArchive', 'ArchiveId')
+                        }
+                    }]
+                },{
+                    Name: 'DeliverLayers',
+                    Conditions: [],
+                    Actions: [{
+                        WriteToS3: {
+                            S3Bucket: cf.ref('MailBucket'),
+                            RoleArn: cf.getAtt('MailRuleRole', 'Arn'),
+                            ActionFailurePolicy: 'DROP'
+                        }
+                    },{
+                        InvokeLambda: {
+                            FunctionArn: cf.getAtt('MailRouterFunction', 'Arn'),
+                            InvocationType: 'EVENT',
+                            RoleArn: cf.getAtt('MailRuleRole', 'Arn'),
+                            ActionFailurePolicy: 'CONTINUE'
                         }
                     }]
                 }]
@@ -180,6 +377,20 @@ export default cf.merge({
             Value: cf.getAtt('PagingArchive', 'ArchiveId'),
             Export: {
                 Name: cf.join([cf.stackName, '-archive-id'])
+            }
+        },
+        MailBucket: {
+            Description: 'Bucket that raw email delivered to ETL Layers is written to',
+            Value: cf.ref('MailBucket'),
+            Export: {
+                Name: cf.join([cf.stackName, '-bucket'])
+            }
+        },
+        LayerPrefix: {
+            Description: 'SSM Parameter prefix that ETL Layers register their function ARN under, keyed by Layer UUID',
+            Value: cf.join(['/', cf.stackName, '/layer/']),
+            Export: {
+                Name: cf.join([cf.stackName, '-layer-prefix'])
             }
         }
     }
