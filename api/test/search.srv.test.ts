@@ -90,6 +90,23 @@ test('GET /api/search/forward - success', async () => {
     }
 });
 
+test('GET /api/search - no providers configured', async () => {
+    try {
+        const res = await flight.fetch('/api/search', {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.deepEqual(res.body, {
+            reverse: { enabled: false, providers: [] },
+            route: { enabled: false, providers: [] },
+            forward: { enabled: false, providers: [] },
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET /api/search/route - without token', async () => {
     try {
         const res = await flight.fetch('/api/search/route?start=-105,39.7&end=-104.8,39.9', {

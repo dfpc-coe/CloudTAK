@@ -6,6 +6,7 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthUser } from '../../common/auth.js';
 import { FetchHourly } from '../lib/interface-weather.js';
 import { SearchManager } from '../lib/interface-search.js';
+import { RouteManager } from '../lib/interface-route.js';
 import { SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from '../lib/search/types.js';
 import { Feature } from '@tak-ps/node-cot';
 import type ConfigStateless from '../config.js';
@@ -17,6 +18,7 @@ function optionalISOString(date: Date | null): string | null {
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     const searchManager = await SearchManager.init(config);
+    const routeManager = await RouteManager.init(config);
     const SunTime = (description: string) => Type.Union([Type.String(), Type.Null()], { description });
 
     const SunResponse = Type.Object({
@@ -69,9 +71,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             await Auth.as_user(config, req);
 
-            const searchConfig = await searchManager.config();
-
-            return res.json(searchConfig);
+            return res.json({
+                ...(await searchManager.config()),
+                route: await routeManager.config(),
+            });
         } catch (err) {
             Err.respond(err, res);
         }
@@ -385,9 +388,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 req.query.end.split(',').map(Number),
             ] as [number, number][];
 
-            if (searchManager.defaultProvider) {
-                const route = await searchManager.route(
-                    req.query.provider || searchManager.defaultProvider,
+            if (routeManager.defaultProvider) {
+                const route = await routeManager.route(
+                    req.query.provider || routeManager.defaultProvider,
                     stops,
                     req.query.travelMode,
                 );

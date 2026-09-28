@@ -169,6 +169,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { stdurl, server, downloadUrl } from '../../std.ts';
 import type { paths } from '@cloudtak/api-types';
 import type { ImportList } from '../../types.ts';
@@ -192,14 +193,7 @@ const error = ref<Error | undefined>();
 const loading = ref(true);
 const expanded = ref<string | undefined>(undefined);
 
-const paging = ref({
-    filter: '',
-    status: 'All',
-    sort: 'created',
-    order: 'desc',
-    limit: 100,
-    page: 0
-});
+const route = useRoute();
 
 const statusOptions = [
     'All',
@@ -209,6 +203,15 @@ const statusOptions = [
     'Success',
     'Fail'
 ];
+
+const paging = ref({
+    filter: '',
+    status: statusOptions.includes(String(route.query.status)) ? String(route.query.status) : 'All',
+    sort: 'created',
+    order: 'desc',
+    limit: 100,
+    page: 0
+});
 
 const list = ref<ImportList>({
     total: 0,

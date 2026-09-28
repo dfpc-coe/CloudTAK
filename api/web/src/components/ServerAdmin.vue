@@ -132,6 +132,7 @@ import {
     IconBuildingBroadcastTower,
     IconMap,
     IconClipboardList,
+    IconLayoutDashboard,
 } from '@tabler/icons-vue'
 
 const route = useRoute();
@@ -146,6 +147,7 @@ const sections: MenuSection[] = [{
     title: 'CloudTAK Admin',
     short: 'Admin',
     items: [
+        { label: 'Overview', to: '/admin', match: 'admin-overview', icon: IconLayoutDashboard },
         { label: 'TAK Server Connection', to: '/admin/server', match: 'admin-server', icon: IconServer },
         { label: 'CloudTAK Settings', to: '/admin/config', match: 'admin-config', icon: IconSettings },
         { label: 'Health', to: '/admin/health', match: 'admin-health', icon: IconHeartbeat },

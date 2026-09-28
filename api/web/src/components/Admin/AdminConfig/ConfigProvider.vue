@@ -3,6 +3,14 @@
         v-model='isOpen'
         label='COTAK OAuth Provider'
     >
+        <template #icon>
+            <IconKey
+                :size='18'
+                stroke='1'
+                color='#6b7990'
+                class='ms-2 me-1'
+            />
+        </template>
         <template #right>
             <TablerIconButton
                 v-if='!edit && isOpen'
@@ -33,7 +41,7 @@
                 </TablerIconButton>
             </div>
         </template>
-        <div class='col-lg-12 py-2 px-2 border rounded'>
+        <div class='col-lg-12 py-2 px-2'>
             <TablerLoading v-if='loading' />
             <template v-else>
                 <TablerAlert
@@ -81,7 +89,8 @@ import {
 import {
     IconPencil,
     IconDeviceFloppy,
-    IconX
+    IconX,
+    IconKey
 } from '@tabler/icons-vue';
 
 interface ProviderConfig {

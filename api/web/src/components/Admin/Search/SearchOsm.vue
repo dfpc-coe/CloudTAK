@@ -3,7 +3,19 @@
         v-model='isOpen'
         label='OpenStreetMap'
     >
+        <template #icon>
+            <IconMapPin
+                :size='18'
+                stroke='1'
+                color='#6b7990'
+                class='ms-2 me-1'
+            />
+        </template>
         <template #right>
+            <SearchStatus
+                class='me-2'
+                :status='props.status'
+            />
             <TablerIconButton
                 v-if='!edit && isOpen'
                 title='Edit'
@@ -33,7 +45,7 @@
                 </TablerIconButton>
             </div>
         </template>
-        <div class='col-lg-12 py-2 px-2 border rounded'>
+        <div class='col-lg-12 py-2 px-2'>
             <TablerLoading v-if='loading' />
             <template v-else>
                 <TablerAlert
@@ -46,15 +58,15 @@
                             v-model='config["osm::enabled"]'
                             :disabled='!edit'
                             label='OpenStreetMap Search Enabled'
-                            description='Forward & reverse geocoding via Nominatim. Changes take effect after the API restarts.'
+                            description='Forward & reverse geocoding via Photon'
                         />
 
                         <TablerInput
                             v-if='config["osm::enabled"]'
                             v-model='config["osm::url"]'
                             :disabled='!edit'
-                            label='Nominatim URL'
-                            description='The public nominatim.openstreetmap.org instance is rate limited to one request per second and is not intended for heavy use - point this at a self-hosted Nominatim for production deployments'
+                            label='Photon URL'
+                            description='The public photon.komoot.io instance is provided on a fair use basis and heavy use will be throttled - point this at a self-hosted Photon for production deployments'
                         />
                     </div>
                 </div>
@@ -65,6 +77,8 @@
 
 <script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
+import SearchStatus from './SearchStatus.vue';
+import type { SearchProviderStatus } from '../../../types.ts';
 import { ref, watch, onMounted } from 'vue';
 import { server } from '../../../std.ts';
 import {
@@ -77,13 +91,18 @@ import {
 import {
     IconPencil,
     IconDeviceFloppy,
-    IconX
+    IconX,
+    IconMapPin
 } from '@tabler/icons-vue';
 
 interface OsmConfig {
     'osm::enabled': boolean;
     'osm::url': string;
 }
+
+const props = defineProps<{
+    status?: SearchProviderStatus;
+}>();
 
 const isOpen = ref<boolean>(false);
 const loading = ref<boolean>(false);
@@ -92,7 +111,7 @@ const err = ref<Error | null>(null);
 
 const config = ref<OsmConfig>({
     'osm::enabled': false,
-    'osm::url': 'https://nominatim.openstreetmap.org',
+    'osm::url': 'https://photon.komoot.io',
 });
 
 onMounted(() => {
@@ -118,7 +137,7 @@ async function fetch(): Promise<void> {
 
         config.value = {
             'osm::enabled': data['osm::enabled'] ?? false,
-            'osm::url': data['osm::url'] ?? 'https://nominatim.openstreetmap.org',
+            'osm::url': data['osm::url'] ?? 'https://photon.komoot.io',
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));

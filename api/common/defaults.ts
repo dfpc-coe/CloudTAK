@@ -34,7 +34,7 @@ export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'proxy::whitelist': [],
     'media::proxy::allow': [],
     'osm::enabled': false,
-    'osm::url': 'https://nominatim.openstreetmap.org',
+    'osm::url': 'https://photon.komoot.io',
     'login::name': 'CloudTAK',
     'login::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../web/public/CloudTAKLogo.svg', import.meta.url)).toString('base64')}`,
     'login::signup': '',

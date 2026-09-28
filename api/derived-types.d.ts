@@ -2419,9 +2419,22 @@ export interface paths {
                             "agol::client_id"?: string;
                             /** @description AGOL OAuth2 Client Secret */
                             "agol::client_secret"?: string;
-                            /** @description Enable OpenStreetMap (Nominatim) Search Provider */
+                            /** @description Enable ArcGIS Online Routing Provider */
+                            "routing::agol::enabled"?: boolean;
+                            /**
+                             * @description AGOL Routing Auth Type
+                             * @enum {string}
+                             */
+                            "routing::agol::auth_method"?: "oauth2" | "legacy";
+                            /** @description AGOL Routing Legacy Token */
+                            "routing::agol::token"?: string;
+                            /** @description AGOL Routing OAuth2 Client ID */
+                            "routing::agol::client_id"?: string;
+                            /** @description AGOL Routing OAuth2 Client Secret */
+                            "routing::agol::client_secret"?: string;
+                            /** @description Enable OpenStreetMap (Photon) Search Provider */
                             "osm::enabled"?: boolean;
-                            /** @description Nominatim Base URL */
+                            /** @description Photon Base URL */
                             "osm::url"?: string;
                             /** @description Base URL for Media Service */
                             "media::url"?: string;
@@ -2699,9 +2712,22 @@ export interface paths {
                         "agol::client_id"?: string;
                         /** @description AGOL OAuth2 Client Secret */
                         "agol::client_secret"?: string;
-                        /** @description Enable OpenStreetMap (Nominatim) Search Provider */
+                        /** @description Enable ArcGIS Online Routing Provider */
+                        "routing::agol::enabled"?: boolean;
+                        /**
+                         * @description AGOL Routing Auth Type
+                         * @enum {string}
+                         */
+                        "routing::agol::auth_method"?: "oauth2" | "legacy";
+                        /** @description AGOL Routing Legacy Token */
+                        "routing::agol::token"?: string;
+                        /** @description AGOL Routing OAuth2 Client ID */
+                        "routing::agol::client_id"?: string;
+                        /** @description AGOL Routing OAuth2 Client Secret */
+                        "routing::agol::client_secret"?: string;
+                        /** @description Enable OpenStreetMap (Photon) Search Provider */
                         "osm::enabled"?: boolean;
-                        /** @description Nominatim Base URL */
+                        /** @description Photon Base URL */
                         "osm::url"?: string;
                         /** @description Base URL for Media Service */
                         "media::url"?: string;
@@ -2904,9 +2930,22 @@ export interface paths {
                             "agol::client_id"?: string;
                             /** @description AGOL OAuth2 Client Secret */
                             "agol::client_secret"?: string;
-                            /** @description Enable OpenStreetMap (Nominatim) Search Provider */
+                            /** @description Enable ArcGIS Online Routing Provider */
+                            "routing::agol::enabled"?: boolean;
+                            /**
+                             * @description AGOL Routing Auth Type
+                             * @enum {string}
+                             */
+                            "routing::agol::auth_method"?: "oauth2" | "legacy";
+                            /** @description AGOL Routing Legacy Token */
+                            "routing::agol::token"?: string;
+                            /** @description AGOL Routing OAuth2 Client ID */
+                            "routing::agol::client_id"?: string;
+                            /** @description AGOL Routing OAuth2 Client Secret */
+                            "routing::agol::client_secret"?: string;
+                            /** @description Enable OpenStreetMap (Photon) Search Provider */
                             "osm::enabled"?: boolean;
-                            /** @description Nominatim Base URL */
+                            /** @description Photon Base URL */
                             "osm::url"?: string;
                             /** @description Base URL for Media Service */
                             "media::url"?: string;
@@ -59631,6 +59670,8 @@ export interface paths {
                                 };
                             };
                             reverse: null | {
+                                /** @description Normalized category of the result */
+                                type?: "address" | "street" | "poi" | "trailhead" | "parking" | "hospital" | "police" | "park" | "peak" | "locality" | "region" | "postal";
                                 LongLabel: string;
                                 ShortLabel: string;
                                 Addr_type: string;
@@ -60172,6 +60213,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             reverse: null | {
+                                /** @description Normalized category of the result */
+                                type?: "address" | "street" | "poi" | "trailhead" | "parking" | "hospital" | "police" | "park" | "peak" | "locality" | "region" | "postal";
                                 LongLabel: string;
                                 ShortLabel: string;
                                 Addr_type: string;
@@ -61062,6 +61105,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             items: {
+                                /** @description Normalized category of the result */
+                                type?: "address" | "street" | "poi" | "trailhead" | "parking" | "hospital" | "police" | "park" | "peak" | "locality" | "region" | "postal";
                                 address: string;
                                 location: {
                                     x: number;
@@ -61207,6 +61252,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             items: {
+                                /** @description Normalized category of the result */
+                                type?: "address" | "street" | "poi" | "trailhead" | "parking" | "hospital" | "police" | "park" | "peak" | "locality" | "region" | "postal";
                                 text: string;
                                 magicKey: string;
                                 isCollection: boolean;

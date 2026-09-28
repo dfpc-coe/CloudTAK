@@ -26,6 +26,17 @@ export type COT2525EList = paths["/api/type/2525e"]["get"]["responses"]["200"]["
 export type COT2525EType = COT2525EList["items"][number];
 
 export type Search = paths["/api/search"]["get"]["responses"]["200"]["content"]["application/json"];
+export type SearchProviderStatus = {
+    active: boolean;
+    default: boolean;
+    forward: boolean;
+    reverse: boolean;
+};
+export type RoutingProviderStatus = {
+    active: boolean;
+    default: boolean;
+    modes: number;
+};
 export type SearchSuggest = paths["/api/search/suggest"]["get"]["responses"]["200"]["content"]["application/json"];
 export type SearchForward = paths["/api/search/forward"]["get"]["responses"]["200"]["content"]["application/json"];
 

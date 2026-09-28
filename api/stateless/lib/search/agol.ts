@@ -1,18 +1,33 @@
 import { fetch } from '@tak-ps/node-safeurl';
-import Err from '@openaddresses/batch-error';
 import Config from '../../../common/config.js';
-import { EsriSpatialReference, EsriExtent } from '../esri/types.js';
-import { randomUUID } from 'node:crypto';
 import { Static, Type } from '@sinclair/typebox';
-import { Feature } from '@tak-ps/node-cot';
-import { CoTParser } from '@tak-ps/node-cot';
 import ArcGISTokenManager from './arcgis-token-manager.js';
 import ArcGISConfigService from './arcgis-config.js';
 import { Search } from '../interface-search.js';
+import { Search_Type } from '../../../common/enums.js';
 import { SearchConfig, FetchSuggest, FetchReverse, FetchForward } from './types.js';
 
+export const AGOLReverse = Type.Object({
+    LongLabel: Type.String(),
+    ShortLabel: Type.String(),
+    Addr_type: Type.String(),
+    Type: Type.Optional(Type.String()),
+});
+
+export const AGOLForward = Type.Composite([
+    Type.Omit(FetchForward, ['type', 'attributes']),
+    Type.Object({
+        attributes: Type.Object({
+            LongLabel: Type.Optional(Type.String()),
+            ShortLabel: Type.Optional(Type.String()),
+            Addr_type: Type.Optional(Type.String()),
+            Type: Type.Optional(Type.String()),
+        }),
+    }),
+]);
+
 export const AGOLReverseContainer = Type.Object({
-    address: Type.Optional(FetchReverse),
+    address: Type.Optional(AGOLReverse),
     error: Type.Optional(Type.Object({
         code: Type.Number(),
         message: Type.String(),
@@ -20,7 +35,7 @@ export const AGOLReverseContainer = Type.Object({
 });
 
 export const AGOLSuggestContainer = Type.Object({
-    suggestions: Type.Optional(Type.Array(FetchSuggest)),
+    suggestions: Type.Optional(Type.Array(Type.Omit(FetchSuggest, ['type']))),
     error: Type.Optional(Type.Object({
         code: Type.Number(),
         message: Type.String(),
@@ -28,99 +43,63 @@ export const AGOLSuggestContainer = Type.Object({
 });
 
 export const AGOLForwardContainer = Type.Object({
-    candidates: Type.Optional(Type.Array(FetchForward)),
+    candidates: Type.Optional(Type.Array(AGOLForward)),
     error: Type.Optional(Type.Object({
         code: Type.Number(),
         message: Type.String(),
     })),
 });
 
-export const AGOLRouteContainer = Type.Object({
-    checksum: Type.Optional(Type.String()),
-    requestID: Type.Optional(Type.String()),
-    error: Type.Optional(Type.Object({
-        code: Type.Number(),
-        message: Type.String(),
-    })),
-    routes: Type.Optional(Type.Object({
-        fieldAliases: Type.Optional(Type.Object({})),
-        geometryType: Type.Optional(Type.String()),
-        spatialReference: Type.Optional(EsriSpatialReference),
-        fields: Type.Optional(Type.Array(Type.Object({
-            name: Type.String(),
-            type: Type.String(),
-            alias: Type.String(),
-            length: Type.Optional(Type.Integer()),
-        }))),
-        features: Type.Optional(Type.Array(Type.Object({
-            attributes: Type.Optional(Type.Record(Type.String(), Type.Union([Type.Number(), Type.String()]))),
-            geometry: Type.Optional(Type.Object({
-                paths: Type.Optional(Type.Array(Type.Array(Type.Array(Type.Number())))),
-            })),
-        }))),
-    })),
-    directions: Type.Optional(Type.Array(Type.Object({
-        routeId: Type.Optional(Type.Integer()),
-        routeName: Type.Optional(Type.String()),
-        summary: Type.Optional(Type.Object({
-            totalLength: Type.Optional(Type.Number()),
-            totalTime: Type.Optional(Type.Number()),
-            totalDriveTime: Type.Optional(Type.Number()),
-            envelope: Type.Optional(EsriExtent),
-        })),
-        features: Type.Optional(Type.Array(Type.Object({
-            attributes: Type.Optional(Type.Record(Type.String(), Type.Union([Type.Number(), Type.String()]))),
-            compressedGeometry: Type.Optional(Type.String()),
-            strings: Type.Optional(Type.Array(Type.Object({
-                string: Type.String(),
-                stringType: Type.String(),
-            }))),
-        }))),
-    }))),
-});
+const AGOL_ADDR_TYPES: Record<string, Search_Type> = {
+    PointAddress: Search_Type.ADDRESS,
+    Subaddress: Search_Type.ADDRESS,
+    StreetAddress: Search_Type.ADDRESS,
+    StreetAddressExt: Search_Type.ADDRESS,
+    StreetName: Search_Type.STREET,
+    StreetInt: Search_Type.STREET,
+    StreetMidBlock: Search_Type.STREET,
+    StreetBetween: Search_Type.STREET,
+    DistanceMarker: Search_Type.STREET,
+    Postal: Search_Type.POSTAL,
+    PostalExt: Search_Type.POSTAL,
+    PostalLoc: Search_Type.POSTAL,
+};
 
-const AGOLAttributeParameterValue = Type.Object({
-    attributeName: Type.String(),
-    parameterName: Type.String(),
-    value: Type.Union([
-        Type.String(),
-        Type.Number(),
-    ]),
-});
+const AGOL_REGION_TYPES = ['County', 'State or Province', 'Country', 'Region', 'Subregion', 'Territory'];
 
-const AGOLSupportedTravelMode = Type.Object({
-    attributeParameterValues: Type.Array(AGOLAttributeParameterValue),
-    description: Type.String(),
-    distanceAttributeName: Type.String(),
-    id: Type.String(),
-    impedanceAttributeName: Type.String(),
-    name: Type.String(),
-    restrictionAttributeNames: Type.Array(Type.String()),
-    simplificationTolerance: Type.Number(),
-    simplificationToleranceUnits: Type.Literal('esriMeters'),
-    timeAttributeName: Type.String(),
-    type: Type.Enum({
-        AUTOMOBILE: 'AUTOMOBILE',
-        TRUCK: 'TRUCK',
-        WALK: 'WALK',
-    }),
-    useHierarchy: Type.Boolean(),
-    uturnAtJunctions: Type.Enum({
-        esriNFSBAtDeadEndsAndIntersections: 'esriNFSBAtDeadEndsAndIntersections',
-        esriNFSBNoBacktrack: 'esriNFSBNoBacktrack',
-        esriNFSBAllowBacktrack: 'esriNFSBAllowBacktrack',
-    }),
-});
+const AGOL_POI_TYPES: Record<string, Search_Type> = {
+    'Hospital': Search_Type.HOSPITAL,
+    'Police Station': Search_Type.POLICE,
+    'Park': Search_Type.PARK,
+    'Nature Reserve': Search_Type.PARK,
+    'Wildlife Reserve': Search_Type.PARK,
+    'Other Parks and Outdoors': Search_Type.PARK,
+    'Mountain': Search_Type.PEAK,
+    'Volcano': Search_Type.PEAK,
+    'Trail': Search_Type.TRAILHEAD,
+    'Parking': Search_Type.PARKING,
+};
+
+export function searchType(addrType?: string, type?: string, name?: string): Search_Type | undefined {
+    if (!addrType) return undefined;
+
+    if (AGOL_ADDR_TYPES[addrType]) return AGOL_ADDR_TYPES[addrType];
+
+    if (addrType === 'Locality') {
+        return type && AGOL_REGION_TYPES.includes(type) ? Search_Type.REGION : Search_Type.LOCALITY;
+    }
+
+    if (addrType !== 'POI') return undefined;
+
+    if (name && /\btrailhead\b/i.test(name)) return Search_Type.TRAILHEAD;
+
+    return (type && AGOL_POI_TYPES[type]) || Search_Type.POI;
+}
 
 export default class AGOLSearch extends Search {
     reverseApi: string;
     suggestApi: string;
     forwardApi: string;
-    routingApi: string;
-    routingApiModes: string;
-
-    // Store ID => Travel Mode Object
-    routeModes: Map<string, Static<typeof AGOLSupportedTravelMode>>;
 
     tokenManager?: ArcGISTokenManager;
 
@@ -130,13 +109,9 @@ export default class AGOLSearch extends Search {
     ) {
         super(config, 'agol', 'ArcGIS Online');
 
-        this.routeModes = new Map();
-
         this.reverseApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode';
         this.suggestApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest';
         this.forwardApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates';
-        this.routingApi = 'https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World/solve';
-        this.routingApiModes = 'https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World/retrieveTravelModes';
 
         this.tokenManager = tokenManager;
     }
@@ -151,15 +126,11 @@ export default class AGOLSearch extends Search {
         const configInstance = await configService.getConfig();
         const tokenManager = new ArcGISTokenManager(configInstance);
 
-        const agol = new AGOLSearch(config, tokenManager);
-
-        await agol.setRouteModes();
-
-        return agol;
+        return new AGOLSearch(config, tokenManager);
     }
 
-    async config(): Promise<Static<typeof SearchConfig>> {
-        const cnf: Static<typeof SearchConfig> = {
+    config(): Promise<Static<typeof SearchConfig>> {
+        return Promise.resolve({
             id: this._id,
             name: this._name,
             reverse: {
@@ -168,58 +139,7 @@ export default class AGOLSearch extends Search {
             forward: {
                 supported: true,
             },
-            route: {
-                supported: true,
-                modes: [],
-            },
-        };
-
-        for (const mode of this.routeModes.values()) {
-            cnf.route.modes.push({
-                id: mode.id,
-                name: mode.name,
-            });
-        }
-
-        return cnf;
-    }
-
-    async setRouteModes(): Promise<void> {
-        const url = new URL(this.routingApiModes);
-        url.searchParams.append('f', 'json');
-
-        if (this.tokenManager) {
-            const token = await this.tokenManager.getValidToken();
-            if (token) url.searchParams.append('token', token);
-        }
-
-        const res = await fetch(url);
-
-        const body = await res.typed(Type.Union([
-            Type.Object({
-                error: Type.Object({
-                    code: Type.Number(),
-                    message: Type.String(),
-                }),
-            }),
-            Type.Object({
-                currentVersion: Type.Number(),
-                defaultTravelMode: Type.String(),
-                supportedTravelModes: Type.Array(AGOLSupportedTravelMode),
-            }),
-        ]));
-
-        if ('error' in body) {
-            if (body.error.code === 498 || body.error.code === 499) {
-                throw new Error('API not authorized');
-            }
-
-            throw new Error(`ArcGIS Routing Error: ${body.error.message}`);
-        }
-
-        for (const mode of body.supportedTravelModes) {
-            this.routeModes.set(mode.id, mode);
-        }
+        });
     }
 
     async reverse(lon: number, lat: number): Promise<Static<typeof FetchReverse>> {
@@ -246,84 +166,14 @@ export default class AGOLSearch extends Search {
             throw new Error('No address found');
         }
 
-        return body.address;
-    }
+        const type = searchType(body.address.Addr_type, body.address.Type, body.address.ShortLabel);
 
-    async route(
-        stops: Array<[number, number]>,
-        travelMode?: string,
-    ): Promise<Static<typeof Feature.FeatureCollection>> {
-        const url = new URL(this.routingApi);
-        url.searchParams.append('stops', stops.map(stop => stop.join(',')).join(';'));
-        url.searchParams.append('f', 'json');
-
-        if (travelMode) {
-            const mode = this.routeModes.get(travelMode);
-
-            if (!mode) throw new Err(400, null, `Travel Mode not found`);
-
-            url.searchParams.append('travelMode', JSON.stringify(mode));
-        }
-
-        if (this.tokenManager) {
-            const token = await this.tokenManager.getValidToken();
-            if (token) url.searchParams.append('token', token);
-        }
-
-        const res = await fetch(url);
-
-        const body = await res.typed(AGOLRouteContainer);
-
-        // Check for API errors first
-        if (body.error) {
-            if (body.error.code === 498 || body.error.code === 499) {
-                throw new Error('API not authorized');
-            }
-            throw new Error(`ArcGIS Routing Error: ${body.error.message}`);
-        }
-
-        // Check for routing errors
-        if (!body.routes || !body.routes.features || body.routes.features.length === 0) {
-            throw new Error('No Route Found');
-        }
-
-        const processed: Static<typeof Feature.FeatureCollection> = {
-            type: 'FeatureCollection',
-            features: [],
+        return {
+            ...(type ? { type } : {}),
+            LongLabel: body.address.LongLabel,
+            ShortLabel: body.address.ShortLabel,
+            Addr_type: body.address.Addr_type,
         };
-
-        if (body.routes?.features) {
-            for (const feat of body.routes.features) {
-                if (!feat.geometry?.paths?.[0] || !feat.attributes) continue;
-
-                const norm = await CoTParser.normalize_geojson({
-                    id: String(randomUUID()),
-                    type: 'Feature',
-                    properties: {
-                        metadata: {
-                            ...feat.attributes,
-                        },
-                    },
-                    geometry: {
-                        type: 'LineString',
-                        coordinates: feat.geometry.paths[0],
-                    },
-                });
-
-                norm.properties.type = 'b-m-r';
-                norm.properties.how = 'm-g';
-                norm.properties.callsign = String(feat.attributes.Name);
-                norm.properties.archived = true;
-
-                // Add directions as remarks if available
-                const directions = body.directions?.[0]?.features?.map(dir => dir.attributes?.text).filter(Boolean).join('\n');
-                if (directions) norm.properties.remarks = directions;
-
-                processed.features.push(norm);
-            }
-        }
-
-        return processed;
     }
 
     async forward(query: string, magicKey: string, limit?: number): Promise<Array<Static<typeof FetchForward>>> {
@@ -331,6 +181,7 @@ export default class AGOLSearch extends Search {
         url.searchParams.append('magicKey', magicKey);
         url.searchParams.append('singleLine', query);
         if (limit) url.searchParams.append('maxLocations', String(limit));
+        url.searchParams.append('outFields', 'Addr_type,Type');
         url.searchParams.append('f', 'json');
 
         if (this.tokenManager) {
@@ -348,7 +199,18 @@ export default class AGOLSearch extends Search {
             throw new Error(`ArcGIS API Error: ${body.error.message}`);
         }
 
-        return body.candidates || [];
+        return (body.candidates || []).map(({ attributes, ...candidate }) => {
+            const type = searchType(attributes.Addr_type, attributes.Type, candidate.address);
+
+            return {
+                ...(type ? { type } : {}),
+                ...candidate,
+                attributes: {
+                    ...(attributes.LongLabel ? { LongLabel: attributes.LongLabel } : {}),
+                    ...(attributes.ShortLabel ? { ShortLabel: attributes.ShortLabel } : {}),
+                },
+            };
+        });
     }
 
     async suggest(query: string, limit?: number, location?: [number, number]): Promise<Array<Static<typeof FetchSuggest>>> {
