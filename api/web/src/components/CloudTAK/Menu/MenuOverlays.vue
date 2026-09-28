@@ -124,6 +124,16 @@
                                         />
                                     </span>
                                     <span
+                                        v-else-if='card.overlay.type === "3dtiles"'
+                                        class='flex-shrink-0 text-white-50'
+                                        title='3D Buildings'
+                                    >
+                                        <IconBuildingSkyscraper
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                    </span>
+                                    <span
                                         v-else
                                         class='flex-shrink-0 text-white-50'
                                         title='Vector'
@@ -236,7 +246,7 @@
                                 @click.stop
                             >
                                 <div
-                                    v-if='card.overlay.type === "raster"'
+                                    v-if='card.overlay.type === "raster" || card.overlay.type === "3dtiles"'
                                     class='mb-3'
                                 >
                                     <TablerRange
@@ -285,6 +295,7 @@ import TreeVector from './Overlays/TreeVector.vue';
 import {
     IconGripVertical,
     IconCloudPin,
+    IconBuildingSkyscraper,
     IconMaximize,
     IconVector,
     IconEyeOff,
@@ -482,6 +493,7 @@ function handleCardClick(overlay: Overlay) {
 /** Whether an overlay has an expandable details panel. Mission overlays are managed from MenuMission and are not expandable here. */
 function hasOverlayDetails(overlay: Overlay): boolean {
     return overlay.type === 'raster'
+        || overlay.type === '3dtiles'
         || overlay.type === 'vector';
 }
 
@@ -547,6 +559,8 @@ function getOverlayBadges(overlay: Overlay): OverlayBadge[] {
         addBadge({ label: 'Vector', variant: 'secondary' });
     } else if (overlay.type === 'geojson') {
         addBadge({ label: 'GeoJSON', variant: 'secondary' });
+    } else if (overlay.type === '3dtiles') {
+        addBadge({ label: '3D', variant: 'secondary' });
     }
 
     if (!overlay.visible) {

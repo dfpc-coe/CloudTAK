@@ -34,6 +34,7 @@ import { invalidateOfflinePMTiles } from './modules/pmtiles.ts';
 import { FeatureVisibility } from './modules/feature-visibility.ts';
 import Subscription from '../base/subscription.ts';
 import { stdurl, getRuntimeToken, serverUrl } from '../std.js';
+import { peekTiles3D, formatAttribution } from '../base/tiles3d.ts';
 import * as mapgl from 'maplibre-gl'
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import type Atlas from '../workers/atlas.ts';
@@ -671,6 +672,11 @@ export const useMapStore = defineStore('cloudtak', {
                 this._overlaySubscription = undefined;
             }
 
+            // Stop 3D Tiles refresh timers and drop the deck.gl overlay before the
+            // map itself is torn down, so stale ion credits/timers do not survive
+            // a logout/login in the same tab.
+            peekTiles3D()?.destroy();
+
             if (this._map) {
                 try {
                     this._map.remove();
@@ -715,6 +721,36 @@ export const useMapStore = defineStore('cloudtak', {
             if (!overlay) return;
 
             await overlay.update({ visible: !overlay.visible });
+        },
+
+        /**
+         * 3D Tiles buildings line up with the ground only on unexaggerated
+         * terrain, so keep the terrain overlay's source on at 1x while any 3D
+         * overlay is visible - even when the terrain overlay itself is hidden.
+         * Without a raster-dem overlay (admin `map::terrain` unset) buildings
+         * are drawn on the flat map.
+         */
+        sync3DTerrain: async function(): Promise<void> {
+            if (!this._map) return;
+
+            const has3D = !!peekTiles3D()?.hasVisible();
+            const overlay = this.terrainOverlay();
+            if (!overlay || !this.map.getSource(String(overlay.id))) return;
+
+            const sourceId = String(overlay.id);
+            const active = this.map.getTerrain()?.source === sourceId;
+
+            if (has3D) {
+                this.map.setTerrain({ source: sourceId, exaggeration: 1 });
+                this.terrainEnabled = true;
+                this.map.setGlobalStateProperty('3d', true);
+            } else if (active && overlay.visible) {
+                this.map.setTerrain({ source: sourceId, exaggeration: 1.5 });
+            } else if (active) {
+                this.map.setTerrain(null);
+                this.terrainEnabled = false;
+                this.map.setGlobalStateProperty('3d', false);
+            }
         },
 
         returnHome: async function(): Promise<void> {
@@ -1523,6 +1559,10 @@ export const useMapStore = defineStore('cloudtak', {
 
             await FeatureVisibility.apply();
 
+            // 3D overlays were created before the CoT layer existed; redraw
+            // them below it so markers stay on top
+            peekTiles3D()?.render();
+
             // Mission loading is fire-and-forget so it does not block map init;
             // each overlay is marked `loading` while its data is fetched.
             for (const overlay of OverlayManager.missionOverlays()) {
@@ -1768,9 +1808,14 @@ export const useMapStore = defineStore('cloudtak', {
                 .map((overlay) => overlay.attribution)
                 .filter((a): a is string => !!a);
 
+            // Cesium ion attributions arrive pre-sanitized as text + optional image
+            const tiles3d = peekTiles3D();
+            const ionAttributions = tiles3d ? tiles3d.attributions().map(formatAttribution) : [];
+            const all = [...attributions, ...ionAttributions];
+
             const attributionContainer = document.querySelector('.maplibregl-ctrl-attrib-inner');
-            if (attributionContainer && attributions.length > 0) {
-                attributionContainer.innerHTML = attributions.join(' | ');
+            if (attributionContainer && (all.length > 0 || tiles3d)) {
+                attributionContainer.innerHTML = all.join(' | ');
             }
         },
 

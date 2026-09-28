@@ -114,7 +114,7 @@ export default class OverlayManager extends BaseInterface {
 
         // Anchor against the resolved stack rather than the dragged list so a
         // drop beyond a pinned overlay cannot leave the map out of step
-        overlay.moveBefore(this.loaded[this.loaded.indexOf(overlay) + 1]);
+        overlay.moveBefore(this.loadedLayerAnchor(this.loaded.indexOf(overlay) + 1));
 
         const results = await Promise.allSettled(changed.map((current) => current.save()));
         const failed = results.find((result): result is PromiseRejectedResult => result.status === 'rejected');
@@ -156,8 +156,21 @@ export default class OverlayManager extends BaseInterface {
      */
     static applyLoadedOrder(): void {
         for (let i = this.loaded.length - 1; i >= 0; i--) {
-            this.loaded[i].moveBefore(this.loaded[i + 1]);
+            this.loaded[i].moveBefore(this.loadedLayerAnchor(i + 1));
         }
+    }
+
+    /**
+     * First loaded overlay at or above the given index that MapLibre layers
+     * can be moved before - 3D Tiles overlays are drawn by deck.gl, have no
+     * MapLibre layers and would otherwise send the moved layers to the top
+     */
+    static loadedLayerAnchor(idx: number): Overlay | undefined {
+        for (let i = idx; i < this.loaded.length; i++) {
+            if (this.loaded[i].type !== '3dtiles') return this.loaded[i];
+        }
+
+        return undefined;
     }
 
     /**

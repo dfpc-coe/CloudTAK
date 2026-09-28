@@ -21,6 +21,7 @@ import { useMapStore } from '../stores/map.js';
 import ProfileConfig from './profile.ts';
 import Subscription from './subscription.ts';
 import { FeatureVisibility } from '../stores/modules/feature-visibility.ts';
+import { getTiles3D, peekTiles3D } from './tiles3d.ts';
 
 export default class Overlay {
     _destroyed: boolean;
@@ -250,6 +251,9 @@ export default class Overlay {
         } else if (active) {
             this.disableTerrain(opts);
         }
+
+        // A visible 3D Tiles overlay keeps terrain on at 1x regardless
+        mapStore.sync3DTerrain().catch((err: unknown) => console.error('Failed to sync terrain', err));
     }
 
     private disableTerrain(opts: { ease?: boolean } = {}): void {
@@ -425,7 +429,31 @@ export default class Overlay {
 
         this._error = undefined;
 
-        if (this.isTiled() && this.url) {
+        if (this.type === '3dtiles') {
+            // Rendered by deck.gl, not by a MapLibre source. A failure must not
+            // abort map initialization, same as the tiled branch below.
+            try {
+                const tiles = await getTiles3D();
+                await tiles.add({
+                    id: String(this.id),
+                    name: String(this.mode_id),
+                    visible: this.visible,
+                    opacity: Number(this.opacity),
+                });
+            } catch (err) {
+                this._error = err instanceof Error ? err : new Error(String(err));
+                console.error(`Failed to load 3D Tiles for overlay ${this.id} (${this.name}):`, err);
+            }
+
+            // Terrain sync is best-effort and independent of whether the
+            // tileset itself loaded: a terrain failure must never mark a
+            // tileset that loaded fine as broken (this._error).
+            try {
+                await mapStore.sync3DTerrain();
+            } catch (err) {
+                console.error(`Failed to sync terrain for overlay ${this.id} (${this.name}):`, err);
+            }
+        } else if (this.isTiled() && this.url) {
             if (!mapStore.map.getSource(String(this.id))) {
                 // TileJSON load failures surface via the map `error` event (see map store)
                 registerTileJSONProtocol();
@@ -512,6 +540,11 @@ export default class Overlay {
         const mapStore = useMapStore();
 
         this.removeHoverListeners();
+
+        if (this.type === '3dtiles') {
+            peekTiles3D()?.remove(String(this.id));
+            mapStore.sync3DTerrain().catch((err: unknown) => console.error('Failed to sync terrain', err));
+        }
 
         if (mapStore.map.getTerrain()?.source === String(this.id)) this.disableTerrain();
 
@@ -750,6 +783,7 @@ export default class Overlay {
                     mapStore.map.setPaintProperty(l.id, 'raster-opacity', Number(this.opacity));
                 }
             }
+            if (this.type === '3dtiles') peekTiles3D()?.setOpacity(String(this.id), Number(this.opacity));
         }
 
         if (record.visible !== this.visible) {
@@ -760,6 +794,10 @@ export default class Overlay {
             }
 
             if (this.type === 'raster-dem') this.applyTerrain();
+            if (this.type === '3dtiles') {
+                peekTiles3D()?.setVisible(String(this.id), this.visible);
+                mapStore.sync3DTerrain().catch((err: unknown) => console.error('Failed to sync terrain', err));
+            }
         }
     }
 
@@ -779,6 +817,7 @@ export default class Overlay {
                     mapStore.map.setPaintProperty(l.id, 'raster-opacity', Number(this.opacity));
                 }
             }
+            if (this.type === '3dtiles') peekTiles3D()?.setOpacity(String(this.id), Number(this.opacity));
             changed = true;
         }
 
@@ -790,6 +829,10 @@ export default class Overlay {
             }
 
             if (this.type === 'raster-dem') this.applyTerrain({ ease: true });
+            if (this.type === '3dtiles') {
+                peekTiles3D()?.setVisible(String(this.id), this.visible);
+                mapStore.sync3DTerrain().catch((err: unknown) => console.error('Failed to sync terrain', err));
+            }
             changed = true;
         }
 
