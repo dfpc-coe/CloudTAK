@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+### v13.99.0 - 2026-09-27
+
 - :tada: Add OpenStreetMap (Photon) search provider supporting forward, suggest & reverse geocoding - enable it & set the Photon URL from the Search Providers section of CloudTAK Settings (`osm::enabled` & `osm::url`)
 - :rocket: Group the ArcGIS Online & OpenStreetMap settings under a single Search Providers section in CloudTAK Settings, showing which providers are active & what they support
 - :rocket: Add a Routing Providers section to CloudTAK Settings - search & routing are now configured independently, each with its own ArcGIS Online credentials (`search::agol::*` & `routing::agol::*`). Existing `agol::*` settings are migrated to both providers on upgrade & each provider now honours its Enabled toggle
