@@ -6,7 +6,8 @@ import { randomUUID } from 'node:crypto';
 import { Static, Type } from '@sinclair/typebox';
 import { Feature } from '@tak-ps/node-cot';
 import { CoTParser } from '@tak-ps/node-cot';
-import ArcGISTokenManager, { ArcGISConfig } from '../search/arcgis-token-manager.js';
+import ArcGISTokenManager from '../search/arcgis-token-manager.js';
+import arcgisSettings from '../search/arcgis-settings.js';
 import { RouteInterface } from '../interface-route.js';
 import { RouteConfig } from './types.js';
 
@@ -116,37 +117,8 @@ export default class AGOLRoute implements RouteInterface {
         this.tokenManager = tokenManager;
     }
 
-    static async settings(config: Config): Promise<ArcGISConfig | null> {
-        const settings = await config.models.Setting.typedMany({
-            'routing::agol::enabled': false,
-            'routing::agol::auth_method': 'oauth2',
-            'routing::agol::client_id': '',
-            'routing::agol::client_secret': '',
-            'routing::agol::token': '',
-        });
-
-        if (!settings['routing::agol::enabled']) return null;
-
-        if (settings['routing::agol::auth_method'] === 'legacy') {
-            if (!settings['routing::agol::token']) return null;
-
-            return {
-                authMethod: 'legacy',
-                legacyToken: settings['routing::agol::token'],
-            };
-        }
-
-        if (!settings['routing::agol::client_id'] || !settings['routing::agol::client_secret']) return null;
-
-        return {
-            authMethod: 'oauth2',
-            clientId: settings['routing::agol::client_id'],
-            clientSecret: settings['routing::agol::client_secret'],
-        };
-    }
-
     static async init(config: Config): Promise<AGOLRoute | null> {
-        const settings = await AGOLRoute.settings(config);
+        const settings = await arcgisSettings(config, 'routing');
 
         if (!settings) return null;
 

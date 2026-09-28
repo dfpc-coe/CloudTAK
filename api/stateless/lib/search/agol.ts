@@ -2,7 +2,7 @@ import { fetch } from '@tak-ps/node-safeurl';
 import Config from '../../../common/config.js';
 import { Static, Type } from '@sinclair/typebox';
 import ArcGISTokenManager from './arcgis-token-manager.js';
-import ArcGISConfigService from './arcgis-config.js';
+import arcgisSettings from './arcgis-settings.js';
 import { Search } from '../interface-search.js';
 import { Search_Type } from '../../../common/enums.js';
 import { SearchConfig, FetchSuggest, FetchReverse, FetchForward } from './types.js';
@@ -117,16 +117,11 @@ export default class AGOLSearch extends Search {
     }
 
     static async init(config: Config): Promise<AGOLSearch | null> {
-        const configService = ArcGISConfigService.getInstance(config);
+        const settings = await arcgisSettings(config, 'search');
 
-        if (!(await configService.isConfigured())) {
-            return null;
-        }
+        if (!settings) return null;
 
-        const configInstance = await configService.getConfig();
-        const tokenManager = new ArcGISTokenManager(configInstance);
-
-        return new AGOLSearch(config, tokenManager);
+        return new AGOLSearch(config, new ArcGISTokenManager(settings));
     }
 
     config(): Promise<Static<typeof SearchConfig>> {

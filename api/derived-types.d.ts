@@ -2406,19 +2406,19 @@ export interface paths {
                             "notification::push::firebase::client_email"?: string;
                             /** @description Firebase service account private key */
                             "notification::push::firebase::private_key"?: string;
-                            /** @description Enable ArcGIS Online Integration */
-                            "agol::enabled"?: boolean;
+                            /** @description Enable ArcGIS Online Search Provider */
+                            "search::agol::enabled"?: boolean;
                             /**
-                             * @description AGOL Auth Type
+                             * @description AGOL Search Auth Type
                              * @enum {string}
                              */
-                            "agol::auth_method"?: "oauth2" | "legacy";
-                            /** @description AGOL Legacy Token */
-                            "agol::token"?: string;
-                            /** @description AGOL OAuth2 Client ID */
-                            "agol::client_id"?: string;
-                            /** @description AGOL OAuth2 Client Secret */
-                            "agol::client_secret"?: string;
+                            "search::agol::auth_method"?: "oauth2" | "legacy";
+                            /** @description AGOL Search Legacy Token */
+                            "search::agol::token"?: string;
+                            /** @description AGOL Search OAuth2 Client ID */
+                            "search::agol::client_id"?: string;
+                            /** @description AGOL Search OAuth2 Client Secret */
+                            "search::agol::client_secret"?: string;
                             /** @description Enable ArcGIS Online Routing Provider */
                             "routing::agol::enabled"?: boolean;
                             /**
@@ -2699,19 +2699,19 @@ export interface paths {
                         "notification::push::firebase::client_email"?: string;
                         /** @description Firebase service account private key */
                         "notification::push::firebase::private_key"?: string;
-                        /** @description Enable ArcGIS Online Integration */
-                        "agol::enabled"?: boolean;
+                        /** @description Enable ArcGIS Online Search Provider */
+                        "search::agol::enabled"?: boolean;
                         /**
-                         * @description AGOL Auth Type
+                         * @description AGOL Search Auth Type
                          * @enum {string}
                          */
-                        "agol::auth_method"?: "oauth2" | "legacy";
-                        /** @description AGOL Legacy Token */
-                        "agol::token"?: string;
-                        /** @description AGOL OAuth2 Client ID */
-                        "agol::client_id"?: string;
-                        /** @description AGOL OAuth2 Client Secret */
-                        "agol::client_secret"?: string;
+                        "search::agol::auth_method"?: "oauth2" | "legacy";
+                        /** @description AGOL Search Legacy Token */
+                        "search::agol::token"?: string;
+                        /** @description AGOL Search OAuth2 Client ID */
+                        "search::agol::client_id"?: string;
+                        /** @description AGOL Search OAuth2 Client Secret */
+                        "search::agol::client_secret"?: string;
                         /** @description Enable ArcGIS Online Routing Provider */
                         "routing::agol::enabled"?: boolean;
                         /**
@@ -2917,19 +2917,19 @@ export interface paths {
                             "notification::push::firebase::client_email"?: string;
                             /** @description Firebase service account private key */
                             "notification::push::firebase::private_key"?: string;
-                            /** @description Enable ArcGIS Online Integration */
-                            "agol::enabled"?: boolean;
+                            /** @description Enable ArcGIS Online Search Provider */
+                            "search::agol::enabled"?: boolean;
                             /**
-                             * @description AGOL Auth Type
+                             * @description AGOL Search Auth Type
                              * @enum {string}
                              */
-                            "agol::auth_method"?: "oauth2" | "legacy";
-                            /** @description AGOL Legacy Token */
-                            "agol::token"?: string;
-                            /** @description AGOL OAuth2 Client ID */
-                            "agol::client_id"?: string;
-                            /** @description AGOL OAuth2 Client Secret */
-                            "agol::client_secret"?: string;
+                            "search::agol::auth_method"?: "oauth2" | "legacy";
+                            /** @description AGOL Search Legacy Token */
+                            "search::agol::token"?: string;
+                            /** @description AGOL Search OAuth2 Client ID */
+                            "search::agol::client_id"?: string;
+                            /** @description AGOL Search OAuth2 Client Secret */
+                            "search::agol::client_secret"?: string;
                             /** @description Enable ArcGIS Online Routing Provider */
                             "routing::agol::enabled"?: boolean;
                             /**

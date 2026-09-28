@@ -135,7 +135,7 @@ test('GET api/config/login', async () => {
 
 test('GET api/config (user - restricted)', async () => {
     try {
-        const res = await flight.fetch('/api/config?keys=agol::token', {
+        const res = await flight.fetch('/api/config?keys=search::agol::token', {
             method: 'GET',
             auth: {
                 bearer: flight.token.user,
