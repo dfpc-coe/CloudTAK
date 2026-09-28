@@ -142,6 +142,9 @@ export type TileJSON = paths["/api/basemap/{:basemapid}/tiles"]["get"]["response
 export type Basemap = paths["/api/basemap/{:basemapid}"]["patch"]["responses"]["200"]["content"]["application/json"]
 export type BasemapList = paths["/api/basemap"]["get"]["responses"]["200"]["content"]["application/json"]
 
+export type IonAsset = paths["/api/ion"]["get"]["responses"]["200"]["content"]["application/json"]["items"][0]
+export type IonAccess = paths["/api/ion/{:name}/endpoint"]["get"]["responses"]["200"]["content"]["application/json"]
+
 export type PaletteFeature = {
     uuid: string;
     created: string;
