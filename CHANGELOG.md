@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+### v13.100.0 - 2026-09-28
+
 - :tada: ETL Layers can be invoked by email alongside schedules & webhooks - enabling Email Delivery in the Layer Config gives the Layer the address `<layer uuid>@mail.map.<domain>` and each email it receives is delivered to the task. Tasks must be built with `@tak-ps/etl` v10.22.0 or later & list the `Email` invocation
 - :tada: Add Allowed Senders to the Layer Config - a list of addresses or `@domains`, matched against the `From` header, that may email the Layer. An empty list accepts email from any sender
 - :tada: Creating a Layer seeds Email Delivery & its Allowed Senders from `invocations.incoming.email.default` of the task's Capabilities document
