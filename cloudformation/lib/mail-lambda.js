@@ -8,23 +8,45 @@ const lambda = new LambdaClient({});
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
+// Senders are an address or an @domain, matched against the From header
+function allowed(senders, mail) {
+    if (!senders.length) return true;
+
+    const from = (mail.commonHeaders && mail.commonHeaders.from) || [];
+
+    return from.some((entry) => {
+        const match = String(entry).match(/<([^<>]+)>\s*$/);
+        const address = (match ? match[1] : String(entry)).trim().toLowerCase();
+
+        return senders.some((sender) => {
+            sender = sender.toLowerCase();
+            return sender.startsWith('@') ? address.endsWith(sender) : address === sender;
+        });
+    });
+}
+
 // Layers are addressed as <layer uuid>@<mail domain> and register their
-// function ARN as an SSM Parameter under LAYER_PREFIX
+// function ARN & allowed senders as an SSM Parameter under LAYER_PREFIX
 async function deliver(uuid, mail, receipt) {
-    let arn;
+    let layer;
     try {
         const res = await ssm.send(new GetParameterCommand({
             Name: `${process.env.LAYER_PREFIX}${uuid}`
         }));
-        arn = res.Parameter.Value;
+        layer = JSON.parse(res.Parameter.Value);
     } catch (err) {
         if (err.name !== 'ParameterNotFound') throw err;
         console.log(`ok - no layer registered for ${uuid}`);
         return;
     }
 
+    if (!allowed(layer.senders || [], mail)) {
+        console.log(`ok - sender of ${mail.messageId} not allowed for ${uuid}`);
+        return;
+    }
+
     await lambda.send(new InvokeCommand({
-        FunctionName: arn,
+        FunctionName: layer.arn,
         InvocationType: 'Event',
         Payload: Buffer.from(JSON.stringify({
             type: 'email',

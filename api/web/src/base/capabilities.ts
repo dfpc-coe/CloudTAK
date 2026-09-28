@@ -12,6 +12,8 @@ export interface CapabilitySettings {
     schedule: boolean;
     cron: string;
     webhooks: boolean;
+    email: boolean;
+    email_senders: string[];
     outgoing: boolean;
 }
 
@@ -24,6 +26,8 @@ export function defaultCapabilitySettings(): CapabilitySettings {
         schedule: false,
         cron: 'rate(5 minutes)',
         webhooks: false,
+        email: false,
+        email_senders: [],
         outgoing: false,
     };
 }
@@ -43,6 +47,8 @@ export function capabilitySettings(caps: ETLTaskCapabilities): CapabilitySetting
         schedule: caps.invocations.incoming?.schedule?.default.enabled ?? false,
         cron: caps.invocations.incoming?.schedule?.default.schedule || 'rate(5 minutes)',
         webhooks: caps.invocations.incoming?.webhook?.default.enabled ?? false,
+        email: caps.invocations.incoming?.email?.default.enabled ?? false,
+        email_senders: caps.invocations.incoming?.email?.default.senders ?? [],
         outgoing: (caps.invocations.outgoing?.types.length ?? 0) > 0,
     };
 }

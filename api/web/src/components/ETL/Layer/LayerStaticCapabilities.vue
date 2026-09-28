@@ -146,7 +146,7 @@
         </div>
 
         <div
-            v-if='disabled && (schedule || webhook)'
+            v-if='disabled && (schedule || webhook || email)'
             class='col-12'
         >
             <SlideDownHeader
@@ -208,6 +208,38 @@
                             class='small text-secondary'
                             v-text='webhook.description'
                         />
+                    </div>
+                    <div
+                        v-if='email'
+                        class='mb-2'
+                    >
+                        <div class='d-flex align-items-center'>
+                            <IconMail
+                                :size='16'
+                                stroke='1.5'
+                                class='text-secondary'
+                            />
+                            <span class='ms-2'>Email</span>
+                            <span
+                                class='ms-auto small text-secondary'
+                                v-text='email.default.enabled ? "on by default" : "off by default"'
+                            />
+                        </div>
+                        <div
+                            class='small text-secondary'
+                            v-text='email.description'
+                        />
+                        <div
+                            v-if='email.default.senders && email.default.senders.length'
+                            class='small text-secondary'
+                        >
+                            Allowed senders: <code
+                                v-for='sender in email.default.senders'
+                                :key='sender'
+                                class='me-1'
+                                v-text='sender'
+                            />
+                        </div>
                     </div>
                 </div>
             </SlideDownHeader>
@@ -286,6 +318,40 @@
                                 v-text='webhook.description'
                             />
                         </div>
+                        <div
+                            v-if='email'
+                            class='ps-3'
+                        >
+                            <div class='d-flex align-items-center'>
+                                <IconMail
+                                    :size='20'
+                                    stroke='1'
+                                />
+                                <div style='width: calc(100% - 20px);'>
+                                    <TablerToggle
+                                        v-model='settings.email'
+                                        label='Email Delivery'
+                                    />
+                                </div>
+                            </div>
+                            <div
+                                class='small text-secondary'
+                                v-text='email.description'
+                            />
+                            <div
+                                v-if='settings.email'
+                                class='border rounded px-2 py-2 mt-2'
+                            >
+                                <TablerInput
+                                    v-model='emailSenders'
+                                    label='Allowed Senders'
+                                    description='One address or @domain per line - leave empty to accept email from any sender'
+                                    placeholder='dispatch@example.com'
+                                    :rows='3'
+                                    :error='errors.email_senders'
+                                />
+                            </div>
+                        </div>
                     </template>
                 </div>
             </SlideDownHeader>
@@ -340,6 +406,7 @@ import {
     defaultCapabilitySettings,
     capabilitySettings,
 } from '../../../base/capabilities.ts';
+import { parseSenders } from '../../../utils/senders.ts';
 import ScheduleInput from '../../util/ScheduleInput.vue';
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import {
@@ -350,6 +417,7 @@ import {
     IconCpu,
     IconLock,
     IconClock2,
+    IconMail,
     IconWebhook,
     IconCalendarClock,
     IconWorldDownload,
@@ -360,9 +428,11 @@ const props = withDefaults(defineProps<{
     capabilities: ETLTaskCapabilities;
     disabled?: boolean;
     modelValue?: CapabilitySettings;
+    errors?: Record<string, string>;
 }>(), {
     disabled: false,
     modelValue: undefined,
+    errors: () => ({}),
 });
 
 const emit = defineEmits<{
@@ -373,7 +443,14 @@ const settings = ref<CapabilitySettings>(props.modelValue ?? defaultCapabilitySe
 
 const schedule = computed(() => props.capabilities.invocations.incoming?.schedule);
 const webhook = computed(() => props.capabilities.invocations.incoming?.webhook);
+const email = computed(() => props.capabilities.invocations.incoming?.email);
 const outgoing = computed(() => props.capabilities.invocations.outgoing);
+
+const emailSenders = ref(settings.value.email_senders.join('\n'));
+
+watch(emailSenders, (text) => {
+    settings.value.email_senders = parseSenders(text);
+});
 
 watch(() => props.modelValue, (value) => {
     if (value) settings.value = value;
@@ -385,6 +462,7 @@ watch(() => props.capabilities, () => {
     if (props.disabled) return;
 
     settings.value = capabilitySettings(props.capabilities);
+    emailSenders.value = settings.value.email_senders.join('\n');
     emit('update:modelValue', settings.value);
 }, { immediate: true });
 </script>

@@ -98,6 +98,45 @@
                         />
                     </div>
                 </div>
+                <div
+                    v-if='props.capabilities ? props.capabilities.incoming.invocation.includes("email") : true'
+                    class='col-md-12'
+                >
+                    <div class='d-flex align-items-center'>
+                        <IconMail
+                            :size='20'
+                            stroke='1'
+                        />
+                        <div style='width: calc(100% - 20px);'>
+                            <TablerToggle
+                                v-model='incoming.email'
+                                :disabled='disabled'
+                                label='Email Delivery'
+                            />
+                        </div>
+                    </div>
+
+                    <div
+                        v-if='incoming.email'
+                        class='col-12 border rounded px-2 py-2'
+                    >
+                        <label>Email Address</label>
+                        <CopyField
+                            :model-value='emailAddress'
+                        />
+
+                        <TablerInput
+                            v-model='emailSenders'
+                            class='mt-2'
+                            label='Allowed Senders'
+                            description='One address or @domain per line - leave empty to accept email from any sender'
+                            placeholder='dispatch@example.com'
+                            :rows='3'
+                            :disabled='disabled'
+                            :error='errors.email_senders'
+                        />
+                    </div>
+                </div>
                 <div class='col-md-12'>
                     <div class='row'>
                         <div class='col-12'>
@@ -147,17 +186,20 @@ import { useRoute } from 'vue-router';
 import { server } from '../../../std.ts';
 import type { ETLLayerIncoming } from '../../../types.ts';
 import { validateSchedule } from '../../../utils/schedule.ts';
+import { parseSenders, validateSenders } from '../../../utils/senders.ts';
 import DataSelect from '../../util/DataSelect.vue';
 import ScheduleInput from '../../util/ScheduleInput.vue';
 import CopyField from '../../CloudTAK/util/CopyField.vue';
 import {
     TablerIconButton,
+    TablerInput,
     TablerToggle,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
     IconCalendarClock,
     IconPlayerPlay,
+    IconMail,
     IconWebhook,
     IconPencil,
     IconDatabase,
@@ -199,6 +241,19 @@ const webhookUrl = computed(() => {
     return `${webhookBase.value.replace(/\/$/, '')}/${props.layer.uuid}`;
 });
 
+const emailDomain = ref<string | undefined>();
+
+const emailAddress = computed(() => {
+    if (!emailDomain.value) return props.layer.uuid;
+    return `${props.layer.uuid}@${emailDomain.value}`;
+});
+
+const emailSenders = ref('');
+
+const errors = ref({
+    email_senders: ''
+});
+
 watch(cronEnabled, () => {
     if (cronEnabled.value && !incoming.value.cron) {
         incoming.value.cron = 'rate(5 minutes)';
@@ -214,11 +269,17 @@ onMounted(async () => {
     const { data, error } = await server.GET('/api/config/webhooks');
     if (error) throw new Error(String(error));
     webhookBase.value = data.url;
+
+    const email = await server.GET('/api/config/email');
+    if (email.error) throw new Error(String(email.error));
+    emailDomain.value = email.data.domain;
 })
 
 function reload() {
     incoming.value = props.layer.incoming;
     cronEnabled.value = !!incoming.value.cron
+    emailSenders.value = (incoming.value.email_senders || []).join('\n');
+    errors.value.email_senders = '';
     disabled.value = true;
 }
 
@@ -249,6 +310,12 @@ async function saveIncoming() {
         // The ScheduleInput displays the validation error inline
         return;
     }
+
+    const senders = parseSenders(emailSenders.value);
+    errors.value.email_senders = validateSenders(senders);
+    if (errors.value.email_senders) return;
+
+    incoming.value.email_senders = senders;
 
     loading.value.save = true;
 

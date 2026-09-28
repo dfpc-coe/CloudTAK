@@ -18,6 +18,15 @@
 
 ### Pending Release
 
+- :tada: ETL Layers can be invoked by email alongside schedules & webhooks - enabling Email Delivery in the Layer Config gives the Layer the address `<layer uuid>@mail.map.<domain>` and each email it receives is delivered to the task. Tasks must be built with `@tak-ps/etl` v10.22.0 or later & list the `Email` invocation
+- :tada: Add Allowed Senders to the Layer Config - a list of addresses or `@domains`, matched against the `From` header, that may email the Layer. An empty list accepts email from any sender
+- :tada: Creating a Layer seeds Email Delivery & its Allowed Senders from `invocations.incoming.email.default` of the task's Capabilities document
+- :tada: Add `email` & `email_senders` to the incoming config accepted by `POST /connection/:connectionid/layer` and `POST/PATCH /connection/:connectionid/layer/:layerid/incoming`
+- :tada: Add `GET /api/config/email` returning the domain Layer email is addressed to - it defaults to `mail.<API host>` & can be set with the `MAIL_DOMAIN` environment variable
+- :rocket: The `mail` CloudFormation stack writes received email to an S3 bucket, expired after `MailExpirationDays`, and routes it to the Layer it is addressed to - the stack must be deployed or updated before Email Delivery is enabled on a Layer & now requires the main CloudTAK stack to exist
+- :bug: `PATCH /connection/:connectionid/layer/:layerid/incoming` deployed the Layer with the config as it was before the update, so a changed schedule or webhooks setting did not take effect until a later deploy
+- :bug: `PATCH /connection/:connectionid/layer/:layerid/incoming` redeployed the Layer whenever `cron` or `webhooks` was in the request, even if the value had not changed
+
 ### v13.99.1 - 2026-09-28
 
 - :bug: Refresh search/route manager to ensure most recent config
