@@ -1,10 +1,10 @@
 <template>
     <SlideDownHeader
         v-model='isOpen'
-        label='COTAK OAuth Provider'
+        label='OpenStreetMap'
     >
         <template #icon>
-            <IconKey
+            <IconMapPin
                 :size='18'
                 stroke='1'
                 color='#6b7990'
@@ -12,6 +12,10 @@
             />
         </template>
         <template #right>
+            <SearchStatus
+                class='me-2'
+                :status='props.status'
+            />
             <TablerIconButton
                 v-if='!edit && isOpen'
                 title='Edit'
@@ -50,24 +54,19 @@
                 />
                 <div class='row'>
                     <div class='col-lg-12'>
-                        <TablerInput
-                            v-model='config[`provider::url`]'
-                            label='Provider URL'
+                        <TablerToggle
+                            v-model='config["osm::enabled"]'
                             :disabled='!edit'
+                            label='OpenStreetMap Search Enabled'
+                            description='Forward & reverse geocoding via Photon'
                         />
-                    </div>
-                    <div class='col-lg-12'>
+
                         <TablerInput
-                            v-model='config[`provider::secret`]'
-                            label='Provider Secret'
+                            v-if='config["osm::enabled"]'
+                            v-model='config["osm::url"]'
                             :disabled='!edit'
-                        />
-                    </div>
-                    <div class='col-lg-12'>
-                        <TablerInput
-                            v-model='config[`provider::client`]'
-                            label='Provider Client'
-                            :disabled='!edit'
+                            label='Photon URL'
+                            description='The public photon.komoot.io instance is provided on a fair use basis and heavy use will be throttled - point this at a self-hosted Photon for production deployments'
                         />
                     </div>
                 </div>
@@ -78,11 +77,14 @@
 
 <script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
+import SearchStatus from './SearchStatus.vue';
+import type { SearchProviderStatus } from '../../../types.ts';
 import { ref, watch, onMounted } from 'vue';
 import { server } from '../../../std.ts';
 import {
     TablerLoading,
     TablerInput,
+    TablerToggle,
     TablerIconButton,
     TablerAlert
 } from '@tak-ps/vue-tabler';
@@ -90,28 +92,30 @@ import {
     IconPencil,
     IconDeviceFloppy,
     IconX,
-    IconKey
+    IconMapPin
 } from '@tabler/icons-vue';
 
-interface ProviderConfig {
-    'provider::url': string;
-    'provider::secret': string;
-    'provider::client': string;
+interface OsmConfig {
+    'osm::enabled': boolean;
+    'osm::url': string;
 }
+
+const props = defineProps<{
+    status?: SearchProviderStatus;
+}>();
 
 const isOpen = ref<boolean>(false);
 const loading = ref<boolean>(false);
 const edit = ref<boolean>(false);
 const err = ref<Error | null>(null);
 
-const config = ref<ProviderConfig>({
-    'provider::url': '',
-    'provider::secret': '',
-    'provider::client': '',
+const config = ref<OsmConfig>({
+    'osm::enabled': false,
+    'osm::url': 'https://photon.komoot.io',
 });
 
 onMounted(() => {
-     if (isOpen.value) void fetch();
+    if (isOpen.value) void fetch();
 });
 
 watch(isOpen, (newState) => {
@@ -130,10 +134,10 @@ async function fetch(): Promise<void> {
             }
         });
         if (error) throw new Error(error.message);
+
         config.value = {
-            'provider::url': data['provider::url'] ?? '',
-            'provider::secret': data['provider::secret'] ?? '',
-            'provider::client': data['provider::client'] ?? '',
+            'osm::enabled': data['osm::enabled'] ?? false,
+            'osm::url': data['osm::url'] ?? 'https://photon.komoot.io',
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
@@ -152,7 +156,7 @@ async function save(): Promise<void> {
         edit.value = false;
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
-        console.error('Failed to save Provider config:', error);
+        console.error('Failed to save OSM config:', error);
     }
     loading.value = false;
 }

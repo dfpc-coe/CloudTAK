@@ -18,6 +18,13 @@
 
 ### Pending Release
 
+- :tada: Add OpenStreetMap (Photon) search provider supporting forward, suggest & reverse geocoding - enable it & set the Photon URL from the Search Providers section of CloudTAK Settings (`osm::enabled` & `osm::url`)
+- :rocket: Group the ArcGIS Online & OpenStreetMap settings under a single Search Providers section in CloudTAK Settings, showing which providers are active & what they support
+- :rocket: Add a Routing Providers section to CloudTAK Settings - search & routing are now configured independently, each with its own ArcGIS Online credentials (`search::agol::*` & `routing::agol::*`). Existing `agol::*` settings are migrated to both providers on upgrade & each provider now honours its Enabled toggle
+- :rocket: Add a filter to CloudTAK Settings to find a section by its name or the settings it contains & an icon beside each section title
+- :rocket: Add a normalized `type` to search suggest, forward & reverse results (address, street, poi, trailhead, parking, hospital, police, park, peak, locality, region, postal) and show a matching icon in the search dropdown
+- :tada: Add an Admin Overview as the default `/admin` view showing TAK Server status, the configuration state of the Video Server, SCIM, GeoFence Server, Search & Routing providers, and totals for the main admin sections
+
 ### v13.98.1 - 2026-09-25
 
 - :bug: Fix bug related to public vs private iconset creation

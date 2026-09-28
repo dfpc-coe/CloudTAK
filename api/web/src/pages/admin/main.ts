@@ -18,10 +18,8 @@ const router = VueRouter.createRouter({
             component: () => import('../../components/ServerAdmin.vue'),
             children: [{
                 path: '',
-                name: 'admin-default',
-                redirect: () => {
-                    return { name: 'admin-server-connection' };
-                }
+                name: 'admin-overview',
+                component: () => import('../../components/Admin/AdminOverview.vue')
             },{
                 path: 'layer',
                 name: 'admin-layers',

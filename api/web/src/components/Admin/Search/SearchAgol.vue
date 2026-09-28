@@ -3,7 +3,19 @@
         v-model='isOpen'
         label='ArcGIS Online'
     >
+        <template #icon>
+            <IconWorld
+                :size='18'
+                stroke='1'
+                color='#6b7990'
+                class='ms-2 me-1'
+            />
+        </template>
         <template #right>
+            <SearchStatus
+                class='me-2'
+                :status='props.status'
+            />
             <TablerIconButton
                 v-if='!edit && isOpen'
                 title='Edit'
@@ -33,7 +45,7 @@
                 </TablerIconButton>
             </div>
         </template>
-        <div class='col-lg-12 py-2 px-2 border rounded'>
+        <div class='col-lg-12 py-2 px-2'>
             <TablerLoading v-if='loading' />
             <template v-else>
                 <TablerAlert
@@ -43,31 +55,31 @@
                 <div class='row'>
                     <div class='col-lg-12'>
                         <TablerToggle
-                            v-model='config["agol::enabled"]'
+                            v-model='config["search::agol::enabled"]'
                             :disabled='!edit'
                             label='ArcGIS Online Enabled'
                         />
 
-                        <template v-if='config["agol::enabled"]'>
+                        <template v-if='config["search::agol::enabled"]'>
                             <TablerPillGroup
-                                v-model='config["agol::auth_method"]'
+                                v-model='config["search::agol::auth_method"]'
                                 :options='[
                                     { value: "oauth2", label: "OAuth2" },
                                     { value: "legacy", label: "Legacy" }
                                 ]'
-                                :disabled='!config["agol::enabled"] || !edit'
+                                :disabled='!config["search::agol::enabled"] || !edit'
                                 size='default'
                             />
 
-                            <template v-if='config["agol::auth_method"] === "oauth2"'>
+                            <template v-if='config["search::agol::auth_method"] === "oauth2"'>
                                 <TablerInput
-                                    v-model='config["agol::client_id"]'
+                                    v-model='config["search::agol::client_id"]'
                                     :disabled='!edit'
                                     label='OAuth2 Client ID'
                                     description='Client ID from your ArcGIS Location Platform or ArcGIS Enterprise account'
                                 />
                                 <TablerInput
-                                    v-model='config["agol::client_secret"]'
+                                    v-model='config["search::agol::client_secret"]'
                                     type='password'
                                     autocomplete='new-password'
                                     :disabled='!edit'
@@ -77,7 +89,7 @@
                             </template>
                             <template v-else>
                                 <TablerInput
-                                    v-model='config["agol::token"]'
+                                    v-model='config["search::agol::token"]'
                                     type='password'
                                     autocomplete='new-password'
                                     :disabled='!edit'
@@ -95,6 +107,8 @@
 
 <script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
+import SearchStatus from './SearchStatus.vue';
+import type { SearchProviderStatus } from '../../../types.ts';
 import { ref, watch, onMounted } from 'vue';
 import { server } from '../../../std.ts';
 import {
@@ -108,16 +122,21 @@ import {
 import {
     IconPencil,
     IconDeviceFloppy,
-    IconX
+    IconX,
+    IconWorld
 } from '@tabler/icons-vue';
 
 interface AgolConfig {
-    'agol::enabled': boolean;
-    'agol::auth_method': 'oauth2' | 'legacy';
-    'agol::token': string;
-    'agol::client_id': string;
-    'agol::client_secret': string;
+    'search::agol::enabled': boolean;
+    'search::agol::auth_method': 'oauth2' | 'legacy';
+    'search::agol::token': string;
+    'search::agol::client_id': string;
+    'search::agol::client_secret': string;
 }
+
+const props = defineProps<{
+    status?: SearchProviderStatus;
+}>();
 
 const isOpen = ref<boolean>(false);
 const loading = ref<boolean>(false);
@@ -125,11 +144,11 @@ const edit = ref<boolean>(false);
 const err = ref<Error | null>(null);
 
 const config = ref<AgolConfig>({
-    'agol::enabled': false,
-    'agol::auth_method': 'oauth2',
-    'agol::token': '',
-    'agol::client_id': '',
-    'agol::client_secret': '',
+    'search::agol::enabled': false,
+    'search::agol::auth_method': 'oauth2',
+    'search::agol::token': '',
+    'search::agol::client_id': '',
+    'search::agol::client_secret': '',
 });
 
 onMounted(() => {
@@ -154,11 +173,11 @@ async function fetch(): Promise<void> {
         if (error) throw new Error(error.message);
 
         config.value = {
-            'agol::enabled': data['agol::enabled'] ?? false,
-            'agol::auth_method': data['agol::auth_method'] ?? 'oauth2',
-            'agol::token': data['agol::token'] ?? '',
-            'agol::client_id': data['agol::client_id'] ?? '',
-            'agol::client_secret': data['agol::client_secret'] ?? '',
+            'search::agol::enabled': data['search::agol::enabled'] ?? false,
+            'search::agol::auth_method': data['search::agol::auth_method'] ?? 'oauth2',
+            'search::agol::token': data['search::agol::token'] ?? '',
+            'search::agol::client_id': data['search::agol::client_id'] ?? '',
+            'search::agol::client_secret': data['search::agol::client_secret'] ?? '',
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));

@@ -2406,19 +2406,36 @@ export interface paths {
                             "notification::push::firebase::client_email"?: string;
                             /** @description Firebase service account private key */
                             "notification::push::firebase::private_key"?: string;
-                            /** @description Enable ArcGIS Online Integration */
-                            "agol::enabled"?: boolean;
+                            /** @description Enable ArcGIS Online Search Provider */
+                            "search::agol::enabled"?: boolean;
                             /**
-                             * @description AGOL Auth Type
+                             * @description AGOL Search Auth Type
                              * @enum {string}
                              */
-                            "agol::auth_method"?: "oauth2" | "legacy";
-                            /** @description AGOL Legacy Token */
-                            "agol::token"?: string;
-                            /** @description AGOL OAuth2 Client ID */
-                            "agol::client_id"?: string;
-                            /** @description AGOL OAuth2 Client Secret */
-                            "agol::client_secret"?: string;
+                            "search::agol::auth_method"?: "oauth2" | "legacy";
+                            /** @description AGOL Search Legacy Token */
+                            "search::agol::token"?: string;
+                            /** @description AGOL Search OAuth2 Client ID */
+                            "search::agol::client_id"?: string;
+                            /** @description AGOL Search OAuth2 Client Secret */
+                            "search::agol::client_secret"?: string;
+                            /** @description Enable ArcGIS Online Routing Provider */
+                            "routing::agol::enabled"?: boolean;
+                            /**
+                             * @description AGOL Routing Auth Type
+                             * @enum {string}
+                             */
+                            "routing::agol::auth_method"?: "oauth2" | "legacy";
+                            /** @description AGOL Routing Legacy Token */
+                            "routing::agol::token"?: string;
+                            /** @description AGOL Routing OAuth2 Client ID */
+                            "routing::agol::client_id"?: string;
+                            /** @description AGOL Routing OAuth2 Client Secret */
+                            "routing::agol::client_secret"?: string;
+                            /** @description Enable OpenStreetMap (Photon) Search Provider */
+                            "osm::enabled"?: boolean;
+                            /** @description Photon Base URL */
+                            "osm::url"?: string;
                             /** @description Base URL for Media Service */
                             "media::url"?: string;
                             "media::proxy::allow"?: string[];
@@ -2682,19 +2699,36 @@ export interface paths {
                         "notification::push::firebase::client_email"?: string;
                         /** @description Firebase service account private key */
                         "notification::push::firebase::private_key"?: string;
-                        /** @description Enable ArcGIS Online Integration */
-                        "agol::enabled"?: boolean;
+                        /** @description Enable ArcGIS Online Search Provider */
+                        "search::agol::enabled"?: boolean;
                         /**
-                         * @description AGOL Auth Type
+                         * @description AGOL Search Auth Type
                          * @enum {string}
                          */
-                        "agol::auth_method"?: "oauth2" | "legacy";
-                        /** @description AGOL Legacy Token */
-                        "agol::token"?: string;
-                        /** @description AGOL OAuth2 Client ID */
-                        "agol::client_id"?: string;
-                        /** @description AGOL OAuth2 Client Secret */
-                        "agol::client_secret"?: string;
+                        "search::agol::auth_method"?: "oauth2" | "legacy";
+                        /** @description AGOL Search Legacy Token */
+                        "search::agol::token"?: string;
+                        /** @description AGOL Search OAuth2 Client ID */
+                        "search::agol::client_id"?: string;
+                        /** @description AGOL Search OAuth2 Client Secret */
+                        "search::agol::client_secret"?: string;
+                        /** @description Enable ArcGIS Online Routing Provider */
+                        "routing::agol::enabled"?: boolean;
+                        /**
+                         * @description AGOL Routing Auth Type
+                         * @enum {string}
+                         */
+                        "routing::agol::auth_method"?: "oauth2" | "legacy";
+                        /** @description AGOL Routing Legacy Token */
+                        "routing::agol::token"?: string;
+                        /** @description AGOL Routing OAuth2 Client ID */
+                        "routing::agol::client_id"?: string;
+                        /** @description AGOL Routing OAuth2 Client Secret */
+                        "routing::agol::client_secret"?: string;
+                        /** @description Enable OpenStreetMap (Photon) Search Provider */
+                        "osm::enabled"?: boolean;
+                        /** @description Photon Base URL */
+                        "osm::url"?: string;
                         /** @description Base URL for Media Service */
                         "media::url"?: string;
                         "media::proxy::allow"?: string[];
@@ -2883,19 +2917,36 @@ export interface paths {
                             "notification::push::firebase::client_email"?: string;
                             /** @description Firebase service account private key */
                             "notification::push::firebase::private_key"?: string;
-                            /** @description Enable ArcGIS Online Integration */
-                            "agol::enabled"?: boolean;
+                            /** @description Enable ArcGIS Online Search Provider */
+                            "search::agol::enabled"?: boolean;
                             /**
-                             * @description AGOL Auth Type
+                             * @description AGOL Search Auth Type
                              * @enum {string}
                              */
-                            "agol::auth_method"?: "oauth2" | "legacy";
-                            /** @description AGOL Legacy Token */
-                            "agol::token"?: string;
-                            /** @description AGOL OAuth2 Client ID */
-                            "agol::client_id"?: string;
-                            /** @description AGOL OAuth2 Client Secret */
-                            "agol::client_secret"?: string;
+                            "search::agol::auth_method"?: "oauth2" | "legacy";
+                            /** @description AGOL Search Legacy Token */
+                            "search::agol::token"?: string;
+                            /** @description AGOL Search OAuth2 Client ID */
+                            "search::agol::client_id"?: string;
+                            /** @description AGOL Search OAuth2 Client Secret */
+                            "search::agol::client_secret"?: string;
+                            /** @description Enable ArcGIS Online Routing Provider */
+                            "routing::agol::enabled"?: boolean;
+                            /**
+                             * @description AGOL Routing Auth Type
+                             * @enum {string}
+                             */
+                            "routing::agol::auth_method"?: "oauth2" | "legacy";
+                            /** @description AGOL Routing Legacy Token */
+                            "routing::agol::token"?: string;
+                            /** @description AGOL Routing OAuth2 Client ID */
+                            "routing::agol::client_id"?: string;
+                            /** @description AGOL Routing OAuth2 Client Secret */
+                            "routing::agol::client_secret"?: string;
+                            /** @description Enable OpenStreetMap (Photon) Search Provider */
+                            "osm::enabled"?: boolean;
+                            /** @description Photon Base URL */
+                            "osm::url"?: string;
                             /** @description Base URL for Media Service */
                             "media::url"?: string;
                             "media::proxy::allow"?: string[];
@@ -59619,6 +59670,8 @@ export interface paths {
                                 };
                             };
                             reverse: null | {
+                                /** @description Normalized category of the result */
+                                type?: "address" | "street" | "poi" | "trailhead" | "parking" | "hospital" | "police" | "park" | "peak" | "locality" | "region" | "postal";
                                 LongLabel: string;
                                 ShortLabel: string;
                                 Addr_type: string;
@@ -60160,6 +60213,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             reverse: null | {
+                                /** @description Normalized category of the result */
+                                type?: "address" | "street" | "poi" | "trailhead" | "parking" | "hospital" | "police" | "park" | "peak" | "locality" | "region" | "postal";
                                 LongLabel: string;
                                 ShortLabel: string;
                                 Addr_type: string;
@@ -61050,6 +61105,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             items: {
+                                /** @description Normalized category of the result */
+                                type?: "address" | "street" | "poi" | "trailhead" | "parking" | "hospital" | "police" | "park" | "peak" | "locality" | "region" | "postal";
                                 address: string;
                                 location: {
                                     x: number;
@@ -61195,6 +61252,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             items: {
+                                /** @description Normalized category of the result */
+                                type?: "address" | "street" | "poi" | "trailhead" | "parking" | "hospital" | "police" | "park" | "peak" | "locality" | "region" | "postal";
                                 text: string;
                                 magicKey: string;
                                 isCollection: boolean;

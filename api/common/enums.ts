@@ -64,6 +64,21 @@ export function AllBooleanCast(allBoolean: AllBoolean): boolean | null {
         : allBoolean === AllBoolean.FALSE ? false : null;
 }
 
+export enum Search_Type {
+    ADDRESS = 'address',
+    STREET = 'street',
+    POI = 'poi',
+    TRAILHEAD = 'trailhead',
+    PARKING = 'parking',
+    HOSPITAL = 'hospital',
+    POLICE = 'police',
+    PARK = 'park',
+    PEAK = 'peak',
+    LOCALITY = 'locality',
+    REGION = 'region',
+    POSTAL = 'postal',
+}
+
 export enum ExportFeatureFormat {
     GEOJSON = 'geojson',
     KML = 'kml',

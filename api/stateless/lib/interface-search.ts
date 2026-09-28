@@ -1,8 +1,7 @@
 import Config from '../../common/config.js';
 import Err from '@openaddresses/batch-error';
 import { Static } from '@sinclair/typebox';
-import { Feature } from '@tak-ps/node-cot';
-import { SearchConfig, SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from './search/types.js';
+import { SearchConfig, SearchProvidersConfig, FetchReverse, FetchSuggest, FetchForward } from './search/types.js';
 
 export class Search implements SearchInterface {
     _id: string;
@@ -29,10 +28,6 @@ export class Search implements SearchInterface {
             forward: {
                 supported: false,
             },
-            route: {
-                supported: false,
-                modes: [],
-            },
         });
     }
 }
@@ -53,11 +48,6 @@ export interface SearchInterface {
         lon: number,
         lat: number
     ): Promise<Static<typeof FetchReverse>>;
-
-    route?(
-        stops: Array<[number, number]>,
-        travelMode?: string
-    ): Promise<Static<typeof Feature.FeatureCollection>>;
 
     forward?(
         query: string,
@@ -87,32 +77,33 @@ export class SearchManager extends Map<string, Search> {
     static async init(config: Config): Promise<SearchManager> {
         const manager = new SearchManager();
 
-        const AGOLSearch = (await import('./search/agol.js')).default;
+        const providers = [
+            { name: 'AGOL', load: async () => (await import('./search/agol.js')).default.init(config) },
+            { name: 'OSM', load: async () => (await import('./search/osm.js')).default.init(config) },
+        ];
 
-        try {
-            const agol = await AGOLSearch.init(config);
+        for (const provider of providers) {
+            try {
+                const search = await provider.load();
 
-            if (agol) {
+                if (!search) continue;
+
                 if (!manager.defaultProvider) {
-                    manager.defaultProvider = agol._id;
+                    manager.defaultProvider = search._id;
                 }
 
-                manager.set(agol._id, agol);
+                manager.set(search._id, search);
+            } catch (err) {
+                console.error(`not ok - ${provider.name} Search Provider failed to initialize`, err);
             }
-        } catch (err) {
-            console.error('not ok - AGOL Search Provider failed to initialize', err);
         }
 
         return manager;
     }
 
-    async config(): Promise<Static<typeof SearchManagerConfig>> {
-        const settings: Static<typeof SearchManagerConfig> = {
+    async config(): Promise<Static<typeof SearchProvidersConfig>> {
+        const settings: Static<typeof SearchProvidersConfig> = {
             reverse: {
-                enabled: false,
-                providers: [],
-            },
-            route: {
                 enabled: false,
                 providers: [],
             },
@@ -140,15 +131,6 @@ export class SearchManager extends Map<string, Search> {
                     name: config.name,
                 });
             }
-
-            if (config.route.supported) {
-                settings.route.enabled = true;
-                settings.route.providers.push({
-                    id: config.id,
-                    name: config.name,
-                    modes: config.route.modes,
-                });
-            }
         }
 
         return settings;
@@ -174,18 +156,6 @@ export class SearchManager extends Map<string, Search> {
         if (!search.reverse) throw new Err(400, null, `Search provider ${provider} does not support reverse geocoding`);
 
         return await search.reverse(lon, lat);
-    }
-
-    async route(
-        provider: string,
-        stops: Array<[number, number]>,
-        travelMode?: string,
-    ): Promise<Static<typeof Feature.FeatureCollection>> {
-        const search = this.getProvider(provider);
-
-        if (!search.route) throw new Err(400, null, `Search provider ${provider} does not support routing`);
-
-        return await search.route(stops, travelMode);
     }
 
     async forward(

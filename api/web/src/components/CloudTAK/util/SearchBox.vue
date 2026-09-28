@@ -56,7 +56,8 @@
                     @click='fetchSearch(item.text, item.magicKey)'
                 >
                     <div class='icon-wrapper ms-2 d-flex align-items-center justify-content-center rounded-circle'>
-                        <IconMapPin
+                        <component
+                            :is='typeIcon(item.type)'
                             :size='24'
                             stroke='1'
                         />
@@ -92,6 +93,7 @@ import StandardItem from './StandardItem.vue';
 import { server } from '../../../std.ts'
 import { useMapStore } from '../../../stores/map.ts';
 import COT from '../../../base/cot.ts';
+import type { SearchSuggest } from '../../../types.ts';
 import {
     TablerNone,
     TablerInput,
@@ -99,10 +101,44 @@ import {
     TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
+    IconMap,
+    IconHome,
+    IconRoad,
+    IconTrees,
+    IconShield,
     IconMapPin,
-    IconCrosshair
+    IconParking,
+    IconMailbox,
+    IconMountain,
+    IconTrekking,
+    IconCrosshair,
+    IconMapPinStar,
+    IconBuildingHospital,
+    IconBuildingCommunity
 } from '@tabler/icons-vue';
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
+import type { Component } from 'vue';
+
+type SearchType = NonNullable<SearchSuggest['items'][number]['type']>;
+
+const typeIcons: Record<SearchType, Component> = {
+    address: IconHome,
+    street: IconRoad,
+    poi: IconMapPinStar,
+    trailhead: IconTrekking,
+    parking: IconParking,
+    hospital: IconBuildingHospital,
+    police: IconShield,
+    park: IconTrees,
+    peak: IconMountain,
+    locality: IconBuildingCommunity,
+    region: IconMap,
+    postal: IconMailbox
+};
+
+function typeIcon(type?: SearchType): Component {
+    return (type && typeIcons[type]) || IconMapPin;
+}
 
 const props = defineProps({
     label: {
@@ -195,6 +231,7 @@ const query = ref<{
 const cots = ref<Set<COT>>(new Set())
 
 const results = ref<Array<{
+    type?: SearchType
     text: string
     magicKey?: string
 }>>([]);
