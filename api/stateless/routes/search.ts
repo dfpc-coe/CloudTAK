@@ -71,6 +71,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             await Auth.as_user(config, req);
 
+            await Promise.all([searchManager.refresh(), routeManager.refresh()]);
+
             return res.json({
                 ...(await searchManager.config()),
                 route: await routeManager.config(),
@@ -134,6 +136,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 reverse: null,
                 elevation: null,
             };
+
+            await searchManager.refresh();
 
             await Promise.all([
                 (async () => {
@@ -302,6 +306,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             await Auth.as_user(config, req);
 
+            await searchManager.refresh();
+
             let reverse = null;
             if (searchManager.defaultProvider) {
                 try {
@@ -388,6 +394,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 req.query.end.split(',').map(Number),
             ] as [number, number][];
 
+            await routeManager.refresh();
+
             if (routeManager.defaultProvider) {
                 const route = await routeManager.route(
                     req.query.provider || routeManager.defaultProvider,
@@ -437,6 +445,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 items: [],
             };
 
+            await searchManager.refresh();
+
             if (searchManager.defaultProvider) {
                 try {
                     response.items = await searchManager.forward(
@@ -479,6 +489,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const response: Static<typeof SuggestResponse> = {
                 items: [],
             };
+
+            await searchManager.refresh();
 
             if (searchManager.defaultProvider) {
                 try {

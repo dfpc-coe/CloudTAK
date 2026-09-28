@@ -132,6 +132,32 @@ test('OSM - init enabled', async () => {
     await config.models.Setting.generate({ key: 'osm::enabled', value: 'false' }, { upsert: GenerateUpsert.UPDATE });
 });
 
+test('OSM - manager follows setting changes', async () => {
+    const manager = await SearchManager.init(config);
+    assert.equal(manager.has('osm'), false);
+
+    await config.models.Setting.generate({ key: 'osm::enabled', value: 'true' }, { upsert: GenerateUpsert.UPDATE });
+    await manager.refresh();
+
+    const enabled = manager.get('osm');
+    assert.ok(enabled);
+    assert.equal(manager.defaultProvider, 'osm');
+    assert.deepEqual((await manager.config()).forward.providers, [{ id: 'osm', name: 'OpenStreetMap' }]);
+
+    await manager.refresh();
+    assert.equal(manager.get('osm'), enabled, 'Unchanged settings keep the provider');
+
+    await config.models.Setting.generate({ key: 'osm::enabled', value: 'false' }, { upsert: GenerateUpsert.UPDATE });
+    await manager.refresh();
+
+    assert.equal(manager.has('osm'), false);
+    assert.equal(manager.defaultProvider, null);
+    assert.deepEqual(await manager.config(), {
+        reverse: { enabled: false, providers: [] },
+        forward: { enabled: false, providers: [] },
+    });
+});
+
 test('OSM - reverse', async () => {
     requests.length = 0;
 

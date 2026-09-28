@@ -3,6 +3,9 @@ import Err from '@openaddresses/batch-error';
 import { Static } from '@sinclair/typebox';
 import { Feature } from '@tak-ps/node-cot';
 import { RouteConfig, RouteManagerConfig } from './routing/types.js';
+import { arcgisSettingKeys } from './search/arcgis-settings.js';
+import { ProviderManager } from './interface-provider.js';
+import type { ProviderLoader, ProviderSettingKey } from './interface-provider.js';
 
 /**
  * @class
@@ -26,36 +29,19 @@ export interface RouteInterface {
  * @class
  * A Manager for different Routing providers
  */
-export class RouteManager extends Map<string, RouteInterface> {
-    defaultProvider: string | null;
+export class RouteManager extends ProviderManager<RouteInterface> {
+    label = 'Routing';
 
-    constructor() {
-        super();
-        this.defaultProvider = null;
-    }
+    settingKeys: ProviderSettingKey[] = [...arcgisSettingKeys('routing')];
+
+    providers: ProviderLoader<RouteInterface>[] = [
+        { name: 'AGOL', load: async config => (await import('./routing/agol.js')).default.init(config) },
+    ];
 
     static async init(config: Config): Promise<RouteManager> {
-        const manager = new RouteManager();
+        const manager = new RouteManager(config);
 
-        const providers = [
-            { name: 'AGOL', load: async () => (await import('./routing/agol.js')).default.init(config) },
-        ];
-
-        for (const provider of providers) {
-            try {
-                const route = await provider.load();
-
-                if (!route) continue;
-
-                if (!manager.defaultProvider) {
-                    manager.defaultProvider = route._id;
-                }
-
-                manager.set(route._id, route);
-            } catch (err) {
-                console.error(`not ok - ${provider.name} Routing Provider failed to initialize`, err);
-            }
-        }
+        await manager.refresh();
 
         return manager;
     }

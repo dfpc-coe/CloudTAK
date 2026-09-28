@@ -143,6 +143,45 @@ test('Search - disabled with credentials', async () => {
     assert.equal(search.has('agol'), false);
 });
 
+test('Routing - manager retries a provider that failed to initialize', async (t) => {
+    t.mock.timers.enable({ apis: ['Date'] });
+    t.mock.method(console, 'error', () => {});
+
+    let calls = 0;
+
+    const manager = new RouteManager(config);
+    manager.providers = [{
+        name: 'Test',
+        load: async () => {
+            if (++calls === 1) throw new Error('Provider Offline');
+
+            return new AGOLRoute(config);
+        },
+    }];
+
+    await manager.refresh();
+    assert.equal(calls, 1);
+    assert.deepEqual(await manager.config(), { enabled: false, providers: [] });
+
+    await manager.refresh();
+    assert.equal(calls, 1, 'Not retried on every request');
+
+    t.mock.timers.tick(30 * 1000);
+
+    await manager.refresh();
+    assert.equal(calls, 2);
+    assert.equal(manager.defaultProvider, 'agol');
+    assert.deepEqual(await manager.config(), {
+        enabled: true,
+        providers: [{ id: 'agol', name: 'ArcGIS Online', modes: [] }],
+    });
+
+    t.mock.timers.tick(30 * 1000);
+
+    await manager.refresh();
+    assert.equal(calls, 2, 'Unchanged settings keep the provider');
+});
+
 test('Routing - teardown', async () => {
     await config.pg.end();
 });

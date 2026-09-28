@@ -185,3 +185,56 @@ test('ConnectionGeofence.load - synchronizes connection geofences to Tile38', as
         { key: 'cloudtak:geofence:1', id: 'feature-b', feature: features[1] },
     ]);
 });
+
+test('ConnectionGeofence.status - follows settings changed by another process', async () => {
+    const settings = {
+        'geofence::enabled': true,
+        'geofence::url': 'redis://tile38.example.com:9851',
+    };
+
+    let quit = false;
+
+    const geofence = new ConnectionGeofence({
+        models: {
+            Setting: {
+                typedMany: async (defaults: Record<string, unknown>) => {
+                    return { ...defaults, ...settings };
+                },
+            },
+        },
+    } as unknown as ConfigStateful);
+
+    geofence.state = 'connected';
+    geofence.tile38 = {
+        removeAllListeners: () => {},
+        quit: async () => {
+            quit = true;
+        },
+    } as unknown as Tile38;
+
+    assert.deepEqual(await geofence.status(), {
+        state: 'connected',
+        enabled: true,
+        configured: true,
+        connected: true,
+        url: 'redis://tile38.example.com:9851',
+        reconnectAttempts: 0,
+        lastError: undefined,
+    }, 'Never connects when the integration was not initialized');
+
+    geofence.applied = 'stale';
+    settings['geofence::enabled'] = false;
+
+    assert.deepEqual(await geofence.status(), {
+        state: 'disabled',
+        enabled: false,
+        configured: false,
+        connected: false,
+        url: 'redis://tile38.example.com:9851',
+        reconnectAttempts: 0,
+        lastError: undefined,
+    });
+
+    assert.equal(quit, true);
+    assert.equal(geofence.tile38, undefined);
+});

@@ -1,17 +1,21 @@
 import type Config from '../../../common/config.js';
 import type { ArcGISConfig } from './arcgis-token-manager.js';
 
-/**
- * Load the ArcGIS Online credentials of a provider, returning null if it is disabled or incomplete
- */
-export default async function arcgisSettings(config: Config, scope: 'search' | 'routing'): Promise<ArcGISConfig | null> {
-    const settings = await config.models.Setting.typedKeys([
+export function arcgisSettingKeys<S extends 'search' | 'routing'>(scope: S) {
+    return [
         `${scope}::agol::enabled`,
         `${scope}::agol::auth_method`,
         `${scope}::agol::client_id`,
         `${scope}::agol::client_secret`,
         `${scope}::agol::token`,
-    ]);
+    ] as const;
+}
+
+/**
+ * Load the ArcGIS Online credentials of a provider, returning null if it is disabled or incomplete
+ */
+export default async function arcgisSettings(config: Config, scope: 'search' | 'routing'): Promise<ArcGISConfig | null> {
+    const settings = await config.models.Setting.typedKeys([...arcgisSettingKeys(scope)]);
 
     if (!settings[`${scope}::agol::enabled`]) return null;
 

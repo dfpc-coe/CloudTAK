@@ -107,6 +107,48 @@ test('GET /api/search - no providers configured', async () => {
     }
 });
 
+test('GET /api/search - provider enabled after boot', async () => {
+    try {
+        const res = await flight.fetch('/api/config', {
+            method: 'PUT',
+            auth: { bearer: flight.token.admin },
+            body: { 'osm::enabled': true },
+        }, true);
+
+        assert.equal(res.body['osm::enabled'], true);
+
+        const enabled = await flight.fetch('/api/search', {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.deepEqual(enabled.body, {
+            reverse: { enabled: true, providers: [{ id: 'osm', name: 'OpenStreetMap' }] },
+            route: { enabled: false, providers: [] },
+            forward: { enabled: true, providers: [{ id: 'osm', name: 'OpenStreetMap' }] },
+        });
+
+        await flight.fetch('/api/config', {
+            method: 'PUT',
+            auth: { bearer: flight.token.admin },
+            body: { 'osm::enabled': false },
+        }, true);
+
+        const disabled = await flight.fetch('/api/search', {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.deepEqual(disabled.body, {
+            reverse: { enabled: false, providers: [] },
+            route: { enabled: false, providers: [] },
+            forward: { enabled: false, providers: [] },
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET /api/search/route - without token', async () => {
     try {
         const res = await flight.fetch('/api/search/route?start=-105,39.7&end=-104.8,39.9', {

@@ -18,6 +18,10 @@
 
 ### Pending Release
 
+### v13.99.1 - 2026-09-28
+
+- :bug: Refresh search/route manager to ensure most recent config
+
 ### v13.99.0 - 2026-09-27
 
 - :tada: Add OpenStreetMap (Photon) search provider supporting forward, suggest & reverse geocoding - enable it & set the Photon URL from the Search Providers section of CloudTAK Settings (`osm::enabled` & `osm::url`)

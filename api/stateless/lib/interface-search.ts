@@ -2,6 +2,9 @@ import Config from '../../common/config.js';
 import Err from '@openaddresses/batch-error';
 import { Static } from '@sinclair/typebox';
 import { SearchConfig, SearchProvidersConfig, FetchReverse, FetchSuggest, FetchForward } from './search/types.js';
+import { arcgisSettingKeys } from './search/arcgis-settings.js';
+import { ProviderManager } from './interface-provider.js';
+import type { ProviderLoader, ProviderSettingKey } from './interface-provider.js';
 
 export class Search implements SearchInterface {
     _id: string;
@@ -66,37 +69,20 @@ export interface SearchInterface {
  * @class
  * A Manager for different Search providers
  */
-export class SearchManager extends Map<string, Search> {
-    defaultProvider: string | null;
+export class SearchManager extends ProviderManager<Search> {
+    label = 'Search';
 
-    constructor() {
-        super();
-        this.defaultProvider = null;
-    }
+    settingKeys: ProviderSettingKey[] = [...arcgisSettingKeys('search'), 'osm::enabled', 'osm::url'];
+
+    providers: ProviderLoader<Search>[] = [
+        { name: 'AGOL', load: async config => (await import('./search/agol.js')).default.init(config) },
+        { name: 'OSM', load: async config => (await import('./search/osm.js')).default.init(config) },
+    ];
 
     static async init(config: Config): Promise<SearchManager> {
-        const manager = new SearchManager();
+        const manager = new SearchManager(config);
 
-        const providers = [
-            { name: 'AGOL', load: async () => (await import('./search/agol.js')).default.init(config) },
-            { name: 'OSM', load: async () => (await import('./search/osm.js')).default.init(config) },
-        ];
-
-        for (const provider of providers) {
-            try {
-                const search = await provider.load();
-
-                if (!search) continue;
-
-                if (!manager.defaultProvider) {
-                    manager.defaultProvider = search._id;
-                }
-
-                manager.set(search._id, search);
-            } catch (err) {
-                console.error(`not ok - ${provider.name} Search Provider failed to initialize`, err);
-            }
-        }
+        await manager.refresh();
 
         return manager;
     }
