@@ -121,6 +121,10 @@ const router = VueRouter.createRouter({
                     name: 'home-menu-features-deleted',
                     component: () => import('./components/CloudTAK/Menu/MenuFeaturesDeleted.vue')
                 },{
+                    path: 'features/events',
+                    name: 'home-menu-features-events',
+                    component: () => import('./components/CloudTAK/Menu/MenuFeaturesEvents.vue')
+                },{
                     path: 'feature',
                     name: 'home-menu-feature',
                     component: () => import('./components/CloudTAK/Menu/MenuFeatView.vue')
