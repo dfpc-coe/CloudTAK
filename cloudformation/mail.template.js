@@ -5,6 +5,8 @@ import url from 'url';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
+const HIGH = [cf.join(['arn:', cf.partition, ':sns:', cf.region, ':', cf.accountId, ':tak-cloudtak-', cf.ref('Environment'), '-high-urgency'])];
+
 export default cf.merge({
     Description: 'Inbound email paging & ETL Layer delivery via AWS SES Mail Manager for CloudTAK',
     Parameters: {
@@ -54,15 +56,34 @@ export default cf.merge({
     },
     Resources: {
         /**
-         * Traffic policy — allow all inbound mail up to MaxMessageSizeBytes.
+         * Traffic policy — only accept mail addressed to the mail domain,
+         * up to MaxMessageSizeBytes.
          */
         PagingTrafficPolicy: {
             Type: 'AWS::SES::MailManagerTrafficPolicy',
             Properties: {
                 TrafficPolicyName: cf.stackName,
-                DefaultAction: 'ALLOW',
+                DefaultAction: 'DENY',
                 MaxMessageSizeBytes: cf.ref('MaxMessageSizeBytes'),
-                PolicyStatements: []
+                PolicyStatements: [{
+                    Action: 'ALLOW',
+                    Conditions: [{
+                        StringExpression: {
+                            Evaluate: {
+                                Attribute: 'RECIPIENT'
+                            },
+                            Operator: 'ENDS_WITH',
+                            Values: [
+                                cf.join([
+                                    '@',
+                                    cf.ref('SubdomainPrefix'),
+                                    '.',
+                                    cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))
+                                ])
+                            ]
+                        }
+                    }]
+                }]
             }
         },
 
@@ -194,7 +215,7 @@ export default cf.merge({
                     }
                 },
                 Code: {
-                    ZipFile: fs.readFileSync(path.join(__dirname, './lib/mail-lambda.js'), 'utf8')
+                    ZipFile: fs.readFileSync(path.join(__dirname, './lib/mail-lambda.cjs'), 'utf8')
                 }
             }
         },
@@ -227,6 +248,67 @@ export default cf.merge({
                     }
                 }],
                 ManagedPolicyArns: [cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'])]
+            }
+        },
+
+        /**
+         * Router alarms — notify the CloudTAK high urgency topic.
+         */
+        MailRouterErrorsAlarm: {
+            Type: 'AWS::CloudWatch::Alarm',
+            Properties: {
+                AlarmName: cf.join('-', [cf.stackName, 'RouterErrors', cf.region]),
+                Namespace: 'AWS/Lambda',
+                MetricName: 'Errors',
+                ComparisonOperator: 'GreaterThanThreshold',
+                Threshold: 0,
+                EvaluationPeriods: 1,
+                Statistic: 'Sum',
+                Period: 300,
+                AlarmActions: HIGH,
+                TreatMissingData: 'notBreaching',
+                Dimensions: [{
+                    Name: 'FunctionName',
+                    Value: cf.ref('MailRouterFunction')
+                }]
+            }
+        },
+        MailRouterThrottlesAlarm: {
+            Type: 'AWS::CloudWatch::Alarm',
+            Properties: {
+                AlarmName: cf.join('-', [cf.stackName, 'RouterThrottles', cf.region]),
+                Namespace: 'AWS/Lambda',
+                MetricName: 'Throttles',
+                ComparisonOperator: 'GreaterThanThreshold',
+                Threshold: 0,
+                EvaluationPeriods: 1,
+                Statistic: 'Sum',
+                Period: 300,
+                AlarmActions: HIGH,
+                TreatMissingData: 'notBreaching',
+                Dimensions: [{
+                    Name: 'FunctionName',
+                    Value: cf.ref('MailRouterFunction')
+                }]
+            }
+        },
+        MailRouterDurationAlarm: {
+            Type: 'AWS::CloudWatch::Alarm',
+            Properties: {
+                AlarmName: cf.join('-', [cf.stackName, 'RouterDuration', cf.region]),
+                Namespace: 'AWS/Lambda',
+                MetricName: 'Duration',
+                ComparisonOperator: 'GreaterThanThreshold',
+                Threshold: 25000,
+                EvaluationPeriods: 1,
+                ExtendedStatistic: 'p99',
+                Period: 300,
+                AlarmActions: HIGH,
+                TreatMissingData: 'notBreaching',
+                Dimensions: [{
+                    Name: 'FunctionName',
+                    Value: cf.ref('MailRouterFunction')
+                }]
             }
         },
 

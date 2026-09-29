@@ -1,7 +1,8 @@
-/* eslint-disable n/no-missing-import -- provided by the Lambda runtime */
-import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
-import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
-/* eslint-enable n/no-missing-import */
+// CommonJS as inline Lambda code is deployed as index.js without a package.json
+/* eslint-disable n/no-missing-require -- provided by the Lambda runtime */
+const { SSMClient, GetParameterCommand } = require('@aws-sdk/client-ssm');
+const { LambdaClient, InvokeCommand } = require('@aws-sdk/client-lambda');
+/* eslint-enable n/no-missing-require */
 
 const ssm = new SSMClient({});
 const lambda = new LambdaClient({});
@@ -60,7 +61,7 @@ async function deliver(uuid, mail, receipt) {
     console.log(`ok - delivered ${mail.messageId} to ${uuid}`);
 }
 
-export const handler = async (event) => {
+exports.handler = async (event) => {
     const deliveries = [];
 
     for (const record of event.Records || []) {

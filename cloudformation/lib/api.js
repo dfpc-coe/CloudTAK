@@ -380,6 +380,19 @@ export default {
                                 cf.join(['arn:', cf.partition, ':events:', cf.region, ':', cf.accountId, ':rule/', cf.stackName, '-*'])
                             ]
                         },{
+                            Effect: 'Allow', // Register ETL with the mail router
+                            Action: [
+                                'ssm:PutParameter',
+                                'ssm:GetParameters',
+                                'ssm:DeleteParameter',
+                                'ssm:AddTagsToResource',
+                                'ssm:RemoveTagsFromResource',
+                                'ssm:ListTagsForResource'
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':ssm:', cf.region, ':', cf.accountId, ':parameter/tak-cloudtak-mail-', cf.ref('Environment'), '/layer/*'])
+                            ]
+                        },{
                             Effect: 'Allow',
                             Action: [
                                 'lambda:CreateEventSourceMapping',

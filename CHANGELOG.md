@@ -18,6 +18,10 @@
 
 ### Pending Release
 
+### v13.100.1 - 2026-09-28
+
+- :bug: Fix permissions required to invoke a layer by email
+
 ### v13.100.0 - 2026-09-28
 
 - :tada: ETL Layers can be invoked by email alongside schedules & webhooks - enabling Email Delivery in the Layer Config gives the Layer the address `<layer uuid>@mail.map.<domain>` and each email it receives is delivered to the task. Tasks must be built with `@tak-ps/etl` v10.22.0 or later & list the `Email` invocation

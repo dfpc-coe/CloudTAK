@@ -319,7 +319,7 @@ export default class Lambda {
             }
 
             if (layer.incoming.email && layer.enabled) {
-                // Registers the Layer with the router in cloudformation/lib/mail-lambda.js
+                // Registers the Layer with the router in cloudformation/lib/mail-lambda.cjs
                 stack.Resources.EmailParameter = {
                     Type: 'AWS::SSM::Parameter',
                     Properties: {
