@@ -114,7 +114,7 @@ export default class OverlayManager extends BaseInterface {
 
         // Anchor against the resolved stack rather than the dragged list so a
         // drop beyond a pinned overlay cannot leave the map out of step
-        overlay.moveBefore(this.loaded[this.loaded.indexOf(overlay) + 1]);
+        overlay.moveBefore(this.loadedAnchorOverlayFrom(this.loaded.indexOf(overlay) + 1));
 
         const results = await Promise.allSettled(changed.map((current) => current.save()));
         const failed = results.find((result): result is PromiseRejectedResult => result.status === 'rejected');
@@ -156,8 +156,21 @@ export default class OverlayManager extends BaseInterface {
      */
     static applyLoadedOrder(): void {
         for (let i = this.loaded.length - 1; i >= 0; i--) {
-            this.loaded[i].moveBefore(this.loaded[i + 1]);
+            this.loaded[i].moveBefore(this.loadedAnchorOverlayFrom(i + 1));
         }
+    }
+
+    /**
+     * Nearest overlay at or above the given index that has a renderable
+     * layer on the map - overlays with no layers (e.g. raster-dem terrain,
+     * failed or still initializing) cannot be anchored against and are skipped
+     */
+    static loadedAnchorOverlayFrom(idx: number): Overlay | undefined {
+        for (let i = idx; i < this.loaded.length; i++) {
+            if (this.loaded[i].anchorLayerId()) return this.loaded[i];
+        }
+
+        return undefined;
     }
 
     /**
@@ -177,12 +190,7 @@ export default class OverlayManager extends BaseInterface {
      * still initializing have no layers and are skipped
      */
     static loadedAnchorFrom(idx: number): string | undefined {
-        for (let i = idx; i < this.loaded.length; i++) {
-            const anchor = this.loaded[i].anchorLayerId();
-            if (anchor) return anchor;
-        }
-
-        return undefined;
+        return this.loadedAnchorOverlayFrom(idx)?.anchorLayerId();
     }
 
     static async deleteLoaded(idOrOverlay: string | number | Overlay): Promise<void> {

@@ -365,8 +365,8 @@ const overlayCards = computed<OverlayCard[]>(() => {
         consider(overlay);
     }
 
-    // Menu order mirrors the map stacking order held by the manager
-    return cards.sort((a, b) => OverlayManager.loaded.indexOf(a.overlay) - OverlayManager.loaded.indexOf(b.overlay));
+    // Menu lists the map stack top-first: topmost overlay first, basemap last
+    return cards.sort((a, b) => OverlayManager.loaded.indexOf(b.overlay) - OverlayManager.loaded.indexOf(a.overlay));
 });
 
 const sortableCount = computed(() => overlayCards.value.filter((card) => !OverlayManager.isPinned(card.overlay)).length);
@@ -563,7 +563,8 @@ async function saveOrder(sortableEv: SortableEvent) {
     const id = sortableEv.item.getAttribute('id');
     if (!id) return;
 
-    const overlay_ids = sortable.toArray().map((i) => parseInt(i));
+    // The list is top-first while the manager orders bottom-first
+    const overlay_ids = sortable.toArray().map((i) => parseInt(i)).reverse();
 
     try {
         await OverlayManager.reorderLoaded(overlay_ids, id);

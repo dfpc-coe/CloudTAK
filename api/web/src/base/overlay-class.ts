@@ -538,15 +538,18 @@ export default class Overlay {
         return anchor ? String(anchor.id) : undefined;
     }
 
+    /**
+     * Move this overlay's layers directly below the given overlay's first
+     * renderable layer - with no anchor on the map they move to the top
+     */
     moveBefore(overlay?: Overlay): void {
         const mapStore = useMapStore();
-        const before = overlay?.styles.find((l) => l.type !== 'background')?.id;
-        const hasBefore = before ? !!mapStore.map.getLayer(before) : false;
+        const before = overlay?.anchorLayerId();
 
         for (const layer of this.styles) {
             if (!mapStore.map.getLayer(layer.id)) continue;
 
-            if (before && hasBefore) {
+            if (before) {
                 mapStore.map.moveLayer(layer.id, before);
             } else {
                 mapStore.map.moveLayer(layer.id);
