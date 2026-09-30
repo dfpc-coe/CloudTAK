@@ -158,7 +158,7 @@ import SlideDownHeader from '../util/SlideDownHeader.vue';
 import GroupSelect from '../../util/GroupSelect.vue';
 import GroupManager from '../../../base/group.ts';
 import { openSecondaryView } from '../../../utils/capacitor.ts';
-import type { GroupChannel, CoreEventBoardSummary, CoreEventBoardColumnSummary } from '../../../types.ts';
+import type { GroupChannel, CoreEntityBoardSummary, CoreEntityBoardColumnSummary } from '../../../types.ts';
 import { TablerNone, TablerBadge, TablerLoading, TablerIconButton } from '@tak-ps/vue-tabler';
 import {
     IconAffiliate,
@@ -173,13 +173,13 @@ const props = defineProps<{
     /** TAK Server Channel bitpositions the Event is shared with */
     modelValue: Array<number>;
     /** Boards of the Event's Channels & the Column the Event sits in on each */
-    boards?: Array<CoreEventBoardSummary>;
+    boards?: Array<CoreEntityBoardSummary>;
     edit?: boolean;
 }>();
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<number>): void
-    (e: 'nominate', board: CoreEventBoardSummary): void
+    (e: 'nominate', board: CoreEntityBoardSummary): void
 }>();
 
 const expanded = ref(true);
@@ -219,7 +219,7 @@ watch(() => props.modelValue, () => {
 });
 
 /** Open the Event Board page focused on the given Board in a new tab */
-function openBoard(board: CoreEventBoardSummary): void {
+function openBoard(board: CoreEntityBoardSummary): void {
     const url = new URL('/board', window.location.origin);
 
     url.searchParams.append('channel', String(board.channel));
@@ -229,13 +229,13 @@ function openBoard(board: CoreEventBoardSummary): void {
 }
 
 /** The Column of the Board this Event is currently placed in, if any */
-function columnOf(board: CoreEventBoardSummary): CoreEventBoardColumnSummary | undefined {
+function columnOf(board: CoreEntityBoardSummary): CoreEntityBoardColumnSummary | undefined {
     if (!board.column) return undefined;
 
     return board.columns.find((column) => column.id === board.column);
 }
 
-function badge(column?: CoreEventBoardColumnSummary): { background: string, border: string, text: string } {
+function badge(column?: CoreEntityBoardColumnSummary): { background: string, border: string, text: string } {
     const base = (column && column.color) || '#667382';
 
     return {

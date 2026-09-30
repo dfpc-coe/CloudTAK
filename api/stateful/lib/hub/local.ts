@@ -1,6 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import WebSocket from 'ws';
-import { MachineConnConfig, ProfileConnConfig, AdminConnConfig, isCoreEventSubmitter } from '../../../common/connection-config.js';
+import { MachineConnConfig, ProfileConnConfig, AdminConnConfig, isCoreEntitySubmitter } from '../../../common/connection-config.js';
 import { WebSocket_Event } from '../../../common/enums.js';
 import type { Connection } from '../../../common/schema.js';
 import type { InferSelectModel } from 'drizzle-orm';
@@ -191,11 +191,11 @@ export default class LocalHub implements HubClient {
         this.config.etlEvents.featureRefresh(connection);
     }
 
-    async coreEventSubmit(event: string): Promise<void> {
+    async coreEntitySubmit(event: string): Promise<void> {
         if (this.config.noconnections) return;
 
         const client = this.config.conns.get(0);
-        if (!client || !isCoreEventSubmitter(client.config)) return;
+        if (!client || !isCoreEntitySubmitter(client.config)) return;
 
         await client.config.submitEvents(client.tak, client.api, { event });
     }

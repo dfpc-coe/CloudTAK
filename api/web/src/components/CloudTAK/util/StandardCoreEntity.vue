@@ -83,7 +83,7 @@ import { server } from '../../../std.ts';
 
 /**
  * Preconfigured Event Types are shared by every card on a page - fetch the
- * config once at module scope and let all StandardCoreEvent instances await
+ * config once at module scope and let all StandardCoreEntity instances await
  * the same promise
  */
 let typePresets: Promise<Array<{ name: string; type: string; icon?: string }>> | undefined;
@@ -130,7 +130,7 @@ async function resolveTypeIcon(type: string): Promise<string | undefined> {
 }
 
 export default {
-    name: 'StandardCoreEvent'
+    name: 'StandardCoreEntity'
 };
 </script>
 
@@ -143,11 +143,11 @@ import {
     IconMapPin,
     IconCalendarEvent,
 } from '@tabler/icons-vue';
-import type { CoreEvent } from '../../../types.ts';
+import type { CoreEntity } from '../../../types.ts';
 import timediff from '../../../timediff';
 
 const props = withDefaults(defineProps<{
-    event: CoreEvent;
+    event: CoreEntity;
     icon?: boolean;
 }>(), {
     icon: true,

@@ -92,7 +92,7 @@
         </template>
     </MenuTemplate>
 
-    <CreateCoreEvent
+    <CreateCoreEntity
         v-if='eventModal && coords && coords.length >= 2'
         :coordinates='coords'
         :location='reverse ? reverse.LongLabel : ""'
@@ -121,7 +121,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import Coordinate from './util/Coordinate.vue';
 import MenuTemplate from './util/MenuTemplate.vue';
-import CreateCoreEvent from './util/CreateCoreEvent.vue';
+import CreateCoreEntity from './util/CreateCoreEntity.vue';
 
 const route = useRoute();
 const router = useRouter();

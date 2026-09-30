@@ -30,7 +30,7 @@ const { values: parsedArgs } = parseArgs({
         'no-events': { type: 'boolean' }, // Disable Initialization of Second Level Events
         'no-etl-events': { type: 'boolean' }, // Disable delivery of Outgoing ETL Events
         'no-geofence': { type: 'boolean' }, // Disable Geofence Server Integration
-        'no-connections': { type: 'boolean' }, // Disable Automatic Initialization of ETL Connections & CoreEvent Broadcast
+        'no-connections': { type: 'boolean' }, // Disable Automatic Initialization of ETL Connections & CoreEntity Broadcast
         'postgres': { type: 'string' }, // Postgres Connection String
         'env': { type: 'string' }, // Load a non-default .env file --env local would read .env-local
     },

@@ -3,7 +3,7 @@ import Modeler, { GenericList, GenericListInput } from '@openaddresses/batch-gen
 import { Static } from '@sinclair/typebox';
 import { CoreFormResponseResponse } from '../types.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { CoreFormResponse, CoreEventResponse } from '../schema.js';
+import { CoreFormResponse, CoreEntityResponse } from '../schema.js';
 import { SQL, is, sql, eq, asc, desc } from 'drizzle-orm';
 
 export default class CoreFormResponseModel extends Modeler<typeof CoreFormResponse> {
@@ -16,11 +16,11 @@ export default class CoreFormResponseModel extends Modeler<typeof CoreFormRespon
     async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof CoreFormResponseResponse>> {
         const SubTable = this.pool
             .select({
-                response: CoreEventResponse.response,
-                events: sql`JSON_AGG(core_event_response.event ORDER BY core_event_response.event)`.as('events'),
+                response: CoreEntityResponse.response,
+                events: sql`JSON_AGG(core_entity_response.event ORDER BY core_entity_response.event)`.as('events'),
             })
-            .from(CoreEventResponse)
-            .groupBy(CoreEventResponse.response)
+            .from(CoreEntityResponse)
+            .groupBy(CoreEntityResponse.response)
             .as('events');
 
         const pgres = await this.pool
@@ -47,11 +47,11 @@ export default class CoreFormResponseModel extends Modeler<typeof CoreFormRespon
 
         const SubTable = this.pool
             .select({
-                response: CoreEventResponse.response,
-                events: sql`JSON_AGG(core_event_response.event ORDER BY core_event_response.event)`.as('events'),
+                response: CoreEntityResponse.response,
+                events: sql`JSON_AGG(core_entity_response.event ORDER BY core_entity_response.event)`.as('events'),
             })
-            .from(CoreEventResponse)
-            .groupBy(CoreEventResponse.response)
+            .from(CoreEntityResponse)
+            .groupBy(CoreEntityResponse.response)
             .as('events');
 
         const pgres = await this.pool

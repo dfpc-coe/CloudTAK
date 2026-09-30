@@ -951,7 +951,7 @@ export default class AtlasDatabase {
                 });
 
                 if (geometryMoved) {
-                    await this.syncCoreEventGeometry(exists);
+                    await this.syncCoreEntityGeometry(exists);
                 }
 
                 if (exists.is_self) {
@@ -1006,7 +1006,7 @@ export default class AtlasDatabase {
                 }
 
                 if (opts.authored) {
-                    await this.syncCoreEventGeometry(exists);
+                    await this.syncCoreEntityGeometry(exists);
                 }
             }
 
@@ -1052,7 +1052,7 @@ export default class AtlasDatabase {
      * PATCH a locally moved Core Event marker back to the Event API - a
      * failure is reverted on clients by the next Event rebroadcast
      */
-    private async syncCoreEventGeometry(cot: COT): Promise<void> {
+    private async syncCoreEntityGeometry(cot: COT): Promise<void> {
         const link = (cot.properties.links || []).find((link) => {
             return link.type === 'core-event' && link.event;
         });

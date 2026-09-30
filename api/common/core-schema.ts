@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox';
 import type { TObject, TSchema } from '@sinclair/typebox';
 import { StyleSingle } from './style.js';
-import { LayerMapping_Destination, CoreEvent_Priority } from './enums.js';
+import { LayerMapping_Destination, CoreEntity_Priority } from './enums.js';
 
 export const CoreFeatureSchema = Type.Object(StyleSingle.properties, {
     title: 'Core Feature',
@@ -16,13 +16,13 @@ const Channels = Type.Array(Type.Integer({ minimum: 0 }), {
     'uniqueItems': true,
 });
 
-export const CoreEventLinkSchema = Type.Object({
+export const CoreEntityLinkSchema = Type.Object({
     name: Type.String({ title: 'Name', description: 'Human readable name of the Link' }),
     url: Type.String({ title: 'URL', description: 'URL the Link points at', pattern: '^(https?:\\/\\/.+|)$' }),
 });
 
 /** Point styling overrides - property names match node-cot's CoT GeoJSON representation */
-export const CoreEventStyleSchema = Type.Object({
+export const CoreEntityStyleSchema = Type.Object({
     'icon': Type.Optional(Type.String({ 'title': 'Icon', '@icon': 'IconPhoto', '@widget': 'icon', 'description': 'Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>' })),
     'marker-color': Type.Optional(Type.String({ 'title': 'Marker Color', '@icon': 'IconPaint', '@widget': 'color', 'description': 'Hex colour of the Event marker - ie: #00ff00' })),
     'marker-opacity': Type.Optional(Type.Number({ 'title': 'Marker Opacity', '@icon': 'IconGhost', 'description': 'Opacity of the Event marker', 'minimum': 0, 'maximum': 1 })),
@@ -36,10 +36,10 @@ export const CoreEventStyleSchema = Type.Object({
  * - `@widget`: input used in place of the one implied by the property type
  * - `@relative`: a date-time a Map may also give as a number of seconds from now
  */
-export const CoreEventSchema = Type.Object({
+export const CoreEntitySchema = Type.Object({
     name: Type.String({ 'title': 'Name', '@icon': 'IconTag', 'description': 'Human readable name of the Event' }),
     type: Type.String({ 'title': 'Type', '@icon': 'IconCategory', 'description': 'MIL-STD-2525E Symbol ID' }),
-    priority: Type.Optional(Type.Unsafe<CoreEvent_Priority>({ 'type': 'string', 'title': 'Priority', '@icon': 'IconFlag', 'description': 'Priority of the Event', 'enum': Object.values(CoreEvent_Priority), 'default': CoreEvent_Priority.NONE })),
+    priority: Type.Optional(Type.Unsafe<CoreEntity_Priority>({ 'type': 'string', 'title': 'Priority', '@icon': 'IconFlag', 'description': 'Priority of the Event', 'enum': Object.values(CoreEntity_Priority), 'default': CoreEntity_Priority.NONE })),
     location: Type.Optional(Type.String({ 'title': 'Location', '@icon': 'IconMapPin', 'description': 'Human readable location - ie: an address' })),
     remarks: Type.Optional(Type.String({ 'title': 'Remarks', '@icon': 'IconBlockquote', 'description': 'Free text remarks about the Event' })),
     started: Type.Optional(Type.String({ 'title': 'Started', '@icon': 'IconCalendarEvent', 'description': 'Time at which the Event started - defaults to the time of creation', 'format': 'date-time' })),
@@ -48,8 +48,8 @@ export const CoreEventSchema = Type.Object({
     external_id: Type.Optional(Type.String({ 'title': 'External ID', '@icon': 'IconLicense', 'description': 'ID of the Event in an external system' })),
     editable: Type.Optional(Type.Boolean({ 'title': 'Editable', '@icon': 'IconLock', 'description': 'Can users other than the creator edit the Event', 'default': true })),
     channels: Type.Optional(Channels),
-    style: Type.Optional(CoreEventStyleSchema),
-    links: Type.Optional(Type.Array(CoreEventLinkSchema, { 'title': 'Links', '@icon': 'IconLink', 'description': 'Named URLs associated with the Event' })),
+    style: Type.Optional(CoreEntityStyleSchema),
+    links: Type.Optional(Type.Array(CoreEntityLinkSchema, { 'title': 'Links', '@icon': 'IconLink', 'description': 'Named URLs associated with the Event' })),
 }, {
     title: 'Core Event',
     description: 'Incident or planned Event tracked by CloudTAK',
@@ -98,6 +98,6 @@ export function withoutHints<T extends TObject>(schema: T): T {
 /** JSON Schemas of the record types the Server can convert submitted data into */
 export const CoreSchemas: Record<LayerMapping_Destination, TObject> = {
     [LayerMapping_Destination.COREFEATURE]: CoreFeatureSchema,
-    [LayerMapping_Destination.COREEVENT]: CoreEventSchema,
+    [LayerMapping_Destination.COREENTITY]: CoreEntitySchema,
     [LayerMapping_Destination.COREDEVICE]: CoreDeviceSchema,
 };

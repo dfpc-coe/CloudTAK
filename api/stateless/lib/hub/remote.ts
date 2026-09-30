@@ -168,7 +168,7 @@ export default class RemoteHub implements HubClient {
         await this.#call('/feature/refresh', { connection });
     }
 
-    async coreEventSubmit(event: string): Promise<void> {
+    async coreEntitySubmit(event: string): Promise<void> {
         await this.#call(`/core/event/${encodeURIComponent(event)}`, {});
     }
 

@@ -2,7 +2,7 @@ import type { Static } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import { AuthUser, AuthResourceAccess } from '../../../common/auth.js';
 import type { AuthResource } from '../../../common/auth.js';
-import type { CoreEventResponse } from '../../../common/types.js';
+import type { CoreEntityResponse } from '../../../common/types.js';
 import type ConfigStateless from '../../config.js';
 import { userChannels, connectionChannels } from '../tak-channels.js';
 
@@ -38,7 +38,7 @@ export default class EventControl {
      * a System Admin, or a Connection/Layer token belonging to the Connection
      * that created it
      */
-    isEventCreator(auth: AuthUser | AuthResource, event: Static<typeof CoreEventResponse>, connection: number | null): boolean {
+    isEventCreator(auth: AuthUser | AuthResource, event: Static<typeof CoreEntityResponse>, connection: number | null): boolean {
         if (auth instanceof AuthUser) {
             return auth.is_admin() || event.username === auth.email;
         } else {
@@ -53,7 +53,7 @@ export default class EventControl {
      * has an active channel the Event has been shared with - the same rule
      * under which Outgoing Layers are delivered the Event
      */
-    async ensureEventAccess(auth: AuthUser | AuthResource, event: Static<typeof CoreEventResponse>, connection: number | null): Promise<void> {
+    async ensureEventAccess(auth: AuthUser | AuthResource, event: Static<typeof CoreEntityResponse>, connection: number | null): Promise<void> {
         if (this.isEventCreator(auth, event, connection)) return;
 
         const shared = (event.channels || []).map(c => Number(c));
@@ -76,7 +76,7 @@ export default class EventControl {
      * An Event can be edited by anyone that can access it unless its creator
      * has disabled editing, in which case only the creator can edit it
      */
-    async ensureEventEditable(auth: AuthUser | AuthResource, event: Static<typeof CoreEventResponse>, connection: number | null): Promise<void> {
+    async ensureEventEditable(auth: AuthUser | AuthResource, event: Static<typeof CoreEntityResponse>, connection: number | null): Promise<void> {
         await this.ensureEventAccess(auth, event, connection);
 
         if (!event.editable && !this.isEventCreator(auth, event, connection)) {

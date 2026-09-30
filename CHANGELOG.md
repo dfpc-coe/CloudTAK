@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+- :rocket: Rename `CoreEvent` to `CoreEntity` throughout the database, server, and web app - API routes, payloads, and the `CoreEvent` Layer Mapping destination are unchanged
+
 ### v13.100.4 - 2026-09-30
 
 - :bug: Fix Buffer/Range distance input freezing the page when typing 3+ digits in yards or miles due to a unit conversion feedback loop

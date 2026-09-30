@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { eq } from 'drizzle-orm';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import Flight from './flight.js';
-import { ConnectionFeature, CoreEvent, CoreEventChannel, CoreDevice } from '../common/schema.js';
+import { ConnectionFeature, CoreEntity, CoreEntityChannel, CoreDevice } from '../common/schema.js';
 import { LayerMapping_Destination } from '../common/enums.js';
 
 const flight = new Flight();
@@ -400,7 +400,7 @@ test('POST: api/connection/1/submit - a user token has no Layer so no maps apply
     }
 });
 
-test('POST: api/connection/1/submit - CoreEvent & CoreDevice maps create records', async () => {
+test('POST: api/connection/1/submit - CoreEntity & CoreDevice maps create records', async () => {
     try {
         const models = flight.config!.models;
 
@@ -408,7 +408,7 @@ test('POST: api/connection/1/submit - CoreEvent & CoreDevice maps create records
         await models.LayerMapping.generate({
             layer: 1,
             schema: 'incident',
-            destination: LayerMapping_Destination.COREEVENT,
+            destination: LayerMapping_Destination.COREENTITY,
             name: 'Severe',
             query: 'properties.metadata.severity > 3',
             mapping: {
@@ -424,7 +424,7 @@ test('POST: api/connection/1/submit - CoreEvent & CoreDevice maps create records
         await models.LayerMapping.generate({
             layer: 1,
             schema: 'incident',
-            destination: LayerMapping_Destination.COREEVENT,
+            destination: LayerMapping_Destination.COREENTITY,
             name: 'Incident Defaults',
             query: 'properties.metadata.title != null',
             mapping: {
@@ -486,7 +486,7 @@ test('POST: api/connection/1/submit - CoreEvent & CoreDevice maps create records
         assert.equal(res.body.devices, 1);
         assert.equal(res.body.submitted, 0, 'mapped Features are not delivered as CoT');
 
-        const events = await flight.config!.pg.select().from(CoreEvent);
+        const events = await flight.config!.pg.select().from(CoreEntity);
         const byExternal = new Map(events.map(e => [e.external_id, e]));
 
         assert.equal(events.length, 2);
@@ -509,7 +509,7 @@ test('POST: api/connection/1/submit - CoreEvent & CoreDevice maps create records
         const devices = await flight.config!.pg.select().from(CoreDevice);
         assert.equal(devices.length, 2);
 
-        // incident-1 matched the CoreEvent query first so is not also a Device
+        // incident-1 matched the CoreEntity query first so is not also a Device
         assert.equal(devices.find(d => d.external_id === 'incident-1'), undefined);
 
         const b = devices.find(d => d.external_id === 'sensor-only')!;
@@ -552,7 +552,7 @@ test('POST: api/connection/1/submit - resubmitting updates the mapped records in
         assert.equal(res.body.events, 1);
         assert.equal(res.body.devices, 1);
 
-        const events = await flight.config!.pg.select().from(CoreEvent);
+        const events = await flight.config!.pg.select().from(CoreEntity);
         assert.equal(events.length, 2);
 
         const fire = events.find(e => e.external_id === 'inc-1')!;
@@ -570,7 +570,7 @@ test('POST: api/connection/1/submit - resubmitting updates the mapped records in
 
 test('POST: api/connection/1/submit - concurrent submissions UPSERT a single record per external_id', async () => {
     try {
-        const before = await flight.config!.pg.select().from(CoreEvent);
+        const before = await flight.config!.pg.select().from(CoreEntity);
         const fire = before.find(e => e.external_id === 'inc-1')!;
 
         const responses = await Promise.all([1, 2, 3, 4, 5].map((i) => {
@@ -603,7 +603,7 @@ test('POST: api/connection/1/submit - concurrent submissions UPSERT a single rec
             assert.equal(res.body.events, 2);
         }
 
-        const events = await flight.config!.pg.select().from(CoreEvent);
+        const events = await flight.config!.pg.select().from(CoreEntity);
         assert.equal(events.length, before.length + 1);
         assert.equal(events.filter(e => e.external_id === 'inc-9').length, 1);
 
@@ -624,7 +624,7 @@ test('POST: api/connection/1/submit - channels, style, links, active & Device as
         await models.LayerMapping.generate({
             layer: 1,
             schema: 'dispatch',
-            destination: LayerMapping_Destination.COREEVENT,
+            destination: LayerMapping_Destination.COREENTITY,
             name: 'Calls',
             query: 'properties.metadata.kind = "call"',
             mapping: {
@@ -683,7 +683,7 @@ test('POST: api/connection/1/submit - channels, style, links, active & Device as
             assert.equal(res.body.events, 1);
             assert.equal(res.body.devices, 1);
 
-            const [event] = (await flight.config!.pg.select().from(CoreEvent)).filter(e => e.external_id === 'call-77');
+            const [event] = (await flight.config!.pg.select().from(CoreEntity)).filter(e => e.external_id === 'call-77');
             const [device] = (await flight.config!.pg.select().from(CoreDevice)).filter(d => d.external_id === 'unit-E1');
 
             return { event, device };
@@ -697,7 +697,7 @@ test('POST: api/connection/1/submit - channels, style, links, active & Device as
         assert.deepEqual(opened.event.links, [{ name: 'CAD 77', url: 'https://cad.example.com/77' }]);
         assert.equal(opened.device.event, opened.event.id);
 
-        const augmented = await models.CoreEvent.augmented_from(opened.event.id);
+        const augmented = await models.CoreEntity.augmented_from(opened.event.id);
         assert.equal(augmented.active, true);
         assert.deepEqual(augmented.channels, [3, 7]);
         assert.deepEqual((await models.CoreDevice.augmented_from(opened.device.id)).channels, [3]);
@@ -705,10 +705,10 @@ test('POST: api/connection/1/submit - channels, style, links, active & Device as
         const closed = await submit(false, null);
 
         assert.equal(closed.event.id, opened.event.id);
-        assert.equal((await models.CoreEvent.augmented_from(closed.event.id)).active, false);
+        assert.equal((await models.CoreEntity.augmented_from(closed.event.id)).active, false);
         assert.ok(closed.event.ended, 'closing an Event stamps ended');
         assert.equal(closed.device.event, null, 'an empty event_external_id unassigns the Device');
-        assert.deepEqual((await models.CoreEvent.augmented_from(closed.event.id)).channels, [3, 7]);
+        assert.deepEqual((await models.CoreEntity.augmented_from(closed.event.id)).channels, [3, 7]);
 
         const reclosed = await submit(false, null);
         assert.equal(reclosed.event.ended, closed.event.ended, 'the original end time is preserved');
@@ -724,7 +724,7 @@ test('POST: api/connection/1/submit - ended as seconds from submission is pushed
         await models.LayerMapping.generate({
             layer: 1,
             schema: 'cad',
-            destination: LayerMapping_Destination.COREEVENT,
+            destination: LayerMapping_Destination.COREENTITY,
             name: 'CAD',
             query: null,
             mapping: {
@@ -756,13 +756,13 @@ test('POST: api/connection/1/submit - ended as seconds from submission is pushed
             assert.equal(res.status, 200);
             assert.deepEqual(res.body.errors, []);
 
-            const [event] = (await flight.config!.pg.select().from(CoreEvent)).filter(e => e.external_id === 'cad-1');
+            const [event] = (await flight.config!.pg.select().from(CoreEntity)).filter(e => e.external_id === 'cad-1');
             return event;
         };
 
         const created = await submit();
         assert.ok(created.ended, 'ended set from submission time');
-        assert.equal((await models.CoreEvent.augmented_from(created.id)).active, true, 'active until ended');
+        assert.equal((await models.CoreEntity.augmented_from(created.id)).active, true, 'active until ended');
 
         await new Promise(resolve => setTimeout(resolve, 10));
 
@@ -771,12 +771,12 @@ test('POST: api/connection/1/submit - ended as seconds from submission is pushed
         assert.ok(new Date(pushed.ended!).getTime() > new Date(created.ended!).getTime(), 'resubmitting pushes ended out');
 
         // The feed goes quiet & the end time passes
-        await models.CoreEvent.commit(created.id, { ended: new Date(Date.now() - 1000).toISOString() });
-        assert.equal((await models.CoreEvent.augmented_from(created.id)).active, false, 'ended in the past');
+        await models.CoreEntity.commit(created.id, { ended: new Date(Date.now() - 1000).toISOString() });
+        assert.equal((await models.CoreEntity.augmented_from(created.id)).active, false, 'ended in the past');
 
         // The feed resumes
         await submit();
-        assert.equal((await models.CoreEvent.augmented_from(created.id)).active, true, 'a new ended reopens the Event');
+        assert.equal((await models.CoreEntity.augmented_from(created.id)).active, true, 'a new ended reopens the Event');
     } catch (err) {
         assert.ifError(err);
     }
@@ -789,7 +789,7 @@ test('POST: api/connection/1/submit - update: false fields are only applied when
         await models.LayerMapping.generate({
             layer: 1,
             schema: 'hydrant',
-            destination: LayerMapping_Destination.COREEVENT,
+            destination: LayerMapping_Destination.COREENTITY,
             name: 'Hydrants',
             query: null,
             mapping: {
@@ -826,7 +826,7 @@ test('POST: api/connection/1/submit - update: false fields are only applied when
             assert.equal(res.status, 200);
             assert.deepEqual(res.body.errors, []);
 
-            const [event] = (await flight.config!.pg.select().from(CoreEvent)).filter(e => e.external_id === 'hydrant-1');
+            const [event] = (await flight.config!.pg.select().from(CoreEntity)).filter(e => e.external_id === 'hydrant-1');
             return event;
         };
 
@@ -836,22 +836,22 @@ test('POST: api/connection/1/submit - update: false fields are only applied when
         assert.deepEqual(created.style, { 'icon': 'abc:Fire/hydrant.png', 'marker-color': '#0000ff' });
 
         // A user renames the Event, closes it, restyles it & shares it with another Channel
-        await models.CoreEvent.commit(created.id, {
+        await models.CoreEntity.commit(created.id, {
             name: 'Hydrant (Main St)',
             ended: '2026-01-01T00:00:00.000Z',
             style: { 'icon': 'abc:Fire/custom.png', 'marker-color': '#0000ff', 'marker-opacity': 0.5 },
         });
-        await flight.config!.pg.insert(CoreEventChannel).values({ event: created.id, channel: BigInt(9) });
+        await flight.config!.pg.insert(CoreEntityChannel).values({ event: created.id, channel: BigInt(9) });
 
         const updated = await submit({ title: 'Hydrant Renamed Upstream', notes: 'Flow tested', open: 'true', colour: '#00ff00' });
 
         assert.equal(updated.id, created.id);
         assert.equal(updated.remarks, 'Flow tested', 'fields update by default');
         assert.equal(updated.name, 'Hydrant (Main St)');
-        assert.equal((await models.CoreEvent.augmented_from(updated.id)).active, false);
+        assert.equal((await models.CoreEntity.augmented_from(updated.id)).active, false);
         assert.ok(updated.ended, 'ended is derived from a create only active so is left alone');
         assert.deepEqual(updated.style, { 'icon': 'abc:Fire/custom.png', 'marker-color': '#00ff00', 'marker-opacity': 0.5 });
-        assert.deepEqual((await models.CoreEvent.augmented_from(created.id)).channels, [3, 9]);
+        assert.deepEqual((await models.CoreEntity.augmented_from(created.id)).channels, [3, 9]);
     } catch (err) {
         assert.ifError(err);
     }
@@ -879,7 +879,7 @@ test('POST: api/connection/1/submit - records inherit the Channels of the Connec
         await models.LayerMapping.generate({
             layer: 1,
             schema: 'inherit',
-            destination: LayerMapping_Destination.COREEVENT,
+            destination: LayerMapping_Destination.COREENTITY,
             name: 'No Channels',
             query: null,
             mapping: { name: '{{title}}', type: '10031000001211000000' },
@@ -920,11 +920,11 @@ test('POST: api/connection/1/submit - records inherit the Channels of the Connec
             assert.equal(res.status, 200);
             assert.deepEqual(res.body.errors, []);
 
-            const [event] = (await flight.config!.pg.select().from(CoreEvent)).filter(e => e.external_id === 'inherit-1');
+            const [event] = (await flight.config!.pg.select().from(CoreEntity)).filter(e => e.external_id === 'inherit-1');
             const [device] = (await flight.config!.pg.select().from(CoreDevice)).filter(d => d.external_id === 'inherit-2');
 
             return {
-                event: (await models.CoreEvent.augmented_from(event.id)).channels,
+                event: (await models.CoreEntity.augmented_from(event.id)).channels,
                 device: (await models.CoreDevice.augmented_from(device.id)).channels,
             };
         };
@@ -936,7 +936,7 @@ test('POST: api/connection/1/submit - records inherit the Channels of the Connec
         assert.deepEqual(await submit(), { event: [4], device: [4] });
 
         // A record left without any Channels inherits them again
-        await flight.config!.pg.delete(CoreEventChannel);
+        await flight.config!.pg.delete(CoreEntityChannel);
         assert.deepEqual(await submit(), { event: [8], device: [4] });
 
         flight.tak.mockMarti.shift();
@@ -945,14 +945,14 @@ test('POST: api/connection/1/submit - records inherit the Channels of the Connec
     }
 });
 
-test('POST: api/connection/1/submit - a CoreEvent map that cannot produce a type is reported per feature', async () => {
+test('POST: api/connection/1/submit - a CoreEntity map that cannot produce a type is reported per feature', async () => {
     try {
         const models = flight.config!.models;
 
         await models.LayerMapping.generate({
             layer: 1,
             schema: 'alert',
-            destination: LayerMapping_Destination.COREEVENT,
+            destination: LayerMapping_Destination.COREENTITY,
             name: 'No Type',
             query: null,
             mapping: { remarks: '{{text}}' },
@@ -980,7 +980,7 @@ test('POST: api/connection/1/submit - a CoreEvent map that cannot produce a type
         }, false);
 
         assert.equal(res.status, 400);
-        assert.equal(res.body.submitted, 0, 'a Feature directed to a CoreEvent is not delivered as CoT');
+        assert.equal(res.body.submitted, 0, 'a Feature directed to a CoreEntity is not delivered as CoT');
         assert.equal(res.body.events, 0);
         assert.equal(res.body.errors.length, 2);
         assert.equal(res.body.errors[0].error, 'CoreEvent Map did not produce: type');
@@ -1018,9 +1018,9 @@ test('POST: api/connection/1/submit - a Layer token needs the permissions of its
 
         assert.equal(res.status, 403);
         assert.equal(res.body.message, 'Layer token does not have the device:update permission required by its CoreDevice Mappings');
-        assert.equal(await models.CoreEvent.count({ where: eq(CoreEvent.external_id, 'inc-50') }), 0);
+        assert.equal(await models.CoreEntity.count({ where: eq(CoreEntity.external_id, 'inc-50') }), 0);
 
-        // Schemas without CoreEvent or CoreDevice Mappings need no permissions
+        // Schemas without CoreEntity or CoreDevice Mappings need no permissions
         await models.Layer.commit(1, { permissions: [] });
 
         const unmapped = await flight.fetch('/api/connection/1/submit', {
@@ -1061,7 +1061,7 @@ test('POST: api/connection/1/submit - a paused Connection does not persist mappe
         assert.equal(res.status, 200);
         assert.equal(res.body.message, 'Received but Connection Paused');
         assert.equal(res.body.events, 0);
-        assert.equal(await models.CoreEvent.count({ where: eq(CoreEvent.external_id, 'inc-51') }), 0);
+        assert.equal(await models.CoreEntity.count({ where: eq(CoreEntity.external_id, 'inc-51') }), 0);
 
         await models.Connection.commit(1, { enabled: true });
     } catch (err) {

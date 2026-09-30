@@ -134,7 +134,7 @@
             </div>
 
             <div
-                class='overflow-auto overflow-x-hidden core-event-properties flex-grow-1'
+                class='overflow-auto overflow-x-hidden core-entity-properties flex-grow-1'
                 style='min-height: 0;'
             >
                 <div class='row g-0'>
@@ -159,18 +159,18 @@
                     </div>
 
                     <div class='col-12 pt-2'>
-                        <PropertyCoreEventPriority
+                        <PropertyCoreEntityPriority
                             :model-value='event.priority'
                             :active='event.active'
                             :ended='event.ended'
                             :edit='is_editable'
-                            @update:model-value='patch({ priority: $event as CoreEvent["priority"] })'
+                            @update:model-value='patch({ priority: $event as CoreEntity["priority"] })'
                             @update:active='patch({ active: $event })'
                         />
                     </div>
 
                     <div class='col-12 pt-2'>
-                        <PropertyCoreEventTime
+                        <PropertyCoreEntityTime
                             label='Started'
                             :model-value='event.started'
                             :edit='is_editable'
@@ -179,7 +179,7 @@
                     </div>
 
                     <div class='col-12 pt-2'>
-                        <PropertyCoreEventTime
+                        <PropertyCoreEntityTime
                             label='Ended'
                             :model-value='event.ended'
                             :edit='is_editable'
@@ -190,7 +190,7 @@
                     </div>
 
                     <div class='col-12 pt-2'>
-                        <PropertyCoreEventLocation
+                        <PropertyCoreEntityLocation
                             :model-value='event.location'
                             :edit='is_editable'
                             @update:model-value='patch({ location: $event })'
@@ -198,7 +198,7 @@
                     </div>
 
                     <div class='col-12 pt-2'>
-                        <PropertyCoreEventExternalId
+                        <PropertyCoreEntityExternalId
                             :model-value='event.external_id'
                             :edit='is_editable'
                             @update:model-value='patch({ external_id: $event })'
@@ -212,7 +212,7 @@
                     :email='event.username'
                 />
 
-                <PropertyCoreEventMission
+                <PropertyCoreEntityMission
                     :model-value='event.mission_guid'
                     :edit='is_editable'
                     :event-name='event.name'
@@ -248,7 +248,7 @@
                     </SlideDownHeader>
                 </div>
 
-                <PropertyCoreEventLinks
+                <PropertyCoreEntityLinks
                     :model-value='event.links'
                     :edit='is_editable'
                     @update:model-value='patch({ links: $event })'
@@ -262,7 +262,7 @@
                     @update:model-value='updateStyle($event)'
                 />
 
-                <PropertyCoreEventChannels
+                <PropertyCoreEntityChannels
                     :model-value='event.channels'
                     :boards='event.boards'
                     :edit='is_creator'
@@ -270,7 +270,7 @@
                     @nominate='nominate($event)'
                 />
 
-                <PropertyCoreEventForms
+                <PropertyCoreEntityForms
                     :event='event.id'
                     :refresh='formsRefresh'
                     :channels='event.channels'
@@ -278,13 +278,13 @@
                     @add='completeForm($event)'
                 />
 
-                <PropertyCoreEventMetadata
+                <PropertyCoreEntityMetadata
                     :model-value='event.metadata'
                     :edit='is_editable'
                     @update:model-value='patch({ metadata: $event })'
                 />
 
-                <PropertyCoreEventTimes
+                <PropertyCoreEntityTimes
                     :created='event.created'
                     :started='event.started'
                     :updated='event.updated'
@@ -333,18 +333,18 @@ import SlideDownHeader from './util/SlideDownHeader.vue';
 import PropertyType from './Property/PropertyType.vue';
 import PropertyStyle from './Property/PropertyStyle.vue';
 import PropertyEmail from './Property/PropertyEmail.vue';
-import PropertyCoreEventPriority from './Property/PropertyCoreEventPriority.vue';
-import PropertyCoreEventLocation from './Property/PropertyCoreEventLocation.vue';
-import PropertyCoreEventTime from './Property/PropertyCoreEventTime.vue';
-import PropertyCoreEventExternalId from './Property/PropertyCoreEventExternalId.vue';
-import PropertyCoreEventLinks from './Property/PropertyCoreEventLinks.vue';
-import PropertyCoreEventChannels from './Property/PropertyCoreEventChannels.vue';
-import PropertyCoreEventForms from './Property/PropertyCoreEventForms.vue';
-import PropertyCoreEventMetadata from './Property/PropertyCoreEventMetadata.vue';
-import PropertyCoreEventMission from './Property/PropertyCoreEventMission.vue';
-import PropertyCoreEventTimes from './Property/PropertyCoreEventTimes.vue';
+import PropertyCoreEntityPriority from './Property/PropertyCoreEntityPriority.vue';
+import PropertyCoreEntityLocation from './Property/PropertyCoreEntityLocation.vue';
+import PropertyCoreEntityTime from './Property/PropertyCoreEntityTime.vue';
+import PropertyCoreEntityExternalId from './Property/PropertyCoreEntityExternalId.vue';
+import PropertyCoreEntityLinks from './Property/PropertyCoreEntityLinks.vue';
+import PropertyCoreEntityChannels from './Property/PropertyCoreEntityChannels.vue';
+import PropertyCoreEntityForms from './Property/PropertyCoreEntityForms.vue';
+import PropertyCoreEntityMetadata from './Property/PropertyCoreEntityMetadata.vue';
+import PropertyCoreEntityMission from './Property/PropertyCoreEntityMission.vue';
+import PropertyCoreEntityTimes from './Property/PropertyCoreEntityTimes.vue';
 import FormWizard from './util/FormWizard.vue';
-import type { CoreForm, CoreEvent, CoreEventStyle, CoreEventBoardSummary } from '../../types.ts';
+import type { CoreForm, CoreEntity, CoreEntityStyle, CoreEntityBoardSummary } from '../../types.ts';
 import { server } from '../../std.ts';
 import { db, liveQuery } from '../../database.ts';
 import { missingRequiredForms } from '../../utils/column-forms.ts';
@@ -370,7 +370,7 @@ const embedded = computed(() => props.eventId !== undefined);
 const eventKey = computed(() => props.eventId ?? String(route.params.event || ''));
 const hasMap = computed(() => !!mapStore._map);
 
-const event = ref<CoreEvent | undefined>();
+const event = ref<CoreEntity | undefined>();
 const loading = ref(true);
 const error = ref<Error | undefined>();
 
@@ -497,7 +497,7 @@ async function refreshEvent(): Promise<void> {
     }
 }
 
-async function loadEvent(): Promise<CoreEvent> {
+async function loadEvent(): Promise<CoreEntity> {
     const res = await server.GET('/api/core/event/{:event}', {
         params: {
             path: {
@@ -509,7 +509,7 @@ async function loadEvent(): Promise<CoreEvent> {
     if (res.error) throw new Error(res.error.message);
 
     // openapi-fetch widens the coordinate 2-tuple the API declares
-    return res.data as CoreEvent;
+    return res.data as CoreEntity;
 }
 
 /**
@@ -562,7 +562,7 @@ async function patch(body: Record<string, unknown>): Promise<void> {
 
         if (res.error) throw new Error(res.error.message);
 
-        event.value = res.data as CoreEvent;
+        event.value = res.data as CoreEntity;
 
         await syncMapFeature();
     } catch (err) {
@@ -580,7 +580,7 @@ async function patch(body: Record<string, unknown>): Promise<void> {
  * section reflects the new placement. A Nominated Column with required
  * Forms surfaces the FormWizard first and the nomination completes with it
  */
-async function nominate(board: CoreEventBoardSummary): Promise<void> {
+async function nominate(board: CoreEntityBoardSummary): Promise<void> {
     if (!event.value) return;
 
     const column = board.columns.find((c) => c.type === 'nominated');
@@ -704,7 +704,7 @@ function updateCoordinates(coordinates: number[]): void {
 function updateStyle(properties: Record<string, unknown>): void {
     // PropertyStyle round trips the whole property object - only the keys the
     // Event style supports can be submitted back to the API
-    const style: CoreEventStyle = {};
+    const style: CoreEntityStyle = {};
 
     if (typeof properties.icon === 'string') style.icon = properties.icon;
     if (typeof properties['marker-color'] === 'string') style['marker-color'] = properties['marker-color'];

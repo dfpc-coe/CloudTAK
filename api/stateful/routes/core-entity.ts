@@ -18,7 +18,7 @@ export default async function router(schema: Schema, config: ConfigStateful) {
         res: StandardResponse,
     }, async (req, res) => {
         try {
-            await config.hub.coreEventSubmit(req.params.eventid);
+            await config.hub.coreEntitySubmit(req.params.eventid);
 
             res.json({ status: 200, message: 'Core Event Submitted' });
         } catch (err) {

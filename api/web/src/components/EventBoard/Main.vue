@@ -173,7 +173,7 @@
             @close='nominate = false'
         />
 
-        <CreateCoreEvent
+        <CreateCoreEntity
             v-if='createEvent && channel !== undefined'
             :channel='channel'
             :navigate='false'
@@ -204,7 +204,7 @@
             <div
                 class='d-flex flex-column overflow-hidden px-2 py-2 event-board-event-modal'
             >
-                <CoreEventView
+                <CoreEntityView
                     :event-id='viewEvent'
                     @close='closeEvent'
                 />
@@ -228,7 +228,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { server } from '../../std.ts';
-import type { CoreForm, CoreEvent, CoreEventBoard, CoreEventBoardEvent } from '../../types.ts';
+import type { CoreForm, CoreEntity, CoreEntityBoard, CoreEntityBoardEvent } from '../../types.ts';
 import type { BoardColumn } from './types.ts';
 import { missingRequiredForms } from '../../utils/column-forms.ts';
 import FormWizard from '../CloudTAK/util/FormWizard.vue';
@@ -236,8 +236,8 @@ import NavHeader from '../util/NavHeader.vue';
 import GroupSelectDropdown from '../CloudTAK/util/GroupSelectDropdown.vue';
 import type { GroupSelectChannel } from '../CloudTAK/util/GroupSelectDropdown.vue';
 import BoardSelectDropdown from '../CloudTAK/util/BoardSelectDropdown.vue';
-import CoreEventView from '../CloudTAK/CoreEventView.vue';
-import CreateCoreEvent from '../CloudTAK/util/CreateCoreEvent.vue';
+import CoreEntityView from '../CloudTAK/CoreEntityView.vue';
+import CreateCoreEntity from '../CloudTAK/util/CreateCoreEntity.vue';
 import NominateModal from './NominateModal.vue';
 import EditBoardModal from './EditBoardModal.vue';
 import ViewBoard from './ViewBoard.vue';
@@ -305,7 +305,7 @@ const error = ref<Error | undefined>();
 const channel = ref<number | undefined>();
 const channels = ref<Array<GroupSelectChannel>>([]);
 
-const boards = ref<Array<CoreEventBoard>>([]);
+const boards = ref<Array<CoreEntityBoard>>([]);
 const board = ref<string | undefined>();
 const boardSelect = ref<InstanceType<typeof BoardSelectDropdown> | null>(null);
 const columns = ref<Array<BoardColumn>>([]);
@@ -319,13 +319,13 @@ const createEvent = ref(false);
 /** A nomination held back by required Forms - completed by the FormWizard */
 const formWizard = ref<{
     forms: Array<CoreForm>;
-    event: CoreEvent;
+    event: CoreEntity;
 } | undefined>();
 const addBoard = ref(false);
-const editBoard = ref<CoreEventBoard | undefined>();
+const editBoard = ref<CoreEntityBoard | undefined>();
 const viewEvent = ref<string | undefined>();
 
-const selectedBoard = computed<CoreEventBoard | undefined>(() => {
+const selectedBoard = computed<CoreEntityBoard | undefined>(() => {
     return boards.value.find((b) => b.id === board.value);
 });
 
@@ -378,7 +378,7 @@ watch(channel, (value) => {
  * Listing Boards is owned by the selector - resolving which one is shown stays
  * here since the URL and a freshly created Board both feed into it
  */
-function onBoards(list: Array<CoreEventBoard>): void {
+function onBoards(list: Array<CoreEntityBoard>): void {
     boards.value = list;
 
     const query = String(route.query.board || '');
@@ -469,8 +469,8 @@ async function listColumns(): Promise<void> {
         if (cols.error) throw new Error(cols.error.message);
         if (placements.error) throw new Error(placements.error.message);
 
-        const byColumn = new Map<string, Array<CoreEventBoardEvent>>();
-        for (const placement of placements.data.items as Array<CoreEventBoardEvent>) {
+        const byColumn = new Map<string, Array<CoreEntityBoardEvent>>();
+        for (const placement of placements.data.items as Array<CoreEntityBoardEvent>) {
             const arr = byColumn.get(placement.column) || [];
             arr.push(placement);
             byColumn.set(placement.column, arr);
@@ -532,7 +532,7 @@ async function saveBoard(update: { name: string; description: string }): Promise
     }
 }
 
-async function deleteBoard(existing?: CoreEventBoard): Promise<void> {
+async function deleteBoard(existing?: CoreEntityBoard): Promise<void> {
     if (!existing) return;
 
     try {
@@ -567,13 +567,13 @@ function openCreate(): void {
  * Events created from the Board are nominated straight onto it - unless the
  * user unshared the Board's Channel in the create modal
  */
-async function onEventCreated(event: CoreEvent): Promise<void> {
+async function onEventCreated(event: CoreEntity): Promise<void> {
     if (channel.value === undefined || !event.channels.includes(channel.value)) return;
 
     await nominateEvent(event);
 }
 
-async function nominateEvent(event: CoreEvent): Promise<void> {
+async function nominateEvent(event: CoreEntity): Promise<void> {
     const column = nominatedColumn.value;
 
     if (!column) return;
@@ -594,7 +594,7 @@ async function nominateEvent(event: CoreEvent): Promise<void> {
     }
 }
 
-async function placeEvent(event: CoreEvent): Promise<void> {
+async function placeEvent(event: CoreEntity): Promise<void> {
     const column = nominatedColumn.value;
 
     if (!column) return;
@@ -609,7 +609,7 @@ async function placeEvent(event: CoreEvent): Promise<void> {
 
     if (res.error) throw new Error(res.error.message);
 
-    column.events.push(res.data as CoreEventBoardEvent);
+    column.events.push(res.data as CoreEntityBoardEvent);
 }
 
 async function completeFormWizard(): Promise<void> {

@@ -53,7 +53,7 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
-import type { CoreEventBoard } from '../../types.ts';
+import type { CoreEntityBoard } from '../../types.ts';
 import {
     TablerInput,
     TablerModal,
@@ -61,7 +61,7 @@ import {
 
 // No Board creates the modal in "new Board" mode
 const props = defineProps<{
-    board?: CoreEventBoard;
+    board?: CoreEntityBoard;
 }>();
 
 const emit = defineEmits<{
