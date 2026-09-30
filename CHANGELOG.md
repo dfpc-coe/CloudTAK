@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+### v13.100.4 - 2026-09-30
+
 - :bug: Fix Buffer/Range distance input freezing the page when typing 3+ digits in yards or miles due to a unit conversion feedback loop
 
 ### v13.100.3 - 2026-09-30
