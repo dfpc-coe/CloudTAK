@@ -2,7 +2,8 @@ import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../std.ts', () => ({ server: {} }));
-vi.mock('../base/overlay-class.ts', () => ({ default: class {} }));
+const create = vi.hoisted(() => vi.fn());
+vi.mock('../base/overlay-class.ts', () => ({ default: class { static create = create; } }));
 vi.mock('../base/overlay-sync.ts', () => ({
     syncOverlays: vi.fn(),
     OVERLAY_LIST_CACHE_KEY: 'overlay'
@@ -22,6 +23,7 @@ function stub(id: number, name: string, pos: number, mode = 'profile'): StubOver
         _internal: mode === 'internal',
         save: vi.fn(async () => {}),
         moveBefore: vi.fn(),
+        anchorLayerId: () => `${id}-layer`,
     } as unknown as StubOverlay;
 }
 
@@ -77,5 +79,53 @@ describe('OverlayManager stack order', () => {
         OverlayManager.loaded.sort(OverlayManager.compareStack);
 
         expect(ids()).toEqual([10, 1, 2, 3, 4, 5, -1]);
+    });
+});
+
+describe('OverlayManager.createLoaded', () => {
+    beforeEach(() => {
+        OverlayManager.clearLoaded();
+        create.mockReset();
+    });
+
+    it('inserts a new overlay at the bottom of the ordinary stack, above the basemap', async () => {
+        const basemap = stub(10, 'Basemap', -1, 'basemap');
+        const features = stub(-1, 'Map Features', 3, 'internal');
+        OverlayManager.appendLoaded(basemap, stub(1, 'Overlay 1', 1), stub(2, 'Overlay 2', 2), features);
+
+        // The server gives an overlay created without `pos` the lowest position
+        const created = stub(7, 'New', 0);
+        create.mockResolvedValue(created);
+
+        await OverlayManager.createLoaded({ name: 'New', mode: 'profile', url: '/new' });
+
+        expect(create.mock.calls[0][1]).toMatchObject({ before: '1-layer' });
+        expect(ids()).toEqual([10, 7, 1, 2, -1]);
+        expect([...OverlayManager.loaded].sort(OverlayManager.compareStack).map((o) => o.id)).toEqual(ids());
+    });
+
+    it('inserts a new overlay at the very bottom when there is no basemap', async () => {
+        const features = stub(-1, 'Map Features', 3, 'internal');
+        OverlayManager.appendLoaded(stub(1, 'Overlay 1', 1), stub(2, 'Overlay 2', 2), features);
+
+        create.mockResolvedValue(stub(7, 'New', 0));
+
+        await OverlayManager.createLoaded({ name: 'New', mode: 'profile', url: '/new' });
+
+        expect(create.mock.calls[0][1]).toMatchObject({ before: '1-layer' });
+        expect(ids()).toEqual([7, 1, 2, -1]);
+    });
+
+    it('keeps prepend for a new basemap', async () => {
+        OverlayManager.appendLoaded(stub(1, 'Overlay 1', 1));
+
+        create.mockResolvedValue(stub(10, 'Basemap', -1, 'basemap'));
+
+        await OverlayManager.createLoaded(
+            { name: 'Basemap', mode: 'basemap', url: '/basemap', pos: -1 },
+            { before: '1-layer', position: 'prepend' }
+        );
+
+        expect(ids()).toEqual([10, 1]);
     });
 });

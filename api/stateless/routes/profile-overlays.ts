@@ -129,6 +129,24 @@ async function augmentOverlay(
     return serializeOverlay(overlay, { actions: fromProtocol().actions(), tilejson });
 }
 
+/**
+ * Clients insert a new overlay at the bottom of the stack (directly above the basemap).
+ * Default its pos below every existing non-basemap overlay so the stored order matches,
+ * instead of every overlay sharing the column default.
+ */
+async function bottomPos(config: ConfigStateless, username: string): Promise<number | undefined> {
+    const [row] = await config.pg.select({
+        min: sql<number | null>`min(${ProfileOverlay.pos})`,
+    }).from(ProfileOverlay).where(sql`
+        ${ProfileOverlay.username} = ${username}
+        AND ${ProfileOverlay.mode} != 'basemap'
+    `);
+
+    if (!row || row.min === null) return undefined;
+
+    return Number(row.min) - 1;
+}
+
 export default async function router(schema: Schema, config: ConfigStateless) {
     const profileControl = new ProfileControl(config);
     const userControl = new UserControl(config);
@@ -404,6 +422,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                         username = ${user.email}
                         AND active
                     `);
+            }
+
+            if (req.body.pos === undefined && req.body.mode !== 'basemap') {
+                req.body.pos = await bottomPos(config, user.email);
             }
 
             let overlay;

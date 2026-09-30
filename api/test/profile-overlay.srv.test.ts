@@ -368,4 +368,58 @@ test('GET: api/profile/overlay - mission mode, access denied -> moved to removed
     }
 });
 
+test('POST: api/profile/overlay - new overlays without pos stack below existing ones', async () => {
+    const created: number[] = [];
+
+    const create = async (name: string, pos?: number) => {
+        const res = await flight.fetch('/api/profile/overlay', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name,
+                mode: 'profile',
+                url: `/profile/admin@example.com/${name}.pmtiles`,
+                ...(pos === undefined ? {} : { pos }),
+            },
+        }, false);
+
+        assert.equal(res.status, 200, `POST overlay failed: ${JSON.stringify(res.body)}`);
+        created.push(res.body.id);
+        return res.body;
+    };
+
+    try {
+        const first = await create('pos-first');
+        const second = await create('pos-second');
+
+        // Clients insert a new overlay at the bottom of the stack, so it must not share the column default
+        assert.ok(second.pos < first.pos, `Expected ${second.pos} < ${first.pos}`);
+
+        // A reorder persists explicit positions - a later overlay still goes below all of them
+        for (const [id, pos] of [[first.id, 10], [second.id, 11]]) {
+            await flight.fetch(`/api/profile/overlay/${id}`, {
+                method: 'PATCH',
+                auth: { bearer: flight.token.admin },
+                body: { pos },
+            }, true);
+        }
+
+        const third = await create('pos-third');
+        assert.equal(third.pos, 9);
+
+        // An explicit pos is kept as sent
+        const explicit = await create('pos-explicit', 42);
+        assert.equal(explicit.pos, 42);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        for (const id of created) {
+            await flight.fetch(`/api/profile/overlay?id=${id}`, {
+                method: 'DELETE',
+                auth: { bearer: flight.token.admin },
+            }, false);
+        }
+    }
+});
+
 flight.landing();

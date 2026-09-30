@@ -59,8 +59,14 @@ export default class OverlayManager extends BaseInterface {
         return this.loaded.find((overlay) => overlay.mode === mode && overlay.mode_id === modeId);
     }
 
-    private static loadedBeforeId(): string | undefined {
-        return this.loadedAnchorFrom(1);
+    /**
+     * Index of the bottom of the ordinary stack (directly above any
+     * basemap) - where a new overlay is inserted, matching the server which
+     * gives an overlay created without `pos` the lowest position
+     */
+    private static loadedBottomIndex(): number {
+        const idx = this.loaded.findIndex((overlay) => overlay.mode !== 'basemap');
+        return idx === -1 ? this.loaded.length : idx;
     }
 
     static appendLoaded(...overlays: Overlay[]): void {
@@ -72,17 +78,16 @@ export default class OverlayManager extends BaseInterface {
         opts: Overlay_CreateLoadedOptions = {}
     ): Promise<Overlay> {
         const { position = 'default', ...createOpts } = opts;
+        const idx = this.loadedBottomIndex();
         const overlay = await Overlay.create(body, {
             ...createOpts,
-            before: createOpts.before ?? this.loadedBeforeId()
+            before: createOpts.before ?? this.loadedAnchorFrom(idx)
         });
 
         if (position === 'prepend') {
             this.loaded.unshift(overlay);
-        } else if (this.loaded.length > 0) {
-            this.loaded.splice(1, 0, overlay);
         } else {
-            this.loaded.push(overlay);
+            this.loaded.splice(this.loadedBottomIndex(), 0, overlay);
         }
 
         return overlay;
