@@ -37,6 +37,7 @@ export default class UserControl {
             'display::stale': ProfileConfigDefaults['display::stale'],
             'display::distance': ProfileConfigDefaults['display::distance'],
             'display::elevation': ProfileConfigDefaults['display::elevation'],
+            'display::area': ProfileConfigDefaults['display::area'],
             'display::speed': ProfileConfigDefaults['display::speed'],
             'display::projection': ProfileConfigDefaults['display::projection'],
             'display::zoom': ProfileConfigDefaults['display::zoom'],

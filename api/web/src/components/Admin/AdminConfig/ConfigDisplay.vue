@@ -91,7 +91,7 @@ import {
     IconEye
 } from '@tabler/icons-vue';
 
-type DisplayKey = 'stale' | 'distance' | 'elevation' | 'speed' | 'projection' | 'zoom' | 'style' | 'coordinate' | 'text' | 'icon_rotation' | 'radiation_dose';
+type DisplayKey = 'stale' | 'distance' | 'elevation' | 'area' | 'speed' | 'projection' | 'zoom' | 'style' | 'coordinate' | 'text' | 'icon_rotation' | 'radiation_dose';
 type DisplayConfigKey = `display::${DisplayKey}`;
 type DisplayResponse = paths['/api/config/display']['get']['responses']['200']['content']['application/json'];
 type DisplayConfig = {
@@ -105,6 +105,7 @@ const displayKeys: DisplayConfigKey[] = [
     'display::stale',
     'display::distance',
     'display::elevation',
+    'display::area',
     'display::speed',
     'display::projection',
     'display::zoom',
@@ -120,6 +121,7 @@ function createDisplayConfig(): DisplayConfig {
         'display::stale': '10 Minutes',
         'display::distance': 'mile',
         'display::elevation': 'feet',
+        'display::area': 'acre',
         'display::speed': 'mi/h',
         'display::projection': 'globe',
         'display::zoom': 'conditional',
@@ -136,6 +138,7 @@ function createDisplayOptions(): DisplayOptions {
         'display::stale': [],
         'display::distance': [],
         'display::elevation': [],
+        'display::area': [],
         'display::speed': [],
         'display::projection': [],
         'display::zoom': [],
@@ -188,6 +191,7 @@ async function fetch(): Promise<void> {
             'display::stale': data.stale.options,
             'display::distance': data.distance.options,
             'display::elevation': data.elevation.options,
+            'display::area': data.area.options,
             'display::speed': data.speed.options,
             'display::projection': data.projection.options,
             'display::zoom': data.zoom.options,
@@ -202,6 +206,7 @@ async function fetch(): Promise<void> {
             'display::stale': data.stale.value,
             'display::distance': data.distance.value,
             'display::elevation': data.elevation.value,
+            'display::area': data.area.value,
             'display::speed': data.speed.value,
             'display::projection': data.projection.value,
             'display::zoom': data.zoom.value,
