@@ -4,21 +4,21 @@ import jsonata from 'jsonata';
 import Err from '@openaddresses/batch-error';
 import type { Feature } from '@tak-ps/node-cot';
 import handlebars from './handlebars.js';
-import type { CoreEvent, CoreDevice, LayerMapping } from './schema.js';
+import type { CoreEntity, CoreDevice, LayerMapping } from './schema.js';
 import { LayerMapping_Destination } from './enums.js';
-import { CoreEventSchema, CoreDeviceSchema } from './core-schema.js';
+import { CoreEntitySchema, CoreDeviceSchema } from './core-schema.js';
 
-/** A submitted Feature - the geometry is optional as CoreEvent & CoreDevice Maps do not require one */
+/** A submitted Feature - the geometry is optional as CoreEntity & CoreDevice Maps do not require one */
 export type MappingFeature = Omit<Static<typeof Feature.InputFeature>, 'geometry'> & {
     geometry?: Static<typeof Feature.InputFeature>['geometry'] | null;
 };
 
 export type MappingRow = Pick<InferSelectModel<typeof LayerMapping>, 'destination' | 'query' | 'mapping'>;
 
-type EventColumns = InferInsertModel<typeof CoreEvent>;
+type EventColumns = InferInsertModel<typeof CoreEntity>;
 type DeviceColumns = InferInsertModel<typeof CoreDevice>;
 
-export type MappedEvent = Partial<Pick<EventColumns, Extract<keyof typeof CoreEventSchema.properties, keyof EventColumns>>> & {
+export type MappedEvent = Partial<Pick<EventColumns, Extract<keyof typeof CoreEntitySchema.properties, keyof EventColumns>>> & {
     channels?: number[];
     active?: boolean;
 };
@@ -151,7 +151,7 @@ export const MAP_FIELDS: Record<LayerMapping_Destination, MapField[]> = {
             prop('fill-opacity', 'number'),
         ]),
     ],
-    [LayerMapping_Destination.COREEVENT]: schemaFields(CoreEventSchema),
+    [LayerMapping_Destination.COREENTITY]: schemaFields(CoreEntitySchema),
     [LayerMapping_Destination.COREDEVICE]: schemaFields(CoreDeviceSchema),
 };
 

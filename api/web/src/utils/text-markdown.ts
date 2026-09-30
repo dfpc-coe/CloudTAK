@@ -18,7 +18,7 @@ function dedent(lines: string[]): string[] {
 }
 
 /**
- * Prepare free text - CoT Remarks, CoreEvent Remarks, Mission Logs etc. - to be rendered as Markdown
+ * Prepare free text - CoT Remarks, CoreEntity Remarks, Mission Logs etc. - to be rendered as Markdown
  *
  * Line structure is left intact so block level Markdown such as tables, lists
  * & headings render. Single line breaks are expected to be preserved by the

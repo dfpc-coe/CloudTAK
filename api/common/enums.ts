@@ -32,7 +32,7 @@ export enum Import_Status {
     FAIL = 'Fail',
 }
 
-export enum CoreEvent_Priority {
+export enum CoreEntity_Priority {
     NONE = 'none',
     LOW = 'low',
     MEDIUM = 'medium',
@@ -40,14 +40,14 @@ export enum CoreEvent_Priority {
     CRITICAL = 'critical',
 }
 
-export enum CoreEventEffect_Status {
+export enum CoreEntityEffect_Status {
     TASKED = 'tasked',
     ACTIVE = 'active',
     COMPLETE = 'complete',
     CANCELLED = 'cancelled',
 }
 
-export enum CoreEventBoardColumn_Type {
+export enum CoreEntityBoardColumn_Type {
     NOMINATED = 'nominated',
     CUSTOM = 'custom',
 }
@@ -188,7 +188,7 @@ export enum Basemap_Type {
 
 export enum LayerMapping_Destination {
     COREFEATURE = 'CoreFeature',
-    COREEVENT = 'CoreEvent',
+    COREENTITY = 'CoreEvent',
     COREDEVICE = 'CoreDevice',
 }
 

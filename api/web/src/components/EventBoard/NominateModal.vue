@@ -39,7 +39,7 @@
                 class='d-flex flex-column gap-2 overflow-auto'
                 style='max-height: 50vh;'
             >
-                <StandardCoreEvent
+                <StandardCoreEntity
                     v-for='event in available'
                     :key='event.id'
                     :event='event'
@@ -53,8 +53,8 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { server } from '../../std.ts';
-import type { CoreEvent } from '../../types.ts';
-import StandardCoreEvent from '../CloudTAK/util/StandardCoreEvent.vue';
+import type { CoreEntity } from '../../types.ts';
+import StandardCoreEntity from '../CloudTAK/util/StandardCoreEntity.vue';
 import {
     TablerNone,
     TablerAlert,
@@ -69,16 +69,16 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: 'nominate', event: CoreEvent): void;
+    (e: 'nominate', event: CoreEntity): void;
     (e: 'close'): void;
 }>();
 
 const loading = ref(true);
 const error = ref<Error | undefined>();
 const filter = ref('');
-const events = ref<Array<CoreEvent>>([]);
+const events = ref<Array<CoreEntity>>([]);
 
-const available = computed<Array<CoreEvent>>(() => {
+const available = computed<Array<CoreEntity>>(() => {
     return events.value.filter((event) => !props.placed.has(event.id));
 });
 
@@ -129,7 +129,7 @@ async function listEvents(): Promise<void> {
 
         if (res.error) throw new Error(res.error.message);
 
-        events.value = res.data.items as Array<CoreEvent>;
+        events.value = res.data.items as Array<CoreEntity>;
 
         loading.value = false;
     } catch (err) {

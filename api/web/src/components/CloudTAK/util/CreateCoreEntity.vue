@@ -39,7 +39,7 @@
                     </div>
 
                     <div class='col-12'>
-                        <CoreEventType v-model='config.type' />
+                        <CoreEntityType v-model='config.type' />
                     </div>
 
                     <div class='col-12'>
@@ -51,7 +51,7 @@
                     </div>
 
                     <div class='col-12'>
-                        <PropertyCoreEventLocation
+                        <PropertyCoreEntityLocation
                             v-model='config.location'
                             :edit='true'
                         />
@@ -103,12 +103,12 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { server } from '../../../std.ts';
 import Coordinate from './Coordinate.vue';
-import CoreEventType from './CoreEventType.vue';
-import PropertyCoreEventLocation from '../Property/PropertyCoreEventLocation.vue';
+import CoreEntityType from './CoreEntityType.vue';
+import PropertyCoreEntityLocation from '../Property/PropertyCoreEntityLocation.vue';
 import GroupSelect from '../../util/GroupSelect.vue';
 import GroupManager from '../../../base/group.ts';
 import { useMapStore } from '../../../stores/map.ts';
-import type { CoreEvent, InputFeature } from '../../../types.ts';
+import type { CoreEntity, InputFeature } from '../../../types.ts';
 import {
     TablerAlert,
     TablerEnum,
@@ -131,14 +131,14 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-    (e: 'create', event: CoreEvent): void;
+    (e: 'create', event: CoreEntity): void;
     (e: 'close'): void;
 }>();
 
 const router = useRouter();
 const mapStore = useMapStore();
 
-type CoreEventPriority = 'none' | 'low' | 'medium' | 'high' | 'critical';
+type CoreEntityPriority = 'none' | 'low' | 'medium' | 'high' | 'critical';
 
 const error = ref<Error | undefined>(undefined);
 const loading = ref(false);
@@ -154,7 +154,7 @@ const center = props.coordinates && props.coordinates.length >= 2
 const config = ref({
     name: '',
     type: '',
-    priority: 'none' as CoreEventPriority,
+    priority: 'none' as CoreEntityPriority,
     location: props.location || '',
     remarks: '',
     channels: [] as Array<string>,
@@ -241,7 +241,7 @@ async function submit(): Promise<void> {
             }
         }
 
-        emit('create', res.data as CoreEvent);
+        emit('create', res.data as CoreEntity);
         emit('close');
 
         if (props.navigate) {

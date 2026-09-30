@@ -3,13 +3,13 @@ import {
     StandardResponse,
     CoreFormResponse as CoreFormResponseType,
     CoreFormResponseResponse,
-    CoreEventFormResponse,
+    CoreEntityFormResponse,
 } from '../../common/types.js';
 import { sql, eq } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUser } from '../../common/auth.js';
-import { CoreFormResponse, CoreEventResponse } from '../../common/schema.js';
+import { CoreFormResponse, CoreEntityResponse } from '../../common/schema.js';
 import type ConfigStateless from '../config.js';
 import FormControl from '../lib/control/form.js';
 import { userChannels } from '../lib/tak-channels.js';
@@ -42,18 +42,18 @@ export default async function router(schema: Schema, config: ConfigStateless) {
      */
     async function ensureEvents(user: AuthUser, events: string[]): Promise<void> {
         for (const event of events) {
-            const augmented = await config.models.CoreEvent.augmented_from(event);
+            const augmented = await config.models.CoreEntity.augmented_from(event);
             await ensureEventAccess(user, augmented);
         }
     }
 
     /** Replace the Core Events a Response is linked to */
     async function commitEvents(response: string, events: string[]): Promise<void> {
-        await config.pg.delete(CoreEventResponse)
-            .where(eq(CoreEventResponse.response, response));
+        await config.pg.delete(CoreEntityResponse)
+            .where(eq(CoreEntityResponse.response, response));
 
         if (events.length > 0) {
-            await config.pg.insert(CoreEventResponse)
+            await config.pg.insert(CoreEntityResponse)
                 .values(events.map(event => ({ event, response })));
         }
     }
@@ -78,13 +78,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(CoreEventFormResponse),
+            items: Type.Array(CoreEntityFormResponse),
         }),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
 
-            const event = await config.models.CoreEvent.augmented_from(req.params.event);
+            const event = await config.models.CoreEntity.augmented_from(req.params.event);
 
             await ensureEventAccess(user, event);
 
@@ -96,9 +96,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 where: sql`
                     EXISTS (
                         SELECT 1
-                        FROM core_event_response
-                        WHERE core_event_response.response = core_form_response.id
-                        AND core_event_response.event = ${event.id}
+                        FROM core_entity_response
+                        WHERE core_entity_response.response = core_form_response.id
+                        AND core_entity_response.event = ${event.id}
                     )
                 `,
             });
@@ -115,7 +115,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
             }
 
-            const items: Array<Static<typeof CoreEventFormResponse>> = [];
+            const items: Array<Static<typeof CoreEntityFormResponse>> = [];
             for (const response of list.items) {
                 const form = forms.get(response.form);
 
@@ -185,9 +185,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                         form = ${form.id}
                         AND EXISTS (
                             SELECT 1
-                            FROM core_event_response
-                            WHERE core_event_response.response = core_form_response.id
-                            AND core_event_response.event = ${req.query.event}
+                            FROM core_entity_response
+                            WHERE core_entity_response.response = core_form_response.id
+                            AND core_entity_response.event = ${req.query.event}
                         )
                     `,
             });

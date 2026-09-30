@@ -62,26 +62,26 @@ export type ErrorReportList = paths["/api/error"]["get"]["responses"]["200"]["co
 
 export type CoreDevice = paths["/api/core/device/{:device}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreDeviceList = paths["/api/core/device"]["get"]["responses"]["200"]["content"]["application/json"];
-export type CoreEvent = paths["/api/core/event/{:event}"]["get"]["responses"]["200"]["content"]["application/json"];
-export type CoreEventList = paths["/api/core/event"]["get"]["responses"]["200"]["content"]["application/json"];
-export type CoreEventLink = CoreEvent["links"][0];
-export type CoreEventStyle = CoreEvent["style"];
-export type CoreEventBoardSummary = CoreEvent["boards"][0];
-export type CoreEventBoardColumnSummary = CoreEventBoardSummary["columns"][0];
+export type CoreEntity = paths["/api/core/event/{:event}"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEntityList = paths["/api/core/event"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEntityLink = CoreEntity["links"][0];
+export type CoreEntityStyle = CoreEntity["style"];
+export type CoreEntityBoardSummary = CoreEntity["boards"][0];
+export type CoreEntityBoardColumnSummary = CoreEntityBoardSummary["columns"][0];
 
-export type CoreEventBoardList = paths["/api/board"]["get"]["responses"]["200"]["content"]["application/json"];
-export type CoreEventBoard = CoreEventBoardList["items"][0];
-export type CoreEventBoardColumnList = paths["/api/board/column"]["get"]["responses"]["200"]["content"]["application/json"];
-export type CoreEventBoardColumn = CoreEventBoardColumnList["items"][0];
-export type CoreEventBoardEventList = paths["/api/board/event"]["get"]["responses"]["200"]["content"]["application/json"];
-export type CoreEventBoardEvent = CoreEventBoardEventList["items"][0];
+export type CoreEntityBoardList = paths["/api/board"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEntityBoard = CoreEntityBoardList["items"][0];
+export type CoreEntityBoardColumnList = paths["/api/board/column"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEntityBoardColumn = CoreEntityBoardColumnList["items"][0];
+export type CoreEntityBoardEventList = paths["/api/board/event"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEntityBoardEvent = CoreEntityBoardEventList["items"][0];
 
 export type CoreForm = paths["/api/core/form/{:form}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreFormList = paths["/api/core/form"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreFormColumnList = paths["/api/board/column/{:column}/form"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreFormColumn = CoreFormColumnList["items"][0];
-export type CoreEventFormResponseList = paths["/api/core/event/{:event}/response"]["get"]["responses"]["200"]["content"]["application/json"];
-export type CoreEventFormResponse = CoreEventFormResponseList["items"][0];
+export type CoreEntityFormResponseList = paths["/api/core/event/{:event}/response"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEntityFormResponse = CoreEntityFormResponseList["items"][0];
 
 export type Contact = paths["/api/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"][0];
 export type ContactList = paths["/api/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"];

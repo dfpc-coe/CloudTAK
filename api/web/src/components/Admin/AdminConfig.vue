@@ -46,7 +46,7 @@ import ConfigRetention from './AdminConfig/ConfigRetention.vue';
 import ConfigNotifications from './AdminConfig/ConfigNotifications.vue';
 import ConfigDisplay from './AdminConfig/ConfigDisplay.vue';
 import ConfigApplications from './AdminConfig/ConfigApplications.vue';
-import ConfigCoreEvents from './AdminConfig/ConfigCoreEvents.vue';
+import ConfigCoreEntities from './AdminConfig/ConfigCoreEntities.vue';
 import ConfigGroups from './AdminConfig/ConfigGroups.vue';
 import ConfigMap from './AdminConfig/ConfigMap.vue';
 import ConfigProvider from './AdminConfig/ConfigProvider.vue';
@@ -67,7 +67,7 @@ const sections: Section[] = [
     { label: 'Notifications', keywords: ['email', 'push', 'sms', 'firebase'], component: markRaw(ConfigNotifications) },
     { label: 'Display Defaults', keywords: ['units', 'coordinate', 'distance', 'speed', 'elevation', 'projection', 'text', 'zoom', 'stale', 'rotation'], component: markRaw(ConfigDisplay) },
     { label: 'External Applications', keywords: ['application', 'link', 'logo'], component: markRaw(ConfigApplications) },
-    { label: 'Core Events', keywords: ['event', 'type', 'icon', 'symbol'], component: markRaw(ConfigCoreEvents) },
+    { label: 'Core Events', keywords: ['event', 'type', 'icon', 'symbol'], component: markRaw(ConfigCoreEntities) },
     { label: 'TAK User Groups', keywords: ['group', 'team', 'colour', 'color'], component: markRaw(ConfigGroups) },
     { label: 'Map Settings', keywords: ['basemap', 'terrain', 'center', 'zoom', 'pitch', 'bearing'], component: markRaw(ConfigMap) },
     { label: 'COTAK OAuth Provider', keywords: ['oauth', 'client', 'secret'], component: markRaw(ConfigProvider) },

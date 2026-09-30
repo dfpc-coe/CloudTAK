@@ -182,22 +182,22 @@ import { ref } from 'vue';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
 import { TablerBadge, TablerInput, TablerIconButton, TablerNone } from '@tak-ps/vue-tabler';
 import { IconLink, IconExternalLink, IconPlus, IconTrash, IconPencil, IconCheck } from '@tabler/icons-vue';
-import type { CoreEventLink } from '../../../types.ts';
+import type { CoreEntityLink } from '../../../types.ts';
 
 const props = defineProps<{
     /** Named URLs associated with the Event */
-    modelValue: Array<CoreEventLink>;
+    modelValue: Array<CoreEntityLink>;
     edit?: boolean;
 }>();
 
 const emit = defineEmits<{
-    (e: 'update:modelValue', value: Array<CoreEventLink>): void
+    (e: 'update:modelValue', value: Array<CoreEntityLink>): void
 }>();
 
 const expanded = ref(false);
 const editing = ref<number | null>(null);
 const creating = ref(false);
-const draft = ref<CoreEventLink>({ name: '', url: '' });
+const draft = ref<CoreEntityLink>({ name: '', url: '' });
 
 function addLink(): void {
     creating.value = true;

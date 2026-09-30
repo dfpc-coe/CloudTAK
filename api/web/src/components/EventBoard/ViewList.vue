@@ -137,7 +137,7 @@
 
 import { ref, computed } from 'vue';
 import { server } from '../../std.ts';
-import type { CoreForm, CoreEvent, CoreEventBoardEvent } from '../../types.ts';
+import type { CoreForm, CoreEntity, CoreEntityBoardEvent } from '../../types.ts';
 import type { BoardColumn } from './types.ts';
 import { missingRequiredForms } from '../../utils/column-forms.ts';
 import FormWizard from '../CloudTAK/util/FormWizard.vue';
@@ -156,7 +156,7 @@ const emit = defineEmits<{
 }>();
 
 /** Placements flattened in Board order - Columns are already position sorted */
-const rows = computed<Array<{ column: BoardColumn; placement: CoreEventBoardEvent }>>(() => {
+const rows = computed<Array<{ column: BoardColumn; placement: CoreEntityBoardEvent }>>(() => {
     return columns.value.flatMap((column) => {
         return column.events.map((placement) => {
             return { column, placement };
@@ -184,7 +184,7 @@ const busy = computed<boolean>(() => !!formWizard.value);
 
 defineExpose({ busy });
 
-async function moveEvent(row: { column: BoardColumn; placement: CoreEventBoardEvent }, name: string): Promise<void> {
+async function moveEvent(row: { column: BoardColumn; placement: CoreEntityBoardEvent }, name: string): Promise<void> {
     const target = columns.value.find((column) => column.name === name);
 
     if (!target || target.id === row.column.id) return;
@@ -208,7 +208,7 @@ async function moveEvent(row: { column: BoardColumn; placement: CoreEventBoardEv
     }
 }
 
-async function applyMove(row: { column: BoardColumn; placement: CoreEventBoardEvent }, target: BoardColumn): Promise<void> {
+async function applyMove(row: { column: BoardColumn; placement: CoreEntityBoardEvent }, target: BoardColumn): Promise<void> {
     const position = target.events.length;
 
     const res = await server.PATCH('/api/board/event/{:placement}', {
@@ -242,13 +242,13 @@ function closeFormWizard(): void {
     selectEpoch.value += 1;
 }
 
-function creator(event: CoreEvent): string {
+function creator(event: CoreEntity): string {
     if (event.username) return event.username;
     if (event.connection !== null) return `Connection #${event.connection}`;
     return 'Unknown Creator';
 }
 
-function priorityBadgeClass(event: CoreEvent): string {
+function priorityBadgeClass(event: CoreEntity): string {
     return {
         critical: 'bg-red text-red-fg',
         high: 'bg-orange text-orange-fg',
@@ -258,7 +258,7 @@ function priorityBadgeClass(event: CoreEvent): string {
     }[event.priority] || 'bg-secondary text-secondary-fg';
 }
 
-async function removeEvent(column: BoardColumn, placement: CoreEventBoardEvent): Promise<void> {
+async function removeEvent(column: BoardColumn, placement: CoreEntityBoardEvent): Promise<void> {
     try {
         const res = await server.DELETE('/api/board/event/{:placement}', {
             params: { path: { ':placement': placement.id } }

@@ -418,7 +418,7 @@ test('DELETE: api/core/event/:event - cascades Assignments', async () => {
             auth: { bearer: flight.token.admin },
         }, true);
 
-        const remaining = await flight.config!.models.CoreEventAssignment.list();
+        const remaining = await flight.config!.models.CoreEntityAssignment.list();
         assert.ok(remaining.items.every(a => a.event !== eventId));
     } catch (err) {
         assert.ifError(err);

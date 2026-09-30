@@ -90,7 +90,7 @@
         @close='modal = ModalInputType.NONE'
     />
 
-    <CreateCoreEvent
+    <CreateCoreEntity
         v-if='modal === ModalInputType.EVENT'
         @close='modal = ModalInputType.NONE'
     />
@@ -104,7 +104,7 @@ import CoordInput from './Inputs/CoordInput.vue';
 import RangeRingsInput from './Inputs/RangeRingsInput.vue';
 import RangeInput from './Inputs/RangeInput.vue';
 import GeoJSONInput from './Inputs/GeoJSONInput.vue';
-import CreateCoreEvent from './util/CreateCoreEvent.vue';
+import CreateCoreEntity from './util/CreateCoreEntity.vue';
 import {
     IconTarget,
     IconLasso,

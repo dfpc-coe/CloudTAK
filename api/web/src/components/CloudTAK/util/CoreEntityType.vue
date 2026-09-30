@@ -80,7 +80,7 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 
-type CoreEventTypePreset = {
+type CoreEntityTypePreset = {
     name: string;
     type: string;
     icon?: string;
@@ -102,7 +102,7 @@ const emit = defineEmits(['update:modelValue']);
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 const custom = ref(false);
-const presets = ref<CoreEventTypePreset[]>([]);
+const presets = ref<CoreEntityTypePreset[]>([]);
 
 onMounted(async () => {
     await fetchPresets();
@@ -113,7 +113,7 @@ onMounted(async () => {
     }
 });
 
-function selectPreset(preset: CoreEventTypePreset): void {
+function selectPreset(preset: CoreEntityTypePreset): void {
     emit('update:modelValue', preset.type);
 }
 

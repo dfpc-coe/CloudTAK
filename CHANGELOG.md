@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+- :rocket: Rename `CoreEvent` to `CoreEntity` throughout the database, server, and web app - API routes, payloads, and the `CoreEvent` Layer Mapping destination are unchanged
+
 ### v13.100.2 - 2026-09-29
 
 - :rocket: Add `Area Unit` display preference, defaulting Polygon Area to acres instead of square feet [#1853](https://github.com/dfpc-coe/CloudTAK/issues/1853)

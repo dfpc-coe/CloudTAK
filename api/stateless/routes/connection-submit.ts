@@ -25,7 +25,7 @@ const SubmitFeature = Type.Object({
 });
 
 const RECORDS = [
-    [LayerMapping_Destination.COREEVENT, 'event'],
+    [LayerMapping_Destination.COREENTITY, 'event'],
     [LayerMapping_Destination.COREDEVICE, 'device'],
 ] as const;
 

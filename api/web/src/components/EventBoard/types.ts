@@ -1,6 +1,6 @@
-import type { CoreEventBoardColumn, CoreEventBoardEvent } from '../../types.ts';
+import type { CoreEntityBoardColumn, CoreEntityBoardEvent } from '../../types.ts';
 
 /** A Column with the Events currently placed in it */
-export type BoardColumn = CoreEventBoardColumn & {
-    events: Array<CoreEventBoardEvent>;
+export type BoardColumn = CoreEntityBoardColumn & {
+    events: Array<CoreEntityBoardEvent>;
 };

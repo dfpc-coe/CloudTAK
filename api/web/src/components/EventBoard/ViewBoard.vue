@@ -151,7 +151,7 @@
                         @touchcancel='cancelTouchDrag'
                         @contextmenu='onCardContextMenu'
                     >
-                        <StandardCoreEvent
+                        <StandardCoreEntity
                             :event='placement.event'
                             :icon='false'
                             @click='emit("open-event", placement.event.id)'
@@ -166,7 +166,7 @@
                                     @delete='removeEvent(column, placement)'
                                 />
                             </template>
-                        </StandardCoreEvent>
+                        </StandardCoreEntity>
                     </div>
                 </template>
 
@@ -244,10 +244,10 @@
 
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { server } from '../../std.ts';
-import type { CoreForm, CoreEventBoardEvent } from '../../types.ts';
+import type { CoreForm, CoreEntityBoardEvent } from '../../types.ts';
 import type { BoardColumn } from './types.ts';
 import { missingRequiredForms } from '../../utils/column-forms.ts';
-import StandardCoreEvent from '../CloudTAK/util/StandardCoreEvent.vue';
+import StandardCoreEntity from '../CloudTAK/util/StandardCoreEntity.vue';
 import FormWizard from '../CloudTAK/util/FormWizard.vue';
 import EditColumnModal from './EditColumnModal.vue';
 import {
@@ -300,7 +300,7 @@ const expandedDesc = ref(new Set<string>());
 const descOverflow = ref<Record<string, boolean>>({});
 const descEls = new Map<string, HTMLElement>();
 
-const drag = ref<{ placement: CoreEventBoardEvent; from: string } | undefined>();
+const drag = ref<{ placement: CoreEntityBoardEvent; from: string } | undefined>();
 const dropTarget = ref<{ column: string; index: number; precise: boolean } | undefined>();
 
 // Dragging a column by its grip handle repositions the Column itself -
@@ -489,7 +489,7 @@ async function deleteColumn(column: BoardColumn): Promise<void> {
     }
 }
 
-async function removeEvent(column: BoardColumn, placement: CoreEventBoardEvent): Promise<void> {
+async function removeEvent(column: BoardColumn, placement: CoreEntityBoardEvent): Promise<void> {
     try {
         const res = await server.DELETE('/api/board/event/{:placement}', {
             params: { path: { ':placement': placement.id } }
@@ -538,7 +538,7 @@ async function persistPositions(column: BoardColumn): Promise<void> {
     }
 }
 
-function onDragStart(event: DragEvent, column: BoardColumn, placement: CoreEventBoardEvent): void {
+function onDragStart(event: DragEvent, column: BoardColumn, placement: CoreEntityBoardEvent): void {
     drag.value = { placement, from: column.id };
 
     if (event.dataTransfer) {
@@ -671,7 +671,7 @@ function onColumnDragLeave(event: DragEvent, column: BoardColumn): void {
  * it into the same drag/dropTarget state the mouse path uses, with a fixed
  * position ghost following the finger and elementFromPoint hit-testing
  */
-function onTouchStart(event: TouchEvent, column: BoardColumn, placement: CoreEventBoardEvent): void {
+function onTouchStart(event: TouchEvent, column: BoardColumn, placement: CoreEntityBoardEvent): void {
     if (event.touches.length !== 1) return;
 
     cancelTouchDrag();
@@ -914,7 +914,7 @@ async function onDrop(target: BoardColumn): Promise<void> {
     await applyDrop(placement, source, target, index);
 }
 
-async function applyDrop(placement: CoreEventBoardEvent, source: BoardColumn, target: BoardColumn, index: number): Promise<void> {
+async function applyDrop(placement: CoreEntityBoardEvent, source: BoardColumn, target: BoardColumn, index: number): Promise<void> {
     const current = source.events.findIndex((p) => p.event.id === placement.event.id);
     if (current === -1) return;
 

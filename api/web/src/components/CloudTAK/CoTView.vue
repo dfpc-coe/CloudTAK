@@ -1017,7 +1017,7 @@ async function eventAvailable(event: string): Promise<boolean> {
 }
 
 // UUID of the Core Event a CoT is the projection of, carried on its `p` Link
-function coreEvent(cot: COT): string | undefined {
+function coreEntity(cot: COT): string | undefined {
     const marker = (cot.properties.links || []).find((link) => !!link.event);
     return marker ? marker.event : undefined;
 }
@@ -1036,7 +1036,7 @@ async function load_cot() {
     if (baseCOT) {
         // The Event View is the richer representation but is API-only -
         // offline, the CoT remains the best available view of the Event
-        const event = coreEvent(baseCOT);
+        const event = coreEntity(baseCOT);
         if (event && deviceStore.network.isOnline && await eventAvailable(event)) {
             // replace() so back navigation doesn't immediately redirect again
             await router.replace(`/event/${event}`);

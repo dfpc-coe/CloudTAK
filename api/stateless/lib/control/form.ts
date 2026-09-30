@@ -6,7 +6,7 @@ import type { AuthUser } from '../../../common/auth.js';
 import type { CoreFormResponse, CoreFormResponseResponse } from '../../../common/types.js';
 import {
     CoreFormResponse as CoreFormResponseTable,
-    CoreEventResponse as CoreEventResponseTable,
+    CoreEntityResponse as CoreEntityResponseTable,
 } from '../../../common/schema.js';
 import type ConfigStateless from '../../config.js';
 import { userChannels } from '../tak-channels.js';
@@ -91,10 +91,10 @@ export default class FormControl {
         const satisfied = await this.config.pg
             .select({ form: CoreFormResponseTable.form })
             .from(CoreFormResponseTable)
-            .innerJoin(CoreEventResponseTable, eq(CoreEventResponseTable.response, CoreFormResponseTable.id))
+            .innerJoin(CoreEntityResponseTable, eq(CoreEntityResponseTable.response, CoreFormResponseTable.id))
             .where(and(
                 inArray(CoreFormResponseTable.form, required.items.map(r => r.form)),
-                eq(CoreEventResponseTable.event, event),
+                eq(CoreEntityResponseTable.event, event),
             ));
 
         const have = new Set(satisfied.map(s => s.form));

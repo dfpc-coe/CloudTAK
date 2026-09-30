@@ -129,7 +129,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { server } from '../../std.ts';
 import { openSecondaryView } from '../../utils/capacitor.ts';
-import type { CoreEventBoardColumn } from '../../types.ts';
+import type { CoreEntityBoardColumn } from '../../types.ts';
 import FormSelect from '../CloudTAK/util/FormSelect.vue';
 import type { FormAttachment } from '../CloudTAK/util/FormSelect.vue';
 import { IconCheck, IconSettings } from '@tabler/icons-vue';
@@ -144,7 +144,7 @@ import {
 } from '@tak-ps/vue-tabler';
 
 const props = defineProps<{
-    column: CoreEventBoardColumn;
+    column: CoreEntityBoardColumn;
     /** TAK Channel bitpos of the Column's Board - scopes the attachable Forms */
     channel?: number;
 }>();

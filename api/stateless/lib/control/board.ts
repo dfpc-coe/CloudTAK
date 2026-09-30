@@ -2,13 +2,13 @@ import type { Static } from '@sinclair/typebox';
 import { sql } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import type { AuthUser } from '../../../common/auth.js';
-import type { CoreEventBoard, CoreEventBoardColumn, CoreEventBoardEvent } from '../../../common/schema.js';
-import { CoreEventBoardColumn_Type } from '../../../common/enums.js';
+import type { CoreEntityBoard, CoreEntityBoardColumn, CoreEntityBoardEvent } from '../../../common/schema.js';
+import { CoreEntityBoardColumn_Type } from '../../../common/enums.js';
 import type {
-    CoreEventResponse,
-    CoreEventBoardResponse,
-    CoreEventBoardColumnResponse,
-    CoreEventBoardEventResponse,
+    CoreEntityResponse,
+    CoreEntityBoardResponse,
+    CoreEntityBoardColumnResponse,
+    CoreEntityBoardEventResponse,
 } from '../../../common/types.js';
 import type ConfigStateless from '../../config.js';
 import { ETLEventAction } from '../../../common/etl-events.js';
@@ -18,8 +18,8 @@ import { userChannels } from '../tak-channels.js';
 export const MAX_LIST = 1000;
 
 export function boardResponse(
-    board: typeof CoreEventBoard.$inferSelect,
-): Static<typeof CoreEventBoardResponse> {
+    board: typeof CoreEntityBoard.$inferSelect,
+): Static<typeof CoreEntityBoardResponse> {
     return {
         id: board.id,
         created: board.created,
@@ -31,8 +31,8 @@ export function boardResponse(
 }
 
 export function columnResponse(
-    column: typeof CoreEventBoardColumn.$inferSelect,
-): Static<typeof CoreEventBoardColumnResponse> {
+    column: typeof CoreEntityBoardColumn.$inferSelect,
+): Static<typeof CoreEntityBoardColumnResponse> {
     return {
         id: column.id,
         created: column.created,
@@ -47,9 +47,9 @@ export function columnResponse(
 }
 
 export function placementResponse(
-    placement: typeof CoreEventBoardEvent.$inferSelect,
-    event: Static<typeof CoreEventResponse>,
-): Static<typeof CoreEventBoardEventResponse> {
+    placement: typeof CoreEntityBoardEvent.$inferSelect,
+    event: Static<typeof CoreEntityResponse>,
+): Static<typeof CoreEntityBoardEventResponse> {
     return {
         id: placement.id,
         created: placement.created,
@@ -94,8 +94,8 @@ export default class BoardControl {
     }
 
     /** Resolve a Board and check the caller may see the Channel it belongs to */
-    async boardAccess(user: AuthUser, id: string): Promise<typeof CoreEventBoard.$inferSelect> {
-        const board = await this.config.models.CoreEventBoard.from(id);
+    async boardAccess(user: AuthUser, id: string): Promise<typeof CoreEntityBoard.$inferSelect> {
+        const board = await this.config.models.CoreEntityBoard.from(id);
 
         await this.ensureChannelAccess(user, Number(board.channel));
 
@@ -108,20 +108,20 @@ export default class BoardControl {
      * access check
      */
     async columnAccess(user: AuthUser, id: string): Promise<{
-        column: typeof CoreEventBoardColumn.$inferSelect;
-        board: typeof CoreEventBoard.$inferSelect;
+        column: typeof CoreEntityBoardColumn.$inferSelect;
+        board: typeof CoreEntityBoard.$inferSelect;
     }> {
-        const column = await this.config.models.CoreEventBoardColumn.from(id);
+        const column = await this.config.models.CoreEntityBoardColumn.from(id);
 
         return { column, board: await this.boardAccess(user, column.board) };
     }
 
     /** Resolve a placed Event alongside the Board it sits on */
     async placementAccess(user: AuthUser, id: string): Promise<{
-        placement: typeof CoreEventBoardEvent.$inferSelect;
-        board: typeof CoreEventBoard.$inferSelect;
+        placement: typeof CoreEntityBoardEvent.$inferSelect;
+        board: typeof CoreEntityBoard.$inferSelect;
     }> {
-        const placement = await this.config.models.CoreEventBoardEvent.from(id);
+        const placement = await this.config.models.CoreEntityBoardEvent.from(id);
 
         return { placement, board: await this.boardAccess(user, placement.board) };
     }
@@ -130,18 +130,18 @@ export default class BoardControl {
      * Every Board has a single automatically managed Column of type nominated
      * that newly nominated Events land in by default
      */
-    async ensureNominatedColumn(board: typeof CoreEventBoard.$inferSelect): Promise<typeof CoreEventBoardColumn.$inferSelect> {
-        const existing = await this.config.models.CoreEventBoardColumn.list({
+    async ensureNominatedColumn(board: typeof CoreEntityBoard.$inferSelect): Promise<typeof CoreEntityBoardColumn.$inferSelect> {
+        const existing = await this.config.models.CoreEntityBoardColumn.list({
             limit: 1,
-            where: sql`board = ${board.id} AND type = ${CoreEventBoardColumn_Type.NOMINATED}`,
+            where: sql`board = ${board.id} AND type = ${CoreEntityBoardColumn_Type.NOMINATED}`,
         });
 
         if (existing.items.length) return existing.items[0];
 
-        const column = await this.config.models.CoreEventBoardColumn.generate({
+        const column = await this.config.models.CoreEntityBoardColumn.generate({
             board: board.id,
             name: 'Nominated',
-            type: CoreEventBoardColumn_Type.NOMINATED,
+            type: CoreEntityBoardColumn_Type.NOMINATED,
             position: 0,
         });
 
@@ -158,7 +158,7 @@ export default class BoardControl {
      * from the Event view land on
      */
     async ensureChannelBoard(channel: number): Promise<void> {
-        const existing = await this.config.models.CoreEventBoard.list({
+        const existing = await this.config.models.CoreEntityBoard.list({
             limit: 1,
             where: sql`channel = ${channel}`,
         });
@@ -166,7 +166,7 @@ export default class BoardControl {
         let board = existing.items[0];
 
         if (!board) {
-            board = await this.config.models.CoreEventBoard.generate({
+            board = await this.config.models.CoreEntityBoard.generate({
                 channel: BigInt(channel),
                 name: 'Events',
             });

@@ -123,7 +123,7 @@
 
 import { ref, computed, watch } from 'vue';
 import { server } from '../../../std.ts';
-import type { CoreEventBoard } from '../../../types.ts';
+import type { CoreEntityBoard } from '../../../types.ts';
 import { useTriggerWidth } from '../../../utils/trigger-width.ts';
 import {
     TablerNone,
@@ -154,23 +154,23 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: string): void;
-    (e: 'boards', boards: Array<CoreEventBoard>): void;
+    (e: 'boards', boards: Array<CoreEntityBoard>): void;
     (e: 'error', error: Error): void;
 }>();
 
 const search = ref('');
 const loading = ref(false);
 const error = ref<Error | undefined>();
-const boards = ref<Array<CoreEventBoard>>([]);
+const boards = ref<Array<CoreEntityBoard>>([]);
 
 const trigger = ref<HTMLElement | undefined>();
 const { width: menuWidth } = useTriggerWidth(trigger);
 
-const selected = computed<CoreEventBoard | undefined>(() => {
+const selected = computed<CoreEntityBoard | undefined>(() => {
     return boards.value.find((board) => board.id === props.modelValue);
 });
 
-const filtered = computed<Array<CoreEventBoard>>(() => {
+const filtered = computed<Array<CoreEntityBoard>>(() => {
     const term = search.value.trim().toLowerCase();
 
     if (!term) return boards.value;

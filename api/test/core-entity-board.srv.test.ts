@@ -23,7 +23,7 @@ const submitted: Array<string> = [];
 test('spy on Core Event rebroadcasts', () => {
     if (!flight.config) throw new Error('flight.config is not initialised');
 
-    flight.config.hub.coreEventSubmit = async (event: string) => {
+    flight.config.hub.coreEntitySubmit = async (event: string) => {
         submitted.push(event);
     };
 });

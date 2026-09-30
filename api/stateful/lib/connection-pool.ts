@@ -10,7 +10,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import TAK, { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
 import type ConnectionConfig from '../../common/connection-config.js';
-import { MachineConnConfig, ProfileConnConfig, AdminConnConfig, isCoreEventSubmitter } from '../../common/connection-config.js';
+import { MachineConnConfig, ProfileConnConfig, AdminConnConfig, isCoreEntitySubmitter } from '../../common/connection-config.js';
 import { ProfileChatStatus, WebSocket_Event } from '../../common/enums.js';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')) as {
@@ -110,7 +110,7 @@ export class ConnectionClient {
     }
 
     destroy(): void {
-        if (isCoreEventSubmitter(this.config)) {
+        if (isCoreEntitySubmitter(this.config)) {
             this.config.stopEvents();
         }
 
@@ -459,7 +459,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         const connClient = new ConnectionClient(connConfig, tak, api);
         this.set(connConfig.id, connClient);
 
-        if (!this.config.noconnections && isCoreEventSubmitter(connConfig)) {
+        if (!this.config.noconnections && isCoreEntitySubmitter(connConfig)) {
             connConfig.startEvents(tak, api);
         }
 

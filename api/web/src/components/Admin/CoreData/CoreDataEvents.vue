@@ -105,7 +105,7 @@
                     v-for='event in list.items'
                     :key='event.id'
                 >
-                    <StandardCoreEvent
+                    <StandardCoreEntity
                         :event='event'
                         @click='toggle(event.id)'
                     />
@@ -254,9 +254,9 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { server } from '../../../std.ts';
-import type { CoreEventList } from '../../../types.ts';
+import type { CoreEntityList } from '../../../types.ts';
 import TableFooter from '../../util/TableFooter.vue';
-import StandardCoreEvent from '../../CloudTAK/util/StandardCoreEvent.vue';
+import StandardCoreEntity from '../../CloudTAK/util/StandardCoreEntity.vue';
 import SearchSortFilter from '../../CloudTAK/util/SearchSortFilter.vue';
 import {
     IconClock,
@@ -273,17 +273,17 @@ import {
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 
-type CoreEventSort = 'id' | 'created' | 'updated' | 'ended' | 'username' | 'connection' | 'priority' | 'type' | 'name' | 'external_id' | 'editable' | 'location' | 'remarks';
+type CoreEntitySort = 'id' | 'created' | 'updated' | 'ended' | 'username' | 'connection' | 'priority' | 'type' | 'name' | 'external_id' | 'editable' | 'location' | 'remarks';
 
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 const expanded = ref<string | undefined>(undefined);
 
-const list = ref<CoreEventList>({ total: 0, items: [] });
+const list = ref<CoreEntityList>({ total: 0, items: [] });
 const paging = ref({
     filter: '',
     channel: undefined as number | undefined,
-    sort: 'created' as CoreEventSort,
+    sort: 'created' as CoreEntitySort,
     order: 'desc' as 'asc' | 'desc',
     limit: 100,
     page: 0
@@ -375,7 +375,7 @@ async function fetchList(): Promise<void> {
         });
 
         if (res.error) throw new Error(res.error.message);
-        list.value = res.data as CoreEventList;
+        list.value = res.data as CoreEntityList;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }

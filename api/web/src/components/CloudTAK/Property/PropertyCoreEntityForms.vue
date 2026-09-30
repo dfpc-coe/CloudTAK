@@ -195,7 +195,7 @@
 
 <script setup lang='ts'>
 /**
- * PropertyCoreEventForms - the Forms that have been completed for a Core
+ * PropertyCoreEntityForms - the Forms that have been completed for a Core
  * Event: every Form Response linked to it, expandable into a read-only
  * render of the submitted values against the Form's schema. When editable,
  * a picker offers every Form shared with one of the Event's Channels so a
@@ -204,7 +204,7 @@
 
 import { ref, computed, watch } from 'vue';
 import { server } from '../../../std.ts';
-import type { CoreForm, CoreEventFormResponse } from '../../../types.ts';
+import type { CoreForm, CoreEntityFormResponse } from '../../../types.ts';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
 import {
     TablerNone,
@@ -243,7 +243,7 @@ const emit = defineEmits<{
 const expanded = ref(true);
 const loading = ref(true);
 const error = ref<Error | undefined>();
-const responses = ref<Array<CoreEventFormResponse>>([]);
+const responses = ref<Array<CoreEntityFormResponse>>([]);
 const opened = ref<Set<string>>(new Set());
 
 const search = ref('');
@@ -343,7 +343,7 @@ function toggle(id: string): void {
 }
 
 /** TablerSchema iterates `properties` - normalise so a bare schema can't crash it */
-function responseSchema(item: CoreEventFormResponse): Record<string, unknown> {
+function responseSchema(item: CoreEntityFormResponse): Record<string, unknown> {
     return {
         type: 'object',
         properties: {},

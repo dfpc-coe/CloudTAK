@@ -1,14 +1,14 @@
 import { Type } from '@sinclair/typebox';
-import { StandardResponse, CoreEventResponse, CoreEventLink, CoreEventStyle, GeoJSONFeatureGeometryPoint } from '../../common/types.js';
+import { StandardResponse, CoreEntityResponse, CoreEntityLink, CoreEntityStyle, GeoJSONFeatureGeometryPoint } from '../../common/types.js';
 import { sql, eq } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUser, AuthResource, AuthResourceAccess } from '../../common/auth.js';
-import { CoreEvent, CoreEventChannel } from '../../common/schema.js';
-import { CoreEvent_Priority } from '../../common/enums.js';
+import { CoreEntity, CoreEntityChannel } from '../../common/schema.js';
+import { CoreEntity_Priority } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
 import { userChannels } from '../lib/tak-channels.js';
-import { notifyCoreEvent } from '../lib/core-event.js';
+import { notifyCoreEntity } from '../lib/core-entity.js';
 import EventControl from '../lib/control/event.js';
 import { placementResponse } from '../lib/control/board.js';
 import { ETLEventAction } from '../../common/etl-events.js';
@@ -32,7 +32,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             order: Default.Order,
             sort: Type.String({
                 default: 'created',
-                enum: Object.keys(CoreEvent),
+                enum: Object.keys(CoreEntity),
             }),
             filter: Default.Filter,
             channel: Type.Optional(Type.Union([
@@ -44,7 +44,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(CoreEventResponse),
+            items: Type.Array(CoreEntityResponse),
         }),
     }, async (req, res) => {
         try {
@@ -64,9 +64,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ? sql`True`
                 : sql`EXISTS (
                     SELECT 1
-                    FROM core_event_channel
-                    WHERE core_event_channel.event = core_event.id
-                    AND core_event_channel.channel IN ${filterChannels}
+                    FROM core_entity_channel
+                    WHERE core_entity_channel.event = core_entity.id
+                    AND core_entity_channel.channel IN ${filterChannels}
                 )`;
 
             let where;
@@ -94,9 +94,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                             username = ${user.email}
                             OR EXISTS (
                                 SELECT 1
-                                FROM core_event_channel
-                                WHERE core_event_channel.event = core_event.id
-                                AND core_event_channel.channel IN ${channels}
+                                FROM core_entity_channel
+                                WHERE core_entity_channel.event = core_entity.id
+                                AND core_entity_channel.channel IN ${channels}
                             )
                         )
                         AND ${channel}
@@ -108,7 +108,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     `;
             }
 
-            const list = await config.models.CoreEvent.augmented_list({
+            const list = await config.models.CoreEntity.augmented_list({
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
@@ -132,7 +132,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 format: 'uuid',
             }),
         }),
-        res: CoreEventResponse,
+        res: CoreEntityResponse,
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
@@ -145,7 +145,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const connection = auth instanceof AuthResource ? await resourceConnection(auth) : null;
 
-            const event = await config.models.CoreEvent.augmented_from(req.params.event);
+            const event = await config.models.CoreEntity.augmented_from(req.params.event);
 
             await ensureEventAccess(auth, event, connection);
 
@@ -165,8 +165,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             type: Type.String({
                 description: 'MIL-STD-2525E Symbol ID',
             }),
-            priority: Type.Enum(CoreEvent_Priority, {
-                default: CoreEvent_Priority.NONE,
+            priority: Type.Enum(CoreEntity_Priority, {
+                default: CoreEntity_Priority.NONE,
             }),
             geometry: GeoJSONFeatureGeometryPoint,
             location: Type.String({
@@ -196,11 +196,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 default: {},
                 description: 'User defined key/value Event metadata',
             }),
-            links: Type.Array(CoreEventLink, {
+            links: Type.Array(CoreEntityLink, {
                 default: [],
                 description: 'Named URLs associated with the Event',
             }),
-            style: Type.Object(CoreEventStyle.properties, {
+            style: Type.Object(CoreEntityStyle.properties, {
                 default: {},
                 description: 'Point styling for the Event',
             }),
@@ -210,7 +210,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 description: 'TAK Server Channels to share the Event with - at least one is required',
             }),
         }),
-        res: CoreEventResponse,
+        res: CoreEntityResponse,
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
@@ -223,23 +223,23 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const { channels, ...body } = req.body;
 
-            const event = await config.models.CoreEvent.generate({
+            const event = await config.models.CoreEntity.generate({
                 ...body,
                 username: auth instanceof AuthUser ? auth.email : null,
                 connection: auth instanceof AuthResource ? await resourceConnection(auth) : null,
             });
 
             if (channels.length > 0) {
-                await config.pg.insert(CoreEventChannel)
+                await config.pg.insert(CoreEntityChannel)
                     .values(channels.map(ch => ({
                         event: event.id,
                         channel: BigInt(ch),
                     })));
             }
 
-            const created = await config.models.CoreEvent.augmented_from(event.id);
+            const created = await config.models.CoreEntity.augmented_from(event.id);
 
-            notifyCoreEvent(config, ETLEventAction.Create, created);
+            notifyCoreEntity(config, ETLEventAction.Create, created);
 
             res.json(created);
         } catch (err) {
@@ -265,7 +265,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             })], {
                 description: 'GUID of a TAK Server Mission to associate with the Event - set to null to remove the association',
             })),
-            priority: Type.Optional(Type.Enum(CoreEvent_Priority)),
+            priority: Type.Optional(Type.Enum(CoreEntity_Priority)),
             geometry: Type.Optional(GeoJSONFeatureGeometryPoint),
             location: Type.Optional(Type.String()),
             remarks: Type.Optional(Type.String()),
@@ -284,10 +284,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown(), {
                 description: 'User defined key/value Event metadata - replaces the existing metadata object',
             })),
-            links: Type.Optional(Type.Array(CoreEventLink, {
+            links: Type.Optional(Type.Array(CoreEntityLink, {
                 description: 'Named URLs associated with the Event - replaces the existing links array',
             })),
-            style: Type.Optional(Type.Object(CoreEventStyle.properties, {
+            style: Type.Optional(Type.Object(CoreEntityStyle.properties, {
                 description: 'Point styling for the Event - replaces the existing style object',
             })),
             channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), {
@@ -296,7 +296,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 description: 'TAK Server Channels to share the Event with - replaces the existing Channels, an Event must always be shared with at least one',
             })),
         }),
-        res: CoreEventResponse,
+        res: CoreEntityResponse,
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
@@ -309,7 +309,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const connection = auth instanceof AuthResource ? await resourceConnection(auth) : null;
 
-            const event = await config.models.CoreEvent.augmented_from(req.params.event);
+            const event = await config.models.CoreEntity.augmented_from(req.params.event);
 
             await ensureEventAccess(auth, event, connection);
 
@@ -343,7 +343,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     }
                 }
 
-                await config.models.CoreEvent.commit(req.params.event, {
+                await config.models.CoreEntity.commit(req.params.event, {
                     ...columns,
                     ...(ended === undefined ? {} : { ended }),
                     updated: sql`Now()`,
@@ -351,11 +351,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (channels !== undefined) {
-                await config.pg.delete(CoreEventChannel)
-                    .where(eq(CoreEventChannel.event, req.params.event));
+                await config.pg.delete(CoreEntityChannel)
+                    .where(eq(CoreEntityChannel.event, req.params.event));
 
                 if (channels.length > 0) {
-                    await config.pg.insert(CoreEventChannel)
+                    await config.pg.insert(CoreEntityChannel)
                         .values(channels.map(ch => ({
                             event: req.params.event,
                             channel: BigInt(ch),
@@ -363,10 +363,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
             }
 
-            const updated = await config.models.CoreEvent.augmented_from(req.params.event);
+            const updated = await config.models.CoreEntity.augmented_from(req.params.event);
 
             if (Object.keys(body).length > 0 || channels !== undefined) {
-                notifyCoreEvent(config, ETLEventAction.Update, updated);
+                notifyCoreEntity(config, ETLEventAction.Update, updated);
             }
 
             res.json(updated);
@@ -389,16 +389,16 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const event = await config.models.CoreEvent.augmented_from(req.params.event);
+            const event = await config.models.CoreEntity.augmented_from(req.params.event);
 
             if (!user.is_admin() && event.username !== user.email) {
                 throw new Err(403, null, 'Only the Event creator can delete this Event');
             }
 
             // Deleting the Event cascades its Board placements, which subscribers see as removals
-            const placements = await config.models.CoreEventBoardEvent.placements(req.params.event);
+            const placements = await config.models.CoreEntityBoardEvent.placements(req.params.event);
 
-            await config.models.CoreEvent.delete(req.params.event);
+            await config.models.CoreEntity.delete(req.params.event);
 
             config.etlEvents.event(ETLEventAction.Delete, event).catch((err) => {
                 console.error(`not ok - failed to deliver delete ETL Event for Core Event ${event.id}:`, err);

@@ -171,7 +171,7 @@
                                 <TablerUploadLogo
                                     v-if='edit'
                                     v-model='eventType.icon'
-                                    :input-id='`core-event-type-icon-${index}`'
+                                    :input-id='`core-entity-type-icon-${index}`'
                                     label='Custom Icon (Optional)'
                                 />
                             </div>
@@ -211,14 +211,14 @@ import {
     IconCalendarEvent
 } from '@tabler/icons-vue';
 
-type CoreEventType = {
+type CoreEntityType = {
     name: string;
     type: string;
     icon: string;
 };
 
-type CoreEventTypesConfig = {
-    'core::event::types': CoreEventType[];
+type CoreEntityTypesConfig = {
+    'core::event::types': CoreEntityType[];
 };
 
 type Symbol2525E = {
@@ -226,7 +226,7 @@ type Symbol2525E = {
     name: string;
 };
 
-function createType(): CoreEventType {
+function createType(): CoreEntityType {
     return {
         name: '',
         type: '',
@@ -234,11 +234,11 @@ function createType(): CoreEventType {
     };
 }
 
-function cloneTypes(types: unknown): CoreEventType[] {
+function cloneTypes(types: unknown): CoreEntityType[] {
     if (!Array.isArray(types)) return [];
 
     return types.map((eventType) => {
-        const value = eventType as Partial<CoreEventType> | null;
+        const value = eventType as Partial<CoreEntityType> | null;
 
         return {
             name: typeof value?.name === 'string' ? value.name : '',
@@ -259,7 +259,7 @@ const symbolLoading = ref(false);
 const symbols = ref<Symbol2525E[]>([]);
 const symbolNames = ref<Record<string, string>>({});
 
-const config = ref<CoreEventTypesConfig>({
+const config = ref<CoreEntityTypesConfig>({
     'core::event::types': [],
 });
 
@@ -276,11 +276,11 @@ watch(symbolFilter, async () => {
     await fetchSymbols();
 });
 
-function typeNameError(eventType: CoreEventType): string {
+function typeNameError(eventType: CoreEntityType): string {
     return validateTextNotEmpty(eventType.name.trim());
 }
 
-function isEmptyType(eventType: CoreEventType): boolean {
+function isEmptyType(eventType: CoreEntityType): boolean {
     return !eventType.name.trim() && !eventType.type.trim() && !eventType.icon.trim();
 }
 
