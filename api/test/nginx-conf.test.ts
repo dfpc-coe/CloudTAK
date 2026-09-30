@@ -71,6 +71,7 @@ test('nginx.conf: https subdomain produces full CSP with wildcard parent domain'
         csp[0],
         `add_header 'Content-Security-Policy' "`
         + `default-src 'self' map.example.com:* *.example.com:*; `
+        + `script-src 'self' 'wasm-unsafe-eval' map.example.com:* *.example.com:*; `
         + `img-src 'self' data: blob: map.example.com:* *.example.com:*; `
         + `media-src 'self' blob: map.example.com:* *.example.com:*; `
         + `font-src 'self' data:; `
@@ -216,6 +217,21 @@ test('nginx.conf: NGINX_CSP_* appends sources to a single directive', async () =
     // Other directives are untouched
     assert.ok(csp[0].includes(`media-src 'self' blob: map.example.com:* *.example.com:*;`));
     assert.ok(csp[0].includes(`connect-src 'self' map.example.com:* *.example.com:*;`));
+});
+
+test('nginx.conf: NGINX_CSP_SCRIPT_SRC appends to script-src', async () => {
+    const { stdout } = await exec(process.execPath, [SCRIPT], {
+        env: {
+            ...process.env,
+            API_URL: 'https://map.example.com',
+            NGINX_CSP_SCRIPT_SRC: 'https://scripts.example.com',
+        },
+    });
+
+    const csp = stdout.match(CSP_REGEX);
+    assert.ok(csp, 'Config should contain a Content-Security-Policy header');
+
+    assert.ok(csp[0].includes(`script-src 'self' 'wasm-unsafe-eval' https://scripts.example.com map.example.com:* *.example.com:*;`));
 });
 
 test('nginx.conf: NGINX_CSP_* CSV values are split, trimmed and empties dropped', async () => {
