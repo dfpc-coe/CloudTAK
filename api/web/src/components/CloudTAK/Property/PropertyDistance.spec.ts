@@ -1,6 +1,6 @@
 import { defineComponent, h, ref, nextTick } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import PropertyDistance from './PropertyDistance.vue';
 import CopyField from '../util/CopyField.vue';
 
@@ -23,7 +23,7 @@ function harness(component: typeof PropertyDistance, unit: string, initial = 0.1
 }
 
 describe('PropertyDistance', () => {
-    let warn: ReturnType<typeof vi.spyOn>;
+    let warn: MockInstance<typeof console.warn>;
 
     beforeEach(() => {
         warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
