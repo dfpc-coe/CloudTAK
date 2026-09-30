@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+### v13.100.2 - 2026-09-29
+
 - :rocket: Add `Area Unit` display preference, defaulting Polygon Area to acres instead of square feet [#1853](https://github.com/dfpc-coe/CloudTAK/issues/1853)
 
 ### v13.100.1 - 2026-09-28
