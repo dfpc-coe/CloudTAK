@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+- :rocket: Add a `kind` column to `core_entity` (defaults to `CoreEvent`) and rename the `core_entity_channel.event` column to `entity` - no API change
+
 ### v13.101.0 - 2026-09-30
 
 - :rocket: Rename `CoreEvent` to `CoreEntity` throughout the database, server, and web app - API routes, payloads, and the `CoreEvent` Layer Mapping destination are unchanged

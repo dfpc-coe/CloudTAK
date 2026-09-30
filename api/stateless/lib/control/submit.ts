@@ -68,10 +68,10 @@ export default class SubmitControl {
                 .returning({ id: CoreEntity.id, inserted: INSERTED });
 
             if (channels && (row.inserted || !createOnly.has('channels'))) {
-                await tx.delete(CoreEntityChannel).where(eq(CoreEntityChannel.event, row.id));
-                await tx.insert(CoreEntityChannel).values(channels.map(channel => ({ event: row.id, channel: BigInt(channel) })));
-            } else if (inherited.length && (row.inserted || !(await tx.$count(CoreEntityChannel, eq(CoreEntityChannel.event, row.id))))) {
-                await tx.insert(CoreEntityChannel).values(inherited.map(channel => ({ event: row.id, channel: BigInt(channel) })));
+                await tx.delete(CoreEntityChannel).where(eq(CoreEntityChannel.entity, row.id));
+                await tx.insert(CoreEntityChannel).values(channels.map(channel => ({ entity: row.id, channel: BigInt(channel) })));
+            } else if (inherited.length && (row.inserted || !(await tx.$count(CoreEntityChannel, eq(CoreEntityChannel.entity, row.id))))) {
+                await tx.insert(CoreEntityChannel).values(inherited.map(channel => ({ entity: row.id, channel: BigInt(channel) })));
             }
 
             return row;
