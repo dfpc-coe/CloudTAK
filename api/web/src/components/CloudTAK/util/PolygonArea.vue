@@ -20,25 +20,25 @@
                     title='Square Feet'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "sqfeet",
-                        "cursor-pointer": mode !== "sqfeet",
+                        "cloudtak-accent rounded-bottom text-blue": mode === "square feet",
+                        "cursor-pointer": mode !== "square feet",
                     }'
                     role='menuitem'
                     tabindex='0'
-                    @keyup.enter='mode = "sqfeet"'
-                    @click='mode = "sqfeet"'
+                    @keyup.enter='mode = "square feet"'
+                    @click='mode = "square feet"'
                 >Feet<sup>2</sup></span>
                 <span
                     title='Square Meters'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "sqmeter",
-                        "cursor-pointer": mode !== "sqmeter",
+                        "cloudtak-accent rounded-bottom text-blue": mode === "square meter",
+                        "cursor-pointer": mode !== "square meter",
                     }'
                     role='menuitem'
                     tabindex='0'
-                    @keyup.enter='mode = "sqmeter"'
-                    @click='mode = "sqmeter"'
+                    @keyup.enter='mode = "square meter"'
+                    @click='mode = "square meter"'
                 >Meters<sup>2</sup></span>
                 <span
                     title='Acres'
@@ -56,13 +56,13 @@
                     title='Hectare'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "cloudtak-accent rounded-bottom": mode === "ha",
-                        "cursor-pointer": mode !== "ha",
+                        "cloudtak-accent rounded-bottom": mode === "hectare",
+                        "cursor-pointer": mode !== "hectare",
                     }'
                     role='menuitem'
                     tabindex='0'
-                    @keyup.enter='mode = "ha"'
-                    @click='mode = "ha"'
+                    @keyup.enter='mode = "hectare"'
+                    @click='mode = "hectare"'
                 >Ha</span>
             </div>
         </div>
@@ -70,7 +70,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { area } from '@turf/area';
 import CopyField from './CopyField.vue';
 import COT from '../../../base/cot.ts';
@@ -85,22 +85,26 @@ const props = defineProps({
     },
     unit: {
         type: String,
-        default: 'sqfeet'
+        default: 'acre'
     }
 })
 
-const mode = ref(props.unit || 'sqfeet');
+const mode = ref(props.unit || 'acre');
+
+watch(() => props.unit, (unit) => {
+    mode.value = unit || 'acre';
+});
 
 const inMode = computed(() => {
     const cotArea = area(props.cot.geometry);
 
-    if (mode.value === 'sqfeet') {
+    if (mode.value === 'square feet') {
         return Math.round((cotArea * 10.7639) * 1000) / 1000;
-    } else if (mode.value === 'sqmeter') {
+    } else if (mode.value === 'square meter') {
         return Math.round(cotArea * 1000) / 1000;
     } else if (mode.value === 'acre') {
         return Math.round((cotArea * 0.000247105) * 1000) / 1000;
-    } else if (mode.value === 'ha') {
+    } else if (mode.value === 'hectare') {
         return Math.round((cotArea * 0.0001) * 1000) / 1000;
     } else {
         return 'UNKNOWN';

@@ -501,6 +501,7 @@
                         <PolygonArea
                             :key='String(route.params.uid)'
                             :cot='cot'
+                            :unit='units.display_area'
                         />
                     </div>
 
@@ -818,7 +819,8 @@ const share = ref(false);
 const units = ref({
     display_speed: 'mi/h',
     display_elevation: 'feet',
-    display_distance: 'mile'
+    display_distance: 'mile',
+    display_area: 'acre'
 });
 
 const username = ref<string | undefined>();
@@ -899,6 +901,11 @@ onMounted(async () => {
     const displayElevation = await ProfileConfig.get('display_elevation');
     if (displayElevation && displayElevation.value) {
         units.value.display_elevation = displayElevation.value;
+    }
+
+    const displayArea = await ProfileConfig.get('display_area');
+    if (displayArea && displayArea.value) {
+        units.value.display_area = displayArea.value;
     }
 
     interval.value = setInterval(async () => {

@@ -2467,6 +2467,7 @@ export interface paths {
                             "display::stale"?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             "display::distance"?: "meter" | "kilometer" | "mile";
                             "display::elevation"?: "meter" | "feet";
+                            "display::area"?: "square meter" | "square feet" | "acre" | "hectare";
                             "display::speed"?: "m/s" | "km/h" | "mi/h";
                             "display::projection"?: "mercator" | "globe";
                             "display::zoom"?: "always" | "conditional" | "never";
@@ -2760,6 +2761,7 @@ export interface paths {
                         "display::stale"?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                         "display::distance"?: "meter" | "kilometer" | "mile";
                         "display::elevation"?: "meter" | "feet";
+                        "display::area"?: "square meter" | "square feet" | "acre" | "hectare";
                         "display::speed"?: "m/s" | "km/h" | "mi/h";
                         "display::projection"?: "mercator" | "globe";
                         "display::zoom"?: "always" | "conditional" | "never";
@@ -2978,6 +2980,7 @@ export interface paths {
                             "display::stale"?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             "display::distance"?: "meter" | "kilometer" | "mile";
                             "display::elevation"?: "meter" | "feet";
+                            "display::area"?: "square meter" | "square feet" | "acre" | "hectare";
                             "display::speed"?: "m/s" | "km/h" | "mi/h";
                             "display::projection"?: "mercator" | "globe";
                             "display::zoom"?: "always" | "conditional" | "never";
@@ -3192,6 +3195,11 @@ export interface paths {
                             elevation: {
                                 /** @default feet */
                                 value: "meter" | "feet";
+                                options: string[];
+                            };
+                            area: {
+                                /** @default acre */
+                                value: "square meter" | "square feet" | "acre" | "hectare";
                                 options: string[];
                             };
                             speed: {
@@ -52822,6 +52830,7 @@ export interface paths {
                             display_text: "Small" | "Medium" | "Large";
                             display_distance: "meter" | "kilometer" | "mile";
                             display_elevation: "meter" | "feet";
+                            display_area: "square meter" | "square feet" | "acre" | "hectare";
                             display_speed: "m/s" | "km/h" | "mi/h";
                             display_radiation_dose: "sieverts" | "rems";
                             display_wakelock: "Default" | "Charging" | "Always On";
@@ -52949,6 +52958,7 @@ export interface paths {
                         display_text?: "Small" | "Medium" | "Large";
                         display_distance?: "meter" | "kilometer" | "mile";
                         display_elevation?: "meter" | "feet";
+                        display_area?: "square meter" | "square feet" | "acre" | "hectare";
                         display_speed?: "m/s" | "km/h" | "mi/h";
                         display_radiation_dose?: "sieverts" | "rems";
                         display_wakelock?: "Default" | "Charging" | "Always On";
@@ -53007,6 +53017,7 @@ export interface paths {
                             display_text: "Small" | "Medium" | "Large";
                             display_distance: "meter" | "kilometer" | "mile";
                             display_elevation: "meter" | "feet";
+                            display_area: "square meter" | "square feet" | "acre" | "hectare";
                             display_speed: "m/s" | "km/h" | "mi/h";
                             display_radiation_dose: "sieverts" | "rems";
                             display_wakelock: "Default" | "Charging" | "Always On";
@@ -56720,6 +56731,7 @@ export interface paths {
                             display_text: "Small" | "Medium" | "Large";
                             display_distance: "meter" | "kilometer" | "mile";
                             display_elevation: "meter" | "feet";
+                            display_area: "square meter" | "square feet" | "acre" | "hectare";
                             display_speed: "m/s" | "km/h" | "mi/h";
                             display_radiation_dose: "sieverts" | "rems";
                             display_wakelock: "Default" | "Charging" | "Always On";
@@ -56999,6 +57011,7 @@ export interface paths {
                             display_text: "Small" | "Medium" | "Large";
                             display_distance: "meter" | "kilometer" | "mile";
                             display_elevation: "meter" | "feet";
+                            display_area: "square meter" | "square feet" | "acre" | "hectare";
                             display_speed: "m/s" | "km/h" | "mi/h";
                             display_radiation_dose: "sieverts" | "rems";
                             display_wakelock: "Default" | "Charging" | "Always On";
