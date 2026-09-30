@@ -229,6 +229,13 @@ export enum Profile_Elevation {
     FEET = 'feet',
 }
 
+export enum Profile_Area {
+    SQUARE_METER = 'square meter',
+    SQUARE_FEET = 'square feet',
+    ACRE = 'acre',
+    HECTARE = 'hectare',
+}
+
 export enum Profile_Radiation_Dose {
     SIEVERTS = 'sieverts',
     REMS = 'rems',

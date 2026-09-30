@@ -3,7 +3,7 @@ import { sql } from 'drizzle-orm';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types';
 import type ConfigStateless from '../../config.js';
 import {
-    toEnum, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom, Profile_Style, Profile_Coordinate, Profile_Radiation_Dose, Profile_Wake_Lock,
+    toEnum, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Area, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom, Profile_Style, Profile_Coordinate, Profile_Radiation_Dose, Profile_Wake_Lock,
 } from '../../../common/enums.js';
 import { ProfileResponse } from '../../../common/types.js';
 
@@ -11,6 +11,7 @@ export const ProfileConfigDefaults = {
     'display::stale': Profile_Stale.TenMinutes,
     'display::distance': Profile_Distance.MILE,
     'display::elevation': Profile_Elevation.FEET,
+    'display::area': Profile_Area.ACRE,
     'display::speed': Profile_Speed.MPH,
     'display::projection': Profile_Projection.GLOBE,
     'display::zoom': Profile_Zoom.CONDITIONAL,
@@ -54,6 +55,12 @@ export const DefaultUnits = Type.Object({
     elevation: Type.Object({
         value: Type.Enum(Profile_Elevation, {
             default: ProfileConfigDefaults['display::elevation'],
+        }),
+        options: Type.Array(Type.String()),
+    }),
+    area: Type.Object({
+        value: Type.Enum(Profile_Area, {
+            default: ProfileConfigDefaults['display::area'],
         }),
         options: Type.Array(Type.String()),
     }),
@@ -167,6 +174,7 @@ export default class ProfileControl {
             'display::stale',
             'display::distance',
             'display::elevation',
+            'display::area',
             'display::speed',
             'display::projection',
             'display::zoom',
@@ -197,6 +205,10 @@ export default class ProfileControl {
             elevation: {
                 value: toEnum.fromString(Type.Enum(Profile_Elevation), final.elevation || Profile_Elevation.FEET),
                 options: Object.values(Profile_Elevation),
+            },
+            area: {
+                value: toEnum.fromString(Type.Enum(Profile_Area), final.area || Profile_Area.ACRE),
+                options: Object.values(Profile_Area),
             },
             speed: {
                 value: toEnum.fromString(Type.Enum(Profile_Speed), final.speed || Profile_Speed.MPH),
