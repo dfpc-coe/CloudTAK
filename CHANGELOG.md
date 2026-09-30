@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+### v13.101.0 - 2026-09-30
+
 - :rocket: Rename `CoreEvent` to `CoreEntity` throughout the database, server, and web app - API routes, payloads, and the `CoreEvent` Layer Mapping destination are unchanged
 
 ### v13.100.4 - 2026-09-30
