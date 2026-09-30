@@ -18,6 +18,13 @@
 
 ### Pending Release
 
+- :bug: Fix Buffer/Range distance input freezing the page when typing 3+ digits in yards or miles due to a unit conversion feedback loop
+
+### v13.100.3 - 2026-09-30
+
+- :rocket: Reverse order of overlays (basemap on bottom) in MenuOverlays based on user feedback
+- :bug: Fix overlays without layers from corrupting internal maplibre layer order - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1809
+
 ### v13.100.2 - 2026-09-29
 
 - :rocket: Add `Area Unit` display preference, defaulting Polygon Area to acres instead of square feet [#1853](https://github.com/dfpc-coe/CloudTAK/issues/1853)

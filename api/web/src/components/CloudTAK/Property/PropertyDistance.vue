@@ -137,6 +137,8 @@ watch(config.value, () => {
 });
 
 watch(() => props.modelValue, (nextDistance) => {
+    // Skip echoes of our own emit, otherwise unit rounding loops forever
+    if (toKilometers(mode.value, Number(config.value.distance)) === nextDistance) return;
     config.value.distance = toCustom(mode.value, nextDistance);
 });
 
@@ -150,7 +152,7 @@ watch(() => props.unit, (nextUnit) => {
  */
 function toKilometers(mode: string, distance: number): number {
     if (mode === 'mile') {
-        return distance * 1.60934;
+        return distance * 1.609344;
     } else if (mode === 'feet') {
         return distance * 0.0003048;
     } else if (mode === 'yard') {
@@ -168,11 +170,11 @@ function toCustom(mode: string, kilometers: number): number {
     if (mode === 'kilometer') {
         return kilometers
     } else if (mode === 'feet') {
-        return Math.round((kilometers * 3280.84) * 1000) / 1000;
+        return Math.round((kilometers / 0.0003048) * 1000) / 1000;
     } else if (mode === 'yard') {
-        return Math.round((kilometers * 1093.61) * 1000) / 1000;
+        return Math.round((kilometers / 0.0009144) * 1000) / 1000;
     } else if (mode === 'mile') {
-        return Math.round((kilometers * 0.621371) * 1000) / 1000;
+        return Math.round((kilometers / 1.609344) * 1000) / 1000;
     } else if (mode === 'meter') {
         return kilometers * 1000;
     } else {
