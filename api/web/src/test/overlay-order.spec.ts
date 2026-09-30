@@ -16,12 +16,13 @@ type StubOverlay = Overlay & {
     moveBefore: ReturnType<typeof vi.fn>;
 };
 
-function stub(id: number, name: string, pos: number, mode = 'profile'): StubOverlay {
+function stub(id: number, name: string, pos: number, mode = 'profile', layered = true): StubOverlay {
     return {
         id, name, pos, mode,
         _internal: mode === 'internal',
         save: vi.fn(async () => {}),
         moveBefore: vi.fn(),
+        anchorLayerId: () => layered ? `layer-${id}` : undefined,
     } as unknown as StubOverlay;
 }
 
@@ -68,6 +69,40 @@ describe('OverlayManager stack order', () => {
         expect(ids()[0]).toBe(10);
         expect(ids()[ids().length - 1]).toBe(-1);
         expect(ordinary[0].moveBefore).toHaveBeenCalledWith(OverlayManager.loaded[2]);
+    });
+
+    it('applyLoadedOrder skips overlays with no map layers when anchoring', () => {
+        const terrain = stub(20, 'Terrain', 6, 'profile', false);
+        OverlayManager.loaded.splice(OverlayManager.loaded.length - 1, 0, terrain);
+        expect(ids()).toEqual([10, 1, 2, 3, 4, 5, 20, -1]);
+
+        OverlayManager.applyLoadedOrder();
+
+        expect(features.moveBefore).toHaveBeenCalledWith(undefined);
+        expect(terrain.moveBefore).toHaveBeenCalledWith(features);
+        expect(ordinary[4].moveBefore).toHaveBeenCalledWith(features);
+        expect(ordinary[3].moveBefore).toHaveBeenCalledWith(ordinary[4]);
+        expect(basemap.moveBefore).toHaveBeenCalledWith(ordinary[0]);
+    });
+
+    it('reorderLoaded skips overlays with no map layers when anchoring', async () => {
+        const terrain = stub(20, 'Terrain', 3, 'profile', false);
+        OverlayManager.loaded.splice(3, 0, terrain);
+
+        await OverlayManager.reorderLoaded([10, 1, 5, 2, 20, 3, 4, -1], 5);
+
+        expect(ids()).toEqual([10, 1, 5, 2, 20, 3, 4, -1]);
+        expect(ordinary[4].moveBefore).toHaveBeenCalledWith(ordinary[1]);
+
+        await OverlayManager.reorderLoaded([10, 1, 2, 20, 5, 3, 4, -1], 5);
+
+        expect(ids()).toEqual([10, 1, 2, 20, 5, 3, 4, -1]);
+        expect(ordinary[4].moveBefore).toHaveBeenLastCalledWith(ordinary[2]);
+
+        await OverlayManager.reorderLoaded([10, 1, 2, 5, 20, 3, 4, -1], 5);
+
+        expect(ids()).toEqual([10, 1, 2, 5, 20, 3, 4, -1]);
+        expect(ordinary[4].moveBefore).toHaveBeenLastCalledWith(ordinary[2]);
     });
 
     it('compareStack pins by overlay kind even when pos is corrupted', () => {
