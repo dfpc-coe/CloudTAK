@@ -65,6 +65,12 @@
                     label=''
                     :disabled='disabled'
                 />
+                <PropertyType
+                    v-else-if='field.kind === "type"'
+                    :model-value='String(values[field.key]) || DEFAULT_SIDC'
+                    :edit='!disabled'
+                    @update:model-value='(v: string) => values[field.key] = v'
+                />
                 <TablerInput
                     v-else-if='field.kind === "color"'
                     v-model='values[field.key]'
@@ -158,7 +164,12 @@ import {
 } from '@tabler/icons-vue';
 import { TablerEnum, TablerInput, TablerToggle, TablerIconButton } from '@tak-ps/vue-tabler';
 import IconSelect from '../../../util/IconSelect.vue';
+import PropertyType from '../../../CloudTAK/Property/PropertyType.vue';
 import MappingChannels from './MappingChannels.vue';
+
+// Activity/Event Symbol Set (40) - generic "Incident" entity shown in the
+// 2525E picker before a fixed type has been chosen
+const DEFAULT_SIDC = '10034000001100000000';
 
 type MappingFieldValue = string | number | boolean | unknown[];
 type SchemaProperty = Record<string, unknown>;
@@ -169,7 +180,7 @@ interface MappingField {
     label: string;
     icon: Component;
     placeholder: string;
-    kind: 'template' | 'boolean' | 'number' | 'enum' | 'channels' | 'icon' | 'color' | 'objects';
+    kind: 'template' | 'boolean' | 'number' | 'enum' | 'channels' | 'icon' | 'color' | 'type' | 'objects';
     /** A Handlebars template can be given in place of a fixed value */
     templatable: boolean;
     options?: string[];
@@ -231,10 +242,14 @@ function schemaFields(properties: Record<string, SchemaProperty>, prefix = ''): 
 
         const items = property.items as SchemaProperty | undefined;
 
-        if (property['@widget'] === 'channels' || property['@widget'] === 'icon' || property['@widget'] === 'color') {
+        if (property['@widget'] === 'channels' || property['@widget'] === 'icon' || property['@widget'] === 'color' || property['@widget'] === 'type') {
             field.kind = property['@widget'];
             if (field.kind === 'channels') field.default = [];
             if (field.kind === 'color') field.default = '#d63939';
+            if (field.kind === 'type') {
+                field.templatable = true;
+                field.default = DEFAULT_SIDC;
+            }
         } else if (property.type === 'boolean') {
             field.kind = 'boolean';
             field.templatable = true;
