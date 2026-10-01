@@ -1520,6 +1520,13 @@
       "when": 1790732800127,
       "tag": "0217_core_entity",
       "breakpoints": true
+    },
+    {
+      "idx": 218,
+      "version": "7",
+      "when": 1790808168835,
+      "tag": "0218_core_entity_kind",
+      "breakpoints": true
     }
   ]
 }

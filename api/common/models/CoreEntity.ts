@@ -4,7 +4,12 @@ import { Static } from '@sinclair/typebox';
 import { CoreEntityResponse, GeoJSONFeatureGeometryPoint } from '../types.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { CoreEntity, CoreEntityChannel } from '../schema.js';
-import { SQL, is, sql, eq, asc, desc } from 'drizzle-orm';
+import { SQL, is, sql, eq, asc, desc, getTableColumns } from 'drizzle-orm';
+
+/** kind is internal until Devices share the table - keep it out of Event payloads */
+const EntityColumns = Object.fromEntries(
+    Object.entries(getTableColumns(CoreEntity)).filter(([name]) => name !== 'kind'),
+) as Omit<ReturnType<typeof getTableColumns<typeof CoreEntity>>, 'kind'>;
 
 /**
  * Every Board of every Channel the Event is shared with, each carrying the
@@ -42,7 +47,7 @@ const BOARDS = sql`COALESCE((
         WHERE core_entity_board.channel IN (
             SELECT core_entity_channel.channel
             FROM core_entity_channel
-            WHERE core_entity_channel.event = core_entity.id
+            WHERE core_entity_channel.entity = core_entity.id
         )
     ) brd
 ), '[]'::JSON)`;
@@ -60,22 +65,22 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
     async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof CoreEntityResponse>> {
         const SubTable = this.pool
             .select({
-                event: CoreEntityChannel.event,
+                entity: CoreEntityChannel.entity,
                 channels: sql`JSON_AGG(core_entity_channel.channel::BIGINT ORDER BY core_entity_channel.channel::BIGINT)`.as('channels'),
             })
             .from(CoreEntityChannel)
-            .groupBy(CoreEntityChannel.event)
+            .groupBy(CoreEntityChannel.entity)
             .as('channels');
 
         const pgres = await this.pool
             .select({
-                event: CoreEntity,
+                event: EntityColumns,
                 active: ACTIVE.as('active'),
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
                 boards: BOARDS.as('boards'),
             })
             .from(CoreEntity)
-            .leftJoin(SubTable, eq(CoreEntity.id, SubTable.event))
+            .leftJoin(SubTable, eq(CoreEntity.id, SubTable.entity))
             .where(is(id, SQL) ? id as SQL<unknown> : eq(this.requiredPrimaryKey(), id))
             .limit(1);
 
@@ -123,23 +128,23 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
 
         const SubTable = this.pool
             .select({
-                event: CoreEntityChannel.event,
+                entity: CoreEntityChannel.entity,
                 channels: sql`JSON_AGG(core_entity_channel.channel::BIGINT ORDER BY core_entity_channel.channel::BIGINT)`.as('channels'),
             })
             .from(CoreEntityChannel)
-            .groupBy(CoreEntityChannel.event)
+            .groupBy(CoreEntityChannel.entity)
             .as('channels');
 
         const pgres = await this.pool
             .select({
                 count: sql<string>`count(*) OVER()`.as('count'),
-                event: CoreEntity,
+                event: EntityColumns,
                 active: ACTIVE.as('active'),
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
                 boards: (query.boards === false ? sql`'[]'::JSON` : BOARDS).as('boards'),
             })
             .from(CoreEntity)
-            .leftJoin(SubTable, eq(CoreEntity.id, SubTable.event))
+            .leftJoin(SubTable, eq(CoreEntity.id, SubTable.entity))
             .where(query.where)
             .orderBy(orderBy)
             .limit(query.limit || 10)

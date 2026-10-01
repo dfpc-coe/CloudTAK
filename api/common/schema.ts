@@ -33,6 +33,7 @@ export const SpatialRefSys = pgTable('spatial_ref_sys', {
 
 export const CoreEntity = pgTable('core_entity', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    kind: text().$type<LayerMapping_Destination>().notNull().default(LayerMapping_Destination.COREENTITY),
     mission_guid: uuid(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
@@ -58,11 +59,11 @@ export const CoreEntity = pgTable('core_entity', {
 });
 
 export const CoreEntityChannel = pgTable('core_entity_channel', {
-    event: uuid().notNull().references(() => CoreEntity.id, { onDelete: 'cascade' }),
+    entity: uuid().notNull().references(() => CoreEntity.id, { onDelete: 'cascade' }),
     channel: bigint({ mode: 'bigint' }).notNull(),
 }, table => ({
     pk: primaryKey({
-        columns: [table.event, table.channel],
+        columns: [table.entity, table.channel],
     }),
 }));
 

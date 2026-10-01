@@ -65,7 +65,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 : sql`EXISTS (
                     SELECT 1
                     FROM core_entity_channel
-                    WHERE core_entity_channel.event = core_entity.id
+                    WHERE core_entity_channel.entity = core_entity.id
                     AND core_entity_channel.channel IN ${filterChannels}
                 )`;
 
@@ -95,7 +95,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                             OR EXISTS (
                                 SELECT 1
                                 FROM core_entity_channel
-                                WHERE core_entity_channel.event = core_entity.id
+                                WHERE core_entity_channel.entity = core_entity.id
                                 AND core_entity_channel.channel IN ${channels}
                             )
                         )
@@ -232,7 +232,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             if (channels.length > 0) {
                 await config.pg.insert(CoreEntityChannel)
                     .values(channels.map(ch => ({
-                        event: event.id,
+                        entity: event.id,
                         channel: BigInt(ch),
                     })));
             }
@@ -352,12 +352,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             if (channels !== undefined) {
                 await config.pg.delete(CoreEntityChannel)
-                    .where(eq(CoreEntityChannel.event, req.params.event));
+                    .where(eq(CoreEntityChannel.entity, req.params.event));
 
                 if (channels.length > 0) {
                     await config.pg.insert(CoreEntityChannel)
                         .values(channels.map(ch => ({
-                            event: req.params.event,
+                            entity: req.params.event,
                             channel: BigInt(ch),
                         })));
                 }

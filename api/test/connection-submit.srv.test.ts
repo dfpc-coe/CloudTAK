@@ -841,7 +841,7 @@ test('POST: api/connection/1/submit - update: false fields are only applied when
             ended: '2026-01-01T00:00:00.000Z',
             style: { 'icon': 'abc:Fire/custom.png', 'marker-color': '#0000ff', 'marker-opacity': 0.5 },
         });
-        await flight.config!.pg.insert(CoreEntityChannel).values({ event: created.id, channel: BigInt(9) });
+        await flight.config!.pg.insert(CoreEntityChannel).values({ entity: created.id, channel: BigInt(9) });
 
         const updated = await submit({ title: 'Hydrant Renamed Upstream', notes: 'Flow tested', open: 'true', colour: '#00ff00' });
 
