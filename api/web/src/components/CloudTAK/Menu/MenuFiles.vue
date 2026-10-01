@@ -58,6 +58,45 @@
                     />
                 </div>
 
+                <div
+                    v-if='!paging.filter'
+                    class='col-12 pt-2'
+                >
+                    <StandardItem
+                        class='p-3 bg-info-subtle border border-info border-opacity-50'
+                        @click='router.push("/menu/imports")'
+                    >
+                        <div class='d-flex justify-content-between gap-3 w-100'>
+                            <div class='d-flex align-items-center gap-2 flex-grow-1 min-w-0'>
+                                <IconFileImport
+                                    class='flex-shrink-0 text-white-50'
+                                    :size='24'
+                                    stroke='1'
+                                />
+                                <div class='flex-grow-1 min-w-0'>
+                                    <div class='d-flex align-items-center gap-2'>
+                                        <span class='fw-semibold'>Imports</span>
+                                    </div>
+                                    <p class='mb-0 small text-white-50'>
+                                        Review and manage data imports
+                                    </p>
+                                </div>
+                            </div>
+                            <div class='d-flex align-items-center gap-2 flex-wrap'>
+                                <TablerIconButton
+                                    title='Open Imports'
+                                    @click.stop.prevent='router.push("/menu/imports")'
+                                >
+                                    <IconChevronRight
+                                        :size='20'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
+                            </div>
+                        </div>
+                    </StandardItem>
+                </div>
+
                 <div class='col-12 pt-2 d-flex align-items-center justify-content-between'>
                     <PathBreadcrumb v-model:collection='collectionPath' />
                     <TablerIconButton
@@ -260,12 +299,15 @@ import {
     IconUpload,
     IconFolder,
     IconFolderPlus,
+    IconFileImport,
+    IconChevronRight,
 } from '@tabler/icons-vue';
 import PathBreadcrumb from '../util/PathBreadcrumb.vue';
 import ShareToPackage from '../util/ShareToPackage.vue';
 import ShareToMission from '../util/ShareToMission.vue';
 import GroupSelectModal from '../../util/GroupSelectModal.vue';
 import PathBrowser from '../util/PathBrowser.vue';
+import StandardItem from '../util/StandardItem.vue';
 import FileRow from './MenuFilesRow.vue';
 import MenuFilesOffline from './MenuFilesOffline.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';

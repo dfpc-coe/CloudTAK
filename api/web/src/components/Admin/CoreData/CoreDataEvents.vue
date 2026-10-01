@@ -273,7 +273,7 @@ import {
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 
-type CoreEntitySort = 'id' | 'created' | 'updated' | 'ended' | 'username' | 'connection' | 'priority' | 'type' | 'name' | 'external_id' | 'editable' | 'location' | 'remarks';
+type CoreEntitySort = 'id' | 'created' | 'updated' | 'username' | 'connection' | 'type' | 'name' | 'external_id' | 'editable' | 'remarks';
 
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);

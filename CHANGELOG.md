@@ -18,6 +18,7 @@
 
 ### Pending Release
 
+- :rocket: **Breaking** Replace the Core Event `mission_guid` column with a `missions` array of `{ name, guid }` objects on the `core_entity_event` side table - existing associations are migrated with the GUID as a placeholder name, `POST` & `PATCH /api/core/event` take `missions` in place of `mission_guid`
 - :bug: Fix HTML vs Markdown Detection Parser
 - :tada: Add a `type` Field Mapping widget (`@widget: 'type'` on `common/core-schema.ts` properties) using the MIL-STD-2525E symbol picker from the CoT sidebar to select a fixed Type, or a template
 - :rocket: Move the Event specific `started`, `ended`, `priority` & `location` columns of `core_entity` into a `core_entity_event` side table sharing its primary key - payloads are unchanged, `GET /api/core/event` no longer accepts those columns as `sort`
