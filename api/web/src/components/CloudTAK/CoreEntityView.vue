@@ -648,7 +648,7 @@ async function completeFormWizard(): Promise<void> {
  * immediately rather than on the next Event CoT broadcast
  */
 async function syncMapFeature(): Promise<void> {
-    if (!event.value || !mapStore._worker) return;
+    if (!event.value || !mapStore.workerStarted) return;
 
     try {
         const cot = await mapStore.worker.db.get(event.value.id);
@@ -771,7 +771,7 @@ async function deleteEvent(): Promise<void> {
 
         // The Event is gone server side - drop its marker locally rather than
         // waiting for it to go stale on the map
-        if (mapStore._worker) {
+        if (mapStore.workerStarted) {
             try {
                 await mapStore.worker.db.remove(event.value.id, { skipNetwork: true });
             } catch (err) {
