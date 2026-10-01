@@ -10,7 +10,7 @@ import { TEAM_COLORS, strokeColorFor } from '../utils/team-colors.ts';
 import pointOnFeature from '@turf/point-on-feature';
 import { applyEllipseMutation } from './cot/ellipse.ts';
 import type { COTMutation, COTUpdate } from './cot/types.ts';
-import type { Feature, Subscription } from '../types.ts'
+import type { Feature, FeaturePropertyCreator, Subscription } from '../types.ts'
 import type {
     BBox as GeoJSONBBox,
     Feature as GeoJSONFeature,
@@ -408,6 +408,27 @@ export default class COT {
 
     get is_skittle(): boolean {
         return !!this.properties.group;
+    }
+
+    /**
+     * Author of the feature - the creator detail when present, otherwise
+     * derived from the `p-p` (parent-producer) link TAK clients attach
+     */
+    get creator(): FeaturePropertyCreator | undefined {
+        if (this._properties.creator) return this._properties.creator;
+
+        const link = (this._properties.links || []).find((link) => {
+            return link.relation === 'p-p' && link.uid && link.type;
+        });
+
+        if (!link || !link.uid || !link.type) return;
+
+        return {
+            uid: link.uid,
+            type: link.type,
+            ...(link.parent_callsign ? { callsign: link.parent_callsign } : {}),
+            ...(link.production_time ? { time: link.production_time } : {}),
+        };
     }
 
     get is_self(): boolean {

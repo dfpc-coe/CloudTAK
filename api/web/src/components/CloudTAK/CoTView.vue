@@ -655,9 +655,9 @@
                 />
 
                 <PropertyCreator
-                    v-if='cot.properties.creator'
+                    v-if='cot.creator'
                     :key='cot.properties.id'
-                    :creator='cot.properties.creator'
+                    :creator='cot.creator'
                 />
 
                 <PropertyMetadata

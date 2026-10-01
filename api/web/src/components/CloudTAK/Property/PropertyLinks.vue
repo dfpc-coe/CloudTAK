@@ -318,7 +318,7 @@ const links = computed<LinkEntry[]>(() => {
 const external_links = computed(() => {
     return links.value
         .map((link, index) => ({ link, index }))
-        .filter((item) => item.link.relation !== 't-s' && !isObjectMarker(item.link));
+        .filter((item) => item.link.relation !== 't-s' && item.link.relation !== 'p-p' && !isObjectMarker(item.link));
 });
 
 // A Link marking the CoT as the projection of a richer CloudTAK record -
