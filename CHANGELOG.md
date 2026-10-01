@@ -18,6 +18,7 @@
 
 ### Pending Release
 
+- :bug: Fix HTML vs Markdown Detection Parser
 - :tada: Add a `type` Field Mapping widget (`@widget: 'type'` on `common/core-schema.ts` properties) using the MIL-STD-2525E symbol picker from the CoT sidebar to select a fixed Type, or a template
 - :rocket: Move the Event specific `started`, `ended`, `priority` & `location` columns of `core_entity` into a `core_entity_event` side table sharing its primary key - payloads are unchanged, `GET /api/core/event` no longer accepts those columns as `sort`
 
