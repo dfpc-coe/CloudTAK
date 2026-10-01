@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+### v13.101.1 - 2026-09-30
+
 - :rocket: Add a `kind` column to `core_entity` (defaults to `CoreEvent`) and rename the `core_entity_channel.event` column to `entity` - no API change
 
 ### v13.101.0 - 2026-09-30
