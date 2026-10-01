@@ -38,6 +38,13 @@ import * as mapgl from 'maplibre-gl'
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../workers/handler.ts';
+
+// Comlink proxies answer every property lookup with another proxy, which sends
+// Vue's toRaw() into infinite recursion when a reactive slot holding one is
+// overwritten - keep the worker handles outside Pinia state entirely
+let atlasRawWorker: Worker | undefined;
+let atlasWorkerReady: Promise<void> | undefined;
+let atlasWorker: Comlink.Remote<Atlas> | undefined;
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
 import { isNativePlatform, whenForegrounded } from '../utils/capacitor.ts';
@@ -152,9 +159,7 @@ export const useMapStore = defineStore('cloudtak', {
         // Native app is in the background: storage is suspended, timers paused
         backgrounded: boolean;
 
-        _rawWorker?: Worker;
-        _workerReady?: Promise<void>;
-        _worker?: Comlink.Remote<Atlas>;
+        workerStarted: boolean;
         mission: Subscription | undefined;
         terrainEnabled: boolean;
         container?: HTMLElement;
@@ -195,9 +200,7 @@ export const useMapStore = defineStore('cloudtak', {
         }
     } => {
         return {
-            _rawWorker: undefined,
-            _workerReady: undefined,
-            _worker: undefined,
+            workerStarted: false,
             _destroying: undefined,
             _bottomBar: markRaw(new BottomBarManager()),
             timer: null,
@@ -284,14 +287,14 @@ export const useMapStore = defineStore('cloudtak', {
             return this._bottomBar as BottomBarManager;
         },
         worker: function(): Comlink.Remote<Atlas> {
-            if (!this._worker) throw new Error('Atlas worker has not yet started');
-            return this._worker as Comlink.Remote<Atlas>;
+            if (!atlasWorker) throw new Error('Atlas worker has not yet started');
+            return atlasWorker;
         }
     },
     actions: {
         // A refreshed login token - the worker reconnects its WebSocket with it
         updateToken: async function(token: string): Promise<void> {
-            if (!this._worker) return;
+            if (!atlasWorker) return;
             await this.worker.setToken(token);
         },
 
@@ -521,7 +524,7 @@ export const useMapStore = defineStore('cloudtak', {
             }
         },
         startWorker: function() {
-            if (this._rawWorker) return;
+            if (atlasRawWorker) return;
 
             // The server URL rides along on the worker name so the worker's
             // module evaluation never waits on IndexedDB
@@ -535,9 +538,10 @@ export const useMapStore = defineStore('cloudtak', {
                 true
             );
 
-            this._rawWorker = markRaw(rawWorker);
-            this._workerReady = waitForAtlasWorkerReady(rawWorker);
-            this._worker = markRaw(Comlink.wrap<Atlas>(rawWorker));
+            atlasRawWorker = rawWorker;
+            atlasWorkerReady = waitForAtlasWorkerReady(rawWorker);
+            atlasWorker = Comlink.wrap<Atlas>(rawWorker);
+            this.workerStarted = true;
         },
         startRefreshTimer: function() {
             if (this.timer) window.clearInterval(this.timer);
@@ -563,7 +567,7 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             // Worker first - its WebSocket handlers are the busiest writers
-            if (this._worker) {
+            if (atlasWorker) {
                 try {
                     await withTimeout(this.worker.suspend(), WORKER_LIFECYCLE_TIMEOUT_MS, 'Atlas worker suspend');
                 } catch (err) {
@@ -581,7 +585,7 @@ export const useMapStore = defineStore('cloudtak', {
             // against a still-suspended main-thread database
             resumeDatabase();
 
-            if (this._worker) {
+            if (atlasWorker) {
                 try {
                     await withTimeout(this.worker.resume(), WORKER_LIFECYCLE_TIMEOUT_MS, 'Atlas worker resume');
                 } catch (err) {
@@ -619,9 +623,9 @@ export const useMapStore = defineStore('cloudtak', {
             return this._destroying;
         },
         _destroy: async function() {
-            // Capture current worker instances to avoid races with $reset()/state() creating new ones.
-            const currentWorker = this._worker;
-            const currentRawWorker = this._rawWorker;
+            // Capture current worker instances to avoid races with init() creating new ones.
+            const currentWorker = atlasWorker;
+            const currentRawWorker = atlasRawWorker;
             const deviceStore = useDeviceStore();
 
             if (this.timer) {
@@ -680,6 +684,9 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
             OverlayManager.clearLoaded();
+            atlasWorker = undefined;
+            atlasRawWorker = undefined;
+            atlasWorkerReady = undefined;
             this.$reset();
         },
         makeActiveMission: async function(mission?: Subscription): Promise<void> {
@@ -1024,7 +1031,8 @@ export const useMapStore = defineStore('cloudtak', {
             const { value: token } = await Preferences.get({ key: 'token' });
 
             this.loadingStage = 'Initializing worker…';
-            await withTimeout(this._workerReady!, WORKER_READY_TIMEOUT_MS, 'Atlas worker startup');
+            if (!atlasWorkerReady) throw new Error('Atlas worker has not yet started');
+            await withTimeout(atlasWorkerReady, WORKER_READY_TIMEOUT_MS, 'Atlas worker startup');
             await withTimeout(this.worker.init(token || ''), WORKER_INIT_TIMEOUT_MS, 'Atlas worker init');
 
             try {
