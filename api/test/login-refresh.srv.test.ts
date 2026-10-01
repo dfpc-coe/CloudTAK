@@ -294,6 +294,7 @@ test('DELETE: api/user/user@example.com/session/:session - an open WebSocket is 
             conn.on('close', () => resolve());
             conn.on('message', async (data) => {
                 const msg = JSON.parse(String(data));
+                if (msg.type === 'status') return;
                 received.push(msg);
 
                 if (msg.type === 'connected') {

@@ -3,13 +3,42 @@ import Modeler, { GenericList, GenericListInput, GenericIterInput } from '@opena
 import { Static } from '@sinclair/typebox';
 import { CoreEntityResponse, GeoJSONFeatureGeometryPoint } from '../types.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { CoreEntity, CoreEntityChannel } from '../schema.js';
+import { CoreEntity, CoreEntityEvent, CoreEntityChannel } from '../schema.js';
+import type { PgInsertValue } from 'drizzle-orm/pg-core';
 import { SQL, is, sql, eq, asc, desc, getTableColumns } from 'drizzle-orm';
 
 /** kind is internal until Devices share the table - keep it out of Event payloads */
 const EntityColumns = Object.fromEntries(
     Object.entries(getTableColumns(CoreEntity)).filter(([name]) => name !== 'kind'),
 ) as Omit<ReturnType<typeof getTableColumns<typeof CoreEntity>>, 'kind'>;
+
+/** Event side table columns - the shared primary key is already selected from core_entity */
+const EventColumns = Object.fromEntries(
+    Object.entries(getTableColumns(CoreEntityEvent)).filter(([name]) => name !== 'id'),
+) as Omit<ReturnType<typeof getTableColumns<typeof CoreEntityEvent>>, 'id'>;
+
+const EVENT_KEYS = new Set(Object.keys(EventColumns));
+
+type WithSQL<T> = { [K in keyof T]: T[K] | SQL };
+
+export type CoreEntityEventInsert = WithSQL<Omit<typeof CoreEntity.$inferInsert, 'kind'> & Omit<typeof CoreEntityEvent.$inferInsert, 'id'>>;
+export type CoreEntityEventUpdate = Partial<WithSQL<Omit<typeof CoreEntity.$inferInsert, 'id' | 'kind'> & Omit<typeof CoreEntityEvent.$inferInsert, 'id'>>>;
+
+/** Database or transaction the Event writers run against */
+type Writer = Pick<PostgresJsDatabase<Record<string, unknown>>, 'insert' | 'update'>;
+
+/** Split a flat set of Event values into the core_entity & core_entity_event halves */
+export function splitEvent<T extends Record<string, unknown>>(values: T): { entity: Record<string, unknown>; event: Record<string, unknown> } {
+    const entity: Record<string, unknown> = {};
+    const event: Record<string, unknown> = {};
+
+    for (const [key, value] of Object.entries(values)) {
+        if (value === undefined) continue;
+        (EVENT_KEYS.has(key) ? event : entity)[key] = value;
+    }
+
+    return { entity, event };
+}
 
 /**
  * Every Board of every Channel the Event is shared with, each carrying the
@@ -53,13 +82,44 @@ const BOARDS = sql`COALESCE((
 ), '[]'::JSON)`;
 
 /** An Event is active until its ended time - a future ended keeps it active until then */
-export const ACTIVE = sql<boolean>`(${CoreEntity.ended} IS NULL OR ${CoreEntity.ended} > Now())`;
+export const ACTIVE = sql<boolean>`(${CoreEntityEvent.ended} IS NULL OR ${CoreEntityEvent.ended} > Now())`;
 
 export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
     constructor(
         pool: PostgresJsDatabase<Record<string, unknown>>,
     ) {
         super(pool, CoreEntity);
+    }
+
+    /** Create an Event across core_entity & core_entity_event - returns the new id */
+    async generateEvent(values: CoreEntityEventInsert, tx: Writer = this.pool): Promise<string> {
+        const { entity, event } = splitEvent(values);
+
+        const [row] = await tx.insert(CoreEntity)
+            .values(entity as PgInsertValue<typeof CoreEntity>)
+            .returning({ id: CoreEntity.id });
+
+        await tx.insert(CoreEntityEvent).values({ ...event, id: row.id });
+
+        return row.id;
+    }
+
+    /** Update an Event across core_entity & core_entity_event - core_entity.updated is always touched */
+    async commitEvent(id: string, values: CoreEntityEventUpdate, tx: Writer = this.pool): Promise<void> {
+        const { entity, event } = splitEvent(values);
+
+        const updated = await tx.update(CoreEntity)
+            .set({ ...entity, updated: sql`Now()` })
+            .where(eq(CoreEntity.id, id))
+            .returning({ id: CoreEntity.id });
+
+        if (!updated.length) throw new Err(404, null, 'Item Not Found');
+
+        if (Object.keys(event).length) {
+            await tx.update(CoreEntityEvent)
+                .set(event)
+                .where(eq(CoreEntityEvent.id, id));
+        }
     }
 
     async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof CoreEntityResponse>> {
@@ -74,12 +134,13 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
 
         const pgres = await this.pool
             .select({
-                event: EntityColumns,
+                event: { ...EntityColumns, ...EventColumns },
                 active: ACTIVE.as('active'),
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
                 boards: BOARDS.as('boards'),
             })
             .from(CoreEntity)
+            .innerJoin(CoreEntityEvent, eq(CoreEntity.id, CoreEntityEvent.id))
             .leftJoin(SubTable, eq(CoreEntity.id, SubTable.entity))
             .where(is(id, SQL) ? id as SQL<unknown> : eq(this.requiredPrimaryKey(), id))
             .limit(1);
@@ -138,12 +199,13 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
         const pgres = await this.pool
             .select({
                 count: sql<string>`count(*) OVER()`.as('count'),
-                event: EntityColumns,
+                event: { ...EntityColumns, ...EventColumns },
                 active: ACTIVE.as('active'),
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
                 boards: (query.boards === false ? sql`'[]'::JSON` : BOARDS).as('boards'),
             })
             .from(CoreEntity)
+            .innerJoin(CoreEntityEvent, eq(CoreEntity.id, CoreEntityEvent.id))
             .leftJoin(SubTable, eq(CoreEntity.id, SubTable.entity))
             .where(query.where)
             .orderBy(orderBy)

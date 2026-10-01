@@ -37,16 +37,12 @@ export const CoreEntity = pgTable('core_entity', {
     mission_guid: uuid(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    started: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    ended: timestamp({ withTimezone: true, mode: 'string' }), // A future time keeps the Event active until then
     username: text().references(() => Profile.username),
     connection: integer().references(() => Connection.id, { onDelete: 'set null' }),
-    priority: text().$type<CoreEntity_Priority>().notNull().default(CoreEntity_Priority.NONE),
     type: text().notNull(), // MIL-STD-2525E Symbol ID
     name: text().notNull(),
     external_id: text().notNull().default(''),
     editable: boolean().notNull().default(true), // Can users other than the creator edit the Event
-    location: text().notNull().default(''), // Human readable location - ie: an address
     remarks: text().notNull().default(''),
     metadata: jsonb().$type<Record<string, unknown>>().notNull().default({}),
     links: jsonb().$type<Array<Static<typeof CoreEntityLink>>>().notNull().default([]),
@@ -56,6 +52,15 @@ export const CoreEntity = pgTable('core_entity', {
     return {
         external_idx: uniqueIndex('core_entity_connection_external_id_idx').on(table.connection, table.external_id).where(sql`external_id <> ''`),
     };
+});
+
+/** Event specific columns of a CoreEntity of kind CoreEvent - shares the Entity's primary key */
+export const CoreEntityEvent = pgTable('core_entity_event', {
+    id: uuid().primaryKey().references(() => CoreEntity.id, { onDelete: 'cascade' }),
+    started: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    ended: timestamp({ withTimezone: true, mode: 'string' }), // A future time keeps the Event active until then
+    priority: text().$type<CoreEntity_Priority>().notNull().default(CoreEntity_Priority.NONE),
+    location: text().notNull().default(''), // Human readable location - ie: an address
 });
 
 export const CoreEntityChannel = pgTable('core_entity_channel', {

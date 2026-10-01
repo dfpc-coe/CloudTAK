@@ -6,6 +6,7 @@ import {
     CoreEntityBoardEventResponse,
     CoreEntityResponse,
 } from '../../common/types.js';
+import { CoreEntity } from '../../common/schema.js';
 import { sql } from 'drizzle-orm';
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import Schema from '@openaddresses/batch-schema';
@@ -342,7 +343,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             if (placements.items.length) {
                 const list = await config.models.CoreEntity.augmented_list({
                     limit: placements.items.length,
-                    where: sql`id IN ${placements.items.map(p => p.event)}`,
+                    where: sql`${CoreEntity.id} IN ${placements.items.map(p => p.event)}`,
                 });
 
                 for (const event of list.items) {
