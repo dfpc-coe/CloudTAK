@@ -38,7 +38,7 @@ export const CoreEntityStyleSchema = Type.Object({
  */
 export const CoreEntitySchema = Type.Object({
     name: Type.String({ 'title': 'Name', '@icon': 'IconTag', 'description': 'Human readable name of the Event' }),
-    type: Type.String({ 'title': 'Type', '@icon': 'IconCategory', 'description': 'MIL-STD-2525E Symbol ID' }),
+    type: Type.String({ 'title': 'Type', '@icon': 'IconCategory', '@widget': 'type', 'description': 'MIL-STD-2525E Symbol ID' }),
     priority: Type.Optional(Type.Unsafe<CoreEntity_Priority>({ 'type': 'string', 'title': 'Priority', '@icon': 'IconFlag', 'description': 'Priority of the Event', 'enum': Object.values(CoreEntity_Priority), 'default': CoreEntity_Priority.NONE })),
     location: Type.Optional(Type.String({ 'title': 'Location', '@icon': 'IconMapPin', 'description': 'Human readable location - ie: an address' })),
     remarks: Type.Optional(Type.String({ 'title': 'Remarks', '@icon': 'IconBlockquote', 'description': 'Free text remarks about the Event' })),
@@ -57,7 +57,7 @@ export const CoreEntitySchema = Type.Object({
 
 export const CoreDeviceSchema = Type.Object({
     name: Type.String({ 'title': 'Name', '@icon': 'IconTag', 'description': 'Human readable name/callsign of the Device' }),
-    type: Type.String({ 'title': 'Type', '@icon': 'IconCategory', 'description': 'MIL-STD-2525E Symbol ID' }),
+    type: Type.String({ 'title': 'Type', '@icon': 'IconCategory', '@widget': 'type', 'description': 'MIL-STD-2525E Symbol ID' }),
     manufacturer: Type.Optional(Type.String({ 'title': 'Manufacturer', '@icon': 'IconBuildingFactory2', 'description': 'Manufacturer of the Device - ie: Ortec, Nucsafe, DJI' })),
     model: Type.Optional(Type.String({ 'title': 'Model', '@icon': 'IconBox', 'description': 'Model of the Device - ie: Micro Detective, IdentiFINDER 2' })),
     serial: Type.Optional(Type.String({ 'title': 'Serial', '@icon': 'IconBarcode', 'description': 'Manufacturer assigned Serial Number' })),
