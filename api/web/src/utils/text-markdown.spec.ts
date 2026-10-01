@@ -42,6 +42,32 @@ describe('textToMarkdown', () => {
         expect(render(text)).not.toContain('<pre>');
     });
 
+    it('renders indented HTML with blank lines as HTML, not a code block', () => {
+        // KML description as delivered by the AirNow NetworkLink feed
+        const text = [
+            '\t\t\t<div align="center">',
+            '\t\t\t\t<table border="0">',
+            '\t\t\t\t\t<tr>',
+            '\t\t\t\t\t\t<td colspan="2">',
+            '\t\t\t\t\t\t\t<b><font color="#0f79b9" size="5">AIR&nbsp;QUALITY&nbsp;INFORMATION</font></b>',
+            '',
+            '\t\t\t\t\t\t</td>',
+            '\t\t\t\t\t</tr>',
+            '\t\t\t\t\t<tr>',
+            '\t\t\t\t\t\t<td><a href="http://www.airnow.gov/">National Air Quality</a></td>',
+            '\t\t\t\t\t</tr>',
+            '\t\t\t\t</table>',
+            '\t\t\t</div>'
+        ].join('\n');
+
+        const html = render(text);
+
+        expect(html).not.toContain('<pre>');
+        expect(html).not.toContain('&lt;');
+        expect(html).toContain('<a href="http://www.airnow.gov/">National Air Quality</a>');
+        expect(html).toContain('AIR&nbsp;QUALITY&nbsp;INFORMATION');
+    });
+
     it('links bare URLs', () => {
         expect(textToMarkdown('see https://example.com/a?b=1 now')).toBe('see [https://example.com/a?b=1](https://example.com/a?b=1) now');
         expect(textToMarkdown('| https://example.com |')).toBe('| [https://example.com](https://example.com) |');
