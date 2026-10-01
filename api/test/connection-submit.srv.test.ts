@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import jwt from 'jsonwebtoken';
-import { eq } from 'drizzle-orm';
+import { eq, getTableColumns } from 'drizzle-orm';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import Flight from './flight.js';
-import { ConnectionFeature, CoreEntity, CoreEntityChannel, CoreDevice } from '../common/schema.js';
+import { ConnectionFeature, CoreEntity, CoreEntityEvent, CoreEntityChannel, CoreDevice } from '../common/schema.js';
 import { LayerMapping_Destination } from '../common/enums.js';
 
 const flight = new Flight();
@@ -18,6 +18,14 @@ flight.connection();
 
 const layerToken = 'etl.' + jwt.sign({ access: 'layer', id: 1, internal: true }, 'coe-wildland-fire');
 const otherLayerToken = 'etl.' + jwt.sign({ access: 'layer', id: 2, internal: true }, 'coe-wildland-fire');
+
+/** Events as flat rows across core_entity & core_entity_event */
+function eventRows() {
+    const { id, ...event } = getTableColumns(CoreEntityEvent);
+    return flight.config!.pg.select({ ...getTableColumns(CoreEntity), ...event, id })
+        .from(CoreEntity)
+        .innerJoin(CoreEntityEvent, eq(CoreEntity.id, CoreEntityEvent.id));
+}
 
 test('Setup: Create Layers', async () => {
     try {
@@ -486,7 +494,7 @@ test('POST: api/connection/1/submit - CoreEntity & CoreDevice maps create record
         assert.equal(res.body.devices, 1);
         assert.equal(res.body.submitted, 0, 'mapped Features are not delivered as CoT');
 
-        const events = await flight.config!.pg.select().from(CoreEntity);
+        const events = await eventRows();
         const byExternal = new Map(events.map(e => [e.external_id, e]));
 
         assert.equal(events.length, 2);
@@ -552,7 +560,7 @@ test('POST: api/connection/1/submit - resubmitting updates the mapped records in
         assert.equal(res.body.events, 1);
         assert.equal(res.body.devices, 1);
 
-        const events = await flight.config!.pg.select().from(CoreEntity);
+        const events = await eventRows();
         assert.equal(events.length, 2);
 
         const fire = events.find(e => e.external_id === 'inc-1')!;
@@ -570,7 +578,7 @@ test('POST: api/connection/1/submit - resubmitting updates the mapped records in
 
 test('POST: api/connection/1/submit - concurrent submissions UPSERT a single record per external_id', async () => {
     try {
-        const before = await flight.config!.pg.select().from(CoreEntity);
+        const before = await eventRows();
         const fire = before.find(e => e.external_id === 'inc-1')!;
 
         const responses = await Promise.all([1, 2, 3, 4, 5].map((i) => {
@@ -603,7 +611,7 @@ test('POST: api/connection/1/submit - concurrent submissions UPSERT a single rec
             assert.equal(res.body.events, 2);
         }
 
-        const events = await flight.config!.pg.select().from(CoreEntity);
+        const events = await eventRows();
         assert.equal(events.length, before.length + 1);
         assert.equal(events.filter(e => e.external_id === 'inc-9').length, 1);
 
@@ -683,7 +691,7 @@ test('POST: api/connection/1/submit - channels, style, links, active & Device as
             assert.equal(res.body.events, 1);
             assert.equal(res.body.devices, 1);
 
-            const [event] = (await flight.config!.pg.select().from(CoreEntity)).filter(e => e.external_id === 'call-77');
+            const [event] = (await eventRows()).filter(e => e.external_id === 'call-77');
             const [device] = (await flight.config!.pg.select().from(CoreDevice)).filter(d => d.external_id === 'unit-E1');
 
             return { event, device };
@@ -756,7 +764,7 @@ test('POST: api/connection/1/submit - ended as seconds from submission is pushed
             assert.equal(res.status, 200);
             assert.deepEqual(res.body.errors, []);
 
-            const [event] = (await flight.config!.pg.select().from(CoreEntity)).filter(e => e.external_id === 'cad-1');
+            const [event] = (await eventRows()).filter(e => e.external_id === 'cad-1');
             return event;
         };
 
@@ -771,7 +779,7 @@ test('POST: api/connection/1/submit - ended as seconds from submission is pushed
         assert.ok(new Date(pushed.ended!).getTime() > new Date(created.ended!).getTime(), 'resubmitting pushes ended out');
 
         // The feed goes quiet & the end time passes
-        await models.CoreEntity.commit(created.id, { ended: new Date(Date.now() - 1000).toISOString() });
+        await models.CoreEntity.commitEvent(created.id, { ended: new Date(Date.now() - 1000).toISOString() });
         assert.equal((await models.CoreEntity.augmented_from(created.id)).active, false, 'ended in the past');
 
         // The feed resumes
@@ -826,7 +834,7 @@ test('POST: api/connection/1/submit - update: false fields are only applied when
             assert.equal(res.status, 200);
             assert.deepEqual(res.body.errors, []);
 
-            const [event] = (await flight.config!.pg.select().from(CoreEntity)).filter(e => e.external_id === 'hydrant-1');
+            const [event] = (await eventRows()).filter(e => e.external_id === 'hydrant-1');
             return event;
         };
 
@@ -836,7 +844,7 @@ test('POST: api/connection/1/submit - update: false fields are only applied when
         assert.deepEqual(created.style, { 'icon': 'abc:Fire/hydrant.png', 'marker-color': '#0000ff' });
 
         // A user renames the Event, closes it, restyles it & shares it with another Channel
-        await models.CoreEntity.commit(created.id, {
+        await models.CoreEntity.commitEvent(created.id, {
             name: 'Hydrant (Main St)',
             ended: '2026-01-01T00:00:00.000Z',
             style: { 'icon': 'abc:Fire/custom.png', 'marker-color': '#0000ff', 'marker-opacity': 0.5 },
@@ -920,7 +928,7 @@ test('POST: api/connection/1/submit - records inherit the Channels of the Connec
             assert.equal(res.status, 200);
             assert.deepEqual(res.body.errors, []);
 
-            const [event] = (await flight.config!.pg.select().from(CoreEntity)).filter(e => e.external_id === 'inherit-1');
+            const [event] = (await eventRows()).filter(e => e.external_id === 'inherit-1');
             const [device] = (await flight.config!.pg.select().from(CoreDevice)).filter(d => d.external_id === 'inherit-2');
 
             return {

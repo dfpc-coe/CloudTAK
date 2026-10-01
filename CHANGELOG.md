@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+- :rocket: Move the Event specific `started`, `ended`, `priority` & `location` columns of `core_entity` into a `core_entity_event` side table sharing its primary key - payloads are unchanged, `GET /api/core/event` no longer accepts those columns as `sort`
+
 ### v13.101.1 - 2026-09-30
 
 - :rocket: Add a `kind` column to `core_entity` (defaults to `CoreEvent`) and rename the `core_entity_channel.event` column to `entity` - no API change

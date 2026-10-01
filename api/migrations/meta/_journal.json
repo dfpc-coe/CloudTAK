@@ -1527,6 +1527,13 @@
       "when": 1790808168835,
       "tag": "0218_core_entity_kind",
       "breakpoints": true
+    },
+    {
+      "idx": 219,
+      "version": "7",
+      "when": 1790819833960,
+      "tag": "0219_core_entity_event",
+      "breakpoints": true
     }
   ]
 }
