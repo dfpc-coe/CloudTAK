@@ -4,7 +4,7 @@ import { sql, eq } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUser, AuthResource, AuthResourceAccess } from '../../common/auth.js';
-import { CoreEntity, CoreEntityChannel } from '../../common/schema.js';
+import { CoreEntity, CoreEntityEvent, CoreEntityChannel } from '../../common/schema.js';
 import { CoreEntity_Priority } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
 import { userChannels } from '../lib/tak-channels.js';
@@ -32,7 +32,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             order: Default.Order,
             sort: Type.String({
                 default: 'created',
-                enum: Object.keys(CoreEntity),
+                enum: Object.keys(CoreEntity).filter(key => key !== 'kind'),
             }),
             filter: Default.Filter,
             channel: Type.Optional(Type.Union([
@@ -223,21 +223,27 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const { channels, ...body } = req.body;
 
-            const event = await config.models.CoreEntity.generate({
-                ...body,
-                username: auth instanceof AuthUser ? auth.email : null,
-                connection: auth instanceof AuthResource ? await resourceConnection(auth) : null,
-            });
+            const connection = auth instanceof AuthResource ? await resourceConnection(auth) : null;
 
-            if (channels.length > 0) {
-                await config.pg.insert(CoreEntityChannel)
-                    .values(channels.map(ch => ({
-                        entity: event.id,
-                        channel: BigInt(ch),
-                    })));
-            }
+            const id = await config.pg.transaction(async (tx) => {
+                const id = await config.models.CoreEntity.generateEvent({
+                    ...body,
+                    username: auth instanceof AuthUser ? auth.email : null,
+                    connection,
+                }, tx);
 
-            const created = await config.models.CoreEntity.augmented_from(event.id);
+                if (channels.length > 0) {
+                    await tx.insert(CoreEntityChannel)
+                        .values(channels.map(ch => ({
+                            entity: id,
+                            channel: BigInt(ch),
+                        })));
+                }
+
+                return id;
+            }).catch(uniqueViolation('external_id is already used by another Event of the Connection'));
+
+            const created = await config.models.CoreEntity.augmented_from(id);
 
             notifyCoreEntity(config, ETLEventAction.Create, created);
 
@@ -337,16 +343,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 let ended: typeof body.ended | ReturnType<typeof sql> = body.ended;
                 if (body.ended === undefined) {
                     if (active === false) {
-                        ended = sql`LEAST(COALESCE(ended, Now()), Now())`;
+                        ended = sql`LEAST(COALESCE(${CoreEntityEvent.ended}, Now()), Now())`;
                     } else if (active === true) {
                         ended = null;
                     }
                 }
 
-                await config.models.CoreEntity.commit(req.params.event, {
+                await config.models.CoreEntity.commitEvent(req.params.event, {
                     ...columns,
                     ...(ended === undefined ? {} : { ended }),
-                    updated: sql`Now()`,
                 }).catch(uniqueViolation('external_id is already used by another Event of the Connection'));
             }
 

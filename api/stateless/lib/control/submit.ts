@@ -1,10 +1,11 @@
 import { sql, eq, and, getTableName } from 'drizzle-orm';
-import type { PgUpdateSetSource } from 'drizzle-orm/pg-core';
+import type { PgInsertValue, PgUpdateSetSource } from 'drizzle-orm/pg-core';
 import Err from '@openaddresses/batch-error';
 import pointOnFeature from '@turf/point-on-feature';
 import type { Feature as GeoJSONFeature, Geometry } from 'geojson';
 import type { MappingFeature, MappedEvent, MappedDevice } from '../../../common/mapping.js';
-import { CoreEntity, CoreEntityChannel, CoreDevice, CoreDeviceChannel } from '../../../common/schema.js';
+import { CoreEntity, CoreEntityEvent, CoreEntityChannel, CoreDevice, CoreDeviceChannel } from '../../../common/schema.js';
+import { splitEvent } from '../../../common/models/CoreEntity.js';
 import { ETLEventAction } from '../../../common/etl-events.js';
 import { notifyCoreEntity } from '../core-entity.js';
 import type ConfigStateless from '../../config.js';
@@ -19,7 +20,7 @@ export interface SubmitOptions {
 const HAS_EXTERNAL_ID = sql`external_id <> ''`;
 
 // Ending an Event never moves an end time that has already passed
-const END_NOW = sql`LEAST(COALESCE(${CoreEntity.ended}, Now()), Now())`;
+const END_NOW = sql`LEAST(COALESCE(${CoreEntityEvent.ended}, Now()), Now())`;
 
 // xmax is only set on a row version produced by the conflict UPDATE
 const INSERTED = sql<boolean>`(xmax = 0)`;
@@ -54,18 +55,27 @@ export default class SubmitControl {
         const record = this.#record(CoreEntity, connection, feature, { ...columns, geometry }, createOnly);
         const inherited = channels ? [] : await opts.inherit?.() ?? [];
 
-        const set: PgUpdateSetSource<typeof CoreEntity> = { ...record.set };
-        if (closing && !createOnly.has('ended')) set.ended = END_NOW;
+        const values = splitEvent(closing ? { ...record.values, ended: sql`Now()` } : record.values);
+        const set = splitEvent(record.set);
+        if (closing && !createOnly.has('ended')) set.event.ended = END_NOW;
 
         const { id, inserted } = await this.config.pg.transaction(async (tx) => {
             const [row] = await tx.insert(CoreEntity)
-                .values(closing ? { ...record.values, ended: sql`Now()` } : record.values)
+                .values(values.entity as PgInsertValue<typeof CoreEntity>)
                 .onConflictDoUpdate({
                     target: [CoreEntity.connection, CoreEntity.external_id],
                     targetWhere: HAS_EXTERNAL_ID,
-                    set,
+                    set: set.entity as PgUpdateSetSource<typeof CoreEntity>,
                 })
                 .returning({ id: CoreEntity.id, inserted: INSERTED });
+
+            const event = tx.insert(CoreEntityEvent).values({ ...values.event, id: row.id });
+
+            if (Object.keys(set.event).length) {
+                await event.onConflictDoUpdate({ target: CoreEntityEvent.id, set: set.event as PgUpdateSetSource<typeof CoreEntityEvent> });
+            } else {
+                await event.onConflictDoNothing({ target: CoreEntityEvent.id });
+            }
 
             if (channels && (row.inserted || !createOnly.has('channels'))) {
                 await tx.delete(CoreEntityChannel).where(eq(CoreEntityChannel.entity, row.id));
