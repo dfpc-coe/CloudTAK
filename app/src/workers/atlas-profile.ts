@@ -12,9 +12,11 @@ import COT from '../base/cot.ts';
  * `styleProperties()` styles self as a contact skittle locally, but sending
  * `marker-color` makes node-cot's `from_geojson` emit a synthetic
  * semi-transparent `<color>` detail native clients never produce for a team
- * member - they rely solely on `<__group>`
+ * member - they rely solely on `<__group>`. `milicon`/`milsym` are picked up
+ * when the self CoT echoes back through the API's milsym augment and would
+ * make ATAK render a 2525 symbol in place of the skittle
  */
-const SELF_STYLE_PROPERTIES = ['marker-color', 'marker-opacity', 'icon-opacity', 'icon', 'marker-stroke-color'] as const;
+const SELF_STYLE_PROPERTIES = ['marker-color', 'marker-opacity', 'icon-opacity', 'icon', 'marker-stroke-color', 'milicon', 'milsym'] as const;
 
 export type ProfileLocationState = {
     source: LocationState
