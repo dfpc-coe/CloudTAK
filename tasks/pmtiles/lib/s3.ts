@@ -14,6 +14,8 @@ export default function s3client(): S3.S3Client {
     if (process.env.AWS_S3_Endpoint) {
         s3config.endpoint = process.env.AWS_S3_Endpoint;
         s3config.forcePathStyle = true;
+        s3config.requestChecksumCalculation = 'WHEN_REQUIRED';
+        s3config.responseChecksumValidation = 'WHEN_REQUIRED';
 
         if (!process.env.AWS_S3_AccessKeyId || !process.env.AWS_S3_SecretAccessKey) {
             throw new Error('Cannot use custom S3 Endpoint without providing AWS_S3_AccessKeyId & AWS_S3_SecretAccessKey');

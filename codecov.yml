@@ -8,7 +8,7 @@ flags:
       - api/
   web:
     paths:
-      - api/web/
+      - app/
   events:
     paths:
       - tasks/events/

@@ -25,21 +25,21 @@ jobs:
         run: npm install -g npm@latest
 
       - name: npm install
-        run: cd api/web && npm install
+        run: cd app && npm install
 
       - name: Build Types
-        run: cd api/web && npm run build:types
+        run: cd app && npm run build:types
 
       - name: Build TypeDocs
-        run: cd api/web && npm run doc
+        run: cd app && npm run doc
 
       - name: Upload TypeDoc artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: ./api/web/dist/typedoc
+          path: ./app/dist/typedoc
 
       - name: npm publish
-        run: cd api/web && npm publish --provenance --access public
+        run: cd app && npm publish --provenance --access public
 
       - name: Generate CHANGELOG
         run: |

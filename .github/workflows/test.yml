@@ -180,27 +180,27 @@ jobs:
           registry-url: https://registry.npmjs.org/
 
       - name: Install
-        working-directory: ./api/web/
+        working-directory: ./app/
         run: npm install
 
       - name: Lint
-        working-directory: ./api/web/
+        working-directory: ./app/
         run: npm run lint
 
       - name: Check
-        working-directory: ./api/web/
+        working-directory: ./app/
         run: npm run check
 
       - name: Build Types
-        working-directory: ./api/web/
+        working-directory: ./app/
         run: npm run build:types
 
       - name: Build TypeDocs
-        working-directory: ./api/web/
+        working-directory: ./app/
         run: npm run doc
 
       - name: Test & Coverage
-        working-directory: ./api/web/
+        working-directory: ./app/
         run: npm run coverage
 
       - name: Upload coverage to Codecov
@@ -208,5 +208,5 @@ jobs:
         uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./api/web/coverage/lcov.info
+          files: ./app/coverage/lcov.info
           flags: web

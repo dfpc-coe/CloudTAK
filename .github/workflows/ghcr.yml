@@ -22,7 +22,8 @@ jobs:
       matrix:
         include:
           - task: api
-            context: ./api/
+            context: .
+            file: ./Dockerfile
           - task: pmtiles
             context: .
             file: ./tasks/pmtiles/Dockerfile.compose
