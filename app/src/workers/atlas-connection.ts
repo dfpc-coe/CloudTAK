@@ -242,6 +242,9 @@ export default class AtlasConnection {
             } else if (body.type === 'cot') {
                 const feat = body.data as Feature;
 
+                // File Transfer request/ack - never a map feature
+                if (feat.properties.type.startsWith('b-f-t')) return;
+
                 await this.atlas.db.add(feat);
 
                 if ([
