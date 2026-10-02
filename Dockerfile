@@ -5,7 +5,7 @@ ARG USE_LOCAL_ZIP=false
 
 WORKDIR /tmp/data
 
-COPY data.zip* ./
+COPY api/data.zip* ./
 
 RUN if [ "$USE_LOCAL_ZIP" != "true" ]; then wget -O data.zip "$DATA_SOURCE_URL"; fi \
     && unzip data.zip \
