@@ -1,0 +1,651 @@
+import { Type, Static } from '@sinclair/typebox';
+import {
+    StandardResponse,
+    CoreEntityBoardResponse,
+    CoreEntityBoardColumnResponse,
+    CoreEntityBoardEventResponse,
+    CoreEntityResponse,
+} from '../../common/types.js';
+import { CoreEntity } from '../../common/schema.js';
+import { sql } from 'drizzle-orm';
+import { GenericListOrder } from '@openaddresses/batch-generic';
+import Schema from '@openaddresses/batch-schema';
+import Err from '@openaddresses/batch-error';
+import Auth from '../../common/auth.js';
+import { CoreEntityBoardColumn_Type } from '../../common/enums.js';
+import { ETLEventAction } from '../../common/etl-events.js';
+import type ConfigStateless from '../config.js';
+import BoardControl, {
+    MAX_LIST,
+    boardResponse,
+    columnResponse,
+    placementResponse,
+} from '../lib/control/board.js';
+import FormControl from '../lib/control/form.js';
+import * as Default from '../lib/limits.js';
+
+/**
+ * Route order matters - the literal /board/column & /board/event paths have
+ * to be registered before /board/:board or Express hands them to the
+ * parameterised Board routes
+ */
+export default async function router(schema: Schema, config: ConfigStateless) {
+    const boardControl = new BoardControl(config);
+    const formControl = new FormControl(config);
+
+    /**
+     * A Column change is not carried on the Event CoT but the rebroadcast
+     * signals Map clients to refetch the Event - best effort, the next
+     * scheduled cycle recovers a failed submit
+     */
+    function rebroadcast(event: string): void {
+        config.hub.coreEntitySubmit(event).catch((err) => {
+            console.error(`not ok - failed to immediately submit Core Event ${event}:`, err);
+        });
+    }
+
+    /** Refuse placing an Event into a Column whose required Forms it has not completed */
+    async function ensureRequiredForms(column: string, event: string): Promise<void> {
+        const missing = await formControl.missingRequiredForms(column, event);
+
+        if (missing.length) {
+            throw new Err(400, null, `Required Forms must be completed before the Event can be placed in this Column: ${missing.map(f => f.name).join(', ')}`);
+        }
+    }
+
+    await schema.get('/board', {
+        name: 'List Boards',
+        group: 'CoreEventBoard',
+        description: 'List the KanBan Boards of a Channel',
+        query: Type.Object({
+            channel: Type.Integer({
+                minimum: 0,
+                description: 'TAK Channel bitpos to list Boards for',
+            }),
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(CoreEntityBoardResponse),
+        }),
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            await boardControl.ensureChannelAccess(user, req.query.channel);
+
+            await boardControl.ensureChannelBoard(req.query.channel);
+
+            const boards = await config.models.CoreEntityBoard.list({
+                limit: MAX_LIST,
+                where: sql`channel = ${req.query.channel}`,
+                sort: 'name',
+                order: GenericListOrder.ASC,
+            });
+
+            res.json({
+                total: boards.total,
+                items: boards.items.map(boardResponse),
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/board', {
+        name: 'Create Board',
+        group: 'CoreEventBoard',
+        description: 'Create a new KanBan Board on a Channel - a Nominated Column is created alongside it',
+        body: Type.Object({
+            channel: Type.Integer({
+                minimum: 0,
+                description: 'TAK Channel bitpos the Board belongs to',
+            }),
+            name: Default.NameField,
+            description: Type.Optional(Default.DescriptionField),
+        }),
+        res: CoreEntityBoardResponse,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            await boardControl.ensureChannelAccess(user, req.body.channel);
+
+            const board = await config.models.CoreEntityBoard.generate({
+                channel: BigInt(req.body.channel),
+                name: req.body.name,
+                description: req.body.description,
+            });
+
+            const response = boardResponse(board);
+            boardControl.deliver(config.etlEvents.board(ETLEventAction.Create, response), `Board ${board.id}`);
+
+            await boardControl.ensureNominatedColumn(board);
+
+            res.json(response);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/board/column', {
+        name: 'List Columns',
+        group: 'CoreEventBoardColumn',
+        description: 'List the Columns of a KanBan Board',
+        query: Type.Object({
+            board: Type.String({
+                format: 'uuid',
+                description: 'Board to list Columns for',
+            }),
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(CoreEntityBoardColumnResponse),
+        }),
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const board = await boardControl.boardAccess(user, req.query.board);
+
+            await boardControl.ensureNominatedColumn(board);
+
+            const columns = await config.models.CoreEntityBoardColumn.list({
+                limit: MAX_LIST,
+                where: sql`board = ${board.id}`,
+                sort: 'position',
+                order: GenericListOrder.ASC,
+            });
+
+            res.json({
+                total: columns.total,
+                items: columns.items.map(columnResponse),
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/board/column', {
+        name: 'Create Column',
+        group: 'CoreEventBoardColumn',
+        description: 'Create a new Column on a KanBan Board',
+        body: Type.Object({
+            board: Type.String({
+                format: 'uuid',
+                description: 'Board the Column belongs to',
+            }),
+            name: Default.NameField,
+            description: Type.Optional(Default.DescriptionField),
+            color: Type.Optional(Type.String({
+                pattern: '^(#[0-9a-fA-F]{6})?$',
+                description: 'Hex colour the Column is rendered with - ie: #ff0000 - or an empty string for the default',
+            })),
+            position: Type.Optional(Type.Integer({
+                minimum: 0,
+                description: 'Horizontal position of the Column - defaults to after the existing Columns',
+            })),
+        }),
+        res: CoreEntityBoardColumnResponse,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const board = await boardControl.boardAccess(user, req.body.board);
+
+            let position = req.body.position;
+            if (position === undefined) {
+                const existing = await config.models.CoreEntityBoardColumn.list({
+                    limit: 1,
+                    where: sql`board = ${board.id}`,
+                    sort: 'position',
+                    order: GenericListOrder.DESC,
+                });
+
+                position = existing.items.length ? existing.items[0].position + 1 : 0;
+            }
+
+            const column = await config.models.CoreEntityBoardColumn.generate({
+                board: board.id,
+                name: req.body.name,
+                description: req.body.description,
+                color: req.body.color,
+                type: CoreEntityBoardColumn_Type.CUSTOM,
+                position,
+            });
+
+            const response = columnResponse(column);
+            boardControl.deliver(
+                config.etlEvents.boardColumn(ETLEventAction.Create, Number(board.channel), response),
+                `Column ${column.id}`,
+            );
+
+            res.json(response);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/board/column/:column', {
+        name: 'Update Column',
+        group: 'CoreEventBoardColumn',
+        description: 'Rename, restyle or re-order a Column of a KanBan Board',
+        params: Type.Object({
+            column: Type.String({
+                format: 'uuid',
+            }),
+        }),
+        body: Type.Object({
+            name: Type.Optional(Default.NameField),
+            description: Type.Optional(Default.DescriptionField),
+            color: Type.Optional(Type.String({
+                pattern: '^(#[0-9a-fA-F]{6})?$',
+                description: 'Hex colour the Column is rendered with - ie: #ff0000 - or an empty string for the default',
+            })),
+            position: Type.Optional(Type.Integer({ minimum: 0 })),
+        }),
+        res: CoreEntityBoardColumnResponse,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const access = await boardControl.columnAccess(user, req.params.column);
+            let { column } = access;
+
+            if (Object.keys(req.body).length > 0) {
+                column = await config.models.CoreEntityBoardColumn.commit(req.params.column, {
+                    ...req.body,
+                    updated: sql`Now()`,
+                });
+            }
+
+            const response = columnResponse(column);
+
+            if (Object.keys(req.body).length > 0) {
+                boardControl.deliver(
+                    config.etlEvents.boardColumn(ETLEventAction.Update, Number(access.board.channel), response),
+                    `Column ${column.id}`,
+                );
+            }
+
+            res.json(response);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/board/column/:column', {
+        name: 'Delete Column',
+        group: 'CoreEventBoardColumn',
+        description: 'Delete a Column - Events placed in the Column are removed from the Board but are not deleted',
+        params: Type.Object({
+            column: Type.String({
+                format: 'uuid',
+            }),
+        }),
+        res: StandardResponse,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const { column, board } = await boardControl.columnAccess(user, req.params.column);
+
+            if (column.type === CoreEntityBoardColumn_Type.NOMINATED) {
+                throw new Err(400, null, 'The Nominated Column cannot be deleted');
+            }
+
+            await config.models.CoreEntityBoardColumn.delete(req.params.column);
+
+            boardControl.deliver(
+                config.etlEvents.boardColumn(ETLEventAction.Delete, Number(board.channel), columnResponse(column)),
+                `Column ${column.id}`,
+            );
+
+            res.json({ status: 200, message: 'Column Deleted' });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/board/event', {
+        name: 'List Board Events',
+        group: 'CoreEventBoardEvent',
+        description: 'List the Core Events placed on a KanBan Board along with the Column each sits in',
+        query: Type.Object({
+            board: Type.String({
+                format: 'uuid',
+                description: 'Board to list placed Events for',
+            }),
+            column: Type.Optional(Type.String({
+                format: 'uuid',
+                description: 'Only return Events placed in the given Column',
+            })),
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(CoreEntityBoardEventResponse),
+        }),
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const board = await boardControl.boardAccess(user, req.query.board);
+
+            const placements = await config.models.CoreEntityBoardEvent.list({
+                limit: MAX_LIST,
+                where: req.query.column === undefined
+                    ? sql`board = ${board.id}`
+                    : sql`board = ${board.id} AND "column" = ${req.query.column}`,
+                sort: 'position',
+                order: GenericListOrder.ASC,
+            });
+
+            const events = new Map<string, Static<typeof CoreEntityResponse>>();
+            if (placements.items.length) {
+                const list = await config.models.CoreEntity.augmented_list({
+                    limit: placements.items.length,
+                    where: sql`${CoreEntity.id} IN ${placements.items.map(p => p.event)}`,
+                });
+
+                for (const event of list.items) {
+                    events.set(event.id, event);
+                }
+            }
+
+            const items: Array<Static<typeof CoreEntityBoardEventResponse>> = [];
+            for (const placement of placements.items) {
+                const event = events.get(placement.event);
+
+                // A deleted Event cascades its placements away - a missing
+                // Event here would be a torn read, not a real placement
+                if (!event) continue;
+
+                items.push(placementResponse(placement, event));
+            }
+
+            res.json({
+                total: items.length,
+                items,
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.put('/board/event', {
+        name: 'Place Event',
+        group: 'CoreEventBoardEvent',
+        description: `
+            Nominate a Core Event into a Column or move it between the Columns
+            of a Board - the Event must be shared with the Board's Channel
+        `,
+        body: Type.Object({
+            column: Type.String({
+                format: 'uuid',
+                description: 'Column to place the Event in',
+            }),
+            event: Type.String({
+                format: 'uuid',
+                description: 'Core Event to place',
+            }),
+            position: Type.Integer({
+                minimum: 0,
+                default: 0,
+                description: 'Vertical position of the Event within the Column',
+            }),
+        }),
+        res: CoreEntityBoardEventResponse,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const { column, board } = await boardControl.columnAccess(user, req.body.column);
+
+            const event = await config.models.CoreEntity.augmented_from(req.body.event);
+
+            if (!event.channels.map(c => Number(c)).includes(Number(board.channel))) {
+                throw new Err(400, null, 'The Event is not shared with the Board\'s Channel');
+            }
+
+            const existing = await config.models.CoreEntityBoardEvent.list({
+                limit: 1,
+                where: sql`board = ${board.id} AND event = ${req.body.event}`,
+            });
+
+            // Reordering within the Column an Event already sits in stays
+            // possible even if required Forms were attached after placement
+            if (!existing.items.length || existing.items[0].column !== column.id) {
+                await ensureRequiredForms(column.id, req.body.event);
+            }
+
+            let placement;
+            if (existing.items.length) {
+                placement = await config.models.CoreEntityBoardEvent.commit(existing.items[0].id, {
+                    column: column.id,
+                    position: req.body.position,
+                    updated: sql`Now()`,
+                });
+            } else {
+                placement = await config.models.CoreEntityBoardEvent.generate({
+                    board: board.id,
+                    column: column.id,
+                    event: req.body.event,
+                    position: req.body.position,
+                });
+            }
+
+            if (!existing.items.length || existing.items[0].column !== column.id) {
+                rebroadcast(req.body.event);
+            }
+
+            const response = placementResponse(placement, event);
+            boardControl.deliver(
+                config.etlEvents.boardEvent(
+                    existing.items.length ? ETLEventAction.Update : ETLEventAction.Create,
+                    Number(board.channel),
+                    response,
+                ),
+                `Placement ${placement.id}`,
+            );
+
+            res.json(response);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/board/event/:placement', {
+        name: 'Update Placement',
+        group: 'CoreEventBoardEvent',
+        description: 'Move an already placed Core Event to another Column of the same Board or re-order it within its Column',
+        params: Type.Object({
+            placement: Type.String({
+                format: 'uuid',
+            }),
+        }),
+        body: Type.Object({
+            column: Type.Optional(Type.String({
+                format: 'uuid',
+                description: 'Column of the same Board to move the Event into',
+            })),
+            position: Type.Optional(Type.Integer({ minimum: 0 })),
+        }),
+        res: CoreEntityBoardEventResponse,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const access = await boardControl.placementAccess(user, req.params.placement);
+            let { placement } = access;
+
+            const moved = req.body.column !== undefined && req.body.column !== placement.column;
+
+            if (req.body.column !== undefined) {
+                const column = await config.models.CoreEntityBoardColumn.from(req.body.column);
+
+                if (column.board !== placement.board) {
+                    throw new Err(400, null, 'The Column belongs to a different Board');
+                }
+
+                if (column.id !== placement.column) {
+                    await ensureRequiredForms(column.id, placement.event);
+                }
+            }
+
+            if (Object.keys(req.body).length > 0) {
+                placement = await config.models.CoreEntityBoardEvent.commit(req.params.placement, {
+                    ...req.body,
+                    updated: sql`Now()`,
+                });
+            }
+
+            if (moved) rebroadcast(placement.event);
+
+            const response = placementResponse(
+                placement,
+                await config.models.CoreEntity.augmented_from(placement.event),
+            );
+
+            if (Object.keys(req.body).length > 0) {
+                boardControl.deliver(
+                    config.etlEvents.boardEvent(ETLEventAction.Update, Number(access.board.channel), response),
+                    `Placement ${placement.id}`,
+                );
+            }
+
+            res.json(response);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/board/event/:placement', {
+        name: 'Remove Event',
+        group: 'CoreEventBoardEvent',
+        description: 'Remove a Core Event from a Board - the Event itself is not deleted',
+        params: Type.Object({
+            placement: Type.String({
+                format: 'uuid',
+            }),
+        }),
+        res: StandardResponse,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const { placement, board } = await boardControl.placementAccess(user, req.params.placement);
+
+            const event = await config.models.CoreEntity.augmented_from(placement.event);
+
+            await config.models.CoreEntityBoardEvent.delete(req.params.placement);
+
+            rebroadcast(placement.event);
+
+            boardControl.deliver(
+                config.etlEvents.boardEvent(ETLEventAction.Delete, Number(board.channel), placementResponse(placement, event)),
+                `Placement ${placement.id}`,
+            );
+
+            res.json({ status: 200, message: 'Event removed from Board' });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/board/:board', {
+        name: 'Get Board',
+        group: 'CoreEventBoard',
+        description: 'Get a single KanBan Board',
+        params: Type.Object({
+            board: Type.String({
+                format: 'uuid',
+            }),
+        }),
+        res: CoreEntityBoardResponse,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const board = await boardControl.boardAccess(user, req.params.board);
+
+            res.json(boardResponse(board));
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/board/:board', {
+        name: 'Update Board',
+        group: 'CoreEventBoard',
+        description: 'Rename a KanBan Board or update its description',
+        params: Type.Object({
+            board: Type.String({
+                format: 'uuid',
+            }),
+        }),
+        body: Type.Object({
+            name: Type.Optional(Default.NameField),
+            description: Type.Optional(Default.DescriptionField),
+        }),
+        res: CoreEntityBoardResponse,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            let board = await boardControl.boardAccess(user, req.params.board);
+
+            if (Object.keys(req.body).length > 0) {
+                board = await config.models.CoreEntityBoard.commit(req.params.board, {
+                    ...req.body,
+                    updated: sql`Now()`,
+                });
+            }
+
+            const response = boardResponse(board);
+
+            if (Object.keys(req.body).length > 0) {
+                boardControl.deliver(config.etlEvents.board(ETLEventAction.Update, response), `Board ${board.id}`);
+            }
+
+            res.json(response);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/board/:board', {
+        name: 'Delete Board',
+        group: 'CoreEventBoard',
+        description: 'Delete a KanBan Board along with its Columns - Events placed on the Board are not deleted',
+        params: Type.Object({
+            board: Type.String({
+                format: 'uuid',
+            }),
+        }),
+        res: StandardResponse,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const board = await boardControl.boardAccess(user, req.params.board);
+
+            const boards = await config.models.CoreEntityBoard.list({
+                limit: 2,
+                where: sql`channel = ${board.channel}`,
+            });
+
+            // The Channel's last Board would be re-created by the next list
+            // call - refuse rather than silently resurrecting it empty
+            if (boards.total <= 1) {
+                throw new Err(400, null, 'The last Board of a Channel cannot be deleted');
+            }
+
+            await config.models.CoreEntityBoard.delete(req.params.board);
+
+            boardControl.deliver(config.etlEvents.board(ETLEventAction.Delete, boardResponse(board)), `Board ${board.id}`);
+
+            res.json({ status: 200, message: 'Board Deleted' });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+}

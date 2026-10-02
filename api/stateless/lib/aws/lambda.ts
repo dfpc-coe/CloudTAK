@@ -318,6 +318,26 @@ export default class Lambda {
                 };
             }
 
+            if (layer.incoming.email && layer.enabled) {
+                // Registers the Layer with the router in cloudformation/lib/mail-lambda.cjs
+                stack.Resources.EmailParameter = {
+                    Type: 'AWS::SSM::Parameter',
+                    Properties: {
+                        Type: 'String',
+                        Name: cf.join([
+                            cf.importValue(config.StackName.replace(/^tak-cloudtak-/, 'tak-cloudtak-mail-') + '-layer-prefix'),
+                            cf.ref('UniqueID'),
+                        ]),
+                        Description: `${StackName}: Incoming Email`,
+                        Value: cf.join([
+                            '{"arn":"', cf.getAtt('ETLFunction', 'Arn'),
+                            '","senders":', JSON.stringify(layer.incoming.email_senders),
+                            '}',
+                        ]),
+                    },
+                };
+            }
+
             if (layer.incoming.cron && Schedule.is_aws(layer.incoming.cron)) {
                 stack.Parameters.ScheduleExpression = {
                     Type: 'String',

@@ -132,7 +132,7 @@ export default async function buildApi(config: Config): Promise<express.Applicat
         }],
     }));
 
-    app.use(express.static('web/dist'));
+    app.use(express.static('../app/dist'));
 
     return app;
 }

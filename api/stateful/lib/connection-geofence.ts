@@ -33,6 +33,10 @@ const DEFAULT_GEOFENCE_SETTINGS: GeofenceSettings = {
     'geofence::password': '',
 };
 
+function fingerprint(settings: GeofenceSettings): string {
+    return JSON.stringify([settings['geofence::enabled'], settings['geofence::url'], settings['geofence::password']]);
+}
+
 /**
  * Maintain a persistent connection to the configured Tile38 geofence server.
  * @class
@@ -45,6 +49,7 @@ export default class ConnectionGeofence {
     reconnectTimer?: ReturnType<typeof setTimeout>;
     connectPromise?: Promise<void>;
     settings: GeofenceSettings;
+    applied?: string;
     lastError?: Error;
     connectionVersion: number;
     closing: boolean;
@@ -121,6 +126,11 @@ export default class ConnectionGeofence {
     async status(): Promise<GeofenceStatus> {
         const settings = await this.configured();
 
+        // Settings changed without this process being asked to refresh
+        if (this.applied !== undefined && this.applied !== fingerprint(settings) && !this.closing) {
+            await this.connect();
+        }
+
         return {
             state: this.state,
             enabled: settings['geofence::enabled'],
@@ -180,6 +190,8 @@ export default class ConnectionGeofence {
 
     private async connectInternal(): Promise<void> {
         const settings = await this.configured();
+
+        this.applied = fingerprint(settings);
 
         if (!settings.configured) {
             await this.disable();

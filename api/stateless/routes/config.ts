@@ -322,4 +322,23 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             Err.respond(err, res);
         }
     });
+
+    await schema.get('/config/email', {
+        name: 'Email Config',
+        group: 'Config',
+        description: 'Return the domain that incoming Layer Email is addressed to',
+        res: Type.Object({
+            domain: Type.String(),
+        }),
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            res.json({
+                domain: config.MAIL_DOMAIN,
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
 }

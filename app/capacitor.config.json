@@ -1,0 +1,46 @@
+{
+    "appId": "io.cloudtak.app",
+    "appName": "CloudTAK",
+    "webDir": "dist",
+    "ios": {
+        "includePlugins": [
+            "@capgo/capacitor-updater",
+            "@capacitor-community/keep-awake",
+            "@capacitor-firebase/messaging",
+            "@capacitor/app",
+            "@capacitor/browser",
+            "@capawesome/capacitor-network",
+            "@capacitor/camera",
+            "@capacitor/clipboard",
+            "@capacitor/device",
+            "@capacitor/geolocation",
+            "@capacitor/haptics",
+            "@capacitor/keyboard",
+            "@capacitor/preferences",
+            "@capacitor/status-bar",
+            "@capgo/background-geolocation",
+            "@capgo/capacitor-compass"
+        ]
+    },
+    "android": {
+        "useLegacyBridge": true
+    },
+    "plugins": {
+        "StatusBar": {
+            "overlaysWebView": true,
+            "style": "DARK"
+        },
+        "FirebaseMessaging": {
+            "presentationOptions": [
+                "alert",
+                "badge",
+                "sound"
+            ]
+        },
+        "CapacitorUpdater": {
+            "appId": "io.cloudtak.app",
+            "version": "13.101.1",
+            "autoUpdate": "atBackground"
+        }
+    }
+}

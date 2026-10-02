@@ -1,12 +1,13 @@
 import { sql, eq, and, getTableName } from 'drizzle-orm';
-import type { PgUpdateSetSource } from 'drizzle-orm/pg-core';
+import type { PgInsertValue, PgUpdateSetSource } from 'drizzle-orm/pg-core';
 import Err from '@openaddresses/batch-error';
 import pointOnFeature from '@turf/point-on-feature';
 import type { Feature as GeoJSONFeature, Geometry } from 'geojson';
 import type { MappingFeature, MappedEvent, MappedDevice } from '../../../common/mapping.js';
-import { CoreEvent, CoreEventChannel, CoreDevice, CoreDeviceChannel } from '../../../common/schema.js';
+import { CoreEntity, CoreEntityEvent, CoreEntityChannel, CoreDevice, CoreDeviceChannel } from '../../../common/schema.js';
+import { splitEvent } from '../../../common/models/CoreEntity.js';
 import { ETLEventAction } from '../../../common/etl-events.js';
-import { notifyCoreEvent } from '../core-event.js';
+import { notifyCoreEntity } from '../core-entity.js';
 import type ConfigStateless from '../../config.js';
 
 export interface SubmitOptions {
@@ -19,13 +20,13 @@ export interface SubmitOptions {
 const HAS_EXTERNAL_ID = sql`external_id <> ''`;
 
 // Ending an Event never moves an end time that has already passed
-const END_NOW = sql`LEAST(COALESCE(${CoreEvent.ended}, Now()), Now())`;
+const END_NOW = sql`LEAST(COALESCE(${CoreEntityEvent.ended}, Now()), Now())`;
 
 // xmax is only set on a row version produced by the conflict UPDATE
 const INSERTED = sql<boolean>`(xmax = 0)`;
 
 /**
- * Persist CoreEvents & CoreDevices produced by the Layer Mappings of a submission
+ * Persist CoreEntities & CoreDevices produced by the Layer Mappings of a submission
  *
  * Records are UPSERTed on the `external_id` of the Connection - the mapped
  * value, falling back to the Feature ID - records without one are always created
@@ -51,27 +52,36 @@ export default class SubmitControl {
         const createOnly = new Set(opts.createOnly);
         if (createOnly.has('active') && mapped.ended === undefined) createOnly.add('ended');
 
-        const record = this.#record(CoreEvent, connection, feature, { ...columns, geometry }, createOnly);
+        const record = this.#record(CoreEntity, connection, feature, { ...columns, geometry }, createOnly);
         const inherited = channels ? [] : await opts.inherit?.() ?? [];
 
-        const set: PgUpdateSetSource<typeof CoreEvent> = { ...record.set };
-        if (closing && !createOnly.has('ended')) set.ended = END_NOW;
+        const values = splitEvent(closing ? { ...record.values, ended: sql`Now()` } : record.values);
+        const set = splitEvent(record.set);
+        if (closing && !createOnly.has('ended')) set.event.ended = END_NOW;
 
         const { id, inserted } = await this.config.pg.transaction(async (tx) => {
-            const [row] = await tx.insert(CoreEvent)
-                .values(closing ? { ...record.values, ended: sql`Now()` } : record.values)
+            const [row] = await tx.insert(CoreEntity)
+                .values(values.entity as PgInsertValue<typeof CoreEntity>)
                 .onConflictDoUpdate({
-                    target: [CoreEvent.connection, CoreEvent.external_id],
+                    target: [CoreEntity.connection, CoreEntity.external_id],
                     targetWhere: HAS_EXTERNAL_ID,
-                    set,
+                    set: set.entity as PgUpdateSetSource<typeof CoreEntity>,
                 })
-                .returning({ id: CoreEvent.id, inserted: INSERTED });
+                .returning({ id: CoreEntity.id, inserted: INSERTED });
+
+            const event = tx.insert(CoreEntityEvent).values({ ...values.event, id: row.id });
+
+            if (Object.keys(set.event).length) {
+                await event.onConflictDoUpdate({ target: CoreEntityEvent.id, set: set.event as PgUpdateSetSource<typeof CoreEntityEvent> });
+            } else {
+                await event.onConflictDoNothing({ target: CoreEntityEvent.id });
+            }
 
             if (channels && (row.inserted || !createOnly.has('channels'))) {
-                await tx.delete(CoreEventChannel).where(eq(CoreEventChannel.event, row.id));
-                await tx.insert(CoreEventChannel).values(channels.map(channel => ({ event: row.id, channel: BigInt(channel) })));
-            } else if (inherited.length && (row.inserted || !(await tx.$count(CoreEventChannel, eq(CoreEventChannel.event, row.id))))) {
-                await tx.insert(CoreEventChannel).values(inherited.map(channel => ({ event: row.id, channel: BigInt(channel) })));
+                await tx.delete(CoreEntityChannel).where(eq(CoreEntityChannel.entity, row.id));
+                await tx.insert(CoreEntityChannel).values(channels.map(channel => ({ entity: row.id, channel: BigInt(channel) })));
+            } else if (inherited.length && (row.inserted || !(await tx.$count(CoreEntityChannel, eq(CoreEntityChannel.entity, row.id))))) {
+                await tx.insert(CoreEntityChannel).values(inherited.map(channel => ({ entity: row.id, channel: BigInt(channel) })));
             }
 
             return row;
@@ -79,8 +89,8 @@ export default class SubmitControl {
 
         const action = inserted ? ETLEventAction.Create : ETLEventAction.Update;
 
-        this.config.models.CoreEvent.augmented_from(id).then((event) => {
-            notifyCoreEvent(this.config, action, event);
+        this.config.models.CoreEntity.augmented_from(id).then((event) => {
+            notifyCoreEntity(this.config, action, event);
         }).catch((err) => {
             console.error(`not ok - failed to notify ${action} of Core Event ${id}:`, err);
         });
@@ -118,9 +128,9 @@ export default class SubmitControl {
     async #eventId(connection: number, external_id: string): Promise<string | null> {
         if (!external_id.trim()) return null;
 
-        const [event] = await this.config.pg.select({ id: CoreEvent.id })
-            .from(CoreEvent)
-            .where(and(eq(CoreEvent.connection, connection), eq(CoreEvent.external_id, external_id.trim())))
+        const [event] = await this.config.pg.select({ id: CoreEntity.id })
+            .from(CoreEntity)
+            .where(and(eq(CoreEntity.connection, connection), eq(CoreEntity.external_id, external_id.trim())))
             .limit(1);
 
         return event ? event.id : null;
@@ -132,7 +142,7 @@ export default class SubmitControl {
      * and object columns are merged so their create only properties survive
      */
     #record<T extends Omit<MappedEvent | MappedDevice, 'channels' | 'event_external_id'>>(
-        table: typeof CoreEvent | typeof CoreDevice,
+        table: typeof CoreEntity | typeof CoreDevice,
         connection: number,
         feature: MappingFeature,
         mapped: T,
@@ -143,7 +153,7 @@ export default class SubmitControl {
         const name = mapped.name ?? (feature.properties?.callsign || featureId);
         const type = mapped.type;
 
-        const label = table === CoreEvent ? 'CoreEvent' : 'CoreDevice';
+        const label = table === CoreEntity ? 'CoreEvent' : 'CoreDevice';
         const missing = [!name && 'name', !type && 'type'].filter(Boolean);
         if (!name || !type) throw new Err(400, null, `${label} Map did not produce: ${missing.join(', ')}`);
 

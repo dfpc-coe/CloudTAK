@@ -1,0 +1,2 @@
+ALTER TABLE "layers_incoming" ADD COLUMN IF NOT EXISTS "email" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "layers_incoming" ADD COLUMN IF NOT EXISTS "email_senders" text[] DEFAULT '{}' NOT NULL;

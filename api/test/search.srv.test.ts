@@ -90,6 +90,65 @@ test('GET /api/search/forward - success', async () => {
     }
 });
 
+test('GET /api/search - no providers configured', async () => {
+    try {
+        const res = await flight.fetch('/api/search', {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.deepEqual(res.body, {
+            reverse: { enabled: false, providers: [] },
+            route: { enabled: false, providers: [] },
+            forward: { enabled: false, providers: [] },
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET /api/search - provider enabled after boot', async () => {
+    try {
+        const res = await flight.fetch('/api/config', {
+            method: 'PUT',
+            auth: { bearer: flight.token.admin },
+            body: { 'osm::enabled': true },
+        }, true);
+
+        assert.equal(res.body['osm::enabled'], true);
+
+        const enabled = await flight.fetch('/api/search', {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.deepEqual(enabled.body, {
+            reverse: { enabled: true, providers: [{ id: 'osm', name: 'OpenStreetMap' }] },
+            route: { enabled: false, providers: [] },
+            forward: { enabled: true, providers: [{ id: 'osm', name: 'OpenStreetMap' }] },
+        });
+
+        await flight.fetch('/api/config', {
+            method: 'PUT',
+            auth: { bearer: flight.token.admin },
+            body: { 'osm::enabled': false },
+        }, true);
+
+        const disabled = await flight.fetch('/api/search', {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.deepEqual(disabled.body, {
+            reverse: { enabled: false, providers: [] },
+            route: { enabled: false, providers: [] },
+            forward: { enabled: false, providers: [] },
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET /api/search/route - without token', async () => {
     try {
         const res = await flight.fetch('/api/search/route?start=-105,39.7&end=-104.8,39.9', {
@@ -216,14 +275,28 @@ test('GET /api/search/forward - layer token without search:read', async () => {
     }
 });
 
-test('GET /api/search/suggest - layer token rejected', async () => {
+test('GET /api/search/suggest - layer token with search:read', async () => {
+    try {
+        const res = await flight.fetch('/api/search/suggest?query=Denver&limit=1', {
+            method: 'GET',
+            auth: { bearer: scopedLayerToken },
+        }, true);
+
+        assert.ok(Array.isArray(res.body.items), 'Items is an array');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET /api/search/suggest - layer token without search:read', async () => {
     try {
         const res = await flight.fetch('/api/search/suggest?query=Denver', {
             method: 'GET',
-            auth: { bearer: scopedLayerToken },
+            auth: { bearer: unscopedLayerToken },
         }, false);
 
         assert.equal(res.status, 403);
+        assert.equal(res.body.message, 'Layer token does not have the search:read permission');
     } catch (err) {
         assert.ifError(err);
     }

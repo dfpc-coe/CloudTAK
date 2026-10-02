@@ -8,7 +8,7 @@ import {
     Basemap, BasemapVector, Profile, ProfileSession, ProfileSetting, ProfileFile, ProfileChatroom, ProfileChat,
     ProfileVideo, ProfileFeature, ProfileFusionSource, ProfileToken, ProfileInterest, ProfilePaging,
     ProfilePasskey, ProfilePasskeyChallenge, ProfileOverlay, VideoLease, Errors, Import, Iconset, Icon,
-    CoreEvent, CoreDevice, CoreForm, CoreFormResponse, Connection, Layer, Data,
+    CoreEntity, CoreDevice, CoreForm, CoreFormResponse, Connection, Layer, Data,
 } from '../../../common/schema.js';
 import { ProfileConfigDefaults } from './profile.js';
 import VideoServiceControl from './video-service.js';
@@ -37,6 +37,7 @@ export default class UserControl {
             'display::stale': ProfileConfigDefaults['display::stale'],
             'display::distance': ProfileConfigDefaults['display::distance'],
             'display::elevation': ProfileConfigDefaults['display::elevation'],
+            'display::area': ProfileConfigDefaults['display::area'],
             'display::speed': ProfileConfigDefaults['display::speed'],
             'display::projection': ProfileConfigDefaults['display::projection'],
             'display::zoom': ProfileConfigDefaults['display::zoom'],
@@ -98,7 +99,7 @@ export default class UserControl {
      *
      * Everything the user owns is deleted - settings, credentials, files, chats, features,
      * overlays, video leases, imports, basemaps, iconsets and the CoreForms, CoreFormResponses,
-     * CoreEvents & CoreDevices they authored - followed by the Profile itself. Connections,
+     * CoreEntities & CoreDevices they authored - followed by the Profile itself. Connections,
      * Layers & Data Syncs are operational resources that are retained with their author cleared.
      *
      * Stored objects are removed before the database so that a failure part way through can
@@ -179,7 +180,7 @@ export default class UserControl {
             await tx.delete(CoreFormResponse).where(eq(CoreFormResponse.username, username));
             await tx.delete(CoreForm).where(eq(CoreForm.username, username));
             await tx.delete(CoreDevice).where(eq(CoreDevice.username, username));
-            await tx.delete(CoreEvent).where(eq(CoreEvent.username, username));
+            await tx.delete(CoreEntity).where(eq(CoreEntity.username, username));
 
             await tx.update(Connection).set({ username: null }).where(eq(Connection.username, username));
             await tx.update(Layer).set({ username: null }).where(eq(Layer.username, username));

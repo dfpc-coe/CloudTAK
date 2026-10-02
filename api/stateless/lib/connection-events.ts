@@ -39,7 +39,7 @@ export type ConnectionSyncEvent = {
  * of a user's connected clients, the remaining clients are sent a `sync`
  * message so they can refresh their local copy of that data type.
  *
- * INVARIANT: The client-side handlers for these events (web/src/workers/
+ * INVARIANT: The client-side handlers for these events (app/src/workers/
  * atlas-sync.ts) must never write back to a route that broadcasts through
  * this class - session exclusion only suppresses the echo to the originating
  * client, so a handler that POSTs/PATCHes in response to a sync event will

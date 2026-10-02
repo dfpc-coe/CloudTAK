@@ -69,7 +69,7 @@ export default class DeviceControl {
      * Ensure a Core Event a Device is being assigned to exists
      */
     async ensureEventExists(event: string): Promise<void> {
-        const list = await this.config.models.CoreEvent.list({
+        const list = await this.config.models.CoreEntity.list({
             limit: 1,
             where: sql`id = ${event}`,
         });

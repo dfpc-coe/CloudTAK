@@ -37,5 +37,13 @@ export default [
             "semi-spacing": "error",
             "strict": "error",
         }
+    },
+    {
+        "files": ["**/*.cjs"],
+        ...nodePlugin.configs["flat/recommended-script"],
+        "rules": {
+            ...nodePlugin.configs["flat/recommended-script"].rules,
+            "strict": 0
+        }
     }
 ]

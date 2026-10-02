@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert';
 import Mapping from '../common/mapping.js';
 import type { MappingFeature } from '../common/mapping.js';
-import { LayerMapping_Destination, CoreEvent_Priority } from '../common/enums.js';
+import { LayerMapping_Destination, CoreEntity_Priority } from '../common/enums.js';
 
 const throwsSafe = (fn: () => unknown, expected: RegExp) => {
     assert.throws(fn, (err: unknown) => {
@@ -121,8 +121,8 @@ test('Mapping: CoreFeature - stale template renders to seconds or a timestamp', 
     assert.equal(timestamp.properties.stale, '2030-01-01T00:00:00Z');
 });
 
-test('Mapping: CoreEvent - fields rendered against metadata', async () => {
-    const mapping = new Mapping(rows(LayerMapping_Destination.COREEVENT, [{
+test('Mapping: CoreEntity - fields rendered against metadata', async () => {
+    const mapping = new Mapping(rows(LayerMapping_Destination.COREENTITY, [{
         query: null,
         mapping: {
             name: '{{title}}',
@@ -144,7 +144,7 @@ test('Mapping: CoreEvent - fields rendered against metadata', async () => {
     assert.deepEqual(open, {
         name: 'Fire',
         type: '10031000001211000000',
-        priority: CoreEvent_Priority.LOW,
+        priority: CoreEntity_Priority.LOW,
         location: '1 Main St',
         remarks: 'Big fire',
         ended: null,
@@ -154,7 +154,7 @@ test('Mapping: CoreEvent - fields rendered against metadata', async () => {
 
     const closed = await convert(mapping, point({ title: 'Flood', address: '', description: '', closed: '2026-09-01T12:00:00Z', number: 8, severity: 5 }));
 
-    assert.deepEqual(closed, { priority: CoreEvent_Priority.CRITICAL, ended: '2026-09-01T12:00:00.000Z' });
+    assert.deepEqual(closed, { priority: CoreEntity_Priority.CRITICAL, ended: '2026-09-01T12:00:00.000Z' });
 
     assert.equal(await new Mapping([]).match(point({})), null);
 });
@@ -191,9 +191,9 @@ test('Mapping: CoreDevice - number templates & booleans', async () => {
 test('Mapping: match - a Feature is directed to the destination of the first Mapping it matches', async () => {
     const mapping = new Mapping([
         { destination: LayerMapping_Destination.COREFEATURE, query: null, mapping: { callsign: 'Default' } },
-        { destination: LayerMapping_Destination.COREEVENT, query: '$bogus(', mapping: { name: 'Invalid' } },
-        { destination: LayerMapping_Destination.COREEVENT, query: 'properties.metadata.kind = "incident"', mapping: { name: 'First' } },
-        { destination: LayerMapping_Destination.COREEVENT, query: 'properties.metadata.kind = "incident"', mapping: { name: 'Second' } },
+        { destination: LayerMapping_Destination.COREENTITY, query: '$bogus(', mapping: { name: 'Invalid' } },
+        { destination: LayerMapping_Destination.COREENTITY, query: 'properties.metadata.kind = "incident"', mapping: { name: 'First' } },
+        { destination: LayerMapping_Destination.COREENTITY, query: 'properties.metadata.kind = "incident"', mapping: { name: 'Second' } },
         { destination: LayerMapping_Destination.COREDEVICE, query: 'properties.metadata.kind = "unit"', mapping: { name: 'Unit' } },
         { destination: LayerMapping_Destination.COREDEVICE, query: null, mapping: { name: 'Default Device' } },
     ]);
@@ -207,8 +207,8 @@ test('Mapping: match - a Feature is directed to the destination of the first Map
     assert.equal(await new Mapping([]).match(point({})), null);
 });
 
-test('Mapping: CoreEvent - templated enums & booleans, nested style, links & channels', async () => {
-    const mapping = new Mapping(rows(LayerMapping_Destination.COREEVENT, [{
+test('Mapping: CoreEntity - templated enums & booleans, nested style, links & channels', async () => {
+    const mapping = new Mapping(rows(LayerMapping_Destination.COREENTITY, [{
         query: null,
         mapping: {
             name: '{{title}}',
@@ -228,7 +228,7 @@ test('Mapping: CoreEvent - templated enums & booleans, nested style, links & cha
     assert.deepEqual(await convert(mapping, point({ title: 'Fire', severity: 'HIGH', open: 'False', colour: '#ff0000', opacity: '0.5', number: 12 })), {
         name: 'Fire',
         type: '10031000001211000000',
-        priority: CoreEvent_Priority.HIGH,
+        priority: CoreEntity_Priority.HIGH,
         active: false,
         editable: false,
         channels: [3, 7],
@@ -259,7 +259,7 @@ test('Mapping: CoreDevice - event_external_id & channels', async () => {
 });
 
 test('Mapping: createOnly - { value, update } fields', async () => {
-    const [row] = rows(LayerMapping_Destination.COREEVENT, [{
+    const [row] = rows(LayerMapping_Destination.COREENTITY, [{
         query: null,
         mapping: {
             name: { value: '{{title}}', update: false },
@@ -275,14 +275,14 @@ test('Mapping: createOnly - { value, update } fields', async () => {
     assert.deepEqual(await convert(new Mapping([row]), point({ title: 'Fire' })), {
         name: 'Fire',
         type: '10031000001211000000',
-        priority: CoreEvent_Priority.LOW,
+        priority: CoreEntity_Priority.LOW,
         channels: [3],
         style: { 'icon': 'abc:fire.png', 'marker-color': '#ff0000' },
     });
 
-    assert.equal(Mapping.validate(LayerMapping_Destination.COREEVENT, row.mapping), true);
-    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { name: { value: '{{title}}', update: 'no' } }), /Invalid Name: update must be a boolean/);
-    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { name: { value: '{{#if}}', update: false } }), /Invalid Name Template/);
+    assert.equal(Mapping.validate(LayerMapping_Destination.COREENTITY, row.mapping), true);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { name: { value: '{{title}}', update: 'no' } }), /Invalid Name: update must be a boolean/);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { name: { value: '{{#if}}', update: false } }), /Invalid Name Template/);
 });
 
 test('Mapping: validate', () => {
@@ -302,29 +302,29 @@ test('Mapping: validate', () => {
     throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREFEATURE, { line: { type: 'bogus' } }), /Invalid \(line\) Type: bogus/);
     throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREFEATURE, { links: [{ url: '{{#if}}', remarks: '' }] }), /Invalid Link URL/);
 
-    assert.equal(Mapping.validate(LayerMapping_Destination.COREEVENT, { name: '{{title}}', priority: 'high', editable: true }), true);
-    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { priority: 'urgent' }), /Invalid Priority: urgent/);
-    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { editable: 'maybe' }), /Invalid Editable/);
-    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { external_id: '{{#each' }), /Invalid External ID Template/);
+    assert.equal(Mapping.validate(LayerMapping_Destination.COREENTITY, { name: '{{title}}', priority: 'high', editable: true }), true);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { priority: 'urgent' }), /Invalid Priority: urgent/);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { editable: 'maybe' }), /Invalid Editable/);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { external_id: '{{#each' }), /Invalid External ID Template/);
 
-    assert.equal(Mapping.validate(LayerMapping_Destination.COREEVENT, {
+    assert.equal(Mapping.validate(LayerMapping_Destination.COREENTITY, {
         priority: '{{severity}}',
         active: '{{open}}',
         channels: [1, 2],
         style: { 'marker-color': '#ff0000', 'marker-opacity': 0.5 },
         links: [{ name: 'Page', url: 'https://example.com/{{id}}' }],
     }), true);
-    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { priority: '{{#if}}' }), /Invalid Priority Template/);
-    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { channels: ['one'] }), /Invalid Channels/);
-    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { style: { 'marker-opacity': 2 } }), /Invalid \(style\) Marker Opacity: 2 - Greater than 1/);
-    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { links: [{ name: 'Page', url: '{{#if}}' }] }), /Invalid Links url Template/);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { priority: '{{#if}}' }), /Invalid Priority Template/);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { channels: ['one'] }), /Invalid Channels/);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { style: { 'marker-opacity': 2 } }), /Invalid \(style\) Marker Opacity: 2 - Greater than 1/);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { links: [{ name: 'Page', url: '{{#if}}' }] }), /Invalid Links url Template/);
 
     assert.equal(Mapping.validate(LayerMapping_Destination.COREDEVICE, { battery: '{{battery}}', simulated: false, event_external_id: 'inc-{{incident}}' }), true);
     throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREDEVICE, { battery: { pct: 1 } }), /Invalid Battery/);
 });
 
-test('Mapping: CoreEvent - ended as seconds from now', async () => {
-    const mapping = new Mapping(rows(LayerMapping_Destination.COREEVENT, [{
+test('Mapping: CoreEntity - ended as seconds from now', async () => {
+    const mapping = new Mapping(rows(LayerMapping_Destination.COREENTITY, [{
         query: null,
         mapping: { name: 'Call', type: '10031000001211000000', ended: 1800 },
     }]));
@@ -334,7 +334,7 @@ test('Mapping: CoreEvent - ended as seconds from now', async () => {
     const offset = new Date(event.ended).getTime() - before;
     assert.ok(offset >= 1800 * 1000 - 1000 && offset <= 1800 * 1000 + 1000, `ended ${offset}ms from now`);
 
-    assert.equal(Mapping.validate(LayerMapping_Destination.COREEVENT, { ended: 1800 }), true);
-    assert.equal(Mapping.validate(LayerMapping_Destination.COREEVENT, { ended: '{{closed}}' }), true);
-    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { ended: '{{#if' }), /Invalid Ended Template/);
+    assert.equal(Mapping.validate(LayerMapping_Destination.COREENTITY, { ended: 1800 }), true);
+    assert.equal(Mapping.validate(LayerMapping_Destination.COREENTITY, { ended: '{{closed}}' }), true);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { ended: '{{#if' }), /Invalid Ended Template/);
 });

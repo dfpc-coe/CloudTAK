@@ -136,7 +136,7 @@ test('POST: api/connection/1/layer/1/incoming/mapping - invalid CoreFeature temp
     }
 });
 
-test('POST: api/connection/1/layer/1/incoming/mapping - invalid CoreEvent priority', async () => {
+test('POST: api/connection/1/layer/1/incoming/mapping - invalid CoreEntity priority', async () => {
     try {
         const res = await flight.fetch('/api/connection/1/layer/1/incoming/mapping', {
             method: 'POST',
@@ -145,7 +145,7 @@ test('POST: api/connection/1/layer/1/incoming/mapping - invalid CoreEvent priori
             },
             body: {
                 schema: 'incident',
-                destination: LayerMapping_Destination.COREEVENT,
+                destination: LayerMapping_Destination.COREENTITY,
                 name: 'Bad Priority',
                 mapping: { priority: 'urgent' },
             },

@@ -1,7 +1,7 @@
 services:
     api:
         build:
-          context: ./api/
+          context: .
           dockerfile: Dockerfile
         restart: 'always'
         depends_on:

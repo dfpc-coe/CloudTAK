@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test';
  
 /**
  * The web client stores its JWT in IndexedDB (Dexie db "CloudTAK", table
- * "config", key "token" - see api/web/src/std.ts), not localStorage.
+ * "config", key "token" - see app/src/std.ts), not localStorage.
  */
 export async function getStoredToken(page: Page): Promise<string | undefined> {
     return page.evaluate(() => new Promise<string | undefined>((resolve) => {

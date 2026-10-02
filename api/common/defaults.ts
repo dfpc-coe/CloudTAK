@@ -1,6 +1,6 @@
 import { Static } from '@sinclair/typebox';
 import fs from 'node:fs';
-import { Profile_Style, Profile_Radiation_Dose } from './enums.js';
+import { Profile_Style, Profile_Radiation_Dose, Profile_Area } from './enums.js';
 import { FullConfig } from './types.js';
 
 export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
@@ -29,19 +29,22 @@ export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'map::bearing': 0,
     'display::style': Profile_Style.SYSTEM_DEFAULT,
     'display::radiation_dose': Profile_Radiation_Dose.SIEVERTS,
+    'display::area': Profile_Area.ACRE,
     'proxy::enabled': false,
     'scim::enabled': false,
     'proxy::whitelist': [],
     'media::proxy::allow': [],
+    'osm::enabled': false,
+    'osm::url': 'https://photon.komoot.io',
     'login::name': 'CloudTAK',
-    'login::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../web/public/CloudTAKLogo.svg', import.meta.url)).toString('base64')}`,
+    'login::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../branding/CloudTAKLogo.svg', import.meta.url)).toString('base64')}`,
     'login::signup': '',
     'login::forgot': '',
     'login::username': 'Username or Email',
     'login::brand::enabled': 'default',
     'login::background::enabled': false,
     'login::background::color': '#03384f',
-    'login::brand::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../web/public/CloudTAKLogoText.svg', import.meta.url)).toString('base64')}`,
+    'login::brand::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../branding/CloudTAKLogoText.svg', import.meta.url)).toString('base64')}`,
     'oidc::enabled': false,
     'oidc::enforced': false,
     'oidc::name': '',

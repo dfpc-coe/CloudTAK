@@ -12,7 +12,7 @@ a clear separation of concerns between components, features, and utilities.
 ## Directories
 
 *   `api/` - Backend API Server
-*   `api/web/` - Contains Frontend Vue3 components
+*   `app/` - Contains Frontend Vue3 components
 *   `tasks/pmtiles` - Contains PMTiles Server
 *   `tasks/events` - Contains Event handling server
 *   `tasks/retention` - Contains Retention Process

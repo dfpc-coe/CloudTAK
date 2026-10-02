@@ -1,14 +1,14 @@
 import { Static, Type } from '@sinclair/typebox';
 import type { Feature } from 'geojson';
 import type { Connection } from './schema.js';
-import { CoreEvent } from './schema.js';
+import { CoreEntity } from './schema.js';
 import { InferSelectModel, and, eq, sql } from 'drizzle-orm';
 import ConnectionControl from './control/connection.js';
 import type ConfigStateful from '../stateful/config.js';
 import type TAK from '@tak-ps/node-tak';
 import type { TAKAPI } from '@tak-ps/node-tak';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
-import { ACTIVE } from './models/CoreEvent.js';
+import { ACTIVE } from './models/CoreEntity.js';
 
 const EVENT_STALE = 30 * 60 * 1000;
 
@@ -58,7 +58,7 @@ export default interface ConnectionConfig {
  * Implemented by Connection types that periodically submit active Core
  * Events to the TAK Server as CoTs scoped via Marti dest group entries
  */
-export interface CoreEventSubmitter {
+export interface CoreEntitySubmitter {
     /** Guards against overlapping submission runs */
     submittingEvents: boolean;
 
@@ -69,8 +69,8 @@ export interface CoreEventSubmitter {
     submitEvents(tak: TAK, api: TAKAPI, opts?: { event?: string }): Promise<void>;
 }
 
-export function isCoreEventSubmitter(config: ConnectionConfig): config is ConnectionConfig & CoreEventSubmitter {
-    const submitter = config as Partial<CoreEventSubmitter>;
+export function isCoreEntitySubmitter(config: ConnectionConfig): config is ConnectionConfig & CoreEntitySubmitter {
+    const submitter = config as Partial<CoreEntitySubmitter>;
     return typeof submitter.submitEvents === 'function'
         && typeof submitter.startEvents === 'function'
         && typeof submitter.stopEvents === 'function';
@@ -244,7 +244,7 @@ export class ProfileConnConfig implements ConnectionConfig {
     }
 }
 
-export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
+export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
     id: number;
     name: string;
     enabled: boolean;
@@ -303,11 +303,11 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
 
             const cots: CoT[] = [];
 
-            for await (const event of this.config.models.CoreEvent.augmented_iter({
+            for await (const event of this.config.models.CoreEntity.augmented_iter({
                 // Broadcast CoTs carry Channels, never Board placements
                 boards: false,
                 where: opts && opts.event
-                    ? and(ACTIVE, eq(CoreEvent.id, opts.event))
+                    ? and(ACTIVE, eq(CoreEntity.id, opts.event))
                     : ACTIVE,
             })) {
                 const dest = event.channels

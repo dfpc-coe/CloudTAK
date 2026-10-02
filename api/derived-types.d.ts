@@ -2406,19 +2406,36 @@ export interface paths {
                             "notification::push::firebase::client_email"?: string;
                             /** @description Firebase service account private key */
                             "notification::push::firebase::private_key"?: string;
-                            /** @description Enable ArcGIS Online Integration */
-                            "agol::enabled"?: boolean;
+                            /** @description Enable ArcGIS Online Search Provider */
+                            "search::agol::enabled"?: boolean;
                             /**
-                             * @description AGOL Auth Type
+                             * @description AGOL Search Auth Type
                              * @enum {string}
                              */
-                            "agol::auth_method"?: "oauth2" | "legacy";
-                            /** @description AGOL Legacy Token */
-                            "agol::token"?: string;
-                            /** @description AGOL OAuth2 Client ID */
-                            "agol::client_id"?: string;
-                            /** @description AGOL OAuth2 Client Secret */
-                            "agol::client_secret"?: string;
+                            "search::agol::auth_method"?: "oauth2" | "legacy";
+                            /** @description AGOL Search Legacy Token */
+                            "search::agol::token"?: string;
+                            /** @description AGOL Search OAuth2 Client ID */
+                            "search::agol::client_id"?: string;
+                            /** @description AGOL Search OAuth2 Client Secret */
+                            "search::agol::client_secret"?: string;
+                            /** @description Enable ArcGIS Online Routing Provider */
+                            "routing::agol::enabled"?: boolean;
+                            /**
+                             * @description AGOL Routing Auth Type
+                             * @enum {string}
+                             */
+                            "routing::agol::auth_method"?: "oauth2" | "legacy";
+                            /** @description AGOL Routing Legacy Token */
+                            "routing::agol::token"?: string;
+                            /** @description AGOL Routing OAuth2 Client ID */
+                            "routing::agol::client_id"?: string;
+                            /** @description AGOL Routing OAuth2 Client Secret */
+                            "routing::agol::client_secret"?: string;
+                            /** @description Enable OpenStreetMap (Photon) Search Provider */
+                            "osm::enabled"?: boolean;
+                            /** @description Photon Base URL */
+                            "osm::url"?: string;
                             /** @description Base URL for Media Service */
                             "media::url"?: string;
                             "media::proxy::allow"?: string[];
@@ -2450,6 +2467,7 @@ export interface paths {
                             "display::stale"?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             "display::distance"?: "meter" | "kilometer" | "mile";
                             "display::elevation"?: "meter" | "feet";
+                            "display::area"?: "square meter" | "square feet" | "acre" | "hectare";
                             "display::speed"?: "m/s" | "km/h" | "mi/h";
                             "display::projection"?: "mercator" | "globe";
                             "display::zoom"?: "always" | "conditional" | "never";
@@ -2682,19 +2700,36 @@ export interface paths {
                         "notification::push::firebase::client_email"?: string;
                         /** @description Firebase service account private key */
                         "notification::push::firebase::private_key"?: string;
-                        /** @description Enable ArcGIS Online Integration */
-                        "agol::enabled"?: boolean;
+                        /** @description Enable ArcGIS Online Search Provider */
+                        "search::agol::enabled"?: boolean;
                         /**
-                         * @description AGOL Auth Type
+                         * @description AGOL Search Auth Type
                          * @enum {string}
                          */
-                        "agol::auth_method"?: "oauth2" | "legacy";
-                        /** @description AGOL Legacy Token */
-                        "agol::token"?: string;
-                        /** @description AGOL OAuth2 Client ID */
-                        "agol::client_id"?: string;
-                        /** @description AGOL OAuth2 Client Secret */
-                        "agol::client_secret"?: string;
+                        "search::agol::auth_method"?: "oauth2" | "legacy";
+                        /** @description AGOL Search Legacy Token */
+                        "search::agol::token"?: string;
+                        /** @description AGOL Search OAuth2 Client ID */
+                        "search::agol::client_id"?: string;
+                        /** @description AGOL Search OAuth2 Client Secret */
+                        "search::agol::client_secret"?: string;
+                        /** @description Enable ArcGIS Online Routing Provider */
+                        "routing::agol::enabled"?: boolean;
+                        /**
+                         * @description AGOL Routing Auth Type
+                         * @enum {string}
+                         */
+                        "routing::agol::auth_method"?: "oauth2" | "legacy";
+                        /** @description AGOL Routing Legacy Token */
+                        "routing::agol::token"?: string;
+                        /** @description AGOL Routing OAuth2 Client ID */
+                        "routing::agol::client_id"?: string;
+                        /** @description AGOL Routing OAuth2 Client Secret */
+                        "routing::agol::client_secret"?: string;
+                        /** @description Enable OpenStreetMap (Photon) Search Provider */
+                        "osm::enabled"?: boolean;
+                        /** @description Photon Base URL */
+                        "osm::url"?: string;
                         /** @description Base URL for Media Service */
                         "media::url"?: string;
                         "media::proxy::allow"?: string[];
@@ -2726,6 +2761,7 @@ export interface paths {
                         "display::stale"?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                         "display::distance"?: "meter" | "kilometer" | "mile";
                         "display::elevation"?: "meter" | "feet";
+                        "display::area"?: "square meter" | "square feet" | "acre" | "hectare";
                         "display::speed"?: "m/s" | "km/h" | "mi/h";
                         "display::projection"?: "mercator" | "globe";
                         "display::zoom"?: "always" | "conditional" | "never";
@@ -2883,19 +2919,36 @@ export interface paths {
                             "notification::push::firebase::client_email"?: string;
                             /** @description Firebase service account private key */
                             "notification::push::firebase::private_key"?: string;
-                            /** @description Enable ArcGIS Online Integration */
-                            "agol::enabled"?: boolean;
+                            /** @description Enable ArcGIS Online Search Provider */
+                            "search::agol::enabled"?: boolean;
                             /**
-                             * @description AGOL Auth Type
+                             * @description AGOL Search Auth Type
                              * @enum {string}
                              */
-                            "agol::auth_method"?: "oauth2" | "legacy";
-                            /** @description AGOL Legacy Token */
-                            "agol::token"?: string;
-                            /** @description AGOL OAuth2 Client ID */
-                            "agol::client_id"?: string;
-                            /** @description AGOL OAuth2 Client Secret */
-                            "agol::client_secret"?: string;
+                            "search::agol::auth_method"?: "oauth2" | "legacy";
+                            /** @description AGOL Search Legacy Token */
+                            "search::agol::token"?: string;
+                            /** @description AGOL Search OAuth2 Client ID */
+                            "search::agol::client_id"?: string;
+                            /** @description AGOL Search OAuth2 Client Secret */
+                            "search::agol::client_secret"?: string;
+                            /** @description Enable ArcGIS Online Routing Provider */
+                            "routing::agol::enabled"?: boolean;
+                            /**
+                             * @description AGOL Routing Auth Type
+                             * @enum {string}
+                             */
+                            "routing::agol::auth_method"?: "oauth2" | "legacy";
+                            /** @description AGOL Routing Legacy Token */
+                            "routing::agol::token"?: string;
+                            /** @description AGOL Routing OAuth2 Client ID */
+                            "routing::agol::client_id"?: string;
+                            /** @description AGOL Routing OAuth2 Client Secret */
+                            "routing::agol::client_secret"?: string;
+                            /** @description Enable OpenStreetMap (Photon) Search Provider */
+                            "osm::enabled"?: boolean;
+                            /** @description Photon Base URL */
+                            "osm::url"?: string;
                             /** @description Base URL for Media Service */
                             "media::url"?: string;
                             "media::proxy::allow"?: string[];
@@ -2927,6 +2980,7 @@ export interface paths {
                             "display::stale"?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             "display::distance"?: "meter" | "kilometer" | "mile";
                             "display::elevation"?: "meter" | "feet";
+                            "display::area"?: "square meter" | "square feet" | "acre" | "hectare";
                             "display::speed"?: "m/s" | "km/h" | "mi/h";
                             "display::projection"?: "mercator" | "globe";
                             "display::zoom"?: "always" | "conditional" | "never";
@@ -3141,6 +3195,11 @@ export interface paths {
                             elevation: {
                                 /** @default feet */
                                 value: "meter" | "feet";
+                                options: string[];
+                            };
+                            area: {
+                                /** @default acre */
+                                value: "square meter" | "square feet" | "acre" | "hectare";
                                 options: string[];
                             };
                             speed: {
@@ -3526,6 +3585,114 @@ export interface paths {
                     content: {
                         "application/json": {
                             url: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/config/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return the domain that incoming Layer Email is addressed to */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            domain: string;
                         };
                     };
                 };
@@ -11668,10 +11835,14 @@ export interface paths {
                             name: string;
                             version: string;
                             incoming?: {
-                                invocation: ("manual" | "schedule" | "webhook")[];
+                                invocation: ("manual" | "schedule" | "webhook" | "email")[];
                                 invocationDefaults: {
                                     webhook?: {
                                         enabled: boolean;
+                                    };
+                                    email?: {
+                                        enabled: boolean;
+                                        senders?: string[];
                                     };
                                     schedule?: {
                                         enabled: boolean;
@@ -12125,6 +12296,8 @@ export interface paths {
                                     };
                                     cron: null | string;
                                     webhooks: boolean;
+                                    email: boolean;
+                                    email_senders: string[];
                                     enabled_styles: boolean;
                                     styles: {
                                         line?: {
@@ -12539,6 +12712,9 @@ export interface paths {
                         incoming?: {
                             cron?: null | string;
                             webhooks?: boolean;
+                            email?: boolean;
+                            /** @description Addresses or @domains allowed to email the Layer - empty allows any sender */
+                            email_senders?: string[];
                         };
                         /** @description Create an Outgoing Config alongside the Layer */
                         outgoing?: Record<string, never>;
@@ -12598,6 +12774,8 @@ export interface paths {
                                 };
                                 cron: null | string;
                                 webhooks: boolean;
+                                email: boolean;
+                                email_senders: string[];
                                 enabled_styles: boolean;
                                 styles: {
                                     line?: {
@@ -12992,6 +13170,9 @@ export interface paths {
                 content: {
                     "application/json": {
                         webhooks?: boolean;
+                        email?: boolean;
+                        /** @description Addresses or @domains allowed to email the Layer - empty allows any sender */
+                        email_senders?: string[];
                         cron?: string;
                         stale?: number;
                         data?: number;
@@ -13286,6 +13467,8 @@ export interface paths {
                             };
                             cron: null | string;
                             webhooks: boolean;
+                            email: boolean;
+                            email_senders: string[];
                             enabled_styles: boolean;
                             styles: {
                                 line?: {
@@ -13751,6 +13934,9 @@ export interface paths {
                 content: {
                     "application/json": {
                         webhooks?: boolean;
+                        email?: boolean;
+                        /** @description Addresses or @domains allowed to email the Layer - empty allows any sender */
+                        email_senders?: string[];
                         cron?: null | string;
                         enabled_styles?: boolean;
                         styles?: {
@@ -14046,6 +14232,8 @@ export interface paths {
                             };
                             cron: null | string;
                             webhooks: boolean;
+                            email: boolean;
+                            email_senders: string[];
                             enabled_styles: boolean;
                             styles: {
                                 line?: {
@@ -14833,6 +15021,8 @@ export interface paths {
                                 };
                                 cron: null | string;
                                 webhooks: boolean;
+                                email: boolean;
+                                email_senders: string[];
                                 enabled_styles: boolean;
                                 styles: {
                                     line?: {
@@ -15393,6 +15583,8 @@ export interface paths {
                                 };
                                 cron: null | string;
                                 webhooks: boolean;
+                                email: boolean;
+                                email_senders: string[];
                                 enabled_styles: boolean;
                                 styles: {
                                     line?: {
@@ -31334,6 +31526,8 @@ export interface paths {
                                             description: string;
                                             default: {
                                                 enabled: boolean;
+                                                /** @description Addresses or @domains allowed to email the Layer - omitted or empty allows any sender */
+                                                senders?: string[];
                                             };
                                         };
                                     };
@@ -31737,6 +31931,8 @@ export interface paths {
                                     };
                                     cron: null | string;
                                     webhooks: boolean;
+                                    email: boolean;
+                                    email_senders: string[];
                                     enabled_styles: boolean;
                                     styles: {
                                         line?: {
@@ -32187,6 +32383,8 @@ export interface paths {
                                 };
                                 cron: null | string;
                                 webhooks: boolean;
+                                email: boolean;
+                                email_senders: string[];
                                 enabled_styles: boolean;
                                 styles: {
                                     line?: {
@@ -52632,6 +52830,7 @@ export interface paths {
                             display_text: "Small" | "Medium" | "Large";
                             display_distance: "meter" | "kilometer" | "mile";
                             display_elevation: "meter" | "feet";
+                            display_area: "square meter" | "square feet" | "acre" | "hectare";
                             display_speed: "m/s" | "km/h" | "mi/h";
                             display_radiation_dose: "sieverts" | "rems";
                             display_wakelock: "Default" | "Charging" | "Always On";
@@ -52759,6 +52958,7 @@ export interface paths {
                         display_text?: "Small" | "Medium" | "Large";
                         display_distance?: "meter" | "kilometer" | "mile";
                         display_elevation?: "meter" | "feet";
+                        display_area?: "square meter" | "square feet" | "acre" | "hectare";
                         display_speed?: "m/s" | "km/h" | "mi/h";
                         display_radiation_dose?: "sieverts" | "rems";
                         display_wakelock?: "Default" | "Charging" | "Always On";
@@ -52817,6 +53017,7 @@ export interface paths {
                             display_text: "Small" | "Medium" | "Large";
                             display_distance: "meter" | "kilometer" | "mile";
                             display_elevation: "meter" | "feet";
+                            display_area: "square meter" | "square feet" | "acre" | "hectare";
                             display_speed: "m/s" | "km/h" | "mi/h";
                             display_radiation_dose: "sieverts" | "rems";
                             display_wakelock: "Default" | "Charging" | "Always On";
@@ -56530,6 +56731,7 @@ export interface paths {
                             display_text: "Small" | "Medium" | "Large";
                             display_distance: "meter" | "kilometer" | "mile";
                             display_elevation: "meter" | "feet";
+                            display_area: "square meter" | "square feet" | "acre" | "hectare";
                             display_speed: "m/s" | "km/h" | "mi/h";
                             display_radiation_dose: "sieverts" | "rems";
                             display_wakelock: "Default" | "Charging" | "Always On";
@@ -56809,6 +57011,7 @@ export interface paths {
                             display_text: "Small" | "Medium" | "Large";
                             display_distance: "meter" | "kilometer" | "mile";
                             display_elevation: "meter" | "feet";
+                            display_area: "square meter" | "square feet" | "acre" | "hectare";
                             display_speed: "m/s" | "km/h" | "mi/h";
                             display_radiation_dose: "sieverts" | "rems";
                             display_wakelock: "Default" | "Charging" | "Always On";
@@ -59619,6 +59822,8 @@ export interface paths {
                                 };
                             };
                             reverse: null | {
+                                /** @description Normalized category of the result */
+                                type?: "address" | "street" | "poi" | "trailhead" | "parking" | "hospital" | "police" | "park" | "peak" | "locality" | "region" | "postal";
                                 LongLabel: string;
                                 ShortLabel: string;
                                 Addr_type: string;
@@ -60160,6 +60365,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             reverse: null | {
+                                /** @description Normalized category of the result */
+                                type?: "address" | "street" | "poi" | "trailhead" | "parking" | "hospital" | "police" | "park" | "peak" | "locality" | "region" | "postal";
                                 LongLabel: string;
                                 ShortLabel: string;
                                 Addr_type: string;
@@ -61050,6 +61257,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             items: {
+                                /** @description Normalized category of the result */
+                                type?: "address" | "street" | "poi" | "trailhead" | "parking" | "hospital" | "police" | "park" | "peak" | "locality" | "region" | "postal";
                                 address: string;
                                 location: {
                                     x: number;
@@ -61195,6 +61404,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             items: {
+                                /** @description Normalized category of the result */
+                                type?: "address" | "street" | "poi" | "trailhead" | "parking" | "hospital" | "police" | "park" | "peak" | "locality" | "region" | "postal";
                                 text: string;
                                 magicKey: string;
                                 isCollection: boolean;

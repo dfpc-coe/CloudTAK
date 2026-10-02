@@ -37,7 +37,7 @@ type MapLibreLike = {
  * loaded once that modal is gone and the MapLibre canvas is rendered.
  *
  * Locators use the title / data-test attributes already present in the
- * Vue templates under api/web/src; menu tooltips come from stores/modules/menu.ts.
+ * Vue templates under app/src; menu tooltips come from stores/modules/menu.ts.
  */
 export class MapPage {
     readonly page: Page;
