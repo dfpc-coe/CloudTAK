@@ -22807,8 +22807,16 @@ export interface paths {
                                         url: string;
                                     }[];
                                     id: string;
-                                    /** @description GUID of the TAK Server Mission associated with the Event */
-                                    mission_guid: null | string;
+                                    /** @description TAK Server Missions associated with the Event */
+                                    missions: {
+                                        /** @description Name of the TAK Server Mission */
+                                        name: string;
+                                        /**
+                                         * Format: uuid
+                                         * @description GUID of the TAK Server Mission
+                                         */
+                                        guid: string;
+                                    }[];
                                     created: string;
                                     updated: string;
                                     /** @description Time at which the Event ends - a future time keeps the Event active until then */
@@ -23063,8 +23071,16 @@ export interface paths {
                                     url: string;
                                 }[];
                                 id: string;
-                                /** @description GUID of the TAK Server Mission associated with the Event */
-                                mission_guid: null | string;
+                                /** @description TAK Server Missions associated with the Event */
+                                missions: {
+                                    /** @description Name of the TAK Server Mission */
+                                    name: string;
+                                    /**
+                                     * Format: uuid
+                                     * @description GUID of the TAK Server Mission
+                                     */
+                                    guid: string;
+                                }[];
                                 created: string;
                                 updated: string;
                                 /** @description Time at which the Event ends - a future time keeps the Event active until then */
@@ -23427,8 +23443,16 @@ export interface paths {
                                     url: string;
                                 }[];
                                 id: string;
-                                /** @description GUID of the TAK Server Mission associated with the Event */
-                                mission_guid: null | string;
+                                /** @description TAK Server Missions associated with the Event */
+                                missions: {
+                                    /** @description Name of the TAK Server Mission */
+                                    name: string;
+                                    /**
+                                     * Format: uuid
+                                     * @description GUID of the TAK Server Mission
+                                     */
+                                    guid: string;
+                                }[];
                                 created: string;
                                 updated: string;
                                 /** @description Time at which the Event ends - a future time keeps the Event active until then */
@@ -24530,7 +24554,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "mission_guid" | "created" | "updated" | "started" | "ended" | "username" | "connection" | "priority" | "type" | "name" | "external_id" | "editable" | "location" | "remarks" | "metadata" | "links" | "style" | "geometry" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "username" | "connection" | "type" | "name" | "external_id" | "editable" | "remarks" | "metadata" | "links" | "style" | "geometry" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only return Events shared with the given TAK Channel bitpos - can be provided multiple times to match any of the given Channels */
@@ -24641,8 +24665,16 @@ export interface paths {
                                     url: string;
                                 }[];
                                 id: string;
-                                /** @description GUID of the TAK Server Mission associated with the Event */
-                                mission_guid: null | string;
+                                /** @description TAK Server Missions associated with the Event */
+                                missions: {
+                                    /** @description Name of the TAK Server Mission */
+                                    name: string;
+                                    /**
+                                     * Format: uuid
+                                     * @description GUID of the TAK Server Mission
+                                     */
+                                    guid: string;
+                                }[];
                                 created: string;
                                 updated: string;
                                 /** @description Time at which the Event ends - a future time keeps the Event active until then */
@@ -24829,6 +24861,19 @@ export interface paths {
                             url: string;
                         }[];
                         /**
+                         * @description TAK Server Missions associated with the Event
+                         * @default []
+                         */
+                        missions: {
+                            /** @description Name of the TAK Server Mission */
+                            name: string;
+                            /**
+                             * Format: uuid
+                             * @description GUID of the TAK Server Mission
+                             */
+                            guid: string;
+                        }[];
+                        /**
                          * @description Point styling for the Event
                          * @default {}
                          */
@@ -24952,8 +24997,16 @@ export interface paths {
                                 url: string;
                             }[];
                             id: string;
-                            /** @description GUID of the TAK Server Mission associated with the Event */
-                            mission_guid: null | string;
+                            /** @description TAK Server Missions associated with the Event */
+                            missions: {
+                                /** @description Name of the TAK Server Mission */
+                                name: string;
+                                /**
+                                 * Format: uuid
+                                 * @description GUID of the TAK Server Mission
+                                 */
+                                guid: string;
+                            }[];
                             created: string;
                             updated: string;
                             /** @description Time at which the Event ends - a future time keeps the Event active until then */
@@ -25189,8 +25242,16 @@ export interface paths {
                                 url: string;
                             }[];
                             id: string;
-                            /** @description GUID of the TAK Server Mission associated with the Event */
-                            mission_guid: null | string;
+                            /** @description TAK Server Missions associated with the Event */
+                            missions: {
+                                /** @description Name of the TAK Server Mission */
+                                name: string;
+                                /**
+                                 * Format: uuid
+                                 * @description GUID of the TAK Server Mission
+                                 */
+                                guid: string;
+                            }[];
                             created: string;
                             updated: string;
                             /** @description Time at which the Event ends - a future time keeps the Event active until then */
@@ -25423,8 +25484,16 @@ export interface paths {
                         /** @description Human readable name */
                         name?: string;
                         type?: string;
-                        /** @description GUID of a TAK Server Mission to associate with the Event - set to null to remove the association */
-                        mission_guid?: null | string;
+                        /** @description TAK Server Missions associated with the Event - replaces the existing missions array */
+                        missions?: {
+                            /** @description Name of the TAK Server Mission */
+                            name: string;
+                            /**
+                             * Format: uuid
+                             * @description GUID of the TAK Server Mission
+                             */
+                            guid: string;
+                        }[];
                         priority?: "none" | "low" | "medium" | "high" | "critical";
                         geometry?: {
                             /** @constant */
@@ -25581,8 +25650,16 @@ export interface paths {
                                 url: string;
                             }[];
                             id: string;
-                            /** @description GUID of the TAK Server Mission associated with the Event */
-                            mission_guid: null | string;
+                            /** @description TAK Server Missions associated with the Event */
+                            missions: {
+                                /** @description Name of the TAK Server Mission */
+                                name: string;
+                                /**
+                                 * Format: uuid
+                                 * @description GUID of the TAK Server Mission
+                                 */
+                                guid: string;
+                            }[];
                             created: string;
                             updated: string;
                             /** @description Time at which the Event ends - a future time keeps the Event active until then */
@@ -37115,6 +37192,551 @@ export interface paths {
                     ":guid": string;
                     /** @description No Description */
                     ":log": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marti/missions/{:guid}/property": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to list Mission Key/Value Properties (TAK Server 5.9+) */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Only return properties whose key starts with this prefix */
+                    prefix?: string;
+                };
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":guid": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                key: string;
+                                value: string;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        /** Helper API to create or update (upsert) a Mission Key/Value Property (TAK Server 5.9+) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":guid": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        key: string;
+                        value: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: {
+                                key: string;
+                                value: string;
+                            };
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Helper API to delete all Mission Key/Value Properties (TAK Server 5.9+) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":guid": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marti/missions/{:guid}/property/{:key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to get a single Mission Key/Value Property (TAK Server 5.9+) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":guid": string;
+                    /** @description No Description */
+                    ":key": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: {
+                                key: string;
+                                value: string;
+                            };
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Helper API to delete a single Mission Key/Value Property (TAK Server 5.9+) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":guid": string;
+                    /** @description No Description */
+                    ":key": string;
                 };
                 cookie?: never;
             };

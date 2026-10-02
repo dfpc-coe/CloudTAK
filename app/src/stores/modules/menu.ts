@@ -16,7 +16,6 @@ import {
     IconCloudPin,
     IconServerCog,
     IconBoxMultiple,
-    IconFileImport,
     IconAffiliate,
     IconHistory,
 } from '@tabler/icons-vue';
@@ -183,14 +182,6 @@ export default class MenuManager {
                 tooltip: 'Files',
                 description: 'Browse your uploaded and offline files',
                 icon: IconFiles,
-            },
-            {
-                key: 'imports',
-                label: 'Imports',
-                route: '/menu/imports',
-                tooltip: 'Imports',
-                description: 'Review and manage data imports',
-                icon: IconFileImport,
             },
             {
                 key: 'iconsets',

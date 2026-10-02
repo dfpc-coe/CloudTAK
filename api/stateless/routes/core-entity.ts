@@ -1,5 +1,5 @@
 import { Type } from '@sinclair/typebox';
-import { StandardResponse, CoreEntityResponse, CoreEntityLink, CoreEntityStyle, GeoJSONFeatureGeometryPoint } from '../../common/types.js';
+import { StandardResponse, CoreEntityResponse, CoreEntityLink, CoreEntityStyle, CoreEntityMission, GeoJSONFeatureGeometryPoint } from '../../common/types.js';
 import { sql, eq } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -200,6 +200,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 default: [],
                 description: 'Named URLs associated with the Event',
             }),
+            missions: Type.Array(CoreEntityMission, {
+                default: [],
+                description: 'TAK Server Missions associated with the Event',
+            }),
             style: Type.Object(CoreEntityStyle.properties, {
                 default: {},
                 description: 'Point styling for the Event',
@@ -266,10 +270,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         body: Type.Object({
             name: Type.Optional(Default.NameField),
             type: Type.Optional(Type.String()),
-            mission_guid: Type.Optional(Type.Union([Type.Null(), Type.String({
-                format: 'uuid',
-            })], {
-                description: 'GUID of a TAK Server Mission to associate with the Event - set to null to remove the association',
+            missions: Type.Optional(Type.Array(CoreEntityMission, {
+                description: 'TAK Server Missions associated with the Event - replaces the existing missions array',
             })),
             priority: Type.Optional(Type.Enum(CoreEntity_Priority)),
             geometry: Type.Optional(GeoJSONFeatureGeometryPoint),

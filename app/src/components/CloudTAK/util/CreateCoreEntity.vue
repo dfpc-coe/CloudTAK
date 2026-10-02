@@ -202,6 +202,7 @@ async function submit(): Promise<void> {
                 editable: true,
                 metadata: {},
                 links: [],
+                missions: [],
                 style: {},
                 channels,
                 geometry: {

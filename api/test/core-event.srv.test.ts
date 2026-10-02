@@ -78,7 +78,7 @@ test('POST: api/core/event', async () => {
         delete res.body.started;
 
         assert.deepEqual(res.body, {
-            mission_guid: null,
+            missions: [],
             username: 'admin@example.com',
             connection: null,
             priority: 'high',
@@ -410,7 +410,7 @@ test('PATCH: api/core/event/:event - update links & style', async () => {
     }
 });
 
-test('PATCH: api/core/event/:event - set and clear mission_guid', async () => {
+test('PATCH: api/core/event/:event - set and clear missions', async () => {
     try {
         const res = await flight.fetch(`/api/core/event/${eventId}`, {
             method: 'PATCH',
@@ -418,11 +418,29 @@ test('PATCH: api/core/event/:event - set and clear mission_guid', async () => {
                 bearer: flight.token.admin,
             },
             body: {
-                mission_guid: 'f3170b6c-fbf1-45b7-9077-2e2e63251eb7',
+                missions: [{
+                    name: 'Boulder Wildfire',
+                    guid: 'f3170b6c-fbf1-45b7-9077-2e2e63251eb7',
+                }],
             },
         }, true);
 
-        assert.equal(res.body.mission_guid, 'f3170b6c-fbf1-45b7-9077-2e2e63251eb7');
+        assert.deepEqual(res.body.missions, [{
+            name: 'Boulder Wildfire',
+            guid: 'f3170b6c-fbf1-45b7-9077-2e2e63251eb7',
+        }]);
+
+        const invalid = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                missions: [{ name: 'No GUID' }],
+            },
+        }, false);
+
+        assert.equal(invalid.status, 400);
 
         const cleared = await flight.fetch(`/api/core/event/${eventId}`, {
             method: 'PATCH',
@@ -430,11 +448,11 @@ test('PATCH: api/core/event/:event - set and clear mission_guid', async () => {
                 bearer: flight.token.admin,
             },
             body: {
-                mission_guid: null,
+                missions: [],
             },
         }, true);
 
-        assert.equal(cleared.body.mission_guid, null);
+        assert.deepEqual(cleared.body.missions, []);
     } catch (err) {
         assert.ifError(err);
     }

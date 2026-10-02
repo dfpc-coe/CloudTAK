@@ -19,7 +19,7 @@
                     border-color='rgba(59, 130, 246, 0.4)'
                     text-color='#3b82f6'
                 >
-                    {{ props.modelValue ? 1 : 0 }}
+                    {{ props.modelValue.length }}
                 </TablerBadge>
             </template>
 
@@ -38,38 +38,6 @@
                         :compact='true'
                         desc='Creating Mission'
                     />
-
-                    <div
-                        v-else-if='props.modelValue'
-                        class='d-flex align-items-center gap-1'
-                    >
-                        <TablerButton
-                            class='w-100 d-flex align-items-center text-start'
-                            :title='name'
-                            @click='router.push(`/menu/missions/${props.modelValue}`)'
-                        >
-                            <IconCloudPin
-                                :size='20'
-                                stroke='1'
-                                class='flex-shrink-0'
-                            />
-                            <span
-                                class='mx-2 text-truncate'
-                                v-text='name'
-                            />
-                        </TablerButton>
-
-                        <TablerIconButton
-                            v-if='props.edit'
-                            title='Remove Associated Mission'
-                            @click='emit("update:modelValue", null)'
-                        >
-                            <IconTrash
-                                :size='18'
-                                stroke='1'
-                            />
-                        </TablerIconButton>
-                    </div>
 
                     <template v-else-if='mode === "select"'>
                         <div class='d-flex align-items-center mb-2 user-select-none'>
@@ -138,13 +106,46 @@
 
                     <template v-else>
                         <div
-                            v-if='!props.edit'
+                            v-for='mission of props.modelValue'
+                            :key='mission.guid'
+                            class='d-flex align-items-center gap-1 mb-2'
+                        >
+                            <TablerButton
+                                class='w-100 d-flex align-items-center text-start'
+                                :title='mission.name'
+                                @click='router.push(`/menu/missions/${mission.guid}`)'
+                            >
+                                <IconCloudPin
+                                    :size='20'
+                                    stroke='1'
+                                    class='flex-shrink-0'
+                                />
+                                <span
+                                    class='mx-2 text-truncate'
+                                    v-text='mission.name'
+                                />
+                            </TablerButton>
+
+                            <TablerIconButton
+                                v-if='props.edit'
+                                title='Remove Associated Mission'
+                                @click='removeMission(mission.guid)'
+                            >
+                                <IconTrash
+                                    :size='18'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                        </div>
+
+                        <div
+                            v-if='!props.edit && !props.modelValue.length'
                             class='px-1 py-1 text-muted'
                         >
-                            No Associated Mission
+                            No Associated Missions
                         </div>
                         <div
-                            v-else
+                            v-else-if='props.edit'
                             class='d-flex gap-2'
                         >
                             <TablerButton
@@ -180,7 +181,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
 import Subscription from '../../../base/subscription.ts';
@@ -188,7 +189,7 @@ import GroupManager from '../../../base/group.ts';
 import OverlayManager from '../../../base/overlay.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { server } from '../../../std.ts';
-import type { Mission } from '../../../types.ts';
+import type { Mission, CoreEntityMission } from '../../../types.ts';
 import {
     TablerBadge,
     TablerButton,
@@ -207,8 +208,8 @@ import {
 } from '@tabler/icons-vue';
 
 const props = defineProps<{
-    /** GUID of the TAK Server Mission the Event is associated with */
-    modelValue: string | null;
+    /** TAK Server Missions the Event is associated with */
+    modelValue: Array<CoreEntityMission>;
     edit?: boolean;
     /** Event name - becomes the name of a new Mission */
     eventName?: string;
@@ -219,57 +220,45 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: 'update:modelValue', value: string | null): void
+    (e: 'update:modelValue', value: Array<CoreEntityMission>): void
 }>();
 
 const router = useRouter();
 const mapStore = useMapStore();
 
-const expanded = ref(!!props.modelValue);
+const expanded = ref(props.modelValue.length > 0);
 const mode = ref<'view' | 'select'>('view');
 
 const error = ref<Error | undefined>();
 const busy = ref(false);
 
-// The Mission is only named locally if the user is subscribed to it -
-// otherwise the name comes from the listing cache or falls back to the GUID
-const name = ref('');
-
 const missions = ref<Array<Mission>>([]);
 const listLoading = ref(false);
 const filter = ref('');
 
+// Missions already associated with the Event are not offered again
 const filteredMissions = computed(() => {
+    const associated = new Set(props.modelValue.map((mission) => mission.guid));
+
     return missions.value.filter((mission) => {
-        return mission.name.toLowerCase().includes(filter.value.toLowerCase());
+        return !associated.has(mission.guid)
+            && mission.name.toLowerCase().includes(filter.value.toLowerCase());
     });
 });
 
-onMounted(async () => {
-    await loadName();
-});
-
-watch(() => props.modelValue, async () => {
+watch(() => props.modelValue, () => {
     mode.value = 'view';
-    if (props.modelValue) expanded.value = true;
-    await loadName();
+    if (props.modelValue.length) expanded.value = true;
 });
 
-async function loadName(): Promise<void> {
-    if (!props.modelValue) {
-        name.value = '';
-        return;
-    }
+function addMission(mission: CoreEntityMission): void {
+    if (props.modelValue.some((existing) => existing.guid === mission.guid)) return;
 
-    const subscription = await Subscription.from(props.modelValue);
+    emit('update:modelValue', [...props.modelValue, mission]);
+}
 
-    if (subscription) {
-        name.value = subscription.meta.name;
-        return;
-    }
-
-    const listed = missions.value.find((mission) => mission.guid === props.modelValue);
-    name.value = listed ? listed.name : props.modelValue;
+function removeMission(guid: string): void {
+    emit('update:modelValue', props.modelValue.filter((mission) => mission.guid !== guid));
 }
 
 async function startSelect(): Promise<void> {
@@ -291,10 +280,9 @@ async function startSelect(): Promise<void> {
 }
 
 function selectMission(mission: Mission): void {
-    name.value = mission.name;
     mode.value = 'view';
 
-    emit('update:modelValue', mission.guid);
+    addMission({ name: mission.name, guid: mission.guid });
 }
 
 // Create a Mission from the Event - its name, remarks and Channels carry over
@@ -346,10 +334,9 @@ async function createMission(): Promise<void> {
             console.error('Failed to load the new Mission onto the map:', err);
         }
 
-        name.value = res.data.name;
         mode.value = 'view';
 
-        emit('update:modelValue', res.data.guid);
+        addMission({ name: res.data.name, guid: res.data.guid });
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }

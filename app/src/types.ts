@@ -66,6 +66,7 @@ export type CoreEntity = paths["/api/core/event/{:event}"]["get"]["responses"]["
 export type CoreEntityList = paths["/api/core/event"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreEntityLink = CoreEntity["links"][0];
 export type CoreEntityStyle = CoreEntity["style"];
+export type CoreEntityMission = CoreEntity["missions"][0];
 export type CoreEntityBoardSummary = CoreEntity["boards"][0];
 export type CoreEntityBoardColumnSummary = CoreEntityBoardSummary["columns"][0];
 

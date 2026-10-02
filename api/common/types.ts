@@ -151,6 +151,13 @@ export const PaletteFeatureResponse = createSelectSchema(schemas.PaletteFeature,
 export const CoreEntityLink = withoutHints(CoreEntityLinkSchema);
 export const CoreEntityStyle = withoutHints(CoreEntityStyleSchema);
 
+export const CoreEntityMission = Type.Object({
+    name: Type.String({ description: 'Name of the TAK Server Mission' }),
+    guid: Type.String({ format: 'uuid', description: 'GUID of the TAK Server Mission' }),
+}, {
+    description: 'TAK Server Mission associated with the Event',
+});
+
 /** Enough of a Column to render its name & badge styling inline */
 export const CoreEntityBoardColumnSummary = Type.Object({
     id: Type.String(),
@@ -175,7 +182,7 @@ export const CoreEntityResponse = Type.Composite([
     Type.Required(Type.Omit(withoutHints(CoreEntitySchema), ['ended'])),
     Type.Object({
         id: Type.String(),
-        mission_guid: Type.Union([Type.Null(), Type.String()], { description: 'GUID of the TAK Server Mission associated with the Event' }),
+        missions: Type.Array(CoreEntityMission, { description: 'TAK Server Missions associated with the Event' }),
         created: Type.String(),
         updated: Type.String(),
         ended: Type.Union([Type.Null(), Type.String()], { description: 'Time at which the Event ends - a future time keeps the Event active until then' }),

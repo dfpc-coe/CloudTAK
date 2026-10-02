@@ -213,12 +213,12 @@
                 />
 
                 <PropertyCoreEntityMission
-                    :model-value='event.mission_guid'
+                    :model-value='event.missions'
                     :edit='is_editable'
                     :event-name='event.name'
                     :remarks='event.remarks'
                     :channels='event.channels'
-                    @update:model-value='patch({ mission_guid: $event })'
+                    @update:model-value='patch({ missions: $event })'
                 />
 
                 <div class='col-12'>

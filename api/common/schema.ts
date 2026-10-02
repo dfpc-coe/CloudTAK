@@ -3,7 +3,7 @@ import { primaryKey } from 'drizzle-orm/pg-core';
 import { Static } from '@sinclair/typebox';
 import type { ProfileVideoPosition } from './types.js';
 import type { StyleContainer } from './style.js';
-import { CoreEntityLink, CoreEntityStyle } from './types.js';
+import { CoreEntityLink, CoreEntityStyle, CoreEntityMission } from './types.js';
 import type { FilterContainer } from './filter.js';
 import type { PaletteFeatureStyle } from '../stateless/lib/palette.js';
 import { Polygon, Point } from 'geojson';
@@ -34,7 +34,6 @@ export const SpatialRefSys = pgTable('spatial_ref_sys', {
 export const CoreEntity = pgTable('core_entity', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
     kind: text().$type<LayerMapping_Destination>().notNull().default(LayerMapping_Destination.COREENTITY),
-    mission_guid: uuid(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     username: text().references(() => Profile.username),
@@ -61,6 +60,7 @@ export const CoreEntityEvent = pgTable('core_entity_event', {
     ended: timestamp({ withTimezone: true, mode: 'string' }), // A future time keeps the Event active until then
     priority: text().$type<CoreEntity_Priority>().notNull().default(CoreEntity_Priority.NONE),
     location: text().notNull().default(''), // Human readable location - ie: an address
+    missions: jsonb().$type<Array<Static<typeof CoreEntityMission>>>().notNull().default([]), // TAK Server Missions associated with the Event
 });
 
 export const CoreEntityChannel = pgTable('core_entity_channel', {
