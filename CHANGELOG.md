@@ -15,8 +15,17 @@
 - `GET /api/search/reverse/:long/:lat` endpoint is deprecated and will be removed in v14, use `GET /api/search/reverse/:long/:lat/<type>` instead
 - `Layer.template` is deprecated and will be removed
 - ETLs in v14 will be required to declare Named Schemas, single schema support will be removed
+- The Minio Legacy Store will be removed in V14 - Ensure you have migrated to Garage before updating to v14.
 
 ### Pending Release
+
+> [!WARNING]
+> This release migrates from Minio to Garage as the object store. If you are using Docker Compose, you must run `./cloudtak.sh migrate-store`
+> to copy existing files out of the MinIO volume before updating to this release.
+>
+> BEFORE RUNNING THE MIGRATION ENSURE YOU BACKUP YOUR MINIO VOLUMN!
+> 
+> If you are using CloudFormation, the migration is not relevant as CloudTAK uses S3 natively.
 
 - :rocket: Docker Compose deployments now use [Garage](https://garagehq.deuxfleurs.fr/) as the object store instead of MinIO, whose community images & binaries are no longer published - `./cloudtak.sh migrate-store` (run automatically by `./cloudtak.sh update`) copies existing files out of the MinIO volume, `AWS_S3_Endpoint` moves to `http://store:3900` & a `GARAGE_RPC_SECRET` is added to `.env`
 - :bug: S3 clients only calculate & validate request/response checksums when required so multipart objects served by non-AWS S3 endpoints download correctly
