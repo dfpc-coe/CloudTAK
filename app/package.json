@@ -16,7 +16,7 @@
     },
     "scripts": {
         "serve": "DEV=true vite serve --port 8080",
-        "typegen": "npm run typegen -C ..",
+        "typegen": "npm run typegen --prefix ../api",
         "check": "vue-tsc",
         "build:types": "vue-tsc -p tsconfig.build.json",
         "doc": "typedoc --options typedoc.json",

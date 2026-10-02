@@ -3,7 +3,6 @@
     "appName": "CloudTAK",
     "webDir": "dist",
     "ios": {
-        "path": "../../ios",
         "includePlugins": [
             "@capgo/capacitor-updater",
             "@capacitor-community/keep-awake",
@@ -24,7 +23,6 @@
         ]
     },
     "android": {
-        "path": "../../android",
         "useLegacyBridge": true
     },
     "plugins": {

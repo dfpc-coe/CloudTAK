@@ -91,7 +91,7 @@ function login() {
 function cloudtak_api(plugins = []) {
     const buildArgs = plugins.length ? `--build-arg WEB_PLUGINS="${plugins.join(',')}"` : '';
 
-    return build('api', `${buildArgs} ${tags()} ./api/`);
+    return build('api', `${buildArgs} ${tags()} .`);
 }
 
 function cloudtak_task(task) {

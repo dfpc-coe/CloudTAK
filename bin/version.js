@@ -6,10 +6,10 @@ const stage = process.argv.includes('--stage');
 
 const pkg_root = JSON.parse(String(await fs.readFile(new URL('../package.json', import.meta.url))));
 const pkg_api = JSON.parse(String(await fs.readFile(new URL('../api/package.json', import.meta.url))));
-const pkg_web = JSON.parse(String(await fs.readFile(new URL('../api/web/package.json', import.meta.url))));
-const capacitor = JSON.parse(String(await fs.readFile(new URL('../api/web/capacitor.config.json', import.meta.url))));
-const xcodeproj = String(await fs.readFile(new URL('../ios/App/App.xcodeproj/project.pbxproj', import.meta.url)));
-const gradle = String(await fs.readFile(new URL('../android/app/build.gradle', import.meta.url)));
+const pkg_web = JSON.parse(String(await fs.readFile(new URL('../app/package.json', import.meta.url))));
+const capacitor = JSON.parse(String(await fs.readFile(new URL('../app/capacitor.config.json', import.meta.url))));
+const xcodeproj = String(await fs.readFile(new URL('../app/ios/App/App.xcodeproj/project.pbxproj', import.meta.url)));
+const gradle = String(await fs.readFile(new URL('../app/android/app/build.gradle', import.meta.url)));
 
 console.error('ok version - ' + pkg_root.version);
 
@@ -22,10 +22,10 @@ const versionCode = major * 1000000 + minor * 1000 + patch;
 
 const updated = [
     new URL('../api/package.json', import.meta.url),
-    new URL('../api/web/package.json', import.meta.url),
-    new URL('../api/web/capacitor.config.json', import.meta.url),
-    new URL('../ios/App/App.xcodeproj/project.pbxproj', import.meta.url),
-    new URL('../android/app/build.gradle', import.meta.url)
+    new URL('../app/package.json', import.meta.url),
+    new URL('../app/capacitor.config.json', import.meta.url),
+    new URL('../app/ios/App/App.xcodeproj/project.pbxproj', import.meta.url),
+    new URL('../app/android/app/build.gradle', import.meta.url)
 ];
 
 await fs.writeFile(updated[0], JSON.stringify(pkg_api, null, 4));

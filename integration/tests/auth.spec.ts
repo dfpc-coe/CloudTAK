@@ -352,7 +352,7 @@ test.describe('Auth: access control', () => {
 
         // The web client reads its token from Capacitor Preferences (backed
         // by localStorage on web) as the primary source, with an IndexedDB
-        // copy used inside web workers (see api/web/src/std.ts
+        // copy used inside web workers (see app/src/std.ts
         // getRuntimeToken). Corrupt BOTH so the app cannot fall back to a
         // good copy, then reload: the app must reject the bad token and
         // require login again.

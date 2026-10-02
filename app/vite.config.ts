@@ -100,7 +100,7 @@ export default defineConfig(({ mode }) => {
                 'milsymbol': milsymbolBrowserBundle,
                 '@tak-ps/cloudtak': path.resolve(import.meta.dirname, './plugin.ts'),
                 '@': path.resolve(import.meta.dirname, './src'),
-                '@cloudtak/api-types': path.resolve(import.meta.dirname, '../derived-types.d.ts'),
+                '@cloudtak/api-types': path.resolve(import.meta.dirname, '../api/derived-types.d.ts'),
             }
         },
         build: {
