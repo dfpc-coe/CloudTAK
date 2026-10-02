@@ -18,6 +18,8 @@
 
 ### Pending Release
 
+- :rocket: Docker Compose deployments now use [Garage](https://garagehq.deuxfleurs.fr/) as the object store instead of MinIO, whose community images & binaries are no longer published - `./cloudtak.sh migrate-store` (run automatically by `./cloudtak.sh update`) copies existing files out of the MinIO volume, `AWS_S3_Endpoint` moves to `http://store:3900` & a `GARAGE_RPC_SECRET` is added to `.env`
+- :bug: S3 clients only calculate & validate request/response checksums when required so multipart objects served by non-AWS S3 endpoints download correctly
 - :bug: Fix HTML vs Markdown Detection Parser
 - :tada: Add a `type` Field Mapping widget (`@widget: 'type'` on `common/core-schema.ts` properties) using the MIL-STD-2525E symbol picker from the CoT sidebar to select a fixed Type, or a template
 - :rocket: Move the Event specific `started`, `ended`, `priority` & `location` columns of `core_entity` into a `core_entity_event` side table sharing its primary key - payloads are unchanged, `GET /api/core/event` no longer accepts those columns as `sort`
