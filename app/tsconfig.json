@@ -26,7 +26,7 @@
     "moduleResolution": "bundler",
     "paths": {
       "@tak-ps/cloudtak": ["./plugin.ts"],
-      "@cloudtak/api-types": ["../derived-types.d.ts"]
+      "@cloudtak/api-types": ["../api/derived-types.d.ts"]
     },
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
@@ -76,5 +76,12 @@
     "forceConsistentCasingInFileNames": true,
     // See <https://github.com/vuejs/vue-cli/pull/5688>
     "skipLibCheck": true
-  }
+  },
+  "include": [
+    "src",
+    "plugins",
+    "plugin.ts",
+    "shims-vue.d.ts",
+    "vite.config.ts"
+  ]
 }

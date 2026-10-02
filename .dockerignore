@@ -1,0 +1,10 @@
+.git/
+**/node_modules/
+**/dist/
+**/coverage/
+**/*.dump
+api/data
+api/data-dev/
+app/dev-dist/
+app/ios/
+app/android/

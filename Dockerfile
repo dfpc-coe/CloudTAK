@@ -27,25 +27,29 @@ RUN apk add --no-cache git nodejs-current npm python3 make bash g++ openssl post
 
 WORKDIR $HOME/api
 
-ADD package.json ./
-ADD package-lock.json ./
+ADD api/package.json ./
+ADD api/package-lock.json ./
 
 RUN npm install
 
-ADD web/package.json ./web/
-ADD web/package-lock.json ./web/
+WORKDIR $HOME/app
 
-RUN cd web && npm install
+ADD app/package.json ./
+ADD app/package-lock.json ./
 
-COPY ./ $HOME/api
+RUN npm install
+
+COPY api/ $HOME/api/
+COPY app/ $HOME/app/
+
+WORKDIR $HOME/api
 
 RUN WEB_PLUGINS="$WEB_PLUGINS" node bin/plugin.ts
 
-RUN cd web \
+RUN cd ../app \
     && npm run lint \
     && npm run check \
-    && npm run build \
-    && cd ..
+    && npm run build
 
 RUN npm run lint \
     && npm run build

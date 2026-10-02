@@ -3,7 +3,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const WEB_ROOT = new URL('../web/', import.meta.url);
+const WEB_ROOT = new URL('../../app/', import.meta.url);
 const PLUGINS_DIR = new URL('plugins/', WEB_ROOT);
 const PUBLIC_DIR = new URL('public/', WEB_ROOT);
 
