@@ -23,6 +23,8 @@
 
 ### Pending Release
 
+### v13.103.0 - 2026-10-02
+
 - :rocket: **Breaking** Replace the Core Event `mission_guid` column with a `missions` array of `{ name, guid }` objects on the `core_entity_event` side table - existing associations are migrated with the GUID as a placeholder name, `POST` & `PATCH /api/core/event` take `missions` in place of `mission_guid`
 - :tada: Core Events can now be associated with multiple TAK Server Missions - the Event Mission panel lists, links to & removes each associated Mission, and hides already associated Missions from the selection list
 - :rocket: Move the Imports entry out of the main menu & into a card at the top of the Files menu - saved menu orders have the `imports` entry removed
