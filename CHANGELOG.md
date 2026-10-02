@@ -17,6 +17,10 @@
 - ETLs in v14 will be required to declare Named Schemas, single schema support will be removed
 - The Minio Legacy Store will be removed in V14 - Ensure you have migrated to Garage before updating to v14.
 
+### Beta Notice
+
+- CoreEvents & CoreDevices are in beta and functionality may change in minor releases. Use with caution in production environments.
+
 ### Pending Release
 
 - :rocket: **Breaking** Replace the Core Event `mission_guid` column with a `missions` array of `{ name, guid }` objects on the `core_entity_event` side table - existing associations are migrated with the GUID as a placeholder name, `POST` & `PATCH /api/core/event` take `missions` in place of `mission_guid`
@@ -28,7 +32,7 @@
 > to copy existing files out of the MinIO volume before updating to this release.
 >
 > BEFORE RUNNING THE MIGRATION ENSURE YOU BACKUP YOUR MINIO VOLUMN!
-> 
+>
 > If you are using CloudFormation, the migration is not relevant as CloudTAK uses S3 natively.
 
 - :rocket: Docker Compose deployments now use [Garage](https://garagehq.deuxfleurs.fr/) as the object store instead of MinIO, whose community images & binaries are no longer published - `./cloudtak.sh migrate-store` (run automatically by `./cloudtak.sh update`) copies existing files out of the MinIO volume, `AWS_S3_Endpoint` moves to `http://store:3900` & a `GARAGE_RPC_SECRET` is added to `.env`
