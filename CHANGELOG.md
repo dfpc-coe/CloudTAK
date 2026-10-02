@@ -19,6 +19,8 @@
 
 ### Pending Release
 
+### v13.102.0 - 2026-10-02
+
 > [!WARNING]
 > This release migrates from Minio to Garage as the object store. If you are using Docker Compose, you must run `./cloudtak.sh migrate-store`
 > to copy existing files out of the MinIO volume before updating to this release.
