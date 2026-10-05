@@ -23,6 +23,8 @@
 
 ### Pending Release
 
+### v13.103.2 - 2026-10-05
+
 - :rocket: TAK Server API clients are now built through a shared `TAKServerControl` (`asUser`, `asServer`, `asConnection`) and the CloudTAK client UID through `profileUid`, replacing ~90 inline `TAKAPI.init` calls and 11 inline UID strings
 - :rocket: Profile Overlay rules (unique per url, single basemap, single active mission, mission subscribe/unsubscribe, existence pruning, default basemap & terrain provisioning) now live in a shared `ProfileOverlayControl` used by the overlay, iconset, package & user erase paths and the stateful connection pool
 - :rocket: `POST /api/profile/overlay` is now idempotent - posting an overlay whose URL already exists for the user patches the existing overlay with the supplied fields and returns it instead of failing with a duplicate error
