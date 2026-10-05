@@ -23,6 +23,8 @@
 
 ### Pending Release
 
+- :rocket: Allow navigating to non-cot Point Features from imported overlays
+
 ### v13.103.4 - 2026-10-05
 
 - :rocket: Allow permanently dismissing Initial Permissions Modal on Desktop clients
