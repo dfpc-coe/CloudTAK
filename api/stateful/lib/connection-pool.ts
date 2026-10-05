@@ -384,6 +384,9 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                                 }));
                             } else if (feat.properties.type.startsWith('t-x')) {
                                 client.ws.send(JSON.stringify({ type: 'task', connection: conn.id, data: feat }));
+                            } else if (feat.properties.type.startsWith('b-f-t')) {
+                                // File Transfer request/ack - handled via Imports, never a map feature
+                                continue;
                             } else {
                                 client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: feat }));
                             }
