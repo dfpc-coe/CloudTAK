@@ -148,7 +148,7 @@
                     </button>
                     <button
                         class='btn btn-primary'
-                        @click='emit("close")'
+                        @click='dismissPermissions'
                     >
                         Done
                     </button>
@@ -159,7 +159,32 @@
 </template>
 
 <script lang='ts'>
+import { isNativePlatform } from '../../../utils/capacitor.ts';
+
 export type WarnConfigurationPage = 'details' | 'permissions';
+
+const PERMISSIONS_DISMISSED_KEY = 'cloudtak-permissions-dismissed';
+
+// Browser permissions are per-browser, so the dismissal is local; native always re-prompts
+export function isPermissionsWarningDismissed(): boolean {
+    if (isNativePlatform() || typeof window === 'undefined') return false;
+
+    try {
+        return localStorage.getItem(PERMISSIONS_DISMISSED_KEY) === 'true';
+    } catch {
+        return false;
+    }
+}
+
+export function setPermissionsWarningDismissed(): void {
+    if (isNativePlatform() || typeof window === 'undefined') return;
+
+    try {
+        localStorage.setItem(PERMISSIONS_DISMISSED_KEY, 'true');
+    } catch (err) {
+        console.warn('Failed to persist permissions dismissal', err);
+    }
+}
 </script>
 
 <script setup lang='ts'>
@@ -183,7 +208,6 @@ import Config from '../../../base/config.ts';
 import type { FullConfig } from '../../../base/config.ts';
 import ProfileConfig from '../../../base/profile.ts';
 import { validateTextNotEmpty } from '../../../utils/validators.ts';
-import { isNativePlatform } from '../../../utils/capacitor.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useDeviceStore } from '../../../stores/device.ts';
 import type { BrowserPermissionState, BrowserPermissionType } from '../../../stores/device.ts';
@@ -371,6 +395,11 @@ function actionLabel(type: BrowserPermissionType, status: BrowserPermissionState
     if (needsNativeSettings(status)) return 'Open Settings';
     if (status === 'denied') return 'Re-request Permission';
     return 'Request Permission';
+}
+
+function dismissPermissions(): void {
+    setPermissionsWarningDismissed();
+    emit('close');
 }
 
 async function refreshStatuses(): Promise<void> {

@@ -376,7 +376,7 @@ import TopBar from './TopBar.vue';
 import DrawOverlay from './util/DrawOverlay.vue';
 import WarnChannels from './util/WarnChannels.vue';
 import SearchBox from './util/SearchBox.vue';
-import WarnConfiguration from './util/WarnConfiguration.vue';
+import WarnConfiguration, { isPermissionsWarningDismissed } from './util/WarnConfiguration.vue';
 import type { WarnConfigurationPage } from './util/WarnConfiguration.vue';
 import GenericBottomPane from './GenericBottomPane.vue';
 import type { MapGeoJSONFeature, LngLatLike, MapMouseEvent } from 'maplibre-gl';
@@ -663,7 +663,7 @@ onMounted(async () => {
     warnChannels.value = await mapStore.worker.profile.hasNoChannels();
     if (await mapStore.worker.profile.hasNoConfiguration()) {
         warnConfiguration.value = 'details';
-    } else if (!deviceStore.hasRequiredPermissions()) {
+    } else if (!deviceStore.hasRequiredPermissions() && !isPermissionsWarningDismissed()) {
         warnConfiguration.value = 'permissions';
     }
 
