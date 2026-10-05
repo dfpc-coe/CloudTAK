@@ -12,7 +12,8 @@ import xmljs from 'xml-js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
 import { StandardResponse, IconResponse, IconsetResponse } from '../../common/types.js';
-import { Icon, Iconset, ProfileFile, BasemapVector, ProfileOverlay } from '../../common/schema.js';
+import { Icon, Iconset, ProfileFile, BasemapVector } from '../../common/schema.js';
+import ProfileOverlayControl from '../../common/control/profile-overlay.js';
 import * as Default from '../lib/limits.js';
 
 export type SpriteRecord = {
@@ -26,6 +27,7 @@ export enum IconsetFormatEnum {
 }
 
 export default async function router(schema: Schema, config: ConfigStateless) {
+    const overlayControl = new ProfileOverlayControl(config);
     const DefaultSprite = {
         json: JSON.parse(String(await fs.readFile(new URL('../../icons/generator.json', import.meta.url)))),
         image: await fs.readFile(new URL('../../icons/generator.png', import.meta.url)),
@@ -332,9 +334,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 .set({ iconset: null })
                 .where(eq(BasemapVector.iconset, req.params.iconset));
 
-            await config.pg.update(ProfileOverlay)
-                .set({ iconset: null })
-                .where(eq(ProfileOverlay.iconset, req.params.iconset));
+            await overlayControl.detachIconsets([req.params.iconset]);
 
             await config.models.Iconset.delete(String(req.params.iconset));
 

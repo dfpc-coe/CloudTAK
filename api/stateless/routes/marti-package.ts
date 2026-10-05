@@ -5,7 +5,6 @@ import { Busboy } from '@fastify/busboy';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import { Type, Static } from '@sinclair/typebox';
-import { sql } from 'drizzle-orm';
 import S3 from '../../common/aws/s3.js';
 import { FileShare, DataPackage } from '@tak-ps/node-cot';
 import { fromProtocol } from '../lib/factory-basemap.js';
@@ -15,6 +14,7 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import ProfileControl from '../lib/control/profile.js';
+import ProfileOverlayControl from '../../common/control/profile-overlay.js';
 import MissionPackage, { resolveFeatures } from '../lib/mission-package.js';
 import activeChannels from '../lib/tak-channels.js';
 import { Basemap as BasemapParser } from '@tak-ps/node-cot';
@@ -126,6 +126,7 @@ function packageExpirationForUpdate(value: string | number | null | undefined): 
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     const profileControl = new ProfileControl(config);
+    const overlayControl = new ProfileOverlayControl(config);
 
     await schema.post('/marti/package', {
         name: 'Create File Package',
@@ -487,16 +488,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (missionPkg) {
-                const ovs = new Map();
-                (await config.models.ProfileOverlay.list({
-                    where: sql`
-                        username = ${user.email}
-                        AND mode = 'mission'
-                    `,
-                })).items.map(o => ovs.set(o.mode_id, o));
+                const subscribed = new Set((await overlayControl.missions(user.email)).map(o => o.mode_id));
 
                 for (const guid of missionGuids) {
-                    if (!ovs.get(guid)) {
+                    if (!subscribed.has(guid)) {
                         throw new Err(400, null, `You are not subscribed to mission ${guid}`);
                     }
                 }

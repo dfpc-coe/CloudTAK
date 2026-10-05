@@ -23,6 +23,9 @@
 
 ### Pending Release
 
+- :rocket: Profile Overlay rules (unique per url, single basemap, single active mission, mission subscribe/unsubscribe, existence pruning, default basemap & terrain provisioning) now live in a shared `ProfileOverlayControl` used by the overlay, iconset, package & user erase paths and the stateful connection pool
+- :rocket: `POST /api/profile/overlay` is now idempotent - posting an overlay whose URL already exists for the user patches the existing overlay with the supplied fields and returns it instead of failing with a duplicate error
+
 ### v13.103.1 - 2026-10-05
 
 - :bug: Ensure File Share Notification CoTs don't end up rendered on the map
