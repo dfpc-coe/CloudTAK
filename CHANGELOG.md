@@ -23,6 +23,9 @@
 
 ### Pending Release
 
+### v13.103.3 - 2026-10-05
+
+- :bug: Ensure all localStorage properties are wiped on logout
 - :bug: `PUT/POST /api/profile/location` reported the user's Default Point Type (a 2525 SIDC) as the self CoT type, rendering CloudTAK users in ATAK as a MIL-STD friendly unit square instead of a team skittle - the self type is now always `a-f-G-E-V-C` as the web client sends
 
 ### v13.103.2 - 2026-10-05
