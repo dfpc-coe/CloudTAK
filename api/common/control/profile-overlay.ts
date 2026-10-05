@@ -3,12 +3,11 @@ import Err from '@openaddresses/batch-error';
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import { sql, eq, inArray } from 'drizzle-orm';
 import type { InferSelectModel } from 'drizzle-orm';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import type Config from '../config.js';
 import S3 from '../aws/s3.js';
 import { ProfileOverlay } from '../schema.js';
 import type { Basemap } from '../schema.js';
-import { authenticatedProfile } from './profile.js';
+import TAKServerControl, { profileUid } from './takserver.js';
 
 export type ProfileOverlayRow = InferSelectModel<typeof ProfileOverlay>;
 export type BasemapRow = InferSelectModel<typeof Basemap>;
@@ -62,10 +61,6 @@ export default class ProfileOverlayControl {
         this.config = config;
     }
 
-    static uid(username: string): string {
-        return `ANDROID-CloudTAK-${username}`;
-    }
-
     static normalizeUrl(mode: string, url: string): string {
         if (mode === 'profile' && url.startsWith('http')) return new URL(url).pathname;
         return url;
@@ -74,14 +69,6 @@ export default class ProfileOverlayControl {
     /** Asset name backing a `profile` or `data` overlay - the url is `/.../<name>.pmtiles/tile` */
     static assetName(overlay: Pick<ProfileOverlayRow, 'url'>): string {
         return path.parse(overlay.url.replace(/\/tile$/, '')).name;
-    }
-
-    private async api(username: string): Promise<TAKAPI> {
-        const profile = await authenticatedProfile(this.config, username);
-        return await TAKAPI.init(
-            new URL(String(this.config.server.api)),
-            new APIAuthCertificate(profile.auth.cert, profile.auth.key),
-        );
     }
 
     async from(username: string, id: number): Promise<ProfileOverlayRow> {
@@ -198,9 +185,9 @@ export default class ProfileOverlayControl {
         if (mode === 'mission') {
             if (!patch.mode_id) throw new Err(400, null, 'Mode: Mission must have mode_id set');
 
-            const api = await this.api(username);
+            const api = await new TAKServerControl(this.config).asUser(username);
             const sub = await api.Mission.subscribe(patch.mode_id, {
-                uid: ProfileOverlayControl.uid(username),
+                uid: profileUid(username),
             }, { token });
 
             subscriptionToken = sub.data.token;
@@ -237,9 +224,9 @@ export default class ProfileOverlayControl {
 
         if (overlay.mode === 'mission' && overlay.mode_id) {
             try {
-                const api = await this.api(username);
+                const api = await new TAKServerControl(this.config).asUser(username);
                 await api.Mission.unsubscribe(overlay.mode_id, {
-                    uid: ProfileOverlayControl.uid(username),
+                    uid: profileUid(username),
                 }, {
                     token: overlay.token || undefined,
                 });
@@ -261,7 +248,7 @@ export default class ProfileOverlayControl {
         removed: Array<ProfileOverlayRow>;
     }> {
         const api = overlays.some(o => o.mode === 'mission' && o.mode_id)
-            ? await this.api(username)
+            ? await new TAKServerControl(this.config).asUser(username)
             : null;
 
         const results = await Promise.all(overlays.map(async (overlay): Promise<ResolvedOverlay | null> => {

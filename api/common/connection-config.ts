@@ -10,6 +10,7 @@ import type TAK from '@tak-ps/node-tak';
 import type { TAKAPI } from '@tak-ps/node-tak';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
 import { ACTIVE } from './models/CoreEntity.js';
+import { profileUid } from './control/takserver.js';
 
 const EVENT_STALE = 30 * 60 * 1000;
 
@@ -179,7 +180,7 @@ export class ProfileConnConfig implements ConnectionConfig {
     }
 
     uid(): string {
-        return `ANDROID-CloudTAK-${this.id}`;
+        return profileUid(this.id);
     }
 
     async subscription(guid: string): Promise<null | MissionSub> {

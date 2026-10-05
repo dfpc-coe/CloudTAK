@@ -10,10 +10,11 @@ import ProfileControl from '../lib/control/profile.js';
 import {
     TAKItem,
 } from '@tak-ps/node-tak/lib/api/types';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { authenticatedProfile } from '../../common/control/profile.js';
+import TAKServerControl from '../../common/control/takserver.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
+    const takserver = new TAKServerControl(config);
     const profileControl = new ProfileControl(config);
 
     await schema.get('/marti/missions/:guid/property', {
@@ -37,7 +38,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const user = await Auth.as_user(config, req);
 
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -74,7 +75,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const user = await Auth.as_user(config, req);
 
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -106,7 +107,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const user = await Auth.as_user(config, req);
 
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -142,7 +143,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const user = await Auth.as_user(config, req);
 
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -177,7 +178,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const user = await Auth.as_user(config, req);
 
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }

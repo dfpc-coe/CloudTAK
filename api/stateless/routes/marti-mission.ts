@@ -27,12 +27,13 @@ import { MissionInvite, MissionInviteType, MissionSubscriberRole } from '@tak-ps
 import {
     TAKList,
 } from '@tak-ps/node-tak/lib/api/types';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { authenticatedProfile } from '../../common/control/profile.js';
+import TAKServerControl, { profileUid } from '../../common/control/takserver.js';
 
 const MISSION_COT_SUBMIT_MAX = 100;
 
 export default async function router(schema: Schema, config: ConfigStateless) {
+    const takserver = new TAKServerControl(config);
     const profileControl = new ProfileControl(config);
 
     await schema.get('/marti/missions/:guid', {
@@ -61,7 +62,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -99,7 +100,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -155,7 +156,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -197,7 +198,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const profile = await authenticatedProfile(config, user.email);
             const auth = profile.auth;
 
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -228,7 +229,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req, { token: true });
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -267,7 +268,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -298,7 +299,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -326,11 +327,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const mission = await api.Mission.create({
                 ...req.body,
-                creatorUid: `ANDROID-CloudTAK-${user.email}`,
+                creatorUid: profileUid(user.email),
             });
 
             res.json(mission);
@@ -358,7 +359,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -407,13 +408,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const { sort, order, groups, ...query } = req.query;
 
             const [missions, invites] = await Promise.all([
                 api.Mission.list(query),
-                api.MissionInvite.list('ANDROID-CloudTAK-' + user.email),
+                api.MissionInvite.list(profileUid(user.email)),
             ]);
 
             if (groups) {
@@ -469,7 +470,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -538,7 +539,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -567,7 +568,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -596,7 +597,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -630,7 +631,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -675,7 +676,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -715,7 +716,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const auth = profile.auth;
             const creatorUid = profile.username;
 
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const contents: string[] = [];
 
@@ -777,7 +778,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const name = String(req.query.name);
 
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const content = await api.Files.upload({
                 name: name,
@@ -825,7 +826,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const profile = await authenticatedProfile(config, user.email);
             const auth = profile.auth;
 
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -859,7 +860,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -890,7 +891,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -901,7 +902,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 req.body.type,
                 req.body.invitee,
                 {
-                    creatorUid: `ANDROID-CloudTAK-${user.email}`,
+                    creatorUid: profileUid(user.email),
                     role: req.body.role,
                 },
                 opts,
@@ -932,7 +933,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
@@ -943,7 +944,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 req.query.type,
                 req.query.invitee,
                 {
-                    creatorUid: `ANDROID-CloudTAK-${user.email}`,
+                    creatorUid: profileUid(user.email),
                 },
                 opts,
             );
@@ -972,7 +973,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }

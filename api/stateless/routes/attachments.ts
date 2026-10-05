@@ -8,11 +8,12 @@ import Auth from '../../common/auth.js';
 import S3 from '../../common/aws/s3.js';
 import type ConfigStateless from '../config.js';
 import ProfileControl from '../lib/control/profile.js';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
 import { authenticatedProfile } from '../../common/control/profile.js';
+import TAKServerControl from '../../common/control/takserver.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
+    const takserver = new TAKServerControl(config);
     const attachmentControl = new AttachmentControl(config);
     const profileControl = new ProfileControl(config);
 
@@ -109,7 +110,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     if (req.query.mission) {
                         const profile = await authenticatedProfile(config, user.email);
                         const auth = profile.auth;
-                        const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+                        const api = await takserver.withAuth(auth);
 
                         const attachment = await S3.list(`attachment/${result.hash}/`);
                         if (attachment.length < 1 || !attachment[0].Key) throw new Err(400, null, 'Could not find uploaded attachment');

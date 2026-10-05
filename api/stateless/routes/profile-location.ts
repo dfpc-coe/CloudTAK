@@ -6,6 +6,7 @@ import { CoTParser } from '@tak-ps/node-cot';
 import { Type } from '@sinclair/typebox';
 import { StandardResponse } from '../../common/types.js';
 import ProfileControl from '../lib/control/profile.js';
+import { profileUid } from '../../common/control/takserver.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     const profileControl = new ProfileControl(config);
@@ -40,7 +41,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const now = typeof req.body.time === 'number' ? new Date(req.body.time) : new Date();
             const stale = new Date(now.getTime() + 60_000);
             const callsign = profile.tak_callsign || 'Unknown';
-            const uid = `ANDROID-CloudTAK-${user.email}`;
+            const uid = profileUid(user.email);
 
             const feature = {
                 id: uid,
@@ -113,7 +114,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const now = typeof req.body.time === 'number' ? new Date(req.body.time) : new Date();
             const stale = new Date(now.getTime() + 60_000);
             const callsign = profile.tak_callsign || 'Unknown';
-            const uid = `ANDROID-CloudTAK-${user.email}`;
+            const uid = profileUid(user.email);
 
             const feature = {
                 id: uid,

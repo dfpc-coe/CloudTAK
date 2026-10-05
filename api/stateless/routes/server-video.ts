@@ -6,9 +6,10 @@ import {
     VideoConnectionList,
     VideoConnectionListInput,
 } from '@tak-ps/node-tak/lib/api/video';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
+import TAKServerControl from '../../common/control/takserver.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
+    const takserver = new TAKServerControl(config);
     await schema.get('/server/video', {
         name: 'List Video',
         group: 'ServerVideos',
@@ -20,7 +21,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             await Auth.as_user(config, req, { admin: true });
 
             const auth = config.serverCert();
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const list = await api.Video.list(req.query);
 
