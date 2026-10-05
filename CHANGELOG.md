@@ -23,6 +23,10 @@
 
 ### Pending Release
 
+### v13.103.1 - 2026-10-05
+
+- :bug: Ensure File Share Notification CoTs don't end up rendered on the map
+
 ### v13.103.0 - 2026-10-02
 
 - :rocket: **Breaking** Replace the Core Event `mission_guid` column with a `missions` array of `{ name, guid }` objects on the `core_entity_event` side table - existing associations are migrated with the GUID as a placeholder name, `POST` & `PATCH /api/core/event` take `missions` in place of `mission_guid`
