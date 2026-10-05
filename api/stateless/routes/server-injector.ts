@@ -5,9 +5,10 @@ import type ConfigStateless from '../config.js';
 import { StandardResponse } from '../../common/types.js';
 import Schema from '@openaddresses/batch-schema';
 import { Injector } from '@tak-ps/node-tak/lib/api/injectors';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
+import TAKServerControl from '../../common/control/takserver.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
+    const takserver = new TAKServerControl(config);
     await schema.get('/server/injector', {
         name: 'List Injectors',
         group: 'ServerInjector',
@@ -21,7 +22,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             await Auth.as_user(config, req, { admin: true });
 
             const auth = config.serverCert();
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const list = await api.Injectors.list();
 
@@ -48,7 +49,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             await Auth.as_user(config, req, { admin: true });
 
             const auth = config.serverCert();
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const list = await api.Injectors.create(req.body);
 
@@ -72,7 +73,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             await Auth.as_user(config, req, { admin: true });
 
             const auth = config.serverCert();
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             await api.Injectors.delete(req.query);
 

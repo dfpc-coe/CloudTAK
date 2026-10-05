@@ -13,10 +13,11 @@ import { VideoLease } from '../../common/schema.js';
 import { eq } from 'drizzle-orm';
 import ECSVideoControl, { Action, Protocols, PathListItem, ProtocolPopulation } from '../lib/control/video-service.js';
 import * as Default from '../lib/limits.js';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { authenticatedProfile } from '../../common/control/profile.js';
+import TAKServerControl from '../../common/control/takserver.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
+    const takserver = new TAKServerControl(config);
     const videoControl = new ECSVideoControl(config);
 
     await schema.post('/video/auth', {
@@ -263,7 +264,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 const user = await Auth.as_user(config, req);
 
                 const profile = await authenticatedProfile(config, user.email);
-                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+                const api = await takserver.withAuth(profile.auth);
 
                 const groups = (await api.Group.list({ useCache: true }))
                     .data.map(group => group.name);

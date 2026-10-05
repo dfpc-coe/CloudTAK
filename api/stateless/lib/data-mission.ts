@@ -2,12 +2,12 @@ import type { Data } from '../../common/schema.js';
 import { Static } from '@sinclair/typebox';
 import { sql } from 'drizzle-orm';
 import { InferSelectModel } from 'drizzle-orm';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import type { MissionLayer } from '@tak-ps/node-tak/lib/api/mission-layer';
 import { MissionLayerType } from '@tak-ps/node-tak/lib/api/mission-layer';
 import Config from '../../common/config.js';
 import ConnectionControl from '../../common/control/connection.js';
 import type { Mission } from '@tak-ps/node-tak/lib/api/mission';
+import TAKServerControl from '../../common/control/takserver.js';
 
 export const MAX_LAYERS_IN_DATA_SYNC = 5;
 
@@ -19,7 +19,7 @@ export default class DataMission {
     static async sync(config: Config, data: InferSelectModel<typeof Data>): Promise<Static<typeof Mission> | void> {
         const connection = await config.models.Connection.from(data.connection);
 
-        const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
+        const api = await new TAKServerControl(config).asConnection(connection);
 
         // All groups should be active for data-sync api to work properly
         const groups = await api.Group.list({ useCache: true });

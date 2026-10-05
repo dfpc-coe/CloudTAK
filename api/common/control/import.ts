@@ -12,9 +12,8 @@ export type HubConfig = Config & { hub: HubClient };
 import crypto from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { Import_Status } from '../enums.js';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { sendPush, PagingPriority } from '../paging.js';
-import { authenticatedProfile } from './profile.js';
+import TAKServerControl from './takserver.js';
 
 export enum ImportSourceEnum {
     UPLOAD = 'Upload',
@@ -63,8 +62,7 @@ export default class ImportControl {
 
         // Both Package and Mission Imports fetch from the File API
         if (body.source === ImportSourceEnum.PACKAGE || body.source === ImportSourceEnum.MISSION) {
-            const profile = await authenticatedProfile(this.config, body.username);
-            const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            const api = await new TAKServerControl(this.config).asUser(body.username);
 
             if (!body.source_id) throw new Error('Source ID Must be set for Package Import Source');
             const file = await api.Files.download(body.source_id);

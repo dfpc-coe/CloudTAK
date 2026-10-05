@@ -4,7 +4,6 @@ import type { Static } from '@sinclair/typebox';
 import type SQS from '@aws-sdk/client-sqs';
 import type CoT from '@tak-ps/node-cot';
 import { CoTParser } from '@tak-ps/node-cot';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { OutgoingMessageType, OutgoingAction, StaticCapabilities } from '@tak-ps/etl';
 import type Config from './config.js';
 import type ConnectionConfig from './connection-config.js';
@@ -17,6 +16,7 @@ import type {
 import Filter from './filter.js';
 import type { FilterContainer } from './filter.js';
 import Queue from './aws/queue.js';
+import TAKServerControl from './control/takserver.js';
 
 export { OutgoingAction as ETLEventAction };
 
@@ -209,10 +209,7 @@ export default class ETLEvents {
     async connectionChannels(connection: number): Promise<Set<number>> {
         const conn = await this.config.models.Connection.from(connection);
 
-        const api = await TAKAPI.init(
-            new URL(String(this.config.server.api)),
-            new APIAuthCertificate(conn.auth.cert, conn.auth.key),
-        );
+        const api = await new TAKServerControl(this.config).asConnection(conn);
 
         return new Set(
             (await api.Group.list({ useCache: true })).data

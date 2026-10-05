@@ -5,9 +5,10 @@ import Schema from '@openaddresses/batch-schema';
 import { StandardResponse } from '../../common/types.js';
 import type ConfigStateless from '../config.js';
 import { Repeater } from '@tak-ps/node-tak/lib/api/repeater';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
+import TAKServerControl from '../../common/control/takserver.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
+    const takserver = new TAKServerControl(config);
     await schema.get('/server/repeater', {
         name: 'List Repeaters',
         group: 'ServerRepeater',
@@ -21,7 +22,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             await Auth.as_user(config, req, { admin: true });
 
             const auth = config.serverCert();
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const list = await api.Repeater.list();
 
@@ -47,7 +48,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             await Auth.as_user(config, req, { admin: true });
 
             const auth = config.serverCert();
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             await api.Repeater.delete(req.params.uid);
 
