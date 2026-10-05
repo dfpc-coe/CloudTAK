@@ -101,3 +101,20 @@ export async function forgetPushToken(token: string | null): Promise<void> {
         await setStored(null, null);
     }
 }
+
+/**
+ * Delete this device's push registration from the server and forget it
+ * locally. Used on logout so the next account on this device registers
+ * its own record instead of inheriting this one.
+ */
+export async function unregisterPushToken(): Promise<void> {
+    const stored = await getStored();
+    if (stored.id === null) return;
+
+    const res = await server.DELETE('/api/profile/paging/{:pagingid}', {
+        params: { path: { ':pagingid': stored.id } },
+    });
+    if (res.error && res.response.status !== 404) throw new Error(res.error.message);
+
+    await setStored(null, null);
+}
