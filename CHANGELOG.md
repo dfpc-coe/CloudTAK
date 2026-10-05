@@ -23,6 +23,10 @@
 
 ### Pending Release
 
+### v13.103.4 - 2026-10-05
+
+- :rocket: Allow permanently dismissing Initial Permissions Modal on Desktop clients
+
 ### v13.103.3 - 2026-10-05
 
 - :bug: Ensure all localStorage properties are wiped on logout
