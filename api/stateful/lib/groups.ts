@@ -1,8 +1,8 @@
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { notInArray, sql } from 'drizzle-orm';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
 import { Channel } from '../../common/schema.js';
 import type ConfigStateful from '../config.js';
+import TAKServerControl from '../../common/control/takserver.js';
 
 /**
  * Periodically sync the TAK Server Group list into the channel table
@@ -72,10 +72,7 @@ export default class Groups {
         this.syncing = true;
 
         try {
-            const api = await TAKAPI.init(
-                new URL(String(this.config.server.api)),
-                new APIAuthCertificate(cert, key),
-            );
+            const api = await new TAKServerControl(this.config).withAuth({ cert, key });
 
             // The same Group is returned once per direction (IN/OUT) - dedupe on bitpos
             const groups = new Map<number, { name: string; type: string; description: string }>();

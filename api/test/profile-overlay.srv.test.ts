@@ -83,6 +83,60 @@ test('GET: api/profile/overlay - profile mode, S3 present -> kept in items', asy
     }
 });
 
+test('POST: api/profile/overlay - existing url -> patched in place', async () => {
+    try {
+        const first = await flight.fetch('/api/profile/overlay', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Idempotent Overlay',
+                mode: 'profile',
+                url: '/profile/admin@example.com/idempotent.pmtiles',
+            },
+        }, true);
+
+        const second = await flight.fetch('/api/profile/overlay', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Idempotent Overlay Renamed',
+                mode: 'profile',
+                opacity: 0.5,
+                visible: false,
+                url: `${flight.base}/profile/admin@example.com/idempotent.pmtiles`,
+            },
+        }, true);
+
+        assert.equal(second.body.id, first.body.id);
+        assert.equal(second.body.name, 'Idempotent Overlay Renamed');
+        assert.equal(second.body.opacity, 0.5);
+        assert.equal(second.body.visible, false);
+        assert.equal(second.body.url, '/profile/admin@example.com/idempotent.pmtiles');
+        assert.equal(second.body.created, first.body.created);
+
+        const mismatch = await flight.fetch('/api/profile/overlay', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Idempotent Overlay',
+                mode: 'data',
+                mode_id: '1',
+                url: '/profile/admin@example.com/idempotent.pmtiles',
+            },
+        }, false);
+
+        assert.equal(mismatch.status, 400, `Expected 400 but got: ${JSON.stringify(mismatch.body)}`);
+        assert.equal(mismatch.body.message, 'Overlay already exists with mode "profile" - mode cannot be changed');
+
+        await flight.fetch(`/api/profile/overlay?id=${first.body.id}`, {
+            method: 'DELETE',
+            auth: { bearer: flight.token.admin },
+        }, true);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: api/profile/overlay - profile mode, S3 absent -> moved to removed', async () => {
     let stub: Sinon.SinonStub | undefined;
 
@@ -255,7 +309,7 @@ test('POST: api/profile/overlay - second basemap mode rejected -> only one basem
                 name: 'Second Basemap Overlay',
                 mode: 'basemap',
                 mode_id: '1',
-                url: 'https://tiles.example.com/basemap/{z}/{x}/{y}',
+                url: 'https://tiles.example.com/basemap-second/{z}/{x}/{y}',
             },
         }, false);
 

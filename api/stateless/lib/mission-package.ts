@@ -11,6 +11,7 @@ import type { TAKAPI } from '@tak-ps/node-tak';
 import type { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
 import S3 from '../../common/aws/s3.js';
 import stream2buffer from './stream.js';
+import { profileUid } from '../../common/control/takserver.js';
 
 // TAK Server hands package CoTs to its async messaging pipeline before responding,
 // so mission membership is only visible on a subsequent read of the mission
@@ -148,7 +149,7 @@ export default class MissionPackage {
         // A non-empty response body lists conflicts and arrives with a 409, which node-tak throws
         await api.Mission.upload(
             guid,
-            `ANDROID-CloudTAK-${this.username}`,
+            profileUid(this.username),
             fs.createReadStream(this.#finalized),
             opts,
         );

@@ -8,8 +8,7 @@ import { VideoLease } from '../../../common/schema.js';
 import { VideoLeaseResponse } from '../../../common/types.js';
 import { VideoLease_SourceType } from '../../../common/enums.js';
 import { fetch, isSafeUrl } from '@tak-ps/node-safeurl';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
-import { authenticatedProfile } from '../../../common/control/profile.js';
+import TAKServerControl from '../../../common/control/takserver.js';
 
 export enum ProtocolPopulation {
     TEMPLATE,
@@ -544,11 +543,7 @@ export default class VideoServiceControl {
         headers.append('Content-Type', 'application/json');
 
         if (lease.publish) {
-            const auth = this.config.serverCert();
-            const api = await TAKAPI.init(
-                new URL(String(this.config.server.api)),
-                new APIAuthCertificate(auth.cert, auth.key),
-            );
+            const api = await new TAKServerControl(this.config).asServer();
 
             try {
                 await api.Video.create({
@@ -677,8 +672,7 @@ export default class VideoServiceControl {
             if (opts.username === lease.username) {
                 return lease;
             } else {
-                const profile = await authenticatedProfile(this.config, opts.username);
-                const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+                const api = await new TAKServerControl(this.config).asUser(opts.username);
                 const groups = (await api.Group.list({ useCache: true }))
                     .data.map(group => group.name);
 
@@ -746,11 +740,7 @@ export default class VideoServiceControl {
         lease = await this.config.models.VideoLease.commit(leaseid, body);
 
         try {
-            const auth = this.config.serverCert();
-            const api = await TAKAPI.init(
-                new URL(String(this.config.server.api)),
-                new APIAuthCertificate(auth.cert, auth.key),
-            );
+            const api = await new TAKServerControl(this.config).asServer();
 
             // Remove any existing connection - covers publish being toggled off
             // and channel changes, which the TAK Server Video API cannot apply in place
@@ -920,11 +910,7 @@ export default class VideoServiceControl {
         });
 
         try {
-            const auth = this.config.serverCert();
-            const api = await TAKAPI.init(
-                new URL(String(this.config.server.api)),
-                new APIAuthCertificate(auth.cert, auth.key),
-            );
+            const api = await new TAKServerControl(this.config).asServer();
 
             await api.Video.delete(lease.path);
         } catch (err) {

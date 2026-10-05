@@ -9,9 +9,10 @@ import { Contact } from '@tak-ps/node-tak/lib/api/contacts';
 import { Group } from '@tak-ps/node-tak/lib/api/groups';
 import { ClientEndpoint } from '@tak-ps/node-tak/lib/api/client';
 import { TAKList } from '@tak-ps/node-tak/lib/api/types';
-import { TAKAPI, APIAuthPassword, APIAuthCertificate } from '@tak-ps/node-tak';
+import { TAKAPI, APIAuthPassword } from '@tak-ps/node-tak';
 import type { Request } from 'express';
 import { authenticatedProfile } from '../../common/control/profile.js';
+import TAKServerControl from '../../common/control/takserver.js';
 
 /**
  * Resolve the TAK API client a Marti helper should act as.
@@ -27,7 +28,7 @@ async function serverApi(config: ConfigStateless): Promise<TAKAPI> {
         throw new Err(400, null, 'Server certificate is not configured');
     }
 
-    return await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(config.server.auth.cert, config.server.auth.key));
+    return await new TAKServerControl(config).asServer();
 }
 
 async function groupApi(
@@ -66,20 +67,20 @@ async function groupApi(
         }
 
         const { connection: conn } = await Auth.is_connection_auth(config, auth, inferred);
-        return await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(conn.auth.cert, conn.auth.key));
+        return await new TAKServerControl(config).asConnection(conn);
     } else if (connection === undefined) {
-        const profile = await authenticatedProfile(config, auth.email);
-        return await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+        return await new TAKServerControl(config).asUser(auth.email);
     } else if (connection === 0) {
         await Auth.as_user(config, req, { admin: true });
         return await serverApi(config);
     } else {
         const { connection: conn } = await Auth.is_connection_auth(config, auth, connection);
-        return await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(conn.auth.cert, conn.auth.key));
+        return await new TAKServerControl(config).asConnection(conn);
     }
 }
 
 export default async function router(schema: Schema, config: ConfigStateless) {
+    const takserver = new TAKServerControl(config);
     await schema.get('/marti/group', {
         name: 'List Groups',
         group: 'Marti',
@@ -185,7 +186,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const profile = await authenticatedProfile(config, user.email);
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            const api = await takserver.withAuth(profile.auth);
 
             const contacts = await api.Contacts.list();
 

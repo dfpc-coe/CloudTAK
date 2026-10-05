@@ -1,11 +1,11 @@
 import { Static, Type } from '@sinclair/typebox';
-import { sql } from 'drizzle-orm';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types';
 import type ConfigStateless from '../../config.js';
 import {
     toEnum, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Area, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom, Profile_Style, Profile_Coordinate, Profile_Radiation_Dose, Profile_Wake_Lock,
 } from '../../../common/enums.js';
 import { ProfileResponse } from '../../../common/types.js';
+import ProfileOverlayControl from '../../../common/control/profile-overlay.js';
 
 export const ProfileConfigDefaults = {
     'display::stale': Profile_Stale.TenMinutes,
@@ -128,22 +128,7 @@ export default class ProfileControl {
         guid: string;
         token?: string;
     }> {
-        const missions = await this.config.models.ProfileOverlay.list({
-            where: sql`
-                mode_id = ${guid}
-                AND mode = 'mission'
-                AND username = ${username}
-            `,
-        });
-
-        if (missions.items.length === 0) {
-            return { guid };
-        }
-
-        return {
-            guid,
-            token: missions.items[0].token || undefined,
-        };
+        return await new ProfileOverlayControl(this.config).subscription(username, guid);
     }
 
     async from(email: string): Promise<Static<typeof ProfileResponse>> {

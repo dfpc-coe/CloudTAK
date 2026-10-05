@@ -13,10 +13,11 @@ import {
 import {
     StandardResponse,
 } from '../../common/types.js';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { authenticatedProfile } from '../../common/control/profile.js';
+import TAKServerControl from '../../common/control/takserver.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
+    const takserver = new TAKServerControl(config);
     await schema.get('/marti/video', {
         name: 'List Video',
         group: 'MartiVideos',
@@ -27,7 +28,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const list = await api.Video.list(req.query);
 
@@ -49,7 +50,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const conn = await api.Video.get(req.params.uid);
 
@@ -69,7 +70,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const videoConn = await api.Video.create(req.body);
 
@@ -92,7 +93,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             const videoConn = await api.Video.update({
                 uuid: req.params.uid,
@@ -117,7 +118,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await takserver.withAuth(auth);
 
             await api.Video.delete(req.params.uid);
 

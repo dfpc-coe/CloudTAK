@@ -7,11 +7,12 @@ import { Subscription, ListSubscriptionInput } from '@tak-ps/node-tak/lib/api/su
 import {
     TAKList,
 } from '@tak-ps/node-tak/lib/api/types';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import activeChannels from '../lib/tak-channels.js';
 import { authenticatedProfile } from '../../common/control/profile.js';
+import TAKServerControl from '../../common/control/takserver.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
+    const takserver = new TAKServerControl(config);
     await schema.get('/marti/subscription', {
         name: 'List Subscriptions',
         group: 'MartiSubscription',
@@ -24,7 +25,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const user = await Auth.as_user(config, req);
             const profile = await authenticatedProfile(config, user.email);
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            const api = await takserver.withAuth(profile.auth);
             const channels = await activeChannels(api);
 
             const subs = await api.Subscription.list(req.query);
@@ -55,7 +56,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const user = await Auth.as_user(config, req);
             const profile = await authenticatedProfile(config, user.email);
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            const api = await takserver.withAuth(profile.auth);
 
             const subs = await api.Subscription.list({
                 sortBy: 'CALLSIGN',

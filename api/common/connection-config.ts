@@ -4,11 +4,13 @@ import type { Connection } from './schema.js';
 import { CoreEntity } from './schema.js';
 import { InferSelectModel, and, eq, sql } from 'drizzle-orm';
 import ConnectionControl from './control/connection.js';
+import ProfileOverlayControl from './control/profile-overlay.js';
 import type ConfigStateful from '../stateful/config.js';
 import type TAK from '@tak-ps/node-tak';
 import type { TAKAPI } from '@tak-ps/node-tak';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
 import { ACTIVE } from './models/CoreEntity.js';
+import { profileUid } from './control/takserver.js';
 
 const EVENT_STALE = 30 * 60 * 1000;
 
@@ -178,40 +180,18 @@ export class ProfileConnConfig implements ConnectionConfig {
     }
 
     uid(): string {
-        return `ANDROID-CloudTAK-${this.id}`;
+        return profileUid(this.id);
     }
 
     async subscription(guid: string): Promise<null | MissionSub> {
-        const missions = await this.config.models.ProfileOverlay.list({
-            where: sql`
-                mode_id = ${guid}
-                AND mode = 'mission'
-                AND username = ${this.id}
-            `,
-        });
-
-        if (missions.items.length === 0) {
-            return null;
-        }
-
-        return {
-            name: missions.items[0].name,
-            guid: missions.items[0].mode_id,
-            token: missions.items[0].token,
-        };
+        const overlay = await new ProfileOverlayControl(this.config).mission(this.id, guid);
+        if (!overlay) return null;
+        return { name: overlay.name, guid: overlay.mode_id, token: overlay.token };
     }
 
     async subscriptions(): Promise<Array<MissionSub>> {
-        const missions = await this.config.models.ProfileOverlay.list({
-            where: sql`
-                mode = 'mission'
-                AND username = ${this.id}
-            `,
-        });
-
-        return missions.items.map((m) => {
-            return { name: m.name, guid: m.mode_id, token: m.token };
-        });
+        const overlays = await new ProfileOverlayControl(this.config).missions(this.id);
+        return overlays.map(m => ({ name: m.name, guid: m.mode_id, token: m.token }));
     }
 
     async geofences(): Promise<Array<Feature>> {
