@@ -21,9 +21,10 @@ import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
 import KV from '../base/kv.ts';
-import GeolocateControl from '../lib/geolocate/main.ts';
-import RoutingControl from '../lib/routing/main.ts';
-import type { NavigationState, NavigationDirection, NavigationMode } from '../lib/routing/main.ts';
+import GeolocateControl from '../lib/maplibre-geolocate/main.ts';
+import { GPS_LOCATION_ZOOM, isAccurateGpsFix } from '../utils/gps-accuracy.ts';
+import RoutingControl from '../lib/maplibre-routing/main.ts';
+import type { NavigationState, NavigationDirection, NavigationMode } from '../lib/maplibre-routing/main.ts';
 import { syncPushToken } from '../base/push.ts';
 import { normalizePointType } from '../utils/point-type.ts';
 import { WorkerMessageType, LocationState } from '../utils/events.ts';
@@ -104,6 +105,11 @@ export const useMapStore = defineStore('cloudtak', {
         _cotResync?: Promise<void>;
         _destroying?: Promise<void>;
         _removePushTokenListener?: () => void;
+
+        // One-shot zoom to the first accurate GPS fix, skipped once the user
+        // has chosen a view (map gesture or a location hash in the URL)
+        _autoZoomDone: boolean;
+        _userMovedMap: boolean;
         _overlaySubscription?: { unsubscribe: () => void };
         _overlayReconcile?: Promise<void>;
         _overlayReconcileQueued?: boolean;
@@ -232,6 +238,8 @@ export const useMapStore = defineStore('cloudtak', {
             manualLocationMode: false,
 
             lastUpdateCOTErrorSignature: null,
+            _autoZoomDone: false,
+            _userMovedMap: false,
             locked: [],
             terrainEnabled: false,
             hasNoChannels: false,
@@ -344,6 +352,7 @@ export const useMapStore = defineStore('cloudtak', {
                 // worker to echo Profile_Location_Source back over the channel
                 this.syncGeolocateControl();
                 this.syncRoutingControl();
+                this.autoZoomToLocation();
 
                 // Battery state rides along with each location broadcast so the
                 // self CoT can report it to the TAK Server
@@ -385,6 +394,19 @@ export const useMapStore = defineStore('cloudtak', {
                 const accuracy = this.location === LocationState.Preset ? 0 : this.locationAccuracy;
                 control.setLocation(this.gpsCoordinates, accuracy);
             }
+        },
+        autoZoomToLocation: function() {
+            if (this._autoZoomDone || this._userMovedMap || !this._map) return;
+            if (this.location !== LocationState.Live || this.manualLocationMode) return;
+            if (this.navigation.active || this.locked.length) return;
+            if (!this.gpsCoordinates || !isAccurateGpsFix(this.locationAccuracy)) return;
+
+            this._autoZoomDone = true;
+            this.map.flyTo({
+                center: [this.gpsCoordinates.lng, this.gpsCoordinates.lat],
+                zoom: GPS_LOCATION_ZOOM,
+                speed: Infinity
+            });
         },
         routingControl: function(): RoutingControl | undefined {
             if (!this._map) return undefined;
@@ -718,6 +740,7 @@ export const useMapStore = defineStore('cloudtak', {
         },
 
         returnHome: async function(): Promise<void> {
+            this._userMovedMap = true;
             const cfg = await Config.list(
                 ['map::center', 'map::zoom', 'map::pitch', 'map::bearing'],
                 { defaults: { 'map::center': '-100,40', 'map::zoom': 4, 'map::pitch': 0, 'map::bearing': 0 } }
@@ -1079,6 +1102,7 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                     this.syncGeolocateControl();
                     this.syncRoutingControl();
+                    this.autoZoomToLocation();
                 } else if (msg.type === WorkerMessageType.Profile_Callsign) {
                     this.callsign = msg.body.callsign;
                 } else if (msg.type === WorkerMessageType.Profile_Display_Zoom) {
@@ -1231,7 +1255,15 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.loadingStage = 'Creating map…';
             mapgl.setWorkerUrl(maplibreWorkerUrl);
+            // A location hash in the URL overrides the configured center, so
+            // treat it as the user having already picked a view
+            if (window.location.hash.length > 1) this._userMovedMap = true;
             const map = new mapgl.Map(init);
+
+            // Only gestures carry originalEvent; programmatic camera moves don't
+            map.on('movestart', (e) => {
+                if (e.originalEvent) this._userMovedMap = true;
+            });
 
             // Tag TileJSON load failures onto the owning overlay; per-tile 404s are not errors
             map.on('error', (e) => {
@@ -1319,6 +1351,7 @@ export const useMapStore = defineStore('cloudtak', {
             }
             this.syncGeolocateControl();
             await this.restoreNavigation();
+            this.autoZoomToLocation();
 
             await this.worker.profile.load();
 

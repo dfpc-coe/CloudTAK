@@ -54,7 +54,7 @@ const DEFAULT_PUCK_COLOR = '#1da1f2';
  *
  * @example
  * ```ts
- * import GeolocateControl from './geolocate/main.ts';
+ * import GeolocateControl from './maplibre-geolocate/main.ts';
  *
  * const control = new GeolocateControl();
  * map.addControl(control, 'top-right');
