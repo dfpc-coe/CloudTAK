@@ -9,6 +9,7 @@ import Config from '../base/config.ts';
 import ServerManager from '../base/server.ts';
 import router from '../router.ts';
 import { isNativePlatform, isAndroidPlatform } from '../utils/capacitor.ts';
+import { unregisterPushToken } from '../base/push.ts';
 import { GeolocationPermission } from './device.ts';
 import { server, setSessionRefresher } from '../std.ts';
 
@@ -152,8 +153,24 @@ export const useAppStore = defineStore('cloudtak-app', {
             }
         },
 
+        // Wipe every trace of the user from the device. Only the native
+        // server URL survives so the app does not fall back to setup.
         async destroySession(): Promise<void> {
             await this.clearSession();
+
+            const { value: serverUrl } = await Preferences.get({ key: 'serverUrl' });
+            await Preferences.clear();
+            if (isNativePlatform() && serverUrl) {
+                await Preferences.set({ key: 'serverUrl', value: serverUrl });
+            }
+
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+            } catch (err) {
+                console.warn('Browser storage cleanup did not complete', err);
+            }
+
             await db.delete();
             await db.open();
         },
@@ -286,6 +303,14 @@ export const useAppStore = defineStore('cloudtak-app', {
             this.user = false;
             this.tokenExpiry = null;
             setSessionRefresher(undefined);
+
+            // Drop the device's push registration first; it belongs to this
+            // account, and the next user on the device must register their own
+            try {
+                await withTimeout(unregisterPushToken(), BOOT_NETWORK_TIMEOUT_MS, 'Push unregister');
+            } catch (err) {
+                console.warn('Push unregister did not complete', err);
+            }
 
             // Revoke server side so the login and refresh tokens die with the session
             try {

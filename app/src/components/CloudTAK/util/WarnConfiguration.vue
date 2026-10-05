@@ -138,12 +138,6 @@
                 </div>
             </template>
             <template v-else>
-                <button
-                    class='btn btn-link text-secondary'
-                    @click='emit("close")'
-                >
-                    Skip for now
-                </button>
                 <div class='ms-auto btn-list'>
                     <button
                         class='btn btn-secondary'
@@ -154,7 +148,6 @@
                     </button>
                     <button
                         class='btn btn-primary'
-                        :disabled='!deviceStore.hasRequiredPermissions()'
                         @click='emit("close")'
                     >
                         Done

@@ -23,6 +23,8 @@
 
 ### Pending Release
 
+- :bug: `PUT/POST /api/profile/location` reported the user's Default Point Type (a 2525 SIDC) as the self CoT type, rendering CloudTAK users in ATAK as a MIL-STD friendly unit square instead of a team skittle - the self type is now always `a-f-G-E-V-C` as the web client sends
+
 ### v13.103.2 - 2026-10-05
 
 - :rocket: TAK Server API clients are now built through a shared `TAKServerControl` (`asUser`, `asServer`, `asConnection`) and the CloudTAK client UID through `profileUid`, replacing ~90 inline `TAKAPI.init` calls and 11 inline UID strings
