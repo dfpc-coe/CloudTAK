@@ -159,10 +159,13 @@ export interface UpdateTarget {
     permissions?: string[];
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     layer: UpdateTarget;
     update: TaskUpdate;
-}>();
+    auto?: boolean;
+}>(), {
+    auto: false,
+});
 
 const emit = defineEmits<{
     (e: 'close'): void;
@@ -225,8 +228,8 @@ onMounted(async () => {
 
     loading.value = false;
 
-    // Nothing for the user to decide - submit without prompting
-    if (!requirementsChanged()) await accept();
+    // Bulk updates skip the prompt when there is nothing for the user to decide
+    if (props.auto && !requirementsChanged()) await accept();
 });
 
 /**
