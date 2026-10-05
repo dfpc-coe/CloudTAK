@@ -526,7 +526,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         description: 'Update Icon in Iconset',
         body: Type.Object({
-            name: Type.Optional(Type.String()),
+            name: Type.Optional(Default.NameField),
             data: Type.Optional(Type.String()),
             type2525b: Type.Optional(Type.Union([Type.Null(), Type.String()])),
         }),

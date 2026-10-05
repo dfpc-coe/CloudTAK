@@ -26,6 +26,17 @@ const SUPPORTED_MIME = [
 ];
 
 export default class SpriteBuilder {
+    static validateName(name: string): void {
+        const segments = name.split('/');
+
+        if (
+            /[\\\p{Cc}]/u.test(name)
+            || segments.some(segment => ['', '.', '..'].includes(segment))
+        ) {
+            throw new Err(400, null, 'Icon name must be a relative path without empty, "." or ".." segments');
+        }
+    }
+
     static async validate(
         icon: {
             name?: string;
@@ -33,6 +44,8 @@ export default class SpriteBuilder {
         },
     ): Promise<void> {
         if (icon.name) {
+            SpriteBuilder.validateName(icon.name);
+
             const name = path.parse(icon.name);
 
             if (!SUPPORTED_EXT.includes(name.ext.toLowerCase())) {

@@ -397,6 +397,54 @@ test('POST: /api/iconset/:iconset/icon - PNG with dots in filename', async () =>
     }
 });
 
+for (const name of ['./../../evil.png', 'google/../evil.png', '/evil.png', 'google//evil.png', 'google\\evil.png', 'evil\u0000.png']) {
+    test(`POST: /api/iconset/:iconset/icon - rejects unsafe name ${JSON.stringify(name)}`, async () => {
+        try {
+            const res = await flight.fetch('/api/iconset/test-iconset/icon', {
+                method: 'POST',
+                auth: {
+                    bearer: flight.token.admin,
+                },
+                body: {
+                    name,
+                    data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+                },
+            }, false);
+
+            assert.equal(res.status, 400);
+            assert.equal(res.body.message, 'Icon name must be a relative path without empty, "." or ".." segments');
+        } catch (err) {
+            assert.ifError(err);
+        }
+    });
+}
+
+test('PATCH: /api/iconset/:iconset/icon/:icon - rejects unsafe name', async () => {
+    try {
+        const icon = await flight.fetch('/api/iconset/test-iconset/icon/car', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        const res = await flight.fetch(`/api/iconset/test-iconset/icon/${icon.body.id}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                name: '../evil.png',
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'Icon name must be a relative path without empty, "." or ".." segments');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: /api/iconset/:iconset/icon/:icon - path lookup with seeded leaf-only name', async () => {
     try {
         if (!flight.config) throw new Error('Flight config not initialized');
