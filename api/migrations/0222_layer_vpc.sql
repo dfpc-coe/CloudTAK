@@ -1,0 +1,1 @@
+ALTER TABLE "layers" ADD COLUMN "vpc" boolean DEFAULT false NOT NULL;

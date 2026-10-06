@@ -1178,11 +1178,15 @@ test('POST: api/connection/0/layer - admin layer requires admin', async () => {
 
 test('POST: api/connection/1/layer - vpc requires system admin', async () => {
     try {
-        const token = 'etl.' + jwt.sign({ access: 'layer', id: 1, internal: true }, 'coe-wildland-fire');
+        const minted = await flight.fetch('/api/connection/1/token', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: { name: 'VPC Token' },
+        }, true);
 
         const res = await flight.fetch('/api/connection/1/layer', {
             method: 'POST',
-            auth: { bearer: token },
+            auth: { bearer: minted.body.token },
             body: {
                 name: 'VPC Layer',
                 description: 'Should be rejected',
