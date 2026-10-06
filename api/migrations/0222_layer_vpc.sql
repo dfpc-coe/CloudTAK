@@ -1,1 +1,1 @@
-ALTER TABLE "layers" ADD COLUMN "vpc" boolean DEFAULT false NOT NULL;
+ALTER TABLE "layers" ADD COLUMN IF NOT EXISTS "vpc" boolean DEFAULT false NOT NULL;
