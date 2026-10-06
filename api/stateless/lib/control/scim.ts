@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import type { Request, Response } from 'express';
 import { Type, Static } from '@sinclair/typebox';
 import type { TSchema } from '@sinclair/typebox';
-import { eq, count } from 'drizzle-orm';
+import { eq, count, inArray, sql } from 'drizzle-orm';
 import type { InferSelectModel } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import type Config from '../../../common/config.js';
@@ -113,6 +113,10 @@ export const ScimGroupList = Type.Object({
     itemsPerPage: Type.Integer(),
     Resources: Type.Array(ScimGroupResource),
 });
+
+export type ScimAgencySettings = {
+    prefix: string;
+};
 
 export type ScimGroupInput = {
     displayName?: string;
@@ -430,8 +434,9 @@ export default class ScimControl {
     }
 
     /**
-     * Groups are accepted but not stored - the id is a reversible encoding of the
-     * displayName so an Identity Provider can address the Group on later syncs
+     * Groups are not stored - the id is a reversible encoding of the displayName so
+     * an Identity Provider can address the Group on later syncs. Agency Groups
+     * persist their membership as Profile.agency_admin
      */
     static groupId(displayName: string): string {
         return Buffer.from(displayName, 'utf8').toString('base64url');
@@ -447,6 +452,76 @@ export default class ScimControl {
         }
 
         return displayName;
+    }
+
+    /**
+     * Agency Group settings - undefined when Agency provisioning is disabled
+     */
+    async agency(): Promise<ScimAgencySettings | undefined> {
+        const settings = await this.config.models.Setting.typedMany({
+            'scim::agency::enabled': false,
+            'scim::agency::prefix': '',
+        });
+
+        if (!settings['scim::agency::enabled']) return undefined;
+
+        return { prefix: settings['scim::agency::prefix'] };
+    }
+
+    /**
+     * The Agency a Group displayName of the form `<prefix><Agency ID>` maps to
+     */
+    static agencyId(displayName: string, settings?: ScimAgencySettings): number | undefined {
+        if (!settings || !displayName.startsWith(settings.prefix)) return undefined;
+
+        const suffix = displayName.slice(settings.prefix.length);
+        if (!/^[1-9]\d*$/.test(suffix)) return undefined;
+
+        const id = Number(suffix);
+        return Number.isSafeInteger(id) ? id : undefined;
+    }
+
+    async agencyMembers(agency: number): Promise<string[]> {
+        const profiles = await this.config.models.Profile.pool
+            .select({ username: Profile.username })
+            .from(Profile)
+            .where(sql`${Profile.agency_admin} @> ${JSON.stringify([agency])}::text::jsonb`)
+            .orderBy(Profile.username);
+
+        return profiles.map(profile => profile.username);
+    }
+
+    /**
+     * Make the Agency Admins of an Agency exactly the given usernames - usernames
+     * without a Profile are ignored
+     */
+    async setAgencyMembers(agency: number, usernames: string[]): Promise<string[]> {
+        const wanted = new Set(usernames);
+        const current = new Set(await this.agencyMembers(agency));
+
+        const changes = [
+            ...usernames.filter(username => !current.has(username)),
+            ...Array.from(current).filter(username => !wanted.has(username)),
+        ];
+
+        if (!changes.length) return Array.from(current);
+
+        const profiles = await this.config.models.Profile.pool
+            .select()
+            .from(Profile)
+            .where(inArray(Profile.username, changes));
+
+        for (const profile of profiles) {
+            const agency_admin = (profile.agency_admin || []).filter(id => id !== agency);
+            if (wanted.has(profile.username)) agency_admin.push(agency);
+
+            await this.config.models.Profile.commit(profile.username, {
+                agency_admin: agency_admin.sort((a, b) => a - b),
+                updated: new Date().toISOString(),
+            });
+        }
+
+        return await this.agencyMembers(agency);
     }
 
     serializeGroup(group: {
@@ -472,6 +547,18 @@ export default class ScimControl {
         };
     }
 
+    /**
+     * A Group by displayName - Agency Groups list their current Agency Admins
+     */
+    async group(displayName: string): Promise<Static<typeof ScimGroupResource>> {
+        const agency = ScimControl.agencyId(displayName, await this.agency());
+
+        return this.serializeGroup({
+            displayName,
+            members: agency === undefined ? [] : await this.agencyMembers(agency),
+        });
+    }
+
     static parseGroupFilter(filter?: string): { attribute: 'displayName' | 'externalId' | 'id'; value: string } | undefined {
         if (!filter || !filter.trim()) return undefined;
 
@@ -486,24 +573,26 @@ export default class ScimControl {
         return { attribute, value: match[2].replace(/\\(.)/g, '$1') };
     }
 
-    groupList(opts: {
+    async groupList(opts: {
         filter?: string;
         startIndex: number;
         count: number;
-    }): Static<typeof ScimGroupList> {
+    }): Promise<Static<typeof ScimGroupList>> {
         const filter = ScimControl.parseGroupFilter(opts.filter);
 
-        const groups: Static<typeof ScimGroupResource>[] = [];
+        let displayName: string | undefined;
 
         if (filter && filter.attribute === 'displayName' && filter.value.trim()) {
-            groups.push(this.serializeGroup({ displayName: filter.value.trim() }));
+            displayName = filter.value.trim();
         } else if (filter && filter.attribute === 'id') {
             try {
-                groups.push(this.serializeGroup({ displayName: ScimControl.groupName(filter.value) }));
+                displayName = ScimControl.groupName(filter.value);
             } catch (err) {
                 if (!isPublicError(err) || Number(err.status) !== 404) throw err;
             }
         }
+
+        const groups = displayName ? [await this.group(displayName)] : [];
 
         const page = opts.startIndex === 1 ? groups.slice(0, opts.count) : [];
 
@@ -516,26 +605,52 @@ export default class ScimControl {
         };
     }
 
-    groupCreate(body: Static<typeof ScimGroupBody>): Static<typeof ScimGroupResource> {
+    /**
+     * Create a Group, or replace the Group `previousId` when given - an Agency Group's
+     * members become that Agency's Admins and a replaced Agency Group that no longer
+     * maps to the same Agency releases its previous Admins
+     */
+    async groupCreate(body: Static<typeof ScimGroupBody>, previousId?: string): Promise<Static<typeof ScimGroupResource>> {
+        const settings = await this.agency();
+        const previous = previousId === undefined ? undefined : ScimControl.agencyId(ScimControl.groupName(previousId), settings);
+
         const displayName = body.displayName.trim();
         if (!displayName) throw new ScimErr(400, 'displayName cannot be empty', 'invalidValue');
+
+        const agency = ScimControl.agencyId(displayName, settings);
+        let members = memberValues(body.members || []);
+
+        if (previous !== undefined && previous !== agency) await this.setAgencyMembers(previous, []);
+        if (agency !== undefined) members = await this.setAgencyMembers(agency, members);
 
         return this.serializeGroup({
             displayName,
             externalId: body.externalId,
-            members: memberValues(body.members || []),
+            members,
         });
     }
 
-    groupUpdate(id: string, input: ScimGroupInput): Static<typeof ScimGroupResource> {
+    async groupUpdate(id: string, input: ScimGroupInput): Promise<Static<typeof ScimGroupResource>> {
+        const settings = await this.agency();
+
         let displayName = ScimControl.groupName(id);
+        const previous = ScimControl.agencyId(displayName, settings);
 
         if (input.displayName !== undefined) {
             displayName = input.displayName.trim();
             if (!displayName) throw new ScimErr(400, 'displayName cannot be empty', 'invalidValue');
         }
 
-        let members = input.members ? [...input.members] : [];
+        const agency = ScimControl.agencyId(displayName, settings);
+
+        let members: string[];
+        if (input.members) {
+            members = [...input.members];
+        } else if (previous !== undefined) {
+            members = await this.agencyMembers(previous);
+        } else {
+            members = [];
+        }
 
         if (input.addMembers) {
             members = Array.from(new Set([...members, ...input.addMembers]));
@@ -546,11 +661,23 @@ export default class ScimControl {
             members = members.filter(member => !remove.has(member));
         }
 
+        if (previous !== undefined && previous !== agency) await this.setAgencyMembers(previous, []);
+        if (agency !== undefined) members = await this.setAgencyMembers(agency, members);
+
         return this.serializeGroup({
             displayName,
             externalId: input.externalId,
             members,
         });
+    }
+
+    /**
+     * Delete a Group - an Agency Group releases its Agency Admins
+     */
+    async groupDelete(id: string): Promise<void> {
+        const agency = ScimControl.agencyId(ScimControl.groupName(id), await this.agency());
+
+        if (agency !== undefined) await this.setAgencyMembers(agency, []);
     }
 
     /**

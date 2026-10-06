@@ -536,4 +536,164 @@ test('PATCH: api/scim/v2/Users/:id - application/scim+json', async () => {
     assert.equal(res.body.active, false);
 });
 
+test('PUT: api/config - enable SCIM Agency provisioning', async () => {
+    const res = await flight.fetch('/api/config', {
+        method: 'PUT',
+        auth: { bearer: flight.token.admin },
+        body: {
+            'scim::agency::enabled': true,
+            'scim::agency::prefix': 'Agency-',
+        },
+    }, true);
+
+    assert.deepEqual(res.body, {
+        'scim::agency::enabled': true,
+        'scim::agency::prefix': 'Agency-',
+    });
+
+    await flight.config!.models.Profile.commit('scim.user@example.com', { agency_admin: [3] });
+});
+
+const agencyGroupId = Buffer.from('Agency-7', 'utf8').toString('base64url');
+
+async function agencies(username: string): Promise<number[]> {
+    return (await flight.config!.models.Profile.from(username)).agency_admin;
+}
+
+test('POST: api/scim/v2/Groups - Agency Group', async () => {
+    const res = await flight.fetch('/api/scim/v2/Groups', {
+        method: 'POST',
+        auth: { bearer: SCIM_TOKEN },
+        body: {
+            schemas: ['urn:ietf:params:scim:schemas:core:2.0:Group'],
+            displayName: 'Agency-7',
+            members: [
+                { value: 'SCIM.User@example.com' },
+                { value: 'scim.json@example.com' },
+                { value: 'missing@example.com' },
+            ],
+        },
+    }, true);
+
+    assert.equal(res.status, 201);
+    assert.equal(res.body.id, agencyGroupId);
+    assert.deepEqual(
+        res.body.members.map((m: { value: string }) => m.value),
+        ['scim.json@example.com', 'scim.user@example.com'],
+        'members without a Profile are ignored',
+    );
+
+    assert.deepEqual(await agencies('scim.user@example.com'), [3, 7], 'existing Agencies are retained');
+    assert.deepEqual(await agencies('scim.json@example.com'), [7]);
+    assert.deepEqual(await agencies('admin@example.com'), []);
+});
+
+test('GET: api/scim/v2/Groups - Agency Group members', async () => {
+    const res = await flight.fetch(`/api/scim/v2/Groups/${agencyGroupId}`, {
+        method: 'GET',
+        auth: { bearer: SCIM_TOKEN },
+    }, true);
+
+    assert.deepEqual(res.body.members.map((m: { value: string }) => m.value), ['scim.json@example.com', 'scim.user@example.com']);
+
+    const filtered = await flight.fetch(`/api/scim/v2/Groups?filter=${encodeURIComponent('displayName eq "Agency-7"')}`, {
+        method: 'GET',
+        auth: { bearer: SCIM_TOKEN },
+    }, true);
+
+    assert.equal(filtered.body.totalResults, 1);
+    assert.deepEqual(filtered.body.Resources[0].members.map((m: { value: string }) => m.value), ['scim.json@example.com', 'scim.user@example.com']);
+
+    for (const displayName of ['Agency-Seven', '7', 'agency-7', 'Agency-07']) {
+        const other = await flight.fetch(`/api/scim/v2/Groups?filter=${encodeURIComponent(`displayName eq "${displayName}"`)}`, {
+            method: 'GET',
+            auth: { bearer: SCIM_TOKEN },
+        }, true);
+
+        assert.deepEqual(other.body.Resources[0].members, [], `"${displayName}" is not an Agency Group`);
+    }
+});
+
+test('PATCH: api/scim/v2/Groups/:id - Agency Group', async () => {
+    const res = await flight.fetch(`/api/scim/v2/Groups/${agencyGroupId}`, {
+        method: 'PATCH',
+        auth: { bearer: SCIM_TOKEN },
+        body: {
+            schemas: ['urn:ietf:params:scim:api:messages:2.0:PatchOp'],
+            Operations: [{
+                op: 'add',
+                path: 'members',
+                value: [{ value: 'admin@example.com' }],
+            }, {
+                op: 'remove',
+                path: 'members[value eq "scim.json@example.com"]',
+            }],
+        },
+    }, true);
+
+    assert.deepEqual(res.body.members.map((m: { value: string }) => m.value), ['admin@example.com', 'scim.user@example.com']);
+
+    assert.deepEqual(await agencies('admin@example.com'), [7]);
+    assert.deepEqual(await agencies('scim.json@example.com'), []);
+    assert.deepEqual(await agencies('scim.user@example.com'), [3, 7]);
+});
+
+test('PUT: api/scim/v2/Groups/:id - Agency Group', async () => {
+    const res = await flight.fetch(`/api/scim/v2/Groups/${agencyGroupId}`, {
+        method: 'PUT',
+        auth: { bearer: SCIM_TOKEN },
+        body: {
+            displayName: 'Agency-7',
+            members: [{ value: 'scim.user@example.com' }],
+        },
+    }, true);
+
+    assert.deepEqual(res.body.members.map((m: { value: string }) => m.value), ['scim.user@example.com']);
+    assert.deepEqual(await agencies('admin@example.com'), []);
+
+    const renamed = await flight.fetch(`/api/scim/v2/Groups/${agencyGroupId}`, {
+        method: 'PUT',
+        auth: { bearer: SCIM_TOKEN },
+        body: {
+            displayName: 'Agency-8',
+            members: [{ value: 'scim.user@example.com' }],
+        },
+    }, true);
+
+    assert.equal(renamed.body.id, Buffer.from('Agency-8', 'utf8').toString('base64url'));
+    assert.deepEqual(renamed.body.members.map((m: { value: string }) => m.value), ['scim.user@example.com']);
+    assert.deepEqual(await agencies('scim.user@example.com'), [3, 8], 'a renamed Agency Group releases the previous Agency');
+});
+
+test('DELETE: api/scim/v2/Groups/:id - Agency Group', async () => {
+    const res = await flight.fetch(`/api/scim/v2/Groups/${Buffer.from('Agency-8', 'utf8').toString('base64url')}`, {
+        method: 'DELETE',
+        auth: { bearer: SCIM_TOKEN },
+    }, { json: false });
+
+    assert.equal(res.status, 204);
+    assert.deepEqual(await agencies('scim.user@example.com'), [3]);
+});
+
+test('POST: api/scim/v2/Groups - Agency provisioning disabled', async () => {
+    await flight.fetch('/api/config', {
+        method: 'PUT',
+        auth: { bearer: flight.token.admin },
+        body: { 'scim::agency::enabled': false },
+    }, true);
+
+    const res = await flight.fetch('/api/scim/v2/Groups', {
+        method: 'POST',
+        auth: { bearer: SCIM_TOKEN },
+        body: {
+            displayName: 'Agency-7',
+            members: [{ value: 'scim.user@example.com' }, { value: 'missing@example.com' }],
+        },
+    }, true);
+
+    assert.equal(res.status, 201);
+    assert.deepEqual(res.body.members.map((m: { value: string }) => m.value), ['scim.user@example.com', 'missing@example.com'], 'Group is not stored');
+    assert.deepEqual(await agencies('scim.user@example.com'), [3]);
+});
+
 flight.landing();

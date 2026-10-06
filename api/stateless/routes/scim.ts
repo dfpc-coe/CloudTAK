@@ -181,7 +181,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     schemas: ['urn:ietf:params:scim:schemas:core:2.0:Schema'],
                     id: SCIM_GROUP_SCHEMA,
                     name: 'Group',
-                    description: 'CloudTAK Group - accepted for Identity Provider compatibility, membership is not stored',
+                    description: 'CloudTAK Group - Groups named <prefix><Agency ID> manage Agency Admin membership when Agency provisioning is enabled, other Groups are accepted but not stored',
                     attributes: [
                         attribute('displayName', 'string', { required: true, uniqueness: 'server', caseExact: true }),
                         attribute('externalId', 'string'),
@@ -344,7 +344,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             await scim.auth(req);
 
-            const list = scim.groupList({
+            const list = await scim.groupList({
                 filter: req.query.filter,
                 startIndex: req.query.startIndex,
                 count: req.query.count,
@@ -360,14 +360,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         name: 'SCIM Create Group',
         group: 'SCIM',
         security,
-        description: 'Accept a Group - Groups are not stored, the returned id encodes the displayName so the Group can be addressed on later syncs',
+        description: 'Create a Group - when Agency provisioning is enabled a Group named <prefix><Agency ID> makes its members Agency Admins, other Groups are not stored and the returned id encodes the displayName so the Group can be addressed on later syncs',
         body: scimBody(ScimGroupBody),
         res: ScimGroupResource,
     }, async (req, res) => {
         try {
             await scim.auth(req);
 
-            res.status(201).type(SCIM_CONTENT_TYPE).json(scim.groupCreate(req.body as Static<typeof ScimGroupBody>));
+            res.status(201).type(SCIM_CONTENT_TYPE).json(await scim.groupCreate(req.body as Static<typeof ScimGroupBody>));
         } catch (err) {
             scimRespond(err, res);
         }
@@ -386,9 +386,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             await scim.auth(req);
 
-            res.type(SCIM_CONTENT_TYPE).json(scim.serializeGroup({
-                displayName: ScimControl.groupName(req.params.id),
-            }));
+            res.type(SCIM_CONTENT_TYPE).json(await scim.group(ScimControl.groupName(req.params.id)));
         } catch (err) {
             scimRespond(err, res);
         }
@@ -408,9 +406,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             await scim.auth(req);
 
-            ScimControl.groupName(req.params.id);
-
-            res.type(SCIM_CONTENT_TYPE).json(scim.groupCreate(req.body as Static<typeof ScimGroupBody>));
+            res.type(SCIM_CONTENT_TYPE).json(await scim.groupCreate(req.body as Static<typeof ScimGroupBody>, req.params.id));
         } catch (err) {
             scimRespond(err, res);
         }
@@ -430,7 +426,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             await scim.auth(req);
 
-            res.type(SCIM_CONTENT_TYPE).json(scim.groupUpdate(req.params.id, ScimControl.groupPatchInput((req.body as Static<typeof ScimPatchBody>).Operations)));
+            res.type(SCIM_CONTENT_TYPE).json(await scim.groupUpdate(req.params.id, ScimControl.groupPatchInput((req.body as Static<typeof ScimPatchBody>).Operations)));
         } catch (err) {
             scimRespond(err, res);
         }
@@ -440,7 +436,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         name: 'SCIM Delete Group',
         group: 'SCIM',
         security,
-        description: 'Delete a Group',
+        description: 'Delete a Group - an Agency Group releases its Agency Admins',
         params: Type.Object({
             id: Type.String(),
         }),
@@ -448,7 +444,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             await scim.auth(req);
 
-            ScimControl.groupName(req.params.id);
+            await scim.groupDelete(req.params.id);
 
             res.status(204).end();
         } catch (err) {

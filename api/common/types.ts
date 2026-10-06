@@ -852,6 +852,8 @@ export const FullConfig = Type.Object({
     'login::refresh::expiry': Type.Integer({ minimum: 1, description: 'Hours of inactivity after which a session expires - each refresh extends the session by this much' }),
     'scim::enabled': Type.Boolean({ description: 'Enable incoming SCIM 2.0 user provisioning at /api/scim/v2' }),
     'scim::token': Type.String({ description: 'Bearer token an Identity Provider must present to the SCIM API' }),
+    'scim::agency::enabled': Type.Boolean({ description: 'Map SCIM Groups named <prefix><Agency ID> onto Agency Admin membership' }),
+    'scim::agency::prefix': Type.String({ description: 'displayName prefix that marks a SCIM Group as a CloudTAK Agency' }),
     'provider::url': Type.String(),
     'provider::secret': Type.String(),
     'provider::client': Type.String(),

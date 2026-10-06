@@ -32,6 +32,8 @@ export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'display::area': Profile_Area.ACRE,
     'proxy::enabled': false,
     'scim::enabled': false,
+    'scim::agency::enabled': false,
+    'scim::agency::prefix': 'Agency-',
     'proxy::whitelist': [],
     'media::proxy::allow': [],
     'osm::enabled': false,

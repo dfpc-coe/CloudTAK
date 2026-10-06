@@ -23,6 +23,8 @@
 
 ### Pending Release
 
+- :tada: Add Agency provisioning to SCIM - Groups named `<prefix><Agency ID>` manage Agency Admin membership, toggled with a configurable prefix in Admin Config
+
 ### v13.103.5 - 2026-10-06
 
 - :rocket: Allow navigating to non-cot Point Features from imported overlays
