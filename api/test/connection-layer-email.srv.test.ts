@@ -85,16 +85,16 @@ function stub(): void {
     });
 }
 
-test('GET: api/config/email', async () => {
+test('GET: api/config/layer - email domain', async () => {
     try {
-        const res = await flight.fetch('/api/config/email', {
+        const res = await flight.fetch('/api/config/layer', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
             },
         }, true);
 
-        assert.deepEqual(res.body, {
+        assert.deepEqual(res.body.email, {
             domain: 'mail.localhost',
         });
     } catch (err) {

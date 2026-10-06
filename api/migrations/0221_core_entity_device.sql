@@ -31,7 +31,12 @@ DO $$ BEGIN
 
 		-- The dropped core_device.event assignment is kept as an active Effect
 		INSERT INTO "core_entity_effect" ("event", "device", "action", "status")
-		SELECT "event", "id", 'assigned', 'active' FROM "core_device" WHERE "event" IS NOT NULL;
+		SELECT d."event", d."id", 'assigned', 'active' FROM "core_device" d
+		WHERE d."event" IS NOT NULL
+		AND NOT EXISTS (
+			SELECT 1 FROM "core_entity_effect" e
+			WHERE e."event" = d."event" AND e."device" = d."id" AND e."action" = 'assigned'
+		);
 	END IF;
 
 	IF to_regclass('public.core_device_channel') IS NOT NULL THEN

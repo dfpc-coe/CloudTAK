@@ -3560,14 +3560,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/config/webhooks": {
+    "/api/config/layer": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Return the base URL that incoming Layer Webhooks are served from */
+        /** Deployment settings that apply to every Layer - webhook base URL, incoming email domain and VPC egress */
         get: {
             parameters: {
                 query?: never;
@@ -3584,115 +3584,20 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            url: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/config/email": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Return the domain that incoming Layer Email is addressed to */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            domain: string;
+                            webhooks: {
+                                /** @description Base URL that incoming Layer Webhooks are served from */
+                                url: string;
+                            };
+                            email: {
+                                /** @description Domain that incoming Layer Email is addressed to */
+                                domain: string;
+                            };
+                            vpc: {
+                                /** @description Layers can be attached to the private VPC subnets */
+                                enabled: boolean;
+                                /** @description Static egress addresses used by VPC attached Layers */
+                                addresses: string[];
+                            };
                         };
                     };
                 };
@@ -12221,7 +12126,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "connection" | "logging" | "task" | "version" | "memory" | "timeout" | "permissions" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
+                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "connection" | "logging" | "task" | "version" | "memory" | "timeout" | "vpc" | "permissions" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -12273,6 +12178,8 @@ export interface paths {
                                 };
                                 memory: number;
                                 timeout: number;
+                                /** @description Attach the Lambda to the private VPC subnets - egress uses the static NAT addresses and internal resources are reachable */
+                                vpc: boolean;
                                 priority: "high" | "low" | "off";
                                 permissions: string[];
                                 /** @description Deprecated: Layer Templates have been removed - this value is always false */
@@ -12706,6 +12613,11 @@ export interface paths {
                         alarm_points?: number;
                         /** @default false */
                         protected: boolean;
+                        /**
+                         * @description Attach the Lambda to the private VPC subnets - System Admin only as it grants access to internal resources
+                         * @default false
+                         */
+                        vpc: boolean;
                         /** @description Permissions granted to the Layer as <permission>:<level> pairs - ie video:read or video:* */
                         permissions?: string[];
                         /** @description Create an Incoming Config alongside the Layer */
@@ -12751,6 +12663,8 @@ export interface paths {
                             };
                             memory: number;
                             timeout: number;
+                            /** @description Attach the Lambda to the private VPC subnets - egress uses the static NAT addresses and internal resources are reachable */
+                            vpc: boolean;
                             priority: "high" | "low" | "off";
                             permissions: string[];
                             /** @description Deprecated: Layer Templates have been removed - this value is always false */
@@ -14998,6 +14912,8 @@ export interface paths {
                             };
                             memory: number;
                             timeout: number;
+                            /** @description Attach the Lambda to the private VPC subnets - egress uses the static NAT addresses and internal resources are reachable */
+                            vpc: boolean;
                             priority: "high" | "low" | "off";
                             permissions: string[];
                             /** @description Deprecated: Layer Templates have been removed - this value is always false */
@@ -15520,6 +15436,8 @@ export interface paths {
                         timeout?: number;
                         enabled?: boolean;
                         protected?: boolean;
+                        /** @description Attach the Lambda to the private VPC subnets - System Admin only as it grants access to internal resources */
+                        vpc?: boolean;
                         task?: string;
                         logging?: boolean;
                         alarm_period?: number;
@@ -15560,6 +15478,8 @@ export interface paths {
                             };
                             memory: number;
                             timeout: number;
+                            /** @description Attach the Lambda to the private VPC subnets - egress uses the static NAT addresses and internal resources are reachable */
+                            vpc: boolean;
                             priority: "high" | "low" | "off";
                             permissions: string[];
                             /** @description Deprecated: Layer Templates have been removed - this value is always false */
@@ -32171,7 +32091,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "connection" | "logging" | "task" | "version" | "memory" | "timeout" | "permissions" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
+                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "connection" | "logging" | "task" | "version" | "memory" | "timeout" | "vpc" | "permissions" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -32224,6 +32144,8 @@ export interface paths {
                                 };
                                 memory: number;
                                 timeout: number;
+                                /** @description Attach the Lambda to the private VPC subnets - egress uses the static NAT addresses and internal resources are reachable */
+                                vpc: boolean;
                                 priority: "high" | "low" | "off";
                                 permissions: string[];
                                 /** @description Deprecated: Layer Templates have been removed - this value is always false */
@@ -32676,6 +32598,8 @@ export interface paths {
                             };
                             memory: number;
                             timeout: number;
+                            /** @description Attach the Lambda to the private VPC subnets - egress uses the static NAT addresses and internal resources are reachable */
+                            vpc: boolean;
                             priority: "high" | "low" | "off";
                             permissions: string[];
                             /** @description Deprecated: Layer Templates have been removed - this value is always false */

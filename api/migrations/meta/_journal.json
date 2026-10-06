@@ -1548,6 +1548,13 @@
       "when": 1791313622270,
       "tag": "0221_core_entity_device",
       "breakpoints": true
+    },
+    {
+      "idx": 222,
+      "version": "7",
+      "when": 1791322682011,
+      "tag": "0222_layer_vpc",
+      "breakpoints": true
     }
   ]
 }

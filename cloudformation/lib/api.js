@@ -489,6 +489,11 @@ export default {
                         { Name: 'SubnetPublicA', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-a'])) },
                         { Name: 'SubnetPublicB', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b'])) },
                         { Name: 'MediaSecurityGroup', Value: cf.ref('MediaSecurityGroup') },
+                        { Name: 'SubnetPrivateA', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-private-a'])) },
+                        { Name: 'SubnetPrivateB', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-private-b'])) },
+                        { Name: 'ETLSecurityGroup', Value: cf.ref('ETLSecurityGroup') },
+                        { Name: 'NatPublicIPA', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-nat-ip-a'])) },
+                        { Name: 'NatPublicIPB', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-nat-ip-b'])) },
                         { Name: 'CLOUDTAK_Config_geofence_password', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/geofence}}') }
                     ],
                     RestartPolicy: {
@@ -624,8 +629,21 @@ export default {
                 }],
                 ManagedPolicyArns: [
                     cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole']),
-                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'])
+                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole']),
+                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'])
                 ]
+            }
+        },
+        ETLSecurityGroup: {
+            Type: 'AWS::EC2::SecurityGroup',
+            Properties: {
+                GroupName: cf.join([cf.stackName, '-etl-sg']),
+                GroupDescription: 'Shared by VPC attached ETL Layer Lambdas',
+                VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])),
+                Tags: [{
+                    Key: 'Name',
+                    Value: cf.join([cf.stackName, '-etl-sg'])
+                }]
             }
         }
     },
@@ -647,6 +665,13 @@ export default {
                 Name: cf.join([cf.stackName, '-etl-role'])
             },
             Value: cf.getAtt('ETLFunctionRole', 'Arn')
+        },
+        ETLSecurityGroup: {
+            Description: 'Security Group shared by VPC attached ETL Layer Lambdas',
+            Export: {
+                Name: cf.join([cf.stackName, '-etl-sg'])
+            },
+            Value: cf.ref('ETLSecurityGroup')
         }
     }
 };

@@ -640,6 +640,7 @@ export const Layer = pgTable('layers', {
     version: text().notNull(),
     memory: integer().notNull().default(256),
     timeout: integer().notNull().default(120),
+    vpc: boolean().notNull().default(false),
 
     permissions: text().array().notNull().default([]),
 
