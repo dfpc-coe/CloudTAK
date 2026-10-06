@@ -2518,6 +2518,10 @@ export interface paths {
                             "scim::enabled"?: boolean;
                             /** @description Bearer token an Identity Provider must present to the SCIM API */
                             "scim::token"?: string;
+                            /** @description Map SCIM Groups named <prefix><Agency ID> onto Agency Admin membership */
+                            "scim::agency::enabled"?: boolean;
+                            /** @description displayName prefix that marks a SCIM Group as a CloudTAK Agency */
+                            "scim::agency::prefix"?: string;
                             "provider::url"?: string;
                             "provider::secret"?: string;
                             "provider::client"?: string;
@@ -2812,6 +2816,10 @@ export interface paths {
                         "scim::enabled"?: boolean;
                         /** @description Bearer token an Identity Provider must present to the SCIM API */
                         "scim::token"?: string;
+                        /** @description Map SCIM Groups named <prefix><Agency ID> onto Agency Admin membership */
+                        "scim::agency::enabled"?: boolean;
+                        /** @description displayName prefix that marks a SCIM Group as a CloudTAK Agency */
+                        "scim::agency::prefix"?: string;
                         "provider::url"?: string;
                         "provider::secret"?: string;
                         "provider::client"?: string;
@@ -3031,6 +3039,10 @@ export interface paths {
                             "scim::enabled"?: boolean;
                             /** @description Bearer token an Identity Provider must present to the SCIM API */
                             "scim::token"?: string;
+                            /** @description Map SCIM Groups named <prefix><Agency ID> onto Agency Admin membership */
+                            "scim::agency::enabled"?: boolean;
+                            /** @description displayName prefix that marks a SCIM Group as a CloudTAK Agency */
+                            "scim::agency::prefix"?: string;
                             "provider::url"?: string;
                             "provider::secret"?: string;
                             "provider::client"?: string;

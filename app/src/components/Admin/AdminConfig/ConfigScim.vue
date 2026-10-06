@@ -90,6 +90,27 @@
                                 </TablerIconButton>
                             </div>
                         </div>
+                        <div class='col-lg-12 mt-3'>
+                            <TablerToggle
+                                v-model='config["scim::agency::enabled"]'
+                                :disabled='!edit'
+                                label='Enable Agency Provisioning via SCIM Groups'
+                            />
+                        </div>
+                        <template v-if='config["scim::agency::enabled"]'>
+                            <div class='col-lg-12'>
+                                <p class='text-secondary mt-2 mb-2'>
+                                    A SCIM Group named with the prefix followed by an Agency ID (for example <code v-text='exampleGroup' />) makes its members Agency Admins of that Agency. Groups that do not match are accepted but not stored.
+                                </p>
+                            </div>
+                            <div class='col-lg-12'>
+                                <TablerInput
+                                    v-model='config["scim::agency::prefix"]'
+                                    :disabled='!edit'
+                                    label='Agency Group Prefix'
+                                />
+                            </div>
+                        </template>
                     </template>
                 </div>
             </template>
@@ -120,6 +141,8 @@ import {
 interface ScimConfig {
     'scim::enabled': boolean;
     'scim::token': string;
+    'scim::agency::enabled': boolean;
+    'scim::agency::prefix': string;
 }
 
 const isOpen = ref<boolean>(false);
@@ -130,9 +153,12 @@ const err = ref<Error | null>(null);
 const config = ref<ScimConfig>({
     'scim::enabled': false,
     'scim::token': '',
+    'scim::agency::enabled': false,
+    'scim::agency::prefix': '',
 });
 
 const scimUrl = computed(() => String(stdurl('/api/scim/v2')));
+const exampleGroup = computed(() => `${config.value['scim::agency::prefix']}12`);
 
 onMounted(() => {
     if (isOpen.value) void fetch();
@@ -163,6 +189,8 @@ async function fetch(): Promise<void> {
         config.value = {
             'scim::enabled': data['scim::enabled'] ?? false,
             'scim::token': data['scim::token'] ?? '',
+            'scim::agency::enabled': data['scim::agency::enabled'] ?? false,
+            'scim::agency::prefix': data['scim::agency::prefix'] ?? '',
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
@@ -173,6 +201,11 @@ async function fetch(): Promise<void> {
 async function save(): Promise<void> {
     if (config.value['scim::enabled'] && !config.value['scim::token']) {
         err.value = new Error('A SCIM Bearer Token is required when SCIM is enabled');
+        return;
+    }
+
+    if (config.value['scim::enabled'] && config.value['scim::agency::enabled'] && !config.value['scim::agency::prefix']) {
+        err.value = new Error('An Agency Group Prefix is required when Agency provisioning is enabled');
         return;
     }
 
