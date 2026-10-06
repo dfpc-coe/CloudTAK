@@ -7,6 +7,8 @@ import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import { FullConfig } from '../../common/types.js';
 import { FullConfigDefaults } from '../../common/defaults.js';
+import { vpcAddresses } from '../lib/aws/lambda.js';
+import process from 'node:process';
 
 export { FullConfigDefaults };
 
@@ -317,6 +319,27 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             res.json({
                 url: config.WEBHOOKS_URL,
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/config/vpc', {
+        name: 'VPC Config',
+        group: 'Config',
+        description: 'Return whether Layers can be attached to the VPC and the static egress addresses they use',
+        res: Type.Object({
+            enabled: Type.Boolean(),
+            addresses: Type.Array(Type.String()),
+        }),
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            res.json({
+                enabled: !!(process.env.ETLSecurityGroup && process.env.SubnetPrivateA && process.env.SubnetPrivateB),
+                addresses: vpcAddresses(),
             });
         } catch (err) {
             Err.respond(err, res);

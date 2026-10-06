@@ -17,6 +17,23 @@ function repositoryName(): string {
     return String(process.env.ECR_TASKS_REPOSITORY_NAME);
 }
 
+export function vpcConfig(): { SecurityGroupIds: string[]; SubnetIds: string[] } {
+    const { ETLSecurityGroup, SubnetPrivateA, SubnetPrivateB } = process.env;
+
+    if (!ETLSecurityGroup || !SubnetPrivateA || !SubnetPrivateB) {
+        throw new Err(400, null, 'VPC access is not configured for this deployment');
+    }
+
+    return {
+        SecurityGroupIds: [ETLSecurityGroup],
+        SubnetIds: [SubnetPrivateA, SubnetPrivateB],
+    };
+}
+
+export function vpcAddresses(): string[] {
+    return [process.env.NatPublicIPA, process.env.NatPublicIPB].filter((ip): ip is string => !!ip);
+}
+
 /**
  * @class
  */
@@ -168,6 +185,10 @@ export default class Lambda {
                 },
             },
         };
+
+        if (layer.vpc) {
+            stack.Resources.ETLFunction.Properties.VpcConfig = vpcConfig();
+        }
 
         if (layer.outgoing) {
             stack.Resources.OutgoingQueue = {

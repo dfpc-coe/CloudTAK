@@ -2,7 +2,7 @@ import { Static, Type } from '@sinclair/typebox';
 import { setTimeout } from 'node:timers/promises';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthResourceAccess, AuthUser } from '../../common/auth.js';
+import Auth, { AuthResource, AuthResourceAccess, AuthUser, AuthUserAccess } from '../../common/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
 import LayerDeploy from '../lib/aws/layer-deploy.js';
@@ -42,6 +42,10 @@ const EmailSenders = Type.Array(Type.String({
 function normalizeSenders(senders?: Array<string>): Array<string> | undefined {
     if (!senders) return undefined;
     return Array.from(new Set(senders.map(sender => sender.trim().toLowerCase())));
+}
+
+function isSystemAdmin(auth: AuthResource | AuthUser): boolean {
+    return auth instanceof AuthUser && auth.access === AuthUserAccess.ADMIN;
 }
 
 export default async function router(schema: Schema, config: ConfigStateless) {
@@ -234,6 +238,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             alarm_evals: Type.Optional(Type.Integer()),
             alarm_points: Type.Optional(Type.Integer()),
             protected: Type.Boolean({ default: false }),
+            vpc: Type.Boolean({
+                default: false,
+                description: 'Attach the Lambda to the private VPC subnets - System Admin only as it grants access to internal resources'
+            }),
             permissions: Type.Optional(Type.Array(Type.String(), {
                 description: 'Permissions granted to the Layer as <permission>:<level> pairs - ie video:read or video:*',
             })),
@@ -264,6 +272,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
                 username = auth instanceof AuthUser ? auth.email : null;
+
+                if (req.body.vpc && !isSystemAdmin(auth)) {
+                    throw new Err(403, null, 'Only a System Admin can enable VPC access');
+                }
             }
 
             CommonLayerControl.validatePermissions(req.body.permissions);
@@ -793,6 +805,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             })),
             enabled: Type.Optional(Type.Boolean()),
             protected: Type.Optional(Type.Boolean()),
+            vpc: Type.Optional(Type.Boolean({
+                description: 'Attach the Lambda to the private VPC subnets - System Admin only as it grants access to internal resources'
+            })),
             task: Type.Optional(Type.String()),
             logging: Type.Optional(Type.Boolean()),
 
@@ -831,6 +846,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 connection = auth.connection;
                 layer = await layerControl.from(connection, req.params.layerid);
+
+                if (req.body.vpc !== undefined && req.body.vpc !== layer.vpc && !isSystemAdmin(auth.auth)) {
+                    throw new Err(403, null, 'Only a System Admin can change VPC access');
+                }
             }
 
             const task = req.body.task || layer.task;
@@ -854,7 +873,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
-            for (const prop of ['task', 'memory', 'timeout', 'enabled', 'priority', 'alarm_period', 'alarm_evals', 'alarm_points']) {
+            for (const prop of ['task', 'memory', 'timeout', 'vpc', 'enabled', 'priority', 'alarm_period', 'alarm_evals', 'alarm_points']) {
                 // @ts-expect-error Doesn't like indexed values
                 if (req.body[prop] !== undefined && req.body[prop] !== layer[prop]) changed = true;
             }

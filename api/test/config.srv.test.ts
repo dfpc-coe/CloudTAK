@@ -256,4 +256,22 @@ test('GET api/config (user - push firebase service-account identifiers restricte
     }
 });
 
+test('GET api/config/vpc', async () => {
+    try {
+        const res = await flight.fetch('/api/config/vpc', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.deepEqual(res.body, {
+            enabled: false,
+            addresses: [],
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 flight.landing();

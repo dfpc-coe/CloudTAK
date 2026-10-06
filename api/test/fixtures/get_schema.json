@@ -114,6 +114,11 @@
         "query": false,
         "res": true
     },
+    "GET /config/vpc": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /config/email": {
         "body": false,
         "query": false,
