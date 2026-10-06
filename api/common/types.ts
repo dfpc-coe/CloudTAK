@@ -268,16 +268,19 @@ export const CoreFormColumnResponse = Type.Object({
 });
 
 export const CoreDeviceResponse = Type.Composite([
-    Type.Required(Type.Omit(withoutHints(CoreDeviceSchema), ['battery', 'event_external_id'])),
+    Type.Required(Type.Omit(withoutHints(CoreDeviceSchema), ['battery'])),
     Type.Object({
         id: Type.String(),
         created: Type.String(),
         updated: Type.String(),
         username: Type.Union([Type.Null(), Type.String()]),
         connection: Type.Union([Type.Null(), Type.Integer()], { description: 'Connection that created the Device if created by a Connection or Layer token' }),
-        event: Type.Union([Type.Null(), Type.String()], { description: 'Core Event the Device is currently assigned to' }),
+        editable: Type.Boolean({ description: 'Can users other than the creator edit the Device' }),
         battery: Type.Union([Type.Null(), withoutHints(CoreDeviceSchema).properties.battery]),
         metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Device metadata' }),
+        links: Type.Array(CoreEntityLink, { description: 'Named URLs associated with the Device' }),
+        style: Type.Object(CoreEntityStyle.properties, { description: 'Point styling for the Device' }),
+        geometry: Type.Union([Type.Null(), GeoJSONFeatureGeometryPoint], { description: 'Last known location of the Device' }),
     }),
 ]);
 

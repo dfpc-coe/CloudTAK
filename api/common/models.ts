@@ -28,7 +28,6 @@ export default class Models {
     Channel: Modeler<typeof pgtypes.Channel>;
 
     CoreDevice: CoreDevice;
-    CoreDeviceChannel: Modeler<typeof pgtypes.CoreDeviceChannel>;
     CoreEntity: CoreEntity;
     CoreEntityBoard: Modeler<typeof pgtypes.CoreEntityBoard>;
     CoreEntityBoardColumn: Modeler<typeof pgtypes.CoreEntityBoardColumn>;
@@ -82,7 +81,6 @@ export default class Models {
     constructor(pg: Pool<typeof pgtypes>) {
         this.Channel = new Modeler(pg, pgtypes.Channel);
         this.CoreDevice = new CoreDevice(pg);
-        this.CoreDeviceChannel = new Modeler(pg, pgtypes.CoreDeviceChannel);
         this.CoreEntity = new CoreEntity(pg);
         this.CoreEntityBoard = new Modeler(pg, pgtypes.CoreEntityBoard);
         this.CoreEntityBoardColumn = new Modeler(pg, pgtypes.CoreEntityBoardColumn);

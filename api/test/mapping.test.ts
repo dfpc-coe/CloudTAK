@@ -243,17 +243,16 @@ test('Mapping: CoreEntity - templated enums & booleans, nested style, links & ch
     assert.deepEqual(unknown.style, { 'icon': 'abc:Fire/fire.png', 'marker-color': '' });
 });
 
-test('Mapping: CoreDevice - event_external_id & channels', async () => {
+test('Mapping: CoreDevice - channels', async () => {
     const mapping = new Mapping(rows(LayerMapping_Destination.COREDEVICE, [{
         query: null,
-        mapping: { name: '{{unit}}', type: '10031000001211000000', simulated: '{{sim}}', event_external_id: 'inc-{{incident}}', channels: [3] },
+        mapping: { name: '{{unit}}', type: '10031000001211000000', simulated: '{{sim}}', channels: [3] },
     }]));
 
-    assert.deepEqual(await convert(mapping, point({ unit: 'Engine 1', sim: true, incident: 12 })), {
+    assert.deepEqual(await convert(mapping, point({ unit: 'Engine 1', sim: true })), {
         name: 'Engine 1',
         type: '10031000001211000000',
         simulated: true,
-        event_external_id: 'inc-12',
         channels: [3],
     });
 });
@@ -319,7 +318,7 @@ test('Mapping: validate', () => {
     throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { style: { 'marker-opacity': 2 } }), /Invalid \(style\) Marker Opacity: 2 - Greater than 1/);
     throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { links: [{ name: 'Page', url: '{{#if}}' }] }), /Invalid Links url Template/);
 
-    assert.equal(Mapping.validate(LayerMapping_Destination.COREDEVICE, { battery: '{{battery}}', simulated: false, event_external_id: 'inc-{{incident}}' }), true);
+    assert.equal(Mapping.validate(LayerMapping_Destination.COREDEVICE, { battery: '{{battery}}', simulated: false }), true);
     throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREDEVICE, { battery: { pct: 1 } }), /Invalid Battery/);
 });
 

@@ -4,7 +4,7 @@ import jsonata from 'jsonata';
 import Err from '@openaddresses/batch-error';
 import type { Feature } from '@tak-ps/node-cot';
 import handlebars from './handlebars.js';
-import type { CoreEntity, CoreEntityEvent, CoreDevice, LayerMapping } from './schema.js';
+import type { CoreEntity, CoreEntityEvent, CoreEntityDevice, LayerMapping } from './schema.js';
 import { LayerMapping_Destination } from './enums.js';
 import { CoreEntitySchema, CoreDeviceSchema } from './core-schema.js';
 
@@ -16,7 +16,7 @@ export type MappingFeature = Omit<Static<typeof Feature.InputFeature>, 'geometry
 export type MappingRow = Pick<InferSelectModel<typeof LayerMapping>, 'destination' | 'query' | 'mapping'>;
 
 type EventColumns = InferInsertModel<typeof CoreEntity> & InferInsertModel<typeof CoreEntityEvent>;
-type DeviceColumns = InferInsertModel<typeof CoreDevice>;
+type DeviceColumns = InferInsertModel<typeof CoreEntity> & InferInsertModel<typeof CoreEntityDevice>;
 
 export type MappedEvent = Partial<Pick<EventColumns, Extract<keyof typeof CoreEntitySchema.properties, keyof EventColumns>>> & {
     channels?: number[];
@@ -25,7 +25,6 @@ export type MappedEvent = Partial<Pick<EventColumns, Extract<keyof typeof CoreEn
 
 export type MappedDevice = Partial<Pick<DeviceColumns, Extract<keyof typeof CoreDeviceSchema.properties, keyof DeviceColumns>>> & {
     channels?: number[];
-    event_external_id?: string;
 };
 
 /**

@@ -200,14 +200,6 @@
                             </div>
                             <div class='datagrid-item'>
                                 <div class='datagrid-title'>
-                                    Assigned Event
-                                </div>
-                                <div class='datagrid-content font-monospace'>
-                                    {{ device.event || "Unassigned" }}
-                                </div>
-                            </div>
-                            <div class='datagrid-item'>
-                                <div class='datagrid-title'>
                                     Created
                                 </div>
                                 <div class='datagrid-content'>
@@ -301,7 +293,7 @@ import {
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 
-type CoreDeviceSort = 'id' | 'created' | 'updated' | 'username' | 'connection' | 'event' | 'type' | 'name' | 'manufacturer' | 'model' | 'serial' | 'external_id';
+type CoreDeviceSort = 'id' | 'created' | 'updated' | 'username' | 'connection' | 'type' | 'name' | 'external_id' | 'editable' | 'remarks';
 
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);

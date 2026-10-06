@@ -20504,11 +20504,9 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "username" | "connection" | "event" | "type" | "name" | "manufacturer" | "model" | "serial" | "firmware" | "status" | "battery" | "simulated" | "external_id" | "remarks" | "metadata" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "username" | "connection" | "type" | "name" | "external_id" | "editable" | "remarks" | "metadata" | "links" | "style" | "geometry";
                     /** @description Filter results by a human readable name field */
                     filter: string;
-                    /** @description Only return Devices assigned to the given Core Event */
-                    event?: string;
                     /** @description Only return Devices shared with the given TAK Channel bitpos - can be provided multiple times to match any of the given Channels */
                     channel?: number | number[];
                 };
@@ -20589,12 +20587,52 @@ export interface paths {
                                 username: null | string;
                                 /** @description Connection that created the Device if created by a Connection or Layer token */
                                 connection: null | number;
-                                /** @description Core Event the Device is currently assigned to */
-                                event: null | string;
+                                /** @description Can users other than the creator edit the Device */
+                                editable: boolean;
                                 battery: null | number;
                                 /** @description User defined key/value Device metadata */
                                 metadata: {
                                     [key: string]: unknown;
+                                };
+                                /** @description Named URLs associated with the Device */
+                                links: {
+                                    /**
+                                     * Name
+                                     * @description Human readable name of the Link
+                                     */
+                                    name: string;
+                                    /**
+                                     * URL
+                                     * @description URL the Link points at
+                                     */
+                                    url: string;
+                                }[];
+                                /** @description Point styling for the Device */
+                                style: {
+                                    /**
+                                     * Icon
+                                     * @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>
+                                     */
+                                    icon?: string;
+                                    /**
+                                     * Marker Color
+                                     * @description Hex colour of the Event marker - ie: #00ff00
+                                     */
+                                    "marker-color"?: string;
+                                    /**
+                                     * Marker Opacity
+                                     * @description Opacity of the Event marker
+                                     */
+                                    "marker-opacity"?: number;
+                                };
+                                /** @description Last known location of the Device */
+                                geometry: null | {
+                                    /** @constant */
+                                    type: "Point";
+                                    coordinates: [
+                                        number,
+                                        number
+                                    ];
                                 };
                             }[];
                         };
@@ -20688,8 +20726,15 @@ export interface paths {
                         name: string;
                         /** @description MIL-STD-2525E Symbol ID */
                         type: string;
-                        /** @description Core Event to assign the Device to */
-                        event?: null | string;
+                        /** @description Last known location of the Device */
+                        geometry?: null | {
+                            /** @constant */
+                            type: "Point";
+                            coordinates: [
+                                number,
+                                number
+                            ];
+                        };
                         /**
                          * @description Manufacturer of the Device - ie: Ortec, Nucsafe, DJI
                          * @default
@@ -20735,6 +20780,43 @@ export interface paths {
                          */
                         metadata: {
                             [key: string]: unknown;
+                        };
+                        /**
+                         * @description Named URLs associated with the Device
+                         * @default []
+                         */
+                        links: {
+                            /**
+                             * Name
+                             * @description Human readable name of the Link
+                             */
+                            name: string;
+                            /**
+                             * URL
+                             * @description URL the Link points at
+                             */
+                            url: string;
+                        }[];
+                        /**
+                         * @description Point styling for the Device
+                         * @default {}
+                         */
+                        style: {
+                            /**
+                             * Icon
+                             * @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>
+                             */
+                            icon?: string;
+                            /**
+                             * Marker Color
+                             * @description Hex colour of the Event marker - ie: #00ff00
+                             */
+                            "marker-color"?: string;
+                            /**
+                             * Marker Opacity
+                             * @description Opacity of the Event marker
+                             */
+                            "marker-opacity"?: number;
                         };
                         /**
                          * @description TAK Server Channels to share the Device with
@@ -20814,12 +20896,52 @@ export interface paths {
                             username: null | string;
                             /** @description Connection that created the Device if created by a Connection or Layer token */
                             connection: null | number;
-                            /** @description Core Event the Device is currently assigned to */
-                            event: null | string;
+                            /** @description Can users other than the creator edit the Device */
+                            editable: boolean;
                             battery: null | number;
                             /** @description User defined key/value Device metadata */
                             metadata: {
                                 [key: string]: unknown;
+                            };
+                            /** @description Named URLs associated with the Device */
+                            links: {
+                                /**
+                                 * Name
+                                 * @description Human readable name of the Link
+                                 */
+                                name: string;
+                                /**
+                                 * URL
+                                 * @description URL the Link points at
+                                 */
+                                url: string;
+                            }[];
+                            /** @description Point styling for the Device */
+                            style: {
+                                /**
+                                 * Icon
+                                 * @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>
+                                 */
+                                icon?: string;
+                                /**
+                                 * Marker Color
+                                 * @description Hex colour of the Event marker - ie: #00ff00
+                                 */
+                                "marker-color"?: string;
+                                /**
+                                 * Marker Opacity
+                                 * @description Opacity of the Event marker
+                                 */
+                                "marker-opacity"?: number;
+                            };
+                            /** @description Last known location of the Device */
+                            geometry: null | {
+                                /** @constant */
+                                type: "Point";
+                                coordinates: [
+                                    number,
+                                    number
+                                ];
                             };
                         };
                     };
@@ -20991,12 +21113,52 @@ export interface paths {
                             username: null | string;
                             /** @description Connection that created the Device if created by a Connection or Layer token */
                             connection: null | number;
-                            /** @description Core Event the Device is currently assigned to */
-                            event: null | string;
+                            /** @description Can users other than the creator edit the Device */
+                            editable: boolean;
                             battery: null | number;
                             /** @description User defined key/value Device metadata */
                             metadata: {
                                 [key: string]: unknown;
+                            };
+                            /** @description Named URLs associated with the Device */
+                            links: {
+                                /**
+                                 * Name
+                                 * @description Human readable name of the Link
+                                 */
+                                name: string;
+                                /**
+                                 * URL
+                                 * @description URL the Link points at
+                                 */
+                                url: string;
+                            }[];
+                            /** @description Point styling for the Device */
+                            style: {
+                                /**
+                                 * Icon
+                                 * @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>
+                                 */
+                                icon?: string;
+                                /**
+                                 * Marker Color
+                                 * @description Hex colour of the Event marker - ie: #00ff00
+                                 */
+                                "marker-color"?: string;
+                                /**
+                                 * Marker Opacity
+                                 * @description Opacity of the Event marker
+                                 */
+                                "marker-opacity"?: number;
+                            };
+                            /** @description Last known location of the Device */
+                            geometry: null | {
+                                /** @constant */
+                                type: "Point";
+                                coordinates: [
+                                    number,
+                                    number
+                                ];
                             };
                         };
                     };
@@ -21193,8 +21355,14 @@ export interface paths {
                         /** @description Human readable name */
                         name?: string;
                         type?: string;
-                        /** @description Core Event to assign the Device to - set to null to unassign */
-                        event?: null | string;
+                        geometry?: null | {
+                            /** @constant */
+                            type: "Point";
+                            coordinates: [
+                                number,
+                                number
+                            ];
+                        };
                         manufacturer?: string;
                         model?: string;
                         serial?: string;
@@ -21207,6 +21375,37 @@ export interface paths {
                         /** @description User defined key/value Device metadata - replaces the existing metadata object */
                         metadata?: {
                             [key: string]: unknown;
+                        };
+                        /** @description Named URLs associated with the Device - replaces the existing links array */
+                        links?: {
+                            /**
+                             * Name
+                             * @description Human readable name of the Link
+                             */
+                            name: string;
+                            /**
+                             * URL
+                             * @description URL the Link points at
+                             */
+                            url: string;
+                        }[];
+                        /** @description Point styling for the Device - replaces the existing style object */
+                        style?: {
+                            /**
+                             * Icon
+                             * @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>
+                             */
+                            icon?: string;
+                            /**
+                             * Marker Color
+                             * @description Hex colour of the Event marker - ie: #00ff00
+                             */
+                            "marker-color"?: string;
+                            /**
+                             * Marker Opacity
+                             * @description Opacity of the Event marker
+                             */
+                            "marker-opacity"?: number;
                         };
                         channels?: number[];
                     };
@@ -21282,12 +21481,52 @@ export interface paths {
                             username: null | string;
                             /** @description Connection that created the Device if created by a Connection or Layer token */
                             connection: null | number;
-                            /** @description Core Event the Device is currently assigned to */
-                            event: null | string;
+                            /** @description Can users other than the creator edit the Device */
+                            editable: boolean;
                             battery: null | number;
                             /** @description User defined key/value Device metadata */
                             metadata: {
                                 [key: string]: unknown;
+                            };
+                            /** @description Named URLs associated with the Device */
+                            links: {
+                                /**
+                                 * Name
+                                 * @description Human readable name of the Link
+                                 */
+                                name: string;
+                                /**
+                                 * URL
+                                 * @description URL the Link points at
+                                 */
+                                url: string;
+                            }[];
+                            /** @description Point styling for the Device */
+                            style: {
+                                /**
+                                 * Icon
+                                 * @description Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>
+                                 */
+                                icon?: string;
+                                /**
+                                 * Marker Color
+                                 * @description Hex colour of the Event marker - ie: #00ff00
+                                 */
+                                "marker-color"?: string;
+                                /**
+                                 * Marker Opacity
+                                 * @description Opacity of the Event marker
+                                 */
+                                "marker-opacity"?: number;
+                            };
+                            /** @description Last known location of the Device */
+                            geometry: null | {
+                                /** @constant */
+                                type: "Point";
+                                coordinates: [
+                                    number,
+                                    number
+                                ];
                             };
                         };
                     };
@@ -24554,7 +24793,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "username" | "connection" | "type" | "name" | "external_id" | "editable" | "remarks" | "metadata" | "links" | "style" | "geometry" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "username" | "connection" | "type" | "name" | "external_id" | "editable" | "remarks" | "metadata" | "links" | "style" | "geometry";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only return Events shared with the given TAK Channel bitpos - can be provided multiple times to match any of the given Channels */
@@ -31562,8 +31801,8 @@ export interface paths {
                             version: string;
                             deployed: boolean;
                             capabilities: {
-                                /** @description Version of the Capabilities document format */
-                                version: string;
+                                /** @description Version of the Capabilities document format - 1.1 disables Legacy Styling and enforces the Layer Field Mapping UI */
+                                version: "1.0" | "1.1";
                                 /** @description Human readable name of the task */
                                 name: string;
                                 /** @description Human readable description of what the task does */
@@ -50490,10 +50729,9 @@ export interface paths {
         get?: never;
         /**
          * Submit a live location update for the authenticated user.
-         *                 Only the raw coordinates are required — all profile fields
-         *                 (callsign, TAK type, group, role, remarks) are read from the
-         *                 authenticated user's saved profile, and the CoT UID is derived
-         *                 server-side from their email.
+         *                 Only the raw coordinates are required — callsign, group, role
+         *                 and remarks are read from the authenticated user's saved profile,
+         *                 and the CoT UID is derived server-side from their email.
          */
         put: {
             parameters: {
@@ -50920,7 +51158,13 @@ export interface paths {
             };
         };
         put?: never;
-        /** Create Profile Overlay */
+        /**
+         * Create Profile Overlay
+         *
+         *                 Overlays are unique per user & URL. If an overlay with the given URL already exists
+         *                 the request is treated as a patch: the supplied fields are applied to the existing
+         *                 overlay and it is returned. The mode of an existing overlay cannot be changed.
+         */
         post: {
             parameters: {
                 query?: never;
@@ -63338,6 +63582,7 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
+                        /** @description Human readable name */
                         name?: string;
                         data?: string;
                         type2525b?: null | string;

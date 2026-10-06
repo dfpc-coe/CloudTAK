@@ -4,11 +4,12 @@ import { Static } from '@sinclair/typebox';
 import { CoreEntityResponse, GeoJSONFeatureGeometryPoint } from '../types.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { CoreEntity, CoreEntityEvent, CoreEntityChannel } from '../schema.js';
+import { LayerMapping_Destination } from '../enums.js';
 import type { PgInsertValue } from 'drizzle-orm/pg-core';
 import { SQL, is, sql, eq, asc, desc, getTableColumns } from 'drizzle-orm';
 
-/** kind is internal until Devices share the table - keep it out of Event payloads */
-const EntityColumns = Object.fromEntries(
+/** kind is internal - keep it out of payloads */
+export const EntityColumns = Object.fromEntries(
     Object.entries(getTableColumns(CoreEntity)).filter(([name]) => name !== 'kind'),
 ) as Omit<ReturnType<typeof getTableColumns<typeof CoreEntity>>, 'kind'>;
 
@@ -19,25 +20,62 @@ const EventColumns = Object.fromEntries(
 
 const EVENT_KEYS = new Set(Object.keys(EventColumns));
 
-type WithSQL<T> = { [K in keyof T]: T[K] | SQL };
+export type WithSQL<T> = { [K in keyof T]: T[K] | SQL };
 
 export type CoreEntityEventInsert = WithSQL<Omit<typeof CoreEntity.$inferInsert, 'kind'> & Omit<typeof CoreEntityEvent.$inferInsert, 'id'>>;
 export type CoreEntityEventUpdate = Partial<WithSQL<Omit<typeof CoreEntity.$inferInsert, 'id' | 'kind'> & Omit<typeof CoreEntityEvent.$inferInsert, 'id'>>>;
 
-/** Database or transaction the Event writers run against */
-type Writer = Pick<PostgresJsDatabase<Record<string, unknown>>, 'insert' | 'update'>;
+/** Database or transaction the Entity writers run against */
+export type Writer = Pick<PostgresJsDatabase<Record<string, unknown>>, 'insert' | 'update' | 'delete'>;
 
-/** Split a flat set of Event values into the core_entity & core_entity_event halves */
-export function splitEvent<T extends Record<string, unknown>>(values: T): { entity: Record<string, unknown>; event: Record<string, unknown> } {
-    const entity: Record<string, unknown> = {};
-    const event: Record<string, unknown> = {};
+/** Channels of every Entity as a JSON array - left join against core_entity.id */
+export function channelsSubquery(pool: Pick<PostgresJsDatabase<Record<string, unknown>>, 'select'>) {
+    return pool
+        .select({
+            entity: CoreEntityChannel.entity,
+            channels: sql`JSON_AGG(core_entity_channel.channel::BIGINT ORDER BY core_entity_channel.channel::BIGINT)`.as('channels'),
+        })
+        .from(CoreEntityChannel)
+        .groupBy(CoreEntityChannel.entity)
+        .as('channels');
+}
+
+/** core_entity WHERE fragment matching Entities shared with any of the given Channels */
+export function sharedWith(channels: number[]): SQL {
+    if (!channels.length) return sql`False`;
+
+    return sql`EXISTS (
+        SELECT 1
+        FROM core_entity_channel
+        WHERE core_entity_channel.entity = core_entity.id
+        AND core_entity_channel.channel IN ${channels}
+    )`;
+}
+
+/** Replace the Channels an Entity is shared with */
+export async function setChannels(tx: Writer, id: string, channels: number[]): Promise<void> {
+    await tx.delete(CoreEntityChannel).where(eq(CoreEntityChannel.entity, id));
+
+    if (channels.length) {
+        await tx.insert(CoreEntityChannel).values(channels.map(channel => ({ entity: id, channel: BigInt(channel) })));
+    }
+}
+
+/** Split a flat set of values into the core_entity half & the side table half - side names the side table's columns */
+export function splitEntity(values: Record<string, unknown>, side: Set<string>): { entity: Record<string, unknown>; side: Record<string, unknown> } {
+    const split = { entity: {} as Record<string, unknown>, side: {} as Record<string, unknown> };
 
     for (const [key, value] of Object.entries(values)) {
         if (value === undefined) continue;
-        (EVENT_KEYS.has(key) ? event : entity)[key] = value;
+        (side.has(key) ? split.side : split.entity)[key] = value;
     }
 
-    return { entity, event };
+    return split;
+}
+
+export function splitEvent(values: Record<string, unknown>): { entity: Record<string, unknown>; event: Record<string, unknown> } {
+    const { entity, side } = splitEntity(values, EVENT_KEYS);
+    return { entity, event: side };
 }
 
 /**
@@ -96,7 +134,7 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
         const { entity, event } = splitEvent(values);
 
         const [row] = await tx.insert(CoreEntity)
-            .values(entity as PgInsertValue<typeof CoreEntity>)
+            .values({ ...entity, kind: LayerMapping_Destination.COREENTITY } as PgInsertValue<typeof CoreEntity>)
             .returning({ id: CoreEntity.id });
 
         await tx.insert(CoreEntityEvent).values({ ...event, id: row.id });
@@ -123,14 +161,7 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
     }
 
     async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof CoreEntityResponse>> {
-        const SubTable = this.pool
-            .select({
-                entity: CoreEntityChannel.entity,
-                channels: sql`JSON_AGG(core_entity_channel.channel::BIGINT ORDER BY core_entity_channel.channel::BIGINT)`.as('channels'),
-            })
-            .from(CoreEntityChannel)
-            .groupBy(CoreEntityChannel.entity)
-            .as('channels');
+        const SubTable = channelsSubquery(this.pool);
 
         const pgres = await this.pool
             .select({
@@ -187,14 +218,7 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
         const order = query.order && query.order === 'desc' ? desc : asc;
         const orderBy = order(query.sort ? this.key(query.sort) : this.requiredPrimaryKey());
 
-        const SubTable = this.pool
-            .select({
-                entity: CoreEntityChannel.entity,
-                channels: sql`JSON_AGG(core_entity_channel.channel::BIGINT ORDER BY core_entity_channel.channel::BIGINT)`.as('channels'),
-            })
-            .from(CoreEntityChannel)
-            .groupBy(CoreEntityChannel.entity)
-            .as('channels');
+        const SubTable = channelsSubquery(this.pool);
 
         const pgres = await this.pool
             .select({
