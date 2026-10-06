@@ -240,7 +240,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             protected: Type.Boolean({ default: false }),
             vpc: Type.Boolean({
                 default: false,
-                description: 'Attach the Lambda to the private VPC subnets - System Admin only as it grants access to internal resources'
+                description: 'Attach the Lambda to the private VPC subnets - System Admin only as it grants access to internal resources',
             }),
             permissions: Type.Optional(Type.Array(Type.String(), {
                 description: 'Permissions granted to the Layer as <permission>:<level> pairs - ie video:read or video:*',
@@ -806,7 +806,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             enabled: Type.Optional(Type.Boolean()),
             protected: Type.Optional(Type.Boolean()),
             vpc: Type.Optional(Type.Boolean({
-                description: 'Attach the Lambda to the private VPC subnets - System Admin only as it grants access to internal resources'
+                description: 'Attach the Lambda to the private VPC subnets - System Admin only as it grants access to internal resources',
             })),
             task: Type.Optional(Type.String()),
             logging: Type.Optional(Type.Boolean()),
