@@ -46,10 +46,10 @@ export const CoreEntity = pgTable('core_entity', {
     metadata: jsonb().$type<Record<string, unknown>>().notNull().default({}),
     links: jsonb().$type<Array<Static<typeof CoreEntityLink>>>().notNull().default([]),
     style: jsonb().$type<Static<typeof CoreEntityStyle>>().notNull().default({}),
-    geometry: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>().notNull(),
+    geometry: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(), // Required for Events - a Device may be unlocated
 }, (table) => {
     return {
-        external_idx: uniqueIndex('core_entity_connection_external_id_idx').on(table.connection, table.external_id).where(sql`external_id <> ''`),
+        external_idx: uniqueIndex('core_entity_connection_kind_external_id_idx').on(table.connection, table.kind, table.external_id).where(sql`external_id <> ''`),
     };
 });
 
@@ -61,6 +61,25 @@ export const CoreEntityEvent = pgTable('core_entity_event', {
     priority: text().$type<CoreEntity_Priority>().notNull().default(CoreEntity_Priority.NONE),
     location: text().notNull().default(''), // Human readable location - ie: an address
     missions: jsonb().$type<Array<Static<typeof CoreEntityMission>>>().notNull().default([]), // TAK Server Missions associated with the Event
+});
+
+/**
+ * Device specific columns of a CoreEntity of kind CoreDevice - shares the Entity's primary key
+ *
+ * A durable physical asset (sensor, drone, vehicle, radio, etc.) tracked independently
+ * of any single Core Event. Device identity fields (manufacturer, model, serial, etc.)
+ * are modelled on the CBRN (RadCoT/ChemCoT) sensor_data attributes but are intentionally
+ * generic so a device from any manufacturer can be described
+ */
+export const CoreEntityDevice = pgTable('core_entity_device', {
+    id: uuid().primaryKey().references(() => CoreEntity.id, { onDelete: 'cascade' }),
+    manufacturer: text().notNull().default(''), // ie: Ortec, Nucsafe, DJI
+    model: text().notNull().default(''), // ie: Micro Detective, IdentiFINDER 2
+    serial: text().notNull().default(''), // Manufacturer assigned Serial Number
+    firmware: text().notNull().default(''), // Firmware/Software revision reported by the Device
+    status: text().notNull().default(''), // General Device health status - ie: Full, Reduced, Unknown
+    battery: doublePrecision(), // Battery level as a percentage (0-100) at last report
+    simulated: boolean().notNull().default(false), // Is the Device a simulated data source
 });
 
 export const CoreEntityChannel = pgTable('core_entity_channel', {
@@ -140,7 +159,7 @@ export const CoreEntityEffect = pgTable('core_entity_effect', {
     started: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     ended: timestamp({ withTimezone: true, mode: 'string' }),
     event: uuid().notNull().references(() => CoreEntity.id, { onDelete: 'cascade' }),
-    device: uuid().notNull().references((): AnyPgColumn => CoreDevice.id, { onDelete: 'cascade' }),
+    device: uuid().notNull().references(() => CoreEntity.id, { onDelete: 'cascade' }),
     action: text().notNull(),
     status: text().$type<CoreEntityEffect_Status>().notNull().default(CoreEntityEffect_Status.TASKED),
     metadata: jsonb().$type<Record<string, unknown>>().notNull().default({}), // Action specific parameters - ie: loiter radius
@@ -199,46 +218,6 @@ export const CoreEntityResponse = pgTable('core_entity_response', {
 }, table => ({
     pk: primaryKey({
         columns: [table.event, table.response],
-    }),
-}));
-
-/**
- * A durable physical asset (sensor, drone, vehicle, radio, etc.) tracked independently
- * of any single Core Event. Device identity fields (manufacturer, model, serial, etc.)
- * are modelled on the CBRN (RadCoT/ChemCoT) sensor_data attributes but are intentionally
- * generic so a device from any manufacturer can be described
- */
-export const CoreDevice = pgTable('core_device', {
-    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
-    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    username: text().references(() => Profile.username),
-    connection: integer().references(() => Connection.id, { onDelete: 'set null' }),
-    event: uuid().references(() => CoreEntity.id, { onDelete: 'set null' }), // Current primary Event assignment - CoreEntityEffect holds the full record
-    type: text().notNull(), // MIL-STD-2525E Symbol ID
-    name: text().notNull(), // Human readable name/callsign of the Device
-    manufacturer: text().notNull().default(''), // ie: Ortec, Nucsafe, DJI
-    model: text().notNull().default(''), // ie: Micro Detective, IdentiFINDER 2
-    serial: text().notNull().default(''), // Manufacturer assigned Serial Number
-    firmware: text().notNull().default(''), // Firmware/Software revision reported by the Device
-    status: text().notNull().default(''), // General Device health status - ie: Full, Reduced, Unknown
-    battery: doublePrecision(), // Battery level as a percentage (0-100) at last report
-    simulated: boolean().notNull().default(false), // Is the Device a simulated data source
-    external_id: text().notNull().default(''),
-    remarks: text().notNull().default(''),
-    metadata: jsonb().$type<Record<string, unknown>>().notNull().default({}),
-}, (table) => {
-    return {
-        external_idx: uniqueIndex('core_device_connection_external_id_idx').on(table.connection, table.external_id).where(sql`external_id <> ''`),
-    };
-});
-
-export const CoreDeviceChannel = pgTable('core_device_channel', {
-    device: uuid().notNull().references(() => CoreDevice.id, { onDelete: 'cascade' }),
-    channel: bigint({ mode: 'bigint' }).notNull(),
-}, table => ({
-    pk: primaryKey({
-        columns: [table.device, table.channel],
     }),
 }));
 

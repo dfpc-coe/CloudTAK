@@ -67,7 +67,6 @@ export const CoreDeviceSchema = Type.Object({
     simulated: Type.Optional(Type.Boolean({ 'title': 'Simulated', '@icon': 'IconTestPipe', 'description': 'Is the Device a simulated data source', 'default': false })),
     external_id: Type.Optional(Type.String({ 'title': 'External ID', '@icon': 'IconLicense', 'description': 'ID of the Device in an external system' })),
     remarks: Type.Optional(Type.String({ 'title': 'Remarks', '@icon': 'IconBlockquote', 'description': 'Free text remarks about the Device' })),
-    event_external_id: Type.Optional(Type.String({ 'title': 'Event', '@icon': 'IconCalendarEvent', 'description': 'External ID of the Core Event of the Connection the Device is assigned to - an empty result unassigns the Device' })),
     channels: Type.Optional(Channels),
 }, {
     title: 'Core Device',

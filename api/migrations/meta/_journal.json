@@ -1541,6 +1541,13 @@
       "when": 1790889632580,
       "tag": "0220_event_missions_imports_menu",
       "breakpoints": true
+    },
+    {
+      "idx": 221,
+      "version": "7",
+      "when": 1791313622270,
+      "tag": "0221_core_entity_device",
+      "breakpoints": true
     }
   ]
 }

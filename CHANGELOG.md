@@ -23,6 +23,9 @@
 
 ### Pending Release
 
+- :tada: Add `cloudformation/sms.template.js` provisioning AWS End User Messaging SMS resources (opt-out list, protect configuration, configuration set with CloudWatch event logging, phone number, pool, optional two-way SNS topic and send policy) for outbound SMS from CloudTAK in commercial and GovCloud partitions
+- :rocket: **Breaking** Core Devices are now `core_entity` rows of kind `CoreDevice` with a `core_entity_device` side table, matching Core Events - the `core_device` & `core_device_channel` tables are dropped, Device payloads gain `editable`, `links`, `style` & a nullable `geometry` and lose `event`, the `event` query of `GET /api/core/device` & `event_external_id` of the CoreDevice ETL schema are removed - a Device's Event assignment is expressed through Effects, existing assignments are migrated to an active `assigned` Effect
+
 ### v13.103.5 - 2026-10-06
 
 - :rocket: Allow navigating to non-cot Point Features from imported overlays
