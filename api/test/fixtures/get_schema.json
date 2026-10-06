@@ -109,17 +109,7 @@
         "query": false,
         "res": true
     },
-    "GET /config/webhooks": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /config/vpc": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /config/email": {
+    "GET /config/layer": {
         "body": false,
         "query": false,
         "res": true

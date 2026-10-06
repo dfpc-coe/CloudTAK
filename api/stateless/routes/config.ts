@@ -306,59 +306,33 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
-    await schema.get('/config/webhooks', {
-        name: 'Webhook Config',
+    await schema.get('/config/layer', {
+        name: 'Layer Config',
         group: 'Config',
-        description: 'Return the base URL that incoming Layer Webhooks are served from',
+        description: 'Deployment settings that apply to every Layer - webhook base URL, incoming email domain and VPC egress',
         res: Type.Object({
-            url: Type.String(),
+            webhooks: Type.Object({
+                url: Type.String({ description: 'Base URL that incoming Layer Webhooks are served from' }),
+            }),
+            email: Type.Object({
+                domain: Type.String({ description: 'Domain that incoming Layer Email is addressed to' }),
+            }),
+            vpc: Type.Object({
+                enabled: Type.Boolean({ description: 'Layers can be attached to the private VPC subnets' }),
+                addresses: Type.Array(Type.String(), { description: 'Static egress addresses used by VPC attached Layers' }),
+            }),
         }),
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req);
 
             res.json({
-                url: config.WEBHOOKS_URL,
-            });
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/config/vpc', {
-        name: 'VPC Config',
-        group: 'Config',
-        description: 'Return whether Layers can be attached to the VPC and the static egress addresses they use',
-        res: Type.Object({
-            enabled: Type.Boolean(),
-            addresses: Type.Array(Type.String()),
-        }),
-    }, async (req, res) => {
-        try {
-            await Auth.as_user(config, req);
-
-            res.json({
-                enabled: !!(process.env.ETLSecurityGroup && process.env.SubnetPrivateA && process.env.SubnetPrivateB),
-                addresses: vpcAddresses(),
-            });
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/config/email', {
-        name: 'Email Config',
-        group: 'Config',
-        description: 'Return the domain that incoming Layer Email is addressed to',
-        res: Type.Object({
-            domain: Type.String(),
-        }),
-    }, async (req, res) => {
-        try {
-            await Auth.as_user(config, req);
-
-            res.json({
-                domain: config.MAIL_DOMAIN,
+                webhooks: { url: config.WEBHOOKS_URL },
+                email: { domain: config.MAIL_DOMAIN },
+                vpc: {
+                    enabled: !!(process.env.ETLSecurityGroup && process.env.SubnetPrivateA && process.env.SubnetPrivateB),
+                    addresses: vpcAddresses(),
+                },
             });
         } catch (err) {
             Err.respond(err, res);

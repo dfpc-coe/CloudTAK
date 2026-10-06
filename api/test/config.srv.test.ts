@@ -256,9 +256,9 @@ test('GET api/config (user - push firebase service-account identifiers restricte
     }
 });
 
-test('GET api/config/vpc', async () => {
+test('GET api/config/layer', async () => {
     try {
-        const res = await flight.fetch('/api/config/vpc', {
+        const res = await flight.fetch('/api/config/layer', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -266,8 +266,9 @@ test('GET api/config/vpc', async () => {
         }, true);
 
         assert.deepEqual(res.body, {
-            enabled: false,
-            addresses: [],
+            webhooks: { url: 'http://localhost:5001' },
+            email: { domain: 'mail.localhost' },
+            vpc: { enabled: false, addresses: [] },
         });
     } catch (err) {
         assert.ifError(err);

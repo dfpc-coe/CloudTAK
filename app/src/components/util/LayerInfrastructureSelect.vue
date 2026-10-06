@@ -109,9 +109,9 @@ onMounted(async () => {
         }
     }
 
-    const { data, error } = await server.GET('/api/config/vpc');
+    const { data, error } = await server.GET('/api/config/layer');
     if (error) throw new Error(String(error));
-    vpcConfig.value = data;
+    vpcConfig.value = data.vpc;
 });
 
 watch(() => props.modelValue, (layer) => {
