@@ -33,6 +33,7 @@ import OverlayManager from '../base/overlay.ts';
 import { invalidateOfflinePMTiles } from './modules/pmtiles.ts';
 import { FeatureVisibility } from './modules/feature-visibility.ts';
 import Subscription from '../base/subscription.ts';
+import Filter from '../base/filter.ts';
 import { stdurl, getRuntimeToken, serverUrl } from '../std.js';
 import * as mapgl from 'maplibre-gl'
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
@@ -1485,6 +1486,11 @@ export const useMapStore = defineStore('cloudtak', {
             const profileOverlays = await OverlayManager.list({ localFirst: true });
 
             await FeatureVisibility.load();
+
+            // An edit interrupted by a reload leaves its hide filter behind
+            await Filter.purgeEditHides().catch((err: unknown) => {
+                console.error('Failed to purge edit-hide filters', err);
+            });
 
             // allSettled so one overlay's failed /tiles endpoint doesn't abort
             // the rest of map init. Failures are logged and recorded on the
