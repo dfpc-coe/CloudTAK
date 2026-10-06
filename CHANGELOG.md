@@ -23,6 +23,8 @@
 
 ### Pending Release
 
+### v13.103.5 - 2026-10-06
+
 - :rocket: Allow navigating to non-cot Point Features from imported overlays
 - :rocket: Require explicit confirmation when updating a single Layer's Task version, only Admin "Update All" skips the prompt
 
