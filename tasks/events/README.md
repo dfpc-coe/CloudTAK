@@ -3,7 +3,7 @@
 The events module is CloudTAK's asynchronous geospatial import worker. It polls the CloudTAK API for pending import jobs, claims them, and processes each job in an isolated worker thread. Source files typically originate from [user uploads](https://docs.cloudtak.io/user/#uploaded-files), [data sync](https://docs.cloudtak.io/user/#data-sync-missions) file imports, or TAK Server [file shares](https://docs.cloudtak.io/user/#data-packages) and are stored in S3-compatible object storage. Events downloads each source, processes standalone files or TAK Data Packages, creates CloudTAK resources and derived artifacts, and reports the final job status to the API.
 
  [!NOTE] After installing Node.js, run `npm install` to ensure the above requisite tools are installed.
-As of Aug 2026, the module supports ingesting vectors: (GeoJSON files, KML/KMZ files, Shapefiles) and rasters: (GeoTIFF, GeoPDF, and MBTiles). Vector inputs are normalized to newline-delimited GeoJSON and tiled as PMTiles; raster inputs are converted through MBTiles to PMTiles. The containerized service relies on GDAL, Tippecanoe, and the PMTiles CLI. An offline CLI runs the same import pipeline with local substitutes for the API and object store.
+As of Aug 2026, the module supports ingesting vectors: (GeoJSON files, KML/KMZ files, Shapefiles) and rasters: (GeoTIFF, GeoPDF, and MBTiles). Vector inputs are normalized to newline-delimited GeoJSON, converted to GeoParquet, and tiled as PMTiles; raster inputs are converted through MBTiles to PMTiles. The containerized service relies on GDAL, Tippecanoe, and the PMTiles CLI. An offline CLI runs the same import pipeline with local substitutes for the API and object store.
 
 The main components are:
 
@@ -42,10 +42,10 @@ variable.
 
 | Input | Processing | Derived artifacts |
 | --- | --- | --- |
-| `.kml`, `.kmz` | Converts KML features and icons. KMZ files with a root KML are treated as a single geospatial asset. | `.geojsonld`, `.pmtiles`, and optionally an iconset |
-| `.geojson`, `.json` | Accepts a Feature, FeatureCollection, or line-delimited GeoJSON. Invalid lines are skipped. | `.geojsonld`, `.pmtiles` |
-| `.geojsonld` | Normalizes valid line-delimited features. | `.geojsonld`, `.pmtiles` |
-| `.shp` | Must be delivered in `<filename>.zip` format with (at least) necessary supporting files: `.dbf`, `.prj`, `.shx`. Uses GDAL to convert a complete shapefile to GeoJSON sequence. | `.geojsonld`, `.pmtiles` |
+| `.kml`, `.kmz` | Converts KML features and icons. KMZ files with a root KML are treated as a single geospatial asset. | `.geojsonld`, `.parquet`, `.pmtiles`, and optionally an iconset |
+| `.geojson`, `.json` | Accepts a Feature, FeatureCollection, or line-delimited GeoJSON. Invalid lines are skipped. | `.geojsonld`, `.parquet`, `.pmtiles` |
+| `.geojsonld` | Normalizes valid line-delimited features. | `.geojsonld`, `.parquet`, `.pmtiles` |
+| `.shp` | Must be delivered in `<filename>.zip` format with (at least) necessary supporting files: `.dbf`, `.prj`, `.shx`. Uses GDAL to convert a complete shapefile to GeoJSON sequence. | `.geojsonld`, `.parquet`, `.pmtiles` |
 | `.tif`, `.tiff` | Uses GDAL to create raster MBTiles, including overviews and high-resolution downsampling. | `.pmtiles` |
 | `.pdf` | Accepts georeferenced PDFs only and converts them through GDAL. | `.pmtiles` |
 | `.mbtiles` | Converts an existing MBTiles database with the PMTiles CLI. | `.pmtiles` |

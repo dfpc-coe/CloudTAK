@@ -245,6 +245,30 @@ export default class DataTransform {
             await geouploader.done();
 
             artifacts.push({ ext: '.geojsonld' });
+
+            const parquetPath = path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.parquet');
+            console.log(`ok - converting ${conversion.asset} to GeoParquet`);
+            run('gdal', [
+                'vector', 'convert',
+                '--overwrite',
+                '--input-format', 'GeoJSONSeq',
+                '--output-format', 'Parquet',
+                conversion.asset,
+                parquetPath,
+            ]);
+
+            const parquetuploader = new Upload({
+                client: s3,
+                params: {
+                    Bucket: this.msg.bucket,
+                    Key: `profile/${this.msg.job.username}/${this.asset.id}.parquet`,
+                    Body: fs.createReadStream(parquetPath),
+                },
+            });
+            await parquetuploader.done();
+
+            artifacts.push({ ext: '.parquet' });
+
             const res = await fetch(new URL(`/api/profile/asset/${this.asset.id}`, this.msg.api), {
                 safeUrlAllow: [this.msg.api],
                 method: 'PATCH',
