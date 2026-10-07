@@ -139,6 +139,7 @@ import HandleForm from '../../../util/HandleForm.vue';
 import {
     IconTag,
     IconBox,
+    IconHash,
     IconLink,
     IconPlus,
     IconPaint,
@@ -191,6 +192,7 @@ interface MappingField {
 const icons: Record<string, Component> = {
     IconTag,
     IconBox,
+    IconHash,
     IconLink,
     IconPaint,
     IconPhoto,

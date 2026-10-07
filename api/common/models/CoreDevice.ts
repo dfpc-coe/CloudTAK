@@ -7,7 +7,7 @@ import { CoreEntity, CoreEntityDevice } from '../schema.js';
 import { LayerMapping_Destination } from '../enums.js';
 import type { PgInsertValue } from 'drizzle-orm/pg-core';
 import { SQL, is, sql, eq, asc, desc, getTableColumns } from 'drizzle-orm';
-import { EntityColumns, splitEntity, channelsSubquery } from './CoreEntity.js';
+import { EntityColumns, EXTERNAL_IDS, legacyExternalId, splitEntity, channelsSubquery } from './CoreEntity.js';
 import type { WithSQL, Writer } from './CoreEntity.js';
 
 /** Device side table columns - the shared primary key is already selected from core_entity */
@@ -70,6 +70,7 @@ export default class CoreDeviceModel extends Modeler<typeof CoreEntity> {
         const pgres = await this.pool
             .select({
                 device: { ...EntityColumns, ...DeviceColumns },
+                external_ids: EXTERNAL_IDS.as('external_ids'),
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
             })
             .from(CoreEntity)
@@ -82,6 +83,8 @@ export default class CoreDeviceModel extends Modeler<typeof CoreEntity> {
 
         return {
             ...pgres[0].device,
+            external_id: legacyExternalId(pgres[0].external_ids as Record<string, string>),
+            external_ids: pgres[0].external_ids as Record<string, string>,
             geometry: pgres[0].device.geometry as Static<typeof CoreDeviceResponse>['geometry'],
             channels: pgres[0].channels as number[],
         };
@@ -97,6 +100,7 @@ export default class CoreDeviceModel extends Modeler<typeof CoreEntity> {
             .select({
                 count: sql<string>`count(*) OVER()`.as('count'),
                 device: { ...EntityColumns, ...DeviceColumns },
+                external_ids: EXTERNAL_IDS.as('external_ids'),
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
             })
             .from(CoreEntity)
@@ -115,6 +119,8 @@ export default class CoreDeviceModel extends Modeler<typeof CoreEntity> {
                 items: pgres.map((t) => {
                     return {
                         ...t.device,
+                        external_id: legacyExternalId(t.external_ids as Record<string, string>),
+                        external_ids: t.external_ids as Record<string, string>,
                         geometry: t.device.geometry as Static<typeof CoreDeviceResponse>['geometry'],
                         channels: t.channels as number[],
                     };

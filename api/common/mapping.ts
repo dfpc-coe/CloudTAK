@@ -18,13 +18,17 @@ export type MappingRow = Pick<InferSelectModel<typeof LayerMapping>, 'destinatio
 type EventColumns = InferInsertModel<typeof CoreEntity> & InferInsertModel<typeof CoreEntityEvent>;
 type DeviceColumns = InferInsertModel<typeof CoreEntity> & InferInsertModel<typeof CoreEntityDevice>;
 
+export type MappedExternalId = { system?: string; value?: string };
+
 export type MappedEvent = Partial<Pick<EventColumns, Extract<keyof typeof CoreEntitySchema.properties, keyof EventColumns>>> & {
     channels?: number[];
     active?: boolean;
+    external_id?: MappedExternalId;
 };
 
 export type MappedDevice = Partial<Pick<DeviceColumns, Extract<keyof typeof CoreDeviceSchema.properties, keyof DeviceColumns>>> & {
     channels?: number[];
+    external_id?: MappedExternalId;
 };
 
 /**
@@ -185,6 +189,23 @@ function entry(map: unknown, field: MapField): { value: unknown; update: unknown
     }
 
     return { value: raw, update: true };
+}
+
+/**
+ * Maps saved before external IDs carried a system hold the value template at
+ * `external_id` itself - as a bare string or a `{ value, update }` entry - it
+ * becomes the `external_id.value` field
+ */
+function normalize(map: Record<string, unknown>): Record<string, unknown> {
+    const external = map.external_id;
+
+    if (typeof external === 'string') return { ...map, external_id: { value: external } };
+
+    if (external !== null && typeof external === 'object' && !Array.isArray(external) && 'update' in external && !('system' in external)) {
+        return { ...map, external_id: { value: external } };
+    }
+
+    return map;
 }
 
 function label(field: MapField): string {
@@ -403,7 +424,9 @@ export default class Mapping {
     /**
      * Validate a Map object against the fields of its destination
      */
-    static validate(destination: LayerMapping_Destination, map: Record<string, unknown>): true {
+    static validate(destination: LayerMapping_Destination, raw: Record<string, unknown>): true {
+        const map = normalize(raw);
+
         for (const field of MAP_FIELDS[destination]) {
             const { value, update } = entry(map, field);
             if (typeof update !== 'boolean') throw invalid(null, `Invalid ${label(field)}: update must be a boolean`);
@@ -440,8 +463,10 @@ export default class Mapping {
      * created but left alone when the record already exists
      */
     static createOnly(row: MappingRow): Set<string> {
+        const map = normalize(row.mapping);
+
         return new Set(MAP_FIELDS[row.destination]
-            .filter(field => entry(row.mapping, field).update === false)
+            .filter(field => entry(map, field).update === false)
             .map(field => field.target));
     }
 
@@ -460,11 +485,13 @@ export default class Mapping {
             ? feature as unknown as Record<string, unknown>
             : {};
 
+        const map = normalize(row.mapping);
+
         try {
             for (const field of MAP_FIELDS[row.destination]) {
                 if (field.geometry && feature.geometry?.type !== field.geometry) continue;
 
-                const raw = entry(row.mapping, field).value;
+                const raw = entry(map, field).value;
                 if (isEmpty(raw)) continue;
 
                 const value = KINDS[field.kind].render(raw, { field, feature, target, compile });

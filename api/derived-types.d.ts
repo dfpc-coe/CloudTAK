@@ -20424,7 +20424,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "username" | "connection" | "type" | "name" | "external_id" | "editable" | "remarks" | "metadata" | "links" | "style" | "geometry";
+                    sort: "id" | "created" | "updated" | "username" | "connection" | "type" | "name" | "editable" | "remarks" | "metadata" | "links" | "style" | "geometry";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only return Devices shared with the given TAK Channel bitpos - can be provided multiple times to match any of the given Channels */
@@ -20487,11 +20487,6 @@ export interface paths {
                                  */
                                 simulated: boolean;
                                 /**
-                                 * External ID
-                                 * @description ID of the Device in an external system
-                                 */
-                                external_id: string;
-                                /**
                                  * Remarks
                                  * @description Free text remarks about the Device
                                  */
@@ -20502,6 +20497,12 @@ export interface paths {
                                  */
                                 channels: number[];
                                 id: string;
+                                /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
+                                external_id: string;
+                                /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
+                                external_ids: {
+                                    [key: string]: string;
+                                };
                                 created: string;
                                 updated: string;
                                 username: null | string;
@@ -20687,11 +20688,12 @@ export interface paths {
                          * @default false
                          */
                         simulated: boolean;
-                        /**
-                         * @description ID of the Device in an external system
-                         * @default
-                         */
-                        external_id: string;
+                        external_id?: {
+                            /** @description External system the ID belongs to - ie: active911, caltopo, cad */
+                            system: string;
+                            /** @description ID of the record in the external system - an empty value removes the system from the record */
+                            value: string;
+                        } | string;
                         /** @default  */
                         remarks: string;
                         /**
@@ -20796,11 +20798,6 @@ export interface paths {
                              */
                             simulated: boolean;
                             /**
-                             * External ID
-                             * @description ID of the Device in an external system
-                             */
-                            external_id: string;
-                            /**
                              * Remarks
                              * @description Free text remarks about the Device
                              */
@@ -20811,6 +20808,12 @@ export interface paths {
                              */
                             channels: number[];
                             id: string;
+                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
+                            external_id: string;
+                            /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
+                            external_ids: {
+                                [key: string]: string;
+                            };
                             created: string;
                             updated: string;
                             username: null | string;
@@ -21013,11 +21016,6 @@ export interface paths {
                              */
                             simulated: boolean;
                             /**
-                             * External ID
-                             * @description ID of the Device in an external system
-                             */
-                            external_id: string;
-                            /**
                              * Remarks
                              * @description Free text remarks about the Device
                              */
@@ -21028,6 +21026,12 @@ export interface paths {
                              */
                             channels: number[];
                             id: string;
+                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
+                            external_id: string;
+                            /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
+                            external_ids: {
+                                [key: string]: string;
+                            };
                             created: string;
                             updated: string;
                             username: null | string;
@@ -21290,7 +21294,12 @@ export interface paths {
                         status?: string;
                         battery?: null | number;
                         simulated?: boolean;
-                        external_id?: string;
+                        external_id?: {
+                            /** @description External system the ID belongs to - ie: active911, caltopo, cad */
+                            system: string;
+                            /** @description ID of the record in the external system - an empty value removes the system from the record */
+                            value: string;
+                        } | string;
                         remarks?: string;
                         /** @description User defined key/value Device metadata - replaces the existing metadata object */
                         metadata?: {
@@ -21381,11 +21390,6 @@ export interface paths {
                              */
                             simulated: boolean;
                             /**
-                             * External ID
-                             * @description ID of the Device in an external system
-                             */
-                            external_id: string;
-                            /**
                              * Remarks
                              * @description Free text remarks about the Device
                              */
@@ -21396,6 +21400,12 @@ export interface paths {
                              */
                             channels: number[];
                             id: string;
+                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
+                            external_id: string;
+                            /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
+                            external_ids: {
+                                [key: string]: string;
+                            };
                             created: string;
                             updated: string;
                             username: null | string;
@@ -22916,11 +22926,6 @@ export interface paths {
                                      */
                                     active: boolean;
                                     /**
-                                     * External ID
-                                     * @description ID of the Event in an external system
-                                     */
-                                    external_id: string;
-                                    /**
                                      * Editable
                                      * @description Can users other than the creator edit the Event
                                      * @default true
@@ -22966,6 +22971,12 @@ export interface paths {
                                         url: string;
                                     }[];
                                     id: string;
+                                    /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
+                                    external_id: string;
+                                    /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
+                                    external_ids: {
+                                        [key: string]: string;
+                                    };
                                     /** @description TAK Server Missions associated with the Event */
                                     missions: {
                                         /** @description Name of the TAK Server Mission */
@@ -23180,11 +23191,6 @@ export interface paths {
                                  */
                                 active: boolean;
                                 /**
-                                 * External ID
-                                 * @description ID of the Event in an external system
-                                 */
-                                external_id: string;
-                                /**
                                  * Editable
                                  * @description Can users other than the creator edit the Event
                                  * @default true
@@ -23230,6 +23236,12 @@ export interface paths {
                                     url: string;
                                 }[];
                                 id: string;
+                                /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
+                                external_id: string;
+                                /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
+                                external_ids: {
+                                    [key: string]: string;
+                                };
                                 /** @description TAK Server Missions associated with the Event */
                                 missions: {
                                     /** @description Name of the TAK Server Mission */
@@ -23552,11 +23564,6 @@ export interface paths {
                                  */
                                 active: boolean;
                                 /**
-                                 * External ID
-                                 * @description ID of the Event in an external system
-                                 */
-                                external_id: string;
-                                /**
                                  * Editable
                                  * @description Can users other than the creator edit the Event
                                  * @default true
@@ -23602,6 +23609,12 @@ export interface paths {
                                     url: string;
                                 }[];
                                 id: string;
+                                /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
+                                external_id: string;
+                                /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
+                                external_ids: {
+                                    [key: string]: string;
+                                };
                                 /** @description TAK Server Missions associated with the Event */
                                 missions: {
                                     /** @description Name of the TAK Server Mission */
@@ -24713,7 +24726,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "username" | "connection" | "type" | "name" | "external_id" | "editable" | "remarks" | "metadata" | "links" | "style" | "geometry";
+                    sort: "id" | "created" | "updated" | "username" | "connection" | "type" | "name" | "editable" | "remarks" | "metadata" | "links" | "style" | "geometry";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only return Events shared with the given TAK Channel bitpos - can be provided multiple times to match any of the given Channels */
@@ -24774,11 +24787,6 @@ export interface paths {
                                  */
                                 active: boolean;
                                 /**
-                                 * External ID
-                                 * @description ID of the Event in an external system
-                                 */
-                                external_id: string;
-                                /**
                                  * Editable
                                  * @description Can users other than the creator edit the Event
                                  * @default true
@@ -24824,6 +24832,12 @@ export interface paths {
                                     url: string;
                                 }[];
                                 id: string;
+                                /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
+                                external_id: string;
+                                /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
+                                external_ids: {
+                                    [key: string]: string;
+                                };
                                 /** @description TAK Server Missions associated with the Event */
                                 missions: {
                                     /** @description Name of the TAK Server Mission */
@@ -24986,11 +25000,12 @@ export interface paths {
                          */
                         started?: string;
                         ended?: null | string;
-                        /**
-                         * @description ID of the Event in an external system
-                         * @default
-                         */
-                        external_id: string;
+                        external_id?: {
+                            /** @description External system the ID belongs to - ie: active911, caltopo, cad */
+                            system: string;
+                            /** @description ID of the record in the external system - an empty value removes the system from the record */
+                            value: string;
+                        } | string;
                         /**
                          * @description Can users other than the creator edit the Event
                          * @default true
@@ -25106,11 +25121,6 @@ export interface paths {
                              */
                             active: boolean;
                             /**
-                             * External ID
-                             * @description ID of the Event in an external system
-                             */
-                            external_id: string;
-                            /**
                              * Editable
                              * @description Can users other than the creator edit the Event
                              * @default true
@@ -25156,6 +25166,12 @@ export interface paths {
                                 url: string;
                             }[];
                             id: string;
+                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
+                            external_id: string;
+                            /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
+                            external_ids: {
+                                [key: string]: string;
+                            };
                             /** @description TAK Server Missions associated with the Event */
                             missions: {
                                 /** @description Name of the TAK Server Mission */
@@ -25351,11 +25367,6 @@ export interface paths {
                              */
                             active: boolean;
                             /**
-                             * External ID
-                             * @description ID of the Event in an external system
-                             */
-                            external_id: string;
-                            /**
                              * Editable
                              * @description Can users other than the creator edit the Event
                              * @default true
@@ -25401,6 +25412,12 @@ export interface paths {
                                 url: string;
                             }[];
                             id: string;
+                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
+                            external_id: string;
+                            /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
+                            external_ids: {
+                                [key: string]: string;
+                            };
                             /** @description TAK Server Missions associated with the Event */
                             missions: {
                                 /** @description Name of the TAK Server Mission */
@@ -25669,7 +25686,12 @@ export interface paths {
                         /** Format: date-time */
                         started?: string;
                         ended?: null | string;
-                        external_id?: string;
+                        external_id?: {
+                            /** @description External system the ID belongs to - ie: active911, caltopo, cad */
+                            system: string;
+                            /** @description ID of the record in the external system - an empty value removes the system from the record */
+                            value: string;
+                        } | string;
                         editable?: boolean;
                         /** @description User defined key/value Event metadata - replaces the existing metadata object */
                         metadata?: {
@@ -25759,11 +25781,6 @@ export interface paths {
                              */
                             active: boolean;
                             /**
-                             * External ID
-                             * @description ID of the Event in an external system
-                             */
-                            external_id: string;
-                            /**
                              * Editable
                              * @description Can users other than the creator edit the Event
                              * @default true
@@ -25809,6 +25826,12 @@ export interface paths {
                                 url: string;
                             }[];
                             id: string;
+                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
+                            external_id: string;
+                            /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
+                            external_ids: {
+                                [key: string]: string;
+                            };
                             /** @description TAK Server Missions associated with the Event */
                             missions: {
                                 /** @description Name of the TAK Server Mission */

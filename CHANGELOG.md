@@ -14,6 +14,7 @@
 
 - `GET /api/search/reverse/:long/:lat` endpoint is deprecated and will be removed in v14, use `GET /api/search/reverse/:long/:lat/<type>` instead
 - `Layer.template` is deprecated and will be removed
+- The `external_id` string on CoreEvent & CoreDevice requests & responses is deprecated and will be removed in v14, use `external_id: { system, value }` on requests and `external_ids` on responses
 - ETLs in v14 will be required to declare Named Schemas, single schema support will be removed
 - The Minio Legacy Store will be removed in V14 - Ensure you have migrated to Garage before updating to v14.
 
@@ -22,6 +23,12 @@
 - CoreEvents & CoreDevices are in beta and functionality may change in minor releases. Use with caution in production environments.
 
 ### Pending Release
+
+- :tada: CoreEvents & CoreDevices now carry multiple external IDs keyed by system (ie: `{ "active911": "1234", "caltopo": "B42325" }`) in a new `core_entity_external` table, returned as `external_ids`
+- :rocket: `POST` & `PATCH /api/core/event` & `/api/core/device` take a single `external_id: { system, value }` which is merged into the record's external IDs - an empty value removes the system - a bare string is still accepted as the `default` system and echoed on the deprecated `external_id` response field
+- :rocket: The CoreEvent & CoreDevice Layer Mappings map the External ID as a `system` & `value` pair - the value defaults to the Feature ID and the system to `default`, which is where existing external IDs are migrated to - Mappings saved with the bare string form are migrated & still accepted
+- :rocket: Layer submissions UPSERT on the external ID within the Connection, kind & system, serialised by an advisory lock
+- :white_check_mark: Add API & Mapping tests for multi-system external IDs
 
 ### v13.105.1 - 2026-10-07
 

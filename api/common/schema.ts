@@ -40,16 +40,31 @@ export const CoreEntity = pgTable('core_entity', {
     connection: integer().references(() => Connection.id, { onDelete: 'set null' }),
     type: text().notNull(), // MIL-STD-2525E Symbol ID
     name: text().notNull(),
-    external_id: text().notNull().default(''),
     editable: boolean().notNull().default(true), // Can users other than the creator edit the Event
     remarks: text().notNull().default(''),
     metadata: jsonb().$type<Record<string, unknown>>().notNull().default({}),
     links: jsonb().$type<Array<Static<typeof CoreEntityLink>>>().notNull().default([]),
     style: jsonb().$type<Static<typeof CoreEntityStyle>>().notNull().default({}),
     geometry: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(), // Required for Events - a Device may be unlocated
+});
+
+/**
+ * IDs of a CoreEntity in external systems - one value per system
+ *
+ * connection & kind are copied from the Entity so a value is unique per system
+ * within the Connection & kind that created the Entity, which is what Layer
+ * submissions UPSERT on
+ */
+export const CoreEntityExternal = pgTable('core_entity_external', {
+    entity: uuid().notNull().references(() => CoreEntity.id, { onDelete: 'cascade' }),
+    connection: integer().references(() => Connection.id, { onDelete: 'set null' }),
+    kind: text().$type<LayerMapping_Destination>().notNull(),
+    system: text().notNull(), // ie: active911, caltopo, cad
+    value: text().notNull(),
 }, (table) => {
     return {
-        external_idx: uniqueIndex('core_entity_connection_kind_external_id_idx').on(table.connection, table.kind, table.external_id).where(sql`external_id <> ''`),
+        pk: primaryKey({ columns: [table.entity, table.system] }),
+        value_idx: uniqueIndex('core_entity_external_connection_kind_system_value_idx').on(table.connection, table.kind, table.system, table.value),
     };
 });
 

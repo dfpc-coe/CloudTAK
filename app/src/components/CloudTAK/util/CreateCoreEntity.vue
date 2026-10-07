@@ -198,7 +198,6 @@ async function submit(): Promise<void> {
                 priority: config.value.priority,
                 location: config.value.location,
                 remarks: config.value.remarks,
-                external_id: '',
                 editable: true,
                 metadata: {},
                 links: [],
