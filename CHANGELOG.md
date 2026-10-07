@@ -23,6 +23,10 @@
 
 ### Pending Release
 
+### v13.105.1 - 2026-10-07
+
+- :rocket: Use internally cached active group list for faster API responses as we can avoid a TAK Server Request
+
 ### v13.105.0 - 2026-10-06
 
 - :tada: Introduce GeoParquet output for imported vector layers to power future offline search
