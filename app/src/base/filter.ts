@@ -3,6 +3,9 @@ import type { Feature } from '../types.ts';
 import jsonata from 'jsonata';
 import { v4 as randomUUID } from 'uuid';
 
+/** External id prefix of the per-feature filter that hides a feature while it is being edited */
+export const EDIT_HIDE_PREFIX = 'hidden-';
+
 /**
  * High Level Wrapper around the Data Filters
  *
@@ -39,6 +42,17 @@ export default class Filter {
 
     async test(feature: Feature): Promise<boolean> {
         return await this.expression.evaluate(feature);
+    }
+
+    /**
+     * Drop edit-hide filters left behind when an edit never reached stop(),
+     * which otherwise hide the feature from the map on every repaint
+     */
+    static async purgeEditHides(): Promise<number> {
+        return await db.filter
+            .where('external')
+            .startsWith(EDIT_HIDE_PREFIX)
+            .delete();
     }
 
     static async list(): Promise<Filter[]> {
