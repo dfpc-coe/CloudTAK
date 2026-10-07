@@ -12,7 +12,7 @@ import Auth, { AuthUser } from '../../common/auth.js';
 import { CoreFormResponse, CoreEntityResponse } from '../../common/schema.js';
 import type ConfigStateless from '../config.js';
 import FormControl from '../lib/control/form.js';
-import { userChannels } from '../lib/tak-channels.js';
+import { userChannels } from '../../common/control/tak-channels.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {

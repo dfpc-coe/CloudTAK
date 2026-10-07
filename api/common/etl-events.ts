@@ -16,7 +16,7 @@ import type {
 import Filter from './filter.js';
 import type { FilterContainer } from './filter.js';
 import Queue from './aws/queue.js';
-import TAKServerControl from './control/takserver.js';
+import { connectionChannels } from './control/tak-channels.js';
 
 export { OutgoingAction as ETLEventAction };
 
@@ -209,13 +209,7 @@ export default class ETLEvents {
     async connectionChannels(connection: number): Promise<Set<number>> {
         const conn = await this.config.models.Connection.from(connection);
 
-        const api = await new TAKServerControl(this.config).asConnection(conn);
-
-        return new Set(
-            (await api.Group.list({ useCache: true })).data
-                .filter(group => group.active)
-                .map(group => group.bitpos),
-        );
+        return await connectionChannels(this.config, conn);
     }
 
     async submit(layer: number, messages: Message[]): Promise<void> {

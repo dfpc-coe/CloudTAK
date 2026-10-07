@@ -57,6 +57,13 @@ export default class LocalHub implements HubClient {
         return statuses;
     }
 
+    async connectionChannels(id: number | string): Promise<number[] | null> {
+        const client = this.config.conns.get(id);
+        if (!client || !client.ready || !client.channelsLoaded) return null;
+
+        return [...client.channels];
+    }
+
     async connectionSummary(): Promise<PoolSummary> {
         const summary: PoolSummary = { dead: 0, live: 0, unknown: 0 };
 

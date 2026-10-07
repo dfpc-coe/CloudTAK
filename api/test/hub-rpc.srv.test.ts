@@ -87,6 +87,17 @@ test('Hub RPC: connectionStatus round trip', async () => {
     assert.equal(statuses['999999'], 'unknown');
 });
 
+test('Hub RPC: connectionChannels round trip', async () => {
+    assert.equal(await hub.connectionChannels(999999), null);
+    assert.equal(await hub.connectionChannels('nobody@example.com'), null);
+
+    const admin = await hub.connectionChannels(0);
+    if (admin !== null) {
+        assert.ok(Array.isArray(admin));
+        assert.ok(admin.every(bitpos => Number.isInteger(bitpos)));
+    }
+});
+
 test('Hub RPC: connectionSummary round trip', async () => {
     const summary = await hub.connectionSummary();
 

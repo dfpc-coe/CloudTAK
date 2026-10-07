@@ -16,7 +16,7 @@ import type ConfigStateless from '../config.js';
 import ProfileControl from '../lib/control/profile.js';
 import ProfileOverlayControl from '../../common/control/profile-overlay.js';
 import MissionPackage, { resolveFeatures } from '../lib/mission-package.js';
-import activeChannels from '../lib/tak-channels.js';
+import activeChannels from '../../common/control/tak-channels.js';
 import { Basemap as BasemapParser } from '@tak-ps/node-cot';
 import { Content } from '@tak-ps/node-tak/lib/api/files';
 import { Package } from '@tak-ps/node-tak/lib/api/package';

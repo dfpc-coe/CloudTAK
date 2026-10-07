@@ -4,7 +4,7 @@ import { AuthUser, AuthResourceAccess } from '../../../common/auth.js';
 import type { AuthResource } from '../../../common/auth.js';
 import type { CoreDeviceResponse } from '../../../common/types.js';
 import type ConfigStateless from '../../config.js';
-import { userChannels } from '../tak-channels.js';
+import { userChannels } from '../../../common/control/tak-channels.js';
 
 /**
  * Access control shared by the Core Device endpoints

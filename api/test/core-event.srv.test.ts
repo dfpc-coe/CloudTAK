@@ -767,6 +767,7 @@ let sharedEventId: string;
 test('GET: api/core/event/:event - connection token with a shared channel active', async () => {
     try {
         flight.tak.mockMarti.unshift(channelSeven);
+        await flight.refreshChannels(1);
 
         // Created by a user, not the Connection, and shared with channel 7
         const created = await flight.fetch('/api/core/event', {
@@ -816,6 +817,7 @@ test('PATCH: api/core/event/:event - connection token with a shared channel acti
         assert.ifError(err);
     } finally {
         flight.tak.mockMarti.splice(flight.tak.mockMarti.indexOf(channelSeven), 1);
+        await flight.refreshChannels(1);
     }
 });
 

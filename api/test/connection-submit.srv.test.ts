@@ -889,6 +889,7 @@ test('POST: api/connection/1/submit - records inherit the Channels of the Connec
             response.end();
             return true;
         });
+        await flight.refreshChannels(1);
 
         await models.LayerMapping.generate({
             layer: 1,
@@ -947,6 +948,7 @@ test('POST: api/connection/1/submit - records inherit the Channels of the Connec
 
         // Records that are already shared keep their Channels when the Connection's change
         groups = [{ name: 'Other', direction: 'IN', created: '2026-01-01', type: 'SYSTEM', bitpos: 8, active: true }];
+        await flight.refreshChannels(1);
         assert.deepEqual(await submit(), { event: [4], device: [4] });
 
         // Records left without any Channels inherit them again
@@ -954,6 +956,7 @@ test('POST: api/connection/1/submit - records inherit the Channels of the Connec
         assert.deepEqual(await submit(), { event: [8], device: [8] });
 
         flight.tak.mockMarti.shift();
+        await flight.refreshChannels(1);
     } catch (err) {
         assert.ifError(err);
     }

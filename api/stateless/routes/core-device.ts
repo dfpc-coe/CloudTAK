@@ -7,7 +7,7 @@ import Auth, { AuthUser, AuthResource, AuthResourceAccess } from '../../common/a
 import { CoreEntity } from '../../common/schema.js';
 import { sharedWith, setChannels } from '../../common/models/CoreEntity.js';
 import type ConfigStateless from '../config.js';
-import { userChannels } from '../lib/tak-channels.js';
+import { userChannels } from '../../common/control/tak-channels.js';
 import DeviceControl from '../lib/control/device.js';
 import { uniqueViolation } from '../lib/pg-error.js';
 import * as Default from '../lib/limits.js';

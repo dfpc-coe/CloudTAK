@@ -339,6 +339,15 @@ export default class Flight {
     }
 
     /**
+     * Re-read a pooled connection's channel set from the Mock TAK Server, as a
+     * group-change CoT would, so a swapped group mock reaches the hub cache
+     */
+    async refreshChannels(id: number | string): Promise<void> {
+        const client = this.stateful?.conns.get(id);
+        if (client) await client.refreshChannels();
+    }
+
+    /**
      * Create a new user and return an API token for that user
      */
     user(opts: {
