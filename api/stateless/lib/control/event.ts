@@ -4,7 +4,7 @@ import { AuthUser, AuthResourceAccess } from '../../../common/auth.js';
 import type { AuthResource } from '../../../common/auth.js';
 import type { CoreEntityResponse } from '../../../common/types.js';
 import type ConfigStateless from '../../config.js';
-import { userChannels, connectionChannels } from '../tak-channels.js';
+import { userChannels, connectionChannels } from '../../../common/control/tak-channels.js';
 
 /**
  * Access control shared by the Core Event endpoints and the Assignment &

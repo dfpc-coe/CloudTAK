@@ -8,7 +8,7 @@ import { CoreEntity, CoreEntityEvent } from '../../common/schema.js';
 import { sharedWith, setChannels } from '../../common/models/CoreEntity.js';
 import { CoreEntity_Priority } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
-import { userChannels } from '../lib/tak-channels.js';
+import { userChannels } from '../../common/control/tak-channels.js';
 import { notifyCoreEntity } from '../lib/core-entity.js';
 import EventControl from '../lib/control/event.js';
 import { placementResponse } from '../lib/control/board.js';

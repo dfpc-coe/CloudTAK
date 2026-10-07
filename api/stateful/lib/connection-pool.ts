@@ -46,6 +46,8 @@ export class ConnectionClient {
      */
     channels: Set<number>;
 
+    channelsLoaded: boolean;
+
     constructor(
         config: ConnectionConfig,
         tak: TAK,
@@ -59,6 +61,7 @@ export class ConnectionClient {
         this.retrying = false;
         this.secure = false;
         this.channels = new Set();
+        this.channelsLoaded = false;
 
         this.tak.setMaxListeners(64);
     }
@@ -81,8 +84,10 @@ export class ConnectionClient {
                 }
             }
             this.channels = active;
+            this.channelsLoaded = true;
             console.log(`ok - ${this.config.id} - ${this.config.name} - refreshed channels: [${[...active].join(', ')}]`);
         } catch (err) {
+            this.channelsLoaded = false;
             console.error(`not ok - ${this.config.id} - ${this.config.name} - failed to refresh channels: ${err instanceof Error ? err.message : String(err)}`);
         }
     }

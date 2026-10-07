@@ -143,6 +143,13 @@
                                                     @click.stop='router.push(`/menu/missions/${card.overlay.mode_id}`)'
                                                     v-text='card.overlay.name'
                                                 />
+                                                <a
+                                                    v-else-if='card.overlay.mode === "internal"'
+                                                    class='fw-semibold text-primary text-decoration-underline d-inline-flex align-items-center text-break cursor-pointer'
+                                                    title='Open Features Menu'
+                                                    @click.stop='router.push("/menu/features")'
+                                                    v-text='card.overlay.name'
+                                                />
                                                 <span
                                                     v-else
                                                     class='fw-semibold d-inline-flex align-items-center flex-grow-1 text-break'

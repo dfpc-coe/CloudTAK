@@ -111,6 +111,14 @@ export default class RemoteHub implements HubClient {
         return await this.#call('/connection/status', { ids });
     }
 
+    async connectionChannels(id: number | string): Promise<number[] | null> {
+        const res = await this.#call<{ channels: number[] | null }>('/connection/channels', { id }, {
+            timeout: 5 * 1000,
+        });
+
+        return res.channels;
+    }
+
     async connectionSummary(): Promise<PoolSummary> {
         return await this.#call('/connection/summary', {});
     }

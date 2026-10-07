@@ -12,7 +12,7 @@ import type {
 } from '../../../common/types.js';
 import type ConfigStateless from '../../config.js';
 import { ETLEventAction } from '../../../common/etl-events.js';
-import { userChannels } from '../tak-channels.js';
+import { userChannels } from '../../../common/control/tak-channels.js';
 
 /** Upper bound on Boards, Columns & placed Events returned for a single request */
 export const MAX_LIST = 1000;

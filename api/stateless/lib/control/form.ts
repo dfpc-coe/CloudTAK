@@ -9,7 +9,7 @@ import {
     CoreEntityResponse as CoreEntityResponseTable,
 } from '../../../common/schema.js';
 import type ConfigStateless from '../../config.js';
-import { userChannels } from '../tak-channels.js';
+import { userChannels } from '../../../common/control/tak-channels.js';
 
 /**
  * Access control and JSON Schema validation shared by the Core Form &

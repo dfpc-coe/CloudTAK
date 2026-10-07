@@ -46,6 +46,24 @@ export default async function router(schema: Schema, config: ConfigStateful) {
         }
     });
 
+    await schema.post('/connection/channels', {
+        name: 'Connection Channels',
+        group: 'HubConnection',
+        description: 'Return the active channel bitpos set cached on a pooled connection, or null when the connection is not pooled',
+        body: Type.Object({
+            id: Type.Union([Type.Integer(), Type.String()]),
+        }),
+        res: Type.Object({
+            channels: Type.Union([Type.Array(Type.Integer()), Type.Null()]),
+        }),
+    }, async (req, res) => {
+        try {
+            res.json({ channels: await config.hub.connectionChannels(req.body.id) });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
     await schema.post('/connection/summary', {
         name: 'Connection Summary',
         group: 'HubConnection',

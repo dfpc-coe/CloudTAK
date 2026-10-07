@@ -308,6 +308,12 @@ export const ProfileFile = pgTable('profile_files', {
         ext: string;
         size: number;
     }>>().notNull().default([]),
+}, (table) => {
+    return {
+        username_created_idx: index('profile_files_username_created_idx').on(table.username, table.created),
+        parent_idx: index('profile_files_parent_idx').on(table.parent),
+        iconset_idx: index('profile_files_iconset_idx').on(table.iconset),
+    };
 });
 
 export const ProfileFileChannel = pgTable('profile_file_channel', {
