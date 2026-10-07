@@ -62,7 +62,7 @@ test(`Worker Data Transform Vector: JSON File within ZIP`, async (t) => {
             artifacts: Array<{ ext: string }>;
         };
 
-        assert.deepEqual(body.artifacts, [{ ext: '.geojsonld' }], 'Has Correct Extension');
+        assert.deepEqual(body.artifacts, [{ ext: '.geojsonld' }, { ext: '.parquet' }], 'Has Correct Extension');
 
         return {
             statusCode: 200,
@@ -81,7 +81,7 @@ test(`Worker Data Transform Vector: JSON File within ZIP`, async (t) => {
             artifacts: Array<{ ext: string }>;
         };
 
-        assert.deepEqual(body.artifacts, [{ ext: '.geojsonld' }, { ext: '.pmtiles' }]);
+        assert.deepEqual(body.artifacts, [{ ext: '.geojsonld' }, { ext: '.parquet' }, { ext: '.pmtiles' }]);
 
         return {
             statusCode: 200,
@@ -131,6 +131,21 @@ test(`Worker Data Transform Vector: JSON File within ZIP`, async (t) => {
             assert.equal(command.input.Bucket, 'test-bucket', 'S3.PutObjectCommand Bucket');
             assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`), 'S3.PutObjectCommand Key Prefix');
             assert.ok(command.input.Key.endsWith('.geojsonld'), 'S3.PutObjectCommand Key Suffix');
+
+            return Promise.resolve({ ETag: '"123"' });
+        },
+        (command) => {
+            if (command instanceof CreateMultipartUploadCommand) {
+                assert.equal(command.input.Bucket, 'test-bucket', 'S3.CreateMultipartUploadCommand Bucket');
+                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`), 'S3.CreateMultipartUploadCommand Key Prefix');
+                assert.ok(command.input.Key.endsWith('.parquet'), 'S3.CreateMultipartUploadCommand Key Suffix');
+                return Promise.resolve({ UploadId: '123' });
+            }
+
+            assert.ok(command instanceof PutObjectCommand, 'S3.PutObjectCommand Call');
+            assert.equal(command.input.Bucket, 'test-bucket', 'S3.PutObjectCommand Bucket');
+            assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`), 'S3.PutObjectCommand Key Prefix');
+            assert.ok(command.input.Key.endsWith('.parquet'), 'S3.PutObjectCommand Key Suffix');
 
             return Promise.resolve({ ETag: '"123"' });
         },

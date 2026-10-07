@@ -74,7 +74,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
                 artifacts: string[];
             };
 
-            assert.deepEqual(body.artifacts, [{ ext: '.geojsonld' }], 'Has Correct Extension');
+            assert.deepEqual(body.artifacts, [{ ext: '.geojsonld' }, { ext: '.parquet' }], 'Has Correct Extension');
 
             return {
                 statusCode: 200,
@@ -93,7 +93,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
                 artifacts: string[];
             };
 
-            assert.deepEqual(body.artifacts, [{ ext: '.geojsonld' }, { ext: '.pmtiles' }]);
+            assert.deepEqual(body.artifacts, [{ ext: '.geojsonld' }, { ext: '.parquet' }, { ext: '.pmtiles' }]);
 
             return {
                 statusCode: 200,
@@ -153,6 +153,14 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
 
                 assert.equal(command.input.Bucket, 'test-bucket', 'S3.PutObjectCommand Bucket');
                 assert.equal(command.input.Key, `profile/admin@example.com/${id}.geojsonld`, 'S3.PutObjectCommand Key');
+
+                return Promise.resolve({});
+            },
+            (command) => {
+                assert.ok(command instanceof PutObjectCommand, 'S3.PutObjectCommand Call');
+
+                assert.equal(command.input.Bucket, 'test-bucket', 'S3.PutObjectCommand Bucket');
+                assert.equal(command.input.Key, `profile/admin@example.com/${id}.parquet`, 'S3.PutObjectCommand Key');
 
                 return Promise.resolve({});
             },
