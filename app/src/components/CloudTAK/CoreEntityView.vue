@@ -199,7 +199,7 @@
 
                     <div class='col-12 pt-2'>
                         <PropertyCoreEntityExternalId
-                            :model-value='event.external_id'
+                            :model-value='event.external_ids'
                             :edit='is_editable'
                             @update:model-value='patch({ external_id: $event })'
                         />

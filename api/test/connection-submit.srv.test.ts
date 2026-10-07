@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import jwt from 'jsonwebtoken';
-import { eq, getTableColumns } from 'drizzle-orm';
+import { eq, sql, getTableColumns } from 'drizzle-orm';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import Flight from './flight.js';
-import { ConnectionFeature, CoreEntity, CoreEntityEvent, CoreEntityDevice, CoreEntityChannel } from '../common/schema.js';
+import { ConnectionFeature, CoreEntity, CoreEntityEvent, CoreEntityDevice, CoreEntityChannel, CoreEntityExternal } from '../common/schema.js';
+import { EXTERNAL_IDS } from '../common/models/CoreEntity.js';
 import { LayerMapping_Destination } from '../common/enums.js';
 
 const flight = new Flight();
@@ -19,18 +20,20 @@ flight.connection();
 const layerToken = 'etl.' + jwt.sign({ access: 'layer', id: 1, internal: true }, 'coe-wildland-fire');
 const otherLayerToken = 'etl.' + jwt.sign({ access: 'layer', id: 2, internal: true }, 'coe-wildland-fire');
 
-/** Events as flat rows across core_entity & core_entity_event */
+const externalIds = sql<Record<string, string>>`${EXTERNAL_IDS}`;
+
+/** Events as flat rows across core_entity & core_entity_event with their external IDs */
 function eventRows() {
     const { id, ...event } = getTableColumns(CoreEntityEvent);
-    return flight.config!.pg.select({ ...getTableColumns(CoreEntity), ...event, id })
+    return flight.config!.pg.select({ ...getTableColumns(CoreEntity), ...event, id, external_ids: externalIds })
         .from(CoreEntity)
         .innerJoin(CoreEntityEvent, eq(CoreEntity.id, CoreEntityEvent.id));
 }
 
-/** Devices as flat rows across core_entity & core_entity_device */
+/** Devices as flat rows across core_entity & core_entity_device with their external IDs */
 function deviceRows() {
     const { id, ...device } = getTableColumns(CoreEntityDevice);
-    return flight.config!.pg.select({ ...getTableColumns(CoreEntity), ...device, id })
+    return flight.config!.pg.select({ ...getTableColumns(CoreEntity), ...device, id, external_ids: externalIds })
         .from(CoreEntity)
         .innerJoin(CoreEntityDevice, eq(CoreEntity.id, CoreEntityDevice.id));
 }
@@ -375,7 +378,7 @@ test('POST: api/connection/1/submit - CoreFeature maps for the schema style the 
         assert.equal(byId.get('unit-sensor'), undefined);
 
         const devices = await deviceRows();
-        assert.deepEqual(devices.map(d => [d.external_id, d.name, d.status]), [
+        assert.deepEqual(devices.map(d => [d.external_ids.default, d.name, d.status]), [
             ['unit-sensor', 'Charlie', 'sensor'],
         ]);
     } catch (err) {
@@ -433,7 +436,7 @@ test('POST: api/connection/1/submit - CoreEntity & CoreDevice maps create record
                 priority: 'critical',
                 location: '{{address}}',
                 remarks: 'Incident {{number}}',
-                external_id: 'inc-{{number}}',
+                external_id: { value: 'inc-{{number}}' },
             },
         });
 
@@ -449,7 +452,7 @@ test('POST: api/connection/1/submit - CoreEntity & CoreDevice maps create record
                 priority: 'low',
                 location: '{{address}}',
                 remarks: 'Incident {{number}}',
-                external_id: 'inc-{{number}}',
+                external_id: { value: 'inc-{{number}}' },
             },
         });
 
@@ -503,7 +506,7 @@ test('POST: api/connection/1/submit - CoreEntity & CoreDevice maps create record
         assert.equal(res.body.submitted, 0, 'mapped Features are not delivered as CoT');
 
         const events = await eventRows();
-        const byExternal = new Map(events.map(e => [e.external_id, e]));
+        const byExternal = new Map(events.map(e => [e.external_ids.default, e]));
 
         assert.equal(events.length, 2);
 
@@ -526,9 +529,9 @@ test('POST: api/connection/1/submit - CoreEntity & CoreDevice maps create record
         assert.equal(devices.length, 2);
 
         // incident-1 matched the CoreEntity query first so is not also a Device
-        assert.equal(devices.find(d => d.external_id === 'incident-1'), undefined);
+        assert.equal(devices.find(d => d.external_ids.default === 'incident-1'), undefined);
 
-        const b = devices.find(d => d.external_id === 'sensor-only')!;
+        const b = devices.find(d => d.external_ids.default === 'sensor-only')!;
         assert.equal(b.name, 'Sensor B');
         assert.equal(b.manufacturer, 'Acme');
         assert.equal(b.battery, 20);
@@ -571,14 +574,14 @@ test('POST: api/connection/1/submit - resubmitting updates the mapped records in
         const events = await eventRows();
         assert.equal(events.length, 2);
 
-        const fire = events.find(e => e.external_id === 'inc-1')!;
+        const fire = events.find(e => e.external_ids.default === 'inc-1')!;
         assert.equal(fire.name, 'Fire Contained');
         assert.equal(fire.priority, 'low');
         assert.deepEqual(fire.geometry!.coordinates, [-105.5, 39.5]);
 
         const devices = await deviceRows();
         assert.equal(devices.length, 2);
-        assert.equal(devices.find(d => d.external_id === 'sensor-only')!.battery, 65);
+        assert.equal(devices.find(d => d.external_ids.default === 'sensor-only')!.battery, 65);
     } catch (err) {
         assert.ifError(err);
     }
@@ -587,7 +590,7 @@ test('POST: api/connection/1/submit - resubmitting updates the mapped records in
 test('POST: api/connection/1/submit - concurrent submissions UPSERT a single record per external_id', async () => {
     try {
         const before = await eventRows();
-        const fire = before.find(e => e.external_id === 'inc-1')!;
+        const fire = before.find(e => e.external_ids.default === 'inc-1')!;
 
         const responses = await Promise.all([1, 2, 3, 4, 5].map((i) => {
             return flight.fetch('/api/connection/1/submit', {
@@ -621,10 +624,10 @@ test('POST: api/connection/1/submit - concurrent submissions UPSERT a single rec
 
         const events = await eventRows();
         assert.equal(events.length, before.length + 1);
-        assert.equal(events.filter(e => e.external_id === 'inc-9').length, 1);
+        assert.equal(events.filter(e => e.external_ids.default === 'inc-9').length, 1);
 
         // An UPSERT keeps the identity of the existing Event
-        const updated = events.find(e => e.external_id === 'inc-1')!;
+        const updated = events.find(e => e.external_ids.default === 'inc-1')!;
         assert.equal(updated.id, fire.id);
         assert.equal(updated.created, fire.created);
         assert.match(updated.name, /^Fire \d$/);
@@ -648,7 +651,7 @@ test('POST: api/connection/1/submit - channels, style, links & active', async ()
                 type: '10031000001211000000',
                 priority: '{{severity}}',
                 active: '{{open}}',
-                external_id: 'call-{{number}}',
+                external_id: { system: 'cad', value: 'call-{{number}}' },
                 channels: [3, 7],
                 style: { 'marker-color': '#ff0000', 'marker-opacity': '{{opacity}}' },
                 links: [{ name: 'CAD {{number}}', url: 'https://cad.example.com/{{number}}' }],
@@ -664,7 +667,7 @@ test('POST: api/connection/1/submit - channels, style, links & active', async ()
             mapping: {
                 name: '{{unit}}',
                 type: '10031000001211000000',
-                external_id: 'unit-{{unit}}',
+                external_id: { value: 'unit-{{unit}}' },
                 channels: [3],
             },
         });
@@ -697,8 +700,8 @@ test('POST: api/connection/1/submit - channels, style, links & active', async ()
             assert.equal(res.body.events, 1);
             assert.equal(res.body.devices, 1);
 
-            const [event] = (await eventRows()).filter(e => e.external_id === 'call-77');
-            const [device] = (await deviceRows()).filter(d => d.external_id === 'unit-E1');
+            const [event] = (await eventRows()).filter(e => e.external_ids.cad === 'call-77');
+            const [device] = (await deviceRows()).filter(d => d.external_ids.default === 'unit-E1');
 
             return { event, device };
         };
@@ -744,7 +747,7 @@ test('POST: api/connection/1/submit - ended as seconds from submission is pushed
             mapping: {
                 name: '{{title}}',
                 type: '10031000001211000000',
-                external_id: 'cad-{{number}}',
+                external_id: { value: 'cad-{{number}}' },
                 ended: 1800,
             },
         });
@@ -770,7 +773,7 @@ test('POST: api/connection/1/submit - ended as seconds from submission is pushed
             assert.equal(res.status, 200);
             assert.deepEqual(res.body.errors, []);
 
-            const [event] = (await eventRows()).filter(e => e.external_id === 'cad-1');
+            const [event] = (await eventRows()).filter(e => e.external_ids.default === 'cad-1');
             return event;
         };
 
@@ -840,7 +843,7 @@ test('POST: api/connection/1/submit - update: false fields are only applied when
             assert.equal(res.status, 200);
             assert.deepEqual(res.body.errors, []);
 
-            const [event] = (await eventRows()).filter(e => e.external_id === 'hydrant-1');
+            const [event] = (await eventRows()).filter(e => e.external_ids.default === 'hydrant-1');
             return event;
         };
 
@@ -935,8 +938,8 @@ test('POST: api/connection/1/submit - records inherit the Channels of the Connec
             assert.equal(res.status, 200);
             assert.deepEqual(res.body.errors, []);
 
-            const [event] = (await eventRows()).filter(e => e.external_id === 'inherit-1');
-            const [device] = (await deviceRows()).filter(d => d.external_id === 'inherit-2');
+            const [event] = (await eventRows()).filter(e => e.external_ids.default === 'inherit-1');
+            const [device] = (await deviceRows()).filter(d => d.external_ids.default === 'inherit-2');
 
             return {
                 event: (await models.CoreEntity.augmented_from(event.id)).channels,
@@ -1035,7 +1038,7 @@ test('POST: api/connection/1/submit - a Layer token needs the permissions of its
 
         assert.equal(res.status, 403);
         assert.equal(res.body.message, 'Layer token does not have the device:update permission required by its CoreDevice Mappings');
-        assert.equal(await models.CoreEntity.count({ where: eq(CoreEntity.external_id, 'inc-50') }), 0);
+        assert.equal(await flight.config!.pg.$count(CoreEntityExternal, eq(CoreEntityExternal.value, 'inc-50')), 0);
 
         // Schemas without CoreEntity or CoreDevice Mappings need no permissions
         await models.Layer.commit(1, { permissions: [] });
@@ -1078,7 +1081,7 @@ test('POST: api/connection/1/submit - a paused Connection does not persist mappe
         assert.equal(res.status, 200);
         assert.equal(res.body.message, 'Received but Connection Paused');
         assert.equal(res.body.events, 0);
-        assert.equal(await models.CoreEntity.count({ where: eq(CoreEntity.external_id, 'inc-51') }), 0);
+        assert.equal(await flight.config!.pg.$count(CoreEntityExternal, eq(CoreEntityExternal.value, 'inc-51')), 0);
 
         await models.Connection.commit(1, { enabled: true });
     } catch (err) {

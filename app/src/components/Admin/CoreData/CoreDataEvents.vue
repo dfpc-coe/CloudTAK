@@ -188,10 +188,10 @@
                             </div>
                             <div class='datagrid-item'>
                                 <div class='datagrid-title'>
-                                    External ID
+                                    External IDs
                                 </div>
                                 <div class='datagrid-content'>
-                                    {{ event.external_id || "—" }}
+                                    {{ Object.entries(event.external_ids).map(([system, value]) => `${system}: ${value}`).join(', ') || "—" }}
                                 </div>
                             </div>
                             <div class='datagrid-item'>
@@ -273,7 +273,7 @@ import {
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 
-type CoreEntitySort = 'id' | 'created' | 'updated' | 'username' | 'connection' | 'type' | 'name' | 'external_id' | 'editable' | 'remarks';
+type CoreEntitySort = 'id' | 'created' | 'updated' | 'username' | 'connection' | 'type' | 'name' | 'editable' | 'remarks';
 
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);

@@ -87,6 +87,7 @@ test('POST: api/core/event', async () => {
             active: true,
             ended: null,
             external_id: '',
+            external_ids: {},
             editable: true,
             location: '1234 Main St, Boulder, CO',
             remarks: 'Fast moving fire North of Boulder',
@@ -260,7 +261,7 @@ test('PATCH: api/core/event/:event', async () => {
             body: {
                 priority: 'critical',
                 remarks: 'Fire has jumped the ridge',
-                external_id: 'INC-1234',
+                external_id: { system: 'cad', value: 'INC-1234' },
                 ended: '2026-07-14T12:00:00.000Z',
                 geometry: {
                     type: 'Point',
@@ -273,13 +274,81 @@ test('PATCH: api/core/event/:event', async () => {
         assert.equal(res.body.priority, 'critical');
         assert.equal(res.body.remarks, 'Fire has jumped the ridge');
         assert.equal(res.body.name, 'Wildfire Report');
-        assert.equal(res.body.external_id, 'INC-1234');
+        assert.deepEqual(res.body.external_ids, { cad: 'INC-1234' });
         assert.ok(res.body.ended, 'has ended');
         assert.deepEqual(res.body.geometry, {
             type: 'Point',
             coordinates: [-105.3005, 40.0455],
         });
         assert.deepEqual(res.body.channels, [1]);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/core/event/:event - external IDs merge per system & an empty value removes one', async () => {
+    try {
+        const added = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                external_id: { system: 'caltopo', value: 'B42325' },
+            },
+        }, true);
+
+        assert.deepEqual(added.body.external_ids, { cad: 'INC-1234', caltopo: 'B42325' });
+
+        const replaced = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                external_id: { system: 'cad', value: 'INC-5678' },
+            },
+        }, true);
+
+        assert.deepEqual(replaced.body.external_ids, { cad: 'INC-5678', caltopo: 'B42325' });
+
+        const removed = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                external_id: { system: 'caltopo', value: '' },
+            },
+        }, true);
+
+        assert.deepEqual(removed.body.external_ids, { cad: 'INC-5678' });
+
+        // Deprecated bare string form is the default system & is echoed on the deprecated response field
+        const legacy = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                external_id: 'LEGACY-1',
+            },
+        }, true);
+
+        assert.deepEqual(legacy.body.external_ids, { cad: 'INC-5678', default: 'LEGACY-1' });
+        assert.equal(legacy.body.external_id, 'LEGACY-1');
+
+        const invalid = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                external_id: { system: 'not a system', value: 'x' },
+            },
+        }, false);
+
+        assert.equal(invalid.status, 400);
     } catch (err) {
         assert.ifError(err);
     }
@@ -635,7 +704,7 @@ test('POST: api/core/event - connection token', async () => {
                 name: 'Sensor Alert',
                 type: '10031000001213000000',
                 priority: 'low',
-                external_id: 'SENSOR-1',
+                external_id: { system: 'sensor', value: 'SENSOR-1' },
                 geometry: {
                     type: 'Point',
                     coordinates: [-104.9903, 39.7392],
@@ -650,6 +719,7 @@ test('POST: api/core/event - connection token', async () => {
         assert.equal(res.body.username, null);
         assert.equal(res.body.connection, 1);
         assert.equal(res.body.name, 'Sensor Alert');
+        assert.deepEqual(res.body.external_ids, { sensor: 'SENSOR-1' });
         assert.deepEqual(res.body.channels, [7]);
         assert.deepEqual(res.body.links, [], 'links default to an empty array');
         assert.deepEqual(res.body.style, {}, 'style defaults to an empty object');

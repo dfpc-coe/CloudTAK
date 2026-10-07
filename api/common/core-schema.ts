@@ -21,6 +21,18 @@ export const CoreEntityLinkSchema = Type.Object({
     url: Type.String({ title: 'URL', description: 'URL the Link points at', pattern: '^(https?:\\/\\/.+|)$' }),
 });
 
+/**
+ * The external ID a submitted record is UPSERTed on - the Feature ID under the
+ * `default` system unless the Map says otherwise. Other systems are added to a
+ * record through the API
+ */
+export const CoreEntityExternalIdSchema = Type.Object({
+    system: Type.Optional(Type.String({ 'title': 'External ID System', '@icon': 'IconLicense', 'description': 'External system the ID belongs to - ie: active911, cad - defaults to "default"' })),
+    value: Type.Optional(Type.String({ 'title': 'External ID', '@icon': 'IconHash', 'description': 'ID of the record in the external system - defaults to the Feature ID' })),
+}, {
+    title: 'External ID',
+});
+
 /** Point styling overrides - property names match node-cot's CoT GeoJSON representation */
 export const CoreEntityStyleSchema = Type.Object({
     'icon': Type.Optional(Type.String({ 'title': 'Icon', '@icon': 'IconPhoto', '@widget': 'icon', 'description': 'Iconset Icon path to render the Event with - ie: <iconset uid>/<icon path>' })),
@@ -45,7 +57,7 @@ export const CoreEntitySchema = Type.Object({
     started: Type.Optional(Type.String({ 'title': 'Started', '@icon': 'IconCalendarEvent', 'description': 'Time at which the Event started - defaults to the time of creation', 'format': 'date-time' })),
     ended: Type.Optional(Type.String({ 'title': 'Ended', '@icon': 'IconCalendarOff', '@relative': true, 'description': 'Time at which the Event ends - a future time keeps the Event active until then, a Map value of a number of seconds ends the Event that far from submission', 'format': 'date-time' })),
     active: Type.Optional(Type.Boolean({ 'title': 'Active', '@icon': 'IconActivity', 'description': 'Is the Event active - derived from ended, false ends the Event now & true clears ended', 'default': true })),
-    external_id: Type.Optional(Type.String({ 'title': 'External ID', '@icon': 'IconLicense', 'description': 'ID of the Event in an external system' })),
+    external_id: Type.Optional(CoreEntityExternalIdSchema),
     editable: Type.Optional(Type.Boolean({ 'title': 'Editable', '@icon': 'IconLock', 'description': 'Can users other than the creator edit the Event', 'default': true })),
     channels: Type.Optional(Channels),
     style: Type.Optional(CoreEntityStyleSchema),
@@ -65,7 +77,7 @@ export const CoreDeviceSchema = Type.Object({
     status: Type.Optional(Type.String({ 'title': 'Status', '@icon': 'IconHeartbeat', 'description': 'General Device health status - ie: Full, Reduced, Unknown' })),
     battery: Type.Optional(Type.Number({ 'title': 'Battery', '@icon': 'IconBattery', 'description': 'Battery level as a percentage (0-100) at last report', 'minimum': 0, 'maximum': 100 })),
     simulated: Type.Optional(Type.Boolean({ 'title': 'Simulated', '@icon': 'IconTestPipe', 'description': 'Is the Device a simulated data source', 'default': false })),
-    external_id: Type.Optional(Type.String({ 'title': 'External ID', '@icon': 'IconLicense', 'description': 'ID of the Device in an external system' })),
+    external_id: Type.Optional(CoreEntityExternalIdSchema),
     remarks: Type.Optional(Type.String({ 'title': 'Remarks', '@icon': 'IconBlockquote', 'description': 'Free text remarks about the Device' })),
     channels: Type.Optional(Channels),
 }, {

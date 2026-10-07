@@ -3,10 +3,10 @@ import Modeler, { GenericList, GenericListInput, GenericIterInput } from '@opena
 import { Static } from '@sinclair/typebox';
 import { CoreEntityResponse, GeoJSONFeatureGeometryPoint } from '../types.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { CoreEntity, CoreEntityEvent, CoreEntityChannel } from '../schema.js';
+import { CoreEntity, CoreEntityEvent, CoreEntityChannel, CoreEntityExternal } from '../schema.js';
 import { LayerMapping_Destination } from '../enums.js';
 import type { PgInsertValue } from 'drizzle-orm/pg-core';
-import { SQL, is, sql, eq, asc, desc, getTableColumns } from 'drizzle-orm';
+import { SQL, is, sql, eq, and, asc, desc, getTableColumns } from 'drizzle-orm';
 
 /** kind is internal - keep it out of payloads */
 export const EntityColumns = Object.fromEntries(
@@ -50,6 +50,51 @@ export function sharedWith(channels: number[]): SQL {
         WHERE core_entity_channel.entity = core_entity.id
         AND core_entity_channel.channel IN ${channels}
     )`;
+}
+
+/** System a submitted record's external ID is filed under when its Map names none */
+export const DEFAULT_EXTERNAL_SYSTEM = 'default';
+
+export type ExternalId = { system: string; value: string };
+
+/** A request external ID - the deprecated bare string form is the value under the default system */
+export function toExternalId(input: ExternalId | string): ExternalId {
+    return typeof input === 'string' ? { system: DEFAULT_EXTERNAL_SYSTEM, value: input } : input;
+}
+
+/** The deprecated external_id response field - the value under the default system */
+export function legacyExternalId(ids: Record<string, string>): string {
+    return ids[DEFAULT_EXTERNAL_SYSTEM] ?? '';
+}
+
+/** External IDs of every Entity as a JSON object keyed by system - correlated against core_entity.id */
+export const EXTERNAL_IDS = sql`COALESCE((
+    SELECT JSON_OBJECT_AGG(core_entity_external.system, core_entity_external.value ORDER BY core_entity_external.system)
+    FROM core_entity_external
+    WHERE core_entity_external.entity = core_entity.id
+), '{}'::JSON)`;
+
+/**
+ * Set the ID of an Entity in a single external system - an empty value removes
+ * the system. connection & kind are copied onto the row for the uniqueness of
+ * a value per system within the Connection & kind
+ */
+export async function setExternalId(
+    tx: Writer,
+    entity: { id: string; kind: LayerMapping_Destination; connection: number | null },
+    external: ExternalId,
+): Promise<void> {
+    if (!external.value) {
+        await tx.delete(CoreEntityExternal).where(and(eq(CoreEntityExternal.entity, entity.id), eq(CoreEntityExternal.system, external.system)));
+        return;
+    }
+
+    await tx.insert(CoreEntityExternal)
+        .values({ entity: entity.id, connection: entity.connection, kind: entity.kind, system: external.system, value: external.value })
+        .onConflictDoUpdate({
+            target: [CoreEntityExternal.entity, CoreEntityExternal.system],
+            set: { value: external.value },
+        });
 }
 
 /** Replace the Channels an Entity is shared with */
@@ -167,6 +212,7 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
             .select({
                 event: { ...EntityColumns, ...EventColumns },
                 active: ACTIVE.as('active'),
+                external_ids: EXTERNAL_IDS.as('external_ids'),
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
                 boards: BOARDS.as('boards'),
             })
@@ -181,6 +227,8 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
         return {
             ...pgres[0].event,
             active: pgres[0].active,
+            external_id: legacyExternalId(pgres[0].external_ids as Record<string, string>),
+            external_ids: pgres[0].external_ids as Record<string, string>,
             geometry: pgres[0].event.geometry as Static<typeof GeoJSONFeatureGeometryPoint>,
             channels: pgres[0].channels as number[],
             boards: pgres[0].boards as Static<typeof CoreEntityResponse>['boards'],
@@ -225,6 +273,7 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
                 count: sql<string>`count(*) OVER()`.as('count'),
                 event: { ...EntityColumns, ...EventColumns },
                 active: ACTIVE.as('active'),
+                external_ids: EXTERNAL_IDS.as('external_ids'),
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
                 boards: (query.boards === false ? sql`'[]'::JSON` : BOARDS).as('boards'),
             })
@@ -245,6 +294,8 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
                     return {
                         ...t.event,
                         active: t.active,
+                        external_id: legacyExternalId(t.external_ids as Record<string, string>),
+                        external_ids: t.external_ids as Record<string, string>,
                         geometry: t.event.geometry as Static<typeof GeoJSONFeatureGeometryPoint>,
                         channels: t.channels as number[],
                         boards: t.boards as Static<typeof CoreEntityResponse>['boards'],

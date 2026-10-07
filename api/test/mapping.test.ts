@@ -131,7 +131,7 @@ test('Mapping: CoreEntity - fields rendered against metadata', async () => {
             location: '{{address}}',
             remarks: '{{htmlstrip description}}',
             ended: '{{closed}}',
-            external_id: 'inc-{{number}}',
+            external_id: { system: 'cad', value: 'inc-{{number}}' },
             editable: false,
         },
     }, {
@@ -148,7 +148,7 @@ test('Mapping: CoreEntity - fields rendered against metadata', async () => {
         location: '1 Main St',
         remarks: 'Big fire',
         ended: null,
-        external_id: 'inc-7',
+        external_id: { system: 'cad', value: 'inc-7' },
         editable: false,
     });
 
@@ -157,6 +157,19 @@ test('Mapping: CoreEntity - fields rendered against metadata', async () => {
     assert.deepEqual(closed, { priority: CoreEntity_Priority.CRITICAL, ended: '2026-09-01T12:00:00.000Z' });
 
     assert.equal(await new Mapping([]).match(point({})), null);
+});
+
+test('Mapping: CoreEntity - legacy string external_id is the value template', async () => {
+    const mapping = new Mapping(rows(LayerMapping_Destination.COREENTITY, [{
+        query: null,
+        mapping: { name: '{{title}}', type: '10031000001211000000', external_id: 'inc-{{number}}' },
+    }]));
+
+    const rendered = await convert(mapping, point({ title: 'Fire', number: 7 }));
+    assert.deepEqual(rendered.external_id, { value: 'inc-7' });
+
+    assert.equal(Mapping.validate(LayerMapping_Destination.COREENTITY, { external_id: 'inc-{{number}}' }), true);
+    assert.deepEqual(Mapping.createOnly({ destination: LayerMapping_Destination.COREENTITY, query: null, mapping: { external_id: { value: 'x', update: false } } }), new Set(['external_id.value']));
 });
 
 test('Mapping: CoreDevice - number templates & booleans', async () => {
@@ -304,7 +317,9 @@ test('Mapping: validate', () => {
     assert.equal(Mapping.validate(LayerMapping_Destination.COREENTITY, { name: '{{title}}', priority: 'high', editable: true }), true);
     throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { priority: 'urgent' }), /Invalid Priority: urgent/);
     throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { editable: 'maybe' }), /Invalid Editable/);
-    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { external_id: '{{#each' }), /Invalid External ID Template/);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { external_id: { value: '{{#each' } }), /Invalid \(external_id\) Value Template/);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { external_id: '{{#each' }), /Invalid \(external_id\) Value Template/);
+    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREENTITY, { external_id: { system: '{{#each' } }), /Invalid \(external_id\) System Template/);
 
     assert.equal(Mapping.validate(LayerMapping_Destination.COREENTITY, {
         priority: '{{severity}}',

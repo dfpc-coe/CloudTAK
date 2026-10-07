@@ -1,11 +1,12 @@
 import { Type } from '@sinclair/typebox';
-import { StandardResponse, CoreDeviceResponse, CoreEntityLink, CoreEntityStyle, GeoJSONFeatureGeometryPoint } from '../../common/types.js';
+import { StandardResponse, CoreDeviceResponse, CoreEntityLink, CoreEntityStyle, CoreEntityExternalIdInput, GeoJSONFeatureGeometryPoint } from '../../common/types.js';
 import { sql, getTableColumns } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUser, AuthResource, AuthResourceAccess } from '../../common/auth.js';
 import { CoreEntity } from '../../common/schema.js';
-import { sharedWith, setChannels } from '../../common/models/CoreEntity.js';
+import { sharedWith, setChannels, setExternalId, toExternalId } from '../../common/models/CoreEntity.js';
+import { LayerMapping_Destination } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
 import { userChannels } from '../../common/control/tak-channels.js';
 import DeviceControl from '../lib/control/device.js';
@@ -171,10 +172,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 default: false,
                 description: 'Is the Device a simulated data source',
             }),
-            external_id: Type.String({
-                default: '',
-                description: 'ID of the Device in an external system',
-            }),
+            external_id: Type.Optional(CoreEntityExternalIdInput),
             remarks: Type.String({
                 default: '',
             }),
@@ -207,7 +205,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ],
             });
 
-            const { channels, ...body } = req.body;
+            const { channels, external_id, ...body } = req.body;
 
             const connection = auth instanceof AuthResource ? await deviceControl.resourceConnection(auth) : null;
 
@@ -219,6 +217,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }, tx);
 
                 await setChannels(tx, id, channels);
+
+                if (external_id !== undefined) await setExternalId(tx, { id, kind: LayerMapping_Destination.COREDEVICE, connection }, toExternalId(external_id));
 
                 return id;
             }).catch(uniqueViolation('external_id is already used by another Device of the Connection'));
@@ -253,7 +253,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 maximum: 100,
             })])),
             simulated: Type.Optional(Type.Boolean()),
-            external_id: Type.Optional(Type.String()),
+            external_id: Type.Optional(CoreEntityExternalIdInput),
             remarks: Type.Optional(Type.String()),
             metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown(), {
                 description: 'User defined key/value Device metadata - replaces the existing metadata object',
@@ -285,11 +285,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 throw new Err(403, null, 'Only the Device creator can modify this Device');
             }
 
-            const { channels, ...body } = req.body;
+            const { channels, external_id, ...body } = req.body;
 
-            if (Object.keys(body).length > 0) {
-                await config.models.CoreDevice.commitDevice(req.params.device, body)
-                    .catch(uniqueViolation('external_id is already used by another Device of the Connection'));
+            if (Object.keys(body).length > 0 || external_id !== undefined) {
+                await config.pg.transaction(async (tx) => {
+                    await config.models.CoreDevice.commitDevice(req.params.device, body, tx);
+
+                    if (external_id !== undefined) await setExternalId(tx, { id: device.id, kind: LayerMapping_Destination.COREDEVICE, connection: device.connection }, toExternalId(external_id));
+                }).catch(uniqueViolation('external_id is already used by another Device of the Connection'));
             }
 
             if (channels !== undefined) await setChannels(config.pg, req.params.device, channels);
