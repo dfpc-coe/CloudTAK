@@ -23,6 +23,10 @@
 
 ### Pending Release
 
+### v13.105.0 - 2026-10-06
+
+- :tada: Introduce GeoParquet output for imported vector layers to power future offline search
+
 ### v13.104.0 - 2026-10-06
 
 - :tada: Add `Layer.vpc` - System Admins can attach a Layer's Lambda to the private VPC subnets so it egresses from the static NAT addresses and can reach internal resources; the addresses to allowlist are shown under Layer > Deployment > Infrastructure
