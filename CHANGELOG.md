@@ -17,12 +17,15 @@
 - The `external_id` string on CoreEvent & CoreDevice requests & responses is deprecated and will be removed in v14, use `external_id: { system, value }` on requests and `external_ids` on responses
 - ETLs in v14 will be required to declare Named Schemas, single schema support will be removed
 - The Minio Legacy Store will be removed in V14 - Ensure you have migrated to Garage before updating to v14.
+- CoreEntity single external ID support will be removed in v14 - ensure you have migrated to multi-system external IDs before updating to v14.
 
 ### Beta Notice
 
 - CoreEvents & CoreDevices are in beta and functionality may change in minor releases. Use with caution in production environments.
 
 ### Pending Release
+
+### v13.106.0 - 2026-10-07
 
 - :tada: CoreEvents & CoreDevices now carry multiple external IDs keyed by system (ie: `{ "active911": "1234", "caltopo": "B42325" }`) in a new `core_entity_external` table, returned as `external_ids`
 - :rocket: `POST` & `PATCH /api/core/event` & `/api/core/device` take a single `external_id: { system, value }` which is merged into the record's external IDs - an empty value removes the system - a bare string is still accepted as the `default` system and echoed on the deprecated `external_id` response field
