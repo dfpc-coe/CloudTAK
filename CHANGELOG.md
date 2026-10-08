@@ -25,6 +25,10 @@
 
 ### Pending Release
 
+### v13.107.0 - 2026-10-07
+
+- :rocket: Introduce Quick Pic Support in the Draw Menu
+
 ### v13.106.0 - 2026-10-07
 
 - :tada: CoreEvents & CoreDevices now carry multiple external IDs keyed by system (ie: `{ "active911": "1234", "caltopo": "B42325" }`) in a new `core_entity_external` table, returned as `external_ids`
