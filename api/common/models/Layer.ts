@@ -56,6 +56,7 @@ export const AugmentedLayer = Type.Object({
     logging: Type.Boolean(),
     task: Type.String({ description: 'Container tag as <integration prefix>-v<version>' }),
     version: Type.String(),
+    schema: Type.String({ description: 'Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping' }),
     integration: Type.Object({
         name: Type.String(),
         icon: Type.Union([Type.Null(), Type.String()], { description: 'Base64 Data URL of the Integration Icon' }),
@@ -173,6 +174,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 logging: Layer.logging,
                 task: sql<string>`${Integration.prefix} || '-v' || ${Layer.version}`,
                 version: Layer.version,
+                schema: Layer.schema,
                 integration: jsonBuildObject({
                     name: Integration.name,
                     icon: Integration.logo,
@@ -265,6 +267,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 logging: Layer.logging,
                 task: sql<string>`${Integration.prefix} || '-v' || ${Layer.version}`,
                 version: Layer.version,
+                schema: Layer.schema,
                 integration: jsonBuildObject({
                     name: Integration.name,
                     icon: Integration.logo,

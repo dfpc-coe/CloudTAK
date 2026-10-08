@@ -863,8 +863,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             let capabilities = null;
-            if (req.body.permissions !== undefined || (taskChanged && layer.outgoing)) {
+            if (req.body.permissions !== undefined || taskChanged) {
                 capabilities = await layerControl.capabilities(task);
+            }
+
+            if (taskChanged) {
+                patch.schema = CommonLayerControl.schemaVersion(capabilities);
             }
 
             if (req.body.permissions !== undefined && capabilities) {
