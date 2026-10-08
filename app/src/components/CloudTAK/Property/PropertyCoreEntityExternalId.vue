@@ -46,70 +46,36 @@
                     <div
                         v-for='[system, value] of entries'
                         :key='system'
-                        class='rounded mb-2 px-2 py-2'
-                        :class='{ "cloudtak-hover-fill": editing !== system }'
+                        class='d-flex align-items-center rounded px-1 py-1 cloudtak-hover-fill'
                     >
-                        <template v-if='editing === system'>
-                            <div class='d-flex align-items-center mb-2'>
-                                <div class='subheader user-select-none'>
-                                    {{ system }}
-                                </div>
-                                <div class='ms-auto d-flex align-items-center flex-nowrap'>
-                                    <TablerIconButton
-                                        title='Save External ID'
-                                        @click='save(system)'
-                                    >
-                                        <IconCheck
-                                            :size='18'
-                                            stroke='1'
-                                        />
-                                    </TablerIconButton>
-                                    <TablerIconButton
-                                        title='Remove External ID'
-                                        @click='remove(system)'
-                                    >
-                                        <IconTrash
-                                            :size='18'
-                                            stroke='1'
-                                        />
-                                    </TablerIconButton>
-                                </div>
-                            </div>
-
-                            <TablerInput
-                                v-model='draft.value'
-                                label='ID'
-                                placeholder='1234'
-                            />
-                        </template>
-
-                        <div
-                            v-else
-                            class='d-flex align-items-center'
+                        <span
+                            class='text-muted text-truncate flex-shrink-0'
+                            style='width: 33%'
+                            :title='system'
+                            v-text='system'
+                        />
+                        <span
+                            class='mx-2 text-truncate flex-fill'
+                            style='min-width: 0'
+                            :title='value'
+                            v-text='value'
+                        />
+                        <TablerIconButton
+                            v-if='props.edit'
+                            title='Remove External ID'
+                            class='flex-shrink-0'
+                            @click='remove(system)'
                         >
-                            <span class='text-muted me-2 flex-shrink-0'>{{ system }}</span>
-                            <CopyField
-                                :model-value='value'
-                                :edit='false'
-                                :size='24'
-                                class='flex-fill overflow-hidden'
+                            <IconTrash
+                                :size='18'
+                                stroke='1'
                             />
-                            <TablerIconButton
-                                v-if='props.edit'
-                                title='Edit External ID'
-                                @click='startEditing(system, value)'
-                            >
-                                <IconPencil
-                                    :size='18'
-                                    stroke='1'
-                                />
-                            </TablerIconButton>
-                        </div>
+                        </TablerIconButton>
                     </div>
 
                     <div
                         v-if='creating'
-                        class='rounded mb-2 px-2 py-2'
+                        class='rounded mt-2 px-2 py-2'
                     >
                         <div class='d-flex align-items-center mb-2'>
                             <div class='subheader user-select-none'>
@@ -128,7 +94,7 @@
                                 </TablerIconButton>
                                 <TablerIconButton
                                     title='Discard External ID'
-                                    @click='cancelNew'
+                                    @click='creating = false'
                                 >
                                     <IconTrash
                                         :size='18'
@@ -161,9 +127,8 @@
 <script setup lang='ts'>
 import { ref, computed } from 'vue';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
-import CopyField from '../util/CopyField.vue';
 import { TablerBadge, TablerInput, TablerIconButton, TablerNone } from '@tak-ps/vue-tabler';
-import { IconHash, IconPlus, IconTrash, IconPencil, IconCheck } from '@tabler/icons-vue';
+import { IconHash, IconPlus, IconTrash, IconCheck } from '@tabler/icons-vue';
 import type { CoreEntityExternalId } from '../../../types.ts';
 
 const SYSTEM = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/;
@@ -180,7 +145,6 @@ const emit = defineEmits<{
 }>();
 
 const expanded = ref(false);
-const editing = ref<string | null>(null);
 const creating = ref(false);
 const draft = ref<CoreEntityExternalId>({ system: '', value: '' });
 
@@ -189,25 +153,11 @@ const valid = computed(() => SYSTEM.test(draft.value.system.trim()) && draft.val
 
 function add(): void {
     creating.value = true;
-    editing.value = null;
     draft.value = { system: '', value: '' };
     expanded.value = true;
 }
 
-function startEditing(system: string, value: string): void {
-    creating.value = false;
-    editing.value = system;
-    draft.value = { system, value };
-    expanded.value = true;
-}
-
-function save(system: string): void {
-    emit('update:modelValue', { system, value: draft.value.value.trim() });
-    editing.value = null;
-}
-
 function remove(system: string): void {
-    editing.value = null;
     emit('update:modelValue', { system, value: '' });
 }
 
@@ -216,11 +166,6 @@ function saveNew(): void {
 
     emit('update:modelValue', { system: draft.value.system.trim(), value: draft.value.value.trim() });
 
-    creating.value = false;
-    draft.value = { system: '', value: '' };
-}
-
-function cancelNew(): void {
     creating.value = false;
     draft.value = { system: '', value: '' };
 }

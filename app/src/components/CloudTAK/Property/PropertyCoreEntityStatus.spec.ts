@@ -13,7 +13,7 @@ describe('PropertyCoreEntityStatus', () => {
             }
         });
 
-        expect(wrapper.get('[title="Active"]').exists()).toBe(true);
+        expect(wrapper.find('[title="Active"]').exists()).toBe(true);
         expect(wrapper.text()).toContain('High');
         expect(wrapper.get('button').text()).toBe('End');
     });
@@ -27,7 +27,7 @@ describe('PropertyCoreEntityStatus', () => {
             }
         });
 
-        expect(wrapper.get('[title="Ended"]').exists()).toBe(true);
+        expect(wrapper.find('[title="Ended"]').exists()).toBe(true);
         expect(wrapper.find('.badge').exists()).toBe(false);
 
         await wrapper.get('button').trigger('click');
