@@ -94,6 +94,11 @@
         v-if='modal === ModalInputType.EVENT'
         @close='modal = ModalInputType.NONE'
     />
+
+    <QuickPicInput
+        v-if='modal === ModalInputType.QUICK_PIC'
+        @close='modal = ModalInputType.NONE'
+    />
 </template>
 
 <script setup lang='ts'>
@@ -104,8 +109,10 @@ import CoordInput from './Inputs/CoordInput.vue';
 import RangeRingsInput from './Inputs/RangeRingsInput.vue';
 import RangeInput from './Inputs/RangeInput.vue';
 import GeoJSONInput from './Inputs/GeoJSONInput.vue';
+import QuickPicInput from './Inputs/QuickPicInput.vue';
 import CreateCoreEntity from './util/CreateCoreEntity.vue';
 import {
+    IconCamera,
     IconTarget,
     IconLasso,
     IconSearch,
@@ -136,6 +143,7 @@ enum ModalInputType {
     IMPORT = 'import',
     RANGE_RINGS = 'range_rings',
     EVENT = 'event',
+    QUICK_PIC = 'quick_pic',
 }
 
 const modal = ref<ModalInputType>(ModalInputType.NONE);
@@ -155,6 +163,7 @@ type DrawToolItem = {
 const drawTools: DrawToolItem[] = [
     { key: 'coordinate', label: 'Coordinate Input', icon: IconCursorText, action: () => { modal.value = ModalInputType.POINT; } },
     { key: 'event', label: 'Create Event', icon: IconCalendarEvent, action: () => { modal.value = ModalInputType.EVENT; } },
+    { key: 'quick_pic', label: 'Quick Pic', icon: IconCamera, action: () => { modal.value = ModalInputType.QUICK_PIC; } },
     { key: 'range', label: 'Range & Bearing', icon: IconCompass, action: () => { modal.value = ModalInputType.RANGE; } },
     { key: 'range_rings', label: 'Range Rings', icon: IconTarget, action: () => { modal.value = ModalInputType.RANGE_RINGS; } },
     { key: 'point', label: 'Draw Point', icon: IconPoint, action: () => { mapStore.draw.start(DrawToolMode.POINT); } },
