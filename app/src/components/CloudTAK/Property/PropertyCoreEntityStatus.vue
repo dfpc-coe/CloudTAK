@@ -4,10 +4,6 @@
             :status='active ? "Success" : "Unknown"'
             :title='active ? "Active" : "Ended"'
         />
-        <span
-            class='fw-semibold user-select-none'
-            v-text='active ? "Active" : "Ended"'
-        />
         <TablerBadge
             v-if='priority !== "none"'
             :background-color='badge.background'
@@ -16,11 +12,6 @@
         >
             {{ badge.label }}
         </TablerBadge>
-        <span
-            class='text-secondary small text-truncate user-select-none'
-            style='min-width: 0;'
-            v-text='summary'
-        />
         <button
             v-if='edit'
             type='button'
@@ -47,20 +38,17 @@
 <script setup lang='ts'>
 /**
  * PropertyCoreEntityStatus - the one-line status strip under the Event
- * header: whether it is active, its priority and its time window
+ * header: whether it is active and its priority
  */
 import { computed } from 'vue';
 import { TablerBadge } from '@tak-ps/vue-tabler';
 import { IconPlayerStop, IconPlayerPlay } from '@tabler/icons-vue';
 import StatusDot from '../../util/StatusDot.vue';
-import timediff from '../../../timediff';
 import { priorityBadge } from '../../../utils/priority.ts';
 
 const props = defineProps<{
     active: boolean;
     priority: string;
-    started: string;
-    ended: string | null;
     edit?: boolean;
 }>();
 
@@ -69,12 +57,4 @@ const emit = defineEmits<{
 }>();
 
 const badge = computed(() => priorityBadge(props.priority));
-
-const summary = computed(() => {
-    const started = `Started ${timediff(props.started)}`;
-
-    if (!props.ended) return `${started} · Open ended`;
-
-    return `${started} · ${props.active ? 'Ends' : 'Ended'} ${timediff(props.ended)}`;
-});
 </script>

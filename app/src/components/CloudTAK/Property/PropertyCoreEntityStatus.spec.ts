@@ -3,24 +3,18 @@ import { describe, expect, it } from 'vitest';
 
 import PropertyCoreEntityStatus from './PropertyCoreEntityStatus.vue';
 
-const HOUR = 60 * 60 * 1000;
-
 describe('PropertyCoreEntityStatus', () => {
-    it('summarises an open ended active Event', () => {
+    it('shows an active Event with its priority', () => {
         const wrapper = mount(PropertyCoreEntityStatus, {
             props: {
                 active: true,
                 priority: 'high',
-                started: new Date(Date.now() - 2 * HOUR).toISOString(),
-                ended: null,
                 edit: true
             }
         });
 
-        expect(wrapper.text()).toContain('Active');
+        expect(wrapper.get('[title="Active"]').exists()).toBe(true);
         expect(wrapper.text()).toContain('High');
-        expect(wrapper.text()).toContain('Started 2 hours ago');
-        expect(wrapper.text()).toContain('Open ended');
         expect(wrapper.get('button').text()).toBe('End');
     });
 
@@ -29,13 +23,11 @@ describe('PropertyCoreEntityStatus', () => {
             props: {
                 active: false,
                 priority: 'none',
-                started: new Date(Date.now() - 3 * HOUR).toISOString(),
-                ended: new Date(Date.now() - HOUR).toISOString(),
                 edit: true
             }
         });
 
-        expect(wrapper.text()).toContain('Ended 1 hour ago');
+        expect(wrapper.get('[title="Ended"]').exists()).toBe(true);
         expect(wrapper.find('.badge').exists()).toBe(false);
 
         await wrapper.get('button').trigger('click');
@@ -47,9 +39,7 @@ describe('PropertyCoreEntityStatus', () => {
         const wrapper = mount(PropertyCoreEntityStatus, {
             props: {
                 active: true,
-                priority: 'low',
-                started: new Date().toISOString(),
-                ended: null
+                priority: 'low'
             }
         });
 

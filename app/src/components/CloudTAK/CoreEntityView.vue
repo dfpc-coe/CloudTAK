@@ -31,6 +31,28 @@
         </template>
 
         <template #buttons>
+            <TablerIconButton
+                v-if='event && hasMap'
+                title='Zoom To'
+                @click='flyTo'
+            >
+                <IconZoomPan
+                    :size='28'
+                    stroke='1'
+                />
+            </TablerIconButton>
+
+            <TablerIconButton
+                v-if='event && is_editable && hasMap'
+                title='Move Marker'
+                @click='editGeometry'
+            >
+                <IconPencil
+                    :size='28'
+                    stroke='1'
+                />
+            </TablerIconButton>
+
             <!-- Only the creator can change who is allowed to edit -->
             <TablerIconButton
                 v-if='event && is_creator'
@@ -86,60 +108,9 @@
             <PropertyCoreEntityStatus
                 :active='event.active'
                 :priority='event.priority'
-                :started='event.started'
-                :ended='event.ended'
                 :edit='is_editable'
                 @update:active='patch({ active: $event })'
             />
-
-            <div
-                v-if='hasMap || event.links.length'
-                class='d-flex align-items-center gap-1 px-2 py-1 border-bottom cloudtak-header flex-shrink-0'
-            >
-                <button
-                    v-if='hasMap'
-                    type='button'
-                    class='btn btn-sm btn-ghost-secondary'
-                    @click='flyTo'
-                >
-                    <IconZoomPan
-                        :size='16'
-                        stroke='1.5'
-                        class='me-1'
-                    />
-                    Zoom To
-                </button>
-
-                <button
-                    v-if='is_editable && hasMap'
-                    type='button'
-                    class='btn btn-sm btn-ghost-secondary'
-                    @click='editGeometry'
-                >
-                    <IconPencil
-                        :size='16'
-                        stroke='1.5'
-                        class='me-1'
-                    />
-                    Move Marker
-                </button>
-
-                <button
-                    v-if='event.links.length'
-                    type='button'
-                    class='btn btn-sm btn-ghost-secondary text-truncate'
-                    style='max-width: 180px;'
-                    :title='event.links[0].url'
-                    @click='openLink(event.links[0].url)'
-                >
-                    <IconExternalLink
-                        :size='16'
-                        stroke='1.5'
-                        class='me-1'
-                    />
-                    {{ event.links[0].name || 'Open Link' }}
-                </button>
-            </div>
 
             <div
                 v-if='saveError'
@@ -337,7 +308,6 @@ import {
     IconPencil,
     IconZoomPan,
     IconCircleX,
-    IconExternalLink,
 } from '@tabler/icons-vue';
 import Type2525 from '@tak-ps/node-cot/2525';
 import MenuTemplate from './util/MenuTemplate.vue';
@@ -764,18 +734,6 @@ async function editGeometry(): Promise<void> {
     await mapStore.draw.edit(cot);
 }
 
-function openLink(url: string): void {
-    let parsed: URL;
-    try {
-        parsed = new URL(url);
-    } catch {
-        return;
-    }
-
-    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
-        window.open(parsed.href, '_blank', 'noopener,noreferrer');
-    }
-}
 
 async function deleteEvent(): Promise<void> {
     if (!event.value) return;
