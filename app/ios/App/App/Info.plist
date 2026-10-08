@@ -58,8 +58,10 @@
 		<string>location</string>
 		<string>remote-notification</string>
 	</array>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>CloudTAK saves Quick Pic photos taken in the app to your photo library</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>CloudTAK allows the suer to upload photos from their photo gallery to attach to map markers</string>
+	<string>CloudTAK allows the user to upload photos from their photo gallery to attach to map markers</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
