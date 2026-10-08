@@ -30,6 +30,7 @@
             <TablerNone
                 v-if='!assignments.length && !creating'
                 label='No Assignments'
+                class='pb-4'
                 :compact='true'
                 :create='false'
             />
@@ -195,17 +196,10 @@ const props = defineProps<{
     edit?: boolean;
 }>();
 
-const emit = defineEmits<{
-    /** The number of Assignments the Event has - the parent shows it on the tab */
-    (e: 'count', value: number): void;
-}>();
-
 const loading = ref(true);
 const saving = ref(false);
 const error = ref<Error | undefined>();
 const assignments = ref<Array<CoreEntityAssignment>>([]);
-
-watch(() => assignments.value.length, (count) => emit('count', count), { immediate: true });
 
 const editing = ref<string | null>(null);
 const creating = ref(false);

@@ -18,22 +18,15 @@
                 @click='emit("update:modelValue", tab.value)'
             >
                 <span v-text='tab.label' />
-                <CountBadge
-                    v-if='tab.count !== undefined'
-                    :count='tab.count'
-                />
             </button>
         </li>
     </ul>
 </template>
 
 <script setup lang='ts'>
-import CountBadge from './CountBadge.vue';
-
 export type PropertyTab = {
     value: string;
     label: string;
-    count?: number;
 };
 
 defineProps<{

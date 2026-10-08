@@ -1,103 +1,130 @@
 <template>
-    <PropertySection
-        label='Metadata'
-        :count='entries.length'
-    >
-        <template #actions>
-            <TablerIconButton
-                v-if='props.edit'
-                title='Add Metadata'
-                @click.stop='addEntry'
-            >
-                <IconPlus
-                    :size='20'
-                    stroke='1'
-                />
-            </TablerIconButton>
-        </template>
-
-        <TablerNone
-            v-if='!entries.length && !creating'
-            label='No Metadata'
-            :compact='true'
-            :create='false'
-        />
-
-        <div
-            v-for='entry of entries'
-            :key='entry.key'
-            class='d-flex align-items-center rounded px-1 py-1 cloudtak-hover-fill'
+    <div class='col-12'>
+        <SlideDownHeader
+            v-model='expanded'
+            label='Metadata'
         >
-            <span
-                class='text-muted text-truncate'
-                style='min-width: 33%'
-                v-text='entry.key'
-            />
-            <span
-                class='mx-2 text-truncate flex-fill'
-                v-text='entry.display'
-            />
-            <TablerIconButton
-                v-if='props.edit'
-                title='Remove Metadata'
-                @click='removeEntry(entry.key)'
-            >
-                <IconTrash
+            <template #icon>
+                <IconListDetails
                     :size='18'
                     stroke='1'
+                    color='#6b7990'
+                    class='ms-2 me-1'
                 />
-            </TablerIconButton>
-        </div>
+            </template>
+            <template #right>
+                <TablerIconButton
+                    v-if='props.edit'
+                    title='Add Metadata'
+                    class='me-2'
+                    @click.stop='addEntry'
+                >
+                    <IconPlus
+                        :size='20'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+                <TablerBadge
+                    class='me-2'
+                    background-color='rgba(59, 130, 246, 0.15)'
+                    border-color='rgba(59, 130, 246, 0.4)'
+                    text-color='#3b82f6'
+                >
+                    {{ entries.length }}
+                </TablerBadge>
+            </template>
 
-        <div
-            v-if='creating'
-            class='rounded mt-2 px-2 py-2'
-        >
-            <div class='d-flex align-items-center mb-2'>
-                <div class='subheader user-select-none'>
-                    Metadata
-                </div>
-                <div class='ms-auto d-flex align-items-center flex-nowrap'>
-                    <TablerIconButton
-                        title='Save Metadata'
-                        @click='saveEntry'
+            <div class='overflow-hidden mb-2'>
+                <div class='rounded mx-2 mt-2 px-2 py-2'>
+                    <TablerNone
+                        v-if='!entries.length && !creating'
+                        label='No Metadata'
+                        :compact='true'
+                        :create='false'
+                    />
+
+                    <div
+                        v-for='entry of entries'
+                        :key='entry.key'
+                        class='d-flex align-items-center rounded px-1 py-1 cloudtak-hover-fill'
                     >
-                        <IconCheck
-                            :size='18'
-                            stroke='1'
+                        <span
+                            class='text-muted text-truncate flex-shrink-0'
+                            style='width: 33%'
+                            :title='entry.key'
+                            v-text='entry.key'
                         />
-                    </TablerIconButton>
-                    <TablerIconButton
-                        title='Discard Metadata'
-                        @click='creating = false'
+                        <span
+                            class='mx-2 text-truncate flex-fill'
+                            style='min-width: 0'
+                            :title='entry.display'
+                            v-text='entry.display'
+                        />
+                        <TablerIconButton
+                            v-if='props.edit'
+                            title='Remove Metadata'
+                            class='flex-shrink-0'
+                            @click='removeEntry(entry.key)'
+                        >
+                            <IconTrash
+                                :size='18'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                    </div>
+
+                    <div
+                        v-if='creating'
+                        class='rounded mt-2 px-2 py-2'
                     >
-                        <IconTrash
-                            :size='18'
-                            stroke='1'
+                        <div class='d-flex align-items-center mb-2'>
+                            <div class='subheader user-select-none'>
+                                Metadata
+                            </div>
+                            <div class='ms-auto d-flex align-items-center flex-nowrap'>
+                                <TablerIconButton
+                                    title='Save Metadata'
+                                    @click='saveEntry'
+                                >
+                                    <IconCheck
+                                        :size='18'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
+                                <TablerIconButton
+                                    title='Discard Metadata'
+                                    @click='creating = false'
+                                >
+                                    <IconTrash
+                                        :size='18'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
+                            </div>
+                        </div>
+
+                        <TablerInput
+                            v-model='draft.key'
+                            label='Key'
+                            class='pb-2'
                         />
-                    </TablerIconButton>
+
+                        <TablerInput
+                            v-model='draft.value'
+                            label='Value'
+                        />
+                    </div>
                 </div>
             </div>
-
-            <TablerInput
-                v-model='draft.key'
-                label='Key'
-                class='pb-2'
-            />
-
-            <TablerInput
-                v-model='draft.value'
-                label='Value'
-            />
-        </div>
-    </PropertySection>
+        </SlideDownHeader>
+    </div>
 </template>
 
 <script setup lang='ts'>
 import { ref, computed } from 'vue';
-import PropertySection from '../util/PropertySection.vue';
-import { TablerInput, TablerIconButton, TablerNone } from '@tak-ps/vue-tabler';
-import { IconPlus, IconTrash, IconCheck } from '@tabler/icons-vue';
+import SlideDownHeader from '../util/SlideDownHeader.vue';
+import { TablerBadge, TablerInput, TablerIconButton, TablerNone } from '@tak-ps/vue-tabler';
+import { IconListDetails, IconPlus, IconTrash, IconCheck } from '@tabler/icons-vue';
 
 const props = defineProps<{
     /** User defined key/value Event metadata */
@@ -109,6 +136,7 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: Record<string, unknown>): void
 }>();
 
+const expanded = ref(false);
 const creating = ref(false);
 const draft = ref({ key: '', value: '' });
 
@@ -128,6 +156,7 @@ const entries = computed(() => {
 function addEntry(): void {
     creating.value = true;
     draft.value = { key: '', value: '' };
+    expanded.value = true;
 }
 
 function saveEntry(): void {

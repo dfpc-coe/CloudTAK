@@ -173,6 +173,7 @@
                         <CopyField
                             :model-value='event.location || "None"'
                             :edit='is_editable'
+                            :hover='is_editable'
                             :size='24'
                             @submit='patch({ location: String($event) })'
                         />
@@ -186,6 +187,7 @@
                             :key='eventKey'
                             :inline='true'
                             :edit='is_editable'
+                            :hover='is_editable'
                             :model-value='event.geometry.coordinates'
                             @update:model-value='updateCoordinates($event as number[])'
                         />
@@ -242,6 +244,23 @@
                         @update:model-value='patch({ links: $event })'
                     />
 
+                    <PropertyCoreEntityMission
+                        :model-value='event.missions'
+                        :edit='is_editable'
+                        :event-name='event.name'
+                        :remarks='event.remarks'
+                        :channels='event.channels'
+                        @update:model-value='patch({ missions: $event })'
+                    />
+
+                    <!-- PropertyStyle has no read-only mode so hide it for non-editors -->
+                    <PropertyStyle
+                        v-if='is_editable'
+                        geometry='Point'
+                        :model-value='styleProperties'
+                        @update:model-value='updateStyle($event)'
+                    />
+
                     <PropertyCoreEntityExternalId
                         :model-value='event.external_ids'
                         :edit='is_editable'
@@ -253,17 +272,9 @@
                         :edit='is_editable'
                         @update:model-value='patch({ metadata: $event })'
                     />
-
-                    <!-- PropertyStyle has no read-only mode so hide it for non-editors -->
-                    <PropertyStyle
-                        v-if='is_editable'
-                        geometry='Point'
-                        :model-value='styleProperties'
-                        @update:model-value='updateStyle($event)'
-                    />
                 </div>
 
-                <div v-show='tab === "sharing"'>
+                <div v-show='tab === "channels"'>
                     <PropertyCoreEntityChannels
                         :model-value='event.channels'
                         :boards='event.boards'
@@ -271,31 +282,22 @@
                         @update:model-value='patch({ channels: $event })'
                         @nominate='nominate($event)'
                     />
-
-                    <PropertyCoreEntityMission
-                        :model-value='event.missions'
-                        :edit='is_editable'
-                        :event-name='event.name'
-                        :remarks='event.remarks'
-                        :channels='event.channels'
-                        @update:model-value='patch({ missions: $event })'
-                    />
                 </div>
 
-                <div v-show='tab === "activity"'>
+                <div v-show='tab === "assignments"'>
                     <PropertyCoreEntityAssignments
                         :event='event.id'
                         :edit='is_editable'
-                        @count='assignmentCount = $event'
                     />
+                </div>
 
+                <div v-show='tab === "forms"'>
                     <PropertyCoreEntityForms
                         :event='event.id'
                         :refresh='formsRefresh'
                         :channels='event.channels'
                         :edit='is_editable'
                         @add='completeForm($event)'
-                        @count='formCount = $event'
                     />
                 </div>
             </div>
@@ -408,29 +410,12 @@ const formsRefresh = ref(0);
 
 const tab = ref('details');
 
-// Counts the Activity sections report once their lists load
-const assignmentCount = ref(0);
-const formCount = ref(0);
-
-const tabs = computed<Array<PropertyTab>>(() => {
-    if (!event.value) return [];
-
-    return [{
-        value: 'details',
-        label: 'Details',
-        count: event.value.links.length
-            + Object.keys(event.value.external_ids).length
-            + Object.keys(event.value.metadata).length,
-    }, {
-        value: 'sharing',
-        label: 'Sharing',
-        count: event.value.channels.length + event.value.missions.length,
-    }, {
-        value: 'activity',
-        label: 'Activity',
-        count: assignmentCount.value + formCount.value,
-    }];
-});
+const tabs: Array<PropertyTab> = [
+    { value: 'details', label: 'Details' },
+    { value: 'channels', label: 'Channels' },
+    { value: 'assignments', label: 'Assignments' },
+    { value: 'forms', label: 'Forms' },
+];
 
 const profile = ref<{ username?: string, system_admin?: boolean }>({});
 

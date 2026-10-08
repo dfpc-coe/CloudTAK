@@ -9,6 +9,7 @@
             :title='new Date(started).toLocaleString()'
             type='datetime-local'
             :edit='edit'
+            :hover='edit'
             :validate='validateStarted'
             :size='24'
             @submit='emit("update:started", new Date(String($event)).toISOString())'
@@ -25,6 +26,7 @@
             :title='ended ? new Date(ended).toLocaleString() : "Open Ended"'
             type='datetime-local'
             :edit='edit'
+            :hover='edit'
             :size='24'
             @submit='emit("update:ended", $event ? new Date(String($event)).toISOString() : null)'
         />

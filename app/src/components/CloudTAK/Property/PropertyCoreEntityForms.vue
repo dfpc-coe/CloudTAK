@@ -115,6 +115,7 @@
             <TablerNone
                 v-if='!responses.length'
                 label='No Completed Forms'
+                class='pb-4'
                 :compact='true'
                 :create='false'
             />
@@ -215,16 +216,12 @@ const props = defineProps<{
 const emit = defineEmits<{
     /** A Form was picked for completion - the parent opens the FormWizard */
     (e: 'add', form: CoreForm): void;
-    /** The number of completed Forms - the parent shows it on the tab */
-    (e: 'count', value: number): void;
 }>();
 
 const loading = ref(true);
 const error = ref<Error | undefined>();
 const responses = ref<Array<CoreEntityFormResponse>>([]);
 const opened = ref<Set<string>>(new Set());
-
-watch(() => responses.value.length, (count) => emit('count', count), { immediate: true });
 
 const search = ref('');
 const forms = ref<Array<CoreForm>>([]);

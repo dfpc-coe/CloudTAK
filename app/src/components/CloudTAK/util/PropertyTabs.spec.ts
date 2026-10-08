@@ -5,11 +5,11 @@ import PropertyTabs from './PropertyTabs.vue';
 
 describe('PropertyTabs', () => {
     const tabs = [
-        { value: 'details', label: 'Details', count: 3 },
+        { value: 'details', label: 'Details' },
         { value: 'sharing', label: 'Sharing' },
     ];
 
-    it('marks the selected tab and shows counts only where given', () => {
+    it('marks the selected tab', () => {
         const wrapper = mount(PropertyTabs, {
             props: { modelValue: 'sharing', tabs }
         });
@@ -19,8 +19,6 @@ describe('PropertyTabs', () => {
         expect(links).toHaveLength(2);
         expect(links[0].classes()).not.toContain('active');
         expect(links[1].classes()).toContain('active');
-        expect(links[0].text()).toContain('3');
-        expect(links[1].find('.badge').exists()).toBe(false);
     });
 
     it('emits the clicked tab', async () => {
