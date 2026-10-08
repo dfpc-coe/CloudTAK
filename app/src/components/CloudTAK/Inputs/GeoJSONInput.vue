@@ -1,22 +1,21 @@
 <template>
-    <TablerModal size='lg'>
-        <div class='modal-status bg-red' />
-        <button
-            type='button'
-            class='btn-close'
-            aria-label='Close'
-            @click='emit("close")'
-        />
-        <div class='modal-header text-body'>
-            <div class='d-flex align-items-center'>
-                <IconFileImport
-                    :size='28'
-                    stroke='1'
-                />
-                <span class='mx-2'>Import GeoJSON to Editable Features</span>
-            </div>
-        </div>
-        <div class='modal-body text-body'>
+    <FloatingPane
+        :uid='uid'
+        @close='emit("close")'
+    >
+        <template #header>
+            <IconFileImport
+                :size='24'
+                stroke='1'
+                class='ms-2'
+            />
+            <div
+                class='mx-2 text-sm text-truncate'
+                v-text='"Import GeoJSON to Editable Features"'
+            />
+        </template>
+
+        <div class='h-100 w-100 overflow-auto'>
             <TablerLoading v-if='loading' />
             <div
                 v-else-if='!feats.length'
@@ -58,14 +57,13 @@
                 </div>
             </div>
             <div
-                v-else-if='feats.length'
+                v-else
                 class='row mx-2'
             >
                 <div class='col-12 pt-3'>
                     <label class='mx-2 user-select-none'>Features To Import:</label>
 
                     <div
-                        v-if='feats.length !== 0'
                         class='col-12 overflow-auto'
                         style='
                             max-height: 40vh;
@@ -79,12 +77,6 @@
                             :delete-button='false'
                         />
                     </div>
-                    <TablerNone
-                        v-else
-                        :compact='true'
-                        :create='false'
-                        label='No Features'
-                    />
                 </div>
 
                 <div class='col-12 pt-3'>
@@ -97,45 +89,48 @@
                 </div>
             </div>
         </div>
-    </TablerModal>
+    </FloatingPane>
 </template>
 
 <script setup lang='ts'>
 import { ref } from 'vue';
 import {
-    TablerNone,
-    TablerModal,
     TablerLoading,
     TablerButton,
     TablerInlineAlert,
     TablerFileInput,
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../../stores/map.ts';
+import { useFloatStore } from '../../../stores/float.ts';
+import type { Pane, PaneGeoJSONConfig } from '../../../stores/float.ts';
 import { normalize_geojson } from '@tak-ps/node-cot/normalize_geojson';
 import {
     IconFileImport,
 } from '@tabler/icons-vue';
 import type { LngLatBoundsLike } from 'maplibre-gl';
 import FeatureRow from '../util/FeatureRow.vue';
+import FloatingPane from '../util/FloatingPane.vue';
 import { bbox } from '@turf/bbox';
 import type { InputFeature } from '../../../types.ts';
 
 const mapStore = useMapStore();
+const floatStore = useFloatStore();
 
 const props = defineProps({
-    features: {
-        type: Array as () => InputFeature[],
-        required: false,
-        default: () => []
+    uid: {
+        type: String,
+        required: true
     }
 });
+
+const emit = defineEmits(['close']);
+
+const pane = floatStore.panes.get(props.uid) as Pane<PaneGeoJSONConfig> | undefined;
 
 const error = ref<Error | undefined>();
 const file = ref<File | undefined>();
 
-const feats = ref<InputFeature[]>(props.features || []);
-
-const emit = defineEmits(['close', 'done']);
+const feats = ref<InputFeature[]>(pane?.config.features ?? []);
 
 const loading = ref(false);
 
@@ -234,7 +229,6 @@ async function saveToMap() {
 
     loading.value = false;
 
-    emit('done');
     emit('close');
 }
 </script>

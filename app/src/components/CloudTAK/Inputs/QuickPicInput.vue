@@ -1,22 +1,21 @@
 <template>
-    <TablerModal size='md'>
-        <div class='modal-status bg-blue' />
-        <button
-            type='button'
-            class='btn-close'
-            aria-label='Close'
-            @click='emit("close")'
-        />
-        <div class='modal-header text-body'>
-            <div class='d-flex align-items-center'>
-                <IconCamera
-                    :size='28'
-                    stroke='1'
-                />
-                <span class='mx-2'>Quick Pic</span>
-            </div>
-        </div>
-        <div class='modal-body text-body'>
+    <FloatingPane
+        :uid='uid'
+        @close='emit("close")'
+    >
+        <template #header>
+            <IconCamera
+                :size='24'
+                stroke='1'
+                class='ms-2'
+            />
+            <div
+                class='mx-2 text-sm text-truncate'
+                v-text='"Quick Pic"'
+            />
+        </template>
+
+        <div class='h-100 w-100 overflow-auto'>
             <TablerLoading
                 v-if='stage === "capturing"'
                 desc='Waiting for photo...'
@@ -63,7 +62,7 @@
                 @change='stageFile($event)'
             >
         </div>
-    </TablerModal>
+    </FloatingPane>
 </template>
 
 <script setup lang='ts'>
@@ -74,17 +73,24 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import type { LngLatLike } from 'maplibre-gl';
 import { IconCamera } from '@tabler/icons-vue';
 import {
-    TablerModal,
     TablerButton,
     TablerLoading,
     TablerInlineAlert,
 } from '@tak-ps/vue-tabler';
+import FloatingPane from '../util/FloatingPane.vue';
 import { std, stdurl } from '../../../std.ts';
 import { isNativePlatform } from '../../../utils/capacitor.ts';
 import { quickPicName, quickPicFeature } from '../../../utils/quick-pic.ts';
 import { useMapStore } from '../../../stores/map.ts';
 
 type Stage = 'idle' | 'capturing' | 'uploading' | 'saving';
+
+defineProps({
+    uid: {
+        type: String,
+        required: true
+    }
+});
 
 const emit = defineEmits<{
     (e: 'close'): void;

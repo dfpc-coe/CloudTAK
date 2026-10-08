@@ -1,18 +1,21 @@
 <template>
-    <TablerModal size='md'>
-        <div class='modal-status bg-blue' />
-        <button
-            type='button'
-            class='btn-close'
-            aria-label='Close'
-            @click='emit("close")'
-        />
-        <div class='modal-header text-body'>
-            <div class='modal-title'>
-                Coordinate Entry
-            </div>
-        </div>
-        <div class='modal-body text-body'>
+    <FloatingPane
+        :uid='uid'
+        @close='emit("close")'
+    >
+        <template #header>
+            <IconCursorText
+                :size='24'
+                stroke='1'
+                class='ms-2'
+            />
+            <div
+                class='mx-2 text-sm text-truncate'
+                v-text='"Coordinate Entry"'
+            />
+        </template>
+
+        <div class='h-100 w-100 overflow-auto'>
             <div class='mx-2 my-2'>
                 <TablerInput
                     v-model='config.name'
@@ -27,21 +30,25 @@
                 :hover='true'
                 @submit='submitPoint'
             />
-            <Div class='d-flex justify-content-center'>
+
+            <div class='d-flex justify-content-center'>
                 <CoordinateType
                     v-model='config.type'
                     class='pt-3'
                     :size='24'
                 />
             </div>
-            <button
-                class='btn btn-primary w-100 mt-3'
-                @click='submitPoint'
-            >
-                Save
-            </button>
+
+            <div class='mx-2'>
+                <button
+                    class='btn btn-primary w-100 mt-3'
+                    @click='submitPoint'
+                >
+                    Save
+                </button>
+            </div>
         </div>
-    </TablerModal>
+    </FloatingPane>
 </template>
 
 <script setup lang='ts'>
@@ -49,13 +56,23 @@ import { v4 as randomUUID } from 'uuid';
 import { ref, toRaw } from 'vue'
 import Coordinate from '../util/Coordinate.vue';
 import CoordinateType from '../util/CoordinateType.vue';
+import FloatingPane from '../util/FloatingPane.vue';
 import {
     TablerInput,
-    TablerModal,
 } from '@tak-ps/vue-tabler';
+import {
+    IconCursorText,
+} from '@tabler/icons-vue';
 import type { LngLatLike } from 'maplibre-gl'
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
+
+defineProps({
+    uid: {
+        type: String,
+        required: true
+    }
+});
 
 const emit = defineEmits([ 'close' ]);
 

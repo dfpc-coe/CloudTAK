@@ -1,67 +1,51 @@
 <template>
-    <div
-        class='position-absolute end-0 text-white cloudtak-bg card rounded'
-        style='
-            top: 56px;
-            z-index: 1;
-            width: 400px;
-            border-radius: 0px 6px 0px 0px;
-        '
+    <FloatingPane
+        :uid='uid'
+        @close='emit("close")'
     >
-        <div class='card-header d-flex align-items-center'>
-            <div class='card-title'>
-                <IconCompass
-                    :size='25'
-                    stroke='1'
-                />
+        <template #header>
+            <IconCompass
+                :size='24'
+                stroke='1'
+                class='ms-2'
+            />
+            <div
+                class='mx-2 text-sm text-truncate'
+                v-text='"Range & Bearing"'
+            />
+        </template>
 
-                <span class='ms-2'>Range &amp; Bearing</span>
-            </div>
-            <div class='ms-auto'>
-                <TablerIconButton
-                    title='Close'
-                    @click='emit("close")'
-                >
-                    <IconX
-                        :size='20'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-            </div>
-        </div>
-        <div class='mx-2 my-2 row g-2'>
-            <div class='col-12'>
+        <div class='h-100 w-100 overflow-auto'>
+            <div class='mx-2 my-2'>
                 <TablerInput
                     v-model='config.name'
                     label='Name'
                     @submit='submitPoint'
                 />
             </div>
-            <div class='col-12'>
-                <Coordinate
-                    v-model='config.coordinates'
-                    :edit='true'
-                    :hover='true'
-                    :modes='["dd"]'
-                    @submit='submitPoint'
-                />
-            </div>
-            <div class='col-12'>
-                <PropertyBearing
-                    v-model='config.bearing'
-                    :edit='true'
-                    :hover='true'
-                />
-            </div>
-            <div class='col-12'>
-                <PropertyDistance
-                    v-model='config.range'
-                    :unit='mapStore.distanceUnit'
-                    :edit='true'
-                    :hover='true'
-                />
-            </div>
-            <div class='col-12'>
+
+            <Coordinate
+                v-model='config.coordinates'
+                :edit='true'
+                :hover='true'
+                :modes='["dd"]'
+                @submit='submitPoint'
+            />
+
+            <PropertyBearing
+                v-model='config.bearing'
+                :edit='true'
+                :hover='true'
+            />
+
+            <PropertyDistance
+                v-model='config.range'
+                :unit='mapStore.distanceUnit'
+                :edit='true'
+                :hover='true'
+            />
+
+            <div class='mx-2'>
                 <button
                     class='btn btn-primary w-100 mt-3'
                     @click='submitPoint'
@@ -70,7 +54,7 @@
                 </button>
             </div>
         </div>
-    </div>
+    </FloatingPane>
 </template>
 
 <script setup lang='ts'>
@@ -78,21 +62,25 @@ import { v4 as randomUUID } from 'uuid';
 import { ref, toRaw } from 'vue'
 import { destination } from '@turf/destination'
 import Coordinate from '../util/Coordinate.vue';
+import FloatingPane from '../util/FloatingPane.vue';
 import PropertyBearing from '../Property/PropertyBearing.vue';
 import PropertyDistance from '../Property/PropertyDistance.vue';
 import {
     TablerInput,
-    TablerIconButton
 } from '@tak-ps/vue-tabler';
-
 import {
-    IconX,
     IconCompass
 } from '@tabler/icons-vue';
-
 import type { LngLatLike } from 'maplibre-gl'
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
+
+defineProps({
+    uid: {
+        type: String,
+        required: true
+    }
+});
 
 const emit = defineEmits([ 'close' ]);
 

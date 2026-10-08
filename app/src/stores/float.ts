@@ -6,7 +6,7 @@ import { defineStore } from 'pinia'
 import { markRaw, defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 import { useMapStore } from './map.ts';
-import type { VideoConnection, VideoLease, Attachment } from '../types.ts';
+import type { VideoConnection, VideoLease, Attachment, InputFeature } from '../types.ts';
 
 const FloatingVideo = defineAsyncComponent(() => import('../components/CloudTAK/util/FloatingVideo.vue'));
 const FloatingAttachment = defineAsyncComponent(() => import('../components/CloudTAK/util/FloatingAttachment.vue'));
@@ -27,7 +27,20 @@ export type PaneAttachmentConfig = {
     attachment: Attachment,
 }
 
+export type PaneGeoJSONConfig = {
+    features: InputFeature[],
+}
+
+export type PaneCreateEventConfig = {
+    coordinates?: number[],
+    location?: string,
+    channel?: number,
+    navigate?: boolean,
+}
+
 export type PaneConfig = Record<string, unknown>;
+
+export type PaneCorner = 'top-left' | 'top-right';
 
 export type Pane<C extends PaneConfig = PaneConfig> = {
     uid: string,
@@ -38,6 +51,49 @@ export type Pane<C extends PaneConfig = PaneConfig> = {
     width: number,
     x: number,
     y: number,
+}
+
+// Panes open one 8px gutter clear of the 40px-wide left control column (which
+// ends at 48px) and of the 60px top bar (which ends at 68px), matching the
+// gutters the map chrome uses between itself and the viewport edge.
+const PANE_GUTTER = 8;
+const PANE_DEFAULT_X = 56;
+const PANE_DEFAULT_Y = 76;
+const PANE_DEFAULT_WIDTH = 400;
+const PANE_DEFAULT_HEIGHT = 300;
+
+// Mirrors Map.vue's --map-side-offset: the visible menu edge is the toast
+// offset less its 10px notification buffer.
+const TOAST_OFFSET_BUFFER = 10;
+
+// --status-bar-height is a CSS expression over env(), so the native inset
+// has to be measured rather than parsed.
+function statusBarInset(): number {
+    if (typeof document === 'undefined') return 0;
+
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position: absolute; visibility: hidden; height: var(--status-bar-height, 0px);';
+    document.body.appendChild(probe);
+    const height = probe.offsetHeight;
+    probe.remove();
+    return height;
+}
+
+function defaultPosition(corner: PaneCorner = 'top-left', width = PANE_DEFAULT_WIDTH): { x: number, y: number } {
+    const y = PANE_DEFAULT_Y + statusBarInset();
+
+    if (corner === 'top-right') {
+        const mapStore = useMapStore();
+        const sideOffset = Math.max(mapStore.toastOffset.x - TOAST_OFFSET_BUFFER, 0);
+        const viewport = typeof window === 'undefined' ? 0 : window.innerWidth;
+
+        return {
+            x: Math.max(viewport - sideOffset - PANE_GUTTER - width, PANE_DEFAULT_X),
+            y,
+        };
+    }
+
+    return { x: PANE_DEFAULT_X, y };
 }
 
 export const useFloatStore = defineStore('float', {
@@ -61,16 +117,20 @@ export const useFloatStore = defineStore('float', {
             width?: number,
             x?: number,
             y?: number,
+            corner?: PaneCorner,
         }): Pane {
+            const width = opts.width ?? PANE_DEFAULT_WIDTH;
+            const position = defaultPosition(opts.corner, width);
+
             const pane: Pane = {
                 uid: opts.uid,
                 name: opts.name,
                 component: markRaw(opts.component),
                 config: opts.config || {},
-                height: opts.height ?? 300,
-                width: opts.width ?? 400,
-                x: opts.x ?? 60, // Clear the left-hand map control column
-                y: opts.y ?? 70, // Open below the 60px Active Mission header (matches the map controls' 70px offset)
+                height: opts.height ?? PANE_DEFAULT_HEIGHT,
+                width,
+                x: opts.x ?? position.x,
+                y: opts.y ?? position.y,
             };
             this.panes.set(opts.uid, pane);
             return pane;
@@ -82,10 +142,9 @@ export const useFloatStore = defineStore('float', {
                 config: {
                     attachment,
                 },
-                height: 300,
-                width: 400,
-                x: 60, // Clear the left-hand map control column
-                y: 70 // Open below the 60px Active Mission header (matches the map controls' 70px offset)
+                height: PANE_DEFAULT_HEIGHT,
+                width: PANE_DEFAULT_WIDTH,
+                ...defaultPosition(),
             })
         },
         addConnection(connection: VideoConnection): void {
@@ -99,10 +158,9 @@ export const useFloatStore = defineStore('float', {
                     type: VideoStoreType.CONNECTION,
                     url: connection.feeds[0].url,
                 },
-                height: 300,
-                width: 400,
-                x: 60, // Clear the left-hand map control column
-                y: 70 // Open below the 60px Active Mission header (matches the map controls' 70px offset)
+                height: PANE_DEFAULT_HEIGHT,
+                width: PANE_DEFAULT_WIDTH,
+                ...defaultPosition(),
             })
         },
         addLease(lease: VideoLease): void {
@@ -116,10 +174,9 @@ export const useFloatStore = defineStore('float', {
                     type: VideoStoreType.LEASE,
                     lease: lease.id,
                 },
-                height: 300,
-                width: 400,
-                x: 60, // Clear the left-hand map control column
-                y: 70 // Open below the 60px Active Mission header (matches the map controls' 70px offset)
+                height: PANE_DEFAULT_HEIGHT,
+                width: PANE_DEFAULT_WIDTH,
+                ...defaultPosition(),
             })
         },
         async addCOT(uid: string): Promise<void> {
@@ -140,10 +197,9 @@ export const useFloatStore = defineStore('float', {
                     type: VideoStoreType.COT,
                     url: cot.properties.video.url,
                 },
-                height: 300,
-                width: 400,
-                x: 60, // Clear the left-hand map control column
-                y: 70 // Open below the 60px Active Mission header (matches the map controls' 70px offset)
+                height: PANE_DEFAULT_HEIGHT,
+                width: PANE_DEFAULT_WIDTH,
+                ...defaultPosition(),
             })
         }
     }

@@ -1,22 +1,21 @@
 <template>
-    <TablerModal size='md'>
-        <div class='modal-status bg-blue' />
-        <button
-            type='button'
-            class='btn-close'
-            aria-label='Close'
-            @click='emit("close")'
-        />
-        <div class='modal-header text-body'>
-            <div class='modal-title d-flex align-items-center'>
-                <IconTarget
-                    :size='32'
-                    stroke='1'
-                />
-                <span class='mx-2'>Range Rings</span>
-            </div>
-        </div>
-        <div class='modal-body text-body'>
+    <FloatingPane
+        :uid='uid'
+        @close='emit("close")'
+    >
+        <template #header>
+            <IconTarget
+                :size='24'
+                stroke='1'
+                class='ms-2'
+            />
+            <div
+                class='mx-2 text-sm text-truncate'
+                v-text='"Range Rings"'
+            />
+        </template>
+
+        <div class='h-100 w-100 overflow-auto'>
             <div class='mx-2 my-2'>
                 <TablerInput
                     v-model='config.name'
@@ -113,20 +112,23 @@
                 </TablerSlidedown>
             </div>
 
-            <button
-                class='btn btn-primary w-100 mt-3'
-                @click='submitRings'
-            >
-                Save
-            </button>
+            <div class='mx-2'>
+                <button
+                    class='btn btn-primary w-100 mt-3'
+                    @click='submitRings'
+                >
+                    Save
+                </button>
+            </div>
         </div>
-    </TablerModal>
+    </FloatingPane>
 </template>
 
 <script setup lang='ts'>
 import { v4 as randomUUID } from 'uuid';
 import { ref, toRaw, computed, onMounted } from 'vue'
 import Coordinate from '../util/Coordinate.vue';
+import FloatingPane from '../util/FloatingPane.vue';
 import PropertyDistance from '../Property/PropertyDistance.vue';
 import ProfileConfig from '../../../base/profile.ts';
 import Ellipse from '@turf/ellipse'
@@ -137,7 +139,6 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerInput,
-    TablerModal,
     TablerColour,
     TablerEnum,
     TablerRange,
@@ -146,6 +147,13 @@ import {
 import type { LngLatLike } from 'maplibre-gl'
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
+
+defineProps({
+    uid: {
+        type: String,
+        required: true
+    }
+});
 
 const emit = defineEmits([ 'close' ]);
 
