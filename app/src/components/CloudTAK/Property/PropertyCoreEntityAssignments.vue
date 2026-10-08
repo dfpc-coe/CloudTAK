@@ -206,6 +206,9 @@ const creating = ref(false);
 const draft = ref<CoreEntityAssignmentInput>(emptyDraft());
 
 watch(() => props.event, async () => {
+    creating.value = false;
+    editing.value = null;
+    draft.value = emptyDraft();
     await listAssignments();
 }, { immediate: true });
 
