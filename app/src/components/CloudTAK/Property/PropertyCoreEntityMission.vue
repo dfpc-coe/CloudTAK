@@ -226,7 +226,7 @@ const emit = defineEmits<{
 const router = useRouter();
 const mapStore = useMapStore();
 
-const expanded = ref(props.modelValue.length > 0);
+const expanded = ref(true);
 const mode = ref<'view' | 'select'>('view');
 
 const error = ref<Error | undefined>();

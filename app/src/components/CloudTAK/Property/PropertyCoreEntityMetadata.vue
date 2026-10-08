@@ -49,17 +49,21 @@
                         class='d-flex align-items-center rounded px-1 py-1 cloudtak-hover-fill'
                     >
                         <span
-                            class='text-muted text-truncate'
-                            style='min-width: 33%'
+                            class='text-muted text-truncate flex-shrink-0'
+                            style='width: 33%'
+                            :title='entry.key'
                             v-text='entry.key'
                         />
                         <span
                             class='mx-2 text-truncate flex-fill'
+                            style='min-width: 0'
+                            :title='entry.display'
                             v-text='entry.display'
                         />
                         <TablerIconButton
                             v-if='props.edit'
                             title='Remove Metadata'
+                            class='flex-shrink-0'
                             @click='removeEntry(entry.key)'
                         >
                             <IconTrash

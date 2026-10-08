@@ -194,7 +194,7 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<CoreEntityLink>): void
 }>();
 
-const expanded = ref(false);
+const expanded = ref(true);
 const editing = ref<number | null>(null);
 const creating = ref(false);
 const draft = ref<CoreEntityLink>({ name: '', url: '' });

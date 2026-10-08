@@ -25,6 +25,8 @@
 
 ### Pending Release
 
+- :tada: Core Event view gains an Assignments panel for listing, adding, editing & removing the people managing an Event by name, role & optional Profile username
+
 ### v13.107.0 - 2026-10-07
 
 - :rocket: Introduce Quick Pic Support in the Draw Menu

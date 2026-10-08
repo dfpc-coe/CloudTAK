@@ -1,21 +1,16 @@
-import { Static, Type } from '@sinclair/typebox';
+import { Type } from '@sinclair/typebox';
 import { StandardResponse } from '../../common/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
 import { MissionProperty } from '@tak-ps/node-tak/lib/api/mission-property';
-import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
-import ProfileControl from '../lib/control/profile.js';
 import {
     TAKItem,
 } from '@tak-ps/node-tak/lib/api/types';
-import { authenticatedProfile } from '../../common/control/profile.js';
-import TAKServerControl from '../../common/control/takserver.js';
+import MissionControl from '../lib/control/mission.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
-    const takserver = new TAKServerControl(config);
-    const profileControl = new ProfileControl(config);
+    const missionControl = new MissionControl(config);
 
     await schema.get('/marti/missions/:guid/property', {
         name: 'List Properties',
@@ -35,14 +30,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
-
-            const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await takserver.withAuth(auth);
-
-            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
-                ? { token: String(req.headers['missionauthorization']) }
-                : await profileControl.subscription(user.email, req.params.guid);
+            const { api, opts } = await missionControl.context(req, req.params.guid);
 
             const list = await api.MissionProperty.list(
                 req.params.guid,
@@ -72,14 +60,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: TAKItem(MissionProperty),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
-
-            const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await takserver.withAuth(auth);
-
-            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
-                ? { token: String(req.headers['missionauthorization']) }
-                : await profileControl.subscription(user.email, req.params.guid);
+            const { api, opts } = await missionControl.context(req, req.params.guid);
 
             const property = await api.MissionProperty.get(
                 req.params.guid,
@@ -104,14 +85,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: TAKItem(MissionProperty),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
-
-            const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await takserver.withAuth(auth);
-
-            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
-                ? { token: String(req.headers['missionauthorization']) }
-                : await profileControl.subscription(user.email, req.params.guid);
+            const { user, api, opts } = await missionControl.context(req, req.params.guid);
 
             const property = await api.MissionProperty.set(
                 req.params.guid,
@@ -140,14 +114,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: StandardResponse,
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
-
-            const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await takserver.withAuth(auth);
-
-            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
-                ? { token: String(req.headers['missionauthorization']) }
-                : await profileControl.subscription(user.email, req.params.guid);
+            const { user, api, opts } = await missionControl.context(req, req.params.guid);
 
             await api.MissionProperty.delete(
                 req.params.guid,
@@ -175,14 +142,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: StandardResponse,
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
-
-            const auth = (await authenticatedProfile(config, user.email)).auth;
-            const api = await takserver.withAuth(auth);
-
-            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
-                ? { token: String(req.headers['missionauthorization']) }
-                : await profileControl.subscription(user.email, req.params.guid);
+            const { user, api, opts } = await missionControl.context(req, req.params.guid);
 
             await api.MissionProperty.deleteAll(
                 req.params.guid,

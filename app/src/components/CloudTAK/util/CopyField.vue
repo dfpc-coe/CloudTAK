@@ -47,6 +47,7 @@
         >
             <TablerInput
                 v-model='text'
+                :type='type'
                 :rows='rows'
                 :autofocus='true'
                 label=''
@@ -148,7 +149,7 @@
                 />
             </template>
             <template v-else>
-                <span v-text='text' />
+                <span v-text='props.display ?? text' />
 
                 <TablerDelete
                     v-if='props.deletable'
@@ -239,6 +240,11 @@ const props = defineProps({
         // Rendered in place of modelValue; copy and edit still use modelValue
         type: String,
         default: undefined
+    },
+    type: {
+        // HTML input type used while editing a single row field
+        type: String,
+        default: 'text'
     },
     rows: {
         type: Number,
