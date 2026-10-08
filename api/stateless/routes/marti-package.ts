@@ -13,7 +13,6 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
-import ProfileControl from '../lib/control/profile.js';
 import ProfileOverlayControl from '../../common/control/profile-overlay.js';
 import MissionPackage, { resolveFeatures } from '../lib/mission-package.js';
 import activeChannels from '../../common/control/tak-channels.js';
@@ -21,13 +20,11 @@ import { Basemap as BasemapParser } from '@tak-ps/node-cot';
 import { Content } from '@tak-ps/node-tak/lib/api/files';
 import { Package } from '@tak-ps/node-tak/lib/api/package';
 import { TAKAPI } from '@tak-ps/node-tak';
-import {
-    MissionOptions,
-} from '@tak-ps/node-tak/lib/api/mission';
 import stream2buffer from '../lib/stream.js';
 import { PackageResponse } from './types.js';
 import { authenticatedProfile } from '../../common/control/profile.js';
 import TAKServerControl, { profileUid } from '../../common/control/takserver.js';
+import MissionControl from '../lib/control/mission.js';
 
 async function activeChannelNames(api: TAKAPI): Promise<Set<string>> {
     const groups = await api.Group.list({ useCache: true });
@@ -127,7 +124,7 @@ function packageExpirationForUpdate(value: string | number | null | undefined): 
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     const takserver = new TAKServerControl(config);
-    const profileControl = new ProfileControl(config);
+    const missionControl = new MissionControl(config);
     const overlayControl = new ProfileOverlayControl(config);
 
     await schema.post('/marti/package', {
@@ -499,9 +496,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
 
                 for (const guid of missionGuids) {
-                    const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
-                        ? { token: String(req.headers['missionauthorization']) }
-                        : await profileControl.subscription(user.email, guid);
+                    const opts = await missionControl.options(req, user.email, guid);
 
                     await missionPkg.upload(api, guid, opts);
                 }

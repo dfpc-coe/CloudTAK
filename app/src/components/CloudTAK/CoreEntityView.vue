@@ -30,11 +30,34 @@
             </div>
         </template>
 
-        <template
-            v-if='embedded'
-            #buttons
-        >
+        <template #buttons>
+            <!-- Only the creator can change who is allowed to edit -->
             <TablerIconButton
+                v-if='event && is_creator'
+                :title='event.editable ? "Disable Editing by Others" : "Allow Editing by Others"'
+                @click='patch({ editable: !event.editable })'
+            >
+                <IconLockOpen
+                    v-if='event.editable'
+                    :size='28'
+                    stroke='1'
+                />
+                <IconLock
+                    v-else
+                    :size='28'
+                    stroke='1'
+                />
+            </TablerIconButton>
+
+            <TablerDelete
+                v-if='event && is_creator'
+                displaytype='icon'
+                :size='28'
+                @delete='deleteEvent'
+            />
+
+            <TablerIconButton
+                v-if='embedded'
                 title='Close'
                 @click='emit("close")'
             >
@@ -60,71 +83,67 @@
             class='d-flex flex-column h-100'
             style='min-height: 0;'
         >
-            <div class='col-12 border-bottom cloudtak-header flex-shrink-0 d-flex align-items-center flex-nowrap gap-0 px-1 py-1'>
-                <div class='btn-list d-flex flex-nowrap align-items-center gap-0 mb-0'>
-                    <TablerIconButton
-                        v-if='hasMap'
-                        title='Zoom To'
-                        @click='flyTo'
-                    >
-                        <IconZoomPan
-                            :size='actionIconSize'
-                            stroke='1'
-                        />
-                    </TablerIconButton>
+            <PropertyCoreEntityStatus
+                :active='event.active'
+                :priority='event.priority'
+                :started='event.started'
+                :ended='event.ended'
+                :edit='is_editable'
+                @update:active='patch({ active: $event })'
+            />
 
-                    <TablerIconButton
-                        v-if='is_editable && hasMap'
-                        title='Edit'
-                        @click='editGeometry'
-                    >
-                        <IconPencil
-                            :size='actionIconSize'
-                            stroke='1'
-                        />
-                    </TablerIconButton>
-
-                    <TablerIconButton
-                        v-if='event.links.length'
-                        title='Open Primary Link'
-                        @click='openLink(event.links[0].url)'
-                    >
-                        <IconExternalLink
-                            :size='actionIconSize'
-                            stroke='1'
-                        />
-                    </TablerIconButton>
-                </div>
-                <div class='ms-auto btn-list d-flex flex-nowrap align-items-center gap-0 mb-0'>
-                    <!-- Only the creator can change who is allowed to edit -->
-                    <TablerIconButton
-                        v-if='is_creator'
-                        :title='event.editable ? "Disable Editing by Others" : "Allow Editing by Others"'
-                        @click='patch({ editable: !event.editable })'
-                    >
-                        <IconLockOpen
-                            v-if='event.editable'
-                            :size='actionIconSize'
-                            stroke='1'
-                        />
-                        <IconLock
-                            v-else
-                            :size='actionIconSize'
-                            stroke='1'
-                        />
-                    </TablerIconButton>
-
-                    <TablerDelete
-                        v-if='is_creator'
-                        displaytype='icon'
-                        @delete='deleteEvent'
+            <div
+                v-if='hasMap || event.links.length'
+                class='d-flex align-items-center gap-1 px-2 py-1 border-bottom cloudtak-header flex-shrink-0'
+            >
+                <button
+                    v-if='hasMap'
+                    type='button'
+                    class='btn btn-sm btn-ghost-secondary'
+                    @click='flyTo'
+                >
+                    <IconZoomPan
+                        :size='16'
+                        stroke='1.5'
+                        class='me-1'
                     />
-                </div>
+                    Zoom To
+                </button>
+
+                <button
+                    v-if='is_editable && hasMap'
+                    type='button'
+                    class='btn btn-sm btn-ghost-secondary'
+                    @click='editGeometry'
+                >
+                    <IconPencil
+                        :size='16'
+                        stroke='1.5'
+                        class='me-1'
+                    />
+                    Move Marker
+                </button>
+
+                <button
+                    v-if='event.links.length'
+                    type='button'
+                    class='btn btn-sm btn-ghost-secondary text-truncate'
+                    style='max-width: 180px;'
+                    :title='event.links[0].url'
+                    @click='openLink(event.links[0].url)'
+                >
+                    <IconExternalLink
+                        :size='16'
+                        stroke='1.5'
+                        class='me-1'
+                    />
+                    {{ event.links[0].name || 'Open Link' }}
+                </button>
             </div>
 
             <div
                 v-if='saveError'
-                class='col-12 flex-shrink-0 px-2 pt-2'
+                class='flex-shrink-0 px-2 pt-2'
             >
                 <TablerInlineAlert
                     severity='danger'
@@ -134,11 +153,11 @@
             </div>
 
             <div
-                class='overflow-auto overflow-x-hidden core-entity-properties flex-grow-1'
+                class='overflow-auto overflow-x-hidden flex-grow-1'
                 style='min-height: 0;'
             >
-                <div class='row g-0'>
-                    <div class='pt-2 col-12 px-2'>
+                <div class='pt-1'>
+                    <div class='px-2 pb-2'>
                         <PropertyType
                             :key='event.id'
                             :edit='is_editable'
@@ -147,150 +166,145 @@
                         />
                     </div>
 
-                    <div class='col-12 pt-2'>
+                    <PropertyFactRow
+                        label='Location'
+                        class='py-1'
+                    >
+                        <CopyField
+                            :model-value='event.location || "None"'
+                            :edit='is_editable'
+                            :size='24'
+                            @submit='patch({ location: String($event) })'
+                        />
+                    </PropertyFactRow>
+
+                    <PropertyFactRow
+                        label='Coords'
+                        class='py-1'
+                    >
                         <Coordinate
                             :key='eventKey'
-                            label='Location'
+                            :inline='true'
                             :edit='is_editable'
-                            :hover='is_editable'
                             :model-value='event.geometry.coordinates'
                             @update:model-value='updateCoordinates($event as number[])'
                         />
-                    </div>
+                    </PropertyFactRow>
 
-                    <div class='col-12 pt-2'>
-                        <PropertyCoreEntityPriority
-                            :model-value='event.priority'
-                            :active='event.active'
-                            :ended='event.ended'
-                            :edit='is_editable'
-                            @update:model-value='patch({ priority: $event as CoreEntity["priority"] })'
-                            @update:active='patch({ active: $event })'
-                        />
-                    </div>
+                    <PropertyCoreEntityDuration
+                        :started='event.started'
+                        :ended='event.ended'
+                        :edit='is_editable'
+                        @update:started='patch({ started: $event })'
+                        @update:ended='patch({ ended: $event })'
+                    />
 
-                    <div class='col-12 pt-2'>
-                        <PropertyCoreEntityTime
-                            label='Started'
-                            :model-value='event.started'
-                            :edit='is_editable'
-                            @update:model-value='patch({ started: $event })'
-                        />
-                    </div>
+                    <PropertyCoreEntityPriority
+                        :model-value='event.priority'
+                        :edit='is_editable'
+                        @update:model-value='patch({ priority: $event as CoreEntity["priority"] })'
+                    />
 
-                    <div class='col-12 pt-2'>
-                        <PropertyCoreEntityTime
-                            label='Ended'
-                            :model-value='event.ended'
-                            :edit='is_editable'
-                            nullable
-                            :presets='true'
-                            @update:model-value='patch({ ended: $event })'
-                        />
-                    </div>
-
-                    <div class='col-12 pt-2'>
-                        <PropertyCoreEntityLocation
-                            :model-value='event.location'
-                            :edit='is_editable'
-                            @update:model-value='patch({ location: $event })'
-                        />
-                    </div>
-
-                    <div class='col-12 pt-2'>
-                        <PropertyCoreEntityExternalId
-                            :model-value='event.external_ids'
-                            :edit='is_editable'
-                            @update:model-value='patch({ external_id: $event })'
-                        />
-                    </div>
-                </div>
-
-                <PropertyEmail
-                    v-if='event.username'
-                    :key='event.id'
-                    :email='event.username'
-                />
-
-                <PropertyCoreEntityMission
-                    :model-value='event.missions'
-                    :edit='is_editable'
-                    :event-name='event.name'
-                    :remarks='event.remarks'
-                    :channels='event.channels'
-                    @update:model-value='patch({ missions: $event })'
-                />
-
-                <div class='col-12'>
-                    <SlideDownHeader
-                        v-model='remarksExpanded'
-                        label='Remarks'
+                    <PropertyFactRow
+                        v-if='event.username'
+                        label='Creator'
                     >
-                        <template #icon>
-                            <IconBlockquote
-                                :size='18'
-                                stroke='1'
-                                color='#6b7990'
-                                class='ms-2 me-1'
-                            />
-                        </template>
-
-                        <div class='px-2 pt-2'>
-                            <CopyField
-                                :model-value='event.remarks'
-                                :rows='10'
-                                :markdown='true'
-                                :edit='is_editable'
-                                :hover='is_editable'
-                                @submit='patch({ remarks: String($event) })'
-                            />
-                        </div>
-                    </SlideDownHeader>
+                        <a
+                            :href='`mailto:${event.username}`'
+                            class='text-reset d-block text-truncate'
+                            v-text='event.username'
+                        />
+                    </PropertyFactRow>
                 </div>
 
-                <PropertyCoreEntityLinks
-                    :model-value='event.links'
-                    :edit='is_editable'
-                    @update:model-value='patch({ links: $event })'
+                <div class='px-2 pt-2'>
+                    <label class='subheader user-select-none'>Remarks</label>
+                    <CopyField
+                        :model-value='event.remarks'
+                        :rows='10'
+                        :markdown='true'
+                        :edit='is_editable'
+                        :hover='is_editable'
+                        @submit='patch({ remarks: String($event) })'
+                    />
+                </div>
+
+                <PropertyTabs
+                    v-model='tab'
+                    :tabs='tabs'
+                    class='mt-2'
                 />
 
-                <!-- PropertyStyle has no read-only mode so hide it for non-editors -->
-                <PropertyStyle
-                    v-if='is_editable'
-                    geometry='Point'
-                    :model-value='styleProperties'
-                    @update:model-value='updateStyle($event)'
-                />
+                <div v-show='tab === "details"'>
+                    <PropertyCoreEntityLinks
+                        :model-value='event.links'
+                        :edit='is_editable'
+                        @update:model-value='patch({ links: $event })'
+                    />
 
-                <PropertyCoreEntityChannels
-                    :model-value='event.channels'
-                    :boards='event.boards'
-                    :edit='is_creator'
-                    @update:model-value='patch({ channels: $event })'
-                    @nominate='nominate($event)'
-                />
+                    <PropertyCoreEntityExternalId
+                        :model-value='event.external_ids'
+                        :edit='is_editable'
+                        @update:model-value='patch({ external_id: $event })'
+                    />
 
-                <PropertyCoreEntityForms
-                    :event='event.id'
-                    :refresh='formsRefresh'
-                    :channels='event.channels'
-                    :edit='is_editable'
-                    @add='completeForm($event)'
-                />
+                    <PropertyCoreEntityMetadata
+                        :model-value='event.metadata'
+                        :edit='is_editable'
+                        @update:model-value='patch({ metadata: $event })'
+                    />
 
-                <PropertyCoreEntityMetadata
-                    :model-value='event.metadata'
-                    :edit='is_editable'
-                    @update:model-value='patch({ metadata: $event })'
-                />
+                    <!-- PropertyStyle has no read-only mode so hide it for non-editors -->
+                    <PropertyStyle
+                        v-if='is_editable'
+                        geometry='Point'
+                        :model-value='styleProperties'
+                        @update:model-value='updateStyle($event)'
+                    />
+                </div>
 
-                <PropertyCoreEntityTimes
-                    :created='event.created'
-                    :started='event.started'
-                    :updated='event.updated'
-                    :ended='event.ended'
-                />
+                <div v-show='tab === "sharing"'>
+                    <PropertyCoreEntityChannels
+                        :model-value='event.channels'
+                        :boards='event.boards'
+                        :edit='is_creator'
+                        @update:model-value='patch({ channels: $event })'
+                        @nominate='nominate($event)'
+                    />
+
+                    <PropertyCoreEntityMission
+                        :model-value='event.missions'
+                        :edit='is_editable'
+                        :event-name='event.name'
+                        :remarks='event.remarks'
+                        :channels='event.channels'
+                        @update:model-value='patch({ missions: $event })'
+                    />
+                </div>
+
+                <div v-show='tab === "activity"'>
+                    <PropertyCoreEntityAssignments
+                        :event='event.id'
+                        :edit='is_editable'
+                        @count='assignmentCount = $event'
+                    />
+
+                    <PropertyCoreEntityForms
+                        :event='event.id'
+                        :refresh='formsRefresh'
+                        :channels='event.channels'
+                        :edit='is_editable'
+                        @add='completeForm($event)'
+                        @count='formCount = $event'
+                    />
+                </div>
             </div>
+
+            <PropertyCoreEntityTimes
+                :created='event.created'
+                :updated='event.updated'
+                :username='event.username'
+            />
         </div>
 
         <FormWizard
@@ -321,7 +335,6 @@ import {
     IconPencil,
     IconZoomPan,
     IconCircleX,
-    IconBlockquote,
     IconExternalLink,
 } from '@tabler/icons-vue';
 import Type2525 from '@tak-ps/node-cot/2525';
@@ -329,17 +342,18 @@ import MenuTemplate from './util/MenuTemplate.vue';
 import FeatureIcon from './util/FeatureIcon.vue';
 import CopyField from './util/CopyField.vue';
 import Coordinate from './util/Coordinate.vue';
-import SlideDownHeader from './util/SlideDownHeader.vue';
+import PropertyFactRow from './util/PropertyFactRow.vue';
+import PropertyTabs, { type PropertyTab } from './util/PropertyTabs.vue';
 import PropertyType from './Property/PropertyType.vue';
 import PropertyStyle from './Property/PropertyStyle.vue';
-import PropertyEmail from './Property/PropertyEmail.vue';
+import PropertyCoreEntityStatus from './Property/PropertyCoreEntityStatus.vue';
 import PropertyCoreEntityPriority from './Property/PropertyCoreEntityPriority.vue';
-import PropertyCoreEntityLocation from './Property/PropertyCoreEntityLocation.vue';
-import PropertyCoreEntityTime from './Property/PropertyCoreEntityTime.vue';
+import PropertyCoreEntityDuration from './Property/PropertyCoreEntityDuration.vue';
 import PropertyCoreEntityExternalId from './Property/PropertyCoreEntityExternalId.vue';
 import PropertyCoreEntityLinks from './Property/PropertyCoreEntityLinks.vue';
 import PropertyCoreEntityChannels from './Property/PropertyCoreEntityChannels.vue';
 import PropertyCoreEntityForms from './Property/PropertyCoreEntityForms.vue';
+import PropertyCoreEntityAssignments from './Property/PropertyCoreEntityAssignments.vue';
 import PropertyCoreEntityMetadata from './Property/PropertyCoreEntityMetadata.vue';
 import PropertyCoreEntityMission from './Property/PropertyCoreEntityMission.vue';
 import PropertyCoreEntityTimes from './Property/PropertyCoreEntityTimes.vue';
@@ -392,8 +406,31 @@ const formWizard = ref<{
 /** Bumped when the wizard submits Responses so the Forms section re-fetches */
 const formsRefresh = ref(0);
 
-const remarksExpanded = ref(true);
-const actionIconSize = 28;
+const tab = ref('details');
+
+// Counts the Activity sections report once their lists load
+const assignmentCount = ref(0);
+const formCount = ref(0);
+
+const tabs = computed<Array<PropertyTab>>(() => {
+    if (!event.value) return [];
+
+    return [{
+        value: 'details',
+        label: 'Details',
+        count: event.value.links.length
+            + Object.keys(event.value.external_ids).length
+            + Object.keys(event.value.metadata).length,
+    }, {
+        value: 'sharing',
+        label: 'Sharing',
+        count: event.value.channels.length + event.value.missions.length,
+    }, {
+        value: 'activity',
+        label: 'Activity',
+        count: assignmentCount.value + formCount.value,
+    }];
+});
 
 const profile = ref<{ username?: string, system_admin?: boolean }>({});
 

@@ -1,105 +1,50 @@
 <template>
-    <div class='col-12'>
-        <SlideDownHeader
-            v-model='expanded'
-            label='Times'
-        >
-            <template #icon>
-                <IconClock
-                    :size='18'
-                    stroke='1'
-                    color='#6b7990'
-                    class='ms-2 me-1'
-                />
-            </template>
-            <template #right>
-                <span
-                    class='cursor-pointer me-2 text-white small'
-                    @click.stop='mode = mode === "relative" ? "absolute" : "relative"'
-                    v-text='`Updated: ${format(props.updated)}`'
-                />
-            </template>
-
-            <div class='d-flex mx-3 pt-2 pb-2'>
-                <div class='ms-auto cursor-pointer subheader text-white'>
-                    <span
-                        v-if='mode === "relative"'
-                        @click='mode = "absolute"'
-                    >Absolute</span>
-                    <span
-                        v-if='mode === "absolute"'
-                        @click='mode = "relative"'
-                    >Relative</span>
-                </div>
-            </div>
-            <div class='table-responsive rounded mx-2 pb-2 px-2'>
-                <table class='table table-transparent card-table table-hover table-vcenter'>
-                    <thead>
-                        <tr>
-                            <th class='fw-bold'>
-                                Key
-                            </th>
-                            <th class='fw-bold'>
-                                Value
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Created</td>
-                            <td v-text='format(props.created)' />
-                        </tr>
-                        <tr>
-                            <td>Started</td>
-                            <td v-text='format(props.started)' />
-                        </tr>
-                        <tr>
-                            <td>Updated</td>
-                            <td v-text='format(props.updated)' />
-                        </tr>
-                        <tr>
-                            <td>Ended</td>
-                            <td v-text='props.ended ? format(props.ended) : "Open Ended"' />
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </SlideDownHeader>
+    <div
+        class='d-flex align-items-center gap-1 px-3 py-2 border-top text-secondary small user-select-none cursor-pointer flex-shrink-0'
+        title='Toggle relative & absolute time'
+        @click='relative = !relative'
+    >
+        <span
+            class='text-truncate'
+            v-text='`Created ${format(created)}${username ? ` by ${username}` : ""}`'
+        />
+        <span>&middot;</span>
+        <span
+            class='flex-shrink-0'
+            v-text='`Updated ${format(updated)}`'
+        />
     </div>
 </template>
 
 <script setup lang='ts'>
+/** PropertyCoreEntityTimes - the audit footer: when & by whom the Event was created and when it last changed */
 import { ref, onMounted, onUnmounted } from 'vue';
-import SlideDownHeader from '../util/SlideDownHeader.vue';
-import { IconClock } from '@tabler/icons-vue';
 import timediff from '../../../timediff';
 
-const props = defineProps<{
+defineProps<{
     created: string;
-    started: string;
     updated: string;
-    ended: string | null;
+    username?: string | null;
 }>();
 
-const expanded = ref(false);
-const mode = ref('relative');
+const relative = ref(true);
 
-// Rerenders the relative times once a second
+// Rerenders the relative times once a minute
 const currentTime = ref(new Date());
-const interval = ref<ReturnType<typeof setInterval> | undefined>();
+let interval: ReturnType<typeof setInterval> | undefined;
 
 function format(time: string): string {
     void currentTime.value;
-    return mode.value === 'relative' ? timediff(time) : time;
+    return relative.value ? timediff(time) : new Date(time).toLocaleString();
 }
 
 onMounted(() => {
-    interval.value = setInterval(() => {
+    interval = setInterval(() => {
         currentTime.value = new Date();
-    }, 1000);
+    }, 60 * 1000);
 });
 
 onUnmounted(() => {
-    if (interval.value) clearInterval(interval.value);
+    if (interval) clearInterval(interval);
 });
 </script>

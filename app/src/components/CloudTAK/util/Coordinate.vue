@@ -1,16 +1,18 @@
 <template>
     <div class='col-12'>
-        <IconLabel
-            :size='18'
-            stroke='1'
-            color='#6b7990'
-            class='ms-2 me-1'
-        />
-        <label
-            class='subheader user-select-none'
-            v-text='label'
-        />
-        <div class='mx-2'>
+        <template v-if='!inline'>
+            <IconLabel
+                :size='18'
+                stroke='1'
+                color='#6b7990'
+                class='ms-2 me-1'
+            />
+            <label
+                class='subheader user-select-none'
+                v-text='label'
+            />
+        </template>
+        <div :class='{ "mx-2": !inline }'>
             <CopyField
                 :model-value='inMode'
                 :edit='edit'
@@ -63,6 +65,11 @@ const props = defineProps({
     },
     edit: {
         type: Boolean,
+        default: false
+    },
+    inline: {
+        type: Boolean,
+        description: 'Render only the field - the caller provides the label',
         default: false
     },
     truncate: {
