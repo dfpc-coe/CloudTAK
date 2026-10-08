@@ -62,9 +62,6 @@ const PANE_DEFAULT_Y = 76;
 const PANE_DEFAULT_WIDTH = 400;
 const PANE_DEFAULT_HEIGHT = 300;
 
-// Mirrors Map.vue's --map-side-offset: the visible menu edge is the toast
-// offset less its 10px notification buffer.
-const TOAST_OFFSET_BUFFER = 10;
 
 // --status-bar-height is a CSS expression over env(), so the native inset
 // has to be measured rather than parsed.
@@ -79,16 +76,21 @@ function statusBarInset(): number {
     return height;
 }
 
+// Left edge of the right-hand menu panel (its resize handle hangs outside it),
+// or the viewport gutter when no menu is rendered.
+function menuEdge(): number {
+    if (typeof window === 'undefined') return 0;
+
+    const menu = document.querySelector('.cloudtak-main-menu');
+    return menu ? menu.getBoundingClientRect().left : window.innerWidth - PANE_GUTTER;
+}
+
 function defaultPosition(corner: PaneCorner = 'top-left', width = PANE_DEFAULT_WIDTH): { x: number, y: number } {
     const y = PANE_DEFAULT_Y + statusBarInset();
 
     if (corner === 'top-right') {
-        const mapStore = useMapStore();
-        const sideOffset = Math.max(mapStore.toastOffset.x - TOAST_OFFSET_BUFFER, 0);
-        const viewport = typeof window === 'undefined' ? 0 : window.innerWidth;
-
         return {
-            x: Math.max(viewport - sideOffset - PANE_GUTTER - width, PANE_DEFAULT_X),
+            x: Math.max(menuEdge() - PANE_GUTTER - width, PANE_DEFAULT_X),
             y,
         };
     }
