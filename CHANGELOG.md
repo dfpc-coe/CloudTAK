@@ -25,6 +25,9 @@
 
 ### Pending Release
 
+- :tada: Add a `schema` column to `layers` recording the static Capabilities document `version` of the Task (`1.0` when the Task declares none) - it is read from the ECR image manifest when a Layer is created and again whenever the Layer's task version changes
+- :rocket: Hide the Layer Incoming `Legacy Styling` tab and editor for Layers whose Task declares Capabilities `version: "1.1"` - these Layers are styled through Field Mapping only
+
 ### v13.108.0 - 2026-10-08
 
 - :tada: Core Event view gains an Assignments panel for listing, adding, editing & removing the people managing an Event by name, role & optional Profile username

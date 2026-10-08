@@ -12126,7 +12126,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "connection" | "logging" | "task" | "version" | "memory" | "timeout" | "vpc" | "permissions" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
+                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "connection" | "logging" | "task" | "version" | "schema" | "memory" | "timeout" | "vpc" | "permissions" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -12171,6 +12171,8 @@ export interface paths {
                                 /** @description Container tag as <integration prefix>-v<version> */
                                 task: string;
                                 version: string;
+                                /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping */
+                                schema: string;
                                 integration: {
                                     name: string;
                                     /** @description Base64 Data URL of the Integration Icon */
@@ -12656,6 +12658,8 @@ export interface paths {
                             /** @description Container tag as <integration prefix>-v<version> */
                             task: string;
                             version: string;
+                            /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping */
+                            schema: string;
                             integration: {
                                 name: string;
                                 /** @description Base64 Data URL of the Integration Icon */
@@ -14905,6 +14909,8 @@ export interface paths {
                             /** @description Container tag as <integration prefix>-v<version> */
                             task: string;
                             version: string;
+                            /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping */
+                            schema: string;
                             integration: {
                                 name: string;
                                 /** @description Base64 Data URL of the Integration Icon */
@@ -15471,6 +15477,8 @@ export interface paths {
                             /** @description Container tag as <integration prefix>-v<version> */
                             task: string;
                             version: string;
+                            /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping */
+                            schema: string;
                             integration: {
                                 name: string;
                                 /** @description Base64 Data URL of the Integration Icon */
@@ -32114,7 +32122,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "connection" | "logging" | "task" | "version" | "memory" | "timeout" | "vpc" | "permissions" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
+                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "connection" | "logging" | "task" | "version" | "schema" | "memory" | "timeout" | "vpc" | "permissions" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -32160,6 +32168,8 @@ export interface paths {
                                 /** @description Container tag as <integration prefix>-v<version> */
                                 task: string;
                                 version: string;
+                                /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping */
+                                schema: string;
                                 integration: {
                                     name: string;
                                     /** @description Base64 Data URL of the Integration Icon */
@@ -32614,6 +32624,8 @@ export interface paths {
                             /** @description Container tag as <integration prefix>-v<version> */
                             task: string;
                             version: string;
+                            /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping */
+                            schema: string;
                             integration: {
                                 name: string;
                                 /** @description Base64 Data URL of the Integration Icon */

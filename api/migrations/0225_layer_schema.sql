@@ -1,0 +1,1 @@
+ALTER TABLE "layers" ADD COLUMN IF NOT EXISTS "schema" text DEFAULT '1.0' NOT NULL;

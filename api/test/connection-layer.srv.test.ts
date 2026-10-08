@@ -108,10 +108,8 @@ test('POST: api/connection/1/layer', async () => {
 
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             if (command instanceof BatchGetImageCommand) {
-                assert.deepEqual(command.input, {
-                    repositoryName: process.env.ECR_TASKS_REPOSITORY_NAME,
-                    imageIds: [{ imageTag: 'etl-test-v1.0.0' }],
-                });
+                assert.equal(command.input.repositoryName, process.env.ECR_TASKS_REPOSITORY_NAME);
+                assert.deepEqual(command.input.imageIds, [{ imageTag: 'etl-test-v1.0.0' }]);
 
                 return Promise.resolve({
                     images: [{
@@ -165,6 +163,7 @@ test('POST: api/connection/1/layer', async () => {
             logging: true,
             task: 'etl-test-v1.0.0',
             version: '1.0.0',
+            schema: '1.0',
             integration: {
                 name: 'etl-test',
                 icon: null,
@@ -224,6 +223,7 @@ test('GET: api/connection/1/layer/1', async () => {
             logging: true,
             task: 'etl-test-v1.0.0',
             version: '1.0.0',
+            schema: '1.0',
             integration: {
                 name: 'etl-test',
                 icon: null,
@@ -286,6 +286,7 @@ test('PATCH: api/connection/1/layer/1 - set protected', async () => {
             logging: true,
             task: 'etl-test-v1.0.0',
             version: '1.0.0',
+            schema: '1.0',
             integration: {
                 name: 'etl-test',
                 icon: null,
@@ -362,6 +363,7 @@ test('PATCH: api/connection/1/layer/1 - unset protected', async () => {
             logging: true,
             task: 'etl-test-v1.0.0',
             version: '1.0.0',
+            schema: '1.0',
             integration: {
                 name: 'etl-test',
                 icon: null,
@@ -1089,6 +1091,116 @@ test('Outgoing subscriptions follow the task manifest on create & version update
     } finally {
         if (layerId !== undefined) {
             await flight.config!.models.LayerOutgoing.delete(layerId);
+            await flight.config!.models.Layer.delete(layerId);
+        }
+
+        Sinon.restore();
+    }
+});
+
+test('Layer schema follows the task manifest on create & version update', async () => {
+    const manifest = (capabilities: object) => JSON.stringify({
+        schemaVersion: 2,
+        mediaType: 'application/vnd.oci.image.manifest.v1+json',
+        annotations: {
+            'com.cloudtak.capabilities': JSON.stringify(capabilities),
+        },
+    });
+
+    const base = {
+        name: 'Test Task',
+        description: 'A Task used in testing',
+        compute: { memory: 256, timeout: 30 },
+        permissions: [],
+        invocations: {},
+    };
+
+    const manifests: Record<string, string> = {
+        'etl-test-v1.0.0': manifest({ ...base, version: '1.0' }),
+        'etl-test-v1.1.0': manifest({ ...base, version: '1.1' }),
+        'etl-test-v1.2.0': '{}',
+    };
+
+    let layerId: number | undefined;
+
+    try {
+        Sinon.stub(CloudFormationClient.prototype, 'send').callsFake((command) => {
+            if (command instanceof DescribeStacksCommand) {
+                return Promise.resolve({ Stacks: [{ StackStatus: 'CREATE_COMPLETE' }] });
+            } else if (command instanceof CreateStackCommand) {
+                return Promise.resolve({});
+            } else {
+                throw new Error('Unexpected command');
+            }
+        });
+
+        Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
+            if (!(command instanceof BatchGetImageCommand)) throw new Error('Unexpected command');
+
+            const tag = command.input.imageIds![0].imageTag!;
+            if (!manifests[tag]) throw new Error(`Unexpected tag: ${tag}`);
+
+            return Promise.resolve({
+                images: [{
+                    imageId: { imageTag: tag, imageDigest: 'sha256:abcdef1234567890' },
+                    imageManifest: manifests[tag],
+                }],
+            });
+        });
+
+        const created = await flight.fetch('/api/connection/1/layer', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Schema Layer',
+                description: 'The schema version is derived from the manifest',
+                task: 'etl-test-v1.1.0',
+            },
+        }, true);
+
+        layerId = created.body.id;
+
+        assert.equal(created.body.schema, '1.1');
+
+        // An update that leaves the task alone leaves the schema alone
+        const renamed = await flight.fetch(`/api/connection/1/layer/${layerId}`, {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { name: 'Renamed Schema Layer' },
+        }, true);
+
+        assert.equal(renamed.body.schema, '1.1');
+
+        // A version change re-reads the schema from the new manifest
+        const downgraded = await flight.fetch(`/api/connection/1/layer/${layerId}`, {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { task: 'etl-test-v1.0.0' },
+        }, true);
+
+        assert.equal(downgraded.body.task, 'etl-test-v1.0.0');
+        assert.equal(downgraded.body.schema, '1.0');
+
+        const upgraded = await flight.fetch(`/api/connection/1/layer/${layerId}`, {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { task: 'etl-test-v1.1.0' },
+        }, true);
+
+        assert.equal(upgraded.body.schema, '1.1');
+
+        // A version without a Capabilities document falls back to 1.0
+        const absent = await flight.fetch(`/api/connection/1/layer/${layerId}`, {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { task: 'etl-test-v1.2.0' },
+        }, true);
+
+        assert.equal(absent.body.schema, '1.0');
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        if (layerId !== undefined) {
             await flight.config!.models.Layer.delete(layerId);
         }
 

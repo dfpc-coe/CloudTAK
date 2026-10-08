@@ -4,7 +4,10 @@
             <h3 class='card-title'>
                 Legacy Style Overrides
             </h3>
-            <div class='ms-auto btn-list'>
+            <div
+                v-if='props.layer.schema !== "1.1"'
+                class='ms-auto btn-list'
+            >
                 <TablerIconButton
                     v-if='disabled'
                     title='Edit Style'
@@ -38,7 +41,7 @@
         </div>
 
         <TablerInlineAlert
-            v-if='!outputSchema'
+            v-if='!outputSchema && props.layer.schema !== "1.1"'
             severity='danger'
             class='px-2 my-2'
             title='Data Schema Error'
@@ -50,8 +53,13 @@
             :err='new Error("Layer failed to return an incoming input schema on the Capabilities object")'
         />
 
+        <TablerNone
+            v-if='props.layer.schema === "1.1"'
+            label='Legacy Styling is disabled by this Task - use Field Mapping instead'
+            :create='false'
+        />
         <TablerLoading
-            v-if='loading.save'
+            v-else-if='loading.save'
             desc='Saving Styles'
         />
         <TablerLoading

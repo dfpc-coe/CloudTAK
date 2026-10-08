@@ -659,6 +659,7 @@ export const Layer = pgTable('layers', {
     logging: boolean().notNull().default(true),
     task: bigint({ mode: 'number' }).notNull().references(() => Integration.id),
     version: text().notNull(),
+    schema: text().notNull().default('1.0'),
     memory: integer().notNull().default(256),
     timeout: integer().notNull().default(120),
     vpc: boolean().notNull().default(false),

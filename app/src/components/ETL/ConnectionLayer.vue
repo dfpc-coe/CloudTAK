@@ -297,6 +297,7 @@
                                                         stroke='1'
                                                     /><span class='mx-3'>Field Mapping</span></span>
                                                     <span
+                                                        v-if='layer.schema !== "1.1"'
                                                         tabindex='0'
                                                         role='menuitem'
                                                         class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
