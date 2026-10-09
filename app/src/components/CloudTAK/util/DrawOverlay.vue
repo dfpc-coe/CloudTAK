@@ -275,6 +275,60 @@
             </div>
         </div>
         <div
+            v-else-if='mapStore.draw.mode === DrawToolMode.AXIS'
+            class='card cloudtak-panel user-select-none'
+        >
+            <div class='card-header'>
+                <IconArrowBigRight
+                    :size='24'
+                    stroke='1'
+                /><span class='mx-2'>Axis of Advance</span>
+
+                <div class='ms-auto btn-list align-items-center'>
+                    <TablerEnum
+                        v-model='mapStore.draw.axis.variant'
+                        description='Choose the type of axis.'
+                        :default='axisVariants[0]'
+                        :options='axisVariants'
+                    />
+                    <TablerEnum
+                        v-model='mapStore.draw.axis.affiliation'
+                        description='Choose the affiliation.'
+                        default='Friendly'
+                        :options='axisAffiliations'
+                    />
+
+                    <TablerIconButton
+                        title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <TablerIconButton
+                        title='Cancel Editing'
+                        @click='mapStore.draw.stop()'
+                    >
+                        <IconX
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                </div>
+            </div>
+            <div class='card-body py-2 text-muted'>
+                <span v-if='mapStore.draw.axisStep === "width"'>
+                    Move the cursor to set the arrow width, then click or press Finish.
+                </span>
+                <span v-else>
+                    Click along the direction of advance, tail first. Click the last point again or press Finish to set the width.
+                </span>
+            </div>
+        </div>
+        <div
             v-else-if='mapStore.draw.mode === DrawToolMode.FREEHAND'
             class='card cloudtak-panel user-select-none'
         >
@@ -383,6 +437,7 @@ import { DrawToolMode } from '../../../stores/modules/draw.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useAppStore } from '../../../stores/app.ts';
 import OverlayManager from '../../../base/overlay.ts';
+import { AXIS_OF_ADVANCE_VARIANTS, AXIS_OF_ADVANCE_AFFILIATIONS } from '../../../utils/axis-of-advance.ts';
 import {
     TablerEnum,
     TablerIconButton
@@ -398,6 +453,7 @@ import {
     IconLasso,
     IconCone,
     IconVector,
+    IconArrowBigRight,
     IconPolygon,
     IconCheck,
 } from '@tabler/icons-vue';
@@ -406,6 +462,9 @@ const mapStore = useMapStore();
 const appStore = useAppStore();
 
 const opened = ref(false);
+
+const axisVariants: string[] = AXIS_OF_ADVANCE_VARIANTS.map((v) => v.label);
+const axisAffiliations: string[] = Object.keys(AXIS_OF_ADVANCE_AFFILIATIONS);
 
 const filteredOverlayNames = computed((): string[] => {
     return OverlayManager.queryableOverlayNames();

@@ -22,6 +22,9 @@ import type COT from '../../base/cot.ts';
 import Filter, { EDIT_HIDE_PREFIX } from '../../base/filter.ts';
 import { OriginMode } from '../../base/cot.ts';
 import { createCircleEllipseShape } from '../../base/cot/ellipse.ts';
+import { TerraDrawAxisOfAdvanceMode, AXIS_PROPERTIES } from '../../utils/terra-draw-axis-of-advance-mode.ts';
+import type { AxisOfAdvanceStep } from '../../utils/terra-draw-axis-of-advance-mode.ts';
+import { axisOfAdvanceSIDC, AXIS_OF_ADVANCE_VARIANTS } from '../../utils/axis-of-advance.ts';
 import { std, stdurl, server } from '../../std.ts';
 import type { Feature, FeatureCollection } from '../../types.ts';
 import type { paths } from '@cloudtak/api-types';
@@ -43,6 +46,7 @@ export enum DrawToolMode {
     RECTANGLE = 'angled-rectangle',
     CIRCLE = 'circle',
     SECTOR = 'sector',
+    AXIS = 'axis-of-advance',
 }
 
 export default class DrawTool {
@@ -97,6 +101,21 @@ export default class DrawTool {
     public lasso: {
         loading: boolean;
         overlay: string;
+    }
+
+    public axis: {
+        variant: string;
+        affiliation: string;
+    }
+
+    public get axisStep(): AxisOfAdvanceStep | undefined {
+        void this._changeCount.value;
+
+        const line = this.draw.getSnapshot().find((f) =>
+            f.properties.mode === DrawToolMode.AXIS && f.properties[AXIS_PROPERTIES.path]
+        );
+
+        return line ? line.properties[AXIS_PROPERTIES.step] as AxisOfAdvanceStep | undefined : undefined;
     }
 
     private _snappingOptions = ref<string[]>(['No Snapping']);
@@ -156,6 +175,7 @@ export default class DrawTool {
             && !f.properties.snappingPoint
             && !f.properties.midPoint
             && !f.properties.selectionPoint
+            && !f.properties[AXIS_PROPERTIES.preview]
         );
 
         if (!drawn) return false;
@@ -167,6 +187,8 @@ export default class DrawTool {
             const coords = (drawn.geometry as Polygon).coordinates;
             // Polygon ring needs at least 4 positions (3 unique + closing)
             return coords.length > 0 && coords[0].length >= 4;
+        } else if (this.mode === DrawToolMode.AXIS) {
+            return Number(drawn.properties[AXIS_PROPERTIES.committed] ?? 0) >= 2;
         }
 
         return true;
@@ -301,6 +323,7 @@ export default class DrawTool {
                 new terraDraw.TerraDrawSectorMode({
                     showCoordinatePoints: true
                 }),
+                new TerraDrawAxisOfAdvanceMode(),
                 new terraDraw.TerraDrawCircleMode({
                     drawInteraction
                 }),
@@ -447,6 +470,12 @@ export default class DrawTool {
                         feat.properties.type = 'u-d-f';
                     } else if (this.mode === DrawToolMode.LINESTRING || this.mode === DrawToolMode.SNAPPING) {
                         feat.properties.type = 'u-d-f';
+                    } else if (this.mode === DrawToolMode.AXIS) {
+                        feat.properties.type = 'u-d-f';
+                        feat.properties.callsign = 'Axis of Advance';
+                        feat.properties.milsym = {
+                            id: axisOfAdvanceSIDC(this.axis.variant, this.axis.affiliation)
+                        };
                     } else if (this.mode === DrawToolMode.CIRCLE) {
                         feat.properties.type = 'u-d-c-c';
 
@@ -520,6 +549,11 @@ export default class DrawTool {
         this.lasso = reactive({
             loading: false,
             overlay: 'Map Features'
+        })
+
+        this.axis = reactive({
+            variant: AXIS_OF_ADVANCE_VARIANTS[0].label,
+            affiliation: 'Friendly'
         })
     }
 
@@ -739,6 +773,7 @@ export default class DrawTool {
             this.mode === DrawToolMode.LINESTRING
             || this.mode === DrawToolMode.POLYGON
             || this.mode === DrawToolMode.SNAPPING
+            || this.mode === DrawToolMode.AXIS
         ) {
             // These modes respond to Enter key to finish drawing
             const canvas = this.mapStore.map.getCanvas();

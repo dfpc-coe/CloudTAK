@@ -119,6 +119,7 @@ import {
     IconFileImport,
     IconCone,
     IconCircle,
+    IconArrowBigRight,
     IconVector,
     IconPolygon,
     IconLine,
@@ -172,6 +173,7 @@ const drawTools: DrawToolItem[] = [
     { key: 'rectangle', label: 'Draw Rectangle', icon: IconVector, action: () => { mapStore.draw.start(DrawToolMode.RECTANGLE); } },
     { key: 'circle', label: 'Draw Circle', icon: IconCircle, action: () => { mapStore.draw.start(DrawToolMode.CIRCLE); } },
     { key: 'sector', label: 'Draw Sector', icon: IconCone, action: () => { mapStore.draw.start(DrawToolMode.SECTOR); } },
+    { key: 'axis', label: 'Draw Axis of Advance', icon: IconArrowBigRight, action: () => { mapStore.draw.start(DrawToolMode.AXIS); } },
     { key: 'lasso', label: 'Lasso Select', icon: IconLasso, action: () => { mapStore.draw.start(DrawToolMode.FREEHAND); } },
     { key: 'import', label: 'GeoJSON Import', icon: IconFileImport, action: () => { modal.value = ModalInputType.IMPORT; } },
 ];
