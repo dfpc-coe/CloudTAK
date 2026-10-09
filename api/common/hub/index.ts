@@ -58,6 +58,12 @@ export type SubmitCotsRequest = {
 export interface HubClient {
     connectionSync(id: number, opts?: { force?: boolean; deleted?: boolean }): Promise<ConnStatus>;
 
+    /**
+     * Drop a pooled profile connection so the next WebSocket or CoT submission
+     * rebuilds it from the profile's current certificate
+     */
+    profileSync(username: string): Promise<void>;
+
     connectionStatus(ids: Array<number | string>): Promise<Record<string, ConnStatus>>;
 
     /**

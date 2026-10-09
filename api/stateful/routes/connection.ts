@@ -30,6 +30,27 @@ export default async function router(schema: Schema, config: ConfigStateful) {
         }
     });
 
+    await schema.post('/profile/sync', {
+        name: 'Sync Profile Connection',
+        group: 'HubConnection',
+        description: 'Drop a pooled profile connection so it is rebuilt from the profile\'s current certificate',
+        body: Type.Object({
+            username: Type.String(),
+        }),
+        res: Type.Object({
+            status: Type.Literal(200),
+            message: Type.String(),
+        }),
+    }, async (req, res) => {
+        try {
+            await config.hub.profileSync(req.body.username);
+
+            res.json({ status: 200, message: 'Profile Connection Synced' });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
     await schema.post('/connection/status', {
         name: 'Connection Status',
         group: 'HubConnection',

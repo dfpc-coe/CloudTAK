@@ -1,4 +1,4 @@
-import Config from '../../common/config.js';
+import type ConfigStateless from '../config.js';
 import { InferSelectModel } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import type { Profile } from '../../common/schema.js';
@@ -22,10 +22,10 @@ export enum AuthProviderAccess {
 }
 
 export default class AuthProvider {
-    config: Config;
+    config: ConfigStateless;
     userControl: UserControl;
 
-    constructor(config: Config) {
+    constructor(config: ConfigStateless) {
         this.config = config;
         this.userControl = new UserControl(config);
     }
@@ -60,6 +60,19 @@ export default class AuthProvider {
      */
     static certificateRenewalRequired(cert: unknown, now = Date.now()): boolean {
         return AuthProvider.certificateExpired(cert, now + CERT_RENEWAL_WINDOW_MS);
+    }
+
+    /**
+     * The hub's pooled connection reconnects with the certificate it was built with -
+     * drop it so the next WebSocket rebuilds from the regenerated credentials.
+     * Best effort: an unreachable hub must not fail the login
+     */
+    async profileSync(username: string): Promise<void> {
+        try {
+            await this.config.hub.profileSync(username);
+        } catch (err) {
+            console.error(`Error: ProfileSync: ${username}: ${err instanceof Error ? err.message : String(err)}`);
+        }
     }
 
     async login(username: string, password: string): Promise<string> {
@@ -104,6 +117,7 @@ export default class AuthProvider {
                 const api = await TAKAPI.init(new URL(this.config.server.webtak), new APIAuthPassword(profile.username, password));
                 auth = await api.Credentials.generate();
                 profile = await this.config.models.Profile.commit(profile.username, { auth });
+                await this.profileSync(profile.username);
             } else if (auth) {
                 throw new Err(401, null, 'Certificate is expired');
             } else {
@@ -126,6 +140,7 @@ export default class AuthProvider {
                 profile = await this.config.models.Profile.commit(profile.username, {
                     auth: await api.Credentials.generate(),
                 });
+                await this.profileSync(profile.username);
             } else {
                 let message = 'Certificate was rejected by the TAK Server';
 
