@@ -28,22 +28,28 @@
                 </div>
             </div>
             <div
-                class='modal-body flex-grow-1'
-                style='min-height: 0;'
+                class='floating-pane-body flex-grow-1 overflow-auto'
+                :class='{ "px-3 py-3": padded }'
             >
                 <slot />
+            </div>
+            <div
+                v-if='$slots.footer'
+                class='floating-pane-footer px-3 py-3 border-top flex-shrink-0'
+            >
+                <slot name='footer' />
             </div>
         </div>
     </TablerModal>
     <div
         v-else
         ref='container'
-        class='position-absolute cloudtak-panel resizable-content'
+        class='position-absolute cloudtak-panel resizable-content d-flex flex-column'
         v-bind='$attrs'
     >
         <div
             style='height: 50px;'
-            class='d-flex align-items-center px-2 py-2 border-bottom'
+            class='d-flex align-items-center px-2 py-2 border-bottom flex-shrink-0'
         >
             <div
                 ref='drag-handle'
@@ -72,10 +78,16 @@
             </div>
         </div>
         <div
-            class='modal-body'
-            :style='`height: calc(100% - 50px)`'
+            class='floating-pane-body flex-grow-1 overflow-auto'
+            :class='{ "px-3 py-3": padded }'
         >
             <slot />
+        </div>
+        <div
+            v-if='$slots.footer'
+            class='floating-pane-footer px-3 py-3 border-top flex-shrink-0'
+        >
+            <slot name='footer' />
         </div>
     </div>
 </template>
@@ -106,6 +118,11 @@ const props = defineProps({
     modal: {
         type: Boolean,
         default: false
+    },
+    padded: {
+        type: Boolean,
+        description: 'Inset the body content; disable for full-bleed media',
+        default: true
     }
 });
 
@@ -270,6 +287,10 @@ function touchEnd() {
     min-width: 400px;
     resize: both;
     overflow: hidden;
+}
+
+.floating-pane-body {
+    min-height: 0;
 }
 
 /* Near-fullscreen modal on small screens; the status bar inset is subtracted twice

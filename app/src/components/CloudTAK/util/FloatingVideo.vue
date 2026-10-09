@@ -1,6 +1,7 @@
 <template>
     <FloatingPane
         :uid='uid'
+        :padded='false'
         class='video-container'
         @close='emit("close")'
     >

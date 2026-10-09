@@ -15,53 +15,54 @@
             />
         </template>
 
-        <div class='h-100 w-100 overflow-auto'>
-            <TablerLoading
-                v-if='stage === "capturing"'
-                desc='Waiting for photo...'
+        <TablerLoading
+            v-if='stage === "capturing"'
+            desc='Waiting for photo...'
+        />
+        <TablerLoading
+            v-else-if='stage === "uploading"'
+            desc='Uploading photo...'
+        />
+        <TablerLoading
+            v-else-if='stage === "saving"'
+            desc='Creating marker...'
+        />
+        <template v-else>
+            <TablerInlineAlert
+                v-if='error'
+                title='An Error Occurred'
+                :description='error.message'
             />
-            <TablerLoading
-                v-else-if='stage === "uploading"'
-                desc='Uploading photo...'
-            />
-            <TablerLoading
-                v-else-if='stage === "saving"'
-                desc='Creating marker...'
-            />
-            <div
+            <p
                 v-else
-                class='row mx-2'
+                class='text-secondary m-0'
             >
-                <div class='col-12'>
-                    <TablerInlineAlert
-                        v-if='error'
-                        title='An Error Occurred'
-                        :description='error.message'
-                    />
-                </div>
-                <div class='col-12 pt-3'>
-                    <TablerButton
-                        class='btn-primary w-100'
-                        @click='capture'
-                    >
-                        <IconCamera
-                            :size='20'
-                            stroke='1'
-                        />
-                        <span class='mx-2'>Take Photo</span>
-                    </TablerButton>
-                </div>
-            </div>
+                Take a photo to create a marker at your current location
+            </p>
+        </template>
 
-            <input
-                ref='fileInput'
-                type='file'
-                accept='image/*'
-                capture='environment'
-                class='d-none'
-                @change='stageFile($event)'
+        <input
+            ref='fileInput'
+            type='file'
+            accept='image/*'
+            capture='environment'
+            class='d-none'
+            @change='stageFile($event)'
+        >
+
+        <template #footer>
+            <TablerButton
+                class='btn-primary w-100'
+                :disabled='stage !== "idle"'
+                @click='capture'
             >
-        </div>
+                <IconCamera
+                    :size='20'
+                    stroke='1'
+                />
+                <span class='mx-2'>Take Photo</span>
+            </TablerButton>
+        </template>
     </FloatingPane>
 </template>
 

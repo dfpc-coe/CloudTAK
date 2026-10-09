@@ -15,45 +15,43 @@
             />
         </template>
 
-        <div class='h-100 w-100 overflow-auto'>
-            <div class='mx-2 my-2'>
-                <TablerInput
-                    v-model='config.name'
-                    label='Name'
-                    @submit='submitPoint'
-                />
-            </div>
-
-            <Coordinate
-                v-model='config.coordinates'
-                :edit='true'
-                :hover='true'
-                :modes='["dd"]'
+        <div class='mx-2 mb-2'>
+            <TablerInput
+                v-model='config.name'
+                label='Name'
                 @submit='submitPoint'
             />
-
-            <PropertyBearing
-                v-model='config.bearing'
-                :edit='true'
-                :hover='true'
-            />
-
-            <PropertyDistance
-                v-model='config.range'
-                :unit='mapStore.distanceUnit'
-                :edit='true'
-                :hover='true'
-            />
-
-            <div class='mx-2'>
-                <button
-                    class='btn btn-primary w-100 mt-3'
-                    @click='submitPoint'
-                >
-                    Save
-                </button>
-            </div>
         </div>
+
+        <Coordinate
+            v-model='config.coordinates'
+            :edit='true'
+            :hover='true'
+            :modes='["dd"]'
+            @submit='submitPoint'
+        />
+
+        <PropertyBearing
+            v-model='config.bearing'
+            :edit='true'
+            :hover='true'
+        />
+
+        <PropertyDistance
+            v-model='config.range'
+            :unit='mapStore.distanceUnit'
+            :edit='true'
+            :hover='true'
+        />
+
+        <template #footer>
+            <button
+                class='btn btn-primary w-100'
+                @click='submitPoint'
+            >
+                Create Range &amp; Bearing
+            </button>
+        </template>
     </FloatingPane>
 </template>
 

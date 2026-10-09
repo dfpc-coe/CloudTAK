@@ -23,7 +23,8 @@ function mountPane() {
         slots: {
             header: '<span data-test="header">Header</span>',
             actions: '<button data-test="action">Action</button>',
-            default: '<div data-test="body">Body</div>'
+            default: '<div data-test="body">Body</div>',
+            footer: '<button data-test="footer">Submit</button>'
         },
         attachTo: document.body
     });
@@ -56,6 +57,38 @@ describe('FloatingPane', () => {
         expect(wrapper.find('[data-test="header"]').exists()).toBe(true);
         expect(wrapper.find('[data-test="action"]').exists()).toBe(true);
         expect(wrapper.find('[data-test="body"]').exists()).toBe(true);
+        expect(wrapper.find('.floating-pane-footer [data-test="footer"]').exists()).toBe(true);
+
+        wrapper.unmount();
+    });
+
+    it('pads the scrolling body by default and inset is shared by both layouts', async () => {
+        const wrapper = mountPane();
+
+        const body = wrapper.find('.floating-pane-body');
+        expect(body.classes()).toContain('overflow-auto');
+        expect(body.classes()).toContain('px-3');
+        expect(body.find('[data-test="body"]').exists()).toBe(true);
+
+        appStore.isMobileDetected = true;
+        await nextTick();
+
+        const modalBody = document.querySelector('.modal .floating-pane-body');
+        expect(modalBody?.classList.contains('px-3')).toBe(true);
+        expect(document.querySelector('.modal .modal-body')).toBeNull();
+
+        wrapper.unmount();
+    });
+
+    it('drops the body inset when padded is false', () => {
+        const wrapper = mount(FloatingPane, {
+            props: { uid: pane.uid, padded: false },
+            slots: { default: '<div data-test="body">Body</div>' },
+            attachTo: document.body
+        });
+
+        expect(wrapper.find('.floating-pane-body').classes()).not.toContain('px-3');
+        expect(wrapper.find('.floating-pane-footer').exists()).toBe(false);
 
         wrapper.unmount();
     });
@@ -71,6 +104,7 @@ describe('FloatingPane', () => {
         expect(modal?.querySelector('[data-test="header"]')).not.toBeNull();
         expect(modal?.querySelector('[data-test="action"]')).not.toBeNull();
         expect(modal?.querySelector('[data-test="body"]')).not.toBeNull();
+        expect(modal?.querySelector('.floating-pane-footer [data-test="footer"]')).not.toBeNull();
 
         wrapper.unmount();
     });

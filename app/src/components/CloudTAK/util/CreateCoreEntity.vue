@@ -16,89 +16,93 @@
             />
         </template>
 
-        <div class='h-100 w-100 overflow-auto'>
-            <TablerAlert
-                v-if='error'
-                :err='error'
-            />
-            <TablerLoading
-                v-else-if='loading'
-                desc='Creating Event'
-            />
-            <template v-else>
-                <div class='row g-2'>
-                    <div class='col-12 col-md-8'>
-                        <TablerInput
-                            v-model='config.name'
-                            label='Name'
-                            :required='true'
-                        />
-                    </div>
-                    <div class='col-12 col-md-4'>
-                        <TablerEnum
-                            v-model='config.priority'
-                            label='Priority'
-                            :options='["none", "low", "medium", "high", "critical"]'
-                        />
-                    </div>
+        <TablerAlert
+            v-if='error'
+            :err='error'
+        />
+        <TablerLoading
+            v-else-if='loading'
+            desc='Creating Event'
+        />
+        <div
+            v-else
+            class='row g-2'
+        >
+            <div class='col-12 col-md-8'>
+                <TablerInput
+                    v-model='config.name'
+                    label='Name'
+                    :required='true'
+                />
+            </div>
+            <div class='col-12 col-md-4'>
+                <TablerEnum
+                    v-model='config.priority'
+                    label='Priority'
+                    :options='["none", "low", "medium", "high", "critical"]'
+                />
+            </div>
 
-                    <div class='col-12'>
-                        <CoreEntityType v-model='config.type' />
-                    </div>
+            <div class='col-12'>
+                <CoreEntityType v-model='config.type' />
+            </div>
 
-                    <div class='col-12'>
-                        <Coordinate
-                            v-model='config.coordinates'
-                            :edit='true'
-                            :hover='true'
-                        />
-                    </div>
+            <div class='col-12'>
+                <label class='form-label'>Coordinates</label>
+                <Coordinate
+                    v-model='config.coordinates'
+                    :inline='true'
+                    :edit='true'
+                    :hover='true'
+                />
+            </div>
 
-                    <div class='col-12'>
-                        <PropertyCoreEntityLocation
-                            v-model='config.location'
-                            :edit='true'
-                        />
-                    </div>
+            <div class='col-12'>
+                <TablerInput
+                    v-model='config.location'
+                    label='Location'
+                    placeholder='Address or place name'
+                />
+            </div>
 
-                    <div class='col-12'>
-                        <label class='form-label'>Remarks</label>
-                        <TablerMarkdownEditor
-                            v-model='config.remarks'
-                            label='Remarks'
-                            @submit='submit'
-                        />
-                    </div>
+            <div class='col-12'>
+                <label class='form-label'>Remarks</label>
+                <TablerMarkdownEditor
+                    v-model='config.remarks'
+                    label='Remarks'
+                    @submit='submit'
+                />
+            </div>
 
-                    <div class='col-12'>
-                        <label class='form-label required'>Share to Channels</label>
-                        <div
-                            class='overflow-auto'
-                            style='max-height: 250px;'
-                        >
-                            <GroupSelect
-                                v-model='config.channels'
-                                :active='true'
-                            />
-                        </div>
-                        <div
-                            v-if='!config.channels.length'
-                            class='form-hint text-warning'
-                        >
-                            Select at least one Channel to share the Event with
-                        </div>
-                    </div>
-                </div>
-
-                <button
-                    class='btn btn-primary w-100 mt-3'
-                    :disabled='!valid'
-                    @click='submit'
+            <div class='col-12'>
+                <label class='form-label required'>Share to Channels</label>
+                <div
+                    class='overflow-auto'
+                    style='max-height: 250px;'
                 >
-                    Create Event
-                </button>
-            </template>
+                    <GroupSelect
+                        v-model='config.channels'
+                        :active='true'
+                    />
+                </div>
+                <div
+                    v-if='!config.channels.length'
+                    class='form-hint text-warning'
+                >
+                    Select at least one Channel to share the Event with
+                </div>
+            </div>
         </div>
+
+        <template #footer>
+            <button
+                class='btn btn-primary w-100'
+                :disabled='!valid || loading || !!error'
+                @click='submit'
+            >
+                Create Event
+            </button>
+        </template>
     </FloatingPane>
 </template>
 
@@ -109,7 +113,6 @@ import { server } from '../../../std.ts';
 import Coordinate from './Coordinate.vue';
 import FloatingPane from './FloatingPane.vue';
 import CoreEntityType from './CoreEntityType.vue';
-import PropertyCoreEntityLocation from '../Property/PropertyCoreEntityLocation.vue';
 import GroupSelect from '../../util/GroupSelect.vue';
 import GroupManager from '../../../base/group.ts';
 import { useMapStore } from '../../../stores/map.ts';

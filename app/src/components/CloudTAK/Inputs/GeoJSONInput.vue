@@ -11,84 +11,54 @@
             />
             <div
                 class='mx-2 text-sm text-truncate'
-                v-text='"Import GeoJSON to Editable Features"'
+                v-text='"GeoJSON Import"'
             />
         </template>
 
-        <div class='h-100 w-100 overflow-auto'>
-            <TablerLoading v-if='loading' />
-            <div
-                v-else-if='!feats.length'
-                class='row mx-2'
+        <TablerLoading v-if='loading' />
+        <template v-else-if='!feats.length'>
+            <TablerFileInput
+                :model-value='""'
+                type='file'
+                accept='.json, .geojson'
+                label='File'
+                @change='processUpload($event)'
+            />
+
+            <TablerInlineAlert
+                v-if='error'
+                class='mt-3'
+                title='An Error Occurred'
+                :description='error.message'
+            />
+
+            <TablerInlineAlert
+                class='mt-3'
+                title='FYI'
+                description='Large GeoJSON files should be uploaded via the Imports menu'
+            />
+        </template>
+        <template v-else>
+            <label class='form-label user-select-none'>Features To Import</label>
+
+            <FeatureRow
+                v-for='feat of feats'
+                :key='feat.id'
+                :feature='feat'
+                :hover='false'
+                :delete-button='false'
+            />
+        </template>
+
+        <template #footer>
+            <TablerButton
+                class='btn-primary w-100'
+                :disabled='loading || !feats.length'
+                @click='saveToMap'
             >
-                <div class='col-12'>
-                    <TablerFileInput
-                        :model-value='""'
-                        type='file'
-                        accept='.json, .geojson'
-                        label='File'
-                        @change='processUpload($event)'
-                    />
-                </div>
-
-                <div class='col-12 pt-3'>
-                    <TablerInlineAlert
-                        v-if='error'
-                        title='An Error Occurred'
-                        :description='error.message'
-                    />
-                </div>
-
-                <div class='col-12 pt-3'>
-                    <TablerInlineAlert
-                        title='FYI'
-                        description='Large GeoJSON files should be uploaded via the Imports menu'
-                    />
-                </div>
-
-                <div class='col-12 pt-3'>
-                    <TablerButton
-                        class='btn-primary w-100'
-                        :disabled='!file'
-                        @click='uploadGeoJSON'
-                    >
-                        Upload
-                    </TablerButton>
-                </div>
-            </div>
-            <div
-                v-else
-                class='row mx-2'
-            >
-                <div class='col-12 pt-3'>
-                    <label class='mx-2 user-select-none'>Features To Import:</label>
-
-                    <div
-                        class='col-12 overflow-auto'
-                        style='
-                            max-height: 40vh;
-                        '
-                    >
-                        <FeatureRow
-                            v-for='feat of feats'
-                            :key='feat.id'
-                            :feature='feat'
-                            :hover='false'
-                            :delete-button='false'
-                        />
-                    </div>
-                </div>
-
-                <div class='col-12 pt-3'>
-                    <TablerButton
-                        class='btn-primary w-100'
-                        @click='saveToMap'
-                    >
-                        Save To Map
-                    </TablerButton>
-                </div>
-            </div>
-        </div>
+                Create Features
+            </TablerButton>
+        </template>
     </FloatingPane>
 </template>
 
@@ -128,7 +98,6 @@ const emit = defineEmits(['close']);
 const pane = floatStore.panes.get(props.uid) as Pane<PaneGeoJSONConfig> | undefined;
 
 const error = ref<Error | undefined>();
-const file = ref<File | undefined>();
 
 const feats = ref<InputFeature[]>(pane?.config.features ?? []);
 
@@ -138,17 +107,16 @@ async function processUpload(event: Event) {
     if (!event.target || !(event.target instanceof HTMLInputElement) || !event.target.files) return;
     if (event.target.files.length === 0) return;
 
-    file.value = event.target.files[0];
+    await parseGeoJSON(event.target.files[0]);
 }
 
-async function uploadGeoJSON() {
-    if (!file.value) return;
-
+async function parseGeoJSON(file: File) {
+    error.value = undefined;
     loading.value = true;
     feats.value = [];
 
     const reader = new FileReader();
-    reader.readAsText(file.value);
+    reader.readAsText(file);
 
     reader.onload = async (e) => {
         try {
@@ -163,7 +131,7 @@ async function uploadGeoJSON() {
             // TODO Ideally CloudTAK in the future will use CoTs natively so we will
             // Remove this To_GeoJSON conversion
 
-            const name = file.value?.name ? file.value.name.replace(/\..*$/, '') : new Date().toISOString().replace(/T.*/, '') + ' Import';
+            const name = file.name ? file.name.replace(/\..*$/, '') : new Date().toISOString().replace(/T.*/, '') + ' Import';
 
             for (const feat of fc.features) {
                 try {

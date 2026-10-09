@@ -15,39 +15,37 @@
             />
         </template>
 
-        <div class='h-100 w-100 overflow-auto'>
-            <div class='mx-2 my-2'>
-                <TablerInput
-                    v-model='config.name'
-                    label='Name'
-                    @submit='submitPoint'
-                />
-            </div>
-
-            <Coordinate
-                v-model='config.coordinates'
-                :edit='true'
-                :hover='true'
+        <div class='mx-2 mb-2'>
+            <TablerInput
+                v-model='config.name'
+                label='Name'
                 @submit='submitPoint'
             />
-
-            <div class='d-flex justify-content-center'>
-                <CoordinateType
-                    v-model='config.type'
-                    class='pt-3'
-                    :size='24'
-                />
-            </div>
-
-            <div class='mx-2'>
-                <button
-                    class='btn btn-primary w-100 mt-3'
-                    @click='submitPoint'
-                >
-                    Save
-                </button>
-            </div>
         </div>
+
+        <Coordinate
+            v-model='config.coordinates'
+            :edit='true'
+            :hover='true'
+            @submit='submitPoint'
+        />
+
+        <div class='d-flex justify-content-center'>
+            <CoordinateType
+                v-model='config.type'
+                class='pt-3'
+                :size='24'
+            />
+        </div>
+
+        <template #footer>
+            <button
+                class='btn btn-primary w-100'
+                @click='submitPoint'
+            >
+                Create Point
+            </button>
+        </template>
     </FloatingPane>
 </template>
 
