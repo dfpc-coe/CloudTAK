@@ -1,132 +1,132 @@
 <template>
-    <TablerModal size='md'>
-        <div class='modal-status bg-blue' />
-        <button
-            type='button'
-            class='btn-close'
-            aria-label='Close'
-            @click='emit("close")'
-        />
-        <div class='modal-header text-body'>
-            <div class='modal-title d-flex align-items-center'>
-                <IconTarget
-                    :size='32'
-                    stroke='1'
-                />
-                <span class='mx-2'>Range Rings</span>
-            </div>
-        </div>
-        <div class='modal-body text-body'>
-            <div class='mx-2 my-2'>
-                <TablerInput
-                    v-model='config.name'
-                    label='Name'
-                />
-            </div>
-
-            <Coordinate
-                v-model='config.coordinates'
-                label='Origin'
-                :edit='true'
-                :hover='true'
-                :modes='["dd"]'
+    <FloatingPane
+        :uid='uid'
+        @close='emit("close")'
+    >
+        <template #header>
+            <IconTarget
+                :size='24'
+                stroke='1'
+                class='ms-2'
             />
+            <div
+                class='mx-2 text-sm text-truncate'
+                v-text='"Range Rings"'
+            />
+        </template>
 
-            <div class='mx-2 border my-2'>
-                <template v-for='ring of config.rings'>
-                    <div class='position-relative'>
-                        <div
-                            v-if='config.rings.length > 1'
-                            class='position-absolute cursor-pointer'
-                            style='
-                                top: 4px;
-                                right: 4px;
-                            '
-                            @click='config.rings.splice(config.rings.indexOf(ring), 1)'
-                        >
-                            <IconTrash
-                                :size='18'
-                                stroke='1'
-                            />
-                        </div>
+        <div class='mx-2 mb-2'>
+            <TablerInput
+                v-model='config.name'
+                label='Name'
+            />
+        </div>
 
-                        <PropertyDistance
-                            v-model='ring.distance'
-                            class='py-2'
-                            label='Ring Diameter'
-                            :unit='distanceUnit'
-                            :edit='true'
-                            :hover='true'
-                        />
-                    </div>
-                </template>
+        <Coordinate
+            v-model='config.coordinates'
+            label='Origin'
+            :edit='true'
+            :hover='true'
+            :modes='["dd"]'
+        />
 
-                <div class='col-12 px-2 py-2'>
-                    <button
-                        class='btn btn-secondary btn-sm w-100'
-                        @click='config.rings.push({ distance: 1 })'
+        <div class='mx-2 border my-2'>
+            <template v-for='ring of config.rings'>
+                <div class='position-relative'>
+                    <div
+                        v-if='config.rings.length > 1'
+                        class='position-absolute cursor-pointer'
+                        style='
+                            top: 4px;
+                            right: 4px;
+                        '
+                        @click='config.rings.splice(config.rings.indexOf(ring), 1)'
                     >
-                        <IconPlus
+                        <IconTrash
                             :size='18'
                             stroke='1'
                         />
-                        <span class='ms-2'>Add Ring</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class='mx-2 my-2'>
-                <TablerSlidedown
-                    :arrow='true'
-                    :click-anywhere-expand='true'
-                    :click-anywhere-collapse='true'
-                >
-                    <div class='d-flex align-items-center w-100'>
-                        <span>Style Options</span>
-                        <div :style='previewStyle' />
                     </div>
-                    <template #expanded>
-                        <TablerColour
-                            v-model='config.color'
-                            label='Color'
-                        />
-                        <TablerEnum
-                            v-model='config.style'
-                            label='Style'
-                            :options='["solid", "dashed", "dotted", "outlined"]'
-                        />
-                        <TablerRange
-                            v-model='config.width'
-                            label='Width'
-                            :min='1'
-                            :max='10'
-                            :step='1'
-                        />
-                        <TablerRange
-                            v-model='config.opacity'
-                            label='Opacity'
-                            :min='0'
-                            :max='1'
-                            :step='0.1'
-                        />
-                    </template>
-                </TablerSlidedown>
-            </div>
 
+                    <PropertyDistance
+                        v-model='ring.distance'
+                        class='py-2'
+                        label='Ring Diameter'
+                        :unit='distanceUnit'
+                        :edit='true'
+                        :hover='true'
+                    />
+                </div>
+            </template>
+
+            <div class='col-12 px-2 py-2'>
+                <button
+                    class='btn btn-secondary btn-sm w-100'
+                    @click='config.rings.push({ distance: 1 })'
+                >
+                    <IconPlus
+                        :size='18'
+                        stroke='1'
+                    />
+                    <span class='ms-2'>Add Ring</span>
+                </button>
+            </div>
+        </div>
+
+        <div class='mx-2 my-2'>
+            <TablerSlidedown
+                :arrow='true'
+                :click-anywhere-expand='true'
+                :click-anywhere-collapse='true'
+            >
+                <div class='d-flex align-items-center w-100'>
+                    <span>Style Options</span>
+                    <div :style='previewStyle' />
+                </div>
+                <template #expanded>
+                    <TablerColour
+                        v-model='config.color'
+                        label='Color'
+                    />
+                    <TablerEnum
+                        v-model='config.style'
+                        label='Style'
+                        :options='["solid", "dashed", "dotted", "outlined"]'
+                    />
+                    <TablerRange
+                        v-model='config.width'
+                        label='Width'
+                        :min='1'
+                        :max='10'
+                        :step='1'
+                    />
+                    <TablerRange
+                        v-model='config.opacity'
+                        label='Opacity'
+                        :min='0'
+                        :max='1'
+                        :step='0.1'
+                    />
+                </template>
+            </TablerSlidedown>
+        </div>
+
+        <template #footer>
             <button
-                class='btn btn-primary w-100 mt-3'
+                class='btn btn-primary w-100'
                 @click='submitRings'
             >
-                Save
+                Create Range Rings
             </button>
-        </div>
-    </TablerModal>
+        </template>
+    </FloatingPane>
 </template>
 
 <script setup lang='ts'>
 import { v4 as randomUUID } from 'uuid';
 import { ref, toRaw, computed, onMounted } from 'vue'
 import Coordinate from '../util/Coordinate.vue';
+import FloatingPane from '../util/FloatingPane.vue';
 import PropertyDistance from '../Property/PropertyDistance.vue';
 import ProfileConfig from '../../../base/profile.ts';
 import Ellipse from '@turf/ellipse'
@@ -137,7 +137,6 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerInput,
-    TablerModal,
     TablerColour,
     TablerEnum,
     TablerRange,
@@ -146,6 +145,13 @@ import {
 import type { LngLatLike } from 'maplibre-gl'
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
+
+defineProps({
+    uid: {
+        type: String,
+        required: true
+    }
+});
 
 const emit = defineEmits([ 'close' ]);
 

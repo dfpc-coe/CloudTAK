@@ -49,13 +49,6 @@
                 v-if='isDrawing'
             />
 
-            <GeoJSONInput
-                v-if='mapStore.toImport.length'
-                :features='mapStore.toImport'
-                @close='mapStore.toImport = []'
-                @done='mapStore.toImport = []'
-            />
-
             <GenericBottomPane v-if='mode === "SetLocation"'>
                 <div
                     class='card cloudtak-panel user-select-none'
@@ -367,7 +360,7 @@
 <script setup lang='ts'>
 import GeoJSONInput from './Inputs/GeoJSONInput.vue';
 import BufferInput from './Inputs/BufferInput.vue';
-import { ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
+import { ref, watch, computed, toRaw, nextTick, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import GPSPanel from './GPSPanel/GPSPanel.vue';
 import PluginPane from './PluginPane.vue';
 import {useRoute, useRouter } from 'vue-router';
@@ -530,6 +523,28 @@ const isDrawing = computed(() => {
 
 watch(isMobileDetected, () => {
     appStore.isMobileDetected = isMobileDetected.value;
+});
+
+watch(() => mapStore.toImport.length, async (length) => {
+    if (!length) return;
+
+    const features = toRaw(mapStore.toImport).slice();
+    mapStore.toImport = [];
+
+    // Delete first so a pane already open from the Draw Tools remounts with the dropped features
+    const uid = 'geojson-import';
+    floatStore.delete(uid);
+    await nextTick();
+
+    floatStore.add({
+        uid,
+        name: 'GeoJSON Import',
+        component: GeoJSONInput,
+        config: { features },
+        height: 500,
+        width: 500,
+        corner: 'top-right',
+    });
 });
 
 watch(() => appStore.resolvedTheme, (theme) => {

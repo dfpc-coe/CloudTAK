@@ -1,11 +1,55 @@
 <template>
+    <TablerModal
+        v-if='isModal'
+        size='xl'
+    >
+        <div
+            class='floating-pane-modal-frame w-100 d-flex flex-column overflow-hidden'
+            v-bind='$attrs'
+        >
+            <div
+                style='height: 50px;'
+                class='d-flex align-items-center px-2 py-2 border-bottom flex-shrink-0'
+            >
+                <slot name='header' />
+
+                <div class='btn-list ms-auto flex-nowrap'>
+                    <slot name='actions' />
+
+                    <TablerIconButton
+                        title='Close Pane'
+                        @click='emit("close")'
+                    >
+                        <IconX
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                </div>
+            </div>
+            <div
+                class='floating-pane-body flex-grow-1 overflow-auto'
+                :class='{ "px-3 py-3": padded }'
+            >
+                <slot />
+            </div>
+            <div
+                v-if='$slots.footer'
+                class='floating-pane-footer px-3 py-3 border-top flex-shrink-0'
+            >
+                <slot name='footer' />
+            </div>
+        </div>
+    </TablerModal>
     <div
+        v-else
         ref='container'
-        class='position-absolute cloudtak-panel resizable-content'
+        class='position-absolute cloudtak-panel resizable-content d-flex flex-column'
+        v-bind='$attrs'
     >
         <div
             style='height: 50px;'
-            class='d-flex align-items-center px-2 py-2 border-bottom'
+            class='d-flex align-items-center px-2 py-2 border-bottom flex-shrink-0'
         >
             <div
                 ref='drag-handle'
@@ -34,31 +78,51 @@
             </div>
         </div>
         <div
-            class='modal-body'
-            :style='`height: calc(100% - 50px)`'
+            class='floating-pane-body flex-grow-1 overflow-auto'
+            :class='{ "px-3 py-3": padded }'
         >
             <slot />
+        </div>
+        <div
+            v-if='$slots.footer'
+            class='floating-pane-footer px-3 py-3 border-top flex-shrink-0'
+        >
+            <slot name='footer' />
         </div>
     </div>
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, onUnmounted, useTemplateRef } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted, useTemplateRef } from 'vue'
+import { useAppStore } from '../../../stores/app.ts';
 import { useFloatStore } from '../../../stores/float.ts';
 import {
     IconX,
     IconGripVertical
 } from '@tabler/icons-vue';
 import {
+    TablerModal,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
+defineOptions({ inheritAttrs: false });
+
+const appStore = useAppStore();
 const floatStore = useFloatStore();
 
 const props = defineProps({
     uid: {
         type: String,
         required: true
+    },
+    modal: {
+        type: Boolean,
+        default: false
+    },
+    padded: {
+        type: Boolean,
+        description: 'Inset the body content; disable for full-bleed media',
+        default: true
     }
 });
 
@@ -71,13 +135,30 @@ const pane = ref(floatStore.panes.get(props.uid));
 const observer = ref<ResizeObserver | undefined>();
 const lastPosition = ref({ top: 0, left: 0 })
 
-onUnmounted(async () => {
-    if (observer.value) {
-        observer.value.disconnect();
+// Small screens can't fit a draggable pane, so the same content is shown as a modal;
+// pages without a map force the modal layout
+const isModal = computed(() => props.modal || appStore.isMobileDetected);
+
+onUnmounted(() => {
+    detachFloating();
+});
+
+onMounted(() => {
+    attachFloating();
+});
+
+watch(isModal, async (modal) => {
+    if (modal) {
+        detachFloating();
+    } else {
+        await nextTick();
+        attachFloating();
     }
 });
 
-onMounted(async () => {
+function attachFloating() {
+    if (!container.value || !pane.value) return;
+
     observer.value = new ResizeObserver((entries) => {
         if (!entries.length) return;
 
@@ -89,21 +170,31 @@ onMounted(async () => {
         });
     })
 
-    if (container.value && pane.value) {
-        container.value.style.top = pane.value.y + 'px';
-        container.value.style.left = pane.value.x + 'px';
+    container.value.style.top = pane.value.y + 'px';
+    container.value.style.left = pane.value.x + 'px';
 
-        container.value.style.height = pane.value.height + 'px';
-        container.value.style.width = pane.value.width + 'px';
+    container.value.style.height = pane.value.height + 'px';
+    container.value.style.width = pane.value.width + 'px';
 
-        observer.value.observe(container.value);
-    }
+    observer.value.observe(container.value);
 
     if (dragHandle.value) {
         dragHandle.value.addEventListener('mousedown', dragStart);
         dragHandle.value.addEventListener('touchstart', touchStart, { passive: false });
     }
-});
+}
+
+function detachFloating() {
+    if (observer.value) {
+        observer.value.disconnect();
+        observer.value = undefined;
+    }
+
+    if (dragHandle.value) {
+        dragHandle.value.removeEventListener('mousedown', dragStart);
+        dragHandle.value.removeEventListener('touchstart', touchStart);
+    }
+}
 
 function dragStart(event: MouseEvent) {
     if (!container.value || !dragHandle.value) return;
@@ -196,5 +287,16 @@ function touchEnd() {
     min-width: 400px;
     resize: both;
     overflow: hidden;
+}
+
+.floating-pane-body {
+    min-height: 0;
+}
+
+/* Near-fullscreen modal on small screens; the status bar inset is subtracted twice
+ * to keep the centered modal's top edge clear of the transparent native status bar. */
+.floating-pane-modal-frame {
+    height: calc(100dvh - 2rem - 2 * var(--status-bar-height, 0px));
+    max-height: calc(100dvh - 2rem - 2 * var(--status-bar-height, 0px));
 }
 </style>

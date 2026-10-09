@@ -1,69 +1,69 @@
 <template>
-    <TablerModal size='md'>
-        <div class='modal-status bg-blue' />
-        <button
-            type='button'
-            class='btn-close'
-            aria-label='Close'
-            @click='emit("close")'
-        />
-        <div class='modal-header text-body'>
-            <div class='d-flex align-items-center'>
-                <IconCamera
-                    :size='28'
-                    stroke='1'
-                />
-                <span class='mx-2'>Quick Pic</span>
-            </div>
-        </div>
-        <div class='modal-body text-body'>
-            <TablerLoading
-                v-if='stage === "capturing"'
-                desc='Waiting for photo...'
-            />
-            <TablerLoading
-                v-else-if='stage === "uploading"'
-                desc='Uploading photo...'
-            />
-            <TablerLoading
-                v-else-if='stage === "saving"'
-                desc='Creating marker...'
+    <FloatingPane
+        :uid='uid'
+        @close='emit("close")'
+    >
+        <template #header>
+            <IconCamera
+                :size='24'
+                stroke='1'
+                class='ms-2'
             />
             <div
-                v-else
-                class='row mx-2'
-            >
-                <div class='col-12'>
-                    <TablerInlineAlert
-                        v-if='error'
-                        title='An Error Occurred'
-                        :description='error.message'
-                    />
-                </div>
-                <div class='col-12 pt-3'>
-                    <TablerButton
-                        class='btn-primary w-100'
-                        @click='capture'
-                    >
-                        <IconCamera
-                            :size='20'
-                            stroke='1'
-                        />
-                        <span class='mx-2'>Take Photo</span>
-                    </TablerButton>
-                </div>
-            </div>
+                class='mx-2 text-sm text-truncate'
+                v-text='"Quick Pic"'
+            />
+        </template>
 
-            <input
-                ref='fileInput'
-                type='file'
-                accept='image/*'
-                capture='environment'
-                class='d-none'
-                @change='stageFile($event)'
+        <TablerLoading
+            v-if='stage === "capturing"'
+            desc='Waiting for photo...'
+        />
+        <TablerLoading
+            v-else-if='stage === "uploading"'
+            desc='Uploading photo...'
+        />
+        <TablerLoading
+            v-else-if='stage === "saving"'
+            desc='Creating marker...'
+        />
+        <template v-else>
+            <TablerInlineAlert
+                v-if='error'
+                title='An Error Occurred'
+                :description='error.message'
+            />
+            <p
+                v-else
+                class='text-secondary m-0'
             >
-        </div>
-    </TablerModal>
+                Take a photo to create a marker at your current location
+            </p>
+        </template>
+
+        <input
+            ref='fileInput'
+            type='file'
+            accept='image/*'
+            capture='environment'
+            class='d-none'
+            @change='stageFile($event)'
+        >
+
+        <template #footer>
+            <TablerButton
+                class='btn-primary w-100'
+                :disabled='stage !== "idle"'
+                @click='capture'
+            >
+                <IconCamera
+                    :size='20'
+                    stroke='1'
+                />
+                <span class='mx-2'>Take Photo</span>
+            </TablerButton>
+        </template>
+    </FloatingPane>
 </template>
 
 <script setup lang='ts'>
@@ -74,17 +74,24 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import type { LngLatLike } from 'maplibre-gl';
 import { IconCamera } from '@tabler/icons-vue';
 import {
-    TablerModal,
     TablerButton,
     TablerLoading,
     TablerInlineAlert,
 } from '@tak-ps/vue-tabler';
+import FloatingPane from '../util/FloatingPane.vue';
 import { std, stdurl } from '../../../std.ts';
 import { isNativePlatform } from '../../../utils/capacitor.ts';
 import { quickPicName, quickPicFeature } from '../../../utils/quick-pic.ts';
 import { useMapStore } from '../../../stores/map.ts';
 
 type Stage = 'idle' | 'capturing' | 'uploading' | 'saving';
+
+defineProps({
+    uid: {
+        type: String,
+        required: true
+    }
+});
 
 const emit = defineEmits<{
     (e: 'close'): void;

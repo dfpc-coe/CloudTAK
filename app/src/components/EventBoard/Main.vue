@@ -175,6 +175,7 @@
 
         <CreateCoreEntity
             v-if='createEvent && channel !== undefined'
+            :modal='true'
             :channel='channel'
             :navigate='false'
             @create='onEventCreated($event)'

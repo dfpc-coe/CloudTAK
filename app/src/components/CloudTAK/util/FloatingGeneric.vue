@@ -1,6 +1,7 @@
 <template>
     <FloatingPane
         :uid='uid'
+        :padded='false'
         @close='emit("close")'
     >
         <template #header>

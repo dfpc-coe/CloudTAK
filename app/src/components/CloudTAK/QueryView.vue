@@ -48,7 +48,7 @@
             <div class='px-2 py-2'>
                 <button
                     class='btn btn-success w-100'
-                    @click='eventModal = true'
+                    @click='openCreateEvent'
                 >
                     Create Event
                 </button>
@@ -91,19 +91,13 @@
             />
         </template>
     </MenuTemplate>
-
-    <CreateCoreEntity
-        v-if='eventModal && coords && coords.length >= 2'
-        :coordinates='coords'
-        :location='reverse ? reverse.LongLabel : ""'
-        @close='eventModal = false'
-    />
 </template>
 
 <script setup lang='ts'>
 import { ref, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMapStore } from '../../stores/map.ts';
+import { useFloatStore } from '../../stores/float.ts';
 import type { SearchReverseReverse } from '../../types.ts';
 import {
     IconRefresh,
@@ -126,9 +120,9 @@ import CreateCoreEntity from './util/CreateCoreEntity.vue';
 const route = useRoute();
 const router = useRouter();
 const mapStore = useMapStore();
+const floatStore = useFloatStore();
 
 const refreshKey = ref(0);
-const eventModal = ref(false);
 const reverse = ref<SearchReverseReverse['reverse']>(null);
 
 const coords = computed<number[] | undefined>(() => {
@@ -141,6 +135,25 @@ watch(coords, () => {
     reverse.value = null;
     refreshKey.value++;
 });
+
+function openCreateEvent(): void {
+    if (!coords.value || coords.value.length < 2) return;
+
+    const uid = 'create-event';
+    if (floatStore.panes.has(uid)) return;
+
+    floatStore.add({
+        uid,
+        name: 'Create Event',
+        component: CreateCoreEntity,
+        config: {
+            coordinates: coords.value,
+            location: reverse.value ? reverse.value.LongLabel : '',
+        },
+        height: 640,
+        width: 600,
+    });
+}
 
 const isNavigating = computed(() => {
     const dest = mapStore.navigation.destination;

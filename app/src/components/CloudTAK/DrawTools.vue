@@ -69,36 +69,6 @@
             </div>
         </template>
     </TablerDropdown>
-
-    <CoordInput
-        v-if='modal === ModalInputType.POINT'
-        @close='modal = ModalInputType.NONE'
-    />
-
-    <RangeRingsInput
-        v-if='modal === ModalInputType.RANGE_RINGS'
-        @close='modal = ModalInputType.NONE'
-    />
-
-    <RangeInput
-        v-if='modal === ModalInputType.RANGE'
-        @close='modal = ModalInputType.NONE'
-    />
-
-    <GeoJSONInput
-        v-if='modal === ModalInputType.IMPORT'
-        @close='modal = ModalInputType.NONE'
-    />
-
-    <CreateCoreEntity
-        v-if='modal === ModalInputType.EVENT'
-        @close='modal = ModalInputType.NONE'
-    />
-
-    <QuickPicInput
-        v-if='modal === ModalInputType.QUICK_PIC'
-        @close='modal = ModalInputType.NONE'
-    />
 </template>
 
 <script setup lang='ts'>
@@ -129,6 +99,7 @@ import {
     IconPencilPlus,
 } from '@tabler/icons-vue';
 import { useMapStore } from '../../stores/map';
+import { useFloatStore } from '../../stores/float.ts';
 import {
     TablerNone,
     TablerInput,
@@ -136,19 +107,8 @@ import {
     TablerDropdown,
 } from '@tak-ps/vue-tabler';
 
-enum ModalInputType {
-    NONE = 'none',
-    RANGE = 'range',
-    POINT = 'point',
-    IMPORT = 'import',
-    RANGE_RINGS = 'range_rings',
-    EVENT = 'event',
-    QUICK_PIC = 'quick_pic',
-}
-
-const modal = ref<ModalInputType>(ModalInputType.NONE);
-
 const mapStore = useMapStore();
+const floatStore = useFloatStore();
 
 const search = ref<string>('');
 const searchVisible = ref<boolean>(false);
@@ -161,11 +121,11 @@ type DrawToolItem = {
 };
 
 const drawTools: DrawToolItem[] = [
-    { key: 'coordinate', label: 'Coordinate Input', icon: IconCursorText, action: () => { modal.value = ModalInputType.POINT; } },
-    { key: 'event', label: 'Create Event', icon: IconCalendarEvent, action: () => { modal.value = ModalInputType.EVENT; } },
-    { key: 'quick_pic', label: 'Quick Pic', icon: IconCamera, action: () => { modal.value = ModalInputType.QUICK_PIC; } },
-    { key: 'range', label: 'Range & Bearing', icon: IconCompass, action: () => { modal.value = ModalInputType.RANGE; } },
-    { key: 'range_rings', label: 'Range Rings', icon: IconTarget, action: () => { modal.value = ModalInputType.RANGE_RINGS; } },
+    { key: 'coordinate', label: 'Coordinate Input', icon: IconCursorText, action: () => { openPane('coordinate-input', 'Coordinate Entry', CoordInput, 420); } },
+    { key: 'event', label: 'Create Event', icon: IconCalendarEvent, action: () => { openPane('create-event', 'Create Event', CreateCoreEntity, 640, 600); } },
+    { key: 'quick_pic', label: 'Quick Pic', icon: IconCamera, action: () => { openPane('quick-pic', 'Quick Pic', QuickPicInput, 300); } },
+    { key: 'range', label: 'Range & Bearing', icon: IconCompass, action: () => { openPane('range-bearing-input', 'Range & Bearing', RangeInput, 560); } },
+    { key: 'range_rings', label: 'Range Rings', icon: IconTarget, action: () => { openPane('range-rings-input', 'Range Rings', RangeRingsInput, 640); } },
     { key: 'point', label: 'Draw Point', icon: IconPoint, action: () => { mapStore.draw.start(DrawToolMode.POINT); } },
     { key: 'line', label: 'Draw Line', icon: IconLine, action: () => { mapStore.draw.start(DrawToolMode.LINESTRING); } },
     { key: 'polygon', label: 'Draw Polygon', icon: IconPolygon, action: () => { mapStore.draw.start(DrawToolMode.POLYGON); } },
@@ -173,7 +133,7 @@ const drawTools: DrawToolItem[] = [
     { key: 'circle', label: 'Draw Circle', icon: IconCircle, action: () => { mapStore.draw.start(DrawToolMode.CIRCLE); } },
     { key: 'sector', label: 'Draw Sector', icon: IconCone, action: () => { mapStore.draw.start(DrawToolMode.SECTOR); } },
     { key: 'lasso', label: 'Lasso Select', icon: IconLasso, action: () => { mapStore.draw.start(DrawToolMode.FREEHAND); } },
-    { key: 'import', label: 'GeoJSON Import', icon: IconFileImport, action: () => { modal.value = ModalInputType.IMPORT; } },
+    { key: 'import', label: 'GeoJSON Import', icon: IconFileImport, action: () => { openPane('geojson-import', 'GeoJSON Import', GeoJSONInput, 500, 500); } },
 ];
 
 const filteredDrawTools = computed<DrawToolItem[]>(() => {
@@ -181,6 +141,11 @@ const filteredDrawTools = computed<DrawToolItem[]>(() => {
     if (!query) return drawTools;
     return drawTools.filter((tool) => tool.label.toLowerCase().includes(query));
 });
+
+function openPane(uid: string, name: string, component: Component, height: number, width = 400): void {
+    if (floatStore.panes.has(uid)) return;
+    floatStore.add({ uid, name, component, height, width, corner: 'top-right' });
+}
 
 function toggleSearch(): void {
     searchVisible.value = !searchVisible.value;
