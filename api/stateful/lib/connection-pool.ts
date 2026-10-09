@@ -414,9 +414,14 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     async add(connConfig: ConnectionConfig): Promise<ConnectionClient> {
         if (!connConfig.auth || !connConfig.auth.cert || !connConfig.auth.key) throw new Err(400, null, 'Connection must have auth.cert & auth.key');
 
-        // Return existing tracked connection immediately
-        if (this.has(connConfig.id)) {
-            return this.get(connConfig.id) as ConnectionClient;
+        const tracked = this.get(connConfig.id);
+        if (tracked) {
+            if (this.sameAuth(tracked.config, connConfig)) return tracked;
+
+            // A regenerated certificate must replace the socket - node-tak reconnects
+            // with the credentials it was constructed with
+            console.log(`ok - ${connConfig.id} - ${connConfig.name} - credentials changed, replacing connection`);
+            this.delete(connConfig.id);
         }
 
         // Ensure 2 concurrent adds for the same connection don't occur
@@ -551,7 +556,11 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
      * Determine whether a connection is still managed by the pool.
      */
     private isTracked(connClient: ConnectionClient): boolean {
-        return this.has(connClient.config.id);
+        return this.get(connClient.config.id) === connClient;
+    }
+
+    private sameAuth(a: ConnectionConfig, b: ConnectionConfig): boolean {
+        return a.auth.cert === b.auth.cert && a.auth.key === b.auth.key;
     }
 
     async retry(connClient: ConnectionClient): Promise<void> {

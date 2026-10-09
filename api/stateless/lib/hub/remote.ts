@@ -107,6 +107,10 @@ export default class RemoteHub implements HubClient {
         return res.status;
     }
 
+    async profileSync(username: string): Promise<void> {
+        await this.#call('/profile/sync', { username });
+    }
+
     async connectionStatus(ids: Array<number | string>): Promise<Record<string, ConnStatus>> {
         return await this.#call('/connection/status', { ids });
     }

@@ -98,6 +98,13 @@ test('Hub RPC: connectionChannels round trip', async () => {
     }
 });
 
+test('Hub RPC: profileSync round trip', async () => {
+    await hub.profileSync('nobody@example.com');
+
+    const statuses = await hub.connectionStatus(['nobody@example.com']);
+    assert.equal(statuses['nobody@example.com'], 'unknown');
+});
+
 test('Hub RPC: connectionSummary round trip', async () => {
     const summary = await hub.connectionSummary();
 

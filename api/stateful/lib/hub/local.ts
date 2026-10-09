@@ -47,6 +47,10 @@ export default class LocalHub implements HubClient {
         return this.config.conns.status(id);
     }
 
+    async profileSync(username: string): Promise<void> {
+        this.config.conns.delete(username);
+    }
+
     async connectionStatus(ids: Array<number | string>): Promise<Record<string, ConnStatus>> {
         const statuses: Record<string, ConnStatus> = {};
 
@@ -103,16 +107,19 @@ export default class LocalHub implements HubClient {
     async submitCots(req: SubmitCotsRequest): Promise<void> {
         let client = this.config.conns.get(req.connection);
 
-        if (!client && req.ensureProfile && typeof req.connection === 'string') {
+        if (req.ensureProfile && typeof req.connection === 'string') {
             const profile = await this.config.models.Profile.from(req.connection);
 
             if (!profile.auth || !profile.auth.cert || !profile.auth.key) {
                 throw new Err(400, null, 'Profile auth certificate not configured');
             }
 
-            client = await this.config.conns.add(new ProfileConnConfig(this.config, req.connection, profile.auth));
+            const ensured = await this.config.conns.add(new ProfileConnConfig(this.config, req.connection, profile.auth));
 
-            await client.awaitSecure();
+            if (ensured !== client) {
+                client = ensured;
+                await client.awaitSecure();
+            }
         }
 
         if (!client) {
