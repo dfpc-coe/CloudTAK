@@ -25,6 +25,11 @@
 
 ### Pending Release
 
+### v13.108.2 - 2026-10-09
+
+- :rocket: Migrate Draw tools to be floating panes
+- :bug: Open Floating Panes as modals on mobile - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1815 Closes: https://github.com/dfpc-co
+
 ### v13.108.1 - 2026-10-08
 
 - :tada: Add a `schema` column to `layers` recording the static Capabilities document `version` of the Task (`1.0` when the Task declares none) - it is read from the ECR image manifest when a Layer is created and again whenever the Layer's task version changes
