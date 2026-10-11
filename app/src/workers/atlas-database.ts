@@ -15,6 +15,7 @@ import COT, { OriginMode } from '../base/cot.ts';
 import ContactManager from '../base/contact.ts';
 import TAKNotification, { NotificationType } from '../base/notification.ts';
 import { WorkerMessageType } from '../utils/events.ts';
+import type { MissionChangePropertyBody } from '../utils/events.ts';
 import type { GeoJSONSourceDiff, LngLatLike } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
 import { isEqual } from '@ver0/deep-equal';
@@ -801,6 +802,34 @@ export default class AtlasDatabase {
             }
 
             await sub.log.refresh();
+        } else if (task.properties.type === 't-x-m-c-p' && task.properties.mission && task.properties.mission.guid) {
+            // TAK Server 5.9+ Mission Property (key/value) changes. These aren't mission
+            // content, so nothing is stored or refreshed here - the change is broadcast
+            // for plugins. `changes` can be empty if the CoT carried no MissionProperty,
+            // in which case listeners should re-fetch the mission's properties.
+            const changes: MissionChangePropertyBody['changes'] = [];
+            for (const change of task.properties.mission.missionChanges || []) {
+                // `missionProperty` comes from node-cot >= 14.53.1; read it through a narrow
+                // type until api/derived-types.d.ts is next regenerated
+                const prop = (change as { missionProperty?: { key: string; value: string } }).missionProperty;
+                if (!prop) continue;
+                changes.push({
+                    type: change.type,
+                    key: prop.key,
+                    value: prop.value,
+                    creatorUid: change.creatorUid,
+                    timestamp: change.timestamp,
+                });
+            }
+
+            this.atlas.postMessage({
+                type: WorkerMessageType.Mission_Change_Property,
+                body: {
+                    guid: task.properties.mission.guid,
+                    name: task.properties.mission.name,
+                    changes
+                } satisfies MissionChangePropertyBody
+            });
         } else if (task.properties.type === 't-x-m-c-m' && task.properties.mission && task.properties.mission.guid) {
             const sub = await Subscription.from(task.properties.mission.guid, {
                 subscribed: true
