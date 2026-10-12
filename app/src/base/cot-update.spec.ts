@@ -70,3 +70,29 @@ describe('COT.update type changes', () => {
         expect(renderedIcon(c.properties)).toEqual(`2525E:${SIDC_A}`);
     });
 });
+
+describe('COT.update icon removal', () => {
+    it('drops a user picked Iconset icon when the update omits it', async () => {
+        const icon = 'f7f71666-8b28-4b57-9fbb-e38e61d33b79:Vehicle/Ambulance';
+        const c = cot({ type: 'u-d-p', icon });
+        expect(renderedIcon(c.properties)).toEqual(icon);
+
+        // The main thread serialises `icon: undefined` away before the
+        // worker applies the update, so the key is simply absent
+        const changed = await c.update({ properties: full(c, {}) });
+
+        expect(changed).toBe(true);
+        expect(c.properties.icon).toBeUndefined();
+        expect(renderedIcon(c.properties)).toBeUndefined();
+    });
+
+    it('falls back to the MIL-STD symbol when a SIDC feature drops its icon', async () => {
+        const icon = 'f7f71666-8b28-4b57-9fbb-e38e61d33b79:Vehicle/Ambulance';
+        const c = cot({ type: SIDC_A, icon });
+
+        await c.update({ properties: full(c, {}) });
+
+        expect(c.properties.icon).toBeUndefined();
+        expect(renderedIcon(c.properties)).toEqual(`2525E:${SIDC_A}`);
+    });
+});

@@ -190,17 +190,11 @@
                     </PropertyFactRow>
                 </div>
 
-                <div class='px-2 pt-2'>
-                    <label class='subheader user-select-none'>Remarks</label>
-                    <CopyField
-                        :model-value='event.remarks'
-                        :rows='10'
-                        :markdown='true'
-                        :edit='is_editable'
-                        :hover='is_editable'
-                        @submit='patch({ remarks: String($event) })'
-                    />
-                </div>
+                <PropertyRemarks
+                    :model-value='event.remarks'
+                    :edit='is_editable'
+                    @submit='patch({ remarks: $event })'
+                />
 
                 <PropertyTabs
                     v-model='tab'
@@ -318,6 +312,7 @@ import PropertyFactRow from './util/PropertyFactRow.vue';
 import PropertyTabs, { type PropertyTab } from './util/PropertyTabs.vue';
 import PropertyType from './Property/PropertyType.vue';
 import PropertyStyle from './Property/PropertyStyle.vue';
+import PropertyRemarks from './Property/PropertyRemarks.vue';
 import PropertyCoreEntityStatus from './Property/PropertyCoreEntityStatus.vue';
 import PropertyCoreEntityPriority from './Property/PropertyCoreEntityPriority.vue';
 import PropertyCoreEntityDuration from './Property/PropertyCoreEntityDuration.vue';

@@ -206,13 +206,21 @@ watch([canvas, supportedIcon, () => props.size], async () => {
 
     if (!canvas.value || supportedIcon.value !== iconName) return;
 
+    // Scale to fit like the map's icon layer does - a non-square icon keeps
+    // its aspect ratio and is centred rather than stretched to the canvas
+    const scale = Math.min(props.size / icon.data.width, props.size / icon.data.height);
+    const width = icon.data.width * scale;
+    const height = icon.data.height * scale;
+
     context.drawImage(
         bitmap,
         0, 0,
         icon.data.width,
         icon.data.height,
-        0,0,
-        props.size,props.size
+        (props.size - width) / 2,
+        (props.size - height) / 2,
+        width,
+        height
     );
 })
 </script>

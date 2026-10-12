@@ -170,7 +170,7 @@
                 <TablerNone
                     v-if='currentItems.size === 0 && currentFolders.length === 0'
                     :create='false'
-                    :label='currentPath === "/" ? "No Archived Features" : "Folder is empty"'
+                    :label='query.filter ? "No Matching Features" : currentPath === "/" ? "No Archived Features" : "Folder is empty"'
                 />
 
                 <template v-else>
@@ -323,12 +323,38 @@ const collectionPath = computed({
 });
 
 const currentFolders = computed(() => {
+    let nodes: PathNode<COT>[];
     if (currentPath.value === '/') {
-        return paths.value;
+        nodes = paths.value;
+    } else {
+        const node = PathManager.findNode(paths.value, currentPath.value);
+        nodes = node ? node.children : [];
     }
-    const node = PathManager.findNode(paths.value, currentPath.value);
-    return node ? node.children : [];
+
+    return filterFolders(nodes, query.value.filter.toLowerCase());
 });
+
+/** Folders whose name - or any descendant folder's name - contains the search text */
+function filterFolders(nodes: PathNode<COT>[], filter: string): PathNode<COT>[] {
+    if (!filter) return nodes;
+
+    return nodes.filter((node) => {
+        return node.name.toLowerCase().includes(filter)
+            || filterFolders(node.children, filter).length > 0;
+    });
+}
+
+/** The callsign & geometry filters the root query applies in the worker, for folder contents loaded without one */
+function matchesQuery(cot: COT): boolean {
+    const filter = query.value.filter.toLowerCase();
+    if (filter && !(cot.properties.callsign ?? '').toLowerCase().includes(filter)) return false;
+
+    if (!geometryTypes.value.length) return true;
+
+    return geometryTypes.value.some((type) => {
+        return cot.geometry.type === type || cot.geometry.type === `Multi${type}`;
+    });
+}
 
 function isFolderHidden(node: PathNode<COT>): boolean {
     return FeatureVisibility.isPathHidden(GENERAL_SOURCE_ID, node.fullPath);
@@ -644,7 +670,7 @@ async function refresh(load = false): Promise<void> {
         const node = PathManager.findNode(paths.value, currentPath.value);
         if (node) {
             node.items = await mapStore.worker.db.pathFeatures(node.fullPath);
-            currentItems.value = node.items;
+            currentItems.value = new Set(Array.from(node.items).filter(matchesQuery));
         } else {
             // Folder no longer exists, navigate back to root
             currentPath.value = '/';

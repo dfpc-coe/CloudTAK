@@ -329,6 +329,14 @@ export default class COT {
                         }
                     }
 
+                    // Updates always carry the full property set, and a removed
+                    // icon arrives with the key absent (JSON drops undefined
+                    // on the way from the main thread) - without this the old
+                    // icon survives the assign and the removal silently reverts
+                    if (this._properties.icon && update.properties.icon === undefined) {
+                        delete this._properties.icon;
+                    }
+
                     Object.assign(this._properties, update.properties);
 
                     if (this.is_skittle) this._properties.archived = false;

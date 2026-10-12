@@ -1,50 +1,20 @@
 <template>
-    <div
-        class='d-flex align-items-center gap-1 px-3 py-2 border-top text-secondary small user-select-none cursor-pointer flex-shrink-0'
-        title='Toggle relative & absolute time'
-        @click='relative = !relative'
-    >
-        <span
-            class='text-truncate'
-            v-text='`Created ${format(created)}${username ? ` by ${username}` : ""}`'
-        />
-        <span>&middot;</span>
-        <span
-            class='flex-shrink-0'
-            v-text='`Updated ${format(updated)}`'
-        />
-    </div>
+    <TimesFooter :entries='entries' />
 </template>
 
 <script setup lang='ts'>
 /** PropertyCoreEntityTimes - the audit footer: when & by whom the Event was created and when it last changed */
-import { ref, onMounted, onUnmounted } from 'vue';
-import timediff from '../../../timediff';
+import { computed } from 'vue';
+import TimesFooter, { type TimesFooterEntry } from '../util/TimesFooter.vue';
 
-defineProps<{
+const props = defineProps<{
     created: string;
     updated: string;
     username?: string | null;
 }>();
 
-const relative = ref(true);
-
-// Rerenders the relative times once a minute
-const currentTime = ref(new Date());
-let interval: ReturnType<typeof setInterval> | undefined;
-
-function format(time: string): string {
-    void currentTime.value;
-    return relative.value ? timediff(time) : new Date(time).toLocaleString();
-}
-
-onMounted(() => {
-    interval = setInterval(() => {
-        currentTime.value = new Date();
-    }, 60 * 1000);
-});
-
-onUnmounted(() => {
-    if (interval) clearInterval(interval);
-});
+const entries = computed<Array<TimesFooterEntry>>(() => [
+    { label: 'Created', time: props.created, suffix: props.username ? `by ${props.username}` : undefined },
+    { label: 'Updated', time: props.updated },
+]);
 </script>
