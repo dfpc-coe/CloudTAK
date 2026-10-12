@@ -1,46 +1,52 @@
 <template>
-    <div class='col-12'>
-        <SlideDownHeader
-            v-model='expanded'
-            label='Author'
+    <PropertyFactRow
+        label='Creator'
+        class='py-1'
+    >
+        <div
+            class='d-flex align-items-center gap-2'
+            style='min-width: 0;'
         >
-            <template #icon>
-                <IconUser
-                    :size='18'
+            <span
+                class='text-truncate'
+                :title='props.creator.uid'
+                v-text='effectiveContact.callsign || props.creator.uid'
+            />
+            <span
+                v-if='props.creator.time'
+                class='text-secondary small flex-shrink-0 cursor-pointer user-select-none'
+                title='Toggle relative & absolute time'
+                @click='relative = !relative'
+                v-text='relative ? timediff(props.creator.time) : new Date(props.creator.time).toLocaleString()'
+            />
+        </div>
+
+        <template
+            v-if='contact'
+            #actions
+        >
+            <TablerIconButton
+                title='Chat'
+                @click='router.push(`/menu/chats/new?callsign=${effectiveContact.callsign}&uid=${effectiveContact.uid}`)'
+            >
+                <IconMessage
+                    :size='20'
                     stroke='1'
-                    color='#6b7990'
-                    class='ms-2 me-1'
                 />
-            </template>
-            <template #right>
-                <span
-                    v-if='props.creator.time'
-                    class='cursor-pointer me-2 text-muted small'
-                    @click.stop='relative = !relative'
-                    v-text='relative ? timediff(props.creator.time) : props.creator.time'
-                />
-            </template>
-            <div class='mx-2 pt-2'>
-                <ContactRow
-                    :contact='effectiveContact'
-                    @chat='router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
-                />
-            </div>
-        </SlideDownHeader>
-    </div>
+            </TablerIconButton>
+        </template>
+    </PropertyFactRow>
 </template>
 
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
 import timediff from '../../../timediff.ts';
-import ContactRow from '../util/Contact.vue';
 import ContactManager from '../../../base/contact.ts';
 import type { Contact, FeaturePropertyCreator } from '../../../types.ts';
 import { useRouter } from 'vue-router';
-import SlideDownHeader from '../util/SlideDownHeader.vue';
-import {
-    IconUser
-} from '@tabler/icons-vue';
+import { TablerIconButton } from '@tak-ps/vue-tabler';
+import { IconMessage } from '@tabler/icons-vue';
+import PropertyFactRow from '../util/PropertyFactRow.vue';
 
 const props = defineProps<{
     creator: FeaturePropertyCreator
@@ -48,7 +54,6 @@ const props = defineProps<{
 
 const router = useRouter();
 const relative = ref(true);
-const expanded = ref(false);
 const contact = ref<Contact | undefined>();
 
 const effectiveContact = computed((): Contact => {
@@ -67,5 +72,3 @@ onMounted(async () => {
     contact.value = await ContactManager.from(props.creator.uid);
 });
 </script>
-
-

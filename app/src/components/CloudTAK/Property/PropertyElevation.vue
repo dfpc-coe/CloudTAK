@@ -1,60 +1,23 @@
 <template>
-    <div class='col-12'>
-        <IconMountain
-            :size='18'
-            stroke='1'
-            color='#6b7990'
-            class='ms-2 me-1'
-        />
-        <label
-            class='subheader user-select-none'
-            v-text='props.label'
-        />
-        <div class='mx-2'>
-            <CopyField
-                v-model='inMode'
-                :size='24'
-            />
-            <div
-                class='mx-2'
-                role='menu'
-            >
-                <span
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "feet",
-                        "cursor-pointer": mode !== "feet",
-                    }'
-                    title='Feet'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='mode = "feet"'
-                    @click='mode = "feet"'
-                >Feet</span>
-                <span
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "meter",
-                        "cursor-pointer": mode !== "meter",
-                    }'
-                    title='Meters'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='mode = "meter"'
-                    @click='mode = "meter"'
-                >Meters</span>
-            </div>
-        </div>
-    </div>
+    <PropertyMeasureRow
+        :label='label'
+        :model-value='inMode'
+        :unit='mode'
+        :units='UNITS'
+        @update:unit='mode = $event'
+    />
 </template>
 
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
-import CopyField from '../util/CopyField.vue';
+import PropertyMeasureRow from '../util/PropertyMeasureRow.vue';
+import type { UnitOption } from '../util/UnitSwitcher.vue';
 import ProfileConfig from '../../../base/profile.ts';
-import {
-    IconMountain
-} from '@tabler/icons-vue';
+
+const UNITS: Array<UnitOption> = [
+    { value: 'feet', label: 'ft', title: 'Feet' },
+    { value: 'meter', label: 'm', title: 'Meters' },
+];
 
 const props = defineProps({
     label: {

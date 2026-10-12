@@ -1,96 +1,34 @@
 <template>
-    <div class='col-12'>
-        <label class='subheader mx-2'>Line Length</label>
-        <div class='mx-2'>
-            <CopyField
-                v-model='inMode'
-                :size='24'
-            />
-            <div
-                class='mx-2'
-                role='menu'
-            >
-                <span
-                    title='Feet'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "feet",
-                        "cursor-pointer": mode !== "feet",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='mode = "feet"'
-                    @click='mode = "feet"'
-                >Feet</span>
-                <span
-                    title='Yards'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "yard",
-                        "cursor-pointer": mode !== "yard",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='mode = "yard"'
-                    @click='mode = "yard"'
-                >Yards</span>
-                <span
-                    title='Meters'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "meter",
-                        "cursor-pointer": mode !== "meter",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='mode = "meter"'
-                    @click='mode = "meter"'
-                >Meters</span>
-                <span
-                    title='Kilometers'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "kilometer",
-                        "cursor-pointer": mode !== "kilometer",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='mode = "kilometer"'
-                    @click='mode = "kilometer"'
-                >Kilometers</span>
-                <span
-                    title='Miles'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "mile",
-                        "cursor-pointer": mode !== "mile",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='mode = "mile"'
-                    @click='mode = "mile"'
-                >Miles</span>
-            </div>
-        </div>
-    </div>
+    <PropertyMeasureRow
+        label='Length'
+        :model-value='inMode'
+        :unit='mode'
+        :units='UNITS'
+        @update:unit='mode = $event'
+    />
 </template>
 
 <script setup lang='ts'>
 import { ref, computed, watch } from 'vue';
 import { length } from '@turf/length';
-import CopyField from './CopyField.vue';
-import COT from '../../../base/cot.ts';
+import PropertyMeasureRow from './PropertyMeasureRow.vue';
+import type { UnitOption } from './UnitSwitcher.vue';
+import type { Geometry } from 'geojson';
 
-const props = defineProps({
-    cot: {
-        type: COT,
-        required: true
-    },
-    unit: {
-        type: String,
-        default: 'mile'
-    }
-})
+const UNITS: Array<UnitOption> = [
+    { value: 'feet', label: 'ft', title: 'Feet' },
+    { value: 'yard', label: 'yd', title: 'Yards' },
+    { value: 'meter', label: 'm', title: 'Meters' },
+    { value: 'kilometer', label: 'km', title: 'Kilometers' },
+    { value: 'mile', label: 'mi', title: 'Miles' },
+];
+
+const props = withDefaults(defineProps<{
+    geometry: Geometry;
+    unit?: string;
+}>(), {
+    unit: 'mile'
+});
 
 const mode = ref(props.unit === 'kilometer' ? 'kilometer' : props.unit === 'meter' ? 'meter' : 'mile');
 
@@ -99,9 +37,9 @@ watch(() => props.unit, (newUnit) => {
 });
 
 const inMode = computed(() => {
-    if (props.cot.geometry.type !== 'LineString') return 'Not a Line!';
+    if (props.geometry.type !== 'LineString') return 'Not a Line!';
 
-    const cotLength = length(props.cot.as_feature());
+    const cotLength = length({ type: 'Feature', properties: {}, geometry: props.geometry });
 
     if (mode.value === 'meter') {
         return Number((cotLength * 1000).toFixed(2));

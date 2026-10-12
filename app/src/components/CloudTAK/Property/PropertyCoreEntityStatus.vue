@@ -1,5 +1,5 @@
 <template>
-    <div class='d-flex align-items-center gap-2 px-3 py-2 border-bottom cloudtak-header flex-shrink-0'>
+    <PropertyStatusStrip>
         <StatusDot
             :status='active ? "Success" : "Unknown"'
             :title='active ? "Active" : "Ended"'
@@ -32,7 +32,7 @@
             />
             {{ active ? 'End' : 'Reactivate' }}
         </button>
-    </div>
+    </PropertyStatusStrip>
 </template>
 
 <script setup lang='ts'>
@@ -44,6 +44,7 @@ import { computed } from 'vue';
 import { TablerBadge } from '@tak-ps/vue-tabler';
 import { IconPlayerStop, IconPlayerPlay } from '@tabler/icons-vue';
 import StatusDot from '../../util/StatusDot.vue';
+import PropertyStatusStrip from '../util/PropertyStatusStrip.vue';
 import { priorityBadge } from '../../../utils/priority.ts';
 
 const props = defineProps<{

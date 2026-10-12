@@ -1,98 +1,29 @@
 <template>
-    <div class='col-12'>
-        <IconLine
-            :size='18'
-            stroke='1'
-            color='#6b7990'
-            class='ms-2 me-1'
-        />
-        <label
-            class='subheader user-select-none'
-            v-text='props.label'
-        />
-        <div class='mx-2'>
-            <CopyField
-                v-model='config.distance'
-                :edit='props.edit'
-                :hover='props.hover'
-                :size='24'
-                @submit='submitDistance($event)'
-            />
-            <div
-                class='mx-2'
-                role='menu'
-            >
-                <span
-                    title='Feet'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "feet",
-                        "cursor-pointer": mode !== "feet",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='changeMode("feet")'
-                    @click='changeMode("feet")'
-                >Feet</span>
-                <span
-                    title='Yards'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "yard",
-                        "cursor-pointer": mode !== "yard",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='changeMode("yard")'
-                    @click='changeMode("yard")'
-                >Yards</span>
-                <span
-                    title='Meters'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "meter",
-                        "cursor-pointer": mode !== "meter",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='changeMode("meter")'
-                    @click='changeMode("meter")'
-                >Meters</span>
-                <span
-                    title='Kilometers'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "kilometer",
-                        "cursor-pointer": mode !== "kilometer",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='changeMode("kilometer")'
-                    @click='changeMode("kilometer")'
-                >Kilometers</span>
-                <span
-                    title='Miles'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "mile",
-                        "cursor-pointer": mode !== "mile",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='changeMode("mile")'
-                    @click='changeMode("mile")'
-                >Miles</span>
-            </div>
-        </div>
-    </div>
+    <PropertyMeasureRow
+        :label='label'
+        :model-value='config.distance'
+        :unit='mode'
+        :units='UNITS'
+        :edit='edit'
+        :hover='hover'
+        @update:model-value='config.distance = Number($event)'
+        @update:unit='changeMode($event)'
+        @submit='submitDistance($event)'
+    />
 </template>
 
 <script setup lang='ts'>
 import { ref, watch } from 'vue';
-import CopyField from '../util/CopyField.vue';
-import {
-    IconLine
-} from '@tabler/icons-vue';
+import PropertyMeasureRow from '../util/PropertyMeasureRow.vue';
+import type { UnitOption } from '../util/UnitSwitcher.vue';
+
+const UNITS: Array<UnitOption> = [
+    { value: 'feet', label: 'ft', title: 'Feet' },
+    { value: 'yard', label: 'yd', title: 'Yards' },
+    { value: 'meter', label: 'm', title: 'Meters' },
+    { value: 'kilometer', label: 'km', title: 'Kilometers' },
+    { value: 'mile', label: 'mi', title: 'Miles' },
+];
 
 const emit = defineEmits([
     'submit',
@@ -178,16 +109,16 @@ function toCustom(mode: string, kilometers: number): number {
     } else if (mode === 'meter') {
         return kilometers * 1000;
     } else {
-        throw new Error(`Invalid Bearing Unit: ${mode}`);
+        throw new Error(`Invalid Distance Unit: ${mode}`);
     }
 }
 
 function changeMode(newMode: string): void {
     if (mode.value === newMode) return;
 
-    const degrees = toKilometers(mode.value, config.value.distance);
+    const kilometers = toKilometers(mode.value, config.value.distance);
 
-    config.value.distance = toCustom(newMode, degrees);
+    config.value.distance = toCustom(newMode, kilometers);
 
     mode.value = newMode;
 }
@@ -198,5 +129,4 @@ function submitDistance(distance: string | number): void {
 
     emit('submit', toKilometers(mode.value, distanceValue));
 }
-
 </script>

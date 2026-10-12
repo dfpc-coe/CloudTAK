@@ -1,73 +1,27 @@
 <template>
-    <div class='col-12'>
-        <IconCompass
-            :size='18'
-            stroke='1'
-            color='#6b7990'
-            class='ms-2 me-1'
-        />
-        <label
-            class='subheader user-select-none'
-            v-text='props.label'
-        />
-        <div class='mx-2'>
-            <CopyField
-                v-model='config.bearing'
-                :edit='props.edit'
-                :hover='props.hover'
-                :size='24'
-            />
-            <div
-                class='mx-2'
-                role='menu'
-            >
-                <span
-                    title='Degrees'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "deg",
-                        "cursor-pointer": mode !== "deg",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='changeMode("deg")'
-                    @click='changeMode("deg")'
-                >Deg</span>
-                <span
-                    title='Radians'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "rad",
-                        "cursor-pointer": mode !== "rad",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='changeMode("rad")'
-                    @click='changeMode("rad")'
-                >Rads</span>
-                <span
-                    title='Mil-Radians'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "mil",
-                        "cursor-pointer": mode !== "mil",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='changeMode("mil")'
-                    @click='changeMode("mil")'
-                >Mils</span>
-            </div>
-        </div>
-    </div>
+    <PropertyMeasureRow
+        :label='label'
+        :model-value='config.bearing'
+        :unit='mode'
+        :units='UNITS'
+        :inline='inline'
+        :edit='edit'
+        :hover='hover'
+        @update:model-value='config.bearing = Number($event)'
+        @update:unit='changeMode($event)'
+    />
 </template>
 
 <script setup lang='ts'>
 import { ref, watch } from 'vue';
-import CopyField from '../util/CopyField.vue';
-import {
-    IconCompass
-} from '@tabler/icons-vue';
+import PropertyMeasureRow from '../util/PropertyMeasureRow.vue';
+import type { UnitOption } from '../util/UnitSwitcher.vue';
+
+const UNITS: Array<UnitOption> = [
+    { value: 'deg', label: 'deg', title: 'Degrees' },
+    { value: 'rad', label: 'rad', title: 'Radians' },
+    { value: 'mil', label: 'mil', title: 'Mil-Radians' },
+];
 
 const emit = defineEmits([
     'update:modelValue'
@@ -93,6 +47,11 @@ const props = defineProps({
         default: false
     },
     edit: {
+        type: Boolean,
+        default: false
+    }
+,
+    inline: {
         type: Boolean,
         default: false
     }

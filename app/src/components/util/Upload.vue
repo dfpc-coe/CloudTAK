@@ -7,7 +7,7 @@
         />
         <div
             class='row'
-            :class='{ "d-none": file }'
+            :class='{ "d-none": file || props.immediate }'
         >
             <div
                 class='col-12 d-flex justify-content-center mb-3'
@@ -39,6 +39,7 @@
                     name='file'
                     :accept='props.mimetype'
                     @change='stage'
+                    @cancel='emit("cancel")'
                 >
             </form>
         </div>
@@ -83,7 +84,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import {
     IconFile
@@ -104,6 +105,8 @@ interface Props {
     label?: string;
     mimetype?: string;
     sizeWarning?: boolean;
+    /** Open the file picker as soon as the component mounts instead of showing the Upload button */
+    immediate?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -114,7 +117,8 @@ const props = withDefaults(defineProps<Props>(), {
     cancel: true,
     label: 'Select a file to upload',
     mimetype: '*',
-    sizeWarning: false
+    sizeWarning: false,
+    immediate: false
 });
 
 const emit = defineEmits<{
@@ -131,6 +135,13 @@ const file = ref<{
 } | undefined>();
 const progress = ref<number>(0);
 const fileInput = ref<HTMLInputElement | null>(null);
+
+// Mounting is a direct result of the user's click so the browser still
+// treats the picker as user initiated. Dismissing it fires the input's
+// cancel event, which lets the parent close the upload state
+onMounted(() => {
+    if (props.immediate) fileInput.value?.click();
+});
 
 /**
  * Resets the component state and file input.

@@ -1,93 +1,33 @@
 <template>
-    <div class='col-12'>
-        <IconPolygon
-            :size='18'
-            stroke='1'
-            color='#6b7990'
-            class='ms-2 me-1'
-        />
-        <label class='subheader user-select-none'>Polygon Area</label>
-        <div class='mx-2'>
-            <CopyField
-                v-model='inMode'
-                :size='24'
-            />
-            <div
-                class='mx-2'
-                role='menu'
-            >
-                <span
-                    title='Square Feet'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "square feet",
-                        "cursor-pointer": mode !== "square feet",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='mode = "square feet"'
-                    @click='mode = "square feet"'
-                >Feet<sup>2</sup></span>
-                <span
-                    title='Square Meters'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "square meter",
-                        "cursor-pointer": mode !== "square meter",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='mode = "square meter"'
-                    @click='mode = "square meter"'
-                >Meters<sup>2</sup></span>
-                <span
-                    title='Acres'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom": mode === "acre",
-                        "cursor-pointer": mode !== "acre",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='mode = "acre"'
-                    @click='mode = "acre"'
-                >Acres</span>
-                <span
-                    title='Hectare'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom": mode === "hectare",
-                        "cursor-pointer": mode !== "hectare",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='mode = "hectare"'
-                    @click='mode = "hectare"'
-                >Ha</span>
-            </div>
-        </div>
-    </div>
+    <PropertyMeasureRow
+        label='Area'
+        :model-value='inMode'
+        :unit='mode'
+        :units='UNITS'
+        @update:unit='mode = $event'
+    />
 </template>
 
 <script setup lang='ts'>
 import { ref, computed, watch } from 'vue';
 import { area } from '@turf/area';
-import CopyField from './CopyField.vue';
-import COT from '../../../base/cot.ts';
-import {
-    IconPolygon
-} from '@tabler/icons-vue';
+import PropertyMeasureRow from './PropertyMeasureRow.vue';
+import type { UnitOption } from './UnitSwitcher.vue';
+import type { Geometry } from 'geojson';
 
-const props = defineProps({
-    cot: {
-        type: COT,
-        required: true
-    },
-    unit: {
-        type: String,
-        default: 'acre'
-    }
-})
+const UNITS: Array<UnitOption> = [
+    { value: 'square feet', label: 'ft²', title: 'Square Feet' },
+    { value: 'square meter', label: 'm²', title: 'Square Meters' },
+    { value: 'acre', label: 'acres', title: 'Acres' },
+    { value: 'hectare', label: 'ha', title: 'Hectares' },
+];
+
+const props = withDefaults(defineProps<{
+    geometry: Geometry;
+    unit?: string;
+}>(), {
+    unit: 'acre'
+});
 
 const mode = ref(props.unit || 'acre');
 
@@ -96,7 +36,7 @@ watch(() => props.unit, (unit) => {
 });
 
 const inMode = computed(() => {
-    const cotArea = area(props.cot.geometry);
+    const cotArea = area(props.geometry);
 
     if (mode.value === 'square feet') {
         return Math.round((cotArea * 10.7639) * 1000) / 1000;

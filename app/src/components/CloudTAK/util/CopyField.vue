@@ -25,20 +25,23 @@
                 class='text-danger small mt-1'
                 v-text='error'
             />
-            <div class='d-flex justify-content-end mt-1'>
-                <TablerIconButton
-                    v-if='!error'
-                    title='Done Editing'
+            <div class='d-flex justify-content-end mt-2'>
+                <button
+                    type='button'
+                    class='btn btn-primary btn-sm'
+                    :disabled='!!error'
                     @click.stop.prevent='validUpdate(text, {
                         submit: true,
                         editing: false
                     })'
                 >
                     <IconCheck
-                        :size='20'
+                        :size='16'
                         stroke='1.5'
+                        class='me-1'
                     />
-                </TablerIconButton>
+                    Save
+                </button>
             </div>
         </div>
         <div
