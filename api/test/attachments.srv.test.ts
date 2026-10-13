@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import Flight from './flight.js';
+import jwt from 'jsonwebtoken';
 import Sinon from 'sinon';
 import {
     S3Client,
@@ -14,6 +15,8 @@ const flight = new Flight();
 flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
+flight.integration('test-task');
+flight.connection();
 
 const time = new Date('2025-03-04T22:54:15.447Z').toISOString();
 
@@ -201,6 +204,161 @@ test('GET: api/attachment/:hash - missing', async () => {
 
         assert.equal(res.status, 404);
         assert.equal(res.body.message, 'Attachment not found');
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    Sinon.restore();
+});
+
+test('Layer token: api/attachment - attachment:read only', async () => {
+    try {
+        await flight.config!.models.Layer.generate({
+            name: 'Attachment Layer',
+            task: 1,
+            version: '1.0.0',
+            connection: 1,
+            permissions: ['attachment:read'],
+        });
+
+        const layerToken = 'etl.' + jwt.sign({ access: 'layer', id: 1, internal: true }, 'coe-wildland-fire');
+
+        Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
+            if (command.constructor.name === 'ListObjectsV2Command') {
+                return Promise.resolve({
+                    Contents: [{
+                        Key: 'attachment/layer-hash/data.txt',
+                        Size: 9,
+                        LastModified: new Date(time),
+                    }],
+                });
+            } else if (command.constructor.name === 'GetObjectCommand') {
+                return Promise.resolve({
+                    Body: Readable.from(['file-body']),
+                });
+            }
+
+            throw new Error('Unexpected command');
+        });
+
+        const list = await flight.fetch('/api/attachment?hash=layer-hash', {
+            method: 'GET',
+            auth: { bearer: layerToken },
+        }, true);
+
+        assert.deepEqual(list.body, {
+            total: 1,
+            items: [{
+                hash: 'layer-hash',
+                ext: '.txt',
+                name: 'data.txt',
+                size: 9,
+                created: time,
+            }],
+        });
+
+        const get = await flight.fetch('/api/attachment/layer-hash', {
+            method: 'GET',
+            auth: { bearer: layerToken },
+        }, {
+            json: false,
+        });
+
+        assert.equal(get.status, 200);
+        assert.equal(get.body, 'file-body');
+
+        const body = new FormData();
+        body.append('file', new Blob(['file-content'], { type: 'text/plain' }), 'image.png');
+
+        const upload = await flight.fetch('/api/attachment', {
+            method: 'PUT',
+            auth: { bearer: layerToken },
+            body,
+        }, false);
+
+        assert.equal(upload.status, 403);
+        assert.equal(upload.body.message, 'Layer token does not have the attachment:create permission');
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    Sinon.restore();
+});
+
+test('Layer token: api/attachment - attachment:create', async () => {
+    try {
+        await flight.config!.models.Layer.commit(1, { permissions: ['attachment:*'] });
+
+        const layerToken = 'etl.' + jwt.sign({ access: 'layer', id: 1, internal: true }, 'coe-wildland-fire');
+
+        const s3Stub = Sinon.stub(S3, 'put').resolves();
+        Sinon.stub(DataPackage, 'hash').resolves('hash-layer');
+
+        const body = new FormData();
+        body.append('file', new Blob(['file-content'], { type: 'text/plain' }), 'image.png');
+
+        const upload = await flight.fetch('/api/attachment', {
+            method: 'PUT',
+            auth: { bearer: layerToken },
+            body,
+        }, true);
+
+        assert.deepEqual(upload.body, { hash: 'hash-layer' });
+        assert.equal(s3Stub.firstCall.args[0], 'attachment/hash-layer/image.png');
+
+        const missionBody = new FormData();
+        missionBody.append('file', new Blob(['file-content'], { type: 'text/plain' }), 'image.png');
+
+        const mission = await flight.fetch('/api/attachment?mission=aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', {
+            method: 'PUT',
+            auth: { bearer: layerToken },
+            body: missionBody,
+        }, false);
+
+        assert.equal(mission.status, 401);
+        assert.equal(mission.body.message, 'Only an authenticated user can upload an attachment to a mission');
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    Sinon.restore();
+});
+
+test('Connection token: api/attachment - scoped', async () => {
+    try {
+        const unscoped = await flight.fetch('/api/connection/1/token', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: { name: 'Unscoped Token' },
+        }, true);
+
+        Sinon.stub(S3Client.prototype, 'send').callsFake(() => {
+            return Promise.resolve({ Contents: [] });
+        });
+
+        const denied = await flight.fetch('/api/attachment?hash=123', {
+            method: 'GET',
+            auth: { bearer: unscoped.body.token },
+        }, false);
+
+        assert.equal(denied.status, 403);
+        assert.equal(denied.body.message, 'Connection token does not have the attachment:read permission');
+
+        // Connection JWTs carry no unique claim so two minted in the same second collide
+        await new Promise(resolve => setTimeout(resolve, 1100));
+
+        const scoped = await flight.fetch('/api/connection/1/token', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: { name: 'Attachment Token', permissions: ['attachment:read'] },
+        }, true);
+
+        const list = await flight.fetch('/api/attachment?hash=123', {
+            method: 'GET',
+            auth: { bearer: scoped.body.token },
+        }, true);
+
+        assert.deepEqual(list.body, { total: 0, items: [] });
     } catch (err) {
         assert.ifError(err);
     }

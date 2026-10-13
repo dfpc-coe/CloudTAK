@@ -269,6 +269,7 @@
                                                         stroke='1'
                                                     /><span class='mx-3'>Environment</span></span>
                                                     <span
+                                                        v-if='submits'
                                                         tabindex='0'
                                                         role='menuitem'
                                                         class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
@@ -283,6 +284,7 @@
                                                         stroke='1'
                                                     /><span class='mx-3'>Schema</span></span>
                                                     <span
+                                                        v-if='submits'
                                                         tabindex='0'
                                                         role='menuitem'
                                                         class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
@@ -398,7 +400,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import type { ETLLayer, ETLLayerTask, ETLLayerTaskCapabilities } from '../../types.ts';
 import { server, downloadUrl } from '../../std.ts';
 import { useRoute, useRouter } from 'vue-router';
@@ -445,6 +447,14 @@ const loading = ref({
 });
 const stack = ref<ETLLayerTask | undefined>(undefined)
 const layer = ref<ETLLayer | undefined>(undefined)
+
+/** Schema & Field Mapping only apply to Layers that can post Features to the submit API */
+const submits = computed(() => {
+    if (!layer.value || layer.value.schema !== '1.1') return true;
+    return layer.value.permissions.includes('feature:submit') || layer.value.permissions.includes('feature:*');
+});
+
+const SUBMIT_ROUTES = ['layer-incoming-schema', 'layer-incoming-mapping'];
 const capabilities = ref<ETLLayerTaskCapabilities | undefined>(undefined);
 const looping = ref<ReturnType<typeof setInterval> | undefined>(undefined);
 
@@ -543,6 +553,10 @@ async function fetch() {
     throwIfError(error);
     if (!data) throw new Error('Failed to load layer');
     layer.value = data;
+
+    if (!submits.value && SUBMIT_ROUTES.some((name) => String(route.name).startsWith(name))) {
+        router.replace(`/connection/${route.params.connectionid || 0}/layer/${route.params.layerid}/incoming/config`);
+    }
 
     if (!String(route.name).includes('outgoing') && !String(route.name).includes('incoming')) {
         if (data.outgoing && !data.incoming) {

@@ -56,7 +56,7 @@ export const AugmentedLayer = Type.Object({
     logging: Type.Boolean(),
     task: Type.String({ description: 'Container tag as <integration prefix>-v<version>' }),
     version: Type.String(),
-    schema: Type.String({ description: 'Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping' }),
+    schema: Type.String({ description: 'Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping, which applies only when the Layer holds feature:submit' }),
     integration: Type.Object({
         name: Type.String(),
         icon: Type.Union([Type.Null(), Type.String()], { description: 'Base64 Data URL of the Integration Icon' }),
