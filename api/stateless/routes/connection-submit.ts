@@ -4,6 +4,7 @@ import { GenericListOrder } from '@openaddresses/batch-generic';
 import { eq, and } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import { CoTParser, Feature } from '@tak-ps/node-cot';
+import { StaticCapabilities } from '@tak-ps/etl';
 import Auth, { AuthResourceAccess, hasScope } from '../../common/auth.js';
 import Mapping from '../../common/mapping.js';
 import type { MappingRow } from '../../common/mapping.js';
@@ -90,6 +91,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             if (!req.headers['content-type']) throw new Err(400, null, 'Content-Type not set');
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+
+            // 1.0 Layers predate per-Layer permissions so only 1.1 Layers are held to feature:submit
+            if (layer && layer.schema === StaticCapabilities.versions.V1_1 && !hasScope(layer.permissions, 'feature:submit')) {
+                throw new Err(403, null, 'Layer token does not have the feature:submit permission');
+            }
 
             let rows: MappingRow[] = [];
             if (layer) {
