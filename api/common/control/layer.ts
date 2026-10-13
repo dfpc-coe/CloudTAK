@@ -10,6 +10,7 @@ export const PERMISSIONS: Record<string, Array<string>> = {
     ...ETL_PERMISSIONS,
     assignment: ['create', 'read', 'update', 'delete'],
     effect: ['create', 'read', 'update', 'delete'],
+    attachment: ['create', 'read'],
 };
 
 export default class LayerControl {
