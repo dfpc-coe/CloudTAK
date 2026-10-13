@@ -25,6 +25,9 @@
 
 ### Pending Release
 
+### v13.109.1 - 2026-10-12
+
+- :bug: Allow Schema UI to represent & edit Array<primitive>
 - :tada: Add `attachment:create` & `attachment:read` scopes so Layer & Connection tokens can upload, list & download Attachments
 
 ### v13.109.0 - 2026-10-12
