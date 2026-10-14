@@ -10,7 +10,7 @@ import type ConfigStateless from '../config.js';
  * Connection's next scheduled submit cycle; an ended Event ages out via stale
  */
 export function notifyCoreEvent(config: ConfigStateless, action: ETLEventAction, event: Static<typeof CoreEventResponse>): void {
-    config.hub.coreEventSubmit(event.id).catch((err) => {
+    config.hub.coreEntitySubmit(event.id).catch((err) => {
         console.error(`not ok - failed to immediately submit Core Event ${event.id}:`, err);
     });
 

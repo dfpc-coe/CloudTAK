@@ -88,7 +88,7 @@ export interface HubClient {
 
     featureRefresh(connection: number): Promise<void>;
 
-    coreEventSubmit(event: string): Promise<void>;
+    coreEntitySubmit(entity: string): Promise<void>;
 
     geofenceRefresh(): Promise<void>;
 

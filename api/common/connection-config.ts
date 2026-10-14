@@ -1,18 +1,20 @@
 import { Static, Type } from '@sinclair/typebox';
 import type { Feature } from 'geojson';
 import type { Connection } from './schema.js';
-import { CoreEntity } from './schema.js';
-import { InferSelectModel, and, eq, sql } from 'drizzle-orm';
+import { InferSelectModel, sql } from 'drizzle-orm';
 import ConnectionControl from './control/connection.js';
 import ProfileOverlayControl from './control/profile-overlay.js';
 import type ConfigStateful from '../stateful/config.js';
 import type TAK from '@tak-ps/node-tak';
 import type { TAKAPI } from '@tak-ps/node-tak';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
-import { ACTIVE } from './models/CoreEntity.js';
+import { LayerMapping_Destination } from './enums.js';
 import { profileUid } from './control/takserver.js';
 
 const EVENT_STALE = 30 * 60 * 1000;
+
+/** A Device has no end - its marker lives for as long as the Device is broadcast */
+const DEVICE_STALE = EVENT_STALE;
 
 /** CoT stale in ms - capped at the Event's ended time so clients drop the marker when the Event ends */
 function eventStale(ended: string | null): number {
@@ -57,25 +59,26 @@ export default interface ConnectionConfig {
 }
 
 /**
- * Implemented by Connection types that periodically submit active Core
- * Events to the TAK Server as CoTs scoped via Marti dest group entries
+ * Implemented by Connection types that periodically submit located Core
+ * Entities (active Events & Devices) to the TAK Server as CoTs scoped via
+ * Marti dest group entries
  */
-export interface CoreEventSubmitter {
+export interface CoreEntitySubmitter {
     /** Guards against overlapping submission runs */
-    submittingEvents: boolean;
+    submittingEntities: boolean;
 
-    eventInterval?: ReturnType<typeof setInterval>;
+    entityInterval?: ReturnType<typeof setInterval>;
 
-    startEvents(tak: TAK, api: TAKAPI): void;
-    stopEvents(): void;
-    submitEvents(tak: TAK, api: TAKAPI, opts?: { event?: string }): Promise<void>;
+    startEntities(tak: TAK, api: TAKAPI): void;
+    stopEntities(): void;
+    submitEntities(tak: TAK, api: TAKAPI, opts?: { entity?: string }): Promise<void>;
 }
 
-export function isCoreEventSubmitter(config: ConnectionConfig): config is ConnectionConfig & CoreEventSubmitter {
-    const submitter = config as Partial<CoreEventSubmitter>;
-    return typeof submitter.submitEvents === 'function'
-        && typeof submitter.startEvents === 'function'
-        && typeof submitter.stopEvents === 'function';
+export function isCoreEntitySubmitter(config: ConnectionConfig): config is ConnectionConfig & CoreEntitySubmitter {
+    const submitter = config as Partial<CoreEntitySubmitter>;
+    return typeof submitter.submitEntities === 'function'
+        && typeof submitter.startEntities === 'function'
+        && typeof submitter.stopEntities === 'function';
 }
 
 export class MachineConnConfig implements ConnectionConfig {
@@ -224,15 +227,15 @@ export class ProfileConnConfig implements ConnectionConfig {
     }
 }
 
-export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
+export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
     id: number;
     name: string;
     enabled: boolean;
     auth: Static<typeof ConnectionAuth>;
     config: ConfigStateful;
 
-    submittingEvents: boolean;
-    eventInterval?: ReturnType<typeof setInterval>;
+    submittingEntities: boolean;
+    entityInterval?: ReturnType<typeof setInterval>;
 
     constructor(config: ConfigStateful) {
         this.config = config;
@@ -244,36 +247,36 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
             key: config.server.auth.key!,
         };
 
-        this.submittingEvents = false;
+        this.submittingEntities = false;
     }
 
     uid(): string {
         return ConnectionControl.uid(this.auth.cert);
     }
 
-    startEvents(tak: TAK, api: TAKAPI): void {
-        this.stopEvents();
+    startEntities(tak: TAK, api: TAKAPI): void {
+        this.stopEntities();
 
-        this.eventInterval = setInterval(() => {
-            this.submitEvents(tak, api).catch((err) => {
-                console.error(`not ok - ${this.id} - ${this.name} - failed to submit Core Events:`, err);
+        this.entityInterval = setInterval(() => {
+            this.submitEntities(tak, api).catch((err) => {
+                console.error(`not ok - ${this.id} - ${this.name} - failed to submit Core Entities:`, err);
             });
         }, 10000);
 
-        this.eventInterval.unref();
+        this.entityInterval.unref();
     }
 
-    stopEvents(): void {
-        if (this.eventInterval) {
-            clearInterval(this.eventInterval);
-            this.eventInterval = undefined;
+    stopEntities(): void {
+        if (this.entityInterval) {
+            clearInterval(this.entityInterval);
+            this.entityInterval = undefined;
         }
     }
 
-    async submitEvents(tak: TAK, api: TAKAPI, opts?: { event?: string }): Promise<void> {
-        if (this.submittingEvents || !tak.open) return;
+    async submitEntities(tak: TAK, api: TAKAPI, opts?: { entity?: string }): Promise<void> {
+        if (this.submittingEntities || !tak.open) return;
 
-        this.submittingEvents = true;
+        this.submittingEntities = true;
 
         try {
             const groups = new Map<number, string>();
@@ -283,35 +286,54 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
 
             const cots: CoT[] = [];
 
-            for await (const event of this.config.models.CoreEntity.augmented_iter({
-                // Broadcast CoTs carry Channels, never Board placements
-                boards: false,
-                where: opts && opts.event
-                    ? and(ACTIVE, eq(CoreEntity.id, opts.event))
-                    : ACTIVE,
-            })) {
-                const dest = event.channels
+            for await (const entity of this.config.models.CoreEntity.broadcast_iter({ id: opts?.entity })) {
+                const dest = entity.channels
                     .map(channel => groups.get(channel))
                     .filter((group): group is string => group !== undefined)
                     .map(group => ({ group }));
 
-                // An Event with no resolvable Channels would otherwise be
+                // An Entity with no resolvable Channels would otherwise be
                 // broadcast to every Channel the Admin cert can see
                 if (!dest.length) continue;
 
-                // The `p` (parent) Link carries the Event UUID so a CloudTAK
-                // client can open the Event a marker was generated from
-                const links: Array<Record<string, string>> = [{
-                    relation: 'p',
-                    type: 'core-event',
-                    event: event.id,
-                    url: `${this.config.API_URL}/event/${event.id}`,
-                    remarks: event.name,
-                }];
+                // The `p` (parent) Link carries the Entity UUID so a CloudTAK
+                // client can open the record a marker was generated from
+                const links: Array<Record<string, string>> = [];
+                const remarks: string[] = [];
+                let start: string;
+                let stale: number;
+
+                if (entity.kind === LayerMapping_Destination.COREDEVICE) {
+                    links.push({
+                        relation: 'p',
+                        type: 'core-device',
+                        device: entity.id,
+                        remarks: entity.name,
+                    });
+
+                    if (entity.status) remarks.push(`Status:\n${entity.status}`);
+                    if (entity.battery !== null) remarks.push(`Battery:\n${entity.battery}%`);
+
+                    start = entity.updated;
+                    stale = DEVICE_STALE;
+                } else {
+                    links.push({
+                        relation: 'p',
+                        type: 'core-event',
+                        event: entity.id,
+                        url: `${this.config.API_URL}/event/${entity.id}`,
+                        remarks: entity.name,
+                    });
+
+                    remarks.push(`Location:\n${entity.location}`, `Priority:\n${entity.priority}`);
+
+                    start = entity.started;
+                    stale = eventStale(entity.ended);
+                }
 
                 // `r-u` (refinement url) links render in ATAK as tappable
                 // external links
-                for (const link of event.links) {
+                for (const link of entity.links) {
                     if (!link.url) continue;
 
                     links.push({
@@ -322,36 +344,31 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
                     });
                 }
 
-                const remarks = [
-                    `Location:\n${event.location}`,
-                    `Priority:\n${event.priority}`,
-                ];
-
-                if (event.remarks) remarks.push(event.remarks);
+                if (entity.remarks) remarks.push(entity.remarks);
 
                 try {
                     // node-cot converts a numeric 2525E SIDC type to a CoT
                     // Atom type, retaining the SIDC in a milsym entry
                     cots.push(await CoTParser.from_geojson({
-                        id: event.id,
+                        id: entity.id,
                         type: 'Feature',
                         properties: {
-                            ...event.style,
-                            type: event.type,
+                            ...entity.style,
+                            type: entity.type,
                             // Machine generated - clients disallow editing the
-                            // Event as a plain CoT
+                            // Entity as a plain CoT
                             how: 'm-g',
-                            callsign: event.name,
+                            callsign: entity.name,
                             remarks: remarks.join('\n\n'),
-                            start: event.started,
-                            stale: eventStale(event.ended),
+                            start,
+                            stale,
                             dest,
                             links,
                         },
-                        geometry: event.geometry,
+                        geometry: entity.geometry,
                     }));
                 } catch (err) {
-                    console.error(`not ok - ${this.id} - ${this.name} - failed to convert Core Event ${event.id} to CoT: ${err instanceof Error ? err.message : String(err)}`);
+                    console.error(`not ok - ${this.id} - ${this.name} - failed to convert Core ${entity.kind === LayerMapping_Destination.COREDEVICE ? 'Device' : 'Event'} ${entity.id} to CoT: ${err instanceof Error ? err.message : String(err)}`);
                 }
             }
 
@@ -359,7 +376,7 @@ export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
                 tak.write(cots);
             }
         } finally {
-            this.submittingEvents = false;
+            this.submittingEntities = false;
         }
     }
 

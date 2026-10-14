@@ -39,7 +39,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
      * scheduled cycle recovers a failed submit
      */
     function rebroadcast(event: string): void {
-        config.hub.coreEventSubmit(event).catch((err) => {
+        config.hub.coreEntitySubmit(event).catch((err) => {
             console.error(`not ok - failed to immediately submit Core Event ${event}:`, err);
         });
     }

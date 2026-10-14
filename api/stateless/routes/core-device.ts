@@ -10,6 +10,7 @@ import { LayerMapping_Destination } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
 import { userChannels } from '../../common/control/tak-channels.js';
 import DeviceControl from '../lib/control/device.js';
+import { notifyCoreDevice } from '../lib/core-device.js';
 import { uniqueViolation } from '../lib/pg-error.js';
 import * as Default from '../lib/limits.js';
 
@@ -223,6 +224,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 return id;
             }).catch(uniqueViolation('external_id is already used by another Device of the Connection'));
 
+            notifyCoreDevice(config, id);
+
             res.json(await config.models.CoreDevice.augmented_from(id));
         } catch (err) {
             Err.respond(err, res);
@@ -296,6 +299,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (channels !== undefined) await setChannels(config.pg, req.params.device, channels);
+
+            notifyCoreDevice(config, req.params.device);
 
             res.json(await config.models.CoreDevice.augmented_from(req.params.device));
         } catch (err) {

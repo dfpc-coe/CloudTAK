@@ -3,7 +3,7 @@ import Modeler, { GenericList, GenericListInput, GenericIterInput } from '@opena
 import { Static } from '@sinclair/typebox';
 import { CoreEventResponse, GeoJSONFeatureGeometryPoint } from '../types.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { CoreEntity, CoreEntityEvent, CoreEntityChannel, CoreEntityExternal } from '../schema.js';
+import { CoreEntity, CoreEntityEvent, CoreEntityDevice, CoreEntityChannel, CoreEntityExternal } from '../schema.js';
 import { LayerMapping_Destination } from '../enums.js';
 import type { PgInsertValue } from 'drizzle-orm/pg-core';
 import { SQL, is, sql, eq, and, asc, desc, getTableColumns } from 'drizzle-orm';
@@ -19,6 +19,11 @@ const EventColumns = Object.fromEntries(
 ) as Omit<ReturnType<typeof getTableColumns<typeof CoreEntityEvent>>, 'id'>;
 
 const EVENT_KEYS = new Set(Object.keys(EventColumns));
+
+/** Device side table columns - the shared primary key is already selected from core_entity */
+export const DeviceColumns = Object.fromEntries(
+    Object.entries(getTableColumns(CoreEntityDevice)).filter(([name]) => name !== 'id'),
+) as Omit<ReturnType<typeof getTableColumns<typeof CoreEntityDevice>>, 'id'>;
 
 export type WithSQL<T> = { [K in keyof T]: T[K] | SQL };
 
@@ -167,6 +172,20 @@ const BOARDS = sql`COALESCE((
 /** An Event is active until its ended time - a future ended keeps it active until then */
 export const ACTIVE = sql<boolean>`(${CoreEntityEvent.ended} IS NULL OR ${CoreEntityEvent.ended} > Now())`;
 
+/** An Entity is broadcast as CoT when it is located - a Device, or an Event that is still active */
+export const BROADCAST = sql<boolean>`(${CoreEntity.geometry} IS NOT NULL AND (${CoreEntity.kind} = ${LayerMapping_Destination.COREDEVICE} OR ${ACTIVE}))`;
+
+type BroadcastEntity = Omit<typeof CoreEntity.$inferSelect, 'kind' | 'geometry'> & {
+    geometry: Static<typeof GeoJSONFeatureGeometryPoint>;
+    channels: number[];
+    external_ids: Record<string, string>;
+};
+
+/** A located Entity with the columns of its kind's side table - `kind` says which */
+export type CoreEntityBroadcast
+    = (BroadcastEntity & { kind: LayerMapping_Destination.COREEVENT } & Omit<typeof CoreEntityEvent.$inferSelect, 'id'>)
+        | (BroadcastEntity & { kind: LayerMapping_Destination.COREDEVICE } & Omit<typeof CoreEntityDevice.$inferSelect, 'id'>);
+
 export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
     constructor(
         pool: PostgresJsDatabase<Record<string, unknown>>,
@@ -303,5 +322,56 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
                 }),
             };
         }
+    }
+
+    /**
+     * Stream every Entity to broadcast as CoT regardless of kind - both side
+     * tables are joined and the row's kind picks which one populated it
+     */
+    async* broadcast_iter(opts: { id?: string; pagesize?: number } = {}): AsyncGenerator<CoreEntityBroadcast> {
+        const pagesize = opts.pagesize || 100;
+        const SubTable = channelsSubquery(this.pool);
+        const where = opts.id ? and(BROADCAST, eq(CoreEntity.id, opts.id)) : BROADCAST;
+
+        let page = 0;
+        let pgres;
+
+        do {
+            pgres = await this.pool
+                .select({
+                    entity: { ...EntityColumns, kind: CoreEntity.kind },
+                    event: EventColumns,
+                    device: DeviceColumns,
+                    external_ids: EXTERNAL_IDS.as('external_ids'),
+                    channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
+                })
+                .from(CoreEntity)
+                .leftJoin(CoreEntityEvent, eq(CoreEntity.id, CoreEntityEvent.id))
+                .leftJoin(CoreEntityDevice, eq(CoreEntity.id, CoreEntityDevice.id))
+                .leftJoin(SubTable, eq(CoreEntity.id, SubTable.entity))
+                .where(where)
+                .orderBy(asc(CoreEntity.id))
+                .limit(pagesize)
+                .offset(page * pagesize);
+
+            for (const row of pgres) {
+                const { kind, ...entity } = row.entity;
+
+                const base = {
+                    ...entity,
+                    geometry: entity.geometry as Static<typeof GeoJSONFeatureGeometryPoint>,
+                    channels: row.channels as number[],
+                    external_ids: row.external_ids as Record<string, string>,
+                };
+
+                if (kind === LayerMapping_Destination.COREDEVICE && row.device) {
+                    yield { ...base, ...row.device, kind: LayerMapping_Destination.COREDEVICE };
+                } else if (kind === LayerMapping_Destination.COREEVENT && row.event) {
+                    yield { ...base, ...row.event, kind: LayerMapping_Destination.COREEVENT };
+                }
+            }
+
+            page++;
+        } while (pgres.length === pagesize);
     }
 }
