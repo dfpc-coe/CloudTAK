@@ -71,7 +71,7 @@ test('ETLEvents: setup subscribed Outgoing Layers', async () => {
             return new Set([7, 99]);
         });
 
-        flight.config!.hub.coreEntitySubmit = async () => {};
+        flight.config!.hub.coreEventSubmit = async () => {};
 
         for (const [name, subscriptions] of [
             ['All Events Layer', ['feature:*', 'event:*']],

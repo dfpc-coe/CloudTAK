@@ -476,7 +476,7 @@ test('POST: api/connection/1/submit - CoreEntity & CoreDevice maps create record
         await models.LayerMapping.generate({
             layer: 1,
             schema: 'incident',
-            destination: LayerMapping_Destination.COREENTITY,
+            destination: LayerMapping_Destination.COREEVENT,
             name: 'Severe',
             query: 'properties.metadata.severity > 3',
             mapping: {
@@ -492,7 +492,7 @@ test('POST: api/connection/1/submit - CoreEntity & CoreDevice maps create record
         await models.LayerMapping.generate({
             layer: 1,
             schema: 'incident',
-            destination: LayerMapping_Destination.COREENTITY,
+            destination: LayerMapping_Destination.COREEVENT,
             name: 'Incident Defaults',
             query: 'properties.metadata.title != null',
             mapping: {
@@ -692,7 +692,7 @@ test('POST: api/connection/1/submit - channels, style, links & active', async ()
         await models.LayerMapping.generate({
             layer: 1,
             schema: 'dispatch',
-            destination: LayerMapping_Destination.COREENTITY,
+            destination: LayerMapping_Destination.COREEVENT,
             name: 'Calls',
             query: 'properties.metadata.kind = "call"',
             mapping: {
@@ -790,7 +790,7 @@ test('POST: api/connection/1/submit - ended as seconds from submission is pushed
         await models.LayerMapping.generate({
             layer: 1,
             schema: 'cad',
-            destination: LayerMapping_Destination.COREENTITY,
+            destination: LayerMapping_Destination.COREEVENT,
             name: 'CAD',
             query: null,
             mapping: {
@@ -855,7 +855,7 @@ test('POST: api/connection/1/submit - update: false fields are only applied when
         await models.LayerMapping.generate({
             layer: 1,
             schema: 'hydrant',
-            destination: LayerMapping_Destination.COREENTITY,
+            destination: LayerMapping_Destination.COREEVENT,
             name: 'Hydrants',
             query: null,
             mapping: {
@@ -946,7 +946,7 @@ test('POST: api/connection/1/submit - records inherit the Channels of the Connec
         await models.LayerMapping.generate({
             layer: 1,
             schema: 'inherit',
-            destination: LayerMapping_Destination.COREENTITY,
+            destination: LayerMapping_Destination.COREEVENT,
             name: 'No Channels',
             query: null,
             mapping: { name: '{{title}}', type: '10031000001211000000' },
@@ -1021,7 +1021,7 @@ test('POST: api/connection/1/submit - a CoreEntity map that cannot produce a typ
         await models.LayerMapping.generate({
             layer: 1,
             schema: 'alert',
-            destination: LayerMapping_Destination.COREENTITY,
+            destination: LayerMapping_Destination.COREEVENT,
             name: 'No Type',
             query: null,
             mapping: { remarks: '{{text}}' },

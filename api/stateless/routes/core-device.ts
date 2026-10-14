@@ -315,11 +315,19 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: StandardResponse,
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const auth = await Auth.is_auth(config, req, {
+                scope: 'device:delete',
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION },
+                    { access: AuthResourceAccess.LAYER },
+                ],
+            });
+
+            const connection = auth instanceof AuthResource ? await deviceControl.resourceConnection(auth) : null;
 
             const device = await config.models.CoreDevice.augmented_from(req.params.device);
 
-            if (!user.is_admin() && device.username !== user.email) {
+            if (!deviceControl.isDeviceCreator(auth, device, connection)) {
                 throw new Err(403, null, 'Only the Device creator can delete this Device');
             }
 

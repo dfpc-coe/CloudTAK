@@ -25,6 +25,9 @@
 
 ### Pending Release
 
+- :rocket: Rename Event-specific `core-entity` files & `CoreEntity*` identifiers to `core-event` / `CoreEvent*` (routes, lib, tests, Board/Assignment/Effect/Response tables & models, enums, TypeBox types, `hub.coreEventSubmit`) - the name predated the CoreEntity inheritance model; DB table names & API paths are unchanged
+- :tada: `DELETE /api/core/event/:event` & `DELETE /api/core/device/:device` accept Layer & Connection tokens holding the `event:delete` / `device:delete` permission - a token can only delete records of its own Connection
+
 ### v13.109.2 - 2026-10-14
 
 - :rocket: change AGOL text to be `API Key` instead of Legacy Key as the new API Keys are submitted the same way just with a max 1 year lifespan

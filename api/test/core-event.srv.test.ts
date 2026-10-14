@@ -953,16 +953,58 @@ test('PATCH: api/core/event/:event - layer token from same connection', async ()
     }
 });
 
-test('DELETE: api/core/event/:event - resource token cannot delete', async () => {
+test('DELETE: api/core/event/:event - layer token without event:delete', async () => {
     try {
+        const unscopedToken = 'etl.' + jwt.sign({ access: 'layer', id: 2, internal: true }, 'coe-wildland-fire');
+
         const res = await flight.fetch(`/api/core/event/${machineEventId}`, {
             method: 'DELETE',
-            auth: {
-                bearer: connectionToken,
-            },
+            auth: { bearer: unscopedToken },
         }, false);
 
         assert.equal(res.status, 403);
+        assert.equal(res.body.message, 'Layer token does not have the event:delete permission');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('DELETE: api/core/event/:event - connection token cannot delete a user Event', async () => {
+    try {
+        const res = await flight.fetch(`/api/core/event/${eventId}`, {
+            method: 'DELETE',
+            auth: { bearer: connectionToken },
+        }, false);
+
+        assert.equal(res.status, 403);
+        assert.equal(res.body.message, 'Only the Event creator can delete this Event');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('DELETE: api/core/event/:event - layer token from same connection', async () => {
+    try {
+        await flight.config!.models.Layer.commit(1, { permissions: ['event:delete'] });
+
+        const layerToken = 'etl.' + jwt.sign({ access: 'layer', id: 1, internal: true }, 'coe-wildland-fire');
+
+        const res = await flight.fetch(`/api/core/event/${machineEventId}`, {
+            method: 'DELETE',
+            auth: { bearer: layerToken },
+        }, true);
+
+        assert.deepEqual(res.body, {
+            status: 200,
+            message: 'Core Event Deleted',
+        });
+
+        const get = await flight.fetch(`/api/core/event/${machineEventId}`, {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, false);
+
+        assert.equal(get.status, 404);
     } catch (err) {
         assert.ifError(err);
     }

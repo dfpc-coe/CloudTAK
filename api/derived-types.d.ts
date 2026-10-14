@@ -571,7 +571,7 @@ export interface paths {
         put: {
             parameters: {
                 query?: {
-                    /** @description GUID of a mission to also upload the attachment to */
+                    /** @description GUID of a mission to also upload the attachment to - requires a User token */
                     mission?: string;
                 };
                 header?: never;
@@ -5348,6 +5348,11 @@ export interface paths {
                                                 tool?: string;
                                                 uid: string;
                                             };
+                                            /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                            missionProperty?: {
+                                                key: string;
+                                                value: string;
+                                            };
                                             details?: {
                                                 type: string;
                                                 callsign: string;
@@ -5965,6 +5970,11 @@ export interface paths {
                                         tool?: string;
                                         uid: string;
                                     };
+                                    /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                    missionProperty?: {
+                                        key: string;
+                                        value: string;
+                                    };
                                     details?: {
                                         type: string;
                                         callsign: string;
@@ -6502,6 +6512,11 @@ export interface paths {
                                             submitter: string;
                                             tool?: string;
                                             uid: string;
+                                        };
+                                        /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                        missionProperty?: {
+                                            key: string;
+                                            value: string;
                                         };
                                         details?: {
                                             type: string;
@@ -7241,6 +7256,11 @@ export interface paths {
                                             submitter: string;
                                             tool?: string;
                                             uid: string;
+                                        };
+                                        /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                        missionProperty?: {
+                                            key: string;
+                                            value: string;
                                         };
                                         details?: {
                                             type: string;
@@ -7984,6 +8004,11 @@ export interface paths {
                                             tool?: string;
                                             uid: string;
                                         };
+                                        /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                        missionProperty?: {
+                                            key: string;
+                                            value: string;
+                                        };
                                         details?: {
                                             type: string;
                                             callsign: string;
@@ -8527,6 +8552,11 @@ export interface paths {
                                                     submitter: string;
                                                     tool?: string;
                                                     uid: string;
+                                                };
+                                                /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                                missionProperty?: {
+                                                    key: string;
+                                                    value: string;
                                                 };
                                                 details?: {
                                                     type: string;
@@ -9168,6 +9198,11 @@ export interface paths {
                                             submitter: string;
                                             tool?: string;
                                             uid: string;
+                                        };
+                                        /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                        missionProperty?: {
+                                            key: string;
+                                            value: string;
                                         };
                                         details?: {
                                             type: string;
@@ -9818,6 +9853,11 @@ export interface paths {
                                                 submitter: string;
                                                 tool?: string;
                                                 uid: string;
+                                            };
+                                            /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                            missionProperty?: {
+                                                key: string;
+                                                value: string;
                                             };
                                             details?: {
                                                 type: string;
@@ -12171,7 +12211,7 @@ export interface paths {
                                 /** @description Container tag as <integration prefix>-v<version> */
                                 task: string;
                                 version: string;
-                                /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping */
+                                /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping, which applies only when the Layer holds feature:submit */
                                 schema: string;
                                 integration: {
                                     name: string;
@@ -12658,7 +12698,7 @@ export interface paths {
                             /** @description Container tag as <integration prefix>-v<version> */
                             task: string;
                             version: string;
-                            /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping */
+                            /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping, which applies only when the Layer holds feature:submit */
                             schema: string;
                             integration: {
                                 name: string;
@@ -14909,7 +14949,7 @@ export interface paths {
                             /** @description Container tag as <integration prefix>-v<version> */
                             task: string;
                             version: string;
-                            /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping */
+                            /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping, which applies only when the Layer holds feature:submit */
                             schema: string;
                             integration: {
                                 name: string;
@@ -15477,7 +15517,7 @@ export interface paths {
                             /** @description Container tag as <integration prefix>-v<version> */
                             task: string;
                             version: string;
-                            /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping */
+                            /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping, which applies only when the Layer holds feature:submit */
                             schema: string;
                             integration: {
                                 name: string;
@@ -16135,6 +16175,11 @@ export interface paths {
                                             tool?: string;
                                             uid: string;
                                         };
+                                        /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                        missionProperty?: {
+                                            key: string;
+                                            value: string;
+                                        };
                                         details?: {
                                             type: string;
                                             callsign: string;
@@ -16686,6 +16731,11 @@ export interface paths {
                                                     tool?: string;
                                                     uid: string;
                                                 };
+                                                /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                                missionProperty?: {
+                                                    key: string;
+                                                    value: string;
+                                                };
                                                 details?: {
                                                     type: string;
                                                     callsign: string;
@@ -17218,6 +17268,11 @@ export interface paths {
                                                     submitter: string;
                                                     tool?: string;
                                                     uid: string;
+                                                };
+                                                /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                                missionProperty?: {
+                                                    key: string;
+                                                    value: string;
                                                 };
                                                 details?: {
                                                     type: string;
@@ -32168,7 +32223,7 @@ export interface paths {
                                 /** @description Container tag as <integration prefix>-v<version> */
                                 task: string;
                                 version: string;
-                                /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping */
+                                /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping, which applies only when the Layer holds feature:submit */
                                 schema: string;
                                 integration: {
                                     name: string;
@@ -32624,7 +32679,7 @@ export interface paths {
                             /** @description Container tag as <integration prefix>-v<version> */
                             task: string;
                             version: string;
-                            /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping */
+                            /** @description Version of the static Capabilities document the Task declares - 1.1 disables Legacy Styling in favour of Field Mapping, which applies only when the Layer holds feature:submit */
                             schema: string;
                             integration: {
                                 name: string;
@@ -34751,6 +34806,11 @@ export interface paths {
                                             tool?: string;
                                             uid: string;
                                         };
+                                        /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                        missionProperty?: {
+                                            key: string;
+                                            value: string;
+                                        };
                                         details?: {
                                             type: string;
                                             callsign: string;
@@ -35398,6 +35458,11 @@ export interface paths {
                                                 submitter: string;
                                                 tool?: string;
                                                 uid: string;
+                                            };
+                                            /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                            missionProperty?: {
+                                                key: string;
+                                                value: string;
                                             };
                                             details?: {
                                                 type: string;
@@ -38681,6 +38746,11 @@ export interface paths {
                                                 tool?: string;
                                                 uid: string;
                                             };
+                                            /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                            missionProperty?: {
+                                                key: string;
+                                                value: string;
+                                            };
                                             details?: {
                                                 type: string;
                                                 callsign: string;
@@ -39308,6 +39378,11 @@ export interface paths {
                                             submitter: string;
                                             tool?: string;
                                             uid: string;
+                                        };
+                                        /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                        missionProperty?: {
+                                            key: string;
+                                            value: string;
                                         };
                                         details?: {
                                             type: string;
@@ -47691,6 +47766,11 @@ export interface paths {
                                                 tool?: string;
                                                 uid: string;
                                             };
+                                            /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                            missionProperty?: {
+                                                key: string;
+                                                value: string;
+                                            };
                                             details?: {
                                                 type: string;
                                                 callsign: string;
@@ -48318,6 +48398,11 @@ export interface paths {
                                         tool?: string;
                                         uid: string;
                                     };
+                                    /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                    missionProperty?: {
+                                        key: string;
+                                        value: string;
+                                    };
                                     details?: {
                                         type: string;
                                         callsign: string;
@@ -48855,6 +48940,11 @@ export interface paths {
                                             submitter: string;
                                             tool?: string;
                                             uid: string;
+                                        };
+                                        /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                        missionProperty?: {
+                                            key: string;
+                                            value: string;
                                         };
                                         details?: {
                                             type: string;
@@ -49591,6 +49681,11 @@ export interface paths {
                                             submitter: string;
                                             tool?: string;
                                             uid: string;
+                                        };
+                                        /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                        missionProperty?: {
+                                            key: string;
+                                            value: string;
                                         };
                                         details?: {
                                             type: string;
@@ -61543,6 +61638,11 @@ export interface paths {
                                                 submitter: string;
                                                 tool?: string;
                                                 uid: string;
+                                            };
+                                            /** @description Mission Key/Value Property that was set (ADD_CONTENT) or removed (REMOVE_CONTENT) - TAK Server 5.9+ */
+                                            missionProperty?: {
+                                                key: string;
+                                                value: string;
                                             };
                                             details?: {
                                                 type: string;

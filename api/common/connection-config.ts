@@ -60,7 +60,7 @@ export default interface ConnectionConfig {
  * Implemented by Connection types that periodically submit active Core
  * Events to the TAK Server as CoTs scoped via Marti dest group entries
  */
-export interface CoreEntitySubmitter {
+export interface CoreEventSubmitter {
     /** Guards against overlapping submission runs */
     submittingEvents: boolean;
 
@@ -71,8 +71,8 @@ export interface CoreEntitySubmitter {
     submitEvents(tak: TAK, api: TAKAPI, opts?: { event?: string }): Promise<void>;
 }
 
-export function isCoreEntitySubmitter(config: ConnectionConfig): config is ConnectionConfig & CoreEntitySubmitter {
-    const submitter = config as Partial<CoreEntitySubmitter>;
+export function isCoreEventSubmitter(config: ConnectionConfig): config is ConnectionConfig & CoreEventSubmitter {
+    const submitter = config as Partial<CoreEventSubmitter>;
     return typeof submitter.submitEvents === 'function'
         && typeof submitter.startEvents === 'function'
         && typeof submitter.stopEvents === 'function';
@@ -224,7 +224,7 @@ export class ProfileConnConfig implements ConnectionConfig {
     }
 }
 
-export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
+export class AdminConnConfig implements ConnectionConfig, CoreEventSubmitter {
     id: number;
     name: string;
     enabled: boolean;

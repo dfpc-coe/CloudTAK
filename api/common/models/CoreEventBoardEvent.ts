@@ -1,25 +1,25 @@
 import Modeler from '@openaddresses/batch-generic';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { CoreEntityBoard, CoreEntityBoardEvent } from '../schema.js';
+import { CoreEventBoard, CoreEventBoardEvent } from '../schema.js';
 import { eq } from 'drizzle-orm';
 
-export default class CoreEntityBoardEventModel extends Modeler<typeof CoreEntityBoardEvent> {
+export default class CoreEventBoardEventModel extends Modeler<typeof CoreEventBoardEvent> {
     constructor(
         pool: PostgresJsDatabase<Record<string, unknown>>,
     ) {
-        super(pool, CoreEntityBoardEvent);
+        super(pool, CoreEventBoardEvent);
     }
 
     /** Every placement of a Core Event alongside the Channel of the Board it sits on */
     async placements(event: string): Promise<Array<{
-        placement: typeof CoreEntityBoardEvent.$inferSelect;
+        placement: typeof CoreEventBoardEvent.$inferSelect;
         channel: number;
     }>> {
         const pgres = await this.pool
-            .select({ placement: CoreEntityBoardEvent, channel: CoreEntityBoard.channel })
-            .from(CoreEntityBoardEvent)
-            .innerJoin(CoreEntityBoard, eq(CoreEntityBoard.id, CoreEntityBoardEvent.board))
-            .where(eq(CoreEntityBoardEvent.event, event));
+            .select({ placement: CoreEventBoardEvent, channel: CoreEventBoard.channel })
+            .from(CoreEventBoardEvent)
+            .innerJoin(CoreEventBoard, eq(CoreEventBoard.id, CoreEventBoardEvent.board))
+            .where(eq(CoreEventBoardEvent.event, event));
 
         return pgres.map(row => ({ placement: row.placement, channel: Number(row.channel) }));
     }

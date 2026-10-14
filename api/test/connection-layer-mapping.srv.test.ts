@@ -145,7 +145,7 @@ test('POST: api/connection/1/layer/1/incoming/mapping - invalid CoreEntity prior
             },
             body: {
                 schema: 'incident',
-                destination: LayerMapping_Destination.COREENTITY,
+                destination: LayerMapping_Destination.COREEVENT,
                 name: 'Bad Priority',
                 mapping: { priority: 'urgent' },
             },

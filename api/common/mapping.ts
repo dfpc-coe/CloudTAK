@@ -6,7 +6,7 @@ import type { Feature } from '@tak-ps/node-cot';
 import handlebars from './handlebars.js';
 import type { CoreEntity, CoreEntityEvent, CoreEntityDevice, LayerMapping } from './schema.js';
 import { LayerMapping_Destination } from './enums.js';
-import { CoreEntitySchema, CoreDeviceSchema } from './core-schema.js';
+import { CoreEventSchema, CoreDeviceSchema } from './core-schema.js';
 
 /** A submitted Feature - the geometry is optional as CoreEntity & CoreDevice Maps do not require one */
 export type MappingFeature = Omit<Static<typeof Feature.InputFeature>, 'geometry'> & {
@@ -20,7 +20,7 @@ type DeviceColumns = InferInsertModel<typeof CoreEntity> & InferInsertModel<type
 
 export type MappedExternalId = { system?: string; value?: string };
 
-export type MappedEvent = Partial<Pick<EventColumns, Extract<keyof typeof CoreEntitySchema.properties, keyof EventColumns>>> & {
+export type MappedEvent = Partial<Pick<EventColumns, Extract<keyof typeof CoreEventSchema.properties, keyof EventColumns>>> & {
     channels?: number[];
     active?: boolean;
     external_id?: MappedExternalId;
@@ -154,7 +154,7 @@ export const MAP_FIELDS: Record<LayerMapping_Destination, MapField[]> = {
             prop('fill-opacity', 'number'),
         ]),
     ],
-    [LayerMapping_Destination.COREENTITY]: schemaFields(CoreEntitySchema),
+    [LayerMapping_Destination.COREEVENT]: schemaFields(CoreEventSchema),
     [LayerMapping_Destination.COREDEVICE]: schemaFields(CoreDeviceSchema),
 };
 

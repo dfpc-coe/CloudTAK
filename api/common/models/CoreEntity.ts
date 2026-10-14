@@ -1,7 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import Modeler, { GenericList, GenericListInput, GenericIterInput } from '@openaddresses/batch-generic';
 import { Static } from '@sinclair/typebox';
-import { CoreEntityResponse, GeoJSONFeatureGeometryPoint } from '../types.js';
+import { CoreEventResponse, GeoJSONFeatureGeometryPoint } from '../types.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { CoreEntity, CoreEntityEvent, CoreEntityChannel, CoreEntityExternal } from '../schema.js';
 import { LayerMapping_Destination } from '../enums.js';
@@ -179,7 +179,7 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
         const { entity, event } = splitEvent(values);
 
         const [row] = await tx.insert(CoreEntity)
-            .values({ ...entity, kind: LayerMapping_Destination.COREENTITY } as PgInsertValue<typeof CoreEntity>)
+            .values({ ...entity, kind: LayerMapping_Destination.COREEVENT } as PgInsertValue<typeof CoreEntity>)
             .returning({ id: CoreEntity.id });
 
         await tx.insert(CoreEntityEvent).values({ ...event, id: row.id });
@@ -205,7 +205,7 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
         }
     }
 
-    async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof CoreEntityResponse>> {
+    async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof CoreEventResponse>> {
         const SubTable = channelsSubquery(this.pool);
 
         const pgres = await this.pool
@@ -231,12 +231,12 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
             external_ids: pgres[0].external_ids as Record<string, string>,
             geometry: pgres[0].event.geometry as Static<typeof GeoJSONFeatureGeometryPoint>,
             channels: pgres[0].channels as number[],
-            boards: pgres[0].boards as Static<typeof CoreEntityResponse>['boards'],
+            boards: pgres[0].boards as Static<typeof CoreEventResponse>['boards'],
         };
     }
 
     /** Iterating variant of augmented_list */
-    async* augmented_iter(query: GenericIterInput & { boards?: boolean } = {}): AsyncGenerator<Static<typeof CoreEntityResponse>> {
+    async* augmented_iter(query: GenericIterInput & { boards?: boolean } = {}): AsyncGenerator<Static<typeof CoreEventResponse>> {
         const pagesize = query.pagesize || 100;
         let page = 0;
         let pgres;
@@ -262,7 +262,7 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
      * `boards` is a correlated subquery run once per returned row - callers
      * that never surface it (ie the Event => CoT broadcast loop) opt out
      */
-    async augmented_list(query: GenericListInput & { boards?: boolean } = {}): Promise<GenericList<Static<typeof CoreEntityResponse>>> {
+    async augmented_list(query: GenericListInput & { boards?: boolean } = {}): Promise<GenericList<Static<typeof CoreEventResponse>>> {
         const order = query.order && query.order === 'desc' ? desc : asc;
         const orderBy = order(query.sort ? this.key(query.sort) : this.requiredPrimaryKey());
 
@@ -298,7 +298,7 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
                         external_ids: t.external_ids as Record<string, string>,
                         geometry: t.event.geometry as Static<typeof GeoJSONFeatureGeometryPoint>,
                         channels: t.channels as number[],
-                        boards: t.boards as Static<typeof CoreEntityResponse>['boards'],
+                        boards: t.boards as Static<typeof CoreEventResponse>['boards'],
                     };
                 }),
             };

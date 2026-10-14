@@ -3,9 +3,9 @@ import { Type, Static } from '@sinclair/typebox';
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Area, Profile_Speed, Profile_Text, Profile_Radiation_Dose, Profile_Wake_Lock } from './enums.js';
-import { VideoLease_SourceType, CoreEntityBoardColumn_Type, CoreEntityEffect_Status, LayerMapping_Destination } from './enums.js';
+import { VideoLease_SourceType, CoreEventBoardColumn_Type, CoreEventEffect_Status, LayerMapping_Destination } from './enums.js';
 import { Capabilities, InvocationType } from '@tak-ps/etl';
-import { CoreEntitySchema, CoreDeviceSchema, CoreEntityLinkSchema, CoreEntityStyleSchema, withoutHints } from './core-schema.js';
+import { CoreEventSchema, CoreDeviceSchema, CoreEntityLinkSchema, CoreEntityStyleSchema, withoutHints } from './core-schema.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
 import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, BasemapTerrain_Encoding } from './enums.js';
@@ -151,7 +151,7 @@ export const PaletteFeatureResponse = createSelectSchema(schemas.PaletteFeature,
 export const CoreEntityLink = withoutHints(CoreEntityLinkSchema);
 export const CoreEntityStyle = withoutHints(CoreEntityStyleSchema);
 
-export const CoreEntityMission = Type.Object({
+export const CoreEventMission = Type.Object({
     name: Type.String({ description: 'Name of the TAK Server Mission' }),
     guid: Type.String({ format: 'uuid', description: 'GUID of the TAK Server Mission' }),
 }, {
@@ -159,23 +159,23 @@ export const CoreEntityMission = Type.Object({
 });
 
 /** Enough of a Column to render its name & badge styling inline */
-export const CoreEntityBoardColumnSummary = Type.Object({
+export const CoreEventBoardColumnSummary = Type.Object({
     id: Type.String(),
     name: Type.String(),
     color: Type.String({ description: 'Hex colour the Column is rendered with - ie: #ff0000' }),
-    type: Type.Enum(CoreEntityBoardColumn_Type),
+    type: Type.Enum(CoreEventBoardColumn_Type),
     position: Type.Integer(),
 });
 
 /** A Board of one of the Event's Channels & where the Event sits on it */
-export const CoreEntityBoardSummary = Type.Object({
+export const CoreEventBoardSummary = Type.Object({
     id: Type.String(),
     name: Type.String(),
     channel: Type.Integer({ description: 'TAK Server Channel bitpos the Board belongs to' }),
     column: Type.Union([Type.Null(), Type.String()], {
         description: 'Column of the Board the Event is placed in - null when the Event has not been nominated to this Board',
     }),
-    columns: Type.Array(CoreEntityBoardColumnSummary, { description: 'Columns of the Board' }),
+    columns: Type.Array(CoreEventBoardColumnSummary, { description: 'Columns of the Board' }),
 });
 
 /** A single ID of a record in an external system - merged into the record's external_ids */
@@ -205,13 +205,13 @@ export const CoreEntityExternalIdLegacy = Type.String({
     description: 'Deprecated - ID of the record under the default system, use external_ids - removed in v14',
 });
 
-export const CoreEntityResponse = Type.Composite([
-    Type.Required(Type.Omit(withoutHints(CoreEntitySchema), ['ended', 'external_id'])),
+export const CoreEventResponse = Type.Composite([
+    Type.Required(Type.Omit(withoutHints(CoreEventSchema), ['ended', 'external_id'])),
     Type.Object({
         id: Type.String(),
         external_id: CoreEntityExternalIdLegacy,
         external_ids: CoreEntityExternalIds,
-        missions: Type.Array(CoreEntityMission, { description: 'TAK Server Missions associated with the Event' }),
+        missions: Type.Array(CoreEventMission, { description: 'TAK Server Missions associated with the Event' }),
         created: Type.String(),
         updated: Type.String(),
         ended: Type.Union([Type.Null(), Type.String()], { description: 'Time at which the Event ends - a future time keeps the Event active until then' }),
@@ -219,13 +219,13 @@ export const CoreEntityResponse = Type.Composite([
         connection: Type.Union([Type.Null(), Type.Integer()], { description: 'Connection that created the Event if created by a Connection or Layer token' }),
         metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Event metadata' }),
         geometry: GeoJSONFeatureGeometryPoint,
-        boards: Type.Array(CoreEntityBoardSummary, {
+        boards: Type.Array(CoreEventBoardSummary, {
             description: 'Boards of every Channel the Event is shared with, along with the Column the Event is placed in on each',
         }),
     }),
 ]);
 
-export const CoreEntityBoardResponse = Type.Object({
+export const CoreEventBoardResponse = Type.Object({
     id: Type.String(),
     created: Type.String(),
     updated: Type.String(),
@@ -234,7 +234,7 @@ export const CoreEntityBoardResponse = Type.Object({
     description: Type.String(),
 });
 
-export const CoreEntityBoardColumnResponse = Type.Object({
+export const CoreEventBoardColumnResponse = Type.Object({
     id: Type.String(),
     created: Type.String(),
     updated: Type.String(),
@@ -242,18 +242,18 @@ export const CoreEntityBoardColumnResponse = Type.Object({
     name: Type.String(),
     description: Type.String(),
     color: Type.String({ description: 'Hex colour the Column is rendered with - ie: #ff0000' }),
-    type: Type.Enum(CoreEntityBoardColumn_Type, { description: 'Columns of type nominated are created automatically and cannot be removed' }),
+    type: Type.Enum(CoreEventBoardColumn_Type, { description: 'Columns of type nominated are created automatically and cannot be removed' }),
     position: Type.Integer({ description: 'Horizontal position of the Column relative to the other Columns of the Board' }),
 });
 
-export const CoreEntityBoardEventResponse = Type.Object({
+export const CoreEventBoardEventResponse = Type.Object({
     id: Type.String(),
     created: Type.String(),
     updated: Type.String(),
     board: Type.String({ description: 'Board the Event is placed on' }),
     column: Type.String({ description: 'Column of the Board the Event is placed in' }),
     position: Type.Integer({ description: 'Vertical position of the Event within the Column' }),
-    event: CoreEntityResponse,
+    event: CoreEventResponse,
 });
 
 export const CoreFormResponse = Type.Object({
@@ -278,7 +278,7 @@ export const CoreFormResponseResponse = Type.Object({
 });
 
 /** A Response linked to a Core Event, with the Form it was submitted against embedded */
-export const CoreEntityFormResponse = Type.Object({
+export const CoreEventFormResponse = Type.Object({
     id: Type.String(),
     created: Type.String(),
     updated: Type.String(),
@@ -315,7 +315,7 @@ export const CoreDeviceResponse = Type.Composite([
     }),
 ]);
 
-export const CoreEntityAssignmentResponse = Type.Object({
+export const CoreEventAssignmentResponse = Type.Object({
     id: Type.String(),
     created: Type.String(),
     updated: Type.String(),
@@ -326,7 +326,7 @@ export const CoreEntityAssignmentResponse = Type.Object({
     remarks: Type.String(),
 });
 
-export const CoreEntityEffectResponse = Type.Object({
+export const CoreEventEffectResponse = Type.Object({
     id: Type.String(),
     created: Type.String(),
     updated: Type.String(),
@@ -335,7 +335,7 @@ export const CoreEntityEffectResponse = Type.Object({
     event: Type.String({ description: 'Core Event the Device is acting on' }),
     device: Type.String({ description: 'Core Device acting on the Event' }),
     action: Type.String({ description: 'What the Device is doing - ie: navigate to, loiter' }),
-    status: Type.Enum(CoreEntityEffect_Status),
+    status: Type.Enum(CoreEventEffect_Status),
     metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'Action specific parameters - ie: loiter radius' }),
 });
 
