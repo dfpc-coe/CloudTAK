@@ -29,6 +29,9 @@ export enum WorkerMessageType {
     Connection_Revoked = 'connection:revoked',
 
     Mission_Change_Feature = 'mission:change:feature',
+    // TAK Server 5.9+ Mission Property (key/value) set or removed - see
+    // MissionChangePropertyBody for the payload
+    Mission_Change_Property = 'mission:change:property',
     Mission_Invite = 'mission:invite',
 
     Channel_Change = 'channel:change',
@@ -54,6 +57,18 @@ export enum WorkerMessageType {
     VideoWall_Pong = 'cloudtak:videowall:pong',
     VideoWall_Refresh = 'cloudtak:videowall:refresh',
 }
+
+export type MissionChangePropertyBody = {
+    guid: string;
+    name?: string;
+    changes: Array<{
+        type: 'ADD_CONTENT' | 'REMOVE_CONTENT' | string;
+        key: string;
+        value: string;
+        creatorUid: string;
+        timestamp: string;
+    }>;
+};
 
 export type SyncTriggerReason = 'network' | 'connection';
 
