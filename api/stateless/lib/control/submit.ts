@@ -10,7 +10,8 @@ import { splitEvent, setChannels, setExternalId, DEFAULT_EXTERNAL_SYSTEM } from 
 import type { ExternalId } from '../../../common/models/CoreEntity.js';
 import { splitDevice } from '../../../common/models/CoreDevice.js';
 import { ETLEventAction } from '../../../common/etl-events.js';
-import { notifyCoreEntity } from '../core-entity.js';
+import { notifyCoreEvent } from '../core-event.js';
+import { notifyCoreDevice } from '../core-device.js';
 import type ConfigStateless from '../../config.js';
 
 export interface SubmitOptions {
@@ -62,7 +63,7 @@ export default class SubmitControl {
         if (closing && !createOnly.has('ended')) set.event.ended = END_NOW;
 
         const { id, inserted } = await this.config.pg.transaction(async (tx) => {
-            const row = await this.#upsert(tx, LayerMapping_Destination.COREENTITY, connection, record.external, values.entity, set.entity);
+            const row = await this.#upsert(tx, LayerMapping_Destination.COREEVENT, connection, record.external, values.entity, set.entity);
             await this.#side(tx, CoreEntityEvent, row.id, values.event, set.event);
             await this.#channels(tx, row, channels, inherited, createOnly);
             return row;
@@ -71,7 +72,7 @@ export default class SubmitControl {
         const action = inserted ? ETLEventAction.Create : ETLEventAction.Update;
 
         this.config.models.CoreEntity.augmented_from(id).then((event) => {
-            notifyCoreEntity(this.config, action, event);
+            notifyCoreEvent(this.config, action, event);
         }).catch((err) => {
             console.error(`not ok - failed to notify ${action} of Core Event ${id}:`, err);
         });
@@ -90,11 +91,14 @@ export default class SubmitControl {
         const values = splitDevice(record.values);
         const set = splitDevice(record.set);
 
-        await this.config.pg.transaction(async (tx) => {
+        const { id } = await this.config.pg.transaction(async (tx) => {
             const row = await this.#upsert(tx, LayerMapping_Destination.COREDEVICE, connection, record.external, values.entity, set.entity);
             await this.#side(tx, CoreEntityDevice, row.id, values.device, set.device);
             await this.#channels(tx, row, channels, inherited, createOnly);
+            return row;
         });
+
+        notifyCoreDevice(this.config, id);
     }
 
     /**

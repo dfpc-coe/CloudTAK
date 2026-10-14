@@ -117,7 +117,7 @@ export class ConnectionClient {
 
     destroy(): void {
         if (isCoreEntitySubmitter(this.config)) {
-            this.config.stopEvents();
+            this.config.stopEntities();
         }
 
         this.tak.destroy();
@@ -474,7 +474,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         this.set(connConfig.id, connClient);
 
         if (!this.config.noconnections && isCoreEntitySubmitter(connConfig)) {
-            connConfig.startEvents(tak, api);
+            connConfig.startEntities(tak, api);
         }
 
         tak.on('cot', async (cot: CoT) => {

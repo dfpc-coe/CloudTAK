@@ -3,7 +3,7 @@ import { primaryKey } from 'drizzle-orm/pg-core';
 import { Static } from '@sinclair/typebox';
 import type { ProfileVideoPosition } from './types.js';
 import type { StyleContainer } from './style.js';
-import { CoreEntityLink, CoreEntityStyle, CoreEntityMission } from './types.js';
+import { CoreEntityLink, CoreEntityStyle, CoreEventMission } from './types.js';
 import type { FilterContainer } from './filter.js';
 import type { PaletteFeatureStyle } from '../stateless/lib/palette.js';
 import { Polygon, Point } from 'geojson';
@@ -17,7 +17,7 @@ import {
     BasemapTerrain_Encoding,
     ProfilePaging_Type,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
-    ProfileChatStatus, CoreEntity_Priority, CoreEntityBoardColumn_Type, CoreEntityEffect_Status, LayerMapping_Destination,
+    ProfileChatStatus, CoreEvent_Priority, CoreEventBoardColumn_Type, CoreEventEffect_Status, LayerMapping_Destination,
 } from './enums.js';
 import { bigint, boolean, uuid, numeric, integer, doublePrecision, timestamp, pgTable, serial, varchar, text, unique, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
@@ -33,7 +33,7 @@ export const SpatialRefSys = pgTable('spatial_ref_sys', {
 
 export const CoreEntity = pgTable('core_entity', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
-    kind: text().$type<LayerMapping_Destination>().notNull().default(LayerMapping_Destination.COREENTITY),
+    kind: text().$type<LayerMapping_Destination>().notNull().default(LayerMapping_Destination.COREEVENT),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     username: text().references(() => Profile.username),
@@ -73,9 +73,9 @@ export const CoreEntityEvent = pgTable('core_entity_event', {
     id: uuid().primaryKey().references(() => CoreEntity.id, { onDelete: 'cascade' }),
     started: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     ended: timestamp({ withTimezone: true, mode: 'string' }), // A future time keeps the Event active until then
-    priority: text().$type<CoreEntity_Priority>().notNull().default(CoreEntity_Priority.NONE),
+    priority: text().$type<CoreEvent_Priority>().notNull().default(CoreEvent_Priority.NONE),
     location: text().notNull().default(''), // Human readable location - ie: an address
-    missions: jsonb().$type<Array<Static<typeof CoreEntityMission>>>().notNull().default([]), // TAK Server Missions associated with the Event
+    missions: jsonb().$type<Array<Static<typeof CoreEventMission>>>().notNull().default([]), // TAK Server Missions associated with the Event
 });
 
 /**
@@ -107,7 +107,7 @@ export const CoreEntityChannel = pgTable('core_entity_channel', {
 }));
 
 /** A KanBan Board of Core Events - each Board belongs to a single TAK Channel */
-export const CoreEntityBoard = pgTable('core_entity_board', {
+export const CoreEventBoard = pgTable('core_entity_board', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
@@ -121,15 +121,15 @@ export const CoreEntityBoard = pgTable('core_entity_board', {
 });
 
 /** KanBan style columns of a single Board */
-export const CoreEntityBoardColumn = pgTable('core_entity_board_column', {
+export const CoreEventBoardColumn = pgTable('core_entity_board_column', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    board: uuid().notNull().references(() => CoreEntityBoard.id, { onDelete: 'cascade' }),
+    board: uuid().notNull().references(() => CoreEventBoard.id, { onDelete: 'cascade' }),
     name: text().notNull(),
     description: text().notNull().default(''),
     color: text().notNull().default(''), // Hex colour the Column is rendered with - ie: #ff0000
-    type: text().$type<CoreEntityBoardColumn_Type>().notNull().default(CoreEntityBoardColumn_Type.CUSTOM),
+    type: text().$type<CoreEventBoardColumn_Type>().notNull().default(CoreEventBoardColumn_Type.CUSTOM),
     position: integer().notNull().default(0),
 }, (table) => {
     return {
@@ -138,12 +138,12 @@ export const CoreEntityBoardColumn = pgTable('core_entity_board_column', {
 });
 
 /** Placement of a Core Event in a Column - an Event can only sit in one Column per Board */
-export const CoreEntityBoardEvent = pgTable('core_entity_board_event', {
+export const CoreEventBoardEvent = pgTable('core_entity_board_event', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    board: uuid().notNull().references(() => CoreEntityBoard.id, { onDelete: 'cascade' }),
-    column: uuid().notNull().references(() => CoreEntityBoardColumn.id, { onDelete: 'cascade' }),
+    board: uuid().notNull().references(() => CoreEventBoard.id, { onDelete: 'cascade' }),
+    column: uuid().notNull().references(() => CoreEventBoardColumn.id, { onDelete: 'cascade' }),
     event: uuid().notNull().references(() => CoreEntity.id, { onDelete: 'cascade' }),
     position: integer().notNull().default(0),
 }, table => ({
@@ -151,7 +151,7 @@ export const CoreEntityBoardEvent = pgTable('core_entity_board_event', {
 }));
 
 /** A person assigned to manage a Core Event in some capacity - ie: IC, JAG */
-export const CoreEntityAssignment = pgTable('core_entity_assignment', {
+export const CoreEventAssignment = pgTable('core_entity_assignment', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
@@ -167,7 +167,7 @@ export const CoreEntityAssignment = pgTable('core_entity_assignment', {
 });
 
 /** A Device acting on a Core Event - ie: navigate to, loiter around */
-export const CoreEntityEffect = pgTable('core_entity_effect', {
+export const CoreEventEffect = pgTable('core_entity_effect', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
@@ -176,7 +176,7 @@ export const CoreEntityEffect = pgTable('core_entity_effect', {
     event: uuid().notNull().references(() => CoreEntity.id, { onDelete: 'cascade' }),
     device: uuid().notNull().references(() => CoreEntity.id, { onDelete: 'cascade' }),
     action: text().notNull(),
-    status: text().$type<CoreEntityEffect_Status>().notNull().default(CoreEntityEffect_Status.TASKED),
+    status: text().$type<CoreEventEffect_Status>().notNull().default(CoreEventEffect_Status.TASKED),
     metadata: jsonb().$type<Record<string, unknown>>().notNull().default({}), // Action specific parameters - ie: loiter radius
 });
 
@@ -206,7 +206,7 @@ export const CoreFormColumn = pgTable('core_form_column', {
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     form: uuid().notNull().references(() => CoreForm.id, { onDelete: 'cascade' }),
-    column: uuid().notNull().references(() => CoreEntityBoardColumn.id, { onDelete: 'cascade' }),
+    column: uuid().notNull().references(() => CoreEventBoardColumn.id, { onDelete: 'cascade' }),
     required: boolean().notNull().default(false), // Must the Form be completed for Events in the Column
 }, table => ({
     column_form_idx: unique().on(table.column, table.form),
@@ -227,7 +227,7 @@ export const CoreFormResponse = pgTable('core_form_response', {
 });
 
 /** Links a Core Event to a given Form Response */
-export const CoreEntityResponse = pgTable('core_entity_response', {
+export const CoreEventResponse = pgTable('core_entity_response', {
     event: uuid().notNull().references(() => CoreEntity.id, { onDelete: 'cascade' }),
     response: uuid().notNull().references(() => CoreFormResponse.id, { onDelete: 'cascade' }),
 }, table => ({

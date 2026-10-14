@@ -180,8 +180,8 @@ export default class RemoteHub implements HubClient {
         await this.#call('/feature/refresh', { connection });
     }
 
-    async coreEntitySubmit(event: string): Promise<void> {
-        await this.#call(`/core/event/${encodeURIComponent(event)}`, {});
+    async coreEntitySubmit(entity: string): Promise<void> {
+        await this.#call(`/core/entity/${encodeURIComponent(entity)}`, {});
     }
 
     async geofenceRefresh(): Promise<void> {

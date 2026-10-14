@@ -205,13 +205,13 @@ export default class LocalHub implements HubClient {
         this.config.etlEvents.featureRefresh(connection);
     }
 
-    async coreEntitySubmit(event: string): Promise<void> {
+    async coreEntitySubmit(entity: string): Promise<void> {
         if (this.config.noconnections) return;
 
         const client = this.config.conns.get(0);
         if (!client || !isCoreEntitySubmitter(client.config)) return;
 
-        await client.config.submitEvents(client.tak, client.api, { event });
+        await client.config.submitEntities(client.tak, client.api, { entity });
     }
 
     async geofenceRefresh(): Promise<void> {

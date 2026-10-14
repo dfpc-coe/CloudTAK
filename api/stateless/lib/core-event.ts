@@ -1,5 +1,5 @@
 import type { Static } from '@sinclair/typebox';
-import type { CoreEntityResponse } from '../../common/types.js';
+import type { CoreEventResponse } from '../../common/types.js';
 import type { ETLEventAction } from '../../common/etl-events.js';
 import type ConfigStateless from '../config.js';
 
@@ -9,7 +9,7 @@ import type ConfigStateless from '../config.js';
  * Best effort - a failed immediate submit is recovered by the Admin
  * Connection's next scheduled submit cycle; an ended Event ages out via stale
  */
-export function notifyCoreEntity(config: ConfigStateless, action: ETLEventAction, event: Static<typeof CoreEntityResponse>): void {
+export function notifyCoreEvent(config: ConfigStateless, action: ETLEventAction, event: Static<typeof CoreEventResponse>): void {
     config.hub.coreEntitySubmit(event.id).catch((err) => {
         console.error(`not ok - failed to immediately submit Core Event ${event.id}:`, err);
     });

@@ -1,13 +1,22 @@
 <template>
     <TablerModal size='lg'>
-        <div class='modal-status bg-red' />
+        <div
+            class='modal-status'
+            :class='current === "disclosure" ? "bg-blue" : "bg-red"'
+        />
         <div class='modal-header'>
             <div class='d-flex align-items-center'>
-                <IconInfoSquare
+                <IconMapPin
+                    v-if='current === "disclosure"'
                     :size='28'
                     stroke='1'
                 />
-                <span class='mx-2'>{{ current === 'details' ? 'Welcome to CloudTAK' : 'Permissions' }}</span>
+                <IconInfoSquare
+                    v-else
+                    :size='28'
+                    stroke='1'
+                />
+                <span class='mx-2'>{{ title }}</span>
             </div>
         </div>
         <div class='modal-body'>
@@ -56,9 +65,24 @@
                     </div>
                 </template>
             </template>
+            <template v-else-if='current === "disclosure"'>
+                <p>{{ disclosureLead }}</p>
+
+                <div class='card mb-3'>
+                    <ul class='card-body list-unstyled d-flex flex-column gap-2 mb-0'>
+                        <li>Your location is sent to the TAK server you are connected to and shared with members of your team.</li>
+                        <li>The server's administrator controls whether location data is stored and for how long.</li>
+                        <li>CloudTAK does not use your location for advertising.</li>
+                    </ul>
+                </div>
+
+                <p class='text-secondary mb-0'>
+                    {{ disclosureNext }}
+                </p>
+            </template>
             <template v-else>
                 <p class='text-secondary'>
-                    CloudTAK needs the following permissions to share your position with your team and keep you informed. You can review these later under Settings.
+                    CloudTAK needs the following permissions to keep your team informed. You can review these later under Settings.
                 </p>
 
                 <div
@@ -137,7 +161,32 @@
                     </button>
                 </div>
             </template>
+            <template v-else-if='current === "disclosure"'>
+                <button
+                    class='btn btn-link text-secondary px-0'
+                    :disabled='Boolean(working)'
+                    @click='current = "permissions"'
+                >
+                    Not now
+                </button>
+                <div class='ms-auto'>
+                    <button
+                        class='btn btn-primary'
+                        :disabled='Boolean(working)'
+                        @click='acceptDisclosure'
+                    >
+                        {{ working ? 'Requesting...' : 'Agree and continue' }}
+                    </button>
+                </div>
+            </template>
             <template v-else>
+                <button
+                    class='btn btn-link text-secondary px-0'
+                    :disabled='Boolean(working)'
+                    @click='dismissPermissions'
+                >
+                    Skip for now
+                </button>
                 <div class='ms-auto btn-list'>
                     <button
                         class='btn btn-secondary'
@@ -148,7 +197,8 @@
                     </button>
                     <button
                         class='btn btn-primary'
-                        @click='dismissPermissions'
+                        :disabled='!permissionsSatisfied'
+                        @click='emit("close")'
                     >
                         Done
                     </button>
@@ -159,7 +209,7 @@
 </template>
 
 <script lang='ts'>
-import { isNativePlatform } from '../../../utils/capacitor.ts';
+import { isNativePlatform, isAndroidPlatform, isIOSPlatform } from '../../../utils/capacitor.ts';
 
 export type WarnConfigurationPage = 'details' | 'permissions';
 
@@ -224,7 +274,17 @@ const props = defineProps({
 
 const emit = defineEmits([ 'close' ]);
 
-const current = ref<WarnConfigurationPage>(props.page);
+type ModalPage = WarnConfigurationPage | 'disclosure';
+
+const current = ref<ModalPage>(props.page);
+
+const title = computed(() => {
+    switch (current.value) {
+        case 'details': return 'Welcome to CloudTAK';
+        case 'disclosure': return 'Location access';
+        default: return 'Permissions';
+    }
+});
 
 // --- User Details ---
 
@@ -327,7 +387,9 @@ const permissionDescriptors: Record<string, PermissionDescriptor> = {
     location: {
         key: 'location',
         title: 'Location',
-        description: 'Share your live position with your team on the map.',
+        description: isNativePlatform()
+            ? 'Share your live position with your team, including when the app is closed or not in use.'
+            : 'Share your live position with your team on the map.',
         icon: IconMapPin,
     },
     notification: {
@@ -350,6 +412,28 @@ const permissionItems = computed(() => {
             status: deviceStore.permissions[item.key],
             satisfied: deviceStore.isPermissionSatisfied(item.key),
         }));
+});
+
+const permissionsSatisfied = computed(() => deviceStore.hasRequiredPermissions());
+
+const disclosureLead = computed(() => {
+    return isNativePlatform()
+        ? "CloudTAK collects your device's location, including when the app is closed or not in use, so your team can see your position on the map."
+        : "CloudTAK collects your device's location while it is open in your browser so your team can see your position on the map.";
+});
+
+const disclosureNext = computed(() => {
+    const always = isAndroidPlatform() ? '"Allow all the time"' : '"Always"';
+
+    if (needsNativeSettings(deviceStore.permissions.location)) {
+        return `Next, CloudTAK will open your device settings. Set Location to ${always} to keep sharing your position in the background.`;
+    } else if (isAndroidPlatform()) {
+        return 'Next, Android will ask for location access. Choose "Allow all the time" to keep sharing your position in the background. You can change this anytime in Settings.';
+    } else if (isIOSPlatform()) {
+        return 'Next, iOS will ask for location access. Choose "Allow While Using App", then "Change to Always Allow" to keep sharing your position in the background. You can change this anytime in Settings.';
+    }
+
+    return 'Next, your browser will ask for location access. You can change this anytime in your browser settings.';
 });
 
 function badgeLabel(status: BrowserPermissionState): string {
@@ -412,7 +496,24 @@ async function refreshStatuses(): Promise<void> {
     }
 }
 
+// Location consent is collected on the disclosure page before any system
+// prompt or settings hand-off (Play prominent disclosure requirement).
 async function requestPermission(type: BrowserPermissionType): Promise<void> {
+    if (type === 'location') {
+        error.value = '';
+        current.value = 'disclosure';
+        return;
+    }
+
+    await runRequest(type);
+}
+
+async function acceptDisclosure(): Promise<void> {
+    await runRequest('location');
+    current.value = 'permissions';
+}
+
+async function runRequest(type: BrowserPermissionType): Promise<void> {
     error.value = '';
     working.value = type;
 

@@ -1,10 +1,10 @@
 import { Type } from '@sinclair/typebox';
-import { StandardResponse, CoreEntityAssignmentResponse } from '../../common/types.js';
+import { StandardResponse, CoreEventAssignmentResponse } from '../../common/types.js';
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthResource, AuthResourceAccess } from '../../common/auth.js';
-import { CoreEntityAssignment } from '../../common/schema.js';
+import { CoreEventAssignment } from '../../common/schema.js';
 import type ConfigStateless from '../config.js';
 import EventControl from '../lib/control/event.js';
 import { uniqueViolation } from '../lib/pg-error.js';
@@ -33,7 +33,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
     /** Load an Assignment, ensuring it belongs to the Event in the URL */
     async function loadAssignment(event: string, assignment: string) {
-        const loaded = await config.models.CoreEntityAssignment.from(assignment);
+        const loaded = await config.models.CoreEventAssignment.from(assignment);
         if (loaded.event !== event) throw new Err(404, null, 'Assignment does not belong to this Event');
         return loaded;
     }
@@ -50,13 +50,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             order: Default.Order,
             sort: Type.String({
                 default: 'created',
-                enum: Object.keys(CoreEntityAssignment),
+                enum: Object.keys(CoreEventAssignment),
             }),
             filter: Default.Filter,
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(CoreEntityAssignmentResponse),
+            items: Type.Array(CoreEventAssignmentResponse),
         }),
     }, async (req, res) => {
         try {
@@ -69,7 +69,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const event = await config.models.CoreEntity.augmented_from(req.params.event);
             await eventControl.ensureEventAccess(auth, event, connection);
 
-            const list = await config.models.CoreEntityAssignment.list({
+            const list = await config.models.CoreEventAssignment.list({
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
@@ -92,7 +92,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['event:read', 'assignment:read'], { connection: true }),
         description: 'Get a person assigned to a Core Event',
         params: AssignmentParam,
-        res: CoreEntityAssignmentResponse,
+        res: CoreEventAssignmentResponse,
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
@@ -129,7 +129,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 default: '',
             }),
         }),
-        res: CoreEntityAssignmentResponse,
+        res: CoreEventAssignmentResponse,
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
@@ -143,7 +143,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             if (req.body.uid) await config.models.Profile.from(req.body.uid);
 
-            const assignment = await config.models.CoreEntityAssignment.generate({
+            const assignment = await config.models.CoreEventAssignment.generate({
                 ...req.body,
                 event: req.params.event,
             }).catch(uniqueViolation('Profile is already assigned to this Event'));
@@ -168,7 +168,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             role: Type.Optional(Type.String()),
             remarks: Type.Optional(Type.String()),
         }),
-        res: CoreEntityAssignmentResponse,
+        res: CoreEventAssignmentResponse,
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
@@ -184,7 +184,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             if (req.body.uid) await config.models.Profile.from(req.body.uid);
 
-            const assignment = await config.models.CoreEntityAssignment.commit(req.params.assignment, {
+            const assignment = await config.models.CoreEventAssignment.commit(req.params.assignment, {
                 ...req.body,
                 updated: sql`Now()`,
             }).catch(uniqueViolation('Profile is already assigned to this Event'));
@@ -215,7 +215,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             await loadAssignment(req.params.event, req.params.assignment);
 
-            await config.models.CoreEntityAssignment.delete(req.params.assignment);
+            await config.models.CoreEventAssignment.delete(req.params.assignment);
 
             res.json({ status: 200, message: 'Assignment Deleted' });
         } catch (err) {

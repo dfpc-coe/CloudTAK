@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox';
 import type { TObject, TSchema } from '@sinclair/typebox';
 import { StyleSingle } from './style.js';
-import { LayerMapping_Destination, CoreEntity_Priority } from './enums.js';
+import { LayerMapping_Destination, CoreEvent_Priority } from './enums.js';
 
 export const CoreFeatureSchema = Type.Object(StyleSingle.properties, {
     title: 'Core Feature',
@@ -48,10 +48,10 @@ export const CoreEntityStyleSchema = Type.Object({
  * - `@widget`: input used in place of the one implied by the property type
  * - `@relative`: a date-time a Map may also give as a number of seconds from now
  */
-export const CoreEntitySchema = Type.Object({
+export const CoreEventSchema = Type.Object({
     name: Type.String({ 'title': 'Name', '@icon': 'IconTag', 'description': 'Human readable name of the Event' }),
     type: Type.String({ 'title': 'Type', '@icon': 'IconCategory', '@widget': 'type', 'description': 'MIL-STD-2525E Symbol ID' }),
-    priority: Type.Optional(Type.Unsafe<CoreEntity_Priority>({ 'type': 'string', 'title': 'Priority', '@icon': 'IconFlag', 'description': 'Priority of the Event', 'enum': Object.values(CoreEntity_Priority), 'default': CoreEntity_Priority.NONE })),
+    priority: Type.Optional(Type.Unsafe<CoreEvent_Priority>({ 'type': 'string', 'title': 'Priority', '@icon': 'IconFlag', 'description': 'Priority of the Event', 'enum': Object.values(CoreEvent_Priority), 'default': CoreEvent_Priority.NONE })),
     location: Type.Optional(Type.String({ 'title': 'Location', '@icon': 'IconMapPin', 'description': 'Human readable location - ie: an address' })),
     remarks: Type.Optional(Type.String({ 'title': 'Remarks', '@icon': 'IconBlockquote', 'description': 'Free text remarks about the Event' })),
     started: Type.Optional(Type.String({ 'title': 'Started', '@icon': 'IconCalendarEvent', 'description': 'Time at which the Event started - defaults to the time of creation', 'format': 'date-time' })),
@@ -109,6 +109,6 @@ export function withoutHints<T extends TObject>(schema: T): T {
 /** JSON Schemas of the record types the Server can convert submitted data into */
 export const CoreSchemas: Record<LayerMapping_Destination, TObject> = {
     [LayerMapping_Destination.COREFEATURE]: CoreFeatureSchema,
-    [LayerMapping_Destination.COREENTITY]: CoreEntitySchema,
+    [LayerMapping_Destination.COREEVENT]: CoreEventSchema,
     [LayerMapping_Destination.COREDEVICE]: CoreDeviceSchema,
 };

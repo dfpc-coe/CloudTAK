@@ -586,16 +586,54 @@ test('PATCH: api/core/device/:device - layer token from same connection', async 
     }
 });
 
-test('DELETE: api/core/device/:device - resource token cannot delete', async () => {
+test('DELETE: api/core/device/:device - layer token without device:delete', async () => {
     try {
+        const unscopedToken = 'etl.' + jwt.sign({ access: 'layer', id: 2, internal: true }, 'coe-wildland-fire');
+
         const res = await flight.fetch(`/api/core/device/${machineDeviceId}`, {
             method: 'DELETE',
-            auth: {
-                bearer: connectionToken,
-            },
+            auth: { bearer: unscopedToken },
         }, false);
 
         assert.equal(res.status, 403);
+        assert.equal(res.body.message, 'Layer token does not have the device:delete permission');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('DELETE: api/core/device/:device - connection token cannot delete a user Device', async () => {
+    try {
+        const res = await flight.fetch(`/api/core/device/${deviceId}`, {
+            method: 'DELETE',
+            auth: { bearer: connectionToken },
+        }, false);
+
+        assert.equal(res.status, 403);
+        assert.equal(res.body.message, 'Only the Device creator can delete this Device');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('DELETE: api/core/device/:device - connection token', async () => {
+    try {
+        const res = await flight.fetch(`/api/core/device/${machineDeviceId}`, {
+            method: 'DELETE',
+            auth: { bearer: connectionToken },
+        }, true);
+
+        assert.deepEqual(res.body, {
+            status: 200,
+            message: 'Core Device Deleted',
+        });
+
+        const get = await flight.fetch(`/api/core/device/${machineDeviceId}`, {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, false);
+
+        assert.equal(get.status, 404);
     } catch (err) {
         assert.ifError(err);
     }

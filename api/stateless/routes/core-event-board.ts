@@ -1,10 +1,10 @@
 import { Type, Static } from '@sinclair/typebox';
 import {
     StandardResponse,
-    CoreEntityBoardResponse,
-    CoreEntityBoardColumnResponse,
-    CoreEntityBoardEventResponse,
-    CoreEntityResponse,
+    CoreEventBoardResponse,
+    CoreEventBoardColumnResponse,
+    CoreEventBoardEventResponse,
+    CoreEventResponse,
 } from '../../common/types.js';
 import { CoreEntity } from '../../common/schema.js';
 import { sql } from 'drizzle-orm';
@@ -12,7 +12,7 @@ import { GenericListOrder } from '@openaddresses/batch-generic';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
-import { CoreEntityBoardColumn_Type } from '../../common/enums.js';
+import { CoreEventBoardColumn_Type } from '../../common/enums.js';
 import { ETLEventAction } from '../../common/etl-events.js';
 import type ConfigStateless from '../config.js';
 import BoardControl, {
@@ -65,7 +65,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(CoreEntityBoardResponse),
+            items: Type.Array(CoreEventBoardResponse),
         }),
     }, async (req, res) => {
         try {
@@ -75,7 +75,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             await boardControl.ensureChannelBoard(req.query.channel);
 
-            const boards = await config.models.CoreEntityBoard.list({
+            const boards = await config.models.CoreEventBoard.list({
                 limit: MAX_LIST,
                 where: sql`channel = ${req.query.channel}`,
                 sort: 'name',
@@ -103,14 +103,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             name: Default.NameField,
             description: Type.Optional(Default.DescriptionField),
         }),
-        res: CoreEntityBoardResponse,
+        res: CoreEventBoardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
 
             await boardControl.ensureChannelAccess(user, req.body.channel);
 
-            const board = await config.models.CoreEntityBoard.generate({
+            const board = await config.models.CoreEventBoard.generate({
                 channel: BigInt(req.body.channel),
                 name: req.body.name,
                 description: req.body.description,
@@ -139,7 +139,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(CoreEntityBoardColumnResponse),
+            items: Type.Array(CoreEventBoardColumnResponse),
         }),
     }, async (req, res) => {
         try {
@@ -149,7 +149,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             await boardControl.ensureNominatedColumn(board);
 
-            const columns = await config.models.CoreEntityBoardColumn.list({
+            const columns = await config.models.CoreEventBoardColumn.list({
                 limit: MAX_LIST,
                 where: sql`board = ${board.id}`,
                 sort: 'position',
@@ -185,7 +185,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 description: 'Horizontal position of the Column - defaults to after the existing Columns',
             })),
         }),
-        res: CoreEntityBoardColumnResponse,
+        res: CoreEventBoardColumnResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -194,7 +194,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             let position = req.body.position;
             if (position === undefined) {
-                const existing = await config.models.CoreEntityBoardColumn.list({
+                const existing = await config.models.CoreEventBoardColumn.list({
                     limit: 1,
                     where: sql`board = ${board.id}`,
                     sort: 'position',
@@ -204,12 +204,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 position = existing.items.length ? existing.items[0].position + 1 : 0;
             }
 
-            const column = await config.models.CoreEntityBoardColumn.generate({
+            const column = await config.models.CoreEventBoardColumn.generate({
                 board: board.id,
                 name: req.body.name,
                 description: req.body.description,
                 color: req.body.color,
-                type: CoreEntityBoardColumn_Type.CUSTOM,
+                type: CoreEventBoardColumn_Type.CUSTOM,
                 position,
             });
 
@@ -243,7 +243,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             })),
             position: Type.Optional(Type.Integer({ minimum: 0 })),
         }),
-        res: CoreEntityBoardColumnResponse,
+        res: CoreEventBoardColumnResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -252,7 +252,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             let { column } = access;
 
             if (Object.keys(req.body).length > 0) {
-                column = await config.models.CoreEntityBoardColumn.commit(req.params.column, {
+                column = await config.models.CoreEventBoardColumn.commit(req.params.column, {
                     ...req.body,
                     updated: sql`Now()`,
                 });
@@ -289,11 +289,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const { column, board } = await boardControl.columnAccess(user, req.params.column);
 
-            if (column.type === CoreEntityBoardColumn_Type.NOMINATED) {
+            if (column.type === CoreEventBoardColumn_Type.NOMINATED) {
                 throw new Err(400, null, 'The Nominated Column cannot be deleted');
             }
 
-            await config.models.CoreEntityBoardColumn.delete(req.params.column);
+            await config.models.CoreEventBoardColumn.delete(req.params.column);
 
             boardControl.deliver(
                 config.etlEvents.boardColumn(ETLEventAction.Delete, Number(board.channel), columnResponse(column)),
@@ -322,7 +322,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(CoreEntityBoardEventResponse),
+            items: Type.Array(CoreEventBoardEventResponse),
         }),
     }, async (req, res) => {
         try {
@@ -330,7 +330,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const board = await boardControl.boardAccess(user, req.query.board);
 
-            const placements = await config.models.CoreEntityBoardEvent.list({
+            const placements = await config.models.CoreEventBoardEvent.list({
                 limit: MAX_LIST,
                 where: req.query.column === undefined
                     ? sql`board = ${board.id}`
@@ -339,7 +339,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 order: GenericListOrder.ASC,
             });
 
-            const events = new Map<string, Static<typeof CoreEntityResponse>>();
+            const events = new Map<string, Static<typeof CoreEventResponse>>();
             if (placements.items.length) {
                 const list = await config.models.CoreEntity.augmented_list({
                     limit: placements.items.length,
@@ -351,7 +351,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
             }
 
-            const items: Array<Static<typeof CoreEntityBoardEventResponse>> = [];
+            const items: Array<Static<typeof CoreEventBoardEventResponse>> = [];
             for (const placement of placements.items) {
                 const event = events.get(placement.event);
 
@@ -393,7 +393,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 description: 'Vertical position of the Event within the Column',
             }),
         }),
-        res: CoreEntityBoardEventResponse,
+        res: CoreEventBoardEventResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -406,7 +406,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 throw new Err(400, null, 'The Event is not shared with the Board\'s Channel');
             }
 
-            const existing = await config.models.CoreEntityBoardEvent.list({
+            const existing = await config.models.CoreEventBoardEvent.list({
                 limit: 1,
                 where: sql`board = ${board.id} AND event = ${req.body.event}`,
             });
@@ -419,13 +419,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             let placement;
             if (existing.items.length) {
-                placement = await config.models.CoreEntityBoardEvent.commit(existing.items[0].id, {
+                placement = await config.models.CoreEventBoardEvent.commit(existing.items[0].id, {
                     column: column.id,
                     position: req.body.position,
                     updated: sql`Now()`,
                 });
             } else {
-                placement = await config.models.CoreEntityBoardEvent.generate({
+                placement = await config.models.CoreEventBoardEvent.generate({
                     board: board.id,
                     column: column.id,
                     event: req.body.event,
@@ -469,7 +469,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             })),
             position: Type.Optional(Type.Integer({ minimum: 0 })),
         }),
-        res: CoreEntityBoardEventResponse,
+        res: CoreEventBoardEventResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -480,7 +480,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const moved = req.body.column !== undefined && req.body.column !== placement.column;
 
             if (req.body.column !== undefined) {
-                const column = await config.models.CoreEntityBoardColumn.from(req.body.column);
+                const column = await config.models.CoreEventBoardColumn.from(req.body.column);
 
                 if (column.board !== placement.board) {
                     throw new Err(400, null, 'The Column belongs to a different Board');
@@ -492,7 +492,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (Object.keys(req.body).length > 0) {
-                placement = await config.models.CoreEntityBoardEvent.commit(req.params.placement, {
+                placement = await config.models.CoreEventBoardEvent.commit(req.params.placement, {
                     ...req.body,
                     updated: sql`Now()`,
                 });
@@ -536,7 +536,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const event = await config.models.CoreEntity.augmented_from(placement.event);
 
-            await config.models.CoreEntityBoardEvent.delete(req.params.placement);
+            await config.models.CoreEventBoardEvent.delete(req.params.placement);
 
             rebroadcast(placement.event);
 
@@ -560,7 +560,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 format: 'uuid',
             }),
         }),
-        res: CoreEntityBoardResponse,
+        res: CoreEventBoardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -586,7 +586,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             name: Type.Optional(Default.NameField),
             description: Type.Optional(Default.DescriptionField),
         }),
-        res: CoreEntityBoardResponse,
+        res: CoreEventBoardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -594,7 +594,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             let board = await boardControl.boardAccess(user, req.params.board);
 
             if (Object.keys(req.body).length > 0) {
-                board = await config.models.CoreEntityBoard.commit(req.params.board, {
+                board = await config.models.CoreEventBoard.commit(req.params.board, {
                     ...req.body,
                     updated: sql`Now()`,
                 });
@@ -628,7 +628,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const board = await boardControl.boardAccess(user, req.params.board);
 
-            const boards = await config.models.CoreEntityBoard.list({
+            const boards = await config.models.CoreEventBoard.list({
                 limit: 2,
                 where: sql`channel = ${board.channel}`,
             });
@@ -639,7 +639,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 throw new Err(400, null, 'The last Board of a Channel cannot be deleted');
             }
 
-            await config.models.CoreEntityBoard.delete(req.params.board);
+            await config.models.CoreEventBoard.delete(req.params.board);
 
             boardControl.deliver(config.etlEvents.board(ETLEventAction.Delete, boardResponse(board)), `Board ${board.id}`);
 

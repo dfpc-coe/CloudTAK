@@ -6,14 +6,9 @@ import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { CoreEntity, CoreEntityDevice } from '../schema.js';
 import { LayerMapping_Destination } from '../enums.js';
 import type { PgInsertValue } from 'drizzle-orm/pg-core';
-import { SQL, is, sql, eq, asc, desc, getTableColumns } from 'drizzle-orm';
-import { EntityColumns, EXTERNAL_IDS, legacyExternalId, splitEntity, channelsSubquery } from './CoreEntity.js';
+import { SQL, is, sql, eq, asc, desc } from 'drizzle-orm';
+import { EntityColumns, DeviceColumns, EXTERNAL_IDS, legacyExternalId, splitEntity, channelsSubquery } from './CoreEntity.js';
 import type { WithSQL, Writer } from './CoreEntity.js';
-
-/** Device side table columns - the shared primary key is already selected from core_entity */
-const DeviceColumns = Object.fromEntries(
-    Object.entries(getTableColumns(CoreEntityDevice)).filter(([name]) => name !== 'id'),
-) as Omit<ReturnType<typeof getTableColumns<typeof CoreEntityDevice>>, 'id'>;
 
 const DEVICE_KEYS = new Set(Object.keys(DeviceColumns));
 
