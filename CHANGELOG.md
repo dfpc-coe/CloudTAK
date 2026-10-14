@@ -25,6 +25,10 @@
 
 ### Pending Release
 
+### v13.109.2 - 2026-10-14
+
+- :rocket: change AGOL text to be `API Key` instead of Legacy Key as the new API Keys are submitted the same way just with a max 1 year lifespan
+
 ### v13.109.1 - 2026-10-12
 
 - :bug: Allow Schema UI to represent & edit Array<primitive>

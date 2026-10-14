@@ -2413,7 +2413,7 @@ export interface paths {
                              * @enum {string}
                              */
                             "search::agol::auth_method"?: "oauth2" | "legacy";
-                            /** @description AGOL Search Legacy Token */
+                            /** @description AGOL Search API Key */
                             "search::agol::token"?: string;
                             /** @description AGOL Search OAuth2 Client ID */
                             "search::agol::client_id"?: string;
@@ -2426,7 +2426,7 @@ export interface paths {
                              * @enum {string}
                              */
                             "routing::agol::auth_method"?: "oauth2" | "legacy";
-                            /** @description AGOL Routing Legacy Token */
+                            /** @description AGOL Routing API Key */
                             "routing::agol::token"?: string;
                             /** @description AGOL Routing OAuth2 Client ID */
                             "routing::agol::client_id"?: string;
@@ -2707,7 +2707,7 @@ export interface paths {
                          * @enum {string}
                          */
                         "search::agol::auth_method"?: "oauth2" | "legacy";
-                        /** @description AGOL Search Legacy Token */
+                        /** @description AGOL Search API Key */
                         "search::agol::token"?: string;
                         /** @description AGOL Search OAuth2 Client ID */
                         "search::agol::client_id"?: string;
@@ -2720,7 +2720,7 @@ export interface paths {
                          * @enum {string}
                          */
                         "routing::agol::auth_method"?: "oauth2" | "legacy";
-                        /** @description AGOL Routing Legacy Token */
+                        /** @description AGOL Routing API Key */
                         "routing::agol::token"?: string;
                         /** @description AGOL Routing OAuth2 Client ID */
                         "routing::agol::client_id"?: string;
@@ -2926,7 +2926,7 @@ export interface paths {
                              * @enum {string}
                              */
                             "search::agol::auth_method"?: "oauth2" | "legacy";
-                            /** @description AGOL Search Legacy Token */
+                            /** @description AGOL Search API Key */
                             "search::agol::token"?: string;
                             /** @description AGOL Search OAuth2 Client ID */
                             "search::agol::client_id"?: string;
@@ -2939,7 +2939,7 @@ export interface paths {
                              * @enum {string}
                              */
                             "routing::agol::auth_method"?: "oauth2" | "legacy";
-                            /** @description AGOL Routing Legacy Token */
+                            /** @description AGOL Routing API Key */
                             "routing::agol::token"?: string;
                             /** @description AGOL Routing OAuth2 Client ID */
                             "routing::agol::client_id"?: string;
