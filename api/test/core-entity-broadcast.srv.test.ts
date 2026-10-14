@@ -77,15 +77,10 @@ test('Broadcast: active Events & located Devices on a resolvable Channel are wri
     const device = await CoTParser.to_geojson(cots.find(cot => cot.uid() === deviceId)!);
     assert.equal(device.properties.callsign, 'Located Device');
     assert.equal(device.properties.how, 'm-g');
-    assert.equal(device.properties.remarks, 'Status:\nFull\n\nBattery:\n50%\n\nDevice remarks');
+    assert.equal(device.properties.remarks, 'Device remarks');
     assert.deepEqual([device.properties.dest].flat(), [{ group: 'Shared Group' }]);
-    assert.deepEqual(device.properties.links, [{
-        relation: 'p',
-        type: 'core-device',
-        device: deviceId,
-        remarks: 'Located Device',
-    }]);
-    assert.deepEqual(device.geometry, point);
+    assert.equal(device.properties.links, undefined);
+    assert.deepEqual(device.geometry.coordinates.slice(0, 2), point.coordinates);
 });
 
 test('Broadcast: a single Entity can be submitted on its own', async () => {

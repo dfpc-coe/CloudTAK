@@ -346,6 +346,34 @@ test.describe('Map: interaction', () => {
     });
 });
 
+test.describe('Map: permissions modal', () => {
+    // Fresh context: geolocation is still "prompt", so the modal is shown.
+    test.beforeEach(async ({ map }) => {
+        await map.goto();
+        await map.waitUntilLoaded();
+    });
+
+    test('MAP-22c Request Permission opens the location disclosure before any prompt', async ({ page }) => {
+        const modal = page.getByRole('dialog');
+        await expect(modal.getByText('Permissions', { exact: true })).toBeVisible();
+        await expect(modal.getByRole('button', { name: 'Done' })).toBeDisabled();
+
+        await modal.getByRole('button', { name: 'Request Permission' }).first().click();
+
+        await expect(modal.getByText('Location access')).toBeVisible();
+        await expect(modal.getByText('CloudTAK does not use your location for advertising.')).toBeVisible();
+        await expect(modal.getByRole('button', { name: 'Agree and continue' })).toBeVisible();
+
+        await modal.getByRole('button', { name: 'Not now' }).click();
+
+        await expect(modal.getByText('Permissions', { exact: true })).toBeVisible();
+        await expect(modal.getByRole('button', { name: 'Request Permission' }).first()).toBeVisible();
+
+        await modal.getByRole('button', { name: 'Skip for now' }).click();
+        await expect(modal).toBeHidden();
+    });
+});
+
 test.describe('Map: interaction with mocked GPS', () => {
     // Playwright grants the permission and feeds a fake position; the app's
     // Capacitor Geolocation reads navigator.geolocation on web.

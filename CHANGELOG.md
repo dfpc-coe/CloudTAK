@@ -25,7 +25,8 @@
 
 ### Pending Release
 
-- :tada: The Admin Connection now broadcasts Core Devices as CoT alongside Core Events - one stream over `core_entity` joins both side tables, a located Device carries a `p` link of type `core-device`, and Device create/update/submit trigger an immediate broadcast like Events do (`hub.coreEntitySubmit`)
+- :tada: Permissions modal now shows a location disclosure with explicit consent before the system location prompt (or settings hand-off) on every platform; the location row describes background use on native, and the footer is `Skip for now` / `Refresh` / `Done` with `Done` enabled once required permissions are satisfied
+- :tada: The Admin Connection now broadcasts located Core Devices as CoT alongside Core Events - one stream over `core_entity` joins both side tables, and Device create/update/submit trigger an immediate broadcast like Events do (`hub.coreEntitySubmit`); Device specific CoT details are future work
 - :rocket: Rename Event-specific `core-entity` files & `CoreEntity*` identifiers to `core-event` / `CoreEvent*` (routes, lib, tests, Board/Assignment/Effect/Response tables & models, enums, TypeBox types, `hub.coreEventSubmit`) - the name predated the CoreEntity inheritance model; DB table names & API paths are unchanged
 - :tada: `DELETE /api/core/event/:event` & `DELETE /api/core/device/:device` accept Layer & Connection tokens holding the `event:delete` / `device:delete` permission - a token can only delete records of its own Connection
 

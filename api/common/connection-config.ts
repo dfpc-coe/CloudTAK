@@ -296,27 +296,19 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
                 // broadcast to every Channel the Admin cert can see
                 if (!dest.length) continue;
 
-                // The `p` (parent) Link carries the Entity UUID so a CloudTAK
-                // client can open the record a marker was generated from
                 const links: Array<Record<string, string>> = [];
                 const remarks: string[] = [];
                 let start: string;
                 let stale: number;
 
+                // Device specific CoT details (parent link, status, battery)
+                // are future work - a Device is broadcast as a plain marker
                 if (entity.kind === LayerMapping_Destination.COREDEVICE) {
-                    links.push({
-                        relation: 'p',
-                        type: 'core-device',
-                        device: entity.id,
-                        remarks: entity.name,
-                    });
-
-                    if (entity.status) remarks.push(`Status:\n${entity.status}`);
-                    if (entity.battery !== null) remarks.push(`Battery:\n${entity.battery}%`);
-
                     start = entity.updated;
                     stale = DEVICE_STALE;
                 } else {
+                    // The `p` (parent) Link carries the Event UUID so a CloudTAK
+                    // client can open the Event a marker was generated from
                     links.push({
                         relation: 'p',
                         type: 'core-event',
