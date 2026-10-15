@@ -260,7 +260,7 @@ export default class Subscription {
                 token: opts.missiontoken || ''
             });
 
-            await sub.refresh();
+            await sub.refresh({ refreshRole: false });
 
             if (sub.templateid) {
                 try {
@@ -306,6 +306,12 @@ export default class Subscription {
 
         // Local state is already persisted, announce it even if the PATCH fails
         try {
+            if (body.subscribed !== undefined || body.token !== undefined) {
+                await this.refreshRole().catch((err) => {
+                    console.warn('Failed to refresh mission role', err);
+                });
+            }
+
             if (body.description !== undefined || body.keywords !== undefined || body.groups !== undefined) {
                 const patch: { description?: string; keywords?: string[]; groups?: string[] } = {};
                 if (body.description !== undefined) patch.description = body.description;
@@ -403,19 +409,44 @@ export default class Subscription {
      * Perform a hard refresh of the Mission from the Server
      */
     async refresh(opts?: {
-        refreshMission?: boolean
+        refreshMission?: boolean,
+        refreshRole?: boolean,
     }): Promise<void> {
         if (opts?.refreshMission) {
             await this.fetch();
         }
 
         await Promise.all([
+            opts?.refreshRole === false ? Promise.resolve() : this.refreshRole(),
             this.log.refresh(),
             this.feature.refresh(),
             this.layer.refresh(),
             this.change.refresh(),
         ]);
     };
+
+    /**
+     * Refresh the caller's role from the server - it changes when the user
+     * subscribes, is promoted by an owner, or gains a mission token
+     */
+    async refreshRole(): Promise<MissionRole> {
+        const { data, error } = await server.GET('/api/marti/missions/{:guid}/role', {
+            params: {
+                path: { ':guid': this.guid }
+            },
+            headers: Subscription.headers(this.missiontoken)
+        });
+
+        if (error || !data) throw new Error('Failed to fetch mission role');
+
+        this.role = data as unknown as MissionRole;
+
+        await db.subscription.update(this.guid, {
+            role: JSON.parse(JSON.stringify(this.role)),
+        });
+
+        return this.role;
+    }
 
     async fetch(): Promise<Mission> {
         const { data, error } = await server.GET('/api/marti/missions/{:guid}', {
@@ -553,6 +584,8 @@ export default class Subscription {
         });
 
         if (error) throw new Error('Failed to change user role');
+
+        await this.refreshRole();
     }
 
     async invites(): Promise<MissionInvite[]> {

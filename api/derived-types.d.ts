@@ -25131,8 +25131,8 @@ export interface paths {
                              */
                             "marker-opacity"?: number;
                         };
-                        /** @description TAK Server Channels to share the Event with - at least one is required */
-                        channels: number[];
+                        /** @description TAK Server Channels to share the Event with - required for users, a Connection or Layer token may omit it to share the Event with the Channels of its Connection */
+                        channels?: number[];
                     };
                 };
             };

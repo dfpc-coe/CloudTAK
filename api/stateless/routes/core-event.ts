@@ -8,7 +8,7 @@ import { CoreEntity, CoreEntityEvent } from '../../common/schema.js';
 import { sharedWith, setChannels, setExternalId, toExternalId } from '../../common/models/CoreEntity.js';
 import { CoreEvent_Priority, LayerMapping_Destination } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
-import { userChannels } from '../../common/control/tak-channels.js';
+import { userChannels, connectionChannels } from '../../common/control/tak-channels.js';
 import { notifyCoreEvent } from '../lib/core-event.js';
 import EventControl from '../lib/control/event.js';
 import { placementResponse } from '../lib/control/board.js';
@@ -185,11 +185,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 default: {},
                 description: 'Point styling for the Event',
             }),
-            channels: Type.Array(Type.Integer({ minimum: 0 }), {
+            channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), {
                 uniqueItems: true,
                 minItems: 1,
-                description: 'TAK Server Channels to share the Event with - at least one is required',
-            }),
+                description: 'TAK Server Channels to share the Event with - required for users, a Connection or Layer token may omit it to share the Event with the Channels of its Connection',
+            })),
         }),
         res: CoreEventResponse,
     }, async (req, res) => {
@@ -202,9 +202,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ],
             });
 
-            const { channels, external_id, ...body } = req.body;
+            const { channels: requested, external_id, ...body } = req.body;
 
             const connection = auth instanceof AuthResource ? await resourceConnection(auth) : null;
+
+            let channels = requested;
+            if (!channels) {
+                if (connection === null) throw new Err(400, null, 'channels is required - at least one Channel to share the Event with');
+
+                channels = Array.from(await connectionChannels(config, await config.models.Connection.from(connection)));
+                if (!channels.length) throw new Err(400, null, 'The Connection has no active Channels to share the Event with - provide channels');
+            }
 
             const id = await config.pg.transaction(async (tx) => {
                 const id = await config.models.CoreEntity.generateEvent({
