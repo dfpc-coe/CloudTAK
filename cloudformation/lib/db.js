@@ -121,17 +121,9 @@ export default {
         }
     },
     Outputs: {
-        DB: {
-            Description: 'Postgres Aurora Connection String',
-            Value: cf.join([
-                'postgresql://',
-                cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:username:AWSCURRENT}}'),
-                ':',
-                cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
-                '@',
-                cf.getAtt('DBCluster', 'Endpoint.Address'),
-                ':5432/tak_ps_etl'
-            ])
+        DBEndpoint: {
+            Description: 'Postgres Aurora Cluster Endpoint',
+            Value: cf.getAtt('DBCluster', 'Endpoint.Address')
         }
     }
 };

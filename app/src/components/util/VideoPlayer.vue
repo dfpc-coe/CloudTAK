@@ -37,10 +37,18 @@
         </template>
         <template v-else>
             <div class='position-relative w-100 h-100'>
-                <div
-                    ref='videoContainer'
-                    class='w-100 h-100 live-video'
-                />
+                <live-video-player
+                    :ref='bindPlayer'
+                    class='live-video'
+                >
+                    <live-video-skin class='live-video-skin'>
+                        <video
+                            :ref='bindVideo'
+                            muted
+                            playsinline
+                        />
+                    </live-video-skin>
+                </live-video-player>
 
                 <div
                     v-if='isBuffering'
@@ -63,8 +71,8 @@
  * VideoPlayer - Unified live-stream player used by the Floating Video Pane
  * and the Video Wall, with retry and MediaMTX muxer-restart recovery.
  *
- * video.js provides the player chrome while playback is driven by one of two
- * engines attached to its underlying <video> element:
+ * Video.js 10 (<live-video-player> + <live-video-skin>) provides the player
+ * chrome around a plain <video> element that is driven by one of two engines:
  *   - WebRTC (WHEP) via media-infra - the default for RTSP/RTMP/SRT sources
  *   - HLS via hls.js - the default for proxied HLS sources & the WebRTC fallback
  *
@@ -73,12 +81,12 @@
  * Lease `lease` ID (renewed automatically when expired).
  */
 
-import { ref, shallowRef, onMounted, onUnmounted, nextTick, useTemplateRef } from 'vue';
+import { ref, shallowRef, onMounted, onUnmounted, nextTick, type ComponentPublicInstance } from 'vue';
 import { std, stdurl } from '../../std.ts';
 import type { VideoLeaseResponse, VideoLeaseMetadata } from '../../types.ts';
-import videojs from 'video.js';
-import type Player from 'video.js/dist/types/player';
-import 'video.js/dist/video-js.css';
+import '@videojs/html/live-video/player';
+import '@videojs/html/live-video/skin';
+import { LiveVideoPlayerElement } from '@videojs/html/live-video';
 import Hls from 'hls.js';
 import WhepReader from './video/WhepReader.ts';
 import {
@@ -116,7 +124,10 @@ const emit = defineEmits<{
     error: [error: Error];
 }>();
 
-const videoContainer = useTemplateRef<HTMLDivElement>('videoContainer');
+// Vue owns the player markup - the media element is bound through a function
+// ref so it is prepared before Video.js attaches its store to it
+const videoEl = shallowRef<HTMLVideoElement | undefined>();
+let unsubscribePlayer: (() => void) | undefined;
 
 const loading = ref(true);
 const error = ref<Error | undefined>();
@@ -126,8 +137,7 @@ const maxRetries = ref(3);
 const lastStreamErrorAt = ref<number | undefined>();
 const retryTimeout = ref<number | undefined>();
 
-// Engine instances are never reactive - deep proxies break video.js & hls.js internals
-const player = shallowRef<Player | undefined>();
+// Engine instances are never reactive - deep proxies break hls.js internals
 const hls = shallowRef<Hls | undefined>();
 const whep = shallowRef<WhepReader | undefined>();
 
@@ -166,10 +176,52 @@ function activeProtocol(): PlaybackProtocol | undefined {
 }
 
 function videoElement(): HTMLVideoElement | undefined {
-    if (!player.value || player.value.isDisposed()) return;
+    return videoEl.value;
+}
 
-    const el = player.value.tech(true)?.el();
-    return el instanceof HTMLVideoElement ? el : undefined;
+/**
+ * Expose the media-ui-extensions live-edge properties on the native element
+ * so the skin's Live badge reflects both engines - WebRTC is always at the
+ * edge while HLS reports the hls.js live sync position
+ */
+function bindVideo(el: Element | ComponentPublicInstance | null): void {
+    if (!(el instanceof HTMLVideoElement)) {
+        videoEl.value = undefined;
+        return;
+    }
+
+    Object.defineProperties(el, {
+        targetLiveWindow: { get: () => 0, configurable: true },
+        liveEdgeStart: {
+            get: () => {
+                if (el.srcObject) return 0;
+
+                const position = hls.value?.liveSyncPosition;
+                return typeof position === 'number' ? position : NaN;
+            },
+            configurable: true
+        },
+    });
+
+    videoEl.value = el;
+}
+
+/**
+ * Errors & recovery are surfaced by this component, so dismiss the skin's
+ * error dialog whenever the player store records one
+ */
+function bindPlayer(el: Element | ComponentPublicInstance | null): void {
+    if (unsubscribePlayer) {
+        unsubscribePlayer();
+        unsubscribePlayer = undefined;
+    }
+
+    if (!(el instanceof LiveVideoPlayerElement)) return;
+
+    const { store } = el;
+    unsubscribePlayer = store.subscribe(() => {
+        if (store.error) store.dismissError();
+    });
 }
 
 /**
@@ -365,7 +417,7 @@ function attachVideoEventHandlers(): void {
 }
 
 onUnmounted(async () => {
-    teardownPlayer();
+    destroyEngine();
 
     await deleteLease();
 });
@@ -393,7 +445,7 @@ async function deleteLease(): Promise<void> {
 }
 
 function setError(err: Error): void {
-    teardownPlayer();
+    destroyEngine();
 
     loading.value = false;
     error.value = err;
@@ -408,7 +460,7 @@ function clearRetryTimeout(): void {
 }
 
 /**
- * Stop the active playback engine, leaving the video.js player in place
+ * Stop the active playback engine, leaving the player chrome in place
  */
 function destroyEngine(): void {
     clearBufferMonitoring();
@@ -431,56 +483,13 @@ function destroyEngine(): void {
 }
 
 /**
- * Destroy the engine and the video.js player - Vue only ever manages the
- * container so video.js is free to restructure the DOM beneath it
+ * Bind the media element handlers and start the active engine
  */
-function teardownPlayer(): void {
-    destroyEngine();
-
-    if (player.value) {
-        if (!player.value.isDisposed()) player.value.dispose();
-        player.value = undefined;
-    }
-}
-
-/**
- * Create the video.js player inside the container and start the active engine
- */
-function createPlayer(): void {
+function startPlayback(): void {
     try {
-        if (!player.value || player.value.isDisposed()) {
-            const container = videoContainer.value;
-            if (!container) throw new Error('Video container is not available');
+        if (!videoElement()) throw new Error('Video element is not available');
 
-            container.replaceChildren();
-
-            const el = document.createElement('video');
-            el.className = 'video-js vjs-fill';
-            el.muted = true;
-            el.playsInline = true;
-            container.appendChild(el);
-
-            player.value = videojs(el, {
-                controls: true,
-                autoplay: 'muted',
-                muted: true,
-                playsinline: true,
-                fill: true,
-                liveui: true,
-                errorDisplay: false, // Errors & recovery are surfaced by this component
-                controlBar: {
-                    progressControl: false,
-                    currentTimeDisplay: false,
-                    durationDisplay: false,
-                    remainingTimeDisplay: false,
-                    timeDivider: false,
-                    pictureInPictureToggle: false,
-                },
-            });
-
-            attachVideoEventHandlers();
-        }
-
+        attachVideoEventHandlers();
         startEngine();
     } catch (err) {
         setError(err instanceof Error ? err : new Error(String(err)));
@@ -611,7 +620,7 @@ function createHls(): void {
             maxMaxBufferLength: 600,
             liveSyncDurationCount: 3, // More tolerant of discontinuities
             liveMaxLatencyDurationCount: 10,
-            liveDurationInfinity: true, // Let video.js treat the stream as live
+            liveDurationInfinity: true, // Infinite duration so the player treats the stream as live
             xhrSetup: (xhr: XMLHttpRequest) => {
                 if (username && password) {
                     xhr.setRequestHeader('Authorization', 'Basic ' + btoa(`${username}:${password}`));
@@ -884,7 +893,7 @@ async function requestLeaseStream(leaseId: number): Promise<void> {
 async function requestStream(): Promise<void> {
     loading.value = true;
 
-    teardownPlayer();
+    destroyEngine();
 
     if (!WhepReader.isSupported() && !Hls.isSupported()) {
         setError(new Error('Neither WebRTC nor HLS.js is supported in this browser.'));
@@ -908,7 +917,7 @@ async function requestStream(): Promise<void> {
         if (!error.value && protocolQueue.value.length) {
             retryCount.value = 0;
             nextTick(() => {
-                createPlayer();
+                startPlayback();
             });
         }
     } catch (err) {
@@ -930,14 +939,18 @@ async function requestStream(): Promise<void> {
     max-width: 480px;
 }
 
-.live-video .video-js {
+.live-video {
+    display: block;
     width: 100%;
     height: 100%;
-    background-color: #000;
 }
 
-.live-video .video-js .vjs-tech {
-    object-fit: contain;
+.live-video-skin {
+    width: 100%;
+    height: 100%;
+    --media-object-fit: contain;
+    --media-border-radius: 0;
+    --media-border-color: transparent;
 }
 
 .buffering-overlay {

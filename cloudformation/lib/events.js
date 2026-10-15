@@ -101,11 +101,13 @@ export default {
                         ContainerPort: 5000
                     }],
                     Environment: [
-                        { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'AWS_REGION', Value: cf.region },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
                         { Name: 'API_URL', Value: cf.join(['https://map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]) }
+                    ],
+                    Secrets: [
+                        { Name: 'SigningSecret', ValueFrom: cf.ref('SigningSecret') }
                     ],
                     RestartPolicy: {
                         Enabled: true,

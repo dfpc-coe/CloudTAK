@@ -170,8 +170,7 @@ export default {
                         StackName: cf.stackName,
                         ASSET_BUCKET: cf.ref('AssetBucket'),
                         API_URL: cf.join(['https://map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
-                        PMTILES_URL: cf.join(['https://tiles.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
-                        SigningSecret: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}')
+                        PMTILES_URL: cf.join(['https://tiles.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))])
                     }
                 },
                 Role: cf.getAtt('PMTilesLambdaRole', 'Arn'),
@@ -221,9 +220,16 @@ export default {
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.join('-', [cf.stackName, cf.accountId, cf.region])]),
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.join('-', [cf.stackName, cf.accountId, cf.region]), '/*'])
                             ]
+                        }, {
+                            Effect: 'Allow',
+                            Action: ['secretsmanager:GetSecretValue'],
+                            Resource: [cf.join(['arn:', cf.partition, ':secretsmanager:', cf.region, ':', cf.accountId, ':secret:', cf.stackName, '/api/secret-*'])]
+                        }, {
+                            Effect: 'Allow',
+                            Action: ['kms:Decrypt'],
+                            Resource: [cf.getAtt('KMS', 'Arn')]
                         }]
                     }
-
                 }],
                 ManagedPolicyArns: [
                     cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole']),

@@ -18,6 +18,7 @@
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.726.1",
+        "@aws-sdk/client-secrets-manager": "^3.726.1",
         "@aws-sdk/node-http-handler": "^3.212.0",
         "@mapbox/tile-cover": "^3.0.2",
         "@mapbox/tilebelt": "^2.0.1",
