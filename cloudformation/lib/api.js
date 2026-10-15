@@ -434,6 +434,20 @@ export default {
                                 'logs:DescribeLogStreams'
                             ],
                             Resource: [cf.join(['arn:', cf.partition, ':logs:*:*:*'])]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'secretsmanager:GetSecretValue'
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':secretsmanager:', cf.region, ':', cf.accountId, ':secret:', cf.stackName, '/*'])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'kms:Decrypt'
+                            ],
+                            Resource: [cf.getAtt('KMS', 'Arn')]
                         }]
                     }
                 }],
@@ -470,8 +484,6 @@ export default {
                             Value: cf.join([
                                 'postgresql://',
                                 cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:username:AWSCURRENT}}'),
-                                ':',
-                                cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
                                 '@',
                                 cf.getAtt('DBCluster', 'Endpoint.Address'),
                                 ':5432/tak_ps_etl?sslmode=require'
@@ -493,8 +505,11 @@ export default {
                         { Name: 'SubnetPrivateB', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-private-b'])) },
                         { Name: 'ETLSecurityGroup', Value: cf.ref('ETLSecurityGroup') },
                         { Name: 'NatPublicIPA', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-nat-ip-a'])) },
-                        { Name: 'NatPublicIPB', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-nat-ip-b'])) },
-                        { Name: 'CLOUDTAK_Config_geofence_password', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/geofence}}') }
+                        { Name: 'NatPublicIPB', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-nat-ip-b'])) }
+                    ],
+                    Secrets: [
+                        { Name: 'PGPASSWORD', ValueFrom: cf.join([cf.ref('DBMasterSecret'), ':password::']) },
+                        { Name: 'CLOUDTAK_Config_geofence_password', ValueFrom: cf.ref('GeofenceSecret') }
                     ],
                     RestartPolicy: {
                         Enabled: true,
