@@ -108,8 +108,7 @@ echo "Region: $AwsRegion"
 
 StackInfo=$(deploy info "${Stack}" --profile "${AwsProfile}" --region "${AwsRegion}")
 
-# Postgres connection string (quoted JSON value, as the bastion pg_dump expects).
-POSTGRES=$(echo "$StackInfo" | jq .Outputs.DB)
+DbEndpoint=$(echo "$StackInfo" | jq -r '.Outputs.DBEndpoint // empty')
 
 # Hosted URLs published as stack Outputs.
 ApiUrl=$(echo "$StackInfo" | jq -r '.Outputs.APIURL // empty')
@@ -154,6 +153,19 @@ GeofenceSecret=$(aws secretsmanager get-secret-value \
     --query SecretString --output text \
     --profile "${AwsProfile}" --region "${AwsRegion}" 2>/dev/null || echo "")
 
+if [[ -z "$DbEndpoint" ]]; then
+    echo "not ok - ${FullStack} has no DBEndpoint Output" >&2
+    exit 1
+fi
+
+DbSecret=$(aws secretsmanager get-secret-value \
+    --secret-id "${FullStack}/rds/secret" \
+    --query SecretString --output text \
+    --profile "${AwsProfile}" --region "${AwsRegion}")
+DbUser=$(echo "$DbSecret" | jq -r .username)
+DbPass=$(echo "$DbSecret" | jq -r .password)
+POSTGRES="postgresql://${DbUser}:${DbPass}@${DbEndpoint}:5432/tak_ps_etl"
+
 AssetBucket=$(aws cloudformation describe-stack-resource \
     --stack-name "${FullStack}" \
     --logical-resource-id AssetBucket \
@@ -188,7 +200,7 @@ cd $(pwd)/api
 Dump="${Stack}-latest.dump"
 
 # Owners & grants reference roles that only exist on the deployed database
-if ! ssh "${Stack}-bastion" -t "pg_dump --no-owner --no-privileges -d ${POSTGRES} > ${Dump}"; then
+if ! ssh "${Stack}-bastion" -t "pg_dump --no-owner --no-privileges -d '${POSTGRES}' > ${Dump}"; then
     echo "not ok - pg_dump on ${Stack}-bastion failed" >&2
     exit 1
 fi
