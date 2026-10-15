@@ -1,10 +1,15 @@
 <template>
     <!-- Inline renders only the field so a caller can place it in a row of its own -->
     <component
-        :is='inline ? "div" : PropertyFactRow'
-        :label='inline ? undefined : label'
+        :is='inline || labelPosition === "top" ? "div" : PropertyFactRow'
+        :label='inline || labelPosition === "top" ? undefined : label'
         :class='{ "py-1": !inline }'
     >
+        <label
+            v-if='!inline && labelPosition === "top"'
+            class='form-label'
+            v-text='label'
+        />
         <div>
             <CopyField
                 :model-value='inMode'
@@ -30,7 +35,7 @@ import CopyField from './CopyField.vue';
 import UnitSwitcher from './UnitSwitcher.vue';
 import PropertyFactRow from './PropertyFactRow.vue';
 import { COORD_MODES, formatCoordPair, parseCoordPair, validateCoordPair, type CoordMode } from '../../../utils/coordinateFormat.ts';
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, type PropType } from 'vue';
 
 const props = defineProps({
     label: {
@@ -49,6 +54,11 @@ const props = defineProps({
         type: Boolean,
         description: 'Render only the field - the caller provides the label',
         default: false
+    },
+    labelPosition: {
+        type: String as PropType<'left' | 'top'>,
+        description: 'Place the label beside the field or above it',
+        default: 'left'
     },
     truncate: {
         type: Number,
