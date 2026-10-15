@@ -728,6 +728,81 @@ test('POST: api/core/event - connection token', async () => {
     }
 });
 
+test('POST: api/core/event - 400 for a user without channels', async () => {
+    try {
+        const res = await flight.fetch('/api/core/event', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                name: 'No Channels',
+                type: '10031000001213000000',
+                geometry: {
+                    type: 'Point',
+                    coordinates: [-104.9903, 39.7392],
+                },
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'channels is required - at least one Channel to share the Event with');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('POST: api/core/event - connection token inherits the Channels of the Connection', async () => {
+    try {
+        const groups = [
+            { name: 'Ops', direction: 'IN', created: '2026-01-01', type: 'SYSTEM', bitpos: 4, active: true },
+            { name: 'Ops', direction: 'OUT', created: '2026-01-01', type: 'SYSTEM', bitpos: 4, active: true },
+            { name: 'Inactive', direction: 'IN', created: '2026-01-01', type: 'SYSTEM', bitpos: 6, active: false },
+        ];
+
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
+            if (request.method !== 'GET' || request.url !== '/Marti/api/groups/all?useCache=true') return false;
+
+            response.setHeader('Content-Type', 'application/json');
+            response.write(JSON.stringify({ version: '3', type: 'com.bbn.marti.remote.groups.Group', data: groups }));
+            response.end();
+            return true;
+        });
+        await flight.refreshChannels(1);
+
+        const res = await flight.fetch('/api/core/event', {
+            method: 'POST',
+            auth: {
+                bearer: connectionToken,
+            },
+            body: {
+                name: 'Inherited Channels',
+                type: '10031000001213000000',
+                external_id: { system: 'sensor', value: 'SENSOR-2' },
+                geometry: {
+                    type: 'Point',
+                    coordinates: [-104.9903, 39.7392],
+                },
+            },
+        }, true);
+
+        assert.equal(res.body.connection, 1);
+        assert.deepEqual(res.body.channels, [4]);
+
+        flight.tak.mockMarti.shift();
+        await flight.refreshChannels(1);
+
+        await flight.fetch(`/api/core/event/${res.body.id}`, {
+            method: 'DELETE',
+            auth: {
+                bearer: connectionToken,
+            },
+        }, true);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: api/core/event - connection token scoped to own events', async () => {
     try {
         const res = await flight.fetch('/api/core/event', {
