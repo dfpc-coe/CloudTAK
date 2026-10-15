@@ -25,6 +25,8 @@
 
 ### Pending Release
 
+### v13.110.2 - 2026-10-15
+
 - :tada: `POST /api/core/event` - `channels` is now optional for Connection & Layer tokens, which share the Event with the Channels of their Connection when it is omitted, matching the Layer Mapping submit path
 
 ### v13.110.1 - 2026-10-15
