@@ -35,7 +35,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 if (!process.env.SigningSecret && process.env.StackName) {
     const secrets = new SecretsManagerClient({ region: process.env.AWS_REGION });
     const secret = await secrets.send(new GetSecretValueCommand({
-        SecretId: `${process.env.StackName}/api/secret`
+        SecretId: `${process.env.StackName}/api/secret`,
     }));
     process.env.SigningSecret = secret.SecretString;
 }
