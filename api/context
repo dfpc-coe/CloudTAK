@@ -109,7 +109,23 @@ echo "Region: $AwsRegion"
 StackInfo=$(deploy info "${Stack}" --profile "${AwsProfile}" --region "${AwsRegion}")
 
 # Postgres connection string (quoted JSON value, as the bastion pg_dump expects).
-POSTGRES=$(echo "$StackInfo" | jq .Outputs.DB)
+# The password is read from the RDS secret rather than published as a stack Output.
+DbEndpoint=$(echo "$StackInfo" | jq -r '.Outputs.DBEndpoint // empty')
+if [[ -z "$DbEndpoint" ]]; then
+    echo "not ok - ${Stack} has no DBEndpoint output" >&2
+    exit 1
+fi
+
+DbSecret=$(aws secretsmanager get-secret-value \
+    --secret-id "${Stack}/rds/secret" \
+    --profile "${AwsProfile}" --region "${AwsRegion}" \
+    --query SecretString --output text)
+
+POSTGRES=$(jq -n \
+    --arg u "$(jq -r .username <<< "$DbSecret")" \
+    --arg p "$(jq -r .password <<< "$DbSecret")" \
+    --arg h "$DbEndpoint" \
+    '"postgresql://\($u):\($p)@\($h):5432/tak_ps_etl"')
 
 # Hosted URLs published as stack Outputs.
 ApiUrl=$(echo "$StackInfo" | jq -r '.Outputs.APIURL // empty')

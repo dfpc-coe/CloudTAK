@@ -11,6 +11,7 @@
 
 # Java class files
 *.class
+.kotlin/
 
 # Generated files
 bin/
