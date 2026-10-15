@@ -90,6 +90,7 @@
             class='position-relative rounded text-truncate'
             :style='{
                 ...(rows === 1 ? { minHeight: `${minheight}px` } : {}),
+                ...(rows === 1 && props.mode !== "pre" ? { paddingRight: `${actionsWidth}px` } : {}),
                 ...(props.mode !== "pre" ? { backgroundColor: "rgba(0, 0, 0, 0.1)" } : {}),
             }'
             :class='{
@@ -289,6 +290,11 @@ const text = ref(props.modelValue);
 const error = ref<string | undefined>()
 
 const infoboxRef = useTemplateRef<HTMLElement>('infobox');
+
+// Right padding so single-row text truncates before the absolutely positioned buttons
+const actionsWidth = computed(() => {
+    return 36 + (props.edit ? 28 : 0) + (props.deletable ? 28 : 0);
+});
 
 const wysiwyg = computed(() => {
     return props.markdown && props.mode === 'text' && props.rows > 1;

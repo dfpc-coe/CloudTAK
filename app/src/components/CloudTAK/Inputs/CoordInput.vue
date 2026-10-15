@@ -25,6 +25,8 @@
 
         <Coordinate
             v-model='config.coordinates'
+            label-position='top'
+            class='mx-2'
             :edit='true'
             :hover='true'
             @submit='submitPoint'

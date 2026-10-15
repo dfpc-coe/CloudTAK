@@ -41,7 +41,9 @@
         <Coordinate
             v-if='coords'
             :model-value='coords'
-            class='py-2'
+            :truncate='6'
+            label-position='top'
+            class='mx-2 py-2'
         />
 
         <template v-if='coords && coords.length >= 2'>

@@ -48,10 +48,9 @@
             </div>
 
             <div class='col-12'>
-                <label class='form-label'>Coordinates</label>
                 <Coordinate
                     v-model='config.coordinates'
-                    :inline='true'
+                    label-position='top'
                     :edit='true'
                     :hover='true'
                 />
