@@ -8,7 +8,7 @@ import type { FeatureCollection } from 'geojson';
 import { bbox } from '@turf/bbox'
 import type { LngLatBoundsLike, LayerSpecification, SourceSpecification, VectorTileSource, RasterTileSource, GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl'
 import cotStyles from '../utils/styles.ts'
-import { std, server } from '../std.js';
+import { server } from '../std.js';
 import { db, type DBOverlay } from '../database.ts';
 import {
     registerTileJSONProtocol,
@@ -79,10 +79,13 @@ export default class Overlay {
         } = {}
     ): Promise<Overlay> {
         if (opts.skipSave !== true) {
-            let ov = await std('/api/profile/overlay', {
-                method: 'POST',
-                body
-            }) as ProfileOverlay;
+            const created = await server.POST('/api/profile/overlay', {
+                body: { ...body, mode_id: body.mode_id ?? undefined, token: body.token ?? undefined }
+            });
+
+            if (created.error) throw new Error(created.error.message);
+
+            let ov: ProfileOverlay = created.data;
 
             if (ov.styles && ov.styles.length) {
                 for (const layer of ov.styles) {
@@ -95,10 +98,14 @@ export default class Overlay {
                 }
             }
 
-            ov = await std(`/api/profile/overlay/${ov.id}`, {
-                method: 'PATCH',
-                body: ov
-            }) as ProfileOverlay;
+            const patched = await server.PATCH('/api/profile/overlay/{:overlay}', {
+                params: { path: { ':overlay': ov.id } },
+                body: { ...ov, mode_id: ov.mode_id ?? undefined }
+            });
+
+            if (patched.error) throw new Error(patched.error.message);
+
+            ov = patched.data;
 
             const overlay = shallowReactive(new Overlay(ov, {
                 internal: opts.internal
@@ -155,7 +162,11 @@ export default class Overlay {
     }
 
     static async load(id: number): Promise<Overlay> {
-        const remote = await std(`/api/profile/overlay/${id}`) as ProfileOverlay;
+        const { data: remote, error } = await server.GET('/api/profile/overlay/{:overlay}', {
+            params: { path: { ':overlay': id } }
+        });
+
+        if (error) throw new Error(error.message);
 
         const ov = await Overlay.create(remote, {
             skipSave: true
@@ -821,20 +832,22 @@ export default class Overlay {
 
         await db.overlay.put(this.toDBOverlay());
 
-        const saved = await std(`/api/profile/overlay/${this.id}`, {
-            method: 'PATCH',
+        const { data: saved, error } = await server.PATCH('/api/profile/overlay/{:overlay}', {
+            params: { path: { ':overlay': this.id } },
             body: {
                 pos: this.pos,
                 name: this.name,
                 type: this.type,
                 active: this.active,
                 opacity: this.opacity,
-                mode_id: this.mode_id,
+                mode_id: this.mode_id ?? undefined,
                 url: this.url,
                 visible: this.visible,
                 styles: dropStyles ? [] : this.styles
             }
-        }) as ProfileOverlay;
+        });
+
+        if (error) throw new Error(error.message);
 
         if (saved.tilejson && JSON.stringify(saved.tilejson) !== JSON.stringify(this.tilejson)) {
             this.tilejson = saved.tilejson;

@@ -1,7 +1,7 @@
 import type Atlas from './atlas.ts';
-import { std } from '../std.ts';
+import { server, bearer } from '../std.ts';
 import { WorkerMessageType, LocationState } from '../utils/events.ts'
-import type { Feature, GroupChannel, Server, Profile, Profile_Update, FeaturePropertyCreator } from '../types.ts';
+import type { Feature, GroupChannel, Server, Profile_Update, FeaturePropertyCreator } from '../types.ts';
 import ProfileConfig from '../base/profile.ts';
 import ServerManager from '../base/server.ts';
 import GroupManager from '../base/group.ts';
@@ -443,11 +443,12 @@ export default class AtlasProfile {
             freqChanged = true;
         }
 
-        const profile = await std('/api/profile', {
-            method: 'PATCH',
-            token: this.atlas.token,
+        const { data: profile, error } = await server.PATCH('/api/profile', {
+            headers: bearer(this.atlas.token),
             body
-        }) as Profile;
+        });
+
+        if (error) throw new Error(error.message);
 
         await ProfileConfig.saveAll(profile);
 

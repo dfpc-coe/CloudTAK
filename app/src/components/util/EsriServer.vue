@@ -202,7 +202,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../std.ts';
+import { server as api } from '../../std.ts';
 import {
     TablerAlert,
     TablerBadge,
@@ -225,7 +225,7 @@ import {
 
 interface EsriToken {
     token: string;
-    expires: string;
+    expires: number;
 }
 
 interface PathItem {
@@ -344,13 +344,20 @@ async function createLayer() {
 
     loading.value = true;
     try {
-        const url = stdurl('/api/esri/server/layer');
-        url.searchParams.set('token', props.token.token);
-        url.searchParams.set('expires', props.token.expires);
-        if (props.portal) url.searchParams.set('portal', props.portal);
-        url.searchParams.set('server', stdurl_local(false) as string);
+        if (!props.portal) throw new Error('A Portal URL is required to create a layer');
 
-        await std(url, { method: 'POST' });
+        const { error } = await api.POST('/api/esri/server/layer', {
+            params: {
+                query: {
+                    token: props.token.token,
+                    expires: props.token.expires,
+                    portal: props.portal,
+                    server: stdurl_local(false) as string
+                }
+            }
+        });
+
+        if (error) throw new Error(error.message);
 
         await getList();
     } catch (error) {
@@ -363,13 +370,20 @@ async function deleteLayer(l: LayerItem) {
 
     loading.value = true;
     try {
-        const url = stdurl('/api/esri/server/layer');
-        if (props.token) url.searchParams.set('token', props.token.token);
-        if (props.token) url.searchParams.set('expires', props.token.expires);
-        if (props.portal) url.searchParams.set('portal', props.portal);
-        url.searchParams.set('server', stdurl_local(false) + '/' + l.id);
+        if (!props.portal) throw new Error('A Portal URL is required to delete a layer');
 
-        await std(url, { method: 'DELETE' });
+        const { error } = await api.DELETE('/api/esri/server/layer', {
+            params: {
+                query: {
+                    token: props.token.token,
+                    expires: props.token.expires,
+                    portal: props.portal,
+                    server: stdurl_local(false) + '/' + l.id
+                }
+            }
+        });
+
+        if (error) throw new Error(error.message);
 
         layer.value = null;
 
@@ -383,16 +397,19 @@ async function deleteLayer(l: LayerItem) {
 async function getList() {
     loading.value = true;
     try {
-        const url = stdurl('/api/esri/server');
+        const { data, error } = await api.GET('/api/esri/server', {
+            params: {
+                query: {
+                    token: props.token?.token,
+                    expires: props.token?.expires,
+                    server: stdurl_local(false) as string
+                }
+            }
+        });
 
-        if (props.token) {
-            url.searchParams.set('token', props.token.token);
-            url.searchParams.set('expires', props.token.expires);
-        }
+        if (error) throw new Error(error.message);
 
-        url.searchParams.set('server', stdurl_local(false) as string);
-
-        const res = await std(url) as Record<string, unknown>;
+        const res = data as Record<string, unknown>;
 
         if (Array.isArray((res as { layers?: unknown[] }).layers)) {
             container.value = res as ContainerType;

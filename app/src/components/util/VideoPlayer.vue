@@ -82,7 +82,7 @@
  */
 
 import { ref, shallowRef, onMounted, onUnmounted, nextTick, type ComponentPublicInstance } from 'vue';
-import { std, stdurl } from '../../std.ts';
+import { server } from '../../std.ts';
 import type { VideoLeaseResponse, VideoLeaseMetadata } from '../../types.ts';
 import '@videojs/html/live-video/player';
 import '@videojs/html/live-video/skin';
@@ -434,9 +434,11 @@ async function deleteLease(): Promise<void> {
     if (!videoLease.value) return;
 
     try {
-        await std(`/api/video/lease/${videoLease.value.id}`, {
-            method: 'DELETE',
+        const { error } = await server.DELETE('/api/video/lease/{:lease}', {
+            params: { path: { ':lease': videoLease.value.id } }
         });
+
+        if (error) throw new Error(error.message);
 
         loading.value = false;
     } catch (err) {
@@ -811,9 +813,13 @@ function handleProtocolExhausted(streamError: Error): void {
  * or by creating a new temporary ephemeral lease
  */
 async function requestUrlStream(url: string): Promise<void> {
-    const active_url = stdurl('/api/video/active');
-    active_url.searchParams.set('url', url);
-    const active = await std(active_url) as {
+    const activeRes = await server.GET('/api/video/active', {
+        params: { query: { url } }
+    });
+
+    if (activeRes.error) throw new Error(activeRes.error.message);
+
+    const active = activeRes.data as {
         leasable: boolean;
         message?: string;
         metadata?: VideoPlayerMetadata & {
@@ -829,17 +835,24 @@ async function requestUrlStream(url: string): Promise<void> {
         emit('metadata', active.metadata);
         loading.value = false;
     } else if (active.leasable) {
-        const lease = await std('/api/video/lease', {
-            method: 'POST',
+        const leaseRes = await server.POST('/api/video/lease', {
             body:  {
                 name: 'Temporary Lease',
                 ephemeral: true, // Hidden from streaming list
                 duration: 1 * 60 * 60, // 1 hour lease
+                permanent: false,
+                recording: false,
+                publish: false,
+                share: false,
+                secure: false,
                 proxy: url
             }
-        }) as VideoLeaseResponse;
+        });
 
-        const { protocols } = await std(`/api/video/lease/${lease.path}/metadata`) as VideoLeaseMetadata;
+        if (leaseRes.error) throw new Error(leaseRes.error.message);
+
+        const lease = leaseRes.data;
+        const { protocols } = await fetchLeaseMetadata(lease.path);
 
         videoLease.value = lease;
         videoProtocols.value = protocols;
@@ -851,27 +864,47 @@ async function requestUrlStream(url: string): Promise<void> {
     }
 }
 
+async function fetchLeaseMetadata(lease: string | number): Promise<VideoLeaseMetadata> {
+    const { data, error } = await server.GET('/api/video/lease/{:lease}/metadata', {
+        params: { path: { ':lease': lease } }
+    });
+
+    if (error) throw new Error(error.message);
+
+    return data;
+}
+
 /**
  * Resolve an existing Video Lease by ID - renewing the lease if it has expired
  */
 async function requestLeaseStream(leaseId: number): Promise<void> {
-    let lease = await std(`/api/video/lease/${leaseId}`) as VideoLeaseResponse;
+    const leaseRes = await server.GET('/api/video/lease/{:lease}', {
+        params: { path: { ':lease': leaseId } }
+    });
+
+    if (leaseRes.error) throw new Error(leaseRes.error.message);
+
+    let lease: VideoLeaseResponse = leaseRes.data;
 
     if (lease.expiration && new Date(lease.expiration).getTime() < Date.now()) {
         try {
-            lease = await std(`/api/video/lease/${leaseId}`, {
-                method: 'PATCH',
+            const renewed = await server.PATCH('/api/video/lease/{:lease}', {
+                params: { path: { ':lease': leaseId } },
                 body: {
                     duration: LEASE_RENEW_DURATION
                 }
-            }) as VideoLeaseResponse;
+            });
+
+            if (renewed.error) throw new Error(renewed.error.message);
+
+            lease = renewed.data;
         } catch (err) {
             // Leases the user cannot manage (ie shared leases) cannot be renewed
             console.error('Could not renew video lease:', err);
         }
     }
 
-    const metadata = await std(`/api/video/lease/${lease.path}/metadata`) as VideoLeaseMetadata;
+    const metadata = await fetchLeaseMetadata(lease.path);
 
     videoProtocols.value = metadata.protocols;
     protocolQueue.value = playbackOrder(metadata.protocols, lease.proxy, WhepReader.isSupported());

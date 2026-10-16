@@ -186,15 +186,7 @@ import {
     IconQuestionMark
 } from '@tabler/icons-vue';
 import StyleLayer from './Layer.vue';
-
-interface StyleLayerDef {
-    id: string;
-    type: string;
-    name?: string;
-    layout: Record<string, unknown>;
-    paint: Record<string, unknown>;
-    [key: string]: unknown;
-}
+import type { StyleLayerDef } from './types.ts';
 
 const props = withDefaults(defineProps<{
     modelValue: StyleLayerDef[];

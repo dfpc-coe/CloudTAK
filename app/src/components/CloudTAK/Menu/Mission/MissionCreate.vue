@@ -188,7 +188,7 @@
                         <div class='col-12'>
                             <TablerEnum
                                 v-model='mission.role'
-                                label='Default Role'
+                                label='Default Subscriber Role'
                                 :options='["Read-Only", "Subscriber", "Owner"]'
                             />
                         </div>
