@@ -25,6 +25,12 @@
 
 ### Pending Release
 
+### v13.111.0 - 2026-10-16
+
+- :rocket: Surface Overlays in Search Box
+- :rocket: Surface Feature Type (and cache it in local client) in FeatureRow
+- :tada: UX overhaul of Search Box
+
 ### v13.110.2 - 2026-10-15
 
 - :tada: `POST /api/core/event` - `channels` is now optional for Connection & Layer tokens, which share the Event with the Channels of their Connection when it is omitted, matching the Layer Mapping submit path
