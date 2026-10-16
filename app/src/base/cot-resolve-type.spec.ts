@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const GET = vi.hoisted(() => vi.fn());
 
-vi.mock('../std.ts', () => ({ server: { GET }, std: vi.fn(), stdurl: (url: string) => url }));
+vi.mock('../std.ts', () => ({ server: { GET }, bearer: () => undefined, stdurl: (url: string) => url }));
 
 import { db } from '../database.ts';
 import COT from './cot.ts';

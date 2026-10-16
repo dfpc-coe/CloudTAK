@@ -1,6 +1,6 @@
 import { v4 as randomUUID } from 'uuid';
 import Type2525 from '@tak-ps/node-cot/2525';
-import { std, server } from '../std.ts';
+import { server, bearer } from '../std.ts';
 import { db, withDbRetry, isDatabaseSuspended, deferFeaturePersist, liveQuery, type DBTaxonomy } from '../database.ts';
 import { bbox } from '@turf/bbox'
 import { length } from '@turf/length'
@@ -10,12 +10,15 @@ import { TEAM_COLORS, strokeColorFor } from '../utils/team-colors.ts';
 import pointOnFeature from '@turf/point-on-feature';
 import { applyEllipseMutation } from './cot/ellipse.ts';
 import type { COTMutation, COTUpdate } from './cot/types.ts';
+import type { paths } from '@cloudtak/api-types';
 import type { Feature, FeaturePropertyCreator, Subscription } from '../types.ts'
 import type {
     BBox as GeoJSONBBox,
     Feature as GeoJSONFeature,
     Geometry as GeoJSONGeometry,
 } from 'geojson'
+
+type ProfileFeatureBody = paths["/api/profile/feature"]["put"]["requestBody"]["content"]["application/json"];
 
 export interface Origin {
     mode: OriginMode,
@@ -408,11 +411,13 @@ export default class COT {
             const tokenEntry = await db.config.get('token');
             if (!tokenEntry) return;
 
-            await std('/api/profile/feature', {
-                method: 'PUT',
-                token: tokenEntry.value as string,
-                body: this.as_feature()
-            })
+            const { error } = await server.PUT('/api/profile/feature', {
+                params: { query: { broadcast: false, submit: false, archive: true } },
+                headers: bearer(tokenEntry.value as string),
+                body: this.as_feature() as ProfileFeatureBody
+            });
+
+            if (error) throw new Error(error.message);
         }
     }
 
@@ -495,9 +500,13 @@ export default class COT {
     async subscription(): Promise<Subscription> {
         if (!this.is_skittle) throw new Error('Username can only be obtained for Users');
 
-        return (await std(`/api/marti/subscription/${this.id}`, {
-            method: 'GET'
-        }) as Subscription);
+        const { data, error } = await server.GET('/api/marti/subscription/{:clientuid}', {
+            params: { path: { ':clientuid': this.id } }
+        });
+
+        if (error) throw new Error(error.message);
+
+        return data;
     }
 
     async username(): Promise<string> {

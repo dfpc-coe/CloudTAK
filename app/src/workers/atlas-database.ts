@@ -3,7 +3,7 @@
 * AtlasConnection - Maintain the WebSocket connection with CloudTAK Server
 */
 
-import { std } from '../std.ts';
+import { server, bearer } from '../std.ts';
 import { db, withDbRetry, isDatabaseSuspended, deferFeaturePersist, takeDeferredFeatureIds } from '../database.ts';
 import type { DBSubscriptionChanges, DBFeature } from '../database.ts';
 import { LngLatBounds } from 'maplibre-gl'
@@ -20,7 +20,7 @@ import type { GeoJSONSourceDiff, LngLatLike } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
 import { isEqual } from '@ver0/deep-equal';
 import type { Polygon } from 'geojson';
-import type { InputFeature, Feature, APIList, Contact } from '../types.ts';
+import type { InputFeature, Feature, Contact } from '../types.ts';
 import type {
     Feature as GeoJSONFeature,
     Geometry as GeoJSONGeometry,
@@ -569,9 +569,22 @@ export default class AtlasDatabase {
         // deleted (hydrate seeds archiveIds; this prunes against it).
         if (this.hydrating) await this.hydrating;
 
-        const archive = await std('/api/profile/feature', {
-            token: this.atlas.token
-        }) as APIList<Feature>;
+        const { data: archive, error } = await server.GET('/api/profile/feature', {
+            params: {
+                query: {
+                    format: 'geojson',
+                    deleted: false,
+                    download: false,
+                    limit: 1000,
+                    sort: 'id',
+                    page: 0,
+                    order: 'asc'
+                }
+            },
+            headers: bearer(this.atlas.token)
+        });
+
+        if (error) throw new Error(error.message);
 
         const serverIds = new Set<string>(archive.items.map((f) => String(f.id)));
 
@@ -673,10 +686,12 @@ export default class AtlasDatabase {
 
             if (cot.properties.archived) {
                 if (!opts.skipNetwork) {
-                    await std(`/api/profile/feature/${id}`, {
-                        token: this.atlas.token,
-                        method: 'DELETE'
+                    const { error } = await server.DELETE('/api/profile/feature/{:id}', {
+                        params: { path: { ':id': id }, query: { permanent: false } },
+                        headers: bearer(this.atlas.token)
                     });
+
+                    if (error) throw new Error(error.message);
                 }
 
                 this.atlas.postMessage({
@@ -1090,9 +1105,9 @@ export default class AtlasDatabase {
         if (cot.geometry.type !== 'Point') return;
 
         try {
-            await std(`/api/core/event/${link.event}`, {
-                method: 'PATCH',
-                token: this.atlas.token,
+            const { error } = await server.PATCH('/api/core/event/{:event}', {
+                params: { path: { ':event': link.event } },
+                headers: bearer(this.atlas.token),
                 body: {
                     geometry: {
                         type: 'Point',
@@ -1100,6 +1115,8 @@ export default class AtlasDatabase {
                     }
                 }
             });
+
+            if (error) throw new Error(error.message);
         } catch (err) {
             console.error(`Failed to sync Core Event geometry for ${cot.id}:`, err);
         }

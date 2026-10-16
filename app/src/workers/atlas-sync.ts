@@ -24,7 +24,7 @@
 */
 
 import type Atlas from './atlas.ts';
-import { std } from '../std.ts';
+import { server, bearer } from '../std.ts';
 import type { Feature, ProfileOverlay } from '../types.ts';
 import { WorkerMessageType } from '../utils/events.ts';
 import type { SyncTriggerReason } from '../utils/events.ts';
@@ -396,16 +396,13 @@ export default class AtlasSync {
      * firing and this fetch) it is removed locally instead.
      */
     private async syncFeature(id: string): Promise<void> {
-        let feat: Feature;
+        const { data: feat, error, response } = await server.GET('/api/profile/feature/{:id}', {
+            params: { path: { ':id': id } },
+            headers: bearer(this.atlas.token)
+        });
 
-        try {
-            feat = await std(`/api/profile/feature/${encodeURIComponent(id)}`, {
-                token: this.atlas.token
-            }) as Feature;
-        } catch (err) {
-            const status = (err as { body?: { status?: number } }).body?.status;
-
-            if (status === 404) {
+        if (error) {
+            if (response.status === 404) {
                 // The feature was deleted after the event was emitted. Drop it
                 // locally without a network delete (skipNetwork) so we don't
                 // re-broadcast a sync event.
@@ -413,9 +410,9 @@ export default class AtlasSync {
                 return;
             }
 
-            // Anything else (network blip, auth, 5xx) must surface - silently
-            // swallowing it makes features appear to never propagate
-            throw err;
+            // Anything else (auth, 5xx) must surface - silently swallowing it
+            // makes features appear to never propagate
+            throw new Error(error.message);
         }
 
         await this.atlas.db.add(feat, { skipSave: true });
