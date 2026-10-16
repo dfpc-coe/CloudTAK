@@ -587,7 +587,7 @@ import FeatureIcon from './util/FeatureIcon.vue';
 import BufferInput from './Inputs/BufferInput.vue';
 import MenuTemplate from './util/MenuTemplate.vue';
 import type COT from '../../base/cot.ts';
-import type { COTType } from '../../types.ts';
+import type { DBTaxonomy } from '../../database.ts';
 import type { Feature } from '../../types.ts';
 import { OriginMode } from '../../base/cot.ts'
 import Subscription from '../../base/subscription.ts'
@@ -699,7 +699,7 @@ const units = ref({
 });
 
 const username = ref<string | undefined>();
-const type = ref<COTType | undefined>();
+const type = ref<DBTaxonomy | undefined>();
 const mode = ref('default');
 
 // PropertyStyle has no read-only mode so the tab only exists for editors
@@ -1072,32 +1072,7 @@ function openBufferInput(): void {
 async function fetchType() {
     if (!cot.value) return;
 
-    if (isSIDCType(cot.value.properties.type)) {
-        const { data, error } = await server.GET('/api/type/2525e/{:sidc}', {
-            params: {
-                path: {
-                    ':sidc': cot.value.properties.type
-                }
-            }
-        });
-        if (error) throw new Error(String(error));
-
-        type.value = {
-            cot: data.sidc,
-            full: data.name,
-            desc: data.remarks
-        };
-    } else {
-        const { data, error } = await server.GET('/api/type/cot/{:type}', {
-            params: {
-                path: {
-                    ':type': cot.value.properties.type
-                }
-            }
-        });
-        if (error) throw new Error(String(error));
-        type.value = data;
-    }
+    type.value = await cot.value.resolveType();
 }
 
 function updatePropertyAttachment(hashes: string[]) {

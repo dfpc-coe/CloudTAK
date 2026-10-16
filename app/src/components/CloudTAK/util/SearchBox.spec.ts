@@ -1,7 +1,11 @@
 import { mount, flushPromises } from '@vue/test-utils';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const GET = vi.fn();
+const flyTo = vi.fn();
+const fitBounds = vi.fn();
+const dbAdd = vi.fn();
+const dbFilter = vi.fn(async () => new Set());
 
 vi.mock('../../../std.ts', () => ({
     server: { GET: (...args: unknown[]) => GET(...args) }
@@ -9,13 +13,25 @@ vi.mock('../../../std.ts', () => ({
 
 vi.mock('../../../stores/map.ts', () => ({
     useMapStore: () => ({
-        map: { getCenter: () => ({ lng: -105, lat: 39.7 }) },
-        worker: { db: { filter: async () => new Set() } }
+        map: {
+            getCenter: () => ({ lng: -105, lat: 39.7 }),
+            flyTo,
+            fitBounds
+        },
+        worker: {
+            db: { filter: dbFilter, add: dbAdd },
+            profile: { creator: async () => ({ uid: 'me', callsign: 'Me', type: 'a-f-G' }) }
+        }
     })
 }));
 
 vi.mock('../../../base/cot.ts', () => ({ default: class COT {} }));
-vi.mock('./FeatureRow.vue', () => ({ default: { template: '<div />' } }));
+vi.mock('./FeatureRow.vue', () => ({
+    default: {
+        props: ['feature'],
+        template: '<div class="feature-row-stub" v-text="feature.properties.callsign" />'
+    }
+}));
 
 import SearchBox from './SearchBox.vue';
 
@@ -34,20 +50,36 @@ const icons: Record<string, string> = {
     postal: 'tabler-icon-mailbox'
 };
 
-async function search(items: Array<{ type?: string, text: string, magicKey: string, isCollection: boolean }>) {
+type Suggestion = { type?: string, text: string, magicKey: string, isCollection: boolean };
+
+async function search(items: Array<Suggestion>, query = 'Denver') {
     GET.mockResolvedValue({ data: { items }, error: undefined });
 
     const wrapper = mount(SearchBox);
 
-    await wrapper.find('input').setValue('Denver');
+    await wrapper.find('input').setValue(query);
+    await vi.advanceTimersByTimeAsync(250);
     await flushPromises();
 
     return wrapper;
 }
 
+function labels(wrapper: ReturnType<typeof mount>) {
+    return wrapper.findAll('[role="option"]').map(row => row.find('.fw-semibold, .feature-row-stub').text());
+}
+
 describe('CloudTAK/util/SearchBox', () => {
+    beforeEach(() => {
+        vi.useFakeTimers();
+    });
+
     afterEach(() => {
+        vi.useRealTimers();
         GET.mockReset();
+        flyTo.mockReset();
+        fitBounds.mockReset();
+        dbAdd.mockReset();
+        dbFilter.mockClear();
     });
 
     it('shows a distinct icon for every search type', async () => {
@@ -58,11 +90,11 @@ describe('CloudTAK/util/SearchBox', () => {
             isCollection: false
         })));
 
-        const rows = wrapper.findAll('.standard-item');
+        const rows = wrapper.findAll('[role="option"]');
         expect(rows).toHaveLength(Object.keys(icons).length);
 
         const rendered = rows.map(row => ({
-            text: row.text(),
+            text: row.find('.fw-semibold').text(),
             icon: row.find('svg').classes().find(name => name.startsWith('tabler-icon-'))
         }));
 
@@ -81,8 +113,143 @@ describe('CloudTAK/util/SearchBox', () => {
             isCollection: false
         }]);
 
-        const rows = wrapper.findAll('.standard-item');
+        const rows = wrapper.findAll('[role="option"]');
         expect(rows).toHaveLength(1);
         expect(rows[0].find('svg').classes()).toContain('tabler-icon-map-pin');
+    });
+
+    it('debounces suggestions until typing pauses', async () => {
+        GET.mockResolvedValue({ data: { items: [] }, error: undefined });
+
+        const wrapper = mount(SearchBox);
+        const input = wrapper.find('input');
+
+        await input.setValue('D');
+        await input.setValue('De');
+        await input.setValue('Den');
+        await vi.advanceTimersByTimeAsync(100);
+
+        expect(GET).not.toHaveBeenCalled();
+
+        await vi.advanceTimersByTimeAsync(200);
+        await flushPromises();
+
+        expect(GET).toHaveBeenCalledTimes(1);
+        expect(GET.mock.calls[0][1].params.query.query).toBe('Den');
+    });
+
+    it('highlights the first result and moves with the arrow keys', async () => {
+        const wrapper = await search([
+            { text: 'Denver, CO', magicKey: 'a', isCollection: false },
+            { text: 'Denver International Airport', magicKey: 'b', isCollection: false },
+            { text: 'Denver Zoo', magicKey: 'c', isCollection: false }
+        ]);
+
+        const input = wrapper.find('input');
+        const active = () => wrapper.find('[aria-selected="true"] .fw-semibold').text();
+
+        expect(active()).toBe('Denver, CO');
+
+        await input.trigger('keydown', { key: 'ArrowDown' });
+        expect(active()).toBe('Denver International Airport');
+
+        await input.trigger('keydown', { key: 'ArrowDown' });
+        await input.trigger('keydown', { key: 'ArrowDown' });
+        expect(active()).toBe('Denver, CO');
+
+        await input.trigger('keydown', { key: 'ArrowUp' });
+        expect(active()).toBe('Denver Zoo');
+    });
+
+    it('selects the highlighted result with Enter', async () => {
+        const wrapper = await search([
+            { text: 'Denver, CO', magicKey: 'a', isCollection: false },
+            { text: 'Denver Zoo', magicKey: 'b', isCollection: false }
+        ]);
+
+        GET.mockResolvedValue({
+            data: {
+                items: [{
+                    address: 'Denver Zoo, 2300 Steele St, Denver, CO',
+                    location: { x: -104.95, y: 39.75 },
+                    score: 100,
+                    attributes: {},
+                    extent: { xmin: -104.96, ymin: 39.74, xmax: -104.94, ymax: 39.76 }
+                }]
+            },
+            error: undefined
+        });
+
+        const input = wrapper.find('input');
+        await input.trigger('keydown', { key: 'ArrowDown' });
+        await input.trigger('keydown', { key: 'Enter' });
+        await flushPromises();
+
+        expect(GET).toHaveBeenLastCalledWith('/api/search/forward', expect.objectContaining({
+            params: { query: expect.objectContaining({ query: 'Denver Zoo', magicKey: 'b' }) }
+        }));
+        expect(fitBounds).toHaveBeenCalledTimes(1);
+        expect(dbAdd).toHaveBeenCalledTimes(1);
+        expect(dbAdd.mock.calls[0][0].properties.callsign).toBe('Denver Zoo');
+
+        expect(wrapper.emitted('select')).toEqual([[{
+            name: 'Denver Zoo, 2300 Steele St, Denver, CO',
+            coordinates: [-104.95, 39.75]
+        }]]);
+
+        expect((input.element as HTMLInputElement).value).toBe('Denver Zoo, 2300 Steele St, Denver, CO');
+        expect(wrapper.find('[role="listbox"]').exists()).toBe(false);
+    });
+
+    it('renders map features with the Feature component and selects them with Enter', async () => {
+        const cot = {
+            id: 'cot-1',
+            properties: { callsign: 'DENVER-1', center: [-104.9, 39.7] },
+            flyTo: vi.fn(async () => undefined)
+        };
+        dbFilter.mockResolvedValueOnce(new Set([cot]) as never);
+
+        const wrapper = await search([
+            { text: 'Denver, CO', magicKey: 'a', isCollection: false }
+        ]);
+
+        expect(labels(wrapper)).toEqual(['DENVER-1', 'Denver, CO']);
+        expect(wrapper.find('.feature-row-stub').text()).toBe('DENVER-1');
+        expect(wrapper.find('[aria-selected="true"] .feature-row-stub').exists()).toBe(true);
+
+        await wrapper.find('input').trigger('keydown', { key: 'Enter' });
+        await flushPromises();
+
+        expect(cot.flyTo).toHaveBeenCalledTimes(1);
+        expect(GET).toHaveBeenCalledTimes(1);
+        expect(wrapper.emitted('select')).toEqual([[{
+            name: 'DENVER-1',
+            coordinates: [-104.9, 39.7]
+        }]]);
+    });
+
+    it('offers a parsed coordinate without calling the search API', async () => {
+        const wrapper = await search([], '39.7392, -104.9903');
+
+        expect(GET).not.toHaveBeenCalled();
+        expect(labels(wrapper)).toEqual(['39.73920, -104.99030']);
+
+        await wrapper.find('input').trigger('keydown', { key: 'Enter' });
+        await flushPromises();
+
+        expect(flyTo).toHaveBeenCalledWith({ center: [-104.9903, 39.7392], zoom: 15 });
+        expect(dbAdd).toHaveBeenCalledTimes(1);
+        expect(wrapper.emitted('select')).toEqual([[{
+            name: '39.73920, -104.99030',
+            coordinates: [-104.9903, 39.7392]
+        }]]);
+    });
+
+    it('renders the panel variant with an empty state and keyboard hints', async () => {
+        const wrapper = mount(SearchBox, { props: { variant: 'panel' } });
+
+        expect(wrapper.find('.search-box--panel').exists()).toBe(true);
+        expect(wrapper.find('.empty').exists()).toBe(true);
+        expect(wrapper.find('.search-box__footer').text()).toContain('Navigate');
     });
 });

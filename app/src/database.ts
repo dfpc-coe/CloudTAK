@@ -261,6 +261,13 @@ export interface DBCache {
     updated: number;
 }
 
+/** Human readable name for a CoT type or MIL-STD-2525 SIDC */
+export interface DBTaxonomy {
+    type: string;
+    name: string;
+    desc: string;
+}
+
 export interface DBSprite {
     /** Sprite id, e.g. 'default' */
     id: string;
@@ -299,7 +306,8 @@ export type DatabaseType = Dexie & {
     profile_file: EntityTable<DBProfileFile, 'id'>,
     config: EntityTable<DBConfig, 'key'>,
     cache: EntityTable<DBCache, 'key'>,
-    contact: EntityTable<Contact, 'uid'>
+    contact: EntityTable<Contact, 'uid'>,
+    taxonomy: EntityTable<DBTaxonomy, 'type'>
 };
 
 export const db = new Dexie('CloudTAK') as DatabaseType;
@@ -347,6 +355,10 @@ db.version(4).stores({
         deleted: false,
         attempts: 0,
     });
+});
+
+db.version(5).stores({
+    taxonomy: 'type',
 });
 
 let reopenPromise: Promise<void> | null = null;

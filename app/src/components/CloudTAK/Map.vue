@@ -251,26 +251,15 @@
             <TablerModal
                 v-if='searchBoxShown'
                 :dismissable='true'
-                @close='searchBoxShown = false'
                 size='lg'
+                @close='searchBoxShown = false'
             >
-                <div class='modal-header'>
-                    <div class='modal-title'>
-                        Search
-                    </div>
-                    <button
-                        type='button'
-                        class='btn-close'
-                        aria-label='Close'
-                        @click='searchBoxShown = false'
-                    />
-                </div>
-                <div class='modal-body'>
-                    <SearchBox
-                        :autofocus='true'
-                        @select='searchBoxShown = false'
-                    />
-                </div>
+                <SearchBox
+                    variant='panel'
+                    placeholder='Search places, coordinates, or callsigns'
+                    :autofocus='true'
+                    @select='searchBoxShown = false'
+                />
             </TablerModal>
 
             <MainMenu
