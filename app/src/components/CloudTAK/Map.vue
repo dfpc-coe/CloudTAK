@@ -256,9 +256,11 @@
             >
                 <SearchBox
                     variant='panel'
-                    placeholder='Search places, coordinates, or callsigns'
+                    placeholder='Search places, overlays, coordinates, or callsigns'
                     :autofocus='true'
+                    :overlays='true'
                     @select='searchBoxShown = false'
+                    @close='searchBoxShown = false'
                 />
             </TablerModal>
 

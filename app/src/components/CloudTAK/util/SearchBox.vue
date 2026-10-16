@@ -161,10 +161,13 @@
 <script setup lang='ts'>
 import { convert } from 'geo-coordinates-parser'
 import { v4 as randomUUID } from 'uuid';
+import { useRouter } from 'vue-router';
 import Feature from './FeatureRow.vue';
 import { server } from '../../../std.ts'
 import { useMapStore } from '../../../stores/map.ts';
 import COT from '../../../base/cot.ts';
+import OverlayManager from '../../../base/overlay.ts';
+import type { DBOverlay } from '../../../database.ts';
 import type { SearchSuggest } from '../../../types.ts';
 import {
     TablerNone,
@@ -184,6 +187,8 @@ import {
     IconMountain,
     IconTrekking,
     IconCrosshair,
+    IconVector,
+    IconCloudPin,
     IconMapSearch,
     IconMapPinStar,
     IconCurrentLocation,
@@ -195,7 +200,7 @@ import type { Component } from 'vue';
 
 type SuggestItem = SearchSuggest['items'][number];
 type SearchType = NonNullable<SuggestItem['type']>;
-type OptionKind = 'coordinate' | 'feature' | 'place';
+type OptionKind = 'coordinate' | 'feature' | 'overlay' | 'place';
 
 type Option = {
     index: number;
@@ -205,6 +210,7 @@ type Option = {
     detail?: string;
     icon: Component;
     cot?: COT;
+    overlay?: DBOverlay;
     coordinates?: [number, number];
     item?: SuggestItem;
 };
@@ -242,8 +248,24 @@ const typeLabels: Record<SearchType, string> = {
 const groupLabels: Record<OptionKind, string> = {
     coordinate: 'Coordinates',
     feature: 'Map Features',
+    overlay: 'Overlays',
     place: 'Places'
 };
+
+function overlayIcon(overlay: DBOverlay): Component {
+    if (overlay.type === 'raster' || overlay.type === 'raster-dem') return IconMap;
+    if (overlay.type === 'geojson' && overlay.mode === 'mission') return IconCloudPin;
+    return IconVector;
+}
+
+function overlayDetail(overlay: DBOverlay): string {
+    let kind = 'Vector';
+    if (overlay.type === 'raster') kind = 'Raster';
+    else if (overlay.type === 'raster-dem') kind = 'Terrain';
+    else if (overlay.type === 'geojson' && overlay.mode === 'mission') kind = 'Data Sync';
+
+    return overlay.visible ? kind : `${kind} · Hidden`;
+}
 
 function typeIcon(type?: SearchType): Component {
     return (type && typeIcons[type]) || IconMapPin;
@@ -273,6 +295,10 @@ const props = defineProps({
     variant: {
         type: String as () => 'dropdown' | 'panel',
         default: 'dropdown'
+    },
+    overlays: {
+        type: Boolean,
+        default: false
     }
 });
 
@@ -280,7 +306,10 @@ const mapStore = useMapStore();
 
 const emit = defineEmits<{
     (e: 'select', value: { name: string, coordinates: [number, number] }): void
+    (e: 'close'): void
 }>();
+
+const router = useRouter();
 
 const listId = `search-box-${randomUUID()}`;
 const isPanel = computed(() => props.variant === 'panel');
@@ -295,6 +324,7 @@ const listRef = ref<HTMLElement | null>(null);
 
 const coordinate = ref<[number, number] | null>(null);
 const cots = ref<Array<COT>>([]);
+const overlayMatches = ref<Array<DBOverlay>>([]);
 const places = ref<Array<SuggestItem>>([]);
 
 const options = computed<Array<Option>>(() => {
@@ -324,6 +354,18 @@ const options = computed<Array<Option>>(() => {
         });
     }
 
+    for (const overlay of overlayMatches.value) {
+        list.push({
+            index: list.length,
+            id: `overlay-${overlay.id}`,
+            kind: 'overlay',
+            label: overlay.name,
+            detail: overlayDetail(overlay),
+            icon: overlayIcon(overlay),
+            overlay
+        });
+    }
+
     for (const item of places.value) {
         list.push({
             index: list.length,
@@ -340,7 +382,7 @@ const options = computed<Array<Option>>(() => {
 });
 
 const groups = computed(() => {
-    return (['coordinate', 'feature', 'place'] as const)
+    return (['coordinate', 'feature', 'overlay', 'place'] as const)
         .map((kind) => ({
             kind,
             label: groupLabels[kind],
@@ -437,6 +479,7 @@ async function search(value: string): Promise<void> {
 
     if (!text || coordinate.value) {
         cots.value = [];
+        overlayMatches.value = [];
         places.value = [];
         loading.value = false;
         return;
@@ -448,11 +491,14 @@ async function search(value: string): Promise<void> {
         const center = mapStore.map.getCenter();
         const needle = text.toLowerCase().replace(/["\\]/g, '\\$&');
 
-        const [features, suggest] = await Promise.all([
+        const [features, matchedOverlays, suggest] = await Promise.all([
             mapStore.worker.db.filter(`$contains($lowercase(properties.callsign), "${needle}")`, {
                 mission: true,
                 limit: 5
             }),
+            props.overlays
+                ? OverlayManager.list({ filter: text, localFirst: true, limit: 5 })
+                : Promise.resolve([]),
             server.GET('/api/search/suggest', {
                 params: {
                     query: {
@@ -470,11 +516,13 @@ async function search(value: string): Promise<void> {
         if (suggest.error) throw new Error(suggest.error.message);
 
         cots.value = Array.from(features);
+        overlayMatches.value = matchedOverlays;
         places.value = suggest.data?.items || [];
     } catch (err) {
         if (current !== sequence) return;
         console.error('Search failed:', err);
         cots.value = [];
+        overlayMatches.value = [];
         places.value = [];
     } finally {
         if (current === sequence) loading.value = false;
@@ -559,6 +607,8 @@ async function select(option: Option, opts: { fly?: boolean } = {}): Promise<voi
         await selectCoordinate(option.coordinates);
     } else if (option.kind === 'feature' && option.cot) {
         await selectFeature(option.cot, opts.fly === true);
+    } else if (option.kind === 'overlay' && option.overlay) {
+        await selectOverlay(option.overlay);
     } else if (option.kind === 'place' && option.item) {
         await selectPlace(option.item);
     }
@@ -581,6 +631,23 @@ async function selectFeature(cot: COT, fly: boolean): Promise<void> {
     if (fly) await cot.flyTo();
 
     applySelection(cot.properties.callsign, [cot.properties.center[0], cot.properties.center[1]]);
+}
+
+async function selectOverlay(overlay: DBOverlay): Promise<void> {
+    const loaded = OverlayManager.loadedFrom(overlay.id);
+
+    selectedLabel.value = overlay.name;
+    filter.value = overlay.name;
+    dismissed.value = true;
+
+    if (!loaded) {
+        await router.push('/menu/overlays');
+    } else {
+        if (!loaded.visible) await loaded.update({ visible: true });
+        if (loaded.hasBounds()) await loaded.zoomTo();
+    }
+
+    emit('close');
 }
 
 async function selectPlace(item: SuggestItem): Promise<void> {

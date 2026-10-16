@@ -2,6 +2,9 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const GET = vi.fn();
+const push = vi.fn();
+const overlayList = vi.fn(async () => [] as unknown[]);
+const loadedFrom = vi.fn();
 const flyTo = vi.fn();
 const fitBounds = vi.fn();
 const dbAdd = vi.fn();
@@ -26,6 +29,13 @@ vi.mock('../../../stores/map.ts', () => ({
 }));
 
 vi.mock('../../../base/cot.ts', () => ({ default: class COT {} }));
+vi.mock('../../../base/overlay.ts', () => ({
+    default: {
+        list: (...args: unknown[]) => overlayList(...args as []),
+        loadedFrom: (id: unknown) => loadedFrom(id)
+    }
+}));
+vi.mock('vue-router', () => ({ useRouter: () => ({ push }) }));
 vi.mock('./FeatureRow.vue', () => ({
     default: {
         props: ['feature'],
@@ -80,6 +90,10 @@ describe('CloudTAK/util/SearchBox', () => {
         fitBounds.mockReset();
         dbAdd.mockReset();
         dbFilter.mockClear();
+        push.mockReset();
+        loadedFrom.mockReset();
+        overlayList.mockReset();
+        overlayList.mockResolvedValue([]);
     });
 
     it('shows a distinct icon for every search type', async () => {
@@ -243,6 +257,62 @@ describe('CloudTAK/util/SearchBox', () => {
             name: '39.73920, -104.99030',
             coordinates: [-104.9903, 39.7392]
         }]]);
+    });
+
+    it('only searches overlays when enabled', async () => {
+        await search([{ text: 'Denver, CO', magicKey: 'a', isCollection: false }]);
+
+        expect(overlayList).not.toHaveBeenCalled();
+    });
+
+    it('lists matching overlays and zooms to a loaded one on Enter', async () => {
+        const overlay = { id: 7, name: 'Denver Parcels', type: 'vector', mode: 'profile', visible: false };
+        overlayList.mockResolvedValue([overlay]);
+
+        const loaded = {
+            visible: false,
+            update: vi.fn(async () => undefined),
+            hasBounds: () => true,
+            zoomTo: vi.fn(async () => undefined)
+        };
+        loadedFrom.mockReturnValue(loaded);
+
+        GET.mockResolvedValue({ data: { items: [] }, error: undefined });
+
+        const wrapper = mount(SearchBox, { props: { overlays: true } });
+        await wrapper.find('input').setValue('Denver');
+        await vi.advanceTimersByTimeAsync(250);
+        await flushPromises();
+
+        expect(overlayList).toHaveBeenCalledWith({ filter: 'Denver', localFirst: true, limit: 5 });
+        expect(labels(wrapper)).toEqual(['Denver Parcels']);
+        expect(wrapper.find('[role="option"] .text-secondary').text()).toBe('Vector · Hidden');
+
+        await wrapper.find('input').trigger('keydown', { key: 'Enter' });
+        await flushPromises();
+
+        expect(loadedFrom).toHaveBeenCalledWith(7);
+        expect(loaded.update).toHaveBeenCalledWith({ visible: true });
+        expect(loaded.zoomTo).toHaveBeenCalledTimes(1);
+        expect(push).not.toHaveBeenCalled();
+        expect(wrapper.emitted('close')).toHaveLength(1);
+    });
+
+    it('opens the overlay menu for an overlay that is not on the map', async () => {
+        overlayList.mockResolvedValue([{ id: 9, name: 'Archived Imagery', type: 'raster', mode: 'profile', visible: true }]);
+        loadedFrom.mockReturnValue(undefined);
+        GET.mockResolvedValue({ data: { items: [] }, error: undefined });
+
+        const wrapper = mount(SearchBox, { props: { overlays: true } });
+        await wrapper.find('input').setValue('Imagery');
+        await vi.advanceTimersByTimeAsync(250);
+        await flushPromises();
+
+        await wrapper.find('[role="option"]').trigger('click');
+        await flushPromises();
+
+        expect(push).toHaveBeenCalledWith('/menu/overlays');
+        expect(wrapper.emitted('close')).toHaveLength(1);
     });
 
     it('renders the panel variant with an empty state and keyboard hints', async () => {
