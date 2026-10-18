@@ -25,6 +25,7 @@
 
 ### Pending Release
 
+- :tada: Layer environment inputs carrying an `@widget: type` hint are edited with the MIL-STD-2525E type picker (requires the pending vue-tabler `TablerSchema` widget slot)
 - :rocket: User rows in feature lists (Search Box, Mission Layers, etc.) use the same `FeatureRow` layout and height as other features, with the team puck in the icon slot and team/role as the subtitle
 - :bug: FeatureServer basemaps now request Esri JSON and nest polygon holes themselves - ArcGIS `f=geojson` flattened multipart holes into standalone polygons, which rendered as double-filled shapes instead of cutouts
 
