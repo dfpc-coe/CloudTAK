@@ -25,6 +25,9 @@
 
 ### Pending Release
 
+- :rocket: User rows in feature lists (Search Box, Mission Layers, etc.) use the same `FeatureRow` layout and height as other features, with the team puck in the icon slot and team/role as the subtitle
+- :bug: FeatureServer basemaps now request Esri JSON and nest polygon holes themselves - ArcGIS `f=geojson` flattened multipart holes into standalone polygons, which rendered as double-filled shapes instead of cutouts
+
 ### v13.111.0 - 2026-10-16
 
 - :rocket: Surface Overlays in Search Box

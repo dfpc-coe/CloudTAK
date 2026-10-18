@@ -30,56 +30,11 @@
             </div>
         </template>
 
-        <template #buttons>
+        <template
+            v-if='embedded'
+            #buttons
+        >
             <TablerIconButton
-                v-if='event && hasMap'
-                title='Zoom To'
-                @click='flyTo'
-            >
-                <IconZoomPan
-                    :size='28'
-                    stroke='1'
-                />
-            </TablerIconButton>
-
-            <TablerIconButton
-                v-if='event && is_editable && hasMap'
-                title='Move Marker'
-                @click='editGeometry'
-            >
-                <IconPencil
-                    :size='28'
-                    stroke='1'
-                />
-            </TablerIconButton>
-
-            <!-- Only the creator can change who is allowed to edit -->
-            <TablerIconButton
-                v-if='event && is_creator'
-                :title='event.editable ? "Disable Editing by Others" : "Allow Editing by Others"'
-                @click='patch({ editable: !event.editable })'
-            >
-                <IconLockOpen
-                    v-if='event.editable'
-                    :size='28'
-                    stroke='1'
-                />
-                <IconLock
-                    v-else
-                    :size='28'
-                    stroke='1'
-                />
-            </TablerIconButton>
-
-            <TablerDelete
-                v-if='event && is_creator'
-                displaytype='icon'
-                :size='28'
-                @delete='deleteEvent'
-            />
-
-            <TablerIconButton
-                v-if='embedded'
                 title='Close'
                 @click='emit("close")'
             >
@@ -105,12 +60,73 @@
             class='d-flex flex-column h-100'
             style='min-height: 0;'
         >
-            <PropertyCoreEntityStatus
-                :active='event.active'
-                :priority='event.priority'
-                :edit='is_editable'
-                @update:active='patch({ active: $event })'
-            />
+            <div class='entity-actions d-flex align-items-center flex-nowrap px-2 py-1 border-bottom cloudtak-header flex-shrink-0'>
+                <TablerIconButton
+                    v-if='hasMap'
+                    title='Zoom To'
+                    @click='flyTo'
+                >
+                    <IconZoomPan
+                        :size='actionIconSize'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <TablerIconButton
+                    v-if='is_editable && hasMap'
+                    title='Move Marker'
+                    @click='editGeometry'
+                >
+                    <IconPencil
+                        :size='actionIconSize'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <TablerIconButton
+                    v-if='is_editable'
+                    :title='event.active ? "End" : "Reactivate"'
+                    @click='patch({ active: !event.active })'
+                >
+                    <IconPlayerStop
+                        v-if='event.active'
+                        :size='actionIconSize'
+                        stroke='1'
+                    />
+                    <IconPlayerPlay
+                        v-else
+                        :size='actionIconSize'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <div class='ms-auto d-flex align-items-center flex-nowrap'>
+                    <!-- Only the creator can change who is allowed to edit -->
+                    <TablerIconButton
+                        v-if='is_creator'
+                        :title='event.editable ? "Disable Editing by Others" : "Allow Editing by Others"'
+                        @click='patch({ editable: !event.editable })'
+                    >
+                        <IconLockOpen
+                            v-if='event.editable'
+                            :size='actionIconSize'
+                            stroke='1'
+                        />
+                        <IconLock
+                            v-else
+                            :size='actionIconSize'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+
+                    <TablerDelete
+                        v-if='is_creator'
+                        displaytype='icon'
+                        :size='actionIconSize'
+                        @delete='deleteEvent'
+                    />
+                </div>
+            </div>
 
             <div
                 v-if='saveError'
@@ -302,6 +318,8 @@ import {
     IconPencil,
     IconZoomPan,
     IconCircleX,
+    IconPlayerStop,
+    IconPlayerPlay,
 } from '@tabler/icons-vue';
 import Type2525 from '@tak-ps/node-cot/2525';
 import MenuTemplate from './util/MenuTemplate.vue';
@@ -313,7 +331,6 @@ import PropertyTabs, { type PropertyTab } from './util/PropertyTabs.vue';
 import PropertyType from './Property/PropertyType.vue';
 import PropertyStyle from './Property/PropertyStyle.vue';
 import PropertyRemarks from './Property/PropertyRemarks.vue';
-import PropertyCoreEntityStatus from './Property/PropertyCoreEntityStatus.vue';
 import PropertyCoreEntityPriority from './Property/PropertyCoreEntityPriority.vue';
 import PropertyCoreEntityDuration from './Property/PropertyCoreEntityDuration.vue';
 import PropertyCoreEntityExternalId from './Property/PropertyCoreEntityExternalId.vue';
@@ -350,6 +367,7 @@ const mapStore = useMapStore();
 const embedded = computed(() => props.eventId !== undefined);
 const eventKey = computed(() => props.eventId ?? String(route.params.event || ''));
 const hasMap = computed(() => !!mapStore._map);
+const actionIconSize = 28;
 
 const event = ref<CoreEntity | undefined>();
 const loading = ref(true);
@@ -765,3 +783,9 @@ async function deleteEvent(): Promise<void> {
 }
 </script>
 
+
+<style scoped>
+.entity-actions :deep(svg) {
+    display: block;
+}
+</style>
