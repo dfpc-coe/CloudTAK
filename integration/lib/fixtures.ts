@@ -61,4 +61,22 @@ export const test = base.extend<Fixtures>({
     },
 });
 
+// First-login onboarding (WarnConfiguration.vue): set the required callsign
+// decline the location disclosure, then skip the permission requests
+// Every step is optional
+export async function completeFirstLoginSetup(page: Page, callsign: string): Promise<void> {
+    const callsignInput = page.getByPlaceholder('Enter your callsign');
+    if (await callsignInput.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await callsignInput.fill(callsign);
+        await page.getByRole('button', { name: 'Get Started' }).click();
+    }
+
+    const notNow = page.getByRole('button', { name: 'Not now' });
+    if (await notNow.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await notNow.click();
+    }
+
+    await skipPermissionsModal(page);
+}
+
 export { expect };

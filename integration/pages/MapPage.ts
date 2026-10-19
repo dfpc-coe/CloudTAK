@@ -96,7 +96,6 @@ export class MapPage {
         'Chats',
         'Routes',
         'Files',
-        'Imports',
         'Iconsets',
         'History',
         'Display Settings',
@@ -115,7 +114,6 @@ export class MapPage {
         'Chats': { route: '/menu/chats', title: 'Chats' },
         'Routes': { route: '/menu/routes', title: 'Routes' },
         'Files': { route: '/menu/files', title: 'Files' },
-        'Imports': { route: '/menu/imports', title: 'Data Imports' },
         'Iconsets': { route: '/menu/iconsets', title: 'Iconsets' },
         'History': { route: '/menu/history', title: 'History' },
         'Display Settings': { route: '/menu/settings', title: 'Settings' },
@@ -187,6 +185,16 @@ export class MapPage {
     async waitUntilLoaded(): Promise<void> {
         await expect(this.canvas.first()).toBeVisible({ timeout: 90_000 });
         await expect(this.loadingModal).toBeHidden({ timeout: 90_000 });
+        await expect.poll(async () => this.page.evaluate(() => {
+            const root = document.querySelector('#app') as (Element & { __vue_app__?: unknown }) | null;
+            const app = root?.__vue_app__ as {
+                config: { globalProperties: { $pinia?: { _s: Map<string, { isMapLoadedFully?: boolean }> } } };
+            } | undefined;
+            return app?.config.globalProperties.$pinia?._s.get('cloudtak')?.isMapLoadedFully === true;
+        }), {
+            timeout: 90_000,
+            message: 'expected mapStore.isMapLoadedFully to be true (overlays loaded, worker init finished)',
+        }).toBe(true);
     }
 
     // Record basemap tile responses (URL template read from the TileJSON). Call BEFORE goto().
