@@ -25,6 +25,8 @@
 
 ### Pending Release
 
+### v13.111.1 - 2026-10-18
+
 - :arrow_up: Update `@tak-ps/maplibre-gl` to 6.15.0 (upstream MapLibre 6.15.0 with the worker restart fork)
 - :rocket: Mouse drag rotate & pitch now turn the map around the point under the pointer (`dragRotate: { around: 'pointer' }`) instead of the map center
 - :tada: Layer environment inputs carrying an `@widget: type` hint are edited with the MIL-STD-2525E type picker (requires the pending vue-tabler `TablerSchema` widget slot)
