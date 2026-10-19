@@ -1203,6 +1203,7 @@ export const useMapStore = defineStore('cloudtak', {
                 bearing: initBearing,
                 center: initCenter.split(',').map(Number) as LngLatLike,
                 maxPitch: 85,
+                dragRotate: { around: 'pointer' },
                 // MapLibre's default of 3px drops mobile taps whose finger drifts mid-tap, so no click event fires
                 clickTolerance: 10,
                 style: {

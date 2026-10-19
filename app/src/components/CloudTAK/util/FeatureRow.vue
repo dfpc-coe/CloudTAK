@@ -3,23 +3,7 @@
         v-if='!isDeleted'
         class='w-100'
     >
-        <Contact
-            v-if='feature.properties.group'
-            class='px-2 py-2 w-100'
-            :button-chat='false'
-            :compact='compact'
-            :contact='{
-                "uid": feature.properties.id,
-                "callsign": feature.properties.callsign,
-                "team": feature.properties.group.name,
-                "notes": "",
-                "role": "",
-                "takv": "",
-                "filterGroups": undefined
-            }'
-        />
         <StandardItem
-            v-else
             class='feature-row w-100 d-flex flex-row gap-3 mb-2 align-items-center px-2 py-2'
             :class='{
                 "cursor-pointer": isZoomable && props.hover,
@@ -44,7 +28,13 @@
                 class='avatar avatar-sm rounded-circle feature-row__icon flex-shrink-0'
                 :title='props.error ? "This change is saved on this device and has not reached the server yet" : undefined'
             >
+                <ContactPuck
+                    v-if='feature.properties.group'
+                    :team='feature.properties.group.name'
+                    :size='20'
+                />
                 <FeatureIcon
+                    v-else
                     :feature='feature'
                     :error='props.error'
                 />
@@ -64,9 +54,9 @@
                     class='fw-semibold text-truncate fst-italic text-secondary'
                 >No Callsign</span>
                 <span
-                    v-if='detail'
+                    v-if='subtitle'
                     class='text-secondary small text-truncate'
-                    v-text='detail'
+                    v-text='subtitle'
                 />
             </div>
 
@@ -123,9 +113,12 @@
 import { useRouter } from 'vue-router';
 import { ref, computed, watch, onMounted } from 'vue';
 import COT from '../../../base/cot.ts';
+import Config from '../../../base/config.ts';
+import type { FullConfig } from '../../../base/config.ts';
+import { TEAM_COLORS } from '../../../utils/team-colors.ts';
 import { FeatureVisibility } from '../../../stores/modules/feature-visibility.ts';
 import FeatureIcon from './FeatureIcon.vue';
-import Contact from './Contact.vue';
+import ContactPuck from './ContactPuck.vue';
 import StandardItem from './StandardItem.vue';
 import {
     TablerDelete,
@@ -177,10 +170,6 @@ const props = defineProps({
     hover: {
         type: Boolean,
         default: true
-    },
-    compact: {
-        type: Boolean,
-        default: true
     }
 });
 
@@ -194,6 +183,24 @@ const isZoomable = ref(false);
 const isHidden = computed(() => FeatureVisibility.isFeatureHidden(props.feature.id));
 
 const detail = ref('');
+const teamName = ref('');
+
+const subtitle = computed(() => {
+    const group = props.feature.properties.group;
+    if (!group) return detail.value;
+
+    return [group.role, teamName.value || group.name].filter(Boolean).join(' · ');
+});
+
+watch(() => props.feature.properties.group?.name, async (team: string | undefined) => {
+    teamName.value = '';
+    if (!team || !(team in TEAM_COLORS)) return;
+
+    const config = await Config.get(`group::${team}` as keyof FullConfig);
+    const name = typeof config?.value === 'string' ? config.value.trim() : '';
+
+    if (props.feature.properties.group?.name === team) teamName.value = name;
+}, { immediate: true });
 
 watch(() => props.feature.properties.type, async (type: string | undefined) => {
     detail.value = type || '';
