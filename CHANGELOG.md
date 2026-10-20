@@ -25,6 +25,10 @@
 
 ### Pending Release
 
+### v13.111.3 - 2026-10-20
+
+- :rocket: Allow global search to search through remarks field
+
 ### v13.111.2 - 2026-10-20
 
 - :bug: FeatureServer basemap tiles derive the Esri quantization tolerance from the tile zoom (one unit per 4096th of the tile width) instead of a fixed 0.001 degrees - the fixed value snapped geometry to a ~100m grid and collapsed most parcels once tiles were requested as Esri JSON, which honours quantization where `f=geojson` ignored it
