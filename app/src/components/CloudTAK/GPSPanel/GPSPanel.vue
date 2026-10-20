@@ -68,6 +68,7 @@
 <script setup lang='ts'>
 import { computed } from 'vue';
 import { LocationState } from '../../../utils/events.ts';
+import { gpsAccuracyColor } from '../../../utils/gps-accuracy.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useAppStore } from '../../../stores/app.ts';
 import { DrawToolMode } from '../../../stores/modules/draw.ts';
@@ -105,10 +106,7 @@ const locationAccuracy = computed(() => {
 
 const locationColor = computed(() => {
     if (!locationAccuracy.value) return 'currentColor';
-    const accuracy = locationAccuracy.value;
-    if (accuracy <= 50) return '#22c55e';
-    if (accuracy <= 200) return '#eab308';
-    return '#ef4444';
+    return gpsAccuracyColor(locationAccuracy.value);
 });
 
 const locationTooltip = computed(() => {
