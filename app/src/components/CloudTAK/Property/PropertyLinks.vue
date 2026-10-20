@@ -240,6 +240,7 @@
                         <TablerBadge
                             v-for='entry of statusSummary'
                             :key='entry.status'
+                            text-color='var(--tblr-body-color)'
                             class='d-flex align-items-center gap-1'
                         >
                             <span>{{ entry.status || 'Unknown' }}:</span>

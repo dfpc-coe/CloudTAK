@@ -229,6 +229,7 @@
                                         <div class='ms-auto d-flex align-items-center'>
                                             <TablerBadge
                                                 v-if='version.deployed'
+                                                text-color='var(--tblr-body-color)'
                                                 class='mx-2'
                                             >
                                                 Deployed

@@ -52,6 +52,7 @@
                         </div>
 
                         <TablerBadge
+                            text-color='var(--tblr-body-color)'
                             class='text-uppercase flex-shrink-0'
                             v-bind='badgeProps(item.status)'
                         >

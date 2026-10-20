@@ -74,13 +74,23 @@ export default class FeatureServerBasemap extends BasemapProtocol {
 
         url.searchParams.set('quantizationParameters', JSON.stringify({
             extent,
-            tolerance: 0.001,
+            tolerance: FeatureServerBasemap.tileTolerance(z),
             mode: 'view',
         }));
 
         url.searchParams.set('geometry', JSON.stringify(extent));
 
         return url;
+    }
+
+    /**
+     * Quantization tolerance in degrees for one unit of a 4096 extent tile
+     * at the given zoom, matching the GeoJSONVT extent used for encoding.
+     *
+     * @param z - Zoom level
+     */
+    static tileTolerance(z: number): number {
+        return 360 / Math.pow(2, z) / 4096;
     }
 
     actions(): Static<typeof TileJSONActions> {
