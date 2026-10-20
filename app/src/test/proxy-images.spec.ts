@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { proxyHtmlImages, featureHtmlDescription } from '../components/CloudTAK/util/proxyImages.ts';
+import { proxyHtmlImages, proxyImageUrl, isImageLink, featureHtmlDescription } from '../components/CloudTAK/util/proxyImages.ts';
 import { stdurl } from '../std.ts';
 
 function imgs(html: string) {
@@ -65,5 +65,39 @@ describe('featureHtmlDescription', () => {
         expect(featureHtmlDescription({ description: 'null' })).toBeNull();
         expect(featureHtmlDescription({})).toBeNull();
         expect(featureHtmlDescription(null)).toBeNull();
+    });
+});
+
+describe('proxyImageUrl', () => {
+    it('proxies remote http(s) URLs with the token', () => {
+        const src = new URL(proxyImageUrl('https://example.com/a.png', 'tok')!);
+        expect(src.pathname).toBe('/api/proxy/image');
+        expect(src.searchParams.get('url')).toBe('https://example.com/a.png');
+        expect(src.searchParams.get('token')).toBe('tok');
+    });
+
+    it('passes same-origin URLs through untouched', () => {
+        const same = stdurl('/api/attachment/abc').href;
+        expect(proxyImageUrl(same, 'tok')).toBe(same);
+    });
+
+    it('returns null for non-http and relative sources', () => {
+        expect(proxyImageUrl('data:image/png;base64,AAAA')).toBeNull();
+        expect(proxyImageUrl('/relative.png')).toBeNull();
+    });
+});
+
+describe('isImageLink', () => {
+    it('uses the mime type when present', () => {
+        expect(isImageLink({ mime: 'image/jpeg', url: 'https://example.com/x' })).toBe(true);
+        expect(isImageLink({ mime: 'text/html', url: 'https://example.com/x.jpg' })).toBe(true);
+        expect(isImageLink({ mime: 'text/html', url: 'https://example.com/x' })).toBe(false);
+    });
+
+    it('falls back to the URL extension', () => {
+        expect(isImageLink({ url: 'https://example.com/x.webp?w=1' })).toBe(true);
+        expect(isImageLink({ url: 'https://example.com/x.pdf' })).toBe(false);
+        expect(isImageLink({ url: 'not a url' })).toBe(false);
+        expect(isImageLink({})).toBe(false);
     });
 });

@@ -25,6 +25,8 @@
 
 ### Pending Release
 
+- :tada: Links section shows `r-u` links to images (by mime or URL extension) as thumbnails loaded through the `/api/proxy/image` API
+
 ### v13.111.1 - 2026-10-18
 
 - :arrow_up: Update `@tak-ps/maplibre-gl` to 6.15.0 (upstream MapLibre 6.15.0 with the worker restart fork)
