@@ -437,6 +437,73 @@ export default class AtlasDatabase {
         }
     }
 
+    /**
+     * Find CoTs whose callsign or remarks contain the query, callsign matches first
+     */
+    async search(
+        query: string,
+        opts: {
+            limit?: number;
+            mission?: boolean,
+        } = {}
+    ): Promise<Set<COT>> {
+        const needle = query.trim().toLowerCase();
+        const byCallsign: Array<COT> = [];
+        const byRemarks: Array<COT> = [];
+
+        if (!needle) return new Set();
+
+        const match = (props: Feature["properties"]): 'callsign' | 'remarks' | null => {
+            if ((props.callsign || '').toLowerCase().includes(needle)) return 'callsign';
+            if ((props.remarks || '').toLowerCase().includes(needle)) return 'remarks';
+            return null;
+        };
+
+        const full = () => opts.limit !== undefined && byCallsign.length >= opts.limit;
+
+        for (const cot of this.cots.values()) {
+            if (full()) break;
+            if (this.pendingDelete.has(cot.id)) continue;
+
+            const hit = match(cot.properties);
+            if (hit === 'callsign') byCallsign.push(cot);
+            else if (hit === 'remarks') byRemarks.push(cot);
+        }
+
+        if (opts.mission && !full()) {
+            for (const sub of await Subscription.localList({
+                subscribed: true
+            })) {
+                if (full()) break;
+
+                const store = await Subscription.from(sub.guid, {
+                    subscribed: true
+                });
+
+                if (!store) continue;
+
+                for (const feat of await store.feature.list()) {
+                    if (full()) break;
+
+                    const hit = match(feat.properties);
+                    if (!hit) continue;
+
+                    const cot = await COT.load(feat, {
+                        mode: OriginMode.MISSION,
+                        mode_id: sub.guid
+                    });
+
+                    if (hit === 'callsign') byCallsign.push(cot);
+                    else byRemarks.push(cot);
+                }
+            }
+        }
+
+        const ranked = byCallsign.concat(byRemarks);
+
+        return new Set(opts.limit === undefined ? ranked : ranked.slice(0, opts.limit));
+    }
+
     async paths(store?: Map<string, COT>): Promise<Array<NestedArray>> {
         if (!store) store = this.cots;
 

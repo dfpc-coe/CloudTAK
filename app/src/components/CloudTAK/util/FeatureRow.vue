@@ -170,6 +170,10 @@ const props = defineProps({
     hover: {
         type: Boolean,
         default: true
+    },
+    detail: {
+        type: String,
+        default: ''
     }
 });
 
@@ -182,12 +186,14 @@ const isZoomable = ref(false);
 
 const isHidden = computed(() => FeatureVisibility.isFeatureHidden(props.feature.id));
 
-const detail = ref('');
+const typeName = ref('');
 const teamName = ref('');
 
 const subtitle = computed(() => {
+    if (props.detail) return props.detail;
+
     const group = props.feature.properties.group;
-    if (!group) return detail.value;
+    if (!group) return typeName.value;
 
     return [group.role, teamName.value || group.name].filter(Boolean).join(' · ');
 });
@@ -203,11 +209,11 @@ watch(() => props.feature.properties.group?.name, async (team: string | undefine
 }, { immediate: true });
 
 watch(() => props.feature.properties.type, async (type: string | undefined) => {
-    detail.value = type || '';
+    typeName.value = type || '';
     if (!type) return;
 
     const resolved = await COT.resolveType(type);
-    if (props.feature.properties.type === type) detail.value = resolved.name;
+    if (props.feature.properties.type === type) typeName.value = resolved.name;
 }, { immediate: true });
 
 function toggleVisibility() {

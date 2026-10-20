@@ -8,7 +8,7 @@ const loadedFrom = vi.fn();
 const flyTo = vi.fn();
 const fitBounds = vi.fn();
 const dbAdd = vi.fn();
-const dbFilter = vi.fn(async () => new Set());
+const dbSearch = vi.fn<(query: string, opts: unknown) => Promise<Set<unknown>>>(async () => new Set());
 
 vi.mock('../../../std.ts', () => ({
     server: { GET: (...args: unknown[]) => GET(...args) }
@@ -22,7 +22,7 @@ vi.mock('../../../stores/map.ts', () => ({
             fitBounds
         },
         worker: {
-            db: { filter: dbFilter, add: dbAdd },
+            db: { search: dbSearch, add: dbAdd },
             profile: { creator: async () => ({ uid: 'me', callsign: 'Me', type: 'a-f-G' }) }
         }
     })
@@ -38,8 +38,8 @@ vi.mock('../../../base/overlay.ts', () => ({
 vi.mock('vue-router', () => ({ useRouter: () => ({ push }) }));
 vi.mock('./FeatureRow.vue', () => ({
     default: {
-        props: ['feature'],
-        template: '<div class="feature-row-stub" v-text="feature.properties.callsign" />'
+        props: ['feature', 'detail'],
+        template: '<div class="feature-row-stub"><span v-text="feature.properties.callsign" /><span v-if="detail" class="feature-row-detail" v-text="detail" /></div>'
     }
 }));
 
@@ -75,7 +75,7 @@ async function search(items: Array<Suggestion>, query = 'Denver') {
 }
 
 function labels(wrapper: ReturnType<typeof mount>) {
-    return wrapper.findAll('[role="option"]').map(row => row.find('.fw-semibold, .feature-row-stub').text());
+    return wrapper.findAll('[role="option"]').map(row => row.find('.fw-semibold, .feature-row-stub > span').text());
 }
 
 describe('CloudTAK/util/SearchBox', () => {
@@ -89,7 +89,7 @@ describe('CloudTAK/util/SearchBox', () => {
         flyTo.mockReset();
         fitBounds.mockReset();
         dbAdd.mockReset();
-        dbFilter.mockClear();
+        dbSearch.mockClear();
         push.mockReset();
         loadedFrom.mockReset();
         overlayList.mockReset();
@@ -221,11 +221,14 @@ describe('CloudTAK/util/SearchBox', () => {
             properties: { callsign: 'DENVER-1', center: [-104.9, 39.7] },
             flyTo: vi.fn(async () => undefined)
         };
-        dbFilter.mockResolvedValueOnce(new Set([cot]) as never);
+        dbSearch.mockResolvedValueOnce(new Set([cot]) as never);
 
         const wrapper = await search([
             { text: 'Denver, CO', magicKey: 'a', isCollection: false }
         ]);
+
+        expect(dbSearch).toHaveBeenCalledTimes(1);
+        expect(dbSearch).toHaveBeenCalledWith('denver', { mission: true, limit: 5 });
 
         expect(labels(wrapper)).toEqual(['DENVER-1', 'Denver, CO']);
         expect(wrapper.find('.feature-row-stub').text()).toBe('DENVER-1');
@@ -240,6 +243,45 @@ describe('CloudTAK/util/SearchBox', () => {
             name: 'DENVER-1',
             coordinates: [-104.9, 39.7]
         }]]);
+    });
+
+    it('lists remark matches after callsign matches with a snippet of the remark', async () => {
+        const byCallsign = {
+            id: 'cot-callsign',
+            properties: { callsign: 'Phone Tree', center: [-104.9, 39.7] }
+        };
+        const byRemarks = {
+            id: 'cot-remarks',
+            properties: {
+                callsign: '123 Main St',
+                remarks: 'Occupant   has a generator.\nPhone: 555-0100, call before 9pm. Has a chainsaw and a truck.',
+                center: [-104.8, 39.6]
+            }
+        };
+        dbSearch.mockResolvedValueOnce(new Set([byCallsign, byRemarks]) as never);
+
+        const wrapper = await search([], 'phone');
+
+        expect(labels(wrapper)).toEqual(['Phone Tree', '123 Main St']);
+
+        const details = wrapper.findAll('.feature-row-detail').map(el => el.text());
+        expect(details).toEqual(['Occupant has a generator. Phone: 555-0100, call before 9pm. Has a chainsaw and a truck.']);
+    });
+
+    it('trims long remarks around the match', async () => {
+        const cot = {
+            id: 'cot-long',
+            properties: {
+                callsign: 'Lot 9',
+                remarks: `${'a'.repeat(50)} needs "water" ${'b'.repeat(80)}`,
+                center: [-104.8, 39.6]
+            }
+        };
+        dbSearch.mockResolvedValueOnce(new Set([cot]) as never);
+
+        const wrapper = await search([], '"water"');
+
+        expect(wrapper.find('.feature-row-detail').text()).toBe(`…${'a'.repeat(23)} needs "water" ${'b'.repeat(59)}…`);
     });
 
     it('offers a parsed coordinate without calling the search API', async () => {

@@ -74,6 +74,7 @@
                         <Feature
                             v-if='option.kind === "feature" && option.cot'
                             :feature='option.cot'
+                            :detail='option.detail'
                             :delete-button='false'
                         />
                         <template v-else>
@@ -126,7 +127,7 @@
                     Search the map
                 </p>
                 <p class='empty-subtitle text-secondary'>
-                    Find places, addresses, coordinates, or features by callsign
+                    Find places, addresses, coordinates, or features by callsign or remarks
                 </p>
             </div>
             <TablerNone
@@ -323,7 +324,7 @@ const activeIndex = ref(0);
 const listRef = ref<HTMLElement | null>(null);
 
 const coordinate = ref<[number, number] | null>(null);
-const cots = ref<Array<COT>>([]);
+const cots = ref<Array<{ cot: COT, detail?: string }>>([]);
 const overlayMatches = ref<Array<DBOverlay>>([]);
 const places = ref<Array<SuggestItem>>([]);
 
@@ -343,12 +344,13 @@ const options = computed<Array<Option>>(() => {
         });
     }
 
-    for (const cot of cots.value) {
+    for (const { cot, detail } of cots.value) {
         list.push({
             index: list.length,
             id: `feature-${cot.id}`,
             kind: 'feature',
             label: cot.properties.callsign || 'No Callsign',
+            detail,
             icon: IconMapPin,
             cot
         });
@@ -471,6 +473,28 @@ function parseCoordinate(value: string): [number, number] | null {
     }
 }
 
+const FEATURE_LIMIT = 5;
+
+function remarksSnippet(remarks: string, needle: string): string {
+    const text = remarks.replace(/\s+/g, ' ').trim();
+    const at = text.toLowerCase().indexOf(needle);
+    if (at === -1) return text;
+
+    const start = Math.max(0, at - 30);
+    const end = Math.min(text.length, at + needle.length + 60);
+
+    return `${start > 0 ? '…' : ''}${text.slice(start, end)}${end < text.length ? '…' : ''}`;
+}
+
+async function searchFeatures(needle: string): Promise<Array<{ cot: COT, detail?: string }>> {
+    const cots = await mapStore.worker.db.search(needle, { mission: true, limit: FEATURE_LIMIT });
+
+    return Array.from(cots, (cot) => {
+        if ((cot.properties.callsign || '').toLowerCase().includes(needle)) return { cot };
+        return { cot, detail: remarksSnippet(cot.properties.remarks || '', needle) };
+    });
+}
+
 async function search(value: string): Promise<void> {
     const current = ++sequence;
     const text = value.trim();
@@ -489,13 +513,9 @@ async function search(value: string): Promise<void> {
 
     try {
         const center = mapStore.map.getCenter();
-        const needle = text.toLowerCase().replace(/["\\]/g, '\\$&');
 
         const [features, matchedOverlays, suggest] = await Promise.all([
-            mapStore.worker.db.filter(`$contains($lowercase(properties.callsign), "${needle}")`, {
-                mission: true,
-                limit: 5
-            }),
+            searchFeatures(text.toLowerCase()),
             props.overlays
                 ? OverlayManager.list({ filter: text, localFirst: true, limit: 5 })
                 : Promise.resolve([]),
@@ -515,7 +535,7 @@ async function search(value: string): Promise<void> {
 
         if (suggest.error) throw new Error(suggest.error.message);
 
-        cots.value = Array.from(features);
+        cots.value = features;
         overlayMatches.value = matchedOverlays;
         places.value = suggest.data?.items || [];
     } catch (err) {
