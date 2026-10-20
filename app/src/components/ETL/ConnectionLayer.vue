@@ -87,6 +87,7 @@
                                 <TablerBadge
                                     v-for='permission in layer.permissions'
                                     :key='permission'
+                                    text-color='var(--tblr-body-color)'
                                     class='me-1 font-monospace'
                                     background-color='rgba(107, 114, 128, 0.15)'
                                     border-color='rgba(107, 114, 128, 0.3)'

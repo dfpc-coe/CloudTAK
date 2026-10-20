@@ -171,7 +171,11 @@
                         label='Hidden'
                         description='Hide this layer from the default list'
                     >
-                        <TablerBadge>admin</TablerBadge>
+                        <TablerBadge
+                            text-color='var(--tblr-body-color)'
+                        >
+                            admin
+                        </TablerBadge>
                     </TablerToggle>
                 </div>
                 <div class='col-12'>
@@ -181,7 +185,11 @@
                         label='Update Frequency (Seconds)'
                         description='How often to refresh the tiles in seconds'
                     >
-                        <TablerBadge>admin</TablerBadge>
+                        <TablerBadge
+                            text-color='var(--tblr-body-color)'
+                        >
+                            admin
+                        </TablerBadge>
                         <TablerToggle
                             :model-value='true'
                             label='Enabled'
@@ -195,7 +203,11 @@
                             description='Automatically refresh the tiles periodically'
                             @click='editing.frequency = 60'
                         >
-                            <TablerBadge>admin</TablerBadge>
+                            <TablerBadge
+                                text-color='var(--tblr-body-color)'
+                            >
+                                admin
+                            </TablerBadge>
                         </TablerToggle>
                     </div>
                 </div>
@@ -210,7 +222,11 @@
                                 label='Enable Snapping'
                                 description='Allow drawing tools to snap to the underlying vector features'
                             >
-                                <TablerBadge>admin</TablerBadge>
+                                <TablerBadge
+                                    text-color='var(--tblr-body-color)'
+                                >
+                                    admin
+                                </TablerBadge>
                             </TablerToggle>
                         </div>
                         <div

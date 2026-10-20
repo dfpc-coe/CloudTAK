@@ -25,6 +25,12 @@
 
 ### Pending Release
 
+- :bug: FeatureServer basemap tiles derive the Esri quantization tolerance from the tile zoom (one unit per 4096th of the tile width) instead of a fixed 0.001 degrees - the fixed value snapped geometry to a ~100m grid and collapsed most parcels once tiles were requested as Esri JSON, which honours quantization where `f=geojson` ignored it
+
+- :bug: Badges that relied on the default white badge text (Layer & Token permissions, basemap type selector, settings permissions, etc.) now use the theme body color so they are legible in light mode
+
+- :tada: Links section shows `r-u` links to images (by mime or URL extension) as thumbnails loaded through the `/api/proxy/image` API
+
 ### v13.111.1 - 2026-10-18
 
 - :arrow_up: Update `@tak-ps/maplibre-gl` to 6.15.0 (upstream MapLibre 6.15.0 with the worker restart fork)

@@ -20,6 +20,7 @@
                     />
                     <TablerBadge
                         v-if='activeFilters > 0'
+                        text-color='var(--tblr-body-color)'
                         class='ms-1'
                         background-color='var(--tblr-primary)'
                         border-color='var(--tblr-primary)'
