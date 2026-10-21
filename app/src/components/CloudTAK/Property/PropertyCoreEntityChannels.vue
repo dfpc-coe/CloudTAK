@@ -78,10 +78,11 @@
                     <div
                         v-for='board of channel.boards'
                         :key='board.id'
-                        class='d-flex align-items-center gap-2 ps-4 pe-2 py-1 cursor-pointer cloudtak-hover'
-                        role='button'
-                        tabindex='0'
-                        :title='`Open ${board.name} in the Event Board`'
+                        class='d-flex align-items-center gap-2 ps-4 pe-2 py-1'
+                        :class='{ "cursor-pointer cloudtak-hover": !isNativePlatform() }'
+                        :role='isNativePlatform() ? undefined : "button"'
+                        :tabindex='isNativePlatform() ? undefined : 0'
+                        :title='isNativePlatform() ? board.name : `Open ${board.name} in the Event Board`'
                         @click='openBoard(board)'
                         @keydown.enter='openBoard(board)'
                     >
@@ -96,6 +97,7 @@
                             v-text='board.name'
                         />
                         <IconExternalLink
+                            v-if='!isNativePlatform()'
                             :size='14'
                             stroke='1'
                             class='flex-shrink-0 text-secondary cloudtak-hover-hidden'
@@ -132,7 +134,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import PropertySection from '../util/PropertySection.vue';
 import GroupSelect from '../../util/GroupSelect.vue';
 import GroupManager from '../../../base/group.ts';
-import { openSecondaryView } from '../../../utils/capacitor.ts';
+import { openSecondaryView, isNativePlatform } from '../../../utils/capacitor.ts';
 import type { GroupChannel, CoreEntityBoardSummary, CoreEntityBoardColumnSummary } from '../../../types.ts';
 import { TablerNone, TablerBadge, TablerLoading, TablerIconButton } from '@tak-ps/vue-tabler';
 import {
@@ -193,6 +195,8 @@ watch(() => props.modelValue, () => {
 
 /** Open the Event Board page focused on the given Board in a new tab */
 function openBoard(board: CoreEntityBoardSummary): void {
+    if (isNativePlatform()) return;
+
     const url = new URL('/board', window.location.origin);
 
     url.searchParams.append('channel', String(board.channel));
