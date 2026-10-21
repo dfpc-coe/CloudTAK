@@ -25,7 +25,10 @@
 
 ### Pending Release
 
+### v13.112.1 - 2026-10-21
+
 - :bug: Send `Cache-Control: no-store` from the nginx SPA fallback so browsers never heuristically cache `index.html` under a misrouted path (#1949)
+- :bug: The mobile app is only able to show the SPA at this time and navigation events to other pages result in an ugly reload. Hide all nav elements that nav to other parts of the web app - IE Board/Video/Admin etc when on mobile
 
 ### v13.112.0 - 2026-10-21
 
