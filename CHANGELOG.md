@@ -25,6 +25,8 @@
 
 ### Pending Release
 
+### v13.112.0 - 2026-10-21
+
 - :tada: Add a Devices menu listing Core Devices from the Device API, falling back to the Device markers already on the map when offline
 - :tada: Add a Core Device sidebar for viewing and editing a Device, reached from a Device marker the same way Events are
 - :rocket: Open the Core Device a marker was generated from when clicking a Device CoT, with the same offline fallback Events have, and sync dragged Device markers back to the Device API
