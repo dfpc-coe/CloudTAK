@@ -4,6 +4,7 @@ import { sql, and, inArray } from 'drizzle-orm';
 import type ConfigStateless from '../config.js';
 import Auth, { AuthResourceAccess } from '../../common/auth.js';
 import { X509Certificate, createPrivateKey } from 'crypto';
+import { certificateMetadata } from '../lib/certificate.js';
 import { Type } from '@sinclair/typebox';
 import { StandardResponse, ConnectionResponse } from '../../common/types.js';
 import { Connection } from '../../common/schema.js';
@@ -100,11 +101,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 total: list.total,
                 status: await config.hub.connectionSummary(),
                 items: list.items.map((conn) => {
-                    const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
-
                     return {
                         status: statuses[String(conn.id)],
-                        certificate: { validFrom, validTo, subject },
+                        certificate: certificateMetadata(conn.auth.cert),
                         ...conn,
                     };
                 }),
@@ -170,8 +169,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const status = await config.hub.connectionSync(conn.id);
 
-            const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
-
             const cotak = config.user?.get('cotak');
             if (req.body.integrationId && cotak && cotak.configured) {
                 if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
@@ -184,7 +181,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             res.json({
                 status,
-                certificate: { validFrom, validTo, subject },
+                certificate: certificateMetadata(conn.auth.cert),
                 ...conn,
             });
         } catch (err) {
@@ -282,11 +279,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const status = await config.hub.connectionSync(conn.id, { force: true });
 
-            const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
-
             res.json({
                 status,
-                certificate: { validFrom, validTo, subject },
+                certificate: certificateMetadata(conn.auth.cert),
                 ...conn,
             });
         } catch (err) {
@@ -311,13 +306,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 throw new Err(400, null, 'Server certificate is not configured');
             }
 
-            const { validFrom, validTo, subject } = new X509Certificate(config.server.auth.cert);
-
             res.json({
                 id: 0,
                 status: (await config.hub.connectionStatus([0]))['0'],
                 agency: null,
-                certificate: { validFrom, validTo, subject },
+                certificate: certificateMetadata(config.server.auth.cert),
                 created: config.server.created,
                 updated: config.server.updated,
                 readonly: false,
@@ -345,11 +338,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
             }, req.params.connectionid);
 
-            const { validFrom, validTo, subject } = new X509Certificate(connection.auth.cert);
-
             res.json({
                 status: (await config.hub.connectionStatus([connection.id]))[String(connection.id)],
-                certificate: { validFrom, validTo, subject },
+                certificate: certificateMetadata(connection.auth.cert),
                 ...connection,
             });
         } catch (err) {
@@ -553,11 +544,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const status = await config.hub.connectionSync(connection.id, { force: true });
 
-            const { validFrom, validTo, subject } = new X509Certificate(connection.auth.cert);
-
             res.json({
                 status,
-                certificate: { validFrom, validTo, subject },
+                certificate: certificateMetadata(connection.auth.cert),
                 ...connection,
             });
         } catch (err) {

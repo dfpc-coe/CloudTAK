@@ -19146,6 +19146,8 @@ export interface paths {
                                     subject: string;
                                     validFrom: string;
                                     validTo: string;
+                                    /** @description The certificate carries the TAK Server channels Extended Key Usage - without it TAK Server ignores the client's channel (group) selection */
+                                    channels: boolean;
                                     /** @description The TAK Server has a record of this certificate - only populated where the server was consulted */
                                     known?: boolean;
                                     /** @description The TAK Server has revoked this certificate - only populated where the server was consulted */
@@ -19284,6 +19286,8 @@ export interface paths {
                                 subject: string;
                                 validFrom: string;
                                 validTo: string;
+                                /** @description The certificate carries the TAK Server channels Extended Key Usage - without it TAK Server ignores the client's channel (group) selection */
+                                channels: boolean;
                                 /** @description The TAK Server has a record of this certificate - only populated where the server was consulted */
                                 known?: boolean;
                                 /** @description The TAK Server has revoked this certificate - only populated where the server was consulted */
@@ -19525,6 +19529,8 @@ export interface paths {
                                 subject: string;
                                 validFrom: string;
                                 validTo: string;
+                                /** @description The certificate carries the TAK Server channels Extended Key Usage - without it TAK Server ignores the client's channel (group) selection */
+                                channels: boolean;
                                 /** @description The TAK Server has a record of this certificate - only populated where the server was consulted */
                                 known?: boolean;
                                 /** @description The TAK Server has revoked this certificate - only populated where the server was consulted */
@@ -19763,6 +19769,8 @@ export interface paths {
                                 subject: string;
                                 validFrom: string;
                                 validTo: string;
+                                /** @description The certificate carries the TAK Server channels Extended Key Usage - without it TAK Server ignores the client's channel (group) selection */
+                                channels: boolean;
                                 /** @description The TAK Server has a record of this certificate - only populated where the server was consulted */
                                 known?: boolean;
                                 /** @description The TAK Server has revoked this certificate - only populated where the server was consulted */
@@ -19886,6 +19894,8 @@ export interface paths {
                                 subject: string;
                                 validFrom: string;
                                 validTo: string;
+                                /** @description The certificate carries the TAK Server channels Extended Key Usage - without it TAK Server ignores the client's channel (group) selection */
+                                channels: boolean;
                                 /** @description The TAK Server has a record of this certificate - only populated where the server was consulted */
                                 known?: boolean;
                                 /** @description The TAK Server has revoked this certificate - only populated where the server was consulted */
@@ -20372,6 +20382,8 @@ export interface paths {
                                 subject: string;
                                 validFrom: string;
                                 validTo: string;
+                                /** @description The certificate carries the TAK Server channels Extended Key Usage - without it TAK Server ignores the client's channel (group) selection */
+                                channels: boolean;
                                 /** @description The TAK Server has a record of this certificate - only populated where the server was consulted */
                                 known?: boolean;
                                 /** @description The TAK Server has revoked this certificate - only populated where the server was consulted */
@@ -57110,6 +57122,8 @@ export interface paths {
                                 subject: string;
                                 validFrom: string;
                                 validTo: string;
+                                /** @description The certificate carries the TAK Server channels Extended Key Usage - without it TAK Server ignores the client's channel (group) selection */
+                                channels: boolean;
                             };
                         };
                     };
@@ -57250,6 +57264,8 @@ export interface paths {
                                 subject: string;
                                 validFrom: string;
                                 validTo: string;
+                                /** @description The certificate carries the TAK Server channels Extended Key Usage - without it TAK Server ignores the client's channel (group) selection */
+                                channels: boolean;
                             };
                         };
                     };
@@ -57490,6 +57506,8 @@ export interface paths {
                                     subject: string;
                                     validFrom: string;
                                     validTo: string;
+                                    /** @description The certificate carries the TAK Server channels Extended Key Usage - without it TAK Server ignores the client's channel (group) selection */
+                                    channels: boolean;
                                     /** @description The TAK Server has a record of this certificate - only populated where the server was consulted */
                                     known?: boolean;
                                     /** @description The TAK Server has revoked this certificate - only populated where the server was consulted */
@@ -57661,6 +57679,8 @@ export interface paths {
                                 subject: string;
                                 validFrom: string;
                                 validTo: string;
+                                /** @description The certificate carries the TAK Server channels Extended Key Usage - without it TAK Server ignores the client's channel (group) selection */
+                                channels: boolean;
                                 /** @description The TAK Server has a record of this certificate - only populated where the server was consulted */
                                 known?: boolean;
                                 /** @description The TAK Server has revoked this certificate - only populated where the server was consulted */
@@ -57941,6 +57961,8 @@ export interface paths {
                                 subject: string;
                                 validFrom: string;
                                 validTo: string;
+                                /** @description The certificate carries the TAK Server channels Extended Key Usage - without it TAK Server ignores the client's channel (group) selection */
+                                channels: boolean;
                                 /** @description The TAK Server has a record of this certificate - only populated where the server was consulted */
                                 known?: boolean;
                                 /** @description The TAK Server has revoked this certificate - only populated where the server was consulted */

@@ -437,6 +437,26 @@ export const IconsetResponse = Type.Object({
     skip_resize: Type.Boolean(),
 });
 
+export const CertificateResponse = Type.Object({
+    subject: Type.String(),
+    validFrom: Type.String(),
+    validTo: Type.String(),
+    channels: Type.Boolean({
+        description: 'The certificate carries the TAK Server channels Extended Key Usage - without it TAK Server ignores the client\'s channel (group) selection',
+    }),
+    known: Type.Optional(Type.Boolean({
+        description: 'The TAK Server has a record of this certificate - only populated where the server was consulted',
+    })),
+    revoked: Type.Optional(Type.Boolean({
+        description: 'The TAK Server has revoked this certificate - only populated where the server was consulted',
+    })),
+    revocationDate: Type.Optional(Type.String({
+        description: 'When the TAK Server revoked this certificate',
+    })),
+}, {
+    description: 'Public metadata of an X509 certificate - clients derive expiry state from validTo',
+});
+
 export const ServerResponse = Type.Object({
     id: Type.Integer(),
     status: Type.String(),
@@ -454,28 +474,7 @@ export const ServerResponse = Type.Object({
     api: Type.String(),
     webtak: Type.String(),
     auth: Type.Boolean({ description: 'Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded' }),
-    certificate: Type.Optional(Type.Object({
-        subject: Type.String(),
-        validFrom: Type.String(),
-        validTo: Type.String(),
-    })),
-});
-
-export const CertificateResponse = Type.Object({
-    subject: Type.String(),
-    validFrom: Type.String(),
-    validTo: Type.String(),
-    known: Type.Optional(Type.Boolean({
-        description: 'The TAK Server has a record of this certificate - only populated where the server was consulted',
-    })),
-    revoked: Type.Optional(Type.Boolean({
-        description: 'The TAK Server has revoked this certificate - only populated where the server was consulted',
-    })),
-    revocationDate: Type.Optional(Type.String({
-        description: 'When the TAK Server revoked this certificate',
-    })),
-}, {
-    description: 'Public metadata of an X509 certificate - clients derive expiry state from validTo',
+    certificate: Type.Optional(CertificateResponse),
 });
 
 export const ProfileListResponse = Type.Object({

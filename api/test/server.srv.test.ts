@@ -25,6 +25,7 @@ test('GET: api/server - Configured - Admin', async () => {
         assert.ok(res.body.certificate.subject);
         assert.ok(res.body.certificate.validFrom);
         assert.ok(res.body.certificate.validTo);
+        assert.equal(typeof res.body.certificate.channels, 'boolean');
         assert.ok(res.body.url);
         assert.ok(res.body.api);
     } catch (err) {

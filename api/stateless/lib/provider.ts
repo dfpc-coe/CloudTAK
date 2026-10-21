@@ -2,7 +2,7 @@ import type ConfigStateless from '../config.js';
 import { InferSelectModel } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import type { Profile } from '../../common/schema.js';
-import { X509Certificate } from 'crypto';
+import { certificateMetadata } from './certificate.js';
 import type { Static } from '@sinclair/typebox';
 import type { CertificateResponse } from '../../common/types.js';
 import { TAKAPI, APIAuthPassword } from '@tak-ps/node-tak';
@@ -37,8 +37,7 @@ export default class AuthProvider {
         if (typeof cert !== 'string' || !cert.length) return undefined;
 
         try {
-            const { subject, validFrom, validTo } = new X509Certificate(cert);
-            return { subject, validFrom, validTo };
+            return certificateMetadata(cert);
         } catch {
             return undefined;
         }

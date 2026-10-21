@@ -1,12 +1,13 @@
 /**
  * Shared certificate expiry helpers for the public certificate metadata
- * (`{ subject, validFrom, validTo }`) returned by the Connection, Server & User APIs
+ * (`{ subject, validFrom, validTo, channels }`) returned by the Connection, Server & User APIs
  */
 
 export type CertificateMetadata = {
     subject?: string | null;
     validFrom?: string | null;
     validTo?: string | null;
+    channels?: boolean | null;
 };
 
 export type CertificateExpiryState = 'expired' | 'near-expiry' | null;
