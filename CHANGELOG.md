@@ -25,6 +25,11 @@
 
 ### Pending Release
 
+- :tada: Add a Devices menu listing Core Devices from the Device API, falling back to the Device markers already on the map when offline
+- :tada: Add a Core Device sidebar for viewing and editing a Device, reached from a Device marker the same way Events are
+- :rocket: Open the Core Device a marker was generated from when clicking a Device CoT, with the same offline fallback Events have, and sync dragged Device markers back to the Device API
+- :rocket: Broadcast Core Devices with a `p` Link of type `core-device` carrying the Device UUID so clients can open the Device a marker was generated from
+
 ### v13.111.3 - 2026-10-20
 
 - :rocket: Allow global search to search through remarks field

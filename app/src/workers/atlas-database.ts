@@ -15,6 +15,7 @@ import COT, { OriginMode } from '../base/cot.ts';
 import ContactManager from '../base/contact.ts';
 import TAKNotification, { NotificationType } from '../base/notification.ts';
 import { WorkerMessageType } from '../utils/events.ts';
+import { entityLink, entityLabel } from '../utils/core-entity.ts';
 import type { MissionChangePropertyBody } from '../utils/events.ts';
 import type { GeoJSONSourceDiff, LngLatLike } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
@@ -1160,32 +1161,36 @@ export default class AtlasDatabase {
     }
 
     /**
-     * PATCH a locally moved Core Event marker back to the Event API - a
-     * failure is reverted on clients by the next Event rebroadcast
+     * PATCH a locally moved Core Entity marker back to the Entity API - a
+     * failure is reverted on clients by the next Entity rebroadcast
      */
     private async syncCoreEntityGeometry(cot: COT): Promise<void> {
-        const link = (cot.properties.links || []).find((link) => {
-            return link.type === 'core-event' && link.event;
-        });
+        const entity = entityLink(cot.properties.links);
 
-        if (!link || !link.event) return;
+        if (!entity) return;
         if (cot.geometry.type !== 'Point') return;
 
+        const geometry = {
+            type: 'Point' as const,
+            coordinates: cot.geometry.coordinates.slice(0, 2)
+        };
+
         try {
-            const { error } = await server.PATCH('/api/core/event/{:event}', {
-                params: { path: { ':event': link.event } },
-                headers: bearer(this.atlas.token),
-                body: {
-                    geometry: {
-                        type: 'Point',
-                        coordinates: cot.geometry.coordinates.slice(0, 2)
-                    }
-                }
-            });
+            const { error } = entity.kind === 'device'
+                ? await server.PATCH('/api/core/device/{:device}', {
+                    params: { path: { ':device': entity.id } },
+                    headers: bearer(this.atlas.token),
+                    body: { geometry }
+                })
+                : await server.PATCH('/api/core/event/{:event}', {
+                    params: { path: { ':event': entity.id } },
+                    headers: bearer(this.atlas.token),
+                    body: { geometry }
+                });
 
             if (error) throw new Error(error.message);
         } catch (err) {
-            console.error(`Failed to sync Core Event geometry for ${cot.id}:`, err);
+            console.error(`Failed to sync Core ${entityLabel(entity)} geometry for ${cot.id}:`, err);
         }
     }
 

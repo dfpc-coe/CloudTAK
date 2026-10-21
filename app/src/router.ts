@@ -22,6 +22,10 @@ const router = VueRouter.createRouter({
                 name: 'home-menu-core-entity',
                 component: () => import('./components/CloudTAK/CoreEntityView.vue'),
             },{
+                path: 'device/:device',
+                name: 'home-menu-core-device',
+                component: () => import('./components/CloudTAK/CoreDeviceView.vue'),
+            },{
                 path: 'menu',
                 name: 'home-menu',
                 children: [{
@@ -136,6 +140,10 @@ const router = VueRouter.createRouter({
                     path: 'contacts',
                     name: 'home-menu-contacts',
                     component: () => import('./components/CloudTAK/Menu/MenuContacts.vue')
+                },{
+                    path: 'devices',
+                    name: 'home-menu-devices',
+                    component: () => import('./components/CloudTAK/Menu/MenuDevices.vue')
                 },{
                     path: 'missions',
                     name: 'home-menu-missions',
