@@ -25,6 +25,8 @@
 
 ### Pending Release
 
+- :bug: Send `Cache-Control: no-store` from the nginx SPA fallback so browsers never heuristically cache `index.html` under a misrouted path (#1949)
+
 ### v13.112.0 - 2026-10-21
 
 - :tada: Add a Devices menu listing Core Devices from the Device API, falling back to the Device markers already on the map when offline
