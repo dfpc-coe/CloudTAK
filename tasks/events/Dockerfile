@@ -22,7 +22,7 @@ COPY --from=build /usr/local/bin/tippecanoe* /usr/local/bin/
 COPY --from=build /usr/local/bin/tile-join /usr/local/bin/
 
 RUN apk add --no-cache curl libstdc++ sqlite-libs zlib \
-    gdal-tools gdal-driver-png gdal-driver-jpeg gdal-driver-gif gdal-driver-webp gdal-driver-libkml
+    gdal-tools gdal-driver-all
 
 # PMTiles: https://github.com/protomaps/go-pmtiles/releases
 RUN export VERSION_PMTILES='1.28.3' && \

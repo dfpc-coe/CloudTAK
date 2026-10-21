@@ -25,6 +25,8 @@
 
 ### Pending Release
 
+- :white_check_mark: Queue mock TAK Server writes for streaming connections still completing their TLS handshake so chat and reconnect tests no longer race the server-side `secureConnection` event under Node 26.12.1
+- :bug: Install `gdal-driver-all` in the events task image - Alpine splits GDAL drivers into subpackages and the Parquet and PDF drivers the task uses were missing
 - :rocket: Install Node.js in the API image from the official `node:26-alpine3.24` image instead of Alpine's `nodejs-current` package so security releases (October 2026: Brotli RCE, TLS hostname bypass) ship as soon as upstream publishes them
 - :rocket: Build the events task on `node:26-alpine3.24` with GDAL 3.13.3 from Alpine 3.24 packages instead of the `osgeo/gdal` Alpine 3.23 image
 - :bug: `PATCH /api/basemap/:basemapid` no longer defaults `scope` to `user` or `tilesize` to `256` when omitted, so editing a single field of a Server scoped basemap keeps it Server scoped (#1947)
