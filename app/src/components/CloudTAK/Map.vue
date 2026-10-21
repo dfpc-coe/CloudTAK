@@ -25,7 +25,7 @@
                  omitted on iOS, where the status bar sits fully transparent
                  over the map -->
             <div
-                v-if='!isIOS'
+                v-if='!isIOSPlatform()'
                 class='position-absolute top-0 start-0 end-0'
                 style='
                     z-index: 5;
@@ -416,8 +416,6 @@ const deviceStore = useDeviceStore();
 const appStore = useAppStore();
 const floatStore = useFloatStore();
 
-const isIOS = isIOSPlatform();
-
 const hasTerrain = computed(() => OverlayManager.loaded.some((overlay) => overlay.type === 'raster-dem'));
 const router = useRouter();
 const route = useRoute();
@@ -550,7 +548,6 @@ const displayZoom = computed(() => {
         return mapStore.zoom === 'always' ? true : false;
     }
 })
-
 
 const humanBearing = computed(() => {
     if (mapStore.bearing < 0) {
@@ -819,8 +816,6 @@ async function exitManualMode() {
 
     await mapStore.refresh();
 }
-
-
 
 function fileUpload(event: unknown) {
     upload.value.shown = false;

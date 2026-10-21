@@ -131,8 +131,7 @@ import { ref, computed } from 'vue';
 import { liveQuery } from '../../database.ts';
 import { useRouter } from 'vue-router';
 import { useObservable } from '@vueuse/rxjs';
-import TAKNotification_, { NotificationType } from '../../base/notification.ts';
-const TAKNotification = TAKNotification_;
+import TAKNotification, { NotificationType } from '../../base/notification.ts';
 import NotificationIcon from './util/NotificationIcon.vue';
 import timeDiff from '../../timediff.ts';
 import {
