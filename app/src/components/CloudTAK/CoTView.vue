@@ -37,18 +37,18 @@
             style='min-height: 0;'
         >
             <div
-                v-if='offlineEvent'
+                v-if='offlineEntity'
                 class='col-12 flex-shrink-0 px-2 pt-2'
             >
                 <TablerInlineAlert
                     severity='warning'
-                    title='Event Details Unavailable'
-                    description='This marker is a CloudTAK Event - the Event it was generated from could not be loaded from the server.'
+                    :title='`${entityLabel(offlineEntity)} Details Unavailable`'
+                    :description='`This marker is a CloudTAK ${entityLabel(offlineEntity)} - the ${entityLabel(offlineEntity)} it was generated from could not be loaded from the server.`'
                 />
                 <TablerButton
                     class='w-100'
                     :disabled='retrying'
-                    @click='retryEvent'
+                    @click='retryEntity'
                 >
                     Retry
                 </TablerButton>
@@ -666,6 +666,8 @@ import { useFloatStore } from '../../stores/float.ts';
 import { useDeviceStore } from '../../stores/device.ts';
 import ProfileConfig from '../../base/profile.ts';
 import OverlayManager from '../../base/overlay.ts';
+import { entityLink, entityLabel, entityRoute, entityRouteName } from '../../utils/core-entity.ts';
+import type { CoreEntityRef } from '../../utils/core-entity.ts';
 import { setCircleRadius } from '../../base/cot/ellipse.ts';
 
 const mapStore = useMapStore();
@@ -716,9 +718,9 @@ const breadcrumbLive = ref(false);
 const bufferCotId = ref<string | null>(null);
 const actionIconSize = 28;
 
-// The Event a CoT is a projection of, when it couldn't be opened because
+// The Entity a CoT is a projection of, when it couldn't be opened because
 // the device is offline
-const offlineEvent = ref<string | undefined>(undefined);
+const offlineEntity = ref<CoreEntityRef | undefined>(undefined);
 const retrying = ref(false);
 
 const isNavigating = computed(() => {
@@ -753,7 +755,7 @@ watch(cot, async () => {
 watch(route, async () => {
     mode.value = 'default'
     breadcrumbLive.value = false;
-    offlineEvent.value = undefined;
+    offlineEntity.value = undefined;
     await load_cot();
     if (cot.value) {
         breadcrumbLive.value = await mapStore.worker.db.breadcrumb.get(cot.value.id);
@@ -906,8 +908,8 @@ function toggleLock() {
     }
 }
 
-// load_cot redirects to the Event View if the network has come back
-async function retryEvent(): Promise<void> {
+// load_cot redirects to the Entity View if the network has come back
+async function retryEntity(): Promise<void> {
     retrying.value = true;
 
     try {
@@ -917,29 +919,23 @@ async function retryEvent(): Promise<void> {
     }
 }
 
-// Redirecting to the Event View is only safe if the API can actually serve
-// the Event - anything but a 200 falls back to the offline CoT rendering
-async function eventAvailable(event: string): Promise<boolean> {
+// Redirecting to the Entity View is only safe if the API can actually serve
+// the Entity - anything but a 200 falls back to the offline CoT rendering
+async function entityAvailable(entity: CoreEntityRef): Promise<boolean> {
     try {
-        const res = await server.GET('/api/core/event/{:event}', {
-            params: {
-                path: {
-                    ':event': event
-                }
-            }
-        });
+        const res = entity.kind === 'device'
+            ? await server.GET('/api/core/device/{:device}', {
+                params: { path: { ':device': entity.id } }
+            })
+            : await server.GET('/api/core/event/{:event}', {
+                params: { path: { ':event': entity.id } }
+            });
 
         return res.response.status === 200;
     } catch (err) {
-        console.error('Failed to load Core Event', err);
+        console.error(`Failed to load Core ${entityLabel(entity)}`, err);
         return false;
     }
-}
-
-// UUID of the Core Event a CoT is the projection of, carried on its `p` Link
-function coreEntity(cot: COT): string | undefined {
-    const marker = (cot.properties.links || []).find((link) => !!link.event);
-    return marker ? marker.event : undefined;
 }
 
 async function load_cot() {
@@ -954,16 +950,18 @@ async function load_cot() {
     }
 
     if (baseCOT) {
-        // The Event View is the richer representation but is API-only -
-        // offline, the CoT remains the best available view of the Event
-        const event = coreEntity(baseCOT);
-        if (event && deviceStore.network.isOnline && await eventAvailable(event)) {
-            // replace() so back navigation doesn't immediately redirect again
-            await router.replace(`/event/${event}`);
-            return;
-        }
+        // The Entity View is the richer representation but is API-only -
+        // offline, the CoT remains the best available view of the Entity
+        const entity = entityLink(baseCOT.properties.links);
+        if (entity && router.hasRoute(entityRouteName(entity))) {
+            if (deviceStore.network.isOnline && await entityAvailable(entity)) {
+                // replace() so back navigation doesn't immediately redirect again
+                await router.replace(entityRoute(entity));
+                return;
+            }
 
-        offlineEvent.value = event;
+            offlineEntity.value = entity;
+        }
 
         if (cot.value && cot.value._liveQuerySubscription) {
             cot.value._liveQuerySubscription.unsubscribe();
