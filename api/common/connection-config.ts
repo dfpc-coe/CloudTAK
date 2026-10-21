@@ -301,14 +301,20 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
                 let start: string;
                 let stale: number;
 
-                // Device specific CoT details (parent link, status, battery)
-                // are future work - a Device is broadcast as a plain marker
+                // The `p` (parent) Link carries the Entity UUID so a CloudTAK
+                // client can open the Event or Device a marker was generated from
                 if (entity.kind === LayerMapping_Destination.COREDEVICE) {
+                    links.push({
+                        relation: 'p',
+                        type: 'core-device',
+                        device: entity.id,
+                        url: `${this.config.API_URL}/device/${entity.id}`,
+                        remarks: entity.name,
+                    });
+
                     start = entity.updated;
                     stale = DEVICE_STALE;
                 } else {
-                    // The `p` (parent) Link carries the Event UUID so a CloudTAK
-                    // client can open the Event a marker was generated from
                     links.push({
                         relation: 'p',
                         type: 'core-event',

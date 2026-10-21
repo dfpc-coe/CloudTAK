@@ -25,6 +25,8 @@
 
 ### Pending Release
 
+- :rocket: Broadcast Core Devices with a `p` Link of type `core-device` carrying the Device UUID so clients can open the Device a marker was generated from
+
 ### v13.111.3 - 2026-10-20
 
 - :rocket: Allow global search to search through remarks field

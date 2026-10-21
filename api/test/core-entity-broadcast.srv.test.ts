@@ -79,7 +79,13 @@ test('Broadcast: active Events & located Devices on a resolvable Channel are wri
     assert.equal(device.properties.how, 'm-g');
     assert.equal(device.properties.remarks, 'Device remarks');
     assert.deepEqual([device.properties.dest].flat(), [{ group: 'Shared Group' }]);
-    assert.equal(device.properties.links, undefined);
+    assert.deepEqual(device.properties.links, [{
+        relation: 'p',
+        type: 'core-device',
+        device: deviceId,
+        url: `${flight.stateful!.API_URL}/device/${deviceId}`,
+        remarks: 'Located Device',
+    }]);
     assert.deepEqual(device.geometry.coordinates.slice(0, 2), point.coordinates);
 });
 
