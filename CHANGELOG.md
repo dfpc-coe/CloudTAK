@@ -25,6 +25,8 @@
 
 ### Pending Release
 
+- :bug: `PATCH /api/basemap/:basemapid` no longer defaults `scope` to `user` or `tilesize` to `256` when omitted, so editing a single field of a Server scoped basemap keeps it Server scoped (#1947)
+
 ### v13.112.1 - 2026-10-21
 
 - :bug: Send `Cache-Control: no-store` from the nginx SPA fallback so browsers never heuristically cache `index.html` under a misrouted path (#1949)

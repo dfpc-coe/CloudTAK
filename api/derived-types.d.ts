@@ -1586,10 +1586,8 @@ export interface paths {
                         collection?: null | string;
                         overlay?: boolean;
                         hidden?: boolean;
-                        /** @default user */
-                        scope: "server" | "user";
+                        scope?: "server" | "user";
                         url?: string;
-                        /** @default 256 */
                         tilesize?: number;
                         attribution?: null | string;
                         frequency?: null | number;
