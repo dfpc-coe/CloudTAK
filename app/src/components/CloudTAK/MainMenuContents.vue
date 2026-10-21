@@ -20,7 +20,10 @@
         </div>
 
         <div class='main-menu-footer flex-shrink-0'>
-            <div class='d-flex justify-content-center mb-2'>
+            <div
+                v-if='showAppSwitcher'
+                class='d-flex justify-content-center mb-2'
+            >
                 <TablerDropdown
                     position='left'
                 >
@@ -65,10 +68,11 @@
                                     <span class='ps-2'>{{ application.name }}</span>
                                 </div>
                                 <div
-                                    v-if='appSwitcherApplications.length'
+                                    v-if='appSwitcherApplications.length && !isNativePlatform()'
                                     class='dropdown-divider my-1'
                                 />
                                 <div
+                                    v-if='!isNativePlatform()'
                                     class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
                                     @click.stop='external("/video")'
                                 >
@@ -79,6 +83,7 @@
                                     <span class='ps-2'>Video Wall</span>
                                 </div>
                                 <div
+                                    v-if='!isNativePlatform()'
                                     class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
                                     @click.stop='external("/board")'
                                 >
@@ -89,6 +94,7 @@
                                     <span class='ps-2'>Event Board</span>
                                 </div>
                                 <div
+                                    v-if='!isNativePlatform()'
                                     class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
                                     @click.stop='external("/forms")'
                                 >
@@ -336,6 +342,7 @@ type AppSwitcherApplication = {
 };
 
 const appSwitcherApplications = ref<AppSwitcherApplication[]>([]);
+const showAppSwitcher = computed(() => !isNativePlatform() || appSwitcherApplications.value.length > 0);
 
 let alive = false;
 onMounted(() => { alive = true; });

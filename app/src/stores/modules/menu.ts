@@ -24,6 +24,7 @@ import ProfileConfig from '../../base/profile.ts';
 import ContactManager from '../../base/contact.ts';
 import Chatroom from '../../base/chatroom.ts';
 import type { Profile } from '../../types.ts';
+import { isNativePlatform } from '../../utils/capacitor.ts';
 
 export type MenuItemConfig = {
     key: string;
@@ -252,7 +253,10 @@ export default class MenuManager {
 
     get items(): ComputedRef<MenuItemConfig[]> {
         return computed(() => {
+            const native = isNativePlatform();
+
             let combined = [...this.baseMenuItems, ...this.pluginMenuItems.value].filter((item) => {
+                if (item.routeExternal && native) return false;
                 if (item.requiresSystemAdmin && !this.isSystemAdmin.value) return false;
                 if (item.requiresAgencyAdmin && !(this.isAgencyAdmin.value || this.isSystemAdmin.value)) return false;
                 return true;
