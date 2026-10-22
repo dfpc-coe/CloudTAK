@@ -21,18 +21,22 @@
             :inline='true'
             class='my-2'
         />
-        <TablerError
+        <div
             v-else-if='error'
-            :err='error'
-            @close='refresh'
+            class='py-1'
         >
-            <template #advanced='{ body }'>
-                <CopyField
-                    mode='pre'
-                    :model-value='body'
-                />
-            </template>
-        </TablerError>
+            <TablerInlineAlert
+                severity='danger'
+                title='Failed to load Attachments'
+                :description='error.message'
+            />
+            <TablerButton
+                class='w-100'
+                @click='refresh'
+            >
+                Retry
+            </TablerButton>
+        </div>
         <Upload
             v-else-if='upload'
             :url='uploadURL()'
@@ -106,7 +110,6 @@
 </template>
 
 <script setup lang="ts">
-import CopyField from '../util/CopyField.vue';
 import { ref, computed, onMounted, watch } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import { server, std, stdurl } from '../../../std.ts';
@@ -122,8 +125,9 @@ import {
 } from '@tabler/icons-vue';
 
 import {
-    TablerError,
+    TablerButton,
     TablerIconButton,
+    TablerInlineAlert,
     TablerLoading,
     TablerDelete,
 } from '@tak-ps/vue-tabler'
@@ -226,17 +230,22 @@ async function uploadComplete(event: unknown): Promise<void> {
 
     loading.value = true;
     upload.value = false;
+    error.value = undefined;
 
-    const res = await server.GET('/api/attachment', {
-        params: {
-            query: {
-                hash: event.hash
+    try {
+        const res = await server.GET('/api/attachment', {
+            params: {
+                query: {
+                    hash: event.hash
+                }
             }
-        }
-    });
+        });
 
-    if (res.error) throw new Error(res.error.message);
-    if (res.data) files.value.push(...res.data.items);
+        if (res.error) throw new Error(res.error.message);
+        if (res.data) files.value.push(...res.data.items);
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
 
     loading.value = false;
 }
