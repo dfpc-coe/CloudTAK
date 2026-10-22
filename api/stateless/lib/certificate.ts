@@ -6,6 +6,29 @@ import { tmpdir } from 'node:os';
 import { randomBytes } from 'node:crypto';
 import { readFile, writeFile, appendFile, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
+import type { CertificateResponse } from '../../common/types.js';
+
+/**
+ * TAK Server marks a client certificate as "channels enabled" by adding the
+ * PKCS#9 Challenge Password OID to its Extended Key Usage extension
+ */
+export const CHANNELS_EKU_OID = '1.2.840.113549.1.9.7';
+
+/**
+ * Public metadata of an X509 certificate as returned by the Connection, Server & User APIs
+ */
+export function certificateMetadata(
+    cert: string | X509Certificate,
+): Static<typeof CertificateResponse> {
+    const x509 = typeof cert === 'string' ? new X509Certificate(cert) : cert;
+
+    return {
+        subject: x509.subject,
+        validFrom: x509.validFrom,
+        validTo: x509.validTo,
+        channels: (x509.keyUsage || []).includes(CHANNELS_EKU_OID),
+    };
+}
 
 /**
  * Generates a PKCS#12 (PFX) file as a Buffer from PEM-encoded private key and certificate.

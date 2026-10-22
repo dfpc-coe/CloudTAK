@@ -461,6 +461,7 @@ export default class Flight {
                 status: 'dead',
                 certificate: {
                     subject: 'CN=Alice',
+                    channels: false,
                 },
                 id: 1,
                 agency: null,

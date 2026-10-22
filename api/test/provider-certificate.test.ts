@@ -3,10 +3,11 @@ import assert from 'node:assert';
 import CP from 'node:child_process';
 import fs from 'node:fs';
 import Provider, { CERT_RENEWAL_WINDOW_MS } from '../stateless/lib/provider.js';
+import { CHANNELS_EKU_OID } from '../stateless/lib/certificate.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-function selfSigned(name: string, days: number): string {
+function selfSigned(name: string, days: number, extendedKeyUsage?: string): string {
     const key = `/tmp/cloudtak-test-provider-${name}.key`;
     const cert = `/tmp/cloudtak-test-provider-${name}.cert`;
 
@@ -19,6 +20,7 @@ function selfSigned(name: string, days: number): string {
             -nodes \
             -days ${days} \
             -subj "/C=US/ST=CO/O=CloudTAK/CN=${name}" \
+            ${extendedKeyUsage ? `-addext "extendedKeyUsage=${extendedKeyUsage}"` : ''} \
             2> /dev/null
     `);
 
@@ -30,9 +32,15 @@ test('Provider.certificate - parses public metadata', () => {
     const info = Provider.certificate(cert);
 
     assert.ok(info);
-    assert.deepEqual(Object.keys(info).sort(), ['subject', 'validFrom', 'validTo']);
+    assert.deepEqual(Object.keys(info).sort(), ['channels', 'subject', 'validFrom', 'validTo']);
     assert.ok(info.subject.includes('CN=valid'));
     assert.ok(!Number.isNaN(Date.parse(info.validTo)));
+    assert.equal(info.channels, false, 'no Extended Key Usage extension');
+});
+
+test('Provider.certificate - channels Extended Key Usage', () => {
+    assert.equal(Provider.certificate(selfSigned('eku-client', 30, 'clientAuth'))!.channels, false);
+    assert.equal(Provider.certificate(selfSigned('eku-channels', 30, `clientAuth,${CHANNELS_EKU_OID}`))!.channels, true);
 });
 
 test('Provider.certificate - unparseable input', () => {

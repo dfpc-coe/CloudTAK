@@ -25,6 +25,7 @@
 
 ### Pending Release
 
+- :tada: Certificate metadata returned by the Server, Connection & User APIs now includes `channels` - whether TAK Server signed the certificate with the channels Extended Key Usage (OID `1.2.840.113549.1.9.7`); certificates without it have their channel selection ignored by TAK Server. The Connection card, Server settings, Admin Overview, Admin User page, and the Admin Users list show the state as a `Channels` / `No Channels` badge
 - :white_check_mark: Queue mock TAK Server writes for streaming connections still completing their TLS handshake so chat and reconnect tests no longer race the server-side `secureConnection` event under Node 26.12.1
 - :bug: Install `gdal-driver-all` in the events task image - Alpine splits GDAL drivers into subpackages and the Parquet and PDF drivers the task uses were missing
 - :rocket: Install Node.js in the API image from the official `node:26-alpine3.24` image instead of Alpine's `nodejs-current` package so security releases (October 2026: Brotli RCE, TLS hostname bypass) ship as soon as upstream publishes them

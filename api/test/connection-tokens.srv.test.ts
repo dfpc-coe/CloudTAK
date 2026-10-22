@@ -167,6 +167,7 @@ test('GET: api/connection/1 - Use Token', async () => {
                 validFrom: time,
                 validTo: time,
                 subject: 'CN=Alice',
+                channels: false,
             },
             id: 1,
             readonly: false,

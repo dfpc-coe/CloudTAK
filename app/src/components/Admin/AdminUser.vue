@@ -20,6 +20,10 @@
                     class='mx-2'
                     v-text='route.params.user'
                 />
+                <CertificateChannelsBadge
+                    class='ms-2'
+                    :certificate='user.certificate'
+                />
                 <CertificateBadge
                     class='ms-2'
                     :certificate='user.certificate'
@@ -161,6 +165,10 @@
                     <IconChevronRight v-else />
 
                     <span class='mx-2 user-select-none'>TAK Certificate</span>
+                    <CertificateChannelsBadge
+                        class='me-2'
+                        :certificate='user.certificate'
+                    />
                     <CertificateBadge
                         :certificate='user.certificate'
                         expired-label='Expired Certificate'
@@ -288,6 +296,7 @@ import type { User } from '../../types.ts';
 import CopyField from '../CloudTAK/util/CopyField.vue';
 import StatusDot from '../util/StatusDot.vue';
 import CertificateBadge from '../util/CertificateBadge.vue';
+import CertificateChannelsBadge from '../util/CertificateChannelsBadge.vue';
 import CertificateInfo from '../util/CertificateInfo.vue';
 import AdminUserSession from './AdminUserSession.vue';
 import {

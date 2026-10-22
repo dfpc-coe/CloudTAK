@@ -124,10 +124,10 @@
                                                     v-text='user.username'
                                                 />
                                             </div>
-                                            <CertificateBadge
-                                                class='ms-auto'
-                                                :certificate='user.certificate'
-                                            />
+                                            <div class='ms-auto d-flex align-items-center gap-2'>
+                                                <CertificateChannelsBadge :certificate='user.certificate' />
+                                                <CertificateBadge :certificate='user.certificate' />
+                                            </div>
                                         </div>
                                         <div
                                             v-else-if='h.name === "last_login"'
@@ -181,6 +181,7 @@ import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import StatusDot from '../util/StatusDot.vue';
 import CertificateBadge from '../util/CertificateBadge.vue';
+import CertificateChannelsBadge from '../util/CertificateChannelsBadge.vue';
 import SearchSortFilter from '../CloudTAK/util/SearchSortFilter.vue';
 import {
     IconLetterCase,
