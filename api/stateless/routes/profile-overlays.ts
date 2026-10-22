@@ -207,6 +207,38 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
+    await schema.patch('/profile/overlay/order', {
+        name: 'Order Overlays',
+        group: 'ProfileOverlay',
+        description: `
+            Persist the stack order of the user's overlays.
+
+            Ids are given bottom-first and each overlay's pos is set to its index. Basemaps keep
+            their fixed position and may be omitted.
+        `,
+        body: Type.Object({
+            ids: Type.Array(Type.Integer()),
+        }),
+        res: Type.Object({
+            items: Type.Array(ProfileOverlayResponse),
+        }),
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const items = await overlayControl.reorder(user.email, req.body.ids);
+
+            // Other sessions re-list rather than receiving one event per overlay
+            ConnectionEvents.user(config, user, ConnectionEventDataType.OVERLAY, ConnectionEventAction.UPDATE);
+
+            res.json({
+                items: items.map(overlay => ({ ...overlay, opacity: Number(overlay.opacity) })),
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
     await schema.get('/profile/overlay/:overlay', {
         name: 'Get Overlay',
         group: 'ProfileOverlay',

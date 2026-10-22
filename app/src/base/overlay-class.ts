@@ -19,7 +19,6 @@ import {
 } from '../stores/modules/tilejson.ts';
 import { useMapStore } from '../stores/map.js';
 import ProfileConfig from './profile.ts';
-import Subscription from './subscription.ts';
 import { FeatureVisibility } from '../stores/modules/feature-visibility.ts';
 
 export default class Overlay {
@@ -72,59 +71,17 @@ export default class Overlay {
         body: ProfileOverlay | ProfileOverlay_Create,
         opts: {
             internal?: boolean;
-            skipSave?: boolean;
             clickable?: Array<{ id: string; type: string }>;
-            before?: string;
             skipLayers?: boolean;
         } = {}
     ): Promise<Overlay> {
-        if (opts.skipSave !== true) {
-            const created = await server.POST('/api/profile/overlay', {
-                body: { ...body, mode_id: body.mode_id ?? undefined, token: body.token ?? undefined }
-            });
+        const overlay = shallowReactive(new Overlay(body as ProfileOverlay, {
+            internal: opts.internal
+        })) as Overlay;
 
-            if (created.error) throw new Error(created.error.message);
+        await overlay.init(opts);
 
-            let ov: ProfileOverlay = created.data;
-
-            if (ov.styles && ov.styles.length) {
-                for (const layer of ov.styles) {
-                    const l = layer as LayerSpecification;
-                    l.id = `${ov.id}-${l.id}`;
-
-                    if (l.type !== 'background') {
-                        l.source = String(ov.id);
-                    }
-                }
-            }
-
-            const patched = await server.PATCH('/api/profile/overlay/{:overlay}', {
-                params: { path: { ':overlay': ov.id } },
-                body: { ...ov, mode_id: ov.mode_id ?? undefined }
-            });
-
-            if (patched.error) throw new Error(patched.error.message);
-
-            ov = patched.data;
-
-            const overlay = shallowReactive(new Overlay(ov, {
-                internal: opts.internal
-            })) as Overlay;
-
-            await overlay.init(opts);
-
-            await db.overlay.put(overlay.toDBOverlay());
-
-            return overlay;
-        } else {
-            const overlay = shallowReactive(new Overlay(body as ProfileOverlay, {
-                internal: opts.internal
-            })) as Overlay;
-
-            await overlay.init(opts);
-
-            return overlay;
-        }
+        return overlay;
     }
 
     static async internal(
@@ -153,7 +110,6 @@ export default class Overlay {
             styles: body.styles || [],
             pos: 3,
         }, {
-            skipSave: true,
             clickable: body.clickable,
             internal: true
         });
@@ -168,9 +124,7 @@ export default class Overlay {
 
         if (error) throw new Error(error.message);
 
-        const ov = await Overlay.create(remote, {
-            skipSave: true
-        });
+        const ov = await Overlay.create(remote);
 
         return ov;
     }
@@ -302,7 +256,7 @@ export default class Overlay {
         }
     }
 
-    async addLayers(before?: string): Promise<void> {
+    async addLayers(): Promise<void> {
         const mapStore = useMapStore();
 
         // If init() failed to register the source (e.g. a /tiles fetch
@@ -315,11 +269,7 @@ export default class Overlay {
         for (const l of this.styles) {
             if (l.type === 'background') continue;
 
-            if (before) {
-                mapStore.map.addLayer(l, before);
-            } else {
-                mapStore.map.addLayer(l)
-            }
+            mapStore.map.addLayer(l);
         }
 
         // The above doesn't set vis/opacity initially - apply directly
@@ -429,7 +379,6 @@ export default class Overlay {
 
     async init(opts: {
         clickable?: Array<{ id: string; type: string }>;
-        before?: string;
         skipLayers?: boolean;
     } = {}) {
         const mapStore = useMapStore();
@@ -514,7 +463,7 @@ export default class Overlay {
         this._clickable = opts.clickable;
 
         if (!opts.skipLayers) {
-            await this.addLayers(opts.before);
+            await this.addLayers();
         }
         this._loaded = true;
     }
@@ -568,146 +517,13 @@ export default class Overlay {
         }
     }
 
-    async replace(
-        overlay: {
-            name?: string
-            active?: boolean;
-            username?: string
-            actions?: ProfileOverlay["actions"];
-            type?: string;
-            opacity?: number;
-            visible?: boolean;
-            mode?: string;
-            mode_id?: string;
-            encoding?: 'mapbox' | 'terrarium' | null;
-            attribution?: string;
-            url?: string;
-            token?: string;
-            tilejson?: OverlayTileJSON | null;
-            styles?: Array<LayerSpecification>;
-        },
-        opts: {
-            before?: string;
-        } = {}
-    ): Promise<void> {
-        this.remove();
-
-        const oldType = this.type;
-        const oldUrl = this.url;
-        const oldModeId = this.mode_id;
-
-        if (overlay.name) this.name = overlay.name;
-        if (overlay.active !== undefined) this.active = overlay.active;
-        if (overlay.username) this.username = overlay.username;
-        if (overlay.actions) this.actions = overlay.actions || { feature: [] };
-        if (overlay.type) this.type = overlay.type;
-
-        if (this.type === 'raster' && oldType !== 'raster' && !overlay.styles) {
-            this.styles = [];
-        }
-
-        if (overlay.opacity !== undefined) this.opacity = overlay.opacity;
-        if (overlay.visible !== undefined) this.visible = overlay.visible;
-        if (overlay.mode) this.mode = overlay.mode;
-        if (overlay.mode_id) this.mode_id = overlay.mode_id || null;
-        if (overlay.encoding !== undefined) this.encoding = overlay.encoding;
-        if (overlay.attribution !== undefined) this.attribution = overlay.attribution;
-        if (overlay.url) this.url = overlay.url;
-        if (overlay.token) this.token = overlay.token;
-        if (overlay.tilejson !== undefined) {
-            this.tilejson = overlay.tilejson;
-        } else if (this.url !== oldUrl || this.mode_id !== oldModeId) {
-            this.tilejson = null;
-        }
-        if (overlay.styles) {
-            if (overlay.styles && overlay.styles.length) {
-                for (const layer of overlay.styles) {
-                    const l = layer as LayerSpecification;
-                    l.id = `${this.id}-${l.id}`;
-                    // @ts-expect-error Special case Background Layer type
-                    l.source = String(this.id);
-                }
-            }
-            this.styles = overlay.styles as Array<LayerSpecification>;
-        }
-
-        await this.init({
-            clickable: this._clickable,
-            before: opts.before
-        });
-
-        await this.save();
-
-
-        if (this.mode === 'basemap') {
-            const mapStore = useMapStore();
-            await mapStore.updateAttribution();
-        }
-    }
-
-    async delete(): Promise<void> {
-        const mapStore = useMapStore();
-        const wasBasemap = this.mode === 'basemap';
-
-        if (this.mode === 'mission' && this.mode_id) {
-            if (mapStore.mission && mapStore.mission.guid === this.mode_id) {
-                await mapStore.makeActiveMission(undefined);
-            }
-
-            const sub = await Subscription.from(this.mode_id, {
-                subscribed: true
-            });
-
-            if (sub) {
-                await sub.update({ subscribed: false });
-            }
-        }
-
-        this._destroyed = true;
-
-        if (this._timer) {
-            clearInterval(this._timer);
-            this._timer = null;
-        }
-
-        this.remove();
-
-        if (this._internal) return;
-
-        if (this.id) {
-            await db.overlay.delete(this.id);
-
-            const { error, response } = await server.DELETE('/api/profile/overlay', {
-                params: {
-                    query: {
-                        id: String(this.id),
-                    }
-                }
-            });
-
-            if (error && response.status !== 404) throw new Error(error.message);
-        }
-
-        // If the remaining basemaps provide no background color the CloudTAK
-        // default is restored
-        if (wasBasemap) {
-            mapStore.updateBackground();
-            await mapStore.updateAttribution();
-        }
-    }
-
     /**
      * Bring this loaded overlay in line with its local database record.
      * Changes are applied to the map directly and never saved, so records
      * written by another client (via AtlasSync) or by this client's own
      * update()/save() are reflected without echoing a PATCH back to the API.
      */
-    async applyRecord(
-        record: DBOverlay,
-        opts: {
-            before?: string;
-        } = {}
-    ): Promise<void> {
+    async applyRecord(record: DBOverlay): Promise<void> {
         const mapStore = useMapStore();
 
         const current = this.toDBOverlay();
@@ -735,7 +551,7 @@ export default class Overlay {
         this.attribution = record.attribution || '';
         this.url = record.url;
         this.token = record.token;
-        this.tilejson = record.tilejson ?? this.tilejson;
+        this.tilejson = record.url !== current.url ? (record.tilejson ?? null) : (record.tilejson ?? this.tilejson);
 
         if (record.frequency !== current.frequency) {
             if (this._timer) clearInterval(this._timer);
@@ -753,7 +569,7 @@ export default class Overlay {
             this.visible = record.visible;
             this.styles = record.styles as Array<LayerSpecification>;
             this._error = undefined;
-            await this.init({ before: opts.before });
+            await this.init();
             return;
         }
 
@@ -778,7 +594,6 @@ export default class Overlay {
     }
 
     async update(body: {
-        pos?: number;
         visible?: boolean;
         opacity?: number;
     }): Promise<void> {
@@ -810,11 +625,6 @@ export default class Overlay {
         if (this.mode === 'basemap') {
             mapStore.updateBackground();
             await mapStore.updateAttribution();
-        }
-
-        if (body.pos !== undefined && body.pos !== this.pos) {
-            this.pos = body.pos;
-            changed = true;
         }
 
         if (changed) {

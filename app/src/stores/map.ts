@@ -1497,7 +1497,7 @@ export const useMapStore = defineStore('cloudtak', {
             // the rest of map init. Failures are logged and recorded on the
             // overlay instance for MenuOverlays to surface.
             const overlayResults = await Promise.allSettled(profileOverlays.map(item =>
-                Overlay.create(item as ProfileOverlay, { skipSave: true, skipLayers: true })
+                Overlay.create(item as ProfileOverlay, { skipLayers: true })
             ));
 
             const newOverlays: Overlay[] = [];
@@ -1527,6 +1527,8 @@ export const useMapStore = defineStore('cloudtak', {
                 name: 'Map Features',
                 type: 'geojson',
             }));
+
+            OverlayManager.applyOrder();
 
             await FeatureVisibility.apply();
 
@@ -1628,9 +1630,6 @@ export const useMapStore = defineStore('cloudtak', {
                 const pos = OverlayManager.loaded.indexOf(overlay);
                 if (pos !== -1) OverlayManager.loaded.splice(pos, 1);
 
-                // Already torn down by Overlay.delete() on this client
-                if (overlay._destroyed) continue;
-
                 // The overlay was removed out from under us (another client,
                 // or the server pruned it) - drop the mission subscription so
                 // the Missions menu and share targets stop listing it
@@ -1647,20 +1646,14 @@ export const useMapStore = defineStore('cloudtak', {
                 overlay.remove();
             }
 
-            let posChanged = false;
-
             for (const item of desired) {
                 if (!this._map) return;
 
                 const loaded = OverlayManager.loadedFrom(item.id);
 
                 if (loaded) {
-                    if (loaded.pos !== item.pos) posChanged = true;
-
                     try {
-                        await loaded.applyRecord(item, {
-                            before: OverlayManager.loadedBeforeOverlay(loaded)
-                        });
+                        await loaded.applyRecord(item);
                     } catch (err) {
                         console.error(`Failed to reconcile overlay ${item.id} (${item.name}):`, err);
                     }
@@ -1669,10 +1662,9 @@ export const useMapStore = defineStore('cloudtak', {
                 }
 
                 try {
-                    const overlay = await Overlay.create(item as ProfileOverlay, { skipSave: true });
+                    const overlay = await Overlay.create(item as ProfileOverlay);
                     if (!this._map) return;
                     OverlayManager.appendLoaded(overlay);
-                    posChanged = true;
 
                     if (overlay.mode === 'mission' && overlay.mode_id) {
                         overlay.loading = true;
@@ -1692,8 +1684,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (!this._map) return;
 
-            OverlayManager.loaded.sort(OverlayManager.compareStack);
-            if (posChanged) OverlayManager.applyLoadedOrder();
+            OverlayManager.applyOrder();
 
             this.updateBackground();
             await this.updateAttribution();
