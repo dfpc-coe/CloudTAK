@@ -1,13 +1,21 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { serverPatch, reconcileOverlays } = vi.hoisted(() => ({
+const { serverPatch, serverPost, serverDelete, reconcileOverlays, layersOrder } = vi.hoisted(() => ({
     serverPatch: vi.fn(),
-    reconcileOverlays: vi.fn(async () => {})
+    serverPost: vi.fn(),
+    serverDelete: vi.fn(),
+    reconcileOverlays: vi.fn(async () => {}),
+    layersOrder: { ids: [] as string[] }
 }));
 
-vi.mock('../std.ts', () => ({ server: { PATCH: serverPatch } }));
-vi.mock('../stores/map.ts', () => ({ useMapStore: () => ({ reconcileOverlays }) }));
+vi.mock('../std.ts', () => ({ server: { PATCH: serverPatch, POST: serverPost, DELETE: serverDelete } }));
+vi.mock('../stores/map.ts', () => ({
+    useMapStore: () => ({
+        reconcileOverlays,
+        map: { getLayersOrder: () => layersOrder.ids }
+    })
+}));
 vi.mock('../base/overlay-class.ts', () => ({ default: class {} }));
 vi.mock('../base/overlay-sync.ts', () => ({
     syncOverlays: vi.fn(),
@@ -28,6 +36,7 @@ function stub(id: number, name: string, pos: number, mode = 'profile', layered =
         _internal: mode === 'internal',
         moveBefore: vi.fn(),
         anchorLayerId: () => layered ? `layer-${id}` : undefined,
+        layerIds: () => layered ? [`layer-${id}`] : [],
     } as unknown as StubOverlay;
 }
 
@@ -43,7 +52,11 @@ describe('OverlayManager stack order', () => {
     beforeEach(() => {
         OverlayManager.clearLoaded();
         serverPatch.mockReset();
-        reconcileOverlays.mockClear();
+        serverPost.mockReset();
+        serverDelete.mockReset();
+        reconcileOverlays.mockReset();
+        reconcileOverlays.mockResolvedValue(undefined);
+        layersOrder.ids = [];
 
         basemap = stub(10, 'Basemap', -1, 'basemap');
         features = stub(-1, 'Map Features', 3, 'internal');
@@ -96,6 +109,42 @@ describe('OverlayManager stack order', () => {
         expect(ordinary[1].moveBefore).toHaveBeenCalledWith(mission);
         expect(mission.moveBefore).toHaveBeenCalledWith(ordinary[2]);
         expect(basemap.moveBefore).toHaveBeenCalledWith(ordinary[0]);
+    });
+
+    it('applyOrder leaves the map alone when managed layers already match the stack', () => {
+        layersOrder.ids = ['layer-10', 'layer-1', 'layer-2', 'routing-line', 'layer-3', 'layer-4', 'layer-5', 'layer--1'];
+
+        OverlayManager.applyOrder();
+
+        for (const overlay of [basemap, features, ...ordinary]) {
+            expect(overlay.moveBefore).not.toHaveBeenCalled();
+        }
+
+        layersOrder.ids = ['layer-10', 'layer-2', 'layer-1', 'layer-3', 'layer-4', 'layer-5', 'layer--1'];
+
+        OverlayManager.applyOrder();
+
+        expect(ordinary[0].moveBefore).toHaveBeenCalledWith(ordinary[1]);
+    });
+
+    it('createLoaded rolls back a mission overlay whose data failed to load', async () => {
+        serverPost.mockResolvedValue({ data: { id: 40, name: 'Mission', mode: 'mission', mode_id: 'guid', pos: 6 } });
+        serverDelete.mockResolvedValue({ response: { status: 200 } });
+
+        reconcileOverlays.mockImplementation(async () => {
+            if (!OverlayManager.loadedFrom(40)) {
+                const mission = stub(40, 'Mission', 6, 'mission');
+                mission._load = Promise.resolve(null);
+                OverlayManager.appendLoaded(mission);
+            }
+        });
+
+        await expect(OverlayManager.createLoaded({
+            name: 'Mission', mode: 'mission', mode_id: 'guid', url: '/mission/guid', type: 'geojson'
+        })).rejects.toThrow('Failed to load the Data Sync');
+
+        expect(serverDelete).toHaveBeenCalledTimes(1);
+        expect(reconcileOverlays).toHaveBeenCalledTimes(2);
     });
 
     it('reorderLoaded persists the ordinary order, mirrors pos locally and reconciles', async () => {

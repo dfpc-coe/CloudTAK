@@ -78,6 +78,11 @@ export default class OverlayManager extends BaseInterface {
         const overlay = this.loadedFrom(record.id);
         if (!overlay) throw new Error('Overlay was created but could not be loaded');
 
+        if (overlay.mode === 'mission' && overlay._load && !await overlay._load) {
+            await this.deleteLoaded(overlay).catch(() => undefined);
+            throw new Error('Failed to load the Data Sync onto the map');
+        }
+
         return overlay;
     }
 
@@ -141,6 +146,13 @@ export default class OverlayManager extends BaseInterface {
      */
     static applyOrder(): void {
         const stack = this.stack();
+
+        // Moving a layer forces a full symbol re-placement even when it does
+        // not change position, so only touch the map when the order differs
+        const desired = stack.flatMap((overlay) => overlay.layerIds());
+        const managed = new Set(desired);
+        const current = useMapStore().map.getLayersOrder().filter((id) => managed.has(id));
+        if (current.length === desired.length && current.every((id, i) => id === desired[i])) return;
 
         for (let i = stack.length - 1; i >= 0; i--) {
             stack[i].moveBefore(this.anchorAbove(stack, i + 1));

@@ -2,6 +2,7 @@ import type {
     ProfileOverlay,
     ProfileOverlay_Create
 } from '../types.ts';
+import type Subscription from './subscription.ts';
 import { shallowReactive } from 'vue';
 import { DrawToolMode } from '../stores/modules/draw.ts';
 import type { FeatureCollection } from 'geojson';
@@ -40,6 +41,9 @@ export default class Overlay {
 
     _error?: Error;
     _loaded: boolean;
+
+    /** In-flight mission load started by the map store, null result on failure */
+    _load?: Promise<Subscription | null>;
 
     loading: boolean;
 
@@ -489,6 +493,12 @@ export default class Overlay {
         clearOverlayTileJSON(this.id);
     }
 
+    /** Ids of this overlay's style layers that are present on the map, in style order */
+    layerIds(): string[] {
+        const mapStore = useMapStore();
+        return this.styles.filter((l) => mapStore.map.getLayer(l.id)).map((l) => String(l.id));
+    }
+
     /**
      * First renderable layer id of this overlay that is present on the map
      */
@@ -645,7 +655,6 @@ export default class Overlay {
         const { data: saved, error } = await server.PATCH('/api/profile/overlay/{:overlay}', {
             params: { path: { ':overlay': this.id } },
             body: {
-                pos: this.pos,
                 name: this.name,
                 type: this.type,
                 active: this.active,

@@ -466,11 +466,6 @@ async function subscribe(next: boolean) {
             });
 
             try {
-                // loadMission returns null on most failures
-                if (!await mapStore.loadMission(props.subscription.guid)) {
-                    throw new Error('Failed to load the Data Sync onto the map');
-                }
-
                 await props.subscription.update({ subscribed: true });
             } catch (err) {
                 await OverlayManager.deleteLoaded(created).catch(() => undefined);

@@ -935,6 +935,25 @@ export const useMapStore = defineStore('cloudtak', {
             return true;
         },
         /**
+         * Load a Mission overlay's data without blocking the caller - the
+         * single in-flight load is kept on the overlay so creators can await it
+         */
+        startMissionLoad: function(overlay: Overlay): void {
+            if (overlay._load || !overlay.mode_id) return;
+
+            overlay.loading = true;
+
+            overlay._load = this.loadMission(overlay.mode_id, { reload: true })
+                .catch((err) => {
+                    console.error('Failed to load Mission', err);
+                    overlay._error = err instanceof Error ? err : new Error(String(err));
+                    return null;
+                })
+                .finally(() => {
+                    overlay.loading = false;
+                });
+        },
+        /**
          * Given a mission Guid, attempt to refresh the Map Layer, loading the mission if it isn't already loaded
          * @returns {boolean} True if successful, false if not
          */
@@ -1538,16 +1557,7 @@ export const useMapStore = defineStore('cloudtak', {
                 const source = map.getSource(String(overlay.id));
                 if (!source) continue;
 
-                overlay.loading = true;
-
-                this.loadMission(overlay.mode_id!, {
-                    reload: true
-                }).catch((err) => {
-                    console.error('Failed to load Mission', err);
-                    overlay._error = err instanceof Error ? err : new Error(String(err));
-                }).finally(() => {
-                    overlay.loading = false;
-                });
+                this.startMissionLoad(overlay);
             }
 
             this.isMapLoaded = true;
@@ -1667,15 +1677,7 @@ export const useMapStore = defineStore('cloudtak', {
                     OverlayManager.appendLoaded(overlay);
 
                     if (overlay.mode === 'mission' && overlay.mode_id) {
-                        overlay.loading = true;
-                        this.loadMission(overlay.mode_id, { reload: true })
-                            .catch((err) => {
-                                console.error('Failed to load Mission after sync', err);
-                                overlay._error = err instanceof Error ? err : new Error(String(err));
-                            })
-                            .finally(() => {
-                                overlay.loading = false;
-                            });
+                        this.startMissionLoad(overlay);
                     }
                 } catch (err) {
                     console.error(`Failed to load synced overlay ${item.id} (${item.name}):`, err);

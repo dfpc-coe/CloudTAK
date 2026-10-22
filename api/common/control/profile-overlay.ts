@@ -487,6 +487,7 @@ export default class ProfileOverlayControl {
             await this.config.models.ProfileOverlay.generate({
                 name: terrain.name,
                 username,
+                pos: await this.nextPos(username),
                 type: terrain.type,
                 visible: false,
                 mode: 'overlay',
