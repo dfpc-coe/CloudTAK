@@ -25,6 +25,10 @@
 
 ### Pending Release
 
+### v13.112.3 - 2026-10-21
+
+- :Bug: Centralize read/write operations to avoid overlay positional drift between Dexie and MapLibre
+
 ### v13.112.2 - 2026-10-21
 
 - :tada: Certificate metadata returned by the Server, Connection & User APIs now includes `channels` - whether TAK Server signed the certificate with the channels Extended Key Usage (OID `1.2.840.113549.1.9.7`); certificates without it have their channel selection ignored by TAK Server. The Connection card, Server settings, Admin Overview, Admin User page, and the Admin Users list show the state as a `Channels` / `No Channels` badge
