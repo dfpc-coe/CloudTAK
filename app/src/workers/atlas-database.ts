@@ -65,6 +65,9 @@ export default class AtlasDatabase {
     pendingUnhide: Set<string>;
     pendingDelete: Set<string>;
 
+    // Vector ids of the render-only features currently on the map, per CoT
+    derived: Map<string, Set<number>>;
+
     subscriptionPending: Map<string, string>;
 
     breadcrumb: AtlasBreadcrumb & Comlink.ProxyMarked;
@@ -80,6 +83,7 @@ export default class AtlasDatabase {
         this.pendingUnhide = new Set();
         this.pendingHidden = new Set();
         this.pendingDelete = new Set();
+        this.derived = new Map();
 
         this.subscriptionPending = new Map(); // UID, Mission Guid
 
@@ -144,6 +148,40 @@ export default class AtlasDatabase {
     }
 
     /**
+     * Upsert the CoT's derived features and drop any it no longer produces.
+     * A GeoJSON source add replaces an existing id, so no add/update split
+     */
+    private renderDerived(cot: COT, diff: GeoJSONSourceDiff): void {
+        const current = new Set<number>();
+
+        for (const feat of cot.as_derived()) {
+            diff.add!.push(feat);
+            current.add(Number(feat.id));
+        }
+
+        const previous = this.derived.get(cot.id);
+        if (previous) {
+            for (const id of previous) {
+                if (!current.has(id)) diff.remove!.push(id);
+            }
+        }
+
+        if (current.size) {
+            this.derived.set(cot.id, current);
+        } else {
+            this.derived.delete(cot.id);
+        }
+    }
+
+    private removeDerived(id: string, diff: GeoJSONSourceDiff): void {
+        const previous = this.derived.get(id);
+        if (!previous) return;
+
+        for (const vectorId of previous) diff.remove!.push(vectorId);
+        this.derived.delete(id);
+    }
+
+    /**
      * Generate a GeoJSONDiff on existing COT Features
      */
     async diff(): Promise<GeoJSONSourceDiff> {
@@ -165,9 +203,11 @@ export default class AtlasDatabase {
 
             if (this.pendingHidden.has(String(cot.id))) {
                 diff.remove.push(cot.vectorId())
+                this.removeDerived(cot.id, diff);
                 this.pendingHidden.delete(cot.id);
             } else if (!cot.properties.archived && AtlasDatabase.staleElapsed(display_stale, stale, now)) {
                 diff.remove.push(cot.vectorId())
+                this.removeDerived(cot.id, diff);
                 staleDelete.add(cot.id);
             } else if (!cot.properties.archived) {
                 if (now < stale && (cot.properties['icon-opacity'] !== 1 || cot.properties['marker-opacity'] !== 1)) {
@@ -184,6 +224,7 @@ export default class AtlasDatabase {
                         }),
                         newGeometry: fresh.geometry
                     })
+                    this.renderDerived(cot, diff);
                 } else if (now > stale && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['marker-opacity'] !== 0.5)) {
                     cot.properties['icon-opacity'] = 0.5;
                     cot.properties['marker-opacity'] = 0.5;
@@ -198,6 +239,7 @@ export default class AtlasDatabase {
                         }),
                         newGeometry: dimmed.geometry
                     })
+                    this.renderDerived(cot, diff);
                 }
             }
         }
@@ -208,6 +250,7 @@ export default class AtlasDatabase {
 
             const render = cot.as_rendered();
             diff.add.push(render);
+            this.renderDerived(cot, diff);
         }
 
         this.pendingUnhide.clear();
@@ -216,6 +259,7 @@ export default class AtlasDatabase {
             if (cot.is_self || staleDelete.has(cot.id) || this.pendingDelete.has(cot.id)) continue;
             const render = cot.as_rendered();
             diff.add.push(render);
+            this.renderDerived(cot, diff);
         }
 
         this.pendingCreate.clear();
@@ -232,6 +276,7 @@ export default class AtlasDatabase {
                 }),
                 newGeometry: render.geometry
             })
+            this.renderDerived(cot, diff);
         }
 
         this.pendingUpdate.clear();
@@ -245,6 +290,7 @@ export default class AtlasDatabase {
             if (!cot) continue;
 
             diff.remove.push(cot.vectorId());
+            this.removeDerived(id, diff);
             removed.add(id);
         }
 
@@ -332,6 +378,8 @@ export default class AtlasDatabase {
 
         const features: Array<GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>>> = [];
 
+        this.derived.clear();
+
         for (const cot of this.cots.values()) {
             // The user's own position is drawn by the GeolocateControl puck
             // rather than as a CoT marker on the map.
@@ -351,6 +399,12 @@ export default class AtlasDatabase {
             }
 
             features.push(cot.as_rendered());
+
+            const derived = cot.as_derived();
+            if (derived.length) {
+                this.derived.set(cot.id, new Set(derived.map((feat) => Number(feat.id))));
+                features.push(...derived);
+            }
         }
 
         for (const id of deleted) this.cots.delete(id);

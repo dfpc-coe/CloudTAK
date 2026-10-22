@@ -9,6 +9,7 @@ import { WorkerMessageType } from '../utils/events.ts'
 import { TEAM_COLORS, strokeColorFor } from '../utils/team-colors.ts';
 import pointOnFeature from '@turf/point-on-feature';
 import { applyEllipseMutation } from './cot/ellipse.ts';
+import { derivedFeatures, type DerivedFeature } from './cot/derived.ts';
 import type { COTMutation, COTUpdate } from './cot/types.ts';
 import type { paths } from '@cloudtak/api-types';
 import type { Feature, FeaturePropertyCreator, Subscription } from '../types.ts'
@@ -342,7 +343,17 @@ export default class COT {
                         delete this._properties.icon;
                     }
 
+                    // The sensor cone is derived at render time from this block
+                    const sensorBefore = this._properties.sensor;
+                    if (sensorBefore && update.properties.sensor === undefined) {
+                        delete this._properties.sensor;
+                    }
+
                     Object.assign(this._properties, update.properties);
+
+                    if (!isEqual(sensorBefore, this._properties.sensor)) {
+                        visuallyChanged = true;
+                    }
 
                     if (this.is_skittle) this._properties.archived = false;
 
@@ -580,6 +591,18 @@ export default class COT {
 
     as_rendered() {
         return COT.as_rendered(this.as_feature());
+    }
+
+    /**
+     * Render-only companions of this CoT (ie the sensor cone), keyed by a
+     * vector id derived from the CoT id so they can be replaced or removed
+     */
+    as_derived(): DerivedFeature[] {
+        return COT.as_derived(this.as_feature());
+    }
+
+    static as_derived(input: Feature): DerivedFeature[] {
+        return derivedFeatures(input, COT.vectorId);
     }
 
     /**
