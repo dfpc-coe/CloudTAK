@@ -5,6 +5,7 @@ import type { paths } from '@cloudtak/api-types';
 import { server } from '../std.ts';
 import BaseInterface from './interface.ts';
 import Overlay from './overlay-class.ts';
+import { useMapStore } from '../stores/map.ts';
 import { syncOverlays, OVERLAY_LIST_CACHE_KEY } from './overlay-sync.ts';
 import type {
     BaseInterface_ListOptions,
@@ -31,14 +32,12 @@ export type Overlay_Page = {
     items: DBOverlay[];
 };
 
-export type Overlay_CreateLoadedOptions = NonNullable<Parameters<typeof Overlay.create>[1]> & {
-    position?: 'default' | 'prepend';
-};
-
 const loadedOverlays = shallowReactive<Overlay[]>([]) as Overlay[];
 
 export default class OverlayManager extends BaseInterface {
     static readonly listCacheKey = OVERLAY_LIST_CACHE_KEY;
+
+    /** Loaded overlay instances - unordered, use stack() for map order */
     static readonly loaded = loadedOverlays;
 
     static clearLoaded(): void {
@@ -59,66 +58,57 @@ export default class OverlayManager extends BaseInterface {
         return this.loaded.find((overlay) => overlay.mode === mode && overlay.mode_id === modeId);
     }
 
-    private static loadedBeforeId(): string | undefined {
-        return this.loadedAnchorFrom(1);
-    }
-
     static appendLoaded(...overlays: Overlay[]): void {
         this.loaded.push(...overlays);
     }
 
-    static async createLoaded(
-        body: Parameters<typeof Overlay.create>[0],
-        opts: Overlay_CreateLoadedOptions = {}
-    ): Promise<Overlay> {
-        const { position = 'default', ...createOpts } = opts;
-        const overlay = await Overlay.create(body, {
-            ...createOpts,
-            before: createOpts.before ?? this.loadedBeforeId()
-        });
+    /** Loaded overlays in stack order, bottom first */
+    static stack(): Overlay[] {
+        return [...this.loaded].sort(OverlayManager.compareStack);
+    }
 
-        if (position === 'prepend') {
-            this.loaded.unshift(overlay);
-        } else if (this.loaded.length > 0) {
-            this.loaded.splice(1, 0, overlay);
-        } else {
-            this.loaded.push(overlay);
+    /** Create the overlay record and wait for the map to reconcile it */
+    static async createLoaded(
+        body: Parameters<typeof OverlayManager.generate>[0]
+    ): Promise<Overlay> {
+        const record = await this.generate(body);
+
+        await useMapStore().reconcileOverlays();
+
+        const overlay = this.loadedFrom(record.id);
+        if (!overlay) throw new Error('Overlay was created but could not be loaded');
+
+        if (overlay.mode === 'mission' && overlay._load && !await overlay._load) {
+            await this.deleteLoaded(overlay).catch(() => undefined);
+            throw new Error('Failed to load the Data Sync onto the map');
         }
 
         return overlay;
     }
 
-    static async reorderLoaded(
-        orderedIds: number[],
-        movedId: string | number
-    ): Promise<void> {
-        const overlayId = this.overlayId(movedId);
-        const overlay = this.loadedFrom(overlayId);
-        if (!overlay) throw new Error('Could not find Overlay');
-
-        if (this.isPinned(overlay)) throw new Error('Overlay position is fixed');
-        if (!orderedIds.includes(overlayId)) throw new Error('Could not find Overlay in order');
-
-        // Pinned overlays keep their sentinel `pos` - only ordinary overlays
-        // take part in drag order bookkeeping
-        const changed = this.loaded.filter((current) => {
-            if (this.isPinned(current)) return false;
-
-            const pos = orderedIds.indexOf(current.id);
-            if (pos === -1 || pos === current.pos) return false;
-            current.pos = pos;
-            return true;
+    /** Persist a bottom-first order for the ordinary overlays and wait for the map to follow */
+    static async reorderLoaded(orderedIds: number[]): Promise<void> {
+        const ids = orderedIds.filter((id) => {
+            const overlay = this.loadedFrom(id);
+            return overlay && !this.isPinned(overlay);
         });
 
-        this.loaded.sort(OverlayManager.compareStack);
+        const res = await server.PATCH('/api/profile/overlay/order', {
+            body: { ids }
+        });
 
-        // Anchor against the resolved stack rather than the dragged list so a
-        // drop beyond a pinned overlay cannot leave the map out of step
-        overlay.moveBefore(this.loadedAnchorOverlayFrom(this.loaded.indexOf(overlay) + 1));
+        if (res.error) throw new Error(res.error.message);
+        if (!res.data) throw new Error('Failed to reorder overlays');
 
-        const results = await Promise.allSettled(changed.map((current) => current.save()));
-        const failed = results.find((result): result is PromiseRejectedResult => result.status === 'rejected');
-        if (failed) throw failed.reason;
+        const items = res.data.items;
+
+        await db.transaction('rw', db.overlay, async () => {
+            for (const item of items) {
+                await db.overlay.update(item.id, { pos: item.pos });
+            }
+        });
+
+        await useMapStore().reconcileOverlays();
     }
 
     /**
@@ -136,12 +126,12 @@ export default class OverlayManager extends BaseInterface {
      */
     static compareStack(
         this: void,
-        a: { mode: string; pos: number; name: string; _internal?: boolean },
-        b: { mode: string; pos: number; name: string; _internal?: boolean }
+        a: { id: number; mode: string; pos: number; _internal?: boolean },
+        b: { id: number; mode: string; pos: number; _internal?: boolean }
     ): number {
         return OverlayManager.stackRank(a) - OverlayManager.stackRank(b)
             || a.pos - b.pos
-            || a.name.localeCompare(b.name);
+            || a.id - b.id;
     }
 
     private static stackRank(overlay: { mode: string; _internal?: boolean }): number {
@@ -151,12 +141,21 @@ export default class OverlayManager extends BaseInterface {
     }
 
     /**
-     * Move every loaded overlay's map layers so their stacking matches the
-     * `loaded` order (index 0 at the bottom)
+     * Move every loaded overlay's map layers so their stacking matches
+     * stack() - idempotent, so it runs after every reconcile
      */
-    static applyLoadedOrder(): void {
-        for (let i = this.loaded.length - 1; i >= 0; i--) {
-            this.loaded[i].moveBefore(this.loadedAnchorOverlayFrom(i + 1));
+    static applyOrder(): void {
+        const stack = this.stack();
+
+        // Moving a layer forces a full symbol re-placement even when it does
+        // not change position, so only touch the map when the order differs
+        const desired = stack.flatMap((overlay) => overlay.layerIds());
+        const managed = new Set(desired);
+        const current = useMapStore().map.getLayersOrder().filter((id) => managed.has(id));
+        if (current.length === desired.length && current.every((id, i) => id === desired[i])) return;
+
+        for (let i = stack.length - 1; i >= 0; i--) {
+            stack[i].moveBefore(this.anchorAbove(stack, i + 1));
         }
     }
 
@@ -165,42 +164,21 @@ export default class OverlayManager extends BaseInterface {
      * layer on the map - overlays with no layers (e.g. raster-dem terrain,
      * failed or still initializing) cannot be anchored against and are skipped
      */
-    static loadedAnchorOverlayFrom(idx: number): Overlay | undefined {
-        for (let i = idx; i < this.loaded.length; i++) {
-            if (this.loaded[i].anchorLayerId()) return this.loaded[i];
+    private static anchorAbove(stack: Overlay[], idx: number): Overlay | undefined {
+        for (let i = idx; i < stack.length; i++) {
+            if (stack[i].anchorLayerId()) return stack[i];
         }
 
         return undefined;
     }
 
-    /**
-     * First renderable layer id of the overlay stacked directly above the
-     * given one - used to re-insert its layers at the same position
-     */
-    static loadedBeforeOverlay(overlay: Overlay): string | undefined {
-        const idx = this.loaded.indexOf(overlay);
-        if (idx === -1) return undefined;
-
-        return this.loadedAnchorFrom(idx + 1);
-    }
-
-    /**
-     * First renderable layer id present on the map, searching `loaded`
-     * upward from the given index - overlays that failed to load or are
-     * still initializing have no layers and are skipped
-     */
-    static loadedAnchorFrom(idx: number): string | undefined {
-        return this.loadedAnchorOverlayFrom(idx)?.anchorLayerId();
-    }
-
+    /** Delete the overlay record and wait for the map to drop it */
     static async deleteLoaded(idOrOverlay: string | number | Overlay): Promise<void> {
-        const overlay = typeof idOrOverlay === 'object' ? idOrOverlay : this.loadedFrom(idOrOverlay);
-        if (!overlay) return;
+        const id = typeof idOrOverlay === 'object' ? idOrOverlay.id : this.overlayId(idOrOverlay);
 
-        const pos = this.loaded.indexOf(overlay);
-        if (pos !== -1) this.loaded.splice(pos, 1);
+        await this.delete(String(id));
 
-        await overlay.delete();
+        await useMapStore().reconcileOverlays();
     }
 
     static queryableOverlayNames(): string[] {

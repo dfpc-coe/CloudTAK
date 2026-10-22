@@ -66,6 +66,18 @@ export default class ProfileOverlayControl {
         return url;
     }
 
+    /** Style layer ids are scoped to the overlay so two overlays can share a stylesheet on one map */
+    static normalizeStyles(id: number, styles: Array<unknown>): Array<unknown> {
+        const prefix = `${id}-`;
+
+        return styles.map((layer) => {
+            const l = { ...(layer as Record<string, unknown>) };
+            if (typeof l.id === 'string' && !l.id.startsWith(prefix)) l.id = `${prefix}${l.id}`;
+            if (l.type !== 'background') l.source = String(id);
+            return l;
+        });
+    }
+
     /** Asset name backing a `profile` or `data` overlay - the url is `/.../<name>.pmtiles/tile` */
     static assetName(overlay: Pick<ProfileOverlayRow, 'url'>): string {
         return path.parse(overlay.url.replace(/\/tile$/, '')).name;
@@ -120,6 +132,21 @@ export default class ProfileOverlayControl {
         return { guid, token: overlay?.token || undefined };
     }
 
+    /** Next stack position for a user: new overlays always land on top of the ordinary overlays */
+    private async nextPos(username: string): Promise<number> {
+        const top = await this.config.models.ProfileOverlay.list({
+            limit: 1,
+            sort: 'pos',
+            order: GenericListOrder.DESC,
+            where: sql`
+                username = ${username}
+                AND mode != 'basemap'
+            `,
+        });
+
+        return (top.items[0]?.pos ?? -1) + 1;
+    }
+
     private async ensureSingleBasemap(username: string, mode: string, excludeId?: number): Promise<void> {
         if (mode !== 'basemap') return;
 
@@ -172,14 +199,19 @@ export default class ProfileOverlayControl {
 
         patch.type = await this.resolveType({ mode, mode_id: patch.mode_id, type: patch.type });
 
+        if (mode === 'basemap') patch.pos = -1;
+
         if (existing) {
             const overlay = await this.config.models.ProfileOverlay.commit(existing.id, {
                 ...patch,
+                styles: patch.styles ? ProfileOverlayControl.normalizeStyles(existing.id, patch.styles) : undefined,
                 opacity: patch.opacity !== undefined ? String(patch.opacity) : undefined,
             });
 
             return { overlay, created: false };
         }
+
+        if (patch.pos === undefined) patch.pos = await this.nextPos(username);
 
         let subscriptionToken: string | undefined = undefined;
         if (mode === 'mission') {
@@ -193,13 +225,20 @@ export default class ProfileOverlayControl {
             subscriptionToken = sub.data.token;
         }
 
-        const overlay = await this.config.models.ProfileOverlay.generate({
+        let overlay = await this.config.models.ProfileOverlay.generate({
             ...patch,
             mode,
             username,
+            styles: [],
             opacity: String(patch.opacity || 1),
             token: subscriptionToken,
         });
+
+        if (patch.styles && patch.styles.length) {
+            overlay = await this.config.models.ProfileOverlay.commit(overlay.id, {
+                styles: ProfileOverlayControl.normalizeStyles(overlay.id, patch.styles),
+            });
+        }
 
         return { overlay, created: true };
     }
@@ -209,10 +248,52 @@ export default class ProfileOverlayControl {
 
         if (input.url) input.url = ProfileOverlayControl.normalizeUrl(overlay.mode, input.url);
         if (input.active) await this.activate(username, overlay.mode, overlay.id);
+        if (overlay.mode === 'basemap') input.pos = -1;
 
         return await this.config.models.ProfileOverlay.commit(id, {
             ...input,
+            styles: input.styles ? ProfileOverlayControl.normalizeStyles(id, input.styles) : undefined,
             opacity: input.opacity !== undefined ? String(input.opacity) : undefined,
+        });
+    }
+
+    /**
+     * Persist a bottom-first stack order for the user's ordinary overlays.
+     * Basemaps keep their fixed position and are ignored if included.
+     */
+    async reorder(username: string, ids: Array<number>): Promise<Array<ProfileOverlayRow>> {
+        if (new Set(ids).size !== ids.length) throw new Err(400, null, 'Duplicate overlay ids in order');
+
+        const owned = ids.length
+            ? await this.config.models.ProfileOverlay.list({
+                    limit: ids.length,
+                    where: sql`
+                username = ${username}
+                AND ${inArray(ProfileOverlay.id, ids)}
+            `,
+                })
+            : { items: [] as Array<ProfileOverlayRow> };
+
+        const byId = new Map(owned.items.map(overlay => [overlay.id, overlay]));
+        for (const id of ids) {
+            if (!byId.has(id)) throw new Err(404, null, `Overlay ${id} not found`);
+        }
+
+        const ordered = ids.map(id => byId.get(id)!).filter(overlay => overlay.mode !== 'basemap');
+
+        return await this.config.pg.transaction(async (tx) => {
+            const updated: Array<ProfileOverlayRow> = [];
+
+            for (let pos = 0; pos < ordered.length; pos++) {
+                const rows = await tx.update(ProfileOverlay)
+                    .set({ pos, updated: sql`Now()` })
+                    .where(eq(ProfileOverlay.id, ordered[pos].id))
+                    .returning();
+
+                updated.push(rows[0]);
+            }
+
+            return updated;
         });
     }
 
@@ -406,6 +487,7 @@ export default class ProfileOverlayControl {
             await this.config.models.ProfileOverlay.generate({
                 name: terrain.name,
                 username,
+                pos: await this.nextPos(username),
                 type: terrain.type,
                 visible: false,
                 mode: 'overlay',

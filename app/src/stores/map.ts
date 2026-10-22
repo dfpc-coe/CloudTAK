@@ -935,6 +935,25 @@ export const useMapStore = defineStore('cloudtak', {
             return true;
         },
         /**
+         * Load a Mission overlay's data without blocking the caller - the
+         * single in-flight load is kept on the overlay so creators can await it
+         */
+        startMissionLoad: function(overlay: Overlay): void {
+            if (overlay._load || !overlay.mode_id) return;
+
+            overlay.loading = true;
+
+            overlay._load = this.loadMission(overlay.mode_id, { reload: true })
+                .catch((err) => {
+                    console.error('Failed to load Mission', err);
+                    overlay._error = err instanceof Error ? err : new Error(String(err));
+                    return null;
+                })
+                .finally(() => {
+                    overlay.loading = false;
+                });
+        },
+        /**
          * Given a mission Guid, attempt to refresh the Map Layer, loading the mission if it isn't already loaded
          * @returns {boolean} True if successful, false if not
          */
@@ -1497,7 +1516,7 @@ export const useMapStore = defineStore('cloudtak', {
             // the rest of map init. Failures are logged and recorded on the
             // overlay instance for MenuOverlays to surface.
             const overlayResults = await Promise.allSettled(profileOverlays.map(item =>
-                Overlay.create(item as ProfileOverlay, { skipSave: true, skipLayers: true })
+                Overlay.create(item as ProfileOverlay, { skipLayers: true })
             ));
 
             const newOverlays: Overlay[] = [];
@@ -1528,6 +1547,8 @@ export const useMapStore = defineStore('cloudtak', {
                 type: 'geojson',
             }));
 
+            OverlayManager.applyOrder();
+
             await FeatureVisibility.apply();
 
             // Mission loading is fire-and-forget so it does not block map init;
@@ -1536,16 +1557,7 @@ export const useMapStore = defineStore('cloudtak', {
                 const source = map.getSource(String(overlay.id));
                 if (!source) continue;
 
-                overlay.loading = true;
-
-                this.loadMission(overlay.mode_id!, {
-                    reload: true
-                }).catch((err) => {
-                    console.error('Failed to load Mission', err);
-                    overlay._error = err instanceof Error ? err : new Error(String(err));
-                }).finally(() => {
-                    overlay.loading = false;
-                });
+                this.startMissionLoad(overlay);
             }
 
             this.isMapLoaded = true;
@@ -1628,9 +1640,6 @@ export const useMapStore = defineStore('cloudtak', {
                 const pos = OverlayManager.loaded.indexOf(overlay);
                 if (pos !== -1) OverlayManager.loaded.splice(pos, 1);
 
-                // Already torn down by Overlay.delete() on this client
-                if (overlay._destroyed) continue;
-
                 // The overlay was removed out from under us (another client,
                 // or the server pruned it) - drop the mission subscription so
                 // the Missions menu and share targets stop listing it
@@ -1647,20 +1656,14 @@ export const useMapStore = defineStore('cloudtak', {
                 overlay.remove();
             }
 
-            let posChanged = false;
-
             for (const item of desired) {
                 if (!this._map) return;
 
                 const loaded = OverlayManager.loadedFrom(item.id);
 
                 if (loaded) {
-                    if (loaded.pos !== item.pos) posChanged = true;
-
                     try {
-                        await loaded.applyRecord(item, {
-                            before: OverlayManager.loadedBeforeOverlay(loaded)
-                        });
+                        await loaded.applyRecord(item);
                     } catch (err) {
                         console.error(`Failed to reconcile overlay ${item.id} (${item.name}):`, err);
                     }
@@ -1669,21 +1672,12 @@ export const useMapStore = defineStore('cloudtak', {
                 }
 
                 try {
-                    const overlay = await Overlay.create(item as ProfileOverlay, { skipSave: true });
+                    const overlay = await Overlay.create(item as ProfileOverlay);
                     if (!this._map) return;
                     OverlayManager.appendLoaded(overlay);
-                    posChanged = true;
 
                     if (overlay.mode === 'mission' && overlay.mode_id) {
-                        overlay.loading = true;
-                        this.loadMission(overlay.mode_id, { reload: true })
-                            .catch((err) => {
-                                console.error('Failed to load Mission after sync', err);
-                                overlay._error = err instanceof Error ? err : new Error(String(err));
-                            })
-                            .finally(() => {
-                                overlay.loading = false;
-                            });
+                        this.startMissionLoad(overlay);
                     }
                 } catch (err) {
                     console.error(`Failed to load synced overlay ${item.id} (${item.name}):`, err);
@@ -1692,8 +1686,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (!this._map) return;
 
-            OverlayManager.loaded.sort(OverlayManager.compareStack);
-            if (posChanged) OverlayManager.applyLoadedOrder();
+            OverlayManager.applyOrder();
 
             this.updateBackground();
             await this.updateAttribution();

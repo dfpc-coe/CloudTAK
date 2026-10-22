@@ -1469,6 +1469,11 @@
         "query": true,
         "res": true
     },
+    "PATCH /profile/overlay/order": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /profile/overlay/:overlay": {
         "body": false,
         "query": false,
