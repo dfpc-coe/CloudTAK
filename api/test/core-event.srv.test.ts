@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import jwt from 'jsonwebtoken';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import Flight from './flight.js';
+import { setChannels } from '../common/models/CoreEntity.js';
 
 const flight = new Flight();
 
@@ -747,6 +748,66 @@ test('POST: api/core/event - 400 for a user without channels', async () => {
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'channels is required - at least one Channel to share the Event with');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/core/event/:event - an Event without channels inherits the Channels of its Connection', async () => {
+    try {
+        const created = await flight.fetch('/api/core/event', {
+            method: 'POST',
+            auth: {
+                bearer: connectionToken,
+            },
+            body: {
+                name: 'Orphaned Event',
+                type: '10031000001213000000',
+                geometry: { type: 'Point', coordinates: [-104.9903, 39.7392] },
+                channels: [7],
+            },
+        }, true);
+
+        // Events created before sharing was required may have no channels
+        await setChannels(flight.config!.pg, created.body.id, []);
+
+        const groups = [
+            { name: 'Ops', direction: 'IN', created: '2026-01-01', type: 'SYSTEM', bitpos: 4, active: true },
+            { name: 'Ops', direction: 'OUT', created: '2026-01-01', type: 'SYSTEM', bitpos: 4, active: true },
+        ];
+
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
+            if (request.method !== 'GET' || request.url !== '/Marti/api/groups/all?useCache=true') return false;
+
+            response.setHeader('Content-Type', 'application/json');
+            response.write(JSON.stringify({ version: '3', type: 'com.bbn.marti.remote.groups.Group', data: groups }));
+            response.end();
+            return true;
+        });
+        await flight.refreshChannels(1);
+
+        const res = await flight.fetch(`/api/core/event/${created.body.id}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: connectionToken,
+            },
+            body: {
+                remarks: 'Updated',
+            },
+        }, true);
+
+        assert.equal(res.body.remarks, 'Updated');
+        assert.deepEqual(res.body.channels, [4]);
+
+        flight.tak.mockMarti.shift();
+        await flight.refreshChannels(1);
+
+        await flight.fetch(`/api/core/event/${created.body.id}`, {
+            method: 'DELETE',
+            auth: {
+                bearer: connectionToken,
+            },
+        }, true);
     } catch (err) {
         assert.ifError(err);
     }

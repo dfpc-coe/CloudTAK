@@ -45,6 +45,7 @@ test('POST: api/core/event & api/core/device - admin', async () => {
                 type: '10031000001213000000',
                 manufacturer: 'DJI',
                 model: 'Matrice 30',
+                channels: [7],
             },
         }, true);
 
@@ -244,6 +245,7 @@ test('POST: api/connection/1/token - event only & scoped tokens', async () => {
             body: {
                 name: 'UAS-2',
                 type: '10031000001213000000',
+                channels: [7],
             },
         }, true);
 

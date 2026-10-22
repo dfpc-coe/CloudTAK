@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import jwt from 'jsonwebtoken';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import Flight from './flight.js';
+import { setChannels } from '../common/models/CoreEntity.js';
 
 const flight = new Flight();
 
@@ -289,7 +291,7 @@ test('PATCH: api/core/device/:device - update metadata', async () => {
     }
 });
 
-test('PATCH: api/core/device/:device - clear channels', async () => {
+test('PATCH: api/core/device/:device - channels cannot be cleared', async () => {
     try {
         const res = await flight.fetch(`/api/core/device/${deviceId}`, {
             method: 'PATCH',
@@ -299,9 +301,18 @@ test('PATCH: api/core/device/:device - clear channels', async () => {
             body: {
                 channels: [],
             },
+        }, false);
+
+        assert.equal(res.status, 400);
+
+        const current = await flight.fetch(`/api/core/device/${deviceId}`, {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
         }, true);
 
-        assert.deepEqual(res.body.channels, []);
+        assert.deepEqual(current.body.channels, [1]);
     } catch (err) {
         assert.ifError(err);
     }
@@ -361,6 +372,165 @@ test('POST: api/core/device - connection token', async () => {
     }
 });
 
+test('POST: api/core/device - 400 for a user without channels', async () => {
+    try {
+        const res = await flight.fetch('/api/core/device', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                name: 'No Channels',
+                type: '10031000001213000000',
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'channels is required - at least one Channel to share the Device with');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('POST: api/core/device - 400 for a connection token whose Connection has no active Channels', async () => {
+    try {
+        const res = await flight.fetch('/api/core/device', {
+            method: 'POST',
+            auth: {
+                bearer: connectionToken,
+            },
+            body: {
+                name: 'No Channels',
+                type: '10031000001213000000',
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'The Connection has no active Channels to share the Device with - provide channels');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('POST: api/core/device - connection token inherits the Channels of the Connection', async () => {
+    try {
+        const groups = [
+            { name: 'Ops', direction: 'IN', created: '2026-01-01', type: 'SYSTEM', bitpos: 4, active: true },
+            { name: 'Ops', direction: 'OUT', created: '2026-01-01', type: 'SYSTEM', bitpos: 4, active: true },
+            { name: 'Inactive', direction: 'IN', created: '2026-01-01', type: 'SYSTEM', bitpos: 6, active: false },
+        ];
+
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
+            if (request.method !== 'GET' || request.url !== '/Marti/api/groups/all?useCache=true') return false;
+
+            response.setHeader('Content-Type', 'application/json');
+            response.write(JSON.stringify({ version: '3', type: 'com.bbn.marti.remote.groups.Group', data: groups }));
+            response.end();
+            return true;
+        });
+        await flight.refreshChannels(1);
+
+        const res = await flight.fetch('/api/core/device', {
+            method: 'POST',
+            auth: {
+                bearer: connectionToken,
+            },
+            body: {
+                name: 'Inherited Channels',
+                type: '10031000001213000000',
+                external_id: { system: 'feed', value: 'SENSOR-2' },
+            },
+        }, true);
+
+        assert.equal(res.body.connection, 1);
+        assert.deepEqual(res.body.channels, [4]);
+
+        flight.tak.mockMarti.shift();
+        await flight.refreshChannels(1);
+
+        await flight.fetch(`/api/core/device/${res.body.id}`, {
+            method: 'DELETE',
+            auth: {
+                bearer: connectionToken,
+            },
+        }, true);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/core/device/:device - a Device without channels inherits the Channels of its Connection', async () => {
+    try {
+        const created = await flight.fetch('/api/core/device', {
+            method: 'POST',
+            auth: {
+                bearer: connectionToken,
+            },
+            body: {
+                name: 'Orphaned Sensor',
+                type: '10031000001213000000',
+                channels: [7],
+            },
+        }, true);
+
+        // Devices created before sharing was required may have no channels
+        await setChannels(flight.config!.pg, created.body.id, []);
+
+        const groups = [
+            { name: 'Ops', direction: 'IN', created: '2026-01-01', type: 'SYSTEM', bitpos: 4, active: true },
+            { name: 'Ops', direction: 'OUT', created: '2026-01-01', type: 'SYSTEM', bitpos: 4, active: true },
+        ];
+
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
+            if (request.method !== 'GET' || request.url !== '/Marti/api/groups/all?useCache=true') return false;
+
+            response.setHeader('Content-Type', 'application/json');
+            response.write(JSON.stringify({ version: '3', type: 'com.bbn.marti.remote.groups.Group', data: groups }));
+            response.end();
+            return true;
+        });
+        await flight.refreshChannels(1);
+
+        const res = await flight.fetch(`/api/core/device/${created.body.id}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: connectionToken,
+            },
+            body: {
+                status: 'Reduced',
+            },
+        }, true);
+
+        assert.equal(res.body.status, 'Reduced');
+        assert.deepEqual(res.body.channels, [4]);
+
+        // Once shared, a PATCH without channels leaves the assignment alone
+        const again = await flight.fetch(`/api/core/device/${created.body.id}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: connectionToken,
+            },
+            body: {
+                status: 'Full',
+            },
+        }, true);
+
+        assert.deepEqual(again.body.channels, [4]);
+
+        flight.tak.mockMarti.shift();
+        await flight.refreshChannels(1);
+
+        await flight.fetch(`/api/core/device/${created.body.id}`, {
+            method: 'DELETE',
+            auth: {
+                bearer: connectionToken,
+            },
+        }, true);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('POST: api/core/device - 400 for an external_id already used by the Connection', async () => {
     try {
         const res = await flight.fetch('/api/core/device', {
@@ -392,6 +562,7 @@ test('PATCH: api/core/device/:device - 400 for an external_id already used by th
                 name: 'Second Sensor',
                 type: '10031000001213000000',
                 external_id: { system: 'feed', value: 'SENSOR-2' },
+                channels: [7],
             },
         }, true);
 
@@ -494,6 +665,86 @@ test('GET: api/core/device/:device - 403 for connection token on user device', a
         }, false);
 
         assert.equal(res.status, 403);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+// The mock TAK Server reports no channels by default - report channel 7 active
+// for every certificate so Connection 1 shares a channel with a user Device
+const channelSeven = async (request: IncomingMessage, response: ServerResponse): Promise<boolean> => {
+    if (request.method !== 'GET' || request.url !== '/Marti/api/groups/all?useCache=true') return false;
+
+    response.setHeader('Content-Type', 'application/json');
+    response.write(JSON.stringify({
+        version: '3',
+        type: 'com.bbn.marti.remote.groups.Group',
+        data: [{ name: 'SAR', direction: 'IN', created: '2026-01-01', type: 'SYSTEM', bitpos: 7, active: true, description: '' }],
+    }));
+    response.end();
+    return true;
+};
+
+test('GET: api/core/device/:device - connection token with a shared channel active', async () => {
+    try {
+        flight.tak.mockMarti.unshift(channelSeven);
+        await flight.refreshChannels(1);
+
+        // Created by a user, not the Connection, and shared with channel 7
+        const created = await flight.fetch('/api/core/device', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                name: 'Shared Detector',
+                type: '10031000001213000000',
+                channels: [7],
+            },
+        }, true);
+
+        const res = await flight.fetch(`/api/core/device/${created.body.id}`, {
+            method: 'GET',
+            auth: {
+                bearer: connectionToken,
+            },
+        }, true);
+
+        assert.equal(res.body.id, created.body.id);
+        assert.equal(res.body.connection, null);
+        assert.deepEqual(res.body.channels, [7]);
+
+        // Visible is not editable - only the creator may modify a Device
+        const patch = await flight.fetch(`/api/core/device/${created.body.id}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: connectionToken,
+            },
+            body: {
+                remarks: 'Machine Edit',
+            },
+        }, false);
+
+        assert.equal(patch.status, 403);
+
+        flight.tak.mockMarti.splice(flight.tak.mockMarti.indexOf(channelSeven), 1);
+        await flight.refreshChannels(1);
+
+        const inactive = await flight.fetch(`/api/core/device/${created.body.id}`, {
+            method: 'GET',
+            auth: {
+                bearer: connectionToken,
+            },
+        }, false);
+
+        assert.equal(inactive.status, 403);
+
+        await flight.fetch(`/api/core/device/${created.body.id}`, {
+            method: 'DELETE',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
     } catch (err) {
         assert.ifError(err);
     }

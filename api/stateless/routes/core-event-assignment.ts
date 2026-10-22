@@ -6,7 +6,7 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthResource, AuthResourceAccess } from '../../common/auth.js';
 import { CoreEventAssignment } from '../../common/schema.js';
 import type ConfigStateless from '../config.js';
-import EventControl from '../lib/control/event.js';
+import EntityControl from '../lib/control/entity.js';
 import { uniqueViolation } from '../lib/pg-error.js';
 import * as Default from '../lib/limits.js';
 
@@ -15,7 +15,7 @@ import * as Default from '../lib/limits.js';
  * and the Assignment scope for an operation
  */
 export default async function router(schema: Schema, config: ConfigStateless) {
-    const eventControl = new EventControl(config);
+    const eventControl = new EntityControl(config, 'Event');
 
     const resources = [
         { access: AuthResourceAccess.CONNECTION },
@@ -67,7 +67,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const connection = auth instanceof AuthResource ? await eventControl.resourceConnection(auth) : null;
             const event = await config.models.CoreEntity.augmented_from(req.params.event);
-            await eventControl.ensureEventAccess(auth, event, connection);
+            await eventControl.ensureAccess(auth, event, connection);
 
             const list = await config.models.CoreEventAssignment.list({
                 limit: req.query.limit,
@@ -102,7 +102,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const connection = auth instanceof AuthResource ? await eventControl.resourceConnection(auth) : null;
             const event = await config.models.CoreEntity.augmented_from(req.params.event);
-            await eventControl.ensureEventAccess(auth, event, connection);
+            await eventControl.ensureAccess(auth, event, connection);
 
             res.json(await loadAssignment(req.params.event, req.params.assignment));
         } catch (err) {
@@ -139,7 +139,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const connection = auth instanceof AuthResource ? await eventControl.resourceConnection(auth) : null;
             const event = await config.models.CoreEntity.augmented_from(req.params.event);
-            await eventControl.ensureEventEditable(auth, event, connection);
+            await eventControl.ensureEditable(auth, event, connection);
 
             if (req.body.uid) await config.models.Profile.from(req.body.uid);
 
@@ -178,7 +178,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const connection = auth instanceof AuthResource ? await eventControl.resourceConnection(auth) : null;
             const event = await config.models.CoreEntity.augmented_from(req.params.event);
-            await eventControl.ensureEventEditable(auth, event, connection);
+            await eventControl.ensureEditable(auth, event, connection);
 
             await loadAssignment(req.params.event, req.params.assignment);
 
@@ -211,7 +211,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const connection = auth instanceof AuthResource ? await eventControl.resourceConnection(auth) : null;
             const event = await config.models.CoreEntity.augmented_from(req.params.event);
-            await eventControl.ensureEventEditable(auth, event, connection);
+            await eventControl.ensureEditable(auth, event, connection);
 
             await loadAssignment(req.params.event, req.params.assignment);
 

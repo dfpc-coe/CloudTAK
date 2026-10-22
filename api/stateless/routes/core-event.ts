@@ -8,19 +8,19 @@ import { CoreEntity, CoreEntityEvent } from '../../common/schema.js';
 import { sharedWith, setChannels, setExternalId, toExternalId } from '../../common/models/CoreEntity.js';
 import { CoreEvent_Priority, LayerMapping_Destination } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
-import { userChannels, connectionChannels } from '../../common/control/tak-channels.js';
+import { userChannels } from '../../common/control/tak-channels.js';
 import { notifyCoreEvent } from '../lib/core-event.js';
-import EventControl from '../lib/control/event.js';
+import EntityControl from '../lib/control/entity.js';
 import { placementResponse } from '../lib/control/board.js';
 import { ETLEventAction } from '../../common/etl-events.js';
 import { uniqueViolation } from '../lib/pg-error.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
-    const eventControl = new EventControl(config);
+    const eventControl = new EntityControl(config, 'Event');
     const resourceConnection = eventControl.resourceConnection.bind(eventControl);
-    const isEventCreator = eventControl.isEventCreator.bind(eventControl);
-    const ensureEventAccess = eventControl.ensureEventAccess.bind(eventControl);
+    const isEventCreator = eventControl.isCreator.bind(eventControl);
+    const ensureEventAccess = eventControl.ensureAccess.bind(eventControl);
 
     await schema.get('/core/event', {
         name: 'List Events',
@@ -206,13 +206,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const connection = auth instanceof AuthResource ? await resourceConnection(auth) : null;
 
-            let channels = requested;
-            if (!channels) {
-                if (connection === null) throw new Err(400, null, 'channels is required - at least one Channel to share the Event with');
-
-                channels = Array.from(await connectionChannels(config, await config.models.Connection.from(connection)));
-                if (!channels.length) throw new Err(400, null, 'The Connection has no active Channels to share the Event with - provide channels');
-            }
+            const channels = await eventControl.createChannels(connection, requested);
 
             const id = await config.pg.transaction(async (tx) => {
                 const id = await config.models.CoreEntity.generateEvent({
@@ -344,11 +338,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }).catch(uniqueViolation('external_id is already used by another Event of the Connection'));
             }
 
-            if (channels !== undefined) await setChannels(config.pg, req.params.event, channels);
+            const shared = await eventControl.fillChannels(event, channels);
+            if (shared !== undefined) await setChannels(config.pg, req.params.event, shared);
 
             const updated = await config.models.CoreEntity.augmented_from(req.params.event);
 
-            if (changed || channels !== undefined) {
+            if (changed || shared !== undefined) {
                 notifyCoreEvent(config, ETLEventAction.Update, updated);
             }
 

@@ -20879,11 +20879,8 @@ export interface paths {
                              */
                             "marker-opacity"?: number;
                         };
-                        /**
-                         * @description TAK Server Channels to share the Device with
-                         * @default []
-                         */
-                        channels: number[];
+                        /** @description TAK Server Channels to share the Device with - required for users, a Connection or Layer token may omit it to share the Device with the Channels of its Connection */
+                        channels?: number[];
                     };
                 };
             };
@@ -21475,6 +21472,7 @@ export interface paths {
                              */
                             "marker-opacity"?: number;
                         };
+                        /** @description TAK Server Channels to share the Device with - replaces the existing Channels, a Device must always be shared with at least one */
                         channels?: number[];
                     };
                 };

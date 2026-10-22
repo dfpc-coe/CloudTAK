@@ -25,6 +25,12 @@
 
 ### Pending Release
 
+- :rocket: `POST /api/core/device` mirrors `POST /api/core/event` - `channels` is required for users and a Connection or Layer token that omits it shares the Device with the active Channels of its Connection, so machine-created Devices are broadcast to the map instead of sitting unshared
+- :rocket: `PATCH /api/core/device/:device` mirrors the Event API - `channels` can no longer be cleared, and a Device of a Connection that has no Channels inherits the active Channels of its Connection on its next PATCH so previously unshared Devices reach the map
+- :rocket: `PATCH /api/core/event/:event` fills in the active Channels of the Connection for an Event of a Connection that has none, the same as Devices
+- :rocket: Connection & Layer tokens can read a Device shared with an active Channel of their Connection, the same rule Events already followed - editing still requires the creator
+- :rocket: Access control and Channel sharing for Core Events & Devices is shared through one `EntityControl` instead of separate Event & Device control classes
+
 ### v13.112.3 - 2026-10-21
 
 - :Bug: Centralize read/write operations to avoid overlay positional drift between Dexie and MapLibre
