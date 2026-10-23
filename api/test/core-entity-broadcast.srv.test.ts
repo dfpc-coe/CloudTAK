@@ -22,10 +22,8 @@ let unlocatedDeviceId: string;
 let unsharedDeviceId: string;
 
 /** Run one submit cycle against a fake TAK socket & Group API and return the CoTs written */
-async function broadcast(entity?: string): Promise<CoT[]> {
+async function broadcast(entity?: string, admin = new AdminConnConfig(flight.stateful!)): Promise<CoT[]> {
     const written: CoT[] = [];
-
-    const admin = new AdminConnConfig(flight.stateful!);
 
     await admin.submitEntities(
         { open: true, write: (cots: CoT[]) => written.push(...cots) } as unknown as TAK,
@@ -96,6 +94,23 @@ test('Broadcast: a single Entity can be submitted on its own', async () => {
     assert.deepEqual(await broadcast(unlocatedDeviceId), []);
     assert.deepEqual(await broadcast(unsharedDeviceId), []);
     assert.deepEqual(await broadcast(endedEventId), []);
+});
+
+test('Broadcast: an Entity is immediately submitted at most once per interval', async () => {
+    const admin = new AdminConnConfig(flight.stateful!);
+
+    assert.deepEqual((await broadcast(deviceId, admin)).map(cot => cot.uid()), [deviceId]);
+    assert.deepEqual(await broadcast(deviceId, admin), []);
+
+    // The sweep is never throttled and restarts the interval for every Entity it broadcasts
+    const sweep = (await broadcast(undefined, admin)).map(cot => cot.uid()).sort();
+    assert.deepEqual(sweep, [deviceId, eventId].sort());
+    assert.deepEqual(await broadcast(eventId, admin), []);
+
+    // An Entity dropped by the sweep is no longer throttled
+    admin.lastBroadcast.set(unlocatedDeviceId, Date.now());
+    assert.deepEqual(await broadcast(undefined, admin).then(cots => cots.length), 2);
+    assert.equal(admin.lastBroadcast.has(unlocatedDeviceId), false);
 });
 
 flight.landing();

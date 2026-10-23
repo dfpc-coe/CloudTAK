@@ -25,6 +25,7 @@
 
 ### Pending Release
 
+- :rocket: Core Events & Devices are broadcast as CoT at most once every 10s per Entity - a create or update is still sent immediately unless that Entity was broadcast within the last 10s, in which case the next scheduled sweep carries it
 - :rocket: `POST /api/core/device` mirrors `POST /api/core/event` - `channels` is required for users and a Connection or Layer token that omits it shares the Device with the active Channels of its Connection, so machine-created Devices are broadcast to the map instead of sitting unshared
 - :rocket: `PATCH /api/core/device/:device` mirrors the Event API - `channels` can no longer be cleared, and a Device of a Connection that has no Channels inherits the active Channels of its Connection on its next PATCH so previously unshared Devices reach the map
 - :rocket: `PATCH /api/core/event/:event` fills in the active Channels of the Connection for an Event of a Connection that has none, the same as Devices

@@ -13,6 +13,9 @@ import { profileUid } from './control/takserver.js';
 
 const EVENT_STALE = 30 * 60 * 1000;
 
+/** Every located Entity is swept to the TAK Server once per interval and any one Entity is broadcast at most once per interval */
+const ENTITY_INTERVAL = 10 * 1000;
+
 /** A Device has no end - its marker lives for as long as the Device is broadcast */
 const DEVICE_STALE = EVENT_STALE;
 
@@ -237,6 +240,9 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
     submittingEntities: boolean;
     entityInterval?: ReturnType<typeof setInterval>;
 
+    /** When each Entity was last broadcast - throttles immediate submits on create & update */
+    lastBroadcast: Map<string, number>;
+
     constructor(config: ConfigStateful) {
         this.config = config;
         this.id = 0;
@@ -248,6 +254,7 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
         };
 
         this.submittingEntities = false;
+        this.lastBroadcast = new Map();
     }
 
     uid(): string {
@@ -261,7 +268,7 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
             this.submitEntities(tak, api).catch((err) => {
                 console.error(`not ok - ${this.id} - ${this.name} - failed to submit Core Entities:`, err);
             });
-        }, 10000);
+        }, ENTITY_INTERVAL);
 
         this.entityInterval.unref();
     }
@@ -275,6 +282,9 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
 
     async submitEntities(tak: TAK, api: TAKAPI, opts?: { entity?: string }): Promise<void> {
         if (this.submittingEntities || !tak.open) return;
+
+        // An Entity broadcast within the interval waits for the next sweep
+        if (opts?.entity && Date.now() - (this.lastBroadcast.get(opts.entity) ?? 0) < ENTITY_INTERVAL) return;
 
         this.submittingEntities = true;
 
@@ -373,6 +383,11 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
             if (cots.length) {
                 tak.write(cots);
             }
+
+            // A sweep rebuilds the map so Entities that stop broadcasting are dropped
+            const now = Date.now();
+            if (!opts?.entity) this.lastBroadcast.clear();
+            for (const cot of cots) this.lastBroadcast.set(cot.uid(), now);
         } finally {
             this.submittingEntities = false;
         }
