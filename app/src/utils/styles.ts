@@ -30,6 +30,55 @@ export default function styles(id: string, opts: {
 } = {}): Array<LayerSpecification> {
     const styles: Array<LayerSpecification> = [];
 
+    // Sensor cones sit beneath everything else so markers & labels stay legible
+    const sensor: FillLayerSpecification = {
+        id: `${id}-sensor`,
+        type: 'fill',
+        source: id,
+        filter: [
+            'all',
+                ['==', ['get', 'derived'], 'sensor'],
+                ...MinMaxFilter
+        ],
+        layout: {},
+        paint: {
+            'fill-color': ['string', ['get', 'sensor-color'], '#3b82f6'],
+            'fill-opacity': ['number', ['get', 'sensor-fill-opacity'], 0.18]
+        }
+    }
+
+    if (opts.sourceLayer) {
+        sensor['source-layer'] = opts.sourceLayer;
+    }
+
+    styles.push(sensor);
+
+    const sensorLine: LineLayerSpecification = {
+        id: `${id}-sensor-line`,
+        type: 'line',
+        source: id,
+        filter: [
+            'all',
+                ['==', ['get', 'derived'], 'sensor'],
+                ...MinMaxFilter
+        ],
+        layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        paint: {
+            'line-color': ['string', ['get', 'sensor-color'], '#3b82f6'],
+            'line-width': 1.5,
+            'line-opacity': ['number', ['get', 'sensor-stroke-opacity'], 0.7]
+        }
+    }
+
+    if (opts.sourceLayer) {
+        sensorLine['source-layer'] = opts.sourceLayer;
+    }
+
+    styles.push(sensorLine);
+
     const poly: FillLayerSpecification = {
         id: `${id}-poly`,
         type: 'fill',
@@ -37,6 +86,7 @@ export default function styles(id: string, opts: {
         filter: [
             'all',
                 ['==', ["geometry-type"], 'Polygon'],
+                ['!', ['has', 'derived']],
                 ['!=', ['get', 'fill-opacity'], 0],
                 ...MinMaxFilter
         ],
@@ -60,6 +110,7 @@ export default function styles(id: string, opts: {
         filter:
             ['all',
                 ["==", ["geometry-type"], "Polygon"],
+                ['!', ['has', 'derived']],
                 ...MinMaxFilter
             ],
         layout: {
@@ -92,6 +143,7 @@ export default function styles(id: string, opts: {
         filter:
             ['all',
                 ["==", ["geometry-type"], "LineString"],
+                ['!', ['has', 'derived']],
                 ...MinMaxFilter
             ],
         layout: {

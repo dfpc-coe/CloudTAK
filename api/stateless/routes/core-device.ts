@@ -9,13 +9,13 @@ import { sharedWith, setChannels, setExternalId, toExternalId } from '../../comm
 import { LayerMapping_Destination } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
 import { userChannels } from '../../common/control/tak-channels.js';
-import DeviceControl from '../lib/control/device.js';
+import EntityControl from '../lib/control/entity.js';
 import { notifyCoreDevice } from '../lib/core-device.js';
 import { uniqueViolation } from '../lib/pg-error.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
-    const deviceControl = new DeviceControl(config);
+    const deviceControl = new EntityControl(config, 'Device');
 
     await schema.get('/core/device', {
         name: 'List Devices',
@@ -122,7 +122,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const device = await config.models.CoreDevice.augmented_from(req.params.device);
 
-            await deviceControl.ensureDeviceAccess(auth, device, connection);
+            await deviceControl.ensureAccess(auth, device, connection);
 
             res.json(device);
         } catch (err) {
@@ -189,11 +189,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 default: {},
                 description: 'Point styling for the Device',
             }),
-            channels: Type.Array(Type.Integer({ minimum: 0 }), {
+            channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), {
                 uniqueItems: true,
-                default: [],
-                description: 'TAK Server Channels to share the Device with',
-            }),
+                minItems: 1,
+                description: 'TAK Server Channels to share the Device with - required for users, a Connection or Layer token may omit it to share the Device with the Channels of its Connection',
+            })),
         }),
         res: CoreDeviceResponse,
     }, async (req, res) => {
@@ -206,9 +206,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ],
             });
 
-            const { channels, external_id, ...body } = req.body;
+            const { channels: requested, external_id, ...body } = req.body;
 
             const connection = auth instanceof AuthResource ? await deviceControl.resourceConnection(auth) : null;
+
+            const channels = await deviceControl.createChannels(connection, requested);
 
             const id = await config.pg.transaction(async (tx) => {
                 const id = await config.models.CoreDevice.generateDevice({
@@ -267,7 +269,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             style: Type.Optional(Type.Object(CoreEntityStyle.properties, {
                 description: 'Point styling for the Device - replaces the existing style object',
             })),
-            channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), { uniqueItems: true })),
+            channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), {
+                uniqueItems: true,
+                minItems: 1,
+                description: 'TAK Server Channels to share the Device with - replaces the existing Channels, a Device must always be shared with at least one',
+            })),
         }),
         res: CoreDeviceResponse,
     }, async (req, res) => {
@@ -284,11 +290,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const device = await config.models.CoreDevice.augmented_from(req.params.device);
 
-            if (!deviceControl.isDeviceCreator(auth, device, connection)) {
+            if (!deviceControl.isCreator(auth, device, connection)) {
                 throw new Err(403, null, 'Only the Device creator can modify this Device');
             }
 
-            const { channels, external_id, ...body } = req.body;
+            const { channels: requested, external_id, ...body } = req.body;
 
             if (Object.keys(body).length > 0 || external_id !== undefined) {
                 await config.pg.transaction(async (tx) => {
@@ -298,6 +304,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }).catch(uniqueViolation('external_id is already used by another Device of the Connection'));
             }
 
+            const channels = await deviceControl.fillChannels(device, requested);
             if (channels !== undefined) await setChannels(config.pg, req.params.device, channels);
 
             notifyCoreDevice(config, req.params.device);
@@ -332,7 +339,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const device = await config.models.CoreDevice.augmented_from(req.params.device);
 
-            if (!deviceControl.isDeviceCreator(auth, device, connection)) {
+            if (!deviceControl.isCreator(auth, device, connection)) {
                 throw new Err(403, null, 'Only the Device creator can delete this Device');
             }
 
