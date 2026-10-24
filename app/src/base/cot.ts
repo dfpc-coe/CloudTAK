@@ -1,6 +1,6 @@
 import { v4 as randomUUID } from 'uuid';
 import Type2525 from '@tak-ps/node-cot/2525';
-import { server, bearer } from '../std.ts';
+import { server } from '../std.ts';
 import { db, withDbRetry, isDatabaseSuspended, deferFeaturePersist, liveQuery, type DBTaxonomy } from '../database.ts';
 import { bbox } from '@turf/bbox'
 import { length } from '@turf/length'
@@ -9,17 +9,15 @@ import { WorkerMessageType } from '../utils/events.ts'
 import { TEAM_COLORS, strokeColorFor } from '../utils/team-colors.ts';
 import pointOnFeature from '@turf/point-on-feature';
 import { applyEllipseMutation } from './cot/ellipse.ts';
+import FeatureOutbox from './feature-outbox.ts';
 import { derivedFeatures, type DerivedFeature } from './cot/derived.ts';
 import type { COTMutation, COTUpdate } from './cot/types.ts';
-import type { paths } from '@cloudtak/api-types';
 import type { Feature, FeaturePropertyCreator, Subscription } from '../types.ts'
 import type {
     BBox as GeoJSONBBox,
     Feature as GeoJSONFeature,
     Geometry as GeoJSONGeometry,
 } from 'geojson'
-
-type ProfileFeatureBody = paths["/api/profile/feature"]["put"]["requestBody"]["content"]["application/json"];
 
 export interface Origin {
     mode: OriginMode,
@@ -215,10 +213,6 @@ export default class COT {
         this.instance = this._remote ? `remote:${randomUUID()}` : `db:${randomUUID()}`
 
         this.origin = origin || { mode: OriginMode.CONNECTION };
-
-        if (!opts || (opts && opts.skipSave !== true)) {
-            this.save();
-        }
     }
 
     /**
@@ -383,25 +377,21 @@ export default class COT {
             if (opts && opts.onApplied) opts.onApplied(visuallyChanged);
 
             if (this.origin.mode === OriginMode.CONNECTION) {
+                // skipSave: true is passed when applying server state locally
+                // (archive loads, sync events) - saving here would PUT the feature
+                // back to the API, which re-broadcasts a sync event to the user's
+                // other clients and creates a circular sync loop between them
+                const save = (!opts || opts.skipSave !== true) && this.savable;
+
                 // Backgrounded on native: keep the in-memory update, persist on resume
                 if (isDatabaseSuspended()) {
                     deferFeaturePersist(this.id);
+                    if (save) FeatureOutbox.deferQueue(this.id);
+                } else if (save) {
+                    await this.save();
                 } else {
-                    await withDbRetry(() => db.feature.put({
-                        id: this.id,
-                        path: this._path,
-                        properties: this._properties,
-                        geometry: this._geometry
-                    }));
+                    await withDbRetry(() => db.feature.put(FeatureOutbox.row(this.as_feature())));
                 }
-            }
-
-            // skipSave: true is passed when applying server state locally
-            // (archive loads, sync events) - saving here would PUT the feature
-            // back to the API, which re-broadcasts a sync event to the user's
-            // other clients and creates a circular sync loop between them
-            if (!this.is_self && (!opts || opts.skipSave !== true)) {
-                await this.save();
             }
 
             return visuallyChanged;
@@ -409,27 +399,24 @@ export default class COT {
     }
 
     /**
-     * Attempt to save the CoT to the database if necessary
+     * Whether the CoT is one of the user's archived Profile Features and so
+     * is persisted through the feature outbox
      */
-    async save(): Promise<void> {
-        if (
-            !this._remote
+    get savable(): boolean {
+        return !this._remote
             && !this.is_self
             && !this.is_skittle
-            && this.properties.archived
-            && this.origin.mode === OriginMode.CONNECTION
-        ) {
-            const tokenEntry = await db.config.get('token');
-            if (!tokenEntry) return;
+            && !!this.properties.archived
+            && this.origin.mode === OriginMode.CONNECTION;
+    }
 
-            const { error } = await server.PUT('/api/profile/feature', {
-                params: { query: { broadcast: false, submit: false, archive: true } },
-                headers: bearer(tokenEntry.value as string),
-                body: this.as_feature() as ProfileFeatureBody
-            });
+    /**
+     * Persist the CoT locally and queue it for submission to the API
+     */
+    async save(): Promise<void> {
+        if (!this.savable) return;
 
-            if (error) throw new Error(error.message);
-        }
+        await FeatureOutbox.queue(this.as_feature({ clone: true }));
     }
 
     get is_skittle(): boolean {

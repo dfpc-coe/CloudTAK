@@ -34,6 +34,7 @@ import type { SyncTriggerReason } from '../utils/events.ts';
 // worker. The worker-safe sync shared with OverlayManager lives in overlay-sync.
 import { syncOverlays, applyOverlay, removeOverlay } from '../base/overlay-sync.ts';
 import Icon from '../base/icon.ts';
+import FeatureOutbox from '../base/feature-outbox.ts';
 import ContactManager from '../base/contact.ts';
 import GroupManager from '../base/group.ts';
 import Chatroom from '../base/chatroom.ts';
@@ -129,6 +130,8 @@ export default class AtlasSync {
      * events that fired while offline or disconnected were not replayed
      */
     private onTrigger(reason: SyncTriggerReason): void {
+        void FeatureOutbox.push();
+
         this.syncMissions().catch((err: unknown) => {
             console.error(`AtlasSync: Failed to sync missions after ${reason} restored`, err);
         });
@@ -236,7 +239,10 @@ export default class AtlasSync {
 
         const tasks: Array<[SyncDataType, () => Promise<unknown>]> = [
             [SyncDataType.Overlay, () => syncOverlays()],
-            [SyncDataType.Feature, () => this.atlas.db.loadArchive()],
+            [SyncDataType.Feature, async () => {
+                await FeatureOutbox.push();
+                await this.atlas.db.loadArchive();
+            }],
             [SyncDataType.Iconset, () => this.syncIcons()],
             [SyncDataType.Contact, () => ContactManager.sync()],
             [SyncDataType.Group, () => GroupManager.sync()],
