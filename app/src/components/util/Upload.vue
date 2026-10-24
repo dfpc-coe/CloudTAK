@@ -180,6 +180,17 @@ function stage(event: Event) {
     upload();
 }
 
+function uploadError(xhr: XMLHttpRequest): string {
+    try {
+        const body = JSON.parse(xhr.responseText);
+        if (body && typeof body.message === 'string') return `Upload Failed: ${body.message}`;
+    } catch {
+        // Non-JSON error body
+    }
+
+    return `Upload Failed: ${xhr.statusText || xhr.status}`;
+}
+
 async function upload(opts: {
     query?: Record<string, string>;
 } = {}) {
@@ -214,8 +225,9 @@ async function upload(opts: {
                     resolve(responseData);
                 } else {
                     refresh();
-                    emit('error', new Error(`Upload Failed: ${xhr.statusText}`));
-                    reject(new Error(`Upload Failed: ${xhr.statusText}`));
+                    const err = new Error(uploadError(xhr));
+                    emit('error', err);
+                    reject(err);
                 }
             } catch (error) {
                 refresh();

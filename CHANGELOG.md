@@ -25,6 +25,11 @@
 
 ### Pending Release
 
+- :bug: `API` Mission file uploads (`POST /api/marti/missions/:guid/upload`) of text, XML, JSON & `application/octet-stream` files reached TAK Server as empty bodies and were rejected - the global body parsers consumed the raw request stream before it could be forwarded
+- :rocket: `API` `POST /api/marti/missions/:guid/upload` now accepts a `multipart/form-data` upload like every other file route - the file is staged on disk so TAK Server receives the required `Content-Length`; the `name` query param is now an optional override of the form file name
+- :rocket: `UI` Mission file uploads use the standard multipart upload flow
+- :bug: `UI` Failed Mission file uploads show the API error message instead of the bare HTTP status text
+
 ### v13.113.0 - 2026-10-22
 
 - :rocket: Core Events & Devices are broadcast as CoT at most once every 10s per Entity - a create or update is still sent immediately unless that Entity was broadcast within the last 10s, in which case the next scheduled sweep carries it
