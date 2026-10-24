@@ -1160,7 +1160,7 @@
         "res": true
     },
     "POST /marti/missions/:guid/upload": {
-        "body": false,
+        "body": true,
         "query": true,
         "res": true
     },
