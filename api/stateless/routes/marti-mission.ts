@@ -1,5 +1,7 @@
 import { Type } from '@sinclair/typebox';
 import path from 'node:path';
+import fs from 'node:fs';
+import { Busboy } from '@fastify/busboy';
 import qr from 'qr-image';
 import tokml from 'tokml';
 import Schema from '@openaddresses/batch-schema';
@@ -27,12 +29,14 @@ import {
 } from '@tak-ps/node-tak/lib/api/types';
 import TAKServerControl, { profileUid } from '../../common/control/takserver.js';
 import MissionControl from '../lib/control/mission.js';
+import AttachmentControl from '../lib/control/attachment.js';
 
 const MISSION_COT_SUBMIT_MAX = 100;
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     const takserver = new TAKServerControl(config);
     const missionControl = new MissionControl(config);
+    const attachmentControl = new AttachmentControl(config);
 
     await schema.get('/marti/missions/:guid', {
         name: 'Get Mission',
@@ -666,40 +670,83 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         params: Type.Object({
             guid: Type.String(),
         }),
-        description: 'Create an upload',
+        description: 'Upload a file to a Mission as a multipart form upload - the file is staged on disk only until TAK Server accepts it',
         query: Type.Object({
-            name: Type.String(),
+            name: Type.Optional(Type.String({
+                description: 'Override the file name from the multipart form',
+            })),
         }),
+        body: {
+            'multipart/form-data': true,
+        },
         res: GenericMartiResponse,
     }, async (req, res) => {
         try {
+            const contentType = req.headers['content-type'];
+
+            if (!contentType || !contentType.startsWith('multipart/form-data')) {
+                throw new Err(400, null, 'Unsupported Content-Type');
+            }
+
             const { user, api, opts } = await missionControl.context(req, req.params.guid);
             const creatorUid = user.email;
 
-            const name = String(req.query.name);
-
-            const content = await api.Files.upload({
-                name: name,
-                contentLength: Number(req.headers['content-length']),
-                keywords: [],
-                creatorUid: creatorUid,
-            }, req);
-
-            // @ts-expect-error Morgan will throw an error after not getting req.ip and there not being req.connection.remoteAddress
-            req.connection = {
-                // @ts-expect-error not a known type
-                remoteAddress: req._remoteAddress,
-            };
-
-            const missionContent = await api.Mission.attachContents(
-                req.params.guid,
-                {
-                    hashes: [content.Hash],
+            const bb = new Busboy({
+                headers: {
+                    'content-type': contentType,
                 },
-                opts,
-            );
+                limits: {
+                    files: 1,
+                },
+            });
 
-            res.json(missionContent);
+            let staged: Promise<{ path: string; size: number; cleanup: () => Promise<void>; name: string }> | undefined;
+
+            bb.on('file', (fieldname, file, filename) => {
+                const name = path.basename(req.query.name || filename);
+
+                staged = attachmentControl.stage(name, file).then((result) => {
+                    return { ...result, name };
+                });
+
+                staged.catch(() => {});
+            }).on('error', (err) => {
+                req.unpipe(bb);
+                req.resume();
+                Err.respond(err, res);
+            }).on('finish', async () => {
+                let cleanup: (() => Promise<void>) | undefined;
+
+                try {
+                    if (!staged) throw new Err(400, null, 'No file uploaded');
+
+                    const file = await staged;
+                    cleanup = file.cleanup;
+
+                    const content = await api.Files.upload({
+                        name: file.name,
+                        contentLength: file.size,
+                        keywords: [],
+                        creatorUid,
+                    }, fs.createReadStream(file.path));
+
+                    const missionContent = await api.Mission.attachContents(
+                        req.params.guid,
+                        {
+                            hashes: [content.Hash],
+                        },
+                        opts,
+                    );
+
+                    res.json(missionContent);
+                } catch (err) {
+                    Err.respond(err, res);
+                } finally {
+                    if (cleanup) await cleanup();
+                }
+            });
+
+            req.pipe(bb);
         } catch (err) {
             Err.respond(err, res);
         }

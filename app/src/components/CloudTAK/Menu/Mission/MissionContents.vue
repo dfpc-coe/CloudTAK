@@ -31,13 +31,9 @@
             class='mx-2'
         >
             <Upload
-                ref='upload'
                 :url='stdurl(`/api/marti/missions/${props.subscription.guid}/upload`)'
                 :headers='uploadHeaders'
-                :autoupload='false'
-                format='raw'
                 method='POST'
-                @staged='uploadStaged($event)'
                 @error='error = $event'
                 @cancel='upload = false'
                 @done='doneUpload'
@@ -204,7 +200,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, useTemplateRef, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import { from } from 'rxjs';
 import { liveQuery } from '../../../../database.ts';
@@ -272,7 +268,6 @@ const filteredContents = computed(() => {
     });
 });
 
-const uploadRef = useTemplateRef<typeof Upload>('upload');
 const upload = ref(false);
 const token = ref<string | null>(null);
 
@@ -294,21 +289,6 @@ const uploadHeaders = computed(() => {
 
 async function doneUpload() {
     upload.value = false;
-    await props.subscription.fetch();
-}
-
-async function uploadStaged(ev: { name: string }) {
-
-    if (uploadRef.value) {
-        await uploadRef.value.upload({
-            query: {
-                name: ev.name
-            }
-        });
-    } else {
-        throw new Error("Upload Not Found");
-    }
-
     await props.subscription.fetch();
 }
 
