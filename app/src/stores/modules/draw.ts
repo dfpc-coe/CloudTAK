@@ -435,7 +435,7 @@ export default class DrawTool {
                             callsign: 'New Feature',
                             time: now.toISOString(),
                             start: now.toISOString(),
-                            stale: new Date(now.getTime() + 3600).toISOString(),
+                            stale: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(),
                             center: [0,0]
                         },
                         geometry: JSON.parse(JSON.stringify(storeFeat.geometry))
@@ -772,7 +772,7 @@ export default class DrawTool {
                         callsign: 'New Feature',
                         time: now.toISOString(),
                         start: now.toISOString(),
-                        stale: new Date(now.getTime() + 3600).toISOString(),
+                        stale: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(),
                         center: [0, 0]
                     },
                     geometry: JSON.parse(JSON.stringify(drawn.geometry))

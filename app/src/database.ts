@@ -29,6 +29,19 @@ export interface DBFeature {
     path: string;
     properties: Feature["properties"];
     geometry: Feature["geometry"];
+    /** false while a local create/edit awaits confirmation from the API */
+    synced?: boolean;
+    /** Tombstone for a local delete awaiting confirmation from the API */
+    deleted?: boolean;
+    attempts?: number;
+    error?: string;
+}
+
+/** A cached MapLibre font glyph range (`<fontstack>/<start>-<end>`) */
+export interface DBGlyph {
+    id: string;
+    data: ArrayBuffer;
+    updated: number;
 }
 
 export interface DBBreadcrumb {
@@ -283,6 +296,7 @@ export type DatabaseType = Dexie & {
     iconset: EntityTable<DBIconset, 'uid'>,
     overlay: EntityTable<DBOverlay, 'id'>,
     sprite: EntityTable<DBSprite, 'id'>,
+    glyph: EntityTable<DBGlyph, 'id'>,
     group: EntityTable<GroupChannel, 'name'>,
     video: EntityTable<DBVideo, 'id'>,
     filter: EntityTable<DBFilter, 'id'>,
@@ -359,6 +373,10 @@ db.version(4).stores({
 
 db.version(5).stores({
     taxonomy: 'type',
+});
+
+db.version(6).stores({
+    glyph: 'id',
 });
 
 let reopenPromise: Promise<void> | null = null;
