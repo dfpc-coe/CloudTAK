@@ -709,10 +709,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     return { ...result, name };
                 });
 
-                staged.catch(() => {});
+                // Drain the part so busboy still reaches 'finish' and reports the failure
+                staged.catch(() => file.resume());
             }).on('error', (err) => {
                 req.unpipe(bb);
                 req.resume();
+
+                if (staged) staged.then(file => file.cleanup()).catch(() => {});
+
                 Err.respond(err, res);
             }).on('finish', async () => {
                 let cleanup: (() => Promise<void>) | undefined;

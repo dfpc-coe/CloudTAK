@@ -18,6 +18,7 @@
 - ETLs in v14 will be required to declare Named Schemas, single schema support will be removed
 - The Minio Legacy Store will be removed in V14 - Ensure you have migrated to Garage before updating to v14.
 - CoreEntity single external ID support will be removed in v14 - ensure you have migrated to multi-system external IDs before updating to v14.
+- The `GET /api/fonts/:fontstack/:start-:end.pbf` glyph endpoint is deprecated and will be removed in v14 - the web app now draws labels from bundled font files via the style `font-faces` property
 
 ### Beta Notice
 
@@ -31,6 +32,9 @@
 - :rocket: `API` `POST /api/marti/missions/:guid/upload` now accepts a `multipart/form-data` upload like every other file route - the file is staged on disk so TAK Server receives the required `Content-Length`; the `name` query param is now an optional override of the form file name
 - :rocket: `UI` Mission file uploads use the standard multipart upload flow
 - :bug: `UI` Failed Mission file uploads show the API error message instead of the bare HTTP status text
+- :rocket: `UI` Map labels are drawn from a bundled Open Sans Bold font via the style `font-faces` property instead of glyph ranges fetched from `/api/fonts`, so labels never wait on the network
+- :rocket: `UI` Background location now has its own prominent disclosure, shown immediately after the foreground location grant and again before every settings hand-off from Settings > Permissions, to satisfy the Google Play User Data policy - the shared `LocationDisclosure` component names background use ("even when the app is closed or not in use") and requires an explicit `Agree and continue`
+- :bug: `UI` On Android, Settings > Permissions showed no action for Background Location until it had been denied once, leaving users who chose "While using the app" with no way to upgrade from inside the app
 
 ### v13.113.0 - 2026-10-22
 

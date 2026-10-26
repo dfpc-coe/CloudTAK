@@ -29,6 +29,12 @@ export interface DBFeature {
     path: string;
     properties: Feature["properties"];
     geometry: Feature["geometry"];
+    /** false while a local create/edit awaits confirmation from the API */
+    synced?: boolean;
+    /** Tombstone for a local delete awaiting confirmation from the API */
+    deleted?: boolean;
+    attempts?: number;
+    error?: string;
 }
 
 export interface DBBreadcrumb {

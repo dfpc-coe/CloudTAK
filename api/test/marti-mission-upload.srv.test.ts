@@ -6,6 +6,7 @@ import Sinon from 'sinon';
 import { Readable } from 'node:stream';
 import S3 from '../common/aws/s3.js';
 import stream2buffer from '../stateless/lib/stream.js';
+import AttachmentControl from '../stateless/lib/control/attachment.js';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 const flight = new Flight();
@@ -159,6 +160,34 @@ test('POST: api/marti/missions/:guid/upload - rejects a non-multipart body', asy
         assert.match(res.body.message, /multipart\/form-data/);
         assert.ok(!seen.upload);
     } finally {
+        flight.tak.reset();
+    }
+});
+
+test('POST: api/marti/missions/:guid/upload - responds instead of hanging when the file cannot be staged', async () => {
+    const seen: Seen = {};
+    mockTAK(seen);
+    const stage = Sinon.stub(AttachmentControl.prototype, 'stage').rejects(new Error('ENOSPC: no space left on device'));
+
+    try {
+        const body = new FormData();
+        body.append('file', new Blob([Buffer.alloc(64 * 1024, 'x')], { type: 'text/plain' }), 'big.txt');
+
+        const res = await flight.fetch(`/api/marti/missions/${missionGuid}/upload`, {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            headers: {
+                missionauthorization: 'test-mission-token',
+            },
+            body,
+        }, false);
+
+        assert.equal(res.status, 500);
+        assert.ok(!seen.upload);
+    } finally {
+        stage.restore();
         flight.tak.reset();
     }
 });
