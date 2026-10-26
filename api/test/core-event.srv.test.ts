@@ -437,6 +437,9 @@ test('PATCH: api/core/event/:event - update links & style', async () => {
                 }, {
                     name: 'Evacuation Map',
                     url: 'https://example.com/incident/1234/evac',
+                }, {
+                    name: 'Call +1 808-555-0027',
+                    url: 'tel:+18085550027',
                 }],
                 // The shape the Event View submits - the icon picker and the
                 // opacity range both feed the style object
@@ -454,6 +457,9 @@ test('PATCH: api/core/event/:event - update links & style', async () => {
         }, {
             name: 'Evacuation Map',
             url: 'https://example.com/incident/1234/evac',
+        }, {
+            name: 'Call +1 808-555-0027',
+            url: 'tel:+18085550027',
         }]);
 
         assert.deepEqual(res.body.style, {
@@ -475,6 +481,20 @@ test('PATCH: api/core/event/:event - update links & style', async () => {
 
         assert.deepEqual(cleared.body.links, []);
         assert.deepEqual(cleared.body.style, {});
+
+        for (const url of ['javascript:alert(1)', 'tel:', 'tel:call me', 'ftp://example.com']) {
+            const invalid = await flight.fetch(`/api/core/event/${eventId}`, {
+                method: 'PATCH',
+                auth: {
+                    bearer: flight.token.admin,
+                },
+                body: {
+                    links: [{ name: 'Bad Link', url }],
+                },
+            }, false);
+
+            assert.equal(invalid.status, 400, `${url} is rejected`);
+        }
     } catch (err) {
         assert.ifError(err);
     }

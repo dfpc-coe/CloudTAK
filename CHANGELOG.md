@@ -26,6 +26,9 @@
 
 ### Pending Release
 
+- :tada: `API` CoreEvent & CoreDevice `links` accept `tel:` URLs alongside `https://` so a marker can carry a tappable phone number - ATAK opens the `r-u` link in the dialer, which no longer carries a `text/html` mime (#1954)
+- :rocket: `UI` Core Entity `tel:` links show a phone icon and open in the current window
+
 ### v13.114.1 - 2026-10-26
 
 - :rocket: Remove need to Glyphs API entirely

@@ -346,7 +346,7 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
 
                     links.push({
                         relation: 'r-u',
-                        mime: 'text/html',
+                        ...(link.url.startsWith('tel:') ? {} : { mime: 'text/html' }),
                         url: link.url,
                         remarks: link.name,
                     });

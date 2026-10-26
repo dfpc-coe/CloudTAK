@@ -18,7 +18,7 @@ const Channels = Type.Array(Type.Integer({ minimum: 0 }), {
 
 export const CoreEntityLinkSchema = Type.Object({
     name: Type.String({ title: 'Name', description: 'Human readable name of the Link' }),
-    url: Type.String({ title: 'URL', description: 'URL the Link points at', pattern: '^(https?:\\/\\/.+|)$' }),
+    url: Type.String({ title: 'URL', description: 'URL the Link points at - an https:// or tel: URL', pattern: '^(https?:\\/\\/.+|tel:\\+?[0-9()\\-.]+|)$' }),
 });
 
 /**
