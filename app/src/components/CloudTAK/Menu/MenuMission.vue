@@ -4,6 +4,27 @@
         :loading='(!subscription && !error) || loading'
         :scroll='false'
     >
+        <template #header='{ isModal }'>
+            <div
+                v-if='subscription && subscription.subscribed'
+                class='mission-name flex-grow-1 text-break'
+                :class='isModal ? "modal-title px-1" : "strong px-2"'
+                style='min-width: 0'
+                role='button'
+                tabindex='0'
+                title='Zoom to Mission Features'
+                @click='zoomToFeatures'
+                @keydown.enter.prevent='zoomToFeatures'
+                v-text='subscription.meta.name'
+            />
+            <div
+                v-else
+                class='flex-grow-1 text-break user-select-none'
+                :class='isModal ? "modal-title px-1" : "strong px-2"'
+                style='min-width: 0'
+                v-text='subscription ? subscription.meta.name : "Data Sync"'
+            />
+        </template>
         <template #buttons>
             <TablerDelete
                 v-if='!loading && subscription && subscription.subscribed && subscription.role.permissions.includes("MISSION_DELETE")'
@@ -242,6 +263,17 @@ async function shareToPackageSetup(): Promise<void> {
     shareToPackage.value.shown = true;
 }
 
+async function zoomToFeatures(): Promise<void> {
+    if (!subscription.value) return;
+    error.value = undefined;
+
+    try {
+        await subscription.value.feature.zoomTo();
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
+
 async function deleteMission() {
     if (!subscription.value) return;
 
@@ -313,3 +345,15 @@ async function fetchMission(reload = false): Promise<void> {
     }
 }
 </script>
+
+<style scoped>
+.mission-name {
+    cursor: pointer;
+}
+
+.mission-name:hover,
+.mission-name:focus-visible {
+    text-decoration: underline;
+    outline: none;
+}
+</style>
