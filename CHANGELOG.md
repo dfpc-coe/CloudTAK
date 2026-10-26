@@ -25,6 +25,8 @@
 
 ### Pending Release
 
+### v13.114.0 - 2026-10-26
+
 - :bug: `API` Mission file uploads (`POST /api/marti/missions/:guid/upload`) of text, XML, JSON & `application/octet-stream` files reached TAK Server as empty bodies and were rejected - the global body parsers consumed the raw request stream before it could be forwarded
 - :rocket: `API` `POST /api/marti/missions/:guid/upload` now accepts a `multipart/form-data` upload like every other file route - the file is staged on disk so TAK Server receives the required `Content-Length`; the `name` query param is now an optional override of the form file name
 - :rocket: `UI` Mission file uploads use the standard multipart upload flow
