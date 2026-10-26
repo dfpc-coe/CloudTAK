@@ -26,6 +26,10 @@
 
 ### Pending Release
 
+### v13.114.1 - 2026-10-26
+
+- :rocket: Remove need to Glyphs API entirely
+
 ### v13.114.0 - 2026-10-26
 
 - :bug: `API` Mission file uploads (`POST /api/marti/missions/:guid/upload`) of text, XML, JSON & `application/octet-stream` files reached TAK Server as empty bodies and were rejected - the global body parsers consumed the raw request stream before it could be forwarded
