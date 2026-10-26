@@ -86,22 +86,34 @@
                 :err='error'
             />
             <template v-else>
-                <TablerPillGroup
+                <div
                     v-if='subscription && subscription.subscribed'
-                    :model-value='String(route.name)'
-                    :options='missionTabs'
-                    @update:model-value='navigateMissionTab'
+                    ref='tabs'
                 >
-                    <template #option='{ option }'>
-                        <span :title='option.label'>
-                            <component
-                                :is='missionTabIcons[option.value]'
-                                :size='32'
-                                stroke='1'
-                            />
-                        </span>
-                    </template>
-                </TablerPillGroup>
+                    <TablerPillGroup
+                        :model-value='String(route.name)'
+                        :options='missionTabs'
+                        @update:model-value='navigateMissionTab'
+                    >
+                        <template #option='{ option }'>
+                            <span
+                                class='d-inline-flex align-items-center'
+                                :title='option.label'
+                            >
+                                <component
+                                    :is='missionTabIcons[option.value]'
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <span
+                                    v-if='showTabLabels'
+                                    class='ms-1'
+                                    v-text='option.label'
+                                />
+                            </span>
+                        </template>
+                    </TablerPillGroup>
+                </div>
 
                 <Suspense>
                     <router-view
@@ -127,7 +139,8 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, triggerRef, onMounted, onBeforeUnmount, watch } from 'vue';
+import { ref, computed, triggerRef, onMounted, onBeforeUnmount, watch, useTemplateRef } from 'vue';
+import { useElementSize } from '@vueuse/core';
 import { std } from '../../../std.ts';
 import type { Feature } from '../../../types.ts';
 import type { Component } from 'vue';
@@ -183,6 +196,12 @@ const missionTabIcons: Record<string, Component> = {
     'home-menu-mission-contents': IconFiles,
     'home-menu-mission-chats': IconMessage,
 };
+
+const MISSION_TAB_LABEL_WIDTH = 100;
+
+const tabs = useTemplateRef('tabs');
+const { width: tabsWidth } = useElementSize(tabs);
+const showTabLabels = computed(() => tabsWidth.value >= missionTabs.length * MISSION_TAB_LABEL_WIDTH);
 
 function navigateMissionTab(name: string) {
     const suffix = name.replace('home-menu-mission-', '');

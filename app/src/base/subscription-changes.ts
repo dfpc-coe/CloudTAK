@@ -5,6 +5,8 @@ import type {
     MissionChange
 } from '../types.ts'
 
+const CHANGES_SECAGO = 7 * 24 * 60 * 60;
+
 /**
  * High Level Wrapper around the Data/Mission Sync API
  */
@@ -30,9 +32,19 @@ export default class SubscriptionChanges {
         return headers;
     }
 
-    async refresh(): Promise<void> {
+    async refresh(
+        opts?: {
+            all?: boolean,
+        }
+    ): Promise<void> {
+        const query: { secago?: number, squashed: boolean } = { squashed: true };
+        if (!opts?.all) query.secago = CHANGES_SECAGO;
+
         const { data, error } = await server.GET('/api/marti/missions/{:guid}/changes', {
-            params: { path: { ':guid': this.guid } },
+            params: {
+                path: { ':guid': this.guid },
+                query
+            },
             headers: this.headers()
         });
 
