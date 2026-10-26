@@ -207,8 +207,12 @@ export default class OverlayManager extends BaseInterface {
         return this.loaded.filter((overlay) => overlay.mode === 'mission' && overlay.mode_id);
     }
 
-    static visibleBasemaps(): Overlay[] {
-        return this.loaded.filter((overlay) => overlay.mode === 'basemap' && overlay.mode_id && overlay.visible);
+    static visible(mode?: string): Overlay[] {
+        return this.loaded.filter((overlay) => {
+            if (!overlay.visible) return false;
+            if (mode === undefined) return true;
+            return overlay.mode === mode && !!overlay.mode_id;
+        });
     }
 
     static async count(opts: Omit<Overlay_ListOptions, 'limit' | 'page' | 'sync'> = {}): Promise<number> {

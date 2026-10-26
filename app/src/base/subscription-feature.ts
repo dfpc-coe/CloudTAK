@@ -298,6 +298,36 @@ export default class SubscriptionFeature {
         return bbox(await this.collection() as GeoJSONFeatureCollection);
     }
 
+    /**
+     * Fit the map to the extent of the mission's features.
+     * No-op when the mission has no features with usable geometry
+     */
+    async zoomTo(): Promise<void> {
+        const bounds = await this.bounds();
+        if (bounds.some((v) => !Number.isFinite(v))) return;
+
+        const channel = new BroadcastChannel('cloudtak');
+
+        channel.postMessage({
+            type: WorkerMessageType.Map_FitBounds,
+            body: {
+                bounds,
+                options: {
+                    maxZoom: 16,
+                    padding: {
+                        top: 25,
+                        bottom: 25,
+                        left: 25,
+                        right: 25
+                    },
+                    speed: Infinity,
+                }
+            }
+        });
+
+        channel.close();
+    }
+
     async from(
         uid: string
     ): Promise<Feature | undefined> {

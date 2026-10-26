@@ -39,8 +39,13 @@
                                     Mission
                                 </p>
                                 <h2
-                                    class='h4 mb-0 text-truncate'
+                                    class='h4 mb-0 text-truncate mission-name'
                                     style='max-width: calc(100% - 48px);'
+                                    role='button'
+                                    tabindex='0'
+                                    title='Zoom to Mission Features'
+                                    @click='zoomToFeatures'
+                                    @keydown.enter.prevent='zoomToFeatures'
                                     v-text='props.subscription.name'
                                 />
                             </div>
@@ -438,6 +443,16 @@ async function fetchSubscriptions() {
     }
 }
 
+async function zoomToFeatures(): Promise<void> {
+    error.value = undefined;
+
+    try {
+        await props.subscription.feature.zoomTo();
+    } catch (err) {
+        fail(err);
+    }
+}
+
 async function updateDescription(description: string) {
     error.value = undefined;
 
@@ -496,6 +511,16 @@ async function subscribe(next: boolean) {
 </script>
 
 <style scoped>
+.mission-name {
+    cursor: pointer;
+}
+
+.mission-name:hover,
+.mission-name:focus-visible {
+    text-decoration: underline;
+    outline: none;
+}
+
 .mission-editable-border:deep(.tabler-border__tools) {
     opacity: 0;
     pointer-events: none;

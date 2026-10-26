@@ -135,13 +135,20 @@ export default class AtlasDatabase {
     /**
      * Return a Set of coordinates within the given Map bounds
      * so that vertex snapping can take place when editing
+     *
+     * @param opts.missions - Mission GUIDs whose features should also contribute vertices
      */
-    async snapping(bboxarr: [number, number][]): Promise<Set<[number, number]>> {
+    async snapping(
+        bboxarr: [number, number][],
+        opts: {
+            missions?: string[]
+        } = {}
+    ): Promise<Set<[number, number]>> {
         const bounds = new LngLatBounds(bboxarr as [LngLatLike, LngLatLike]);
         const coords = new Set<[number, number]>();
 
-        for (const cot of this.cots.values()) {
-            coordEach(cot.geometry, (coord) => {
+        const collect = (geometry: Feature["geometry"]) => {
+            coordEach(geometry, (coord) => {
                 const min = coord.slice(0, 2) as [number, number];
 
                 if (min[0] < -180 || min[0] > 180 || min[1] < -90 || min[1] > 90) {
@@ -152,6 +159,22 @@ export default class AtlasDatabase {
                     coords.add(min);
                 }
             });
+        };
+
+        for (const cot of this.cots.values()) {
+            collect(cot.geometry);
+        }
+
+        if (opts.missions && opts.missions.length) {
+            const feats = await db.subscription_feature
+                .where('mission')
+                .anyOf(opts.missions)
+                .filter((f) => !f.deleted)
+                .toArray();
+
+            for (const feat of feats) {
+                collect(feat.geometry);
+            }
         }
 
         return coords;

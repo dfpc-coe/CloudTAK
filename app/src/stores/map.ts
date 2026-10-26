@@ -1389,7 +1389,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             map.on('moveend', async () => {
                 if (this.draw.mode !== DrawToolMode.STATIC) {
-                    this.draw.snapping = await this.worker.db.snapping(this.map.getBounds().toArray());
+                    await this.draw.refreshSnapping();
                 } else {
                     this.draw.snapping.clear();
                 }
@@ -1748,7 +1748,7 @@ export const useMapStore = defineStore('cloudtak', {
             // background color; checked bottom-up, the base-most one wins.
             let color: PropertyValueSpecification<string> = 'hsl(47, 26%, 88%)';
 
-            for (const overlay of OverlayManager.visibleBasemaps()) {
+            for (const overlay of OverlayManager.visible('basemap')) {
                 const bg = overlay.styles.find(
                     (l): l is Extract<LayerSpecification, { type: 'background' }> => l.type === 'background'
                 );
@@ -1763,7 +1763,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.map.setPaintProperty('background', 'background-color', color);
         },
         updateAttribution: async function(): Promise<void> {
-            const attributions = OverlayManager.visibleBasemaps()
+            const attributions = OverlayManager.visible('basemap')
                 .map((overlay) => overlay.attribution)
                 .filter((a): a is string => !!a);
 
