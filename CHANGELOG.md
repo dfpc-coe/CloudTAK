@@ -26,6 +26,11 @@
 
 ### Pending Release
 
+### v13.114.2 - 2026-10-26
+
+- :tada: Clicking on the name of the mission zooms to the mission extent
+- :rocket: Show labels next to Data Sync tabs when the sidebar is wide enough to avoid truncation, and show the tab icon only when the sidebar is narrow
+- :rocket: Only load the last 7 days of changes by default in the Mission Timeline view
 - :tada: `API` CoreEvent & CoreDevice `links` accept `tel:` URLs alongside `https://` so a marker can carry a tappable phone number - ATAK opens the `r-u` link in the dialer, which no longer carries a `text/html` mime (#1954)
 - :rocket: `UI` Core Entity `tel:` links show a phone icon and open in the current window
 
