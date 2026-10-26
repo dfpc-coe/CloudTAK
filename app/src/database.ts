@@ -37,13 +37,6 @@ export interface DBFeature {
     error?: string;
 }
 
-/** A cached MapLibre font glyph range (`<fontstack>/<start>-<end>`) */
-export interface DBGlyph {
-    id: string;
-    data: ArrayBuffer;
-    updated: number;
-}
-
 export interface DBBreadcrumb {
     id: string;          // `${uid}.track`
     uid: string;         // the source CoT UID being tracked
@@ -296,7 +289,6 @@ export type DatabaseType = Dexie & {
     iconset: EntityTable<DBIconset, 'uid'>,
     overlay: EntityTable<DBOverlay, 'id'>,
     sprite: EntityTable<DBSprite, 'id'>,
-    glyph: EntityTable<DBGlyph, 'id'>,
     group: EntityTable<GroupChannel, 'name'>,
     video: EntityTable<DBVideo, 'id'>,
     filter: EntityTable<DBFilter, 'id'>,
@@ -373,10 +365,6 @@ db.version(4).stores({
 
 db.version(5).stores({
     taxonomy: 'type',
-});
-
-db.version(6).stores({
-    glyph: 'id',
 });
 
 let reopenPromise: Promise<void> | null = null;

@@ -75,6 +75,19 @@
                 </div>
             </StandardItem>
         </div>
+
+        <TablerModal
+            v-if='disclosure'
+            size='lg'
+        >
+            <LocationDisclosure
+                :stage='disclosure'
+                :settings='disclosureOpensSettings'
+                :working='Boolean(working)'
+                @accept='acceptDisclosure'
+                @decline='disclosure = undefined'
+            />
+        </TablerModal>
     </MenuTemplate>
 </template>
 
@@ -92,9 +105,11 @@ import {
     IconRefresh,
     IconSun,
 } from '@tabler/icons-vue';
-import { TablerBadge, TablerIconButton } from '@tak-ps/vue-tabler';
+import { TablerBadge, TablerIconButton, TablerModal } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
+import LocationDisclosure from '../util/LocationDisclosure.vue';
+import type { LocationDisclosureStage } from '../util/LocationDisclosure.vue';
 import { isNativePlatform } from '../../../utils/capacitor.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useDeviceStore } from '../../../stores/device.ts';
@@ -113,6 +128,7 @@ type PermissionStatusText = Record<PermissionKey, string>;
 const loading = ref(true);
 const error = ref('');
 const working = ref<PermissionKey | undefined>();
+const disclosure = ref<LocationDisclosureStage | undefined>();
 
 const permissionDescriptors: PermissionDescriptor[] = [{
     key: 'notification',
@@ -161,7 +177,7 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
     },
     denied: {
         location: 'Location access is currently blocked. Use the button below to try again.',
-        backgroundLocation: 'Location access is currently blocked, so background location sharing is unavailable.',
+        backgroundLocation: 'Background location access is currently blocked. Use the button below to open Settings.',
         notification: 'Notification access is currently blocked. Use the button below to try again.',
         orientation: 'Device orientation access is currently blocked. Use the button below to try again.',
         storage: 'Persistent storage was not granted. Use the button below to try again.',
@@ -276,16 +292,25 @@ function descriptionFor(type: PermissionKey, status: BrowserPermissionState): st
     }
 }
 
-// Background location on native is granted from system settings, not an
-// in-app prompt - offer to open them instead of a permission request.
-function offersNativeSettings(type: PermissionKey, status: BrowserPermissionState): boolean {
-    return isNativePlatform()
-        && type === 'backgroundLocation'
-        && (status === 'when_in_use' || status === 'denied');
+// Native prompts are only ever shown for location, and only from behind the
+// disclosure; a denied permission is re-granted from system settings.
+function offersNativeRequest(type: PermissionKey, status: BrowserPermissionState): boolean {
+    if (!isNativePlatform()) return false;
+    if (type === 'location') return status === 'prompt' || status === 'denied';
+    if (type === 'backgroundLocation') {
+        return deviceStore.permissions.location === 'granted'
+            && ['prompt', 'when_in_use', 'denied'].includes(status);
+    }
+    return false;
 }
 
+const disclosureOpensSettings = computed(() => {
+    const type = disclosure.value === 'background' ? 'backgroundLocation' : 'location';
+    return isNativePlatform() && deviceStore.permissions[type] === 'denied';
+});
+
 function canRequest(type: PermissionKey, status: BrowserPermissionState): boolean {
-    if (offersNativeSettings(type, status)) return true;
+    if (offersNativeRequest(type, status)) return true;
     if (isNativePlatform()) return false;
 
     if (type === 'orientation' && !deviceStore.orientation.hasPermissionRequest() && status !== 'granted') {
@@ -296,13 +321,13 @@ function canRequest(type: PermissionKey, status: BrowserPermissionState): boolea
 }
 
 function shouldShowAction(type: PermissionKey, status: BrowserPermissionState): boolean {
-    if (offersNativeSettings(type, status)) return true;
+    if (offersNativeRequest(type, status)) return true;
     return !isNativePlatform() && status !== 'granted' && status !== 'unsupported';
 }
 
 function actionLabel(status: BrowserPermissionState, type: PermissionKey): string {
-    if (offersNativeSettings(type, status)) return 'Open Settings';
     if (working.value === type) return 'Requesting...';
+    if (isNativePlatform() && status === 'denied') return 'Open Settings';
     if (type === 'orientation' && !deviceStore.orientation.hasPermissionRequest() && status !== 'granted') return 'Unavailable';
     if (status === 'denied') return 'Re-request Permission';
     if (status === 'granted') return 'Allowed';
@@ -319,34 +344,47 @@ async function refreshStatuses(): Promise<void> {
     }
 }
 
+// Location consent is collected on the disclosure before any system prompt
+// or settings hand-off (Play prominent disclosure requirement).
 async function requestPermission(type: PermissionKey): Promise<void> {
-    if (isNativePlatform()) {
-        if (type !== 'backgroundLocation') return;
-
+    if (type === 'location' || type === 'backgroundLocation') {
         error.value = '';
-        working.value = type;
-
-        try {
-            await deviceStore.geolocation.openNativeSettings();
-        } catch (err) {
-            error.value = err instanceof Error ? err.message : 'Failed to open system settings';
-        } finally {
-            working.value = undefined;
-            await refreshStatuses();
-        }
-
+        disclosure.value = type === 'backgroundLocation' ? 'background' : 'location';
         return;
     }
 
+    if (isNativePlatform()) return;
+
+    await runRequest(type);
+}
+
+async function acceptDisclosure(): Promise<void> {
+    const type: PermissionKey = disclosure.value === 'background' ? 'backgroundLocation' : 'location';
+    disclosure.value = undefined;
+    await runRequest(type);
+}
+
+async function runRequest(type: PermissionKey): Promise<void> {
     error.value = '';
     working.value = type;
 
     try {
         switch (type) {
             case 'location':
+                if (isNativePlatform() && deviceStore.permissions.location === 'denied') {
+                    await deviceStore.geolocation.openNativeSettings();
+                    break;
+                }
                 await deviceStore.geolocation.request(() => {
                     void mapStore.startLocationWatch();
                 });
+                break;
+            case 'backgroundLocation':
+                if (deviceStore.permissions.backgroundLocation === 'denied') {
+                    await deviceStore.geolocation.openNativeSettings();
+                    break;
+                }
+                await deviceStore.geolocation.requestBackground();
                 break;
             case 'camera':
                 await deviceStore.camera.request();

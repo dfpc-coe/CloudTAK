@@ -13,7 +13,7 @@ import { defineStore } from 'pinia'
 import { markRaw } from 'vue';
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import IconManager from './modules/icons.ts';
-import GlyphManager from './modules/glyphs.ts';
+import FontManager from './modules/fonts.ts';
 import MenuManager from './modules/menu.ts';
 import BottomBarManager from './modules/bottombar.ts';
 import { useDeviceStore, type BatteryInfo, type NativeDeliveryOptions } from './device.ts';
@@ -1211,8 +1211,6 @@ export const useMapStore = defineStore('cloudtak', {
                 console.error('Failed to load map configuration, using defaults', err);
             }
 
-            const glyphs = GlyphManager.glyphsUrl();
-
             const init: mapgl.MapOptions = {
                 container: this.container,
                 hash: true,
@@ -1228,7 +1226,7 @@ export const useMapStore = defineStore('cloudtak', {
                 clickTolerance: 10,
                 style: {
                     version: 8,
-                    glyphs,
+                    'font-faces': FontManager.fontFaces(),
                     sprite: sprites,
                     state: {
                         theme: { default: useAppStore().resolvedTheme },
