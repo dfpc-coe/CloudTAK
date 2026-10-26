@@ -43,12 +43,35 @@ function isNetworkFailure(err: unknown): boolean {
     return err instanceof Error && /timed out/i.test(err.message);
 }
 
+/** The API refused the change and will keep refusing it - retrying cannot help */
+export class OutboxRejectedError extends Error {
+    status: number;
+
+    constructor(message: string, status: number) {
+        super(message);
+        this.status = status;
+    }
+}
+
+const RETRYABLE_STATUS = new Set([401, 408, 429]);
+
+function requestError(message: string, status?: number): Error {
+    if (status !== undefined && status >= 400 && status < 500 && !RETRYABLE_STATUS.has(status)) {
+        return new OutboxRejectedError(message, status);
+    }
+
+    return new Error(message);
+}
+
 let running: { promise: Promise<boolean>, again: boolean } | undefined;
 let retryTimer: ReturnType<typeof setTimeout> | undefined;
 
 export default class FeatureOutbox {
     /** Unconfirmed local changes, mirrored from Dexie so hot paths avoid a read */
     static pending: Map<string, OutboxState> = new Map();
+
+    /** Called once the API has confirmed a change (a 404 on delete counts) */
+    static onConfirmed: ((id: string, state: OutboxState) => void) | undefined;
 
     static async load(): Promise<void> {
         const rows = await db.feature.filter(isPendingFeature).toArray();
@@ -100,6 +123,13 @@ export default class FeatureOutbox {
     /** Record a change made while IndexedDB was suspended; the row is written on resume */
     static deferQueue(id: string): void {
         FeatureOutbox.pending.set(id, OutboxState.Upsert);
+    }
+
+    /** Forget an unconfirmed create or edit - the feature is being removed on purpose */
+    static discard(id: string): void {
+        if (FeatureOutbox.pending.get(id) === OutboxState.Upsert) {
+            FeatureOutbox.pending.delete(id);
+        }
     }
 
     /** Persist a local delete as a tombstone and submit it in the background */
@@ -187,6 +217,11 @@ export default class FeatureOutbox {
                     await FeatureOutbox.submit(row);
                 }
             } catch (err) {
+                if (err instanceof OutboxRejectedError) {
+                    await FeatureOutbox.rejected(row, err);
+                    continue;
+                }
+
                 ok = false;
                 await FeatureOutbox.failed(row, err);
 
@@ -198,12 +233,12 @@ export default class FeatureOutbox {
     }
 
     private static async submit(row: DBFeature): Promise<void> {
-        const { error } = await server.PUT('/api/profile/feature', {
+        const { error, response } = await server.PUT('/api/profile/feature', {
             params: { query: { broadcast: false, submit: false, archive: true } },
             body: asFeature(row) as ProfileFeatureBody
         });
 
-        if (error) throw new Error(error.message);
+        if (error) throw requestError(error.message, response?.status);
 
         // Confirm only if the row was not changed again while the request was in flight
         await withDbRetry(() => db.transaction('rw', db.feature, async () => {
@@ -212,6 +247,7 @@ export default class FeatureOutbox {
 
             await db.feature.update(row.id, { synced: true, attempts: 0, error: undefined });
             FeatureOutbox.pending.delete(row.id);
+            FeatureOutbox.onConfirmed?.(row.id, OutboxState.Upsert);
         }));
     }
 
@@ -220,13 +256,36 @@ export default class FeatureOutbox {
             params: { path: { ':id': row.id }, query: { permanent: false } }
         });
 
-        if (error && response.status !== 404) throw new Error(error.message);
+        if (error && response?.status !== 404) throw requestError(error.message, response?.status);
 
         await withDbRetry(() => db.transaction('rw', db.feature, async () => {
             const current = await db.feature.get(row.id);
             if (!current || !current.deleted) return;
 
             await db.feature.delete(row.id);
+            FeatureOutbox.pending.delete(row.id);
+            FeatureOutbox.onConfirmed?.(row.id, OutboxState.Delete);
+        }));
+    }
+
+    /**
+     * Give up on a change the API refused: a rejected delete drops the
+     * tombstone and a rejected edit is left for the next archive load to
+     * overwrite with the server copy
+     */
+    private static async rejected(row: DBFeature, err: OutboxRejectedError): Promise<void> {
+        console.warn(`FeatureOutbox: ${row.id} rejected by the API (${err.status}): ${err.message}`);
+
+        await withDbRetry(() => db.transaction('rw', db.feature, async () => {
+            const current = await db.feature.get(row.id);
+            if (!current || !isPendingFeature(current)) return;
+
+            if (current.deleted) {
+                await db.feature.delete(row.id);
+            } else {
+                await db.feature.update(row.id, { synced: true, error: err.message });
+            }
+
             FeatureOutbox.pending.delete(row.id);
         }));
     }

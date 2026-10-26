@@ -12,7 +12,7 @@ import type Atlas from './atlas.ts';
 import Subscription from '../base/subscription.ts';
 import { coordEach } from '@turf/meta'
 import COT, { OriginMode } from '../base/cot.ts';
-import FeatureOutbox, { isPendingFeature } from '../base/feature-outbox.ts';
+import FeatureOutbox, { OutboxState, isPendingFeature } from '../base/feature-outbox.ts';
 import ContactManager from '../base/contact.ts';
 import TAKNotification, { NotificationType } from '../base/notification.ts';
 import { WorkerMessageType } from '../utils/events.ts';
@@ -89,6 +89,15 @@ export default class AtlasDatabase {
         this.subscriptionPending = new Map(); // UID, Mission Guid
 
         this.breadcrumb = Comlink.proxy(new AtlasBreadcrumb(this));
+
+        // The Deleted list is read from the API, so it refreshes once a delete lands there
+        FeatureOutbox.onConfirmed = (id, state) => {
+            if (state !== OutboxState.Delete) return;
+
+            this.atlas.postMessage({
+                type: WorkerMessageType.Feature_Archived_Removed
+            });
+        };
     }
 
     async makeActiveMission(guid? : string): Promise<void> {
@@ -772,7 +781,9 @@ export default class AtlasDatabase {
         id: string,
         opts: {
             mission?: boolean,
-            skipNetwork?: boolean
+            skipNetwork?: boolean,
+            /** The removal mirrors server state and must not discard an unconfirmed local edit */
+            keepPending?: boolean
         } = {
             mission: false,
             skipNetwork: false
@@ -788,8 +799,8 @@ export default class AtlasDatabase {
             return;
         }
 
-        // A server-side delete does not discard an unconfirmed local edit - it is resubmitted
-        if (opts.skipNetwork && FeatureOutbox.isPending(id) && !FeatureOutbox.isTombstone(id)) {
+        // The server copy was deleted before the local edit reached it - the edit is resubmitted
+        if (opts.keepPending && FeatureOutbox.isPending(id) && !FeatureOutbox.isTombstone(id)) {
             return;
         }
 
@@ -813,13 +824,15 @@ export default class AtlasDatabase {
             this.pendingDelete.add(id);
 
             if (cot.properties.archived) {
-                if (!opts.skipNetwork) {
+                if (opts.skipNetwork) {
+                    FeatureOutbox.discard(id);
+
+                    this.atlas.postMessage({
+                        type: WorkerMessageType.Feature_Archived_Removed
+                    });
+                } else {
                     await FeatureOutbox.tombstone(cot.as_feature({ clone: true }));
                 }
-
-                this.atlas.postMessage({
-                    type: WorkerMessageType.Feature_Archived_Removed
-                });
             }
         } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
             const subscription = await Subscription.from(cot.origin.mode_id, {

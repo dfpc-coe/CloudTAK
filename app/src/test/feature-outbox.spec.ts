@@ -116,6 +116,51 @@ describe('FeatureOutbox', () => {
         expect(FeatureOutbox.isPending('a')).toBe(false);
     });
 
+    it('gives up on a change the API permanently rejects instead of retrying it', async () => {
+        server.PUT.mockResolvedValue({ error: { message: 'Invalid geometry' }, response: { status: 400 } });
+        server.DELETE.mockResolvedValue({ error: { message: 'Forbidden' }, response: { status: 403 } });
+
+        await FeatureOutbox.queue(feat('bad'));
+        await FeatureOutbox.tombstone(feat('kept'));
+
+        expect(await FeatureOutbox.push()).toBe(true);
+
+        const bad = await db.feature.get('bad');
+        expect(bad?.synced).toBe(true);
+        expect(bad?.error).toBe('Invalid geometry');
+        expect(FeatureOutbox.isPending('bad')).toBe(false);
+
+        expect(await db.feature.get('kept')).toBeUndefined();
+        expect(FeatureOutbox.isPending('kept')).toBe(false);
+
+        expect(server.PUT).toHaveBeenCalledTimes(1);
+        expect(server.DELETE).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps retrying a 429 or an expired session', async () => {
+        server.PUT.mockResolvedValue({ error: { message: 'Too Many Requests' }, response: { status: 429 } });
+
+        await FeatureOutbox.queue(feat('a'));
+        expect(await FeatureOutbox.push()).toBe(false);
+        expect(FeatureOutbox.isPending('a')).toBe(true);
+
+        FeatureOutbox.cancelRetry();
+    });
+
+    it('reports confirmed deletes through onConfirmed', async () => {
+        server.DELETE.mockResolvedValue({ data: {}, response: { status: 200 } });
+        const confirmed: Array<[string, OutboxState]> = [];
+        FeatureOutbox.onConfirmed = (id, state) => confirmed.push([id, state]);
+
+        try {
+            await FeatureOutbox.tombstone(feat('a'));
+            await FeatureOutbox.push();
+            expect(confirmed).toEqual([['a', OutboxState.Delete]]);
+        } finally {
+            FeatureOutbox.onConfirmed = undefined;
+        }
+    });
+
     it('restores pending state from Dexie', async () => {
         await db.feature.bulkPut([
             { ...rowOf(feat('up')), synced: false },

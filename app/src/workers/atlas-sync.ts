@@ -362,7 +362,7 @@ export default class AtlasSync {
             }
         } else if (event.type === SyncDataType.Feature) {
             if (event.action === SyncEventAction.Delete && event.id !== undefined) {
-                await this.atlas.db.remove(String(event.id), { skipNetwork: true });
+                await this.atlas.db.remove(String(event.id), { skipNetwork: true, keepPending: true });
             } else if (event.body) {
                 // The event carries the mutated feature inline - apply it
                 // directly with no follow-up fetch. db.add() is idempotent and
@@ -412,7 +412,7 @@ export default class AtlasSync {
                 // The feature was deleted after the event was emitted. Drop it
                 // locally without a network delete (skipNetwork) so we don't
                 // re-broadcast a sync event.
-                await this.atlas.db.remove(id, { skipNetwork: true }).catch(() => undefined);
+                await this.atlas.db.remove(id, { skipNetwork: true, keepPending: true }).catch(() => undefined);
                 return;
             }
 

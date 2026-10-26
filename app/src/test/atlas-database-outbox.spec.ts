@@ -16,6 +16,7 @@ vi.mock('../std.ts', async (importOriginal) => ({
 import { db, type DBFeature } from '../database.ts';
 import AtlasDatabase from '../workers/atlas-database.ts';
 import FeatureOutbox from '../base/feature-outbox.ts';
+import { WorkerMessageType } from '../utils/events.ts';
 import type Atlas from '../workers/atlas.ts';
 import type { Feature, InputFeature } from '../types.ts';
 
@@ -153,6 +154,55 @@ describe('AtlasDatabase feature outbox', () => {
         await FeatureOutbox.push();
         expect(await db.feature.get('a')).toBeUndefined();
         expect(FeatureOutbox.isPending('a')).toBe(false);
+    });
+
+    it('removes a pending edit when the user deletes it, but not when a server event does', async () => {
+        server.PUT.mockRejectedValue(new TypeError('Failed to fetch'));
+        const store = setup();
+
+        await store.add(feat('a', 'local'), { authored: true });
+        await store.add(feat('b', 'local'), { authored: true });
+        await FeatureOutbox.push();
+        FeatureOutbox.cancelRetry();
+
+        // Another client deleted the server copy before the edit reached it - the edit wins
+        await store.remove('a', { skipNetwork: true, keepPending: true });
+        expect(store.pendingDelete.has('a')).toBe(false);
+        expect(FeatureOutbox.isPending('a')).toBe(true);
+
+        // The user deleted it through the API - nothing is left to resubmit
+        await store.remove('b', { skipNetwork: true });
+        expect(store.pendingDelete.has('b')).toBe(true);
+        expect(FeatureOutbox.isPending('b')).toBe(false);
+
+        server.PUT.mockClear();
+        server.PUT.mockResolvedValue({ data: {} });
+        await store.diff();
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        await FeatureOutbox.push();
+
+        expect(server.PUT.mock.calls.map((call) => call[1].body.id)).toEqual(['a']);
+        expect(await db.feature.get('b')).toBeUndefined();
+    });
+
+    it('announces an archived delete only once the API confirms it', async () => {
+        server.PUT.mockResolvedValue({ data: {} });
+        server.DELETE.mockResolvedValue({ error: { message: 'offline' }, response: { status: 502 } });
+        const store = setup();
+        const postMessage = store.atlas.postMessage as ReturnType<typeof vi.fn>;
+        const removedCount = () => postMessage.mock.calls.filter((call) => call[0].type === WorkerMessageType.Feature_Archived_Removed).length;
+
+        await store.add(feat('a', 'local'), { authored: true });
+        await FeatureOutbox.push();
+
+        await store.remove('a');
+        await FeatureOutbox.push();
+        FeatureOutbox.cancelRetry();
+        expect(removedCount()).toBe(0);
+
+        server.DELETE.mockResolvedValue({ data: {}, response: { status: 200 } });
+        await FeatureOutbox.push();
+        expect(removedCount()).toBe(1);
     });
 
     it('hydrates a pending edit but not a tombstone, and keeps both out of the prune set', async () => {
