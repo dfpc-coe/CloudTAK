@@ -600,7 +600,17 @@ export default class Overlay {
             }
 
             if (this.type === 'raster-dem') this.applyTerrain();
+            await this.refreshSnapping();
         }
+    }
+
+    private async refreshSnapping(): Promise<void> {
+        if (this.mode !== 'mission') return;
+
+        const mapStore = useMapStore();
+        if (mapStore.draw.mode === DrawToolMode.STATIC) return;
+
+        await mapStore.draw.refreshSnapping();
     }
 
     async update(body: {
@@ -629,6 +639,7 @@ export default class Overlay {
             }
 
             if (this.type === 'raster-dem') this.applyTerrain({ ease: true });
+            await this.refreshSnapping();
             changed = true;
         }
 

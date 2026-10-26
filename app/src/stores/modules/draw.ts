@@ -727,10 +727,23 @@ export default class DrawTool {
             this.draw.start();
             this.draw.setMode(mode)
 
-            this.snapping = await this.mapStore.worker.db.snapping(
-                this.mapStore.map.getBounds().toArray()
-            );
+            await this.refreshSnapping();
         }
+    }
+
+    /**
+     * Reload the vertex snapping set for the current map bounds from
+     * Map Features and any visible Mission overlays
+     */
+    async refreshSnapping(): Promise<void> {
+        this.snapping = await this.mapStore.worker.db.snapping(
+            this.mapStore.map.getBounds().toArray(),
+            {
+                missions: OverlayManager.visible('mission')
+                    .map((overlay) => overlay.mode_id)
+                    .filter((guid): guid is string => !!guid)
+            }
+        );
     }
 
     async finish(): Promise<void> {
