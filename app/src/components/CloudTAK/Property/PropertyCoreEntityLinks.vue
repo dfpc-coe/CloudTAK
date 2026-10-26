@@ -86,7 +86,7 @@
                             <TablerInput
                                 v-model='draft.url'
                                 label='URL'
-                                placeholder='https://example.com'
+                                placeholder='https://example.com or tel:+18005550100'
                             />
                         </template>
 
@@ -97,11 +97,18 @@
                             <a
                                 v-if='link.url'
                                 :href='link.url'
-                                target='_blank'
+                                :target='link.url.startsWith("tel:") ? undefined : "_blank"'
                                 rel='noopener noreferrer'
                                 class='d-flex align-items-center text-reset text-decoration-none flex-fill overflow-hidden'
                             >
+                                <IconPhone
+                                    v-if='link.url.startsWith("tel:")'
+                                    :size='18'
+                                    stroke='1'
+                                    class='me-2 flex-shrink-0'
+                                />
                                 <IconExternalLink
+                                    v-else
                                     :size='18'
                                     stroke='1'
                                     class='me-2 flex-shrink-0'
@@ -168,7 +175,7 @@
                         <TablerInput
                             v-model='draft.url'
                             label='URL'
-                            placeholder='https://example.com'
+                            placeholder='https://example.com or tel:+18005550100'
                         />
                     </div>
                 </div>
@@ -181,7 +188,7 @@
 import { ref } from 'vue';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
 import { TablerBadge, TablerInput, TablerIconButton, TablerNone } from '@tak-ps/vue-tabler';
-import { IconLink, IconExternalLink, IconPlus, IconTrash, IconPencil, IconCheck } from '@tabler/icons-vue';
+import { IconLink, IconExternalLink, IconPhone, IconPlus, IconTrash, IconPencil, IconCheck } from '@tabler/icons-vue';
 import type { CoreEntityLink } from '../../../types.ts';
 
 const props = defineProps<{

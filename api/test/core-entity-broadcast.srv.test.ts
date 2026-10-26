@@ -38,7 +38,18 @@ test('Broadcast: seed Events & Devices', async () => {
     const models = flight.config!.models;
     const pg = flight.config!.pg;
 
-    eventId = await models.CoreEntity.generateEvent({ name: 'Active Event', type: '10031000001211000000', geometry: point, location: 'Denver', remarks: 'Event remarks' });
+    eventId = await models.CoreEntity.generateEvent({
+        name: 'Active Event',
+        type: '10031000001211000000',
+        geometry: point,
+        location: 'Denver',
+        remarks: 'Event remarks',
+        links: [
+            { name: 'Incident Report', url: 'https://example.com/incident/1234' },
+            { name: 'Call +1 808-555-0027', url: 'tel:+18085550027' },
+            { name: 'Pending', url: '' },
+        ],
+    });
     await setChannels(pg, eventId, [1]);
 
     endedEventId = await models.CoreEntity.generateEvent({ name: 'Ended Event', type: '10031000001211000000', geometry: point, ended: '2020-01-01T00:00:00Z' });
@@ -70,7 +81,16 @@ test('Broadcast: active Events & located Devices on a resolvable Channel are wri
         event: eventId,
         url: `${flight.stateful!.API_URL}/event/${eventId}`,
         remarks: 'Active Event',
-    }]);
+    }, {
+        relation: 'r-u',
+        mime: 'text/html',
+        url: 'https://example.com/incident/1234',
+        remarks: 'Incident Report',
+    }, {
+        relation: 'r-u',
+        url: 'tel:+18085550027',
+        remarks: 'Call +1 808-555-0027',
+    }], 'links are broadcast as r-u links, a tel: link without an html mime, an empty URL is dropped');
 
     const device = await CoTParser.to_geojson(cots.find(cot => cot.uid() === deviceId)!);
     assert.equal(device.properties.callsign, 'Located Device');
