@@ -827,20 +827,9 @@ export default class AtlasDatabase {
             return;
         }
 
-        const breadcrumbUid = cot.properties.breadcrumb
-            ? String(cot.properties.uid || cot.id).replace(/\.track$/, '')
-            : cot.id;
-        const breadcrumbId = `${breadcrumbUid}.track`;
-        const breadcrumbEntry = await db.breadcrumb.get(breadcrumbId);
-
-        if (breadcrumbEntry) {
-            await this.breadcrumb.remove(breadcrumbUid);
-
-            if (this.cots.has(breadcrumbId)) {
-                this.pendingDelete.add(breadcrumbId);
-            }
-
-            await withDbRetry(() => db.feature.delete(breadcrumbId));
+        // A deleted CoT takes its breadcrumb trail & history points with it
+        if (await db.breadcrumb.get(AtlasBreadcrumb.trackId(cot.id))) {
+            await this.breadcrumb.remove(cot.id);
         }
 
         if (cot.origin.mode === OriginMode.CONNECTION) {

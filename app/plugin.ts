@@ -7,7 +7,9 @@ import { useMapStore } from './src/stores/map.ts';
 import { useFloatStore } from './src/stores/float.ts';
 import type { MenuItemConfig } from './src/stores/modules/menu.ts';
 import type { BottomBarItemConfig } from './src/stores/modules/bottombar.ts';
-import { db, type DBFeature } from './src/database.ts';
+import { db, type DBFeature, type DBFeatureHistory, FeatureHistorySource } from './src/database.ts';
+import FeatureHistory, { type FeatureHistory_ListOptions } from './src/base/feature-history.ts';
+import type { HistoryPopupRenderer } from './src/stores/modules/history.ts';
 import { liveQuery } from 'dexie';
 import { from, type Observable } from 'rxjs';
 import * as mapgl from 'maplibre-gl';
@@ -18,6 +20,24 @@ const FloatingGeneric = defineAsyncComponent(() => import('./src/components/Clou
 export type { MenuItemConfig };
 export type { BottomBarItemConfig };
 export type { DBFeature };
+export type { DBFeatureHistory };
+export type { FeatureHistory_ListOptions };
+export type { HistoryPopupRenderer };
+export { FeatureHistorySource };
+
+/** Time window for CoT history queries - TAK Server answers at most 24 hours */
+export type HistoryWindow = {
+    start?: string;
+    end?: string;
+    secago?: number;
+};
+
+export type HistoryAllOptions = HistoryWindow & {
+    /** Restrict to events within [minLon, minLat, maxLon, maxLat] */
+    bbox?: [number, number, number, number];
+    /** TAK Server default (true) only returns a-f, a-n, a-u, a-h & b-m-r events plus chat; false returns every stored event */
+    filtered?: boolean;
+};
 
 /**
  * Configuration stored with a floating pane created by the plugin API
@@ -216,16 +236,35 @@ export class PluginAPI {
              * @param uid  The CoT UID to fetch history for
              * @param opts Optional time window constraints
              */
-            history: async (uid: string, opts: {
-                start?: string;
-                end?: string;
-                secago?: number;
-            } = {}): Promise<DBFeature[]> => {
+            history: async (uid: string, opts: HistoryWindow = {}): Promise<DBFeature[]> => {
                 const url = stdurl(`/api/marti/cot/${encodeURIComponent(uid)}/all`);
                 url.searchParams.set('track', 'false');
                 if (opts.start) url.searchParams.set('start', opts.start);
                 if (opts.end) url.searchParams.set('end', opts.end);
                 if (opts.secago !== undefined) url.searchParams.set('secago', String(opts.secago));
+
+                const body = await std(url) as { type: string; features: DBFeature[] };
+                return body.features || [];
+            },
+
+            /**
+             * Fetch every historic CoT point visible to the user within a time
+             * window (at most 24 hours) from the TAK Server, optionally
+             * restricted to a bounding box.
+             *
+             * Each point is returned as its own Feature retaining its temporal
+             * attributes. Nothing is stored - see `breadcrumb.history.loadAll`
+             * to record and render the result.
+             *
+             * @param opts Time window & spatial constraints
+             */
+            historyAll: async (opts: HistoryAllOptions = {}): Promise<DBFeature[]> => {
+                const url = stdurl('/api/marti/cot');
+                if (opts.start) url.searchParams.set('start', opts.start);
+                if (opts.end) url.searchParams.set('end', opts.end);
+                if (opts.secago !== undefined) url.searchParams.set('secago', String(opts.secago));
+                if (opts.bbox) url.searchParams.set('bbox', opts.bbox.join(','));
+                if (opts.filtered !== undefined) url.searchParams.set('filtered', String(opts.filtered));
 
                 const body = await std(url) as { type: string; features: DBFeature[] };
                 return body.features || [];
@@ -263,7 +302,107 @@ export class PluginAPI {
                 list: (): Promise<string[]> => {
                     return mapStore.worker.db.breadcrumb.listEnabled();
                 },
-            }
+            },
+            /**
+             * Manage the local history of discrete, timestamped CoT points that
+             * breadcrumb trails are drawn from. Every point keeps the properties
+             * the CoT carried at that moment; CloudTAK renders the points and
+             * the trail through them, with hover & click surfacing each point.
+             */
+            history: {
+                /**
+                 * Fetch a CoT's history from the TAK Server and record it locally
+                 * @param uid  The CoT UID to load history for
+                 * @param opts Time window (at most 24 hours)
+                 * @returns the recorded points, oldest first
+                 */
+                load: async (uid: string, opts: HistoryWindow = {}): Promise<DBFeatureHistory[]> => {
+                    const features = await this.cot.history(uid, opts);
+                    await mapStore.worker.db.breadcrumb.ingest(features);
+                    return FeatureHistory.list({ uid, start: opts.start, end: opts.end });
+                },
+                /**
+                 * Fetch every CoT's history within a time window from the TAK
+                 * Server and record it locally
+                 * @param opts Time window, spatial constraints and an optional
+                 *             filter applied before anything is recorded
+                 * @returns the number of points recorded
+                 */
+                loadAll: async (opts: HistoryAllOptions & {
+                    filter?: (feature: DBFeature) => boolean;
+                } = {}): Promise<number> => {
+                    let features = await this.cot.historyAll(opts);
+                    if (opts.filter) features = features.filter(opts.filter);
+                    return mapStore.worker.db.breadcrumb.ingest(features);
+                },
+                /**
+                 * Record CoT reports the plugin already holds (for example a
+                 * live update it wants on the trail) as history points. Each
+                 * report needs an id and a `time`/`start`; a report recorded
+                 * twice overwrites itself
+                 * @param features The reports to record
+                 * @returns the number of points recorded
+                 */
+                record: (features: DBFeature[], opts: { source?: FeatureHistorySource } = {}): Promise<number> => {
+                    return mapStore.worker.db.breadcrumb.ingest(features, { source: opts.source || FeatureHistorySource.Live });
+                },
+                /**
+                 * List recorded history points, oldest first
+                 * @param opts Optional UID and time bounds
+                 */
+                list: (opts: FeatureHistory_ListOptions = {}): Promise<DBFeatureHistory[]> => {
+                    return FeatureHistory.list(opts);
+                },
+                /**
+                 * Stream recorded history points, re-emitting as points are
+                 * recorded or cleared
+                 * @param opts Optional UID and time bounds
+                 */
+                stream: (opts: FeatureHistory_ListOptions = {}): Observable<DBFeatureHistory[]> => {
+                    return from(FeatureHistory.stream(opts)) as Observable<DBFeatureHistory[]>;
+                },
+                /**
+                 * Remove recorded history. With a UID the trail is removed and
+                 * its live recording disabled; without one every trail is cleared
+                 */
+                clear: async (uid?: string): Promise<void> => {
+                    if (uid) {
+                        await mapStore.worker.db.breadcrumb.remove(uid);
+                        return;
+                    }
+
+                    for (const trail of await db.breadcrumb.toArray()) {
+                        await mapStore.worker.db.breadcrumb.remove(trail.uid);
+                    }
+                    await FeatureHistory.clear();
+                },
+                /**
+                 * Popup shown while hovering a history point on the map
+                 */
+                popup: {
+                    /**
+                     * Register a renderer for the hover popup. Renderers run in
+                     * registration order and the first to return content wins;
+                     * return nothing to fall through to CloudTAK's default body
+                     * @param key      Unique key for the renderer
+                     * @param renderer Returns an HTML string or element for a point
+                     */
+                    set: (key: string, renderer: HistoryPopupRenderer): void => {
+                        mapStore.history.setPopup(key, renderer);
+                    },
+                    /**
+                     * Remove a previously registered renderer
+                     * @param key The renderer key
+                     */
+                    remove: (key: string): void => {
+                        try {
+                            mapStore.history.removePopup(key);
+                        } catch {
+                            // Ignore error if the map is not loaded
+                        }
+                    },
+                },
+            },
         }
     }
 

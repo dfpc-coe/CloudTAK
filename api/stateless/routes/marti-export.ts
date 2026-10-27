@@ -2,7 +2,7 @@ import { Static, Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { Feature } from '@tak-ps/node-cot';
-import { HistoryOptions } from '@tak-ps/node-tak/lib/api/query';
+import { HistoryOptions, SA_MAX_WINDOW_SECONDS } from '@tak-ps/node-tak/lib/api/query';
 import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import { ExportInput } from '@tak-ps/node-tak/lib/api/export';
@@ -33,6 +33,66 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             exp.pipe(res);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/marti/cot', {
+        name: 'COT Events',
+        group: 'MartiCOTQuery',
+        description: 'Helper API to list every COT event visible to the user within a time window of at most 24 hours, optionally restricted to a bounding box',
+        query: Type.Object({
+            start: Type.Optional(Type.String({ description: 'ISO 8601 start of the window. Defaults to `end` minus `secago`' })),
+            end: Type.Optional(Type.String({ description: 'ISO 8601 end of the window. Defaults to now' })),
+            secago: Type.Optional(Type.Integer({
+                minimum: 1,
+                maximum: SA_MAX_WINDOW_SECONDS,
+                description: 'Window length in seconds, counted back from `end`. Default is 3600 when `start` is omitted',
+            })),
+            bbox: Type.Optional(Type.String({
+                description: 'Restrict to events within `minLon,minLat,maxLon,maxLat`',
+            })),
+            filtered: Type.Boolean({
+                default: true,
+                description: 'TAK Server default (true) only returns a-f, a-n, a-u, a-h & b-m-r events plus chat; false returns every stored event',
+            }),
+        }),
+        res: Type.Object({
+            type: Type.String(),
+            features: Type.Array(Feature.Feature),
+        }),
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const profile = await authenticatedProfile(config, user.email);
+            const api = await takserver.withAuth(profile.auth);
+
+            let bbox: [number, number, number, number] | undefined;
+            if (req.query.bbox !== undefined) {
+                const parts = req.query.bbox.split(',').map(part => Number(part.trim()));
+
+                if (parts.length !== 4 || parts.some(part => !Number.isFinite(part))) {
+                    throw new Err(400, null, 'bbox must be minLon,minLat,maxLon,maxLat');
+                }
+
+                if (parts[0] > parts[2] || parts[1] > parts[3]) throw new Err(400, null, 'bbox min must not exceed max');
+
+                bbox = [parts[0], parts[1], parts[2], parts[3]];
+            }
+
+            const features = await api.Query.saFeats({
+                start: req.query.start,
+                end: req.query.end,
+                secago: req.query.secago,
+                bbox,
+                filtered: req.query.filtered,
+            });
+
+            res.json({
+                type: 'FeatureCollection',
+                features,
+            });
         } catch (err) {
             Err.respond(err, res);
         }
