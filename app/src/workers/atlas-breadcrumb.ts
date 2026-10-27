@@ -1,6 +1,6 @@
 import type COT from '../base/cot.ts';
 import type AtlasDatabase from './atlas-database.ts';
-import { db, withDbRetry, FeatureHistorySource, type DBBreadcrumb, type DBFeatureHistory } from '../database.ts';
+import { db, withDbRetry, isDatabaseSuspendedError, FeatureHistorySource, type DBBreadcrumb, type DBFeatureHistory } from '../database.ts';
 import FeatureHistory, { type FeatureHistory_Input } from '../base/feature-history.ts';
 
 export type BreadcrumbIngestOptions = {
@@ -163,9 +163,14 @@ export default class AtlasBreadcrumb {
         if (!row) return;
 
         if (this.last.get(cot.id) === row.time) return;
-        this.last.set(cot.id, row.time);
 
-        await FeatureHistory.put([row]);
+        try {
+            await FeatureHistory.put([row]);
+            this.last.set(cot.id, row.time);
+        } catch (err) {
+            // Backgrounded on mobile - the position still renders, the trail just skips it
+            if (!isDatabaseSuspendedError(err)) throw err;
+        }
     }
 
     /**

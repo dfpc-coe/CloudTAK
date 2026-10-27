@@ -1,6 +1,6 @@
 import type { App } from 'vue';
 import type { Component } from 'vue';
-import { markRaw, defineAsyncComponent } from 'vue';
+import { markRaw, toRaw, defineAsyncComponent } from 'vue';
 import type { Router, RouteRecordRaw } from 'vue-router';
 import type { Pinia } from 'pinia';
 import { useMapStore } from './src/stores/map.ts';
@@ -319,7 +319,13 @@ export class PluginAPI {
                 load: async (uid: string, opts: HistoryWindow = {}): Promise<DBFeatureHistory[]> => {
                     const features = await this.cot.history(uid, opts);
                     await mapStore.worker.db.breadcrumb.ingest(features);
-                    return FeatureHistory.list({ uid, start: opts.start, end: opts.end });
+
+                    const end = opts.end ? new Date(opts.end).getTime() : Date.now();
+                    const start = opts.start
+                        ? new Date(opts.start).getTime()
+                        : (opts.secago !== undefined ? end - opts.secago * 1000 : undefined);
+
+                    return FeatureHistory.list({ uid, start, end: opts.end ? end : undefined });
                 },
                 /**
                  * Fetch every CoT's history within a time window from the TAK
@@ -344,7 +350,9 @@ export class PluginAPI {
                  * @returns the number of points recorded
                  */
                 record: (features: DBFeature[], opts: { source?: FeatureHistorySource } = {}): Promise<number> => {
-                    return mapStore.worker.db.breadcrumb.ingest(features, { source: opts.source || FeatureHistorySource.Live });
+                    // Vue proxies cannot cross the worker boundary (structured clone throws)
+                    const plain = features.map((feature) => toRaw(feature));
+                    return mapStore.worker.db.breadcrumb.ingest(plain, { source: opts.source || FeatureHistorySource.Live });
                 },
                 /**
                  * List recorded history points, oldest first

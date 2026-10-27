@@ -5,6 +5,7 @@ import type { FeatureCollection, Feature as GeoJSONFeature, Geometry as GeoJSONG
 import { db, liveQuery, type DBBreadcrumb, type DBFeatureHistory } from '../../database.ts';
 import FeatureHistory from '../../base/feature-history.ts';
 import COT from '../../base/cot.ts';
+import { DrawToolMode } from './draw.ts';
 import type { Feature } from '../../types.ts';
 import type { useMapStore } from '../map.ts';
 import router from '../../router.ts';
@@ -15,7 +16,7 @@ export const HISTORY_POINT_LAYER = 'cloudtak-history-point';
 export const HISTORY_DEFAULT_COLOR = '#ff0000';
 export const HISTORY_POPUP_CLASS = 'cloudtak-history-popup';
 
-const RENDER_DEBOUNCE_MS = 150;
+const RENDER_DEBOUNCE_MS = 300;
 const STYLE_ID = 'cloudtak-history-style';
 
 /**
@@ -436,6 +437,10 @@ export default class HistoryLayer {
     }
 
     private onClick(event: MapLayerMouseEvent): void {
+        // Mirror the map click handler: never open a point mid-draw or over an open radial
+        if (this.mapStore.draw.mode !== DrawToolMode.STATIC) return;
+        if (this.mapStore.radial.mode) return;
+
         const row = this.rowAt(event);
         if (!row) return;
 

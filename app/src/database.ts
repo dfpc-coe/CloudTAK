@@ -428,6 +428,31 @@ if (typeof window !== 'undefined') {
     });
 }
 
+const VERSION_RELOAD_KEY = 'cloudtak-db-version-reload';
+const VERSION_RELOAD_COOLDOWN_MS = 60_000;
+
+/**
+ * Another session running a newer build upgraded the schema past what this
+ * bundle declares - the connection can never reopen, so reload once to pick
+ * up the newer build. The cooldown stops a loop if the old build is still served.
+ */
+function reloadForNewerSchema(): boolean {
+    if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') return false;
+
+    try {
+        const last = Number(sessionStorage.getItem(VERSION_RELOAD_KEY)) || 0;
+        if (Date.now() - last < VERSION_RELOAD_COOLDOWN_MS) return false;
+        sessionStorage.setItem(VERSION_RELOAD_KEY, String(Date.now()));
+    } catch {
+        return false;
+    }
+
+    console.warn('IndexedDB schema is newer than this build - reloading to pick up the update');
+    shuttingDown = true;
+    window.location.reload();
+    return true;
+}
+
 export async function ensureDatabase(): Promise<void> {
     if (shuttingDown || suspended || db.isOpen()) return;
 
@@ -443,6 +468,11 @@ export async function ensureDatabase(): Promise<void> {
                 } catch (err) {
                     if (db.isOpen()) return;
                     lastError = err;
+
+                    if ((err as { name?: string } | null)?.name === 'VersionError') {
+                        if (reloadForNewerSchema()) return;
+                        throw err;
+                    }
                     console.warn(`Dexie reopen attempt ${attempt + 1} failed:`, err);
                     await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
                 }

@@ -1564,7 +1564,11 @@ export const useMapStore = defineStore('cloudtak', {
             OverlayManager.applyOrder();
 
             this._history = markRaw(new HistoryLayer(this));
-            this.history.init();
+            try {
+                this.history.init();
+            } catch (err) {
+                console.error('Failed to initialize history layer:', err);
+            }
 
             await FeatureVisibility.apply();
 
