@@ -333,12 +333,18 @@ export default class ProfileOverlayControl {
             : null;
 
         const results = await Promise.all(overlays.map(async (overlay): Promise<ResolvedOverlay | null> => {
-            if (overlay.mode === 'profile') {
-                const exists = await S3.exists(`profile/${overlay.username}/${ProfileOverlayControl.assetName(overlay)}.pmtiles`);
-                return exists ? { overlay } : null;
-            } else if (overlay.mode === 'data') {
-                const exists = await S3.exists(`data/${overlay.mode_id}/${ProfileOverlayControl.assetName(overlay)}.pmtiles`);
-                return exists ? { overlay } : null;
+            if (overlay.mode === 'profile' || overlay.mode === 'data') {
+                const key = overlay.mode === 'profile'
+                    ? `profile/${overlay.username}/${ProfileOverlayControl.assetName(overlay)}.pmtiles`
+                    : `data/${overlay.mode_id}/${ProfileOverlayControl.assetName(overlay)}.pmtiles`;
+
+                try {
+                    return await S3.exists(key) ? { overlay } : null;
+                } catch (err) {
+                    // Only a confirmed missing asset removes an overlay
+                    console.error(`Could not verify asset for overlay ${overlay.id} (${key})`, err);
+                    return { overlay };
+                }
             } else if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
                 try {
                     if (!overlay.mode_id) throw new Error('mode_id is required');

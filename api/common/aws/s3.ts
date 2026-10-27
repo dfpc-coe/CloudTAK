@@ -119,8 +119,12 @@ export default class S3 {
             }));
             return true;
         } catch (err) {
-            if (String(err).startsWith('NotFound')) return false;
-            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to determine existance');
+            const status = (err as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode;
+            if ((err instanceof Error && err.name === 'NotFound') || status === 404) return false;
+
+            const message = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+            console.error(`s3://${process.env.ASSET_BUCKET}/${key} - HEAD ERROR (${status ?? 'no response'}):`, message);
+            throw new Err(500, new Error(message), 'Failed to determine existance');
         }
     }
 

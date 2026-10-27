@@ -178,6 +178,56 @@ test('GET: api/profile/overlay - profile mode, S3 absent -> moved to removed', a
     }
 });
 
+test('GET: api/profile/overlay - profile mode, S3 error -> kept in items', async () => {
+    let stub: Sinon.SinonStub | undefined;
+
+    try {
+        const post = await flight.fetch('/api/profile/overlay', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Unverifiable Profile Overlay',
+                mode: 'profile',
+                url: '/profile/admin@example.com/unverifiable.pmtiles',
+            },
+        }, false);
+
+        assert.equal(post.status, 200, `POST overlay failed: ${JSON.stringify(post.body)}`);
+
+        const forbidden = Object.assign(new Error('UnknownError'), {
+            name: '403',
+            $metadata: { httpStatusCode: 403 },
+        });
+
+        stub = Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
+            if (command instanceof HeadObjectCommand) return Promise.reject(forbidden);
+            throw new Error(`Unexpected S3 command: ${command.constructor.name}`);
+        });
+
+        const res = await flight.fetch('/api/profile/overlay', {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.equal(res.body.removed.length, 0);
+        assert.equal(res.body.total, 1);
+        assert.equal(res.body.items.length, 1);
+        assert.equal(res.body.items[0].name, 'Unverifiable Profile Overlay');
+
+        const del = await flight.fetch(`/api/profile/overlay?id=${res.body.items[0].id}`, {
+            method: 'DELETE',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.equal(del.status, 200);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        stub?.restore();
+        Sinon.restore();
+    }
+});
+
 test('GET: api/profile/overlay - data mode, S3 absent -> moved to removed', async () => {
     let stub: Sinon.SinonStub | undefined;
 
