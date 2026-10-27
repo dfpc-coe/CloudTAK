@@ -26,6 +26,10 @@
 
 ### Pending Release
 
+### v13.115.1 - 2026-10-27
+
+- :bug: The Mission Archive API doesn't support GUIDs which would result in the download silently failing - Closes: Mission *Download Archive* returns an empty file #1977
+
 ### v13.115.0 - 2026-10-27
 
 - :tada: `API` Add `GET /api/marti/cot` to list every CoT event visible to the user within a time window of at most 24 hours (`start`/`end` or `secago`), optionally restricted to a `bbox` - backed by the TAK Server `/Marti/api/cot/sa` query
