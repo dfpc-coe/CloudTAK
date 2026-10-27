@@ -9,6 +9,8 @@ import type { MenuItemConfig } from './src/stores/modules/menu.ts';
 import type { BottomBarItemConfig } from './src/stores/modules/bottombar.ts';
 import { db, type DBFeature, type DBFeatureHistory, FeatureHistorySource } from './src/database.ts';
 import FeatureHistory, { type FeatureHistory_ListOptions } from './src/base/feature-history.ts';
+import ProfileConfig from './src/base/profile.ts';
+import type { Profile } from './src/types.ts';
 import type { HistoryPopupRenderer } from './src/stores/modules/history.ts';
 import { liveQuery } from 'dexie';
 import { from, type Observable } from 'rxjs';
@@ -23,6 +25,7 @@ export type { DBFeature };
 export type { DBFeatureHistory };
 export type { FeatureHistory_ListOptions };
 export type { HistoryPopupRenderer };
+export type { Profile };
 export { FeatureHistorySource };
 
 /** Time window for CoT history queries - TAK Server answers at most 24 hours */
@@ -206,7 +209,20 @@ export class PluginAPI {
             },
 
             /**
-             * Stream features from the local database
+             * Stream one feature by its CoT UID, re-emitting only when that
+             * row changes. Prefer this over `stream` with a filter whenever a
+             * single feature is wanted - a filter scans the whole table on
+             * every write anywhere in it.
+             * @param uid The CoT UID
+             */
+            streamOne: (uid: string): Observable<DBFeature | undefined> => {
+                return from(liveQuery(() => db.feature.get(uid))) as Observable<DBFeature | undefined>;
+            },
+
+            /**
+             * Stream features from the local database. The filter runs over
+             * the entire table and re-runs on every feature write, so keep
+             * one stream per list rather than one per item.
              * @param opts Filter options
              */
             stream: (opts: {
@@ -302,6 +318,16 @@ export class PluginAPI {
                 list: (): Promise<string[]> => {
                     return mapStore.worker.db.breadcrumb.listEnabled();
                 },
+                /**
+                 * Stream the CoT UIDs with live recording enabled, re-emitting
+                 * whenever recording is enabled or disabled for any UID
+                 */
+                stream: (): Observable<string[]> => {
+                    return from(liveQuery(async () => {
+                        const rows = await db.breadcrumb.filter((row) => row.live === true).toArray();
+                        return rows.map((row) => row.uid);
+                    })) as Observable<string[]>;
+                },
             },
             /**
              * Manage the local history of discrete, timestamped CoT points that
@@ -379,10 +405,7 @@ export class PluginAPI {
                         return;
                     }
 
-                    for (const trail of await db.breadcrumb.toArray()) {
-                        await mapStore.worker.db.breadcrumb.remove(trail.uid);
-                    }
-                    await FeatureHistory.clear();
+                    await mapStore.worker.db.breadcrumb.clearAll();
                 },
                 /**
                  * Popup shown while hovering a history point on the map
@@ -476,6 +499,45 @@ export class PluginAPI {
              */
             has: (uid: string): boolean => {
                 return floatStore.panes.has(uid);
+            }
+        }
+    }
+
+    /**
+     * Read the signed-in user's profile settings, such as the display units
+     * chosen under Settings. Settings are read-only to plugins.
+     */
+    get profile() {
+        return {
+            /**
+             * Current value of a profile setting
+             * @param key The profile key, e.g. `display_radiation_dose`
+             * @returns the value, or undefined until the profile has synced
+             */
+            get: async <K extends keyof Profile>(key: K): Promise<Profile[K] | undefined> => {
+                const entry = await ProfileConfig.get(key);
+                return entry ? entry.value : undefined;
+            },
+            /**
+             * Stream a profile setting, emitting its current value and every
+             * later change so views can follow the user's choice live
+             * @param key The profile key
+             */
+            stream: <K extends keyof Profile>(key: K): Observable<Profile[K] | undefined> => {
+                return from(liveQuery(async () => {
+                    const entry = await db.profile.get(key);
+                    return entry ? entry.value as Profile[K] : undefined;
+                })) as Observable<Profile[K] | undefined>;
+            },
+            /**
+             * Every profile setting currently synced
+             */
+            list: async (): Promise<Partial<Profile>> => {
+                const profile: Record<string, unknown> = {};
+                for (const entry of await db.profile.toArray()) {
+                    profile[entry.key] = entry.value;
+                }
+                return profile as Partial<Profile>;
             }
         }
     }

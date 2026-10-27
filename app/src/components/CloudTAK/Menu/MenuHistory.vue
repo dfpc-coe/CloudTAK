@@ -313,7 +313,7 @@ async function clearAll(): Promise<void> {
     for (const entry of entries.value) {
         await mapStore.worker.db.breadcrumb.remove(entry.uid);
     }
-    await FeatureHistory.clear();
+    await mapStore.worker.db.breadcrumb.clearAll();
     loaded.value = null;
 }
 </script>

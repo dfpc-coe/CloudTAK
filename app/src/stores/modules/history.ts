@@ -1,13 +1,13 @@
 import * as mapgl from 'maplibre-gl';
-import type { MapLayerMouseEvent } from 'maplibre-gl';
-import type { Subscription } from 'dexie';
+import type { MapLayerMouseEvent, GeoJSONSourceDiff } from 'maplibre-gl';
 import type { FeatureCollection, Feature as GeoJSONFeature, Geometry as GeoJSONGeometry, Position } from 'geojson';
-import { db, liveQuery, type DBBreadcrumb, type DBFeatureHistory } from '../../database.ts';
+import { db, type DBBreadcrumb, type DBFeatureHistory } from '../../database.ts';
 import FeatureHistory from '../../base/feature-history.ts';
 import COT from '../../base/cot.ts';
 import { DrawToolMode } from './draw.ts';
 import type { Feature } from '../../types.ts';
 import type { useMapStore } from '../map.ts';
+import type { HistoryChangeBody } from '../../utils/events.ts';
 import router from '../../router.ts';
 
 export const HISTORY_SOURCE = 'cloudtak-history';
@@ -25,7 +25,10 @@ const STYLE_ID = 'cloudtak-history-style';
  */
 export type HistoryPopupRenderer = (row: DBFeatureHistory) => string | HTMLElement | null | undefined;
 
-type HistoryFeature = GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>>;
+export type HistoryFeature = GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>> & { id: string };
+
+/** What one UID currently contributes to the source, keyed by feature id */
+export type HistoryUidFeatures = Map<string, HistoryFeature>;
 
 export function escapeHtml(input: unknown): string {
     return String(input ?? '')
@@ -35,17 +38,66 @@ export function escapeHtml(input: unknown): string {
         .replace(/"/g, '&quot;');
 }
 
+export function trailFeatureId(uid: string): string {
+    return `${uid}.trail`;
+}
+
 /**
- * Points plus one trail line per UID, oldest to newest. Trails recorded
- * before history points existed only have legacy coordinates, which are
- * drawn as a line until the UID gains points.
+ * Points plus one trail line for a single UID, oldest to newest. A trail
+ * recorded before history points existed only has legacy coordinates, which
+ * are drawn as a line until the UID gains points.
  */
-export function historyCollection(rows: DBFeatureHistory[], trails: DBBreadcrumb[]): FeatureCollection<GeoJSONGeometry, Record<string, unknown>> {
-    const colors = new Map<string, string>();
-    for (const trail of trails) {
-        if (trail.color) colors.set(trail.uid, trail.color);
+export function historyUidFeatures(uid: string, rows: DBFeatureHistory[], trail?: DBBreadcrumb): HistoryUidFeatures {
+    const features: HistoryUidFeatures = new Map();
+    const color = (trail && trail.color) || HISTORY_DEFAULT_COLOR;
+
+    const sorted = rows.filter((row) => row.geometry.type === 'Point').sort((a, b) => a.time - b.time);
+    const line: Position[] = [];
+
+    for (const row of sorted) {
+        if (row.geometry.type !== 'Point') continue;
+
+        const position = row.geometry.coordinates.slice(0, 2);
+        line.push(position);
+
+        features.set(row.id, {
+            id: row.id,
+            type: 'Feature',
+            properties: {
+                id: row.id,
+                uid,
+                callsign: row.callsign,
+                time: row.time,
+                source: row.source,
+                color,
+            },
+            geometry: { type: 'Point', coordinates: position },
+        });
     }
 
+    if (line.length >= 2) {
+        const id = trailFeatureId(uid);
+        features.set(id, {
+            id,
+            type: 'Feature',
+            properties: { id, uid, callsign: sorted[sorted.length - 1].callsign, color, trail: true },
+            geometry: { type: 'LineString', coordinates: line },
+        });
+    } else if (!sorted.length && trail && trail.coordinates && trail.coordinates.length >= 2) {
+        const id = trailFeatureId(uid);
+        features.set(id, {
+            id,
+            type: 'Feature',
+            properties: { id, uid, callsign: trail.callsign, color, trail: true, legacy: true },
+            geometry: { type: 'LineString', coordinates: trail.coordinates },
+        });
+    }
+
+    return features;
+}
+
+/** Every UID's features as one collection - the initial load and the fallback path */
+export function historyCollection(rows: DBFeatureHistory[], trails: DBBreadcrumb[]): FeatureCollection<GeoJSONGeometry, Record<string, unknown>> {
     const byUid = new Map<string, DBFeatureHistory[]>();
     for (const row of rows) {
         const list = byUid.get(row.uid);
@@ -56,55 +108,47 @@ export function historyCollection(rows: DBFeatureHistory[], trails: DBBreadcrumb
         }
     }
 
-    const features: HistoryFeature[] = [];
-
-    for (const [uid, list] of byUid) {
-        list.sort((a, b) => a.time - b.time);
-
-        const color = colors.get(uid) || HISTORY_DEFAULT_COLOR;
-        const line: Position[] = [];
-
-        for (const row of list) {
-            if (row.geometry.type !== 'Point') continue;
-
-            const position = row.geometry.coordinates.slice(0, 2);
-            line.push(position);
-
-            features.push({
-                type: 'Feature',
-                properties: {
-                    id: row.id,
-                    uid,
-                    callsign: row.callsign,
-                    time: row.time,
-                    source: row.source,
-                    color,
-                },
-                geometry: { type: 'Point', coordinates: position },
-            });
-        }
-
-        if (line.length >= 2) {
-            features.push({
-                type: 'Feature',
-                properties: { uid, callsign: list[list.length - 1].callsign, color, trail: true },
-                geometry: { type: 'LineString', coordinates: line },
-            });
-        }
+    const trailByUid = new Map(trails.map((trail) => [trail.uid, trail]));
+    for (const trail of trails) {
+        if (!byUid.has(trail.uid)) byUid.set(trail.uid, []);
     }
 
-    for (const trail of trails) {
-        if (byUid.has(trail.uid)) continue;
-        if (!trail.coordinates || trail.coordinates.length < 2) continue;
-
-        features.push({
-            type: 'Feature',
-            properties: { uid: trail.uid, callsign: trail.callsign, color: trail.color || HISTORY_DEFAULT_COLOR, trail: true, legacy: true },
-            geometry: { type: 'LineString', coordinates: trail.coordinates },
-        });
+    const features: HistoryFeature[] = [];
+    for (const [uid, list] of byUid) {
+        features.push(...historyUidFeatures(uid, list, trailByUid.get(uid)).values());
     }
 
     return { type: 'FeatureCollection', features };
+}
+
+/**
+ * The source diff that turns one UID's previous features into its next ones.
+ * Points never change once recorded, so they are only added or removed;
+ * the trail line is updated in place as it grows.
+ */
+export function historyDiff(prev: HistoryUidFeatures | undefined, next: HistoryUidFeatures): GeoJSONSourceDiff {
+    const diff: GeoJSONSourceDiff = { add: [], remove: [], update: [] };
+
+    if (prev) {
+        for (const id of prev.keys()) {
+            if (!next.has(id)) diff.remove!.push(id);
+        }
+    }
+
+    for (const [id, feature] of next) {
+        const before = prev ? prev.get(id) : undefined;
+        if (!before) {
+            diff.add!.push(feature);
+        } else if (feature.properties.trail) {
+            diff.update!.push({
+                id,
+                newGeometry: feature.geometry,
+                addOrUpdateProperties: Object.entries(feature.properties).map(([key, value]) => ({ key, value })),
+            });
+        }
+    }
+
+    return diff;
 }
 
 /** The CoT as it was reported at that point in time, shaped for the feature viewer */
@@ -151,8 +195,10 @@ export function defaultPopup(row: DBFeatureHistory, typeName?: string): string {
 /**
  * Draws every `feature_history` point and the per-UID trail through them on
  * a dedicated GeoJSON source kept directly beneath the Map Features overlay.
- * Hovering a point shows who & when; clicking opens the properties the CoT
- * reported at that moment in the feature viewer.
+ * The table is read once at startup; afterwards the breadcrumb worker, which
+ * owns every write, says which UIDs changed and only those are re-read and
+ * diffed into the source. Hovering a point shows who & when; clicking opens
+ * the properties the CoT reported at that moment in the feature viewer.
  */
 export default class HistoryLayer {
     mapStore: ReturnType<typeof useMapStore>;
@@ -161,12 +207,16 @@ export default class HistoryLayer {
     renderers: Map<string, HistoryPopupRenderer>;
 
     private rows: Map<string, DBFeatureHistory>;
+    private byUid: Map<string, HistoryUidFeatures>;
     /** Resolved CoT type names, so a hover never waits on the taxonomy lookup */
     private typeNames: Map<string, string>;
     private hovered: string | null;
-    private subscription: Subscription | null;
     private timer: ReturnType<typeof setTimeout> | null;
-    private pending: FeatureCollection<GeoJSONGeometry, Record<string, unknown>> | null;
+    private pending: GeoJSONSourceDiff | null;
+    /** Changes that arrived while a reload or refresh was still reading */
+    private queued: Set<string>;
+    private queuedAll: boolean;
+    private busy: Promise<void> | null;
     private popup: mapgl.Popup | null;
     private initialized: boolean;
 
@@ -174,11 +224,14 @@ export default class HistoryLayer {
         this.mapStore = mapStore;
         this.renderers = new Map();
         this.rows = new Map();
+        this.byUid = new Map();
         this.typeNames = new Map();
         this.hovered = null;
-        this.subscription = null;
         this.timer = null;
         this.pending = null;
+        this.queued = new Set();
+        this.queuedAll = false;
+        this.busy = null;
         this.popup = null;
         this.initialized = false;
 
@@ -239,24 +292,105 @@ export default class HistoryLayer {
         map.on('mouseleave', HISTORY_POINT_LAYER, this.onLeave);
         map.on('click', HISTORY_POINT_LAYER, this.onClick);
 
-        this.subscription = liveQuery(async () => {
-            const [rows, trails] = await Promise.all([
-                db.feature_history.toArray(),
-                db.breadcrumb.toArray(),
-            ]);
-            return { rows, trails };
-        }).subscribe({
-            next: ({ rows, trails }) => {
-                this.rows = new Map(rows.map((row) => [row.id, row]));
-                this.schedule(historyCollection(rows, trails));
-            },
-            error: (err: unknown) => {
-                console.error('History layer subscription failed', err);
-            },
-        });
-
         this.initialized = true;
         this.restack();
+
+        this.run(() => this.reload());
+    }
+
+    /** The worker reported which trails changed */
+    onChange(body: HistoryChangeBody): void {
+        if (!this.initialized) return;
+
+        if (body.all) {
+            this.queuedAll = true;
+        } else {
+            for (const uid of body.uids) this.queued.add(uid);
+            for (const uid of body.removed) this.queued.add(uid);
+        }
+
+        this.run(() => this.drain());
+    }
+
+    /** Re-read and redraw the given UIDs - for callers that wrote outside the worker */
+    refresh(uids: string[]): void {
+        this.onChange({ uids, removed: [] });
+    }
+
+    /** Serialize reads so a change that lands mid-read is applied afterwards, not lost */
+    private run(task: () => Promise<void>): void {
+        if (this.busy) return;
+
+        this.busy = task().catch((err: unknown) => {
+            console.error('History layer update failed', err);
+        }).finally(() => {
+            this.busy = null;
+            if (this.initialized && (this.queuedAll || this.queued.size)) this.run(() => this.drain());
+        });
+    }
+
+    private async drain(): Promise<void> {
+        if (this.queuedAll) {
+            this.queuedAll = false;
+            this.queued.clear();
+            await this.reload();
+            return;
+        }
+
+        const uids = [...this.queued];
+        this.queued.clear();
+
+        for (const uid of uids) {
+            const [rows, trail] = await Promise.all([
+                FeatureHistory.list({ uid }),
+                db.breadcrumb.get(`${uid}.track`),
+            ]);
+
+            const next = historyUidFeatures(uid, rows, trail);
+            const diff = historyDiff(this.byUid.get(uid), next);
+
+            for (const id of this.byUid.get(uid)?.keys() ?? []) {
+                if (!next.has(id)) this.rows.delete(id);
+            }
+            for (const row of rows) this.rows.set(row.id, row);
+
+            if (next.size) {
+                this.byUid.set(uid, next);
+            } else {
+                this.byUid.delete(uid);
+            }
+
+            this.schedule(diff);
+        }
+    }
+
+    /** Read every trail once and replace the source wholesale */
+    private async reload(): Promise<void> {
+        const [rows, trails] = await Promise.all([
+            FeatureHistory.list(),
+            db.breadcrumb.toArray(),
+        ]);
+
+        if (!this.initialized) return;
+
+        this.rows = new Map(rows.map((row) => [row.id, row]));
+        this.byUid = new Map();
+
+        const collection = historyCollection(rows, trails);
+        for (const feature of collection.features as HistoryFeature[]) {
+            const uid = String(feature.properties.uid);
+            let features = this.byUid.get(uid);
+            if (!features) {
+                features = new Map();
+                this.byUid.set(uid, features);
+            }
+            features.set(feature.id, feature);
+        }
+
+        this.cancelPending();
+
+        const source = this.mapStore._map?.getSource(HISTORY_SOURCE) as mapgl.GeoJSONSource | undefined;
+        if (source) source.setData(collection);
     }
 
     /**
@@ -279,20 +413,14 @@ export default class HistoryLayer {
     }
 
     destroy(): void {
-        if (this.subscription) {
-            this.subscription.unsubscribe();
-            this.subscription = null;
-        }
-
-        if (this.timer) {
-            clearTimeout(this.timer);
-            this.timer = null;
-        }
-        this.pending = null;
+        this.cancelPending();
+        this.queued.clear();
+        this.queuedAll = false;
 
         this.onLeave();
         this.popup = null;
         this.rows.clear();
+        this.byUid.clear();
 
         if (!this.initialized) return;
         this.initialized = false;
@@ -369,18 +497,41 @@ export default class HistoryLayer {
         });
     }
 
-    private schedule(collection: FeatureCollection<GeoJSONGeometry, Record<string, unknown>>): void {
-        this.pending = collection;
+    /** Merge diffs that arrive within the debounce window into one source update */
+    private schedule(diff: GeoJSONSourceDiff): void {
+        if (!diff.add?.length && !diff.remove?.length && !diff.update?.length) return;
+
+        if (!this.pending) this.pending = { add: [], remove: [], update: [] };
+        this.pending.add!.push(...(diff.add || []));
+        this.pending.remove!.push(...(diff.remove || []));
+        this.pending.update!.push(...(diff.update || []));
+
         if (this.timer) return;
 
         this.timer = setTimeout(() => {
             this.timer = null;
             if (!this.pending || !this.initialized) return;
 
-            const source = this.mapStore._map?.getSource(HISTORY_SOURCE) as mapgl.GeoJSONSource | undefined;
-            if (source) source.setData(this.pending);
+            const diff = this.pending;
             this.pending = null;
+
+            const source = this.mapStore._map?.getSource(HISTORY_SOURCE) as mapgl.GeoJSONSource | undefined;
+            if (!source) return;
+
+            source.updateData(diff).catch((err: unknown) => {
+                console.warn('History source diff rejected, reloading', err);
+                this.queuedAll = true;
+                this.run(() => this.drain());
+            });
         }, RENDER_DEBOUNCE_MS);
+    }
+
+    private cancelPending(): void {
+        if (this.timer) {
+            clearTimeout(this.timer);
+            this.timer = null;
+        }
+        this.pending = null;
     }
 
     private rowAt(event: MapLayerMouseEvent): DBFeatureHistory | undefined {

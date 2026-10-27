@@ -37,6 +37,7 @@ export enum WorkerMessageType {
     Channel_Change = 'channel:change',
 
     Feature_Update = 'cloudtak:feature:update',
+    History_Change = 'cloudtak:history:change',
     Profile_Update = 'cloudtak:profile:update',
 
     Sync_Start = 'cloudtak:sync:start',
@@ -78,6 +79,13 @@ export type SyncTriggerBody = {
 
 export type NetworkChangeBody = {
     online: boolean;
+};
+
+/** Trails whose history points or metadata changed; `all` means start over */
+export type HistoryChangeBody = {
+    uids: string[];
+    removed: string[];
+    all?: boolean;
 };
 
 export type WorkerMessage = {

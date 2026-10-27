@@ -343,7 +343,9 @@ export type DatabaseType = Dexie & {
     taxonomy: EntityTable<DBTaxonomy, 'type'>
 };
 
-export const db = new Dexie('CloudTAK') as DatabaseType;
+// Dexie's default result cache deep-clones every live query delivery on the
+// main thread, which stalls input once tables hold thousands of rows
+export const db = new Dexie('CloudTAK', { cache: 'disabled' }) as DatabaseType;
 
 db.version(4).stores({
     kv: 'key',

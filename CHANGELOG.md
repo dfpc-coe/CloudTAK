@@ -26,6 +26,11 @@
 
 ### Pending Release
 
+### v13.116.0 - 2026-10-27
+
+- :bug: Improve History Performance
+- :tada: Add `profile` Plugin API to pulling user preferences
+
 ### v13.115.1 - 2026-10-27
 
 - :bug: The Mission Archive API doesn't support GUIDs which would result in the download silently failing - Closes: Mission *Download Archive* returns an empty file #1977

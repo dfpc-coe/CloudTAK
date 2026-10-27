@@ -1154,6 +1154,8 @@ export const useMapStore = defineStore('cloudtak', {
                     await this.loadMission(msg.body.guid).catch((err: unknown) => {
                         console.error(`Mission:${msg.body.guid} render failed after feature change:`, err);
                     });
+                } else if (msg.type === WorkerMessageType.History_Change) {
+                    if (this._history) this.history.onChange(msg.body);
                 } else if (msg.type === WorkerMessageType.Iconset_Change) {
                     // `purge` iconsets changed content: drop their MapLibre images to
                     // re-resolve. `added` iconsets are newly cached: only retry fallbacks.

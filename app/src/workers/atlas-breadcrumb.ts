@@ -2,6 +2,10 @@ import type COT from '../base/cot.ts';
 import type AtlasDatabase from './atlas-database.ts';
 import { db, withDbRetry, isDatabaseSuspendedError, FeatureHistorySource, type DBBreadcrumb, type DBFeatureHistory } from '../database.ts';
 import FeatureHistory, { type FeatureHistory_Input } from '../base/feature-history.ts';
+import { WorkerMessageType } from '../utils/events.ts';
+import type { HistoryChangeBody } from '../utils/events.ts';
+
+const NOTIFY_BATCH_MS = 250;
 
 export type BreadcrumbIngestOptions = {
     source?: FeatureHistorySource;
@@ -22,10 +26,56 @@ export default class AtlasBreadcrumb {
     // Report time of the last point written per UID - skips duplicate reports
     last: Map<string, number>;
 
+    // UIDs written since the main thread was last told, flushed in one batch
+    private changed: Set<string>;
+    private removed: Set<string>;
+    private changedAll: boolean;
+    private notifyTimer: ReturnType<typeof setTimeout> | null;
+
     constructor(db: AtlasDatabase) {
         this.db = db;
         this.enabled = new Set();
         this.last = new Map();
+        this.changed = new Set();
+        this.removed = new Set();
+        this.changedAll = false;
+        this.notifyTimer = null;
+    }
+
+    /**
+     * Tell the HistoryLayer which trails to re-read. Writes are batched so a
+     * burst of reports costs one message, and the layer only touches those UIDs.
+     */
+    private notify(uids: Iterable<string>, opts: { removed?: boolean; all?: boolean } = {}): void {
+        if (opts.all) {
+            this.changedAll = true;
+        } else {
+            for (const uid of uids) {
+                if (opts.removed) {
+                    this.removed.add(uid);
+                    this.changed.delete(uid);
+                } else {
+                    this.changed.add(uid);
+                }
+            }
+        }
+
+        if (this.notifyTimer) return;
+
+        this.notifyTimer = setTimeout(() => {
+            this.notifyTimer = null;
+
+            const body: HistoryChangeBody = {
+                uids: [...this.changed],
+                removed: [...this.removed],
+                all: this.changedAll || undefined,
+            };
+            this.changed.clear();
+            this.removed.clear();
+            this.changedAll = false;
+
+            void this.db.atlas.postMessage({ type: WorkerMessageType.History_Change, body });
+        }, NOTIFY_BATCH_MS);
     }
 
     static trackId(uid: string): string {
@@ -49,6 +99,7 @@ export default class AtlasBreadcrumb {
         }
 
         await this.ensureTrail(uid, { live: enabled });
+        this.notify([uid]);
     }
 
     /**
@@ -61,6 +112,17 @@ export default class AtlasBreadcrumb {
 
         await withDbRetry(() => db.breadcrumb.delete(AtlasBreadcrumb.trackId(uid)));
         await FeatureHistory.clear(uid);
+        this.notify([uid], { removed: true });
+    }
+
+    /** Remove every trail and every history point */
+    async clearAll(): Promise<void> {
+        this.enabled.clear();
+        this.last.clear();
+
+        await withDbRetry(() => db.breadcrumb.clear());
+        await FeatureHistory.clear();
+        this.notify([], { all: true });
     }
 
     /**
@@ -91,7 +153,7 @@ export default class AtlasBreadcrumb {
             if (entry.live) this.enabled.add(entry.uid);
         }
 
-        await FeatureHistory.prune();
+        if (await FeatureHistory.prune() > 0) this.notify([], { all: true });
     }
 
     /**
@@ -126,6 +188,8 @@ export default class AtlasBreadcrumb {
             await this.ensureTrail(uid, info);
         }
 
+        this.notify(meta.keys());
+
         return count;
     }
 
@@ -149,6 +213,8 @@ export default class AtlasBreadcrumb {
         } else {
             await this.ensureTrail(uid, { coordinates });
         }
+
+        this.notify([uid]);
     }
 
     /**
@@ -167,6 +233,7 @@ export default class AtlasBreadcrumb {
         try {
             await FeatureHistory.put([row]);
             this.last.set(cot.id, row.time);
+            this.notify([cot.id]);
         } catch (err) {
             // Backgrounded on mobile - the position still renders, the trail just skips it
             if (!isDatabaseSuspendedError(err)) throw err;
