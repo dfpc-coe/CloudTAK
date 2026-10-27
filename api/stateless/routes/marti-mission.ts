@@ -422,20 +422,24 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const mission = await api.Mission.get(req.params.guid, {}, opts);
 
-            if (req.query.download) {
-                res.setHeader('Content-Disposition', `attachment; filename="${mission.name}.${req.query.format}"`);
-            }
-
             if (req.query.format === 'zip') {
                 const archive = await api.Mission.getArchive(
                     req.params.guid,
                     opts,
                 );
 
+                if (req.query.download) {
+                    res.setHeader('Content-Disposition', `attachment; filename="${mission.name}.${req.query.format}"`);
+                }
+
                 res.setHeader('Content-Type', 'application/zip');
 
                 archive.pipe(res);
             } else if (['geojson', 'kml'].includes(req.query.format)) {
+                if (req.query.download) {
+                    res.setHeader('Content-Disposition', `attachment; filename="${mission.name}.${req.query.format}"`);
+                }
+
                 const fc = {
                     type: 'FeatureCollection',
                     features: (await api.Mission.latestFeats(req.params.guid, opts)).features,
