@@ -16,6 +16,7 @@ import IconManager from './modules/icons.ts';
 import FontManager from './modules/fonts.ts';
 import MenuManager from './modules/menu.ts';
 import BottomBarManager from './modules/bottombar.ts';
+import HistoryLayer from './modules/history.ts';
 import { useDeviceStore, type BatteryInfo, type NativeDeliveryOptions } from './device.ts';
 import { useAppStore } from './app.ts';
 import * as Comlink from 'comlink';
@@ -101,6 +102,7 @@ export const useMapStore = defineStore('cloudtak', {
         _icons?: IconManager;
         _menu?: unknown;
         _bottomBar?: unknown;
+        _history?: unknown;
 
         _removeOrientationListener?: () => Promise<void>;
         _cotResync?: Promise<void>;
@@ -284,6 +286,10 @@ export const useMapStore = defineStore('cloudtak', {
         bottomBar: function(): BottomBarManager {
             if (!this._bottomBar) throw new Error('BottomBar Manager has not yet initialized');
             return this._bottomBar as BottomBarManager;
+        },
+        history: function(): HistoryLayer {
+            if (!this._history) throw new Error('History Layer has not yet initialized');
+            return this._history as HistoryLayer;
         },
         worker: function(): Comlink.Remote<Atlas> {
             if (!this._worker) throw new Error('Atlas worker has not yet started');
@@ -671,6 +677,15 @@ export const useMapStore = defineStore('cloudtak', {
             if (this._overlaySubscription) {
                 this._overlaySubscription.unsubscribe();
                 this._overlaySubscription = undefined;
+            }
+
+            if (this._history) {
+                try {
+                    this.history.destroy();
+                } catch (err) {
+                    console.error('Failed to destroy history layer:', err);
+                }
+                this._history = undefined;
             }
 
             if (this._map) {
@@ -1548,6 +1563,13 @@ export const useMapStore = defineStore('cloudtak', {
 
             OverlayManager.applyOrder();
 
+            this._history = markRaw(new HistoryLayer(this));
+            try {
+                this.history.init();
+            } catch (err) {
+                console.error('Failed to initialize history layer:', err);
+            }
+
             await FeatureVisibility.apply();
 
             // Mission loading is fire-and-forget so it does not block map init;
@@ -1686,6 +1708,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (!this._map) return;
 
             OverlayManager.applyOrder();
+            if (this._history) this.history.restack();
 
             this.updateBackground();
             await this.updateAttribution();

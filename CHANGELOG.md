@@ -26,6 +26,12 @@
 
 ### Pending Release
 
+- :tada: `API` Add `GET /api/marti/cot` to list every CoT event visible to the user within a time window of at most 24 hours (`start`/`end` or `secago`), optionally restricted to a `bbox` - backed by the TAK Server `/Marti/api/cot/sa` query
+- :tada: `UI` Breadcrumb trails are now built from a local `feature_history` table of discrete timestamped points - hovering a point shows who/when, clicking it opens the properties that CoT reported at that moment; the dashed trail line is derived from the same points
+- :tada: `UI` The History menu can load every CoT's history for a time window (optionally only the current map view) alongside the existing per-CoT history loader in the CoT view
+- :tada: `PluginAPI` Add `cot.historyAll()` plus `breadcrumb.history.{load,loadAll,list,stream,clear}` and a `breadcrumb.history.popup` renderer registry so plugins can surface their own properties on hovered history points - existing `cot.history()` and `breadcrumb.live.*` are unchanged
+- :arrow_up: `API` Update `@tak-ps/node-tak` to `^12.32.0` for the `Query.saFeats` Situational Awareness client
+
 ### v13.114.2 - 2026-10-26
 
 - :tada: Clicking on the name of the mission zooms to the mission extent

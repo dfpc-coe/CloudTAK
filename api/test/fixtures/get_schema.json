@@ -974,6 +974,11 @@
         "query": true,
         "res": false
     },
+    "GET /marti/cot": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /marti/cot/:uid": {
         "body": false,
         "query": false,
