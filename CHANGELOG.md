@@ -26,6 +26,8 @@
 
 ### Pending Release
 
+### v13.115.0 - 2026-10-27
+
 - :tada: `API` Add `GET /api/marti/cot` to list every CoT event visible to the user within a time window of at most 24 hours (`start`/`end` or `secago`), optionally restricted to a `bbox` - backed by the TAK Server `/Marti/api/cot/sa` query
 - :tada: `UI` Breadcrumb trails are now built from a local `feature_history` table of discrete timestamped points - hovering a point shows who/when, clicking it opens the properties that CoT reported at that moment; the dashed trail line is derived from the same points
 - :tada: `UI` The History menu can load every CoT's history for a time window (optionally only the current map view) alongside the existing per-CoT history loader in the CoT view
