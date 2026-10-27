@@ -19,6 +19,7 @@ import * as Default from '../lib/limits.js';
 const symbolsets: Array<{
     id: string;
     name: string;
+    count: number;
 }> = [];
 
 const symbols: Array<{
@@ -36,6 +37,7 @@ for (const symbolset of Object.keys(ms2525e)) {
     symbolsets.push({
         id: symbolset,
         name: ms2525e[symbolset].name,
+        count: ms2525e[symbolset].mainIcon.length,
     });
 
     for (const mainIcon of ms2525e[symbolset].mainIcon) {
@@ -210,6 +212,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             symbolsets: Type.Array(Type.Object({
                 id: Type.String(),
                 name: Type.String(),
+                count: Type.Integer({
+                    description: 'Number of Symbols in the Symbol Set',
+                }),
             })),
             items: Type.Array(Type.Object({
                 sidc: Type.String(),

@@ -26,6 +26,7 @@ test('GET: api/type/2525e', async () => {
         assert.deepEqual(res.body.symbolsets.find((set: { id: string }) => set.id === '10'), {
             id: '10',
             name: 'Land unit',
+            count: 214,
         });
 
         assert.equal(res.body.items.length, 2);

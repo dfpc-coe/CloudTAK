@@ -18,6 +18,10 @@ const router = VueRouter.createRouter({
                 name: 'home-menu-cot',
                 component: () => import('./components/CloudTAK/CoTView.vue'),
             },{
+                path: 'cot/:uid/appearance',
+                name: 'home-menu-cot-appearance',
+                component: () => import('./components/CloudTAK/CoTAppearance.vue'),
+            },{
                 path: 'event/:event',
                 name: 'home-menu-core-entity',
                 component: () => import('./components/CloudTAK/CoreEntityView.vue'),
