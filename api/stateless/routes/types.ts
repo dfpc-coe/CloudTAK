@@ -104,6 +104,24 @@ function isChildOf(parent: string, child: string): boolean {
     return false;
 }
 
+/** Name for a SIDC that carries an identity but no entity - "Hostile", "Unknown" */
+const IDENTITY_NAMES: Record<string, string> = {
+    p: 'Pending',
+    u: 'Unknown',
+    a: 'Assumed friend',
+    f: 'Friendly',
+    n: 'Neutral',
+    s: 'Suspect',
+    h: 'Hostile',
+    j: 'Joker',
+    k: 'Faker',
+};
+
+function identityName(sidc: string): string {
+    const identity = MilSymType.SID_REVERSE_MAP[sidc.substring(2, 4)];
+    return (identity && IDENTITY_NAMES[identity]) || IDENTITY_NAMES.u;
+}
+
 function sidc(
     symbol: { id: string; symbolset: string },
     identity: MilSymType.StandardIdentity,
@@ -301,7 +319,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             if (!symbol) {
                 res.json({
                     sidc: req.params.sidc,
-                    name: 'Unknown 2525 Symbol',
+                    name: entity === '000000' ? identityName(req.params.sidc) : 'Unknown 2525 Symbol',
                     remarks: '',
                     symbolset,
                 });

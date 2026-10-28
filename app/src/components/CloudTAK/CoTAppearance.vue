@@ -4,17 +4,6 @@
         :loading='loading'
         :none='!loading && !cot'
     >
-        <template #buttons>
-            <TablerButton
-                v-if='cot'
-                class='btn-primary btn-sm'
-                :disabled='!canSave || saving'
-                @click='save'
-            >
-                Done
-            </TablerButton>
-        </template>
-
         <div
             v-if='cot && isPoint && draft'
             class='pb-3'
@@ -40,10 +29,6 @@
                         v-text='summary.subtitle'
                     />
                 </div>
-            </div>
-
-            <div class='fw-bold pb-2'>
-                What it is
             </div>
 
             <AppearanceAffiliation
@@ -76,18 +61,18 @@
                 :icon='draft.icon'
                 :color='draft.color'
                 :opacity='draft.opacity'
-                @update:marker='draft.marker = $event'
+                @update:marker='setMarker($event)'
                 @update:icon='draft.icon = $event'
                 @update:color='draft.color = $event'
                 @update:opacity='draft.opacity = $event'
             />
 
             <TablerInlineAlert
-                v-if='!canSave'
+                v-if='needsIcon'
                 class='mt-3'
                 severity='info'
                 title='Choose an icon'
-                description='Pick an icon from an Iconset, or switch back to Military symbol or Dot.'
+                description='The military symbol stays on the map until an icon is picked.'
             />
         </div>
 
@@ -132,12 +117,9 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import {
-    TablerButton,
-    TablerInlineAlert,
-} from '@tak-ps/vue-tabler';
+import { TablerInlineAlert } from '@tak-ps/vue-tabler';
 import MenuTemplate from './util/MenuTemplate.vue';
 import FeatureIcon from './util/FeatureIcon.vue';
 import AppearanceAffiliation from './Appearance/AppearanceAffiliation.vue';
@@ -145,7 +127,6 @@ import AppearanceTypeSelect from './Appearance/AppearanceTypeSelect.vue';
 import AppearanceSymbolDetails from './Appearance/AppearanceSymbolDetails.vue';
 import AppearanceMarker from './Appearance/AppearanceMarker.vue';
 import AppearanceStroke from './Appearance/AppearanceStroke.vue';
-import { appearanceSaved } from './Appearance/saved.ts';
 import { iconsetIconLabel } from './Appearance/icon-label.ts';
 import Type2525 from '@tak-ps/node-cot/2525';
 import COT, { OriginMode, renderedIconImage } from '../../base/cot.ts';
@@ -165,14 +146,13 @@ import {
     carryFrame,
     isIconsetIcon,
 } from '../../utils/appearance.ts';
-import type { AppearanceDraft, StyleDraft } from '../../utils/appearance.ts';
+import type { AppearanceDraft, StyleDraft, Marker } from '../../utils/appearance.ts';
 
 const route = useRoute();
 const router = useRouter();
 const mapStore = useMapStore();
 
 const loading = ref(true);
-const saving = ref(false);
 const cot = ref<COT | undefined>();
 const draft = ref<AppearanceDraft | undefined>();
 const style = ref<StyleDraft | undefined>();
@@ -214,9 +194,22 @@ const summary = computed(() => {
     return describeAppearance(preview.value, typeName.value, iconName.value);
 });
 
-const canSave = computed<boolean>(() => {
-    if (!isPoint.value) return !!style.value;
-    return !!draft.value && (draft.value.marker !== 'icon' || isIconsetIcon(draft.value.icon));
+const needsIcon = computed<boolean>(() => {
+    return !!draft.value && draft.value.marker === 'icon' && !isIconsetIcon(draft.value.icon);
+});
+
+// Edits apply as they are made - a short debounce coalesces slider drags
+let persistTimeout: ReturnType<typeof setTimeout> | undefined;
+
+watch(preview, (properties) => {
+    if (!cot.value || JSON.stringify(properties) === JSON.stringify(cot.value.properties)) return;
+
+    if (persistTimeout) clearTimeout(persistTimeout);
+    persistTimeout = setTimeout(() => void persist(properties), 100);
+});
+
+onUnmounted(() => {
+    if (persistTimeout) clearTimeout(persistTimeout);
 });
 
 watch(() => preview.value.type, async (type) => {
@@ -279,6 +272,14 @@ function setAffiliation(code: string): void {
     if (draft.value.type) draft.value.type = withAffiliation(draft.value.type, code);
 }
 
+// Leaving Custom icon forgets the pick so coming back starts from a clean slate
+function setMarker(marker: Marker): void {
+    if (!draft.value) return;
+
+    draft.value.marker = marker;
+    if (marker !== 'icon') draft.value.icon = undefined;
+}
+
 function setContext(context: string): void {
     if (!draft.value || !draft.value.type) return;
     draft.value.type = withContext(draft.value.type, context);
@@ -290,21 +291,12 @@ function setType(type: string): void {
     draft.value.type = carryFrame(draft.value.type, type);
 
     // A custom icon is the user's own pick and survives a type change
-    if (draft.value.marker === 'dot') draft.value.marker = 'symbol';
+    if (draft.value.marker === 'spot') draft.value.marker = 'symbol';
 }
 
-async function save(): Promise<void> {
-    if (!cot.value || !canSave.value) return;
-
-    saving.value = true;
-
-    try {
-        await cot.value.update({ properties: preview.value });
-        appearanceSaved.value = cot.value.id;
-        await back();
-    } finally {
-        saving.value = false;
-    }
+async function persist(properties: Feature['properties']): Promise<void> {
+    if (!cot.value) return;
+    await cot.value.update({ properties });
 }
 
 async function back(): Promise<void> {

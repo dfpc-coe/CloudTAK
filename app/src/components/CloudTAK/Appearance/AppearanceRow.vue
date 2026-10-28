@@ -23,7 +23,7 @@
             />
             <div
                 class='text-secondary small text-truncate'
-                v-text='edit ? `${summary.subtitle} · tap to edit` : summary.subtitle'
+                v-text='summary.subtitle'
             />
         </div>
 

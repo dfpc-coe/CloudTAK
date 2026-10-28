@@ -16,7 +16,7 @@
                 v-if='modelValue'
                 :key='modelValue'
                 :size='28'
-                :feature='{ properties: { type: modelValue } }'
+                :feature='{ properties: { type: withStatus(modelValue, "0") } }'
             />
             <IconChartGridDots
                 v-else
@@ -300,6 +300,7 @@ import {
     symbolSetLabel,
     splitTypeName,
     withAffiliation,
+    withStatus,
 } from '../../../utils/appearance.ts';
 
 type SymbolSet = COT2525EList['symbolsets'][number];

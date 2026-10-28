@@ -336,16 +336,6 @@
                             :edit='is_editable'
                             @click='router.push(`/cot/${cot.id}/appearance`)'
                         />
-                        <div
-                            v-if='appearanceSavedToast'
-                            class='d-flex align-items-center gap-1 text-green small pt-1'
-                        >
-                            <IconCheck
-                                :size='16'
-                                stroke='2'
-                            />
-                            <span>Appearance saved</span>
-                        </div>
                     </div>
 
                     <div
@@ -607,7 +597,6 @@ import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
 import PropertyProfile from './Property/PropertyProfile.vue';
 import AppearanceRow from './Appearance/AppearanceRow.vue';
-import { appearanceSaved } from './Appearance/saved.ts';
 import PropertyMission from './Property/PropertyMission.vue';
 import PropertyOrigin from './Property/PropertyOrigin.vue';
 import PropertyRemarks from './Property/PropertyRemarks.vue';
@@ -658,7 +647,6 @@ import {
     IconLockOpen,
     IconNavigation,
     IconNavigationFilled,
-    IconCheck,
 } from '@tabler/icons-vue';
 import Subscriptions from './util/Subscriptions.vue';
 import { server } from '../../std.ts';
@@ -718,21 +706,6 @@ const hasAppearance = computed(() => {
     const type = cot.value.properties.type;
     return type.startsWith('a-') || type === 'u-d-p' || isSIDCType(type);
 });
-
-const appearanceSavedToast = ref(false);
-let appearanceSavedTimeout: ReturnType<typeof setTimeout> | undefined;
-
-function confirmAppearanceSaved(): void {
-    if (!cot.value || appearanceSaved.value !== cot.value.id) return;
-
-    appearanceSaved.value = null;
-    appearanceSavedToast.value = true;
-
-    if (appearanceSavedTimeout) clearTimeout(appearanceSavedTimeout);
-    appearanceSavedTimeout = setTimeout(() => {
-        appearanceSavedToast.value = false;
-    }, 2500);
-}
 const actionIconSize = 28;
 
 // The Entity a CoT is a projection of, when it couldn't be opened because
@@ -777,7 +750,6 @@ watch(route, async () => {
     if (cot.value) {
         breadcrumbLive.value = await mapStore.worker.db.breadcrumb.get(cot.value.id);
     }
-    confirmAppearanceSaved();
 });
 
 onMounted(async () => {
@@ -785,7 +757,6 @@ onMounted(async () => {
     if (cot.value) {
         breadcrumbLive.value = await mapStore.worker.db.breadcrumb.get(cot.value.id);
     }
-    confirmAppearanceSaved();
 
     const displaySpeed = await ProfileConfig.get('display_speed');
     if (displaySpeed && displaySpeed.value) {
@@ -818,7 +789,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
     if (interval.value) clearInterval(interval.value);
-    if (appearanceSavedTimeout) clearTimeout(appearanceSavedTimeout);
     if (cot.value && cot.value._liveQuerySubscription) {
         cot.value._liveQuerySubscription.unsubscribe();
     }

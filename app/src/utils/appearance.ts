@@ -3,10 +3,10 @@ import type { Feature } from '../types.ts';
 
 /**
  * Appearance editing for point Features: "what it is" (affiliation + type)
- * and "how it looks" (MIL-STD symbol, Iconset icon or plain dot)
+ * and "how it looks" (MIL-STD symbol, Iconset icon or plain spot)
  */
 
-export type Marker = 'symbol' | 'icon' | 'dot';
+export type Marker = 'symbol' | 'icon' | 'spot';
 
 export type AffiliationFamily = 'friendly' | 'hostile' | 'neutral' | 'unknown' | 'other';
 
@@ -40,14 +40,6 @@ export const FAMILY_COLORS: Record<AffiliationFamily, string> = {
     other: '#AAAAAA',
 };
 
-export const FAMILY_NAMES: Record<AffiliationFamily, string> = {
-    friendly: 'blue',
-    hostile: 'red',
-    neutral: 'green',
-    unknown: 'yellow',
-    other: 'gray',
-};
-
 export function affiliation(code: string | undefined): Affiliation | undefined {
     return AFFILIATIONS.find((aff) => aff.code === code);
 }
@@ -77,12 +69,12 @@ export function withAffiliation(type: string, code: string): string {
 
 /** 2525E Status / Operational Condition - digit index 6 of the numeric SIDC */
 export const STATUS_OPTIONS = [
-    { value: '0', label: 'Present' },
-    { value: '1', label: 'Planned' },
-    { value: '2', label: 'Fully capable' },
-    { value: '3', label: 'Damaged' },
-    { value: '4', label: 'Destroyed' },
-    { value: '5', label: 'Full to capacity' },
+    { value: '0', label: 'Present', meaning: 'At the reported location' },
+    { value: '1', label: 'Planned', meaning: 'Anticipated or planned, drawn with a dashed frame' },
+    { value: '2', label: 'Fully capable', meaning: 'Present and fully operational' },
+    { value: '3', label: 'Damaged', meaning: 'Present with reduced capability' },
+    { value: '4', label: 'Destroyed', meaning: 'Present and no longer operational' },
+    { value: '5', label: 'Full to capacity', meaning: 'Present and unable to take on more' },
 ];
 
 export function statusOf(type: string | undefined): string {
@@ -95,11 +87,11 @@ export function withStatus(type: string, status: string): string {
     return type.substring(0, 6) + status + type.substring(7);
 }
 
-/** CoT types that draw as a plain marker rather than a symbol */
-export const DOT_TYPES = ['u-d-p', 'b-m-p-s-m'];
+/** CoT types that draw as a plain spot rather than a symbol */
+export const SPOT_TYPES = ['u-d-p', 'b-m-p-s-m'];
 
 export function isTyped(type: string | undefined): boolean {
-    return !!type && !DOT_TYPES.includes(type) && !type.startsWith('u-');
+    return !!type && !SPOT_TYPES.includes(type) && !type.startsWith('u-');
 }
 
 export function isIconsetIcon(icon: string | undefined): boolean {
@@ -108,7 +100,7 @@ export function isIconsetIcon(icon: string | undefined): boolean {
 
 export function markerOf(properties: Pick<Feature['properties'], 'type' | 'icon'>): Marker {
     if (isIconsetIcon(properties.icon)) return 'icon';
-    if (!isTyped(properties.type)) return 'dot';
+    if (!isTyped(properties.type)) return 'spot';
     return 'symbol';
 }
 
@@ -227,7 +219,7 @@ export function draftFrom(properties: Feature['properties']): AppearanceDraft {
 
 /**
  * Properties to persist for a draft. A MIL-STD symbol is a pure function of the
- * type so no icon is stored for a SIDC, and a dot is the untyped Custom Point
+ * type so no icon is stored for a SIDC, and a spot is the untyped Custom Point
  * TAK clients draw as a plain marker
  */
 export function applyAppearance(
@@ -242,7 +234,7 @@ export function applyAppearance(
 
     properties['marker-opacity'] = draft.opacity;
 
-    if (draft.marker === 'dot') {
+    if (draft.marker === 'spot') {
         properties.type = 'u-d-p';
         delete properties.icon;
         properties['marker-color'] = draft.color;
@@ -261,11 +253,8 @@ export function applyAppearance(
         return properties;
     }
 
-    if (Type2525.isNumericSIDCConvertable(properties.type) || !isTyped(properties.type)) {
-        delete properties.icon;
-    } else {
-        properties.icon = properties.type;
-    }
+    // The symbol derives from the type alone - see renderedIcon
+    delete properties.icon;
 
     // Spritesheet icons are tinted by marker-color - white leaves the
     // affiliation frame colour as drawn
@@ -295,23 +284,37 @@ export function describeAppearance(
     const status = statusOf(properties.type);
     const statusLabel = status !== '0' ? STATUS_OPTIONS.find((opt) => opt.value === status)?.label : undefined;
 
+    const name = splitTypeName(properties.type, typeName).title;
     const title = typed
-        ? [aff?.label, splitTypeName(properties.type, typeName).title, statusLabel].filter(Boolean).join(' · ')
+        ? [aff?.label, name !== aff?.label ? name : undefined, statusLabel].filter(Boolean).join(' · ')
         : 'Unknown point';
 
     let subtitle: string;
 
     if (marker === 'icon') {
         subtitle = ['Custom icon', iconName].filter(Boolean).join(' · ');
-    } else if (marker === 'dot') {
-        subtitle = `Dot · ${colorLabel(properties['marker-color'])}`;
-    } else if (aff) {
-        subtitle = `Military symbol · ${FAMILY_NAMES[aff.family]} from ${aff.label}`;
+    } else if (marker === 'spot') {
+        subtitle = `Spot · ${colorLabel(properties['marker-color'])}`;
     } else {
-        subtitle = 'Military symbol';
+        subtitle = describeSymbol(properties.type, typeName);
     }
 
     return { title, subtitle };
+}
+
+/** Where the symbol sits plus any echelon and indicators - "Land units › Combat · Platoon · Headquarters" */
+function describeSymbol(type: string | undefined, typeName?: string): string {
+    const set = symbolSetOf(type);
+    const flags = hqTfDummyOf(type);
+    const amplifier = amplifierOptions(set)?.options.find((opt) => opt.value === amplifierOf(type));
+
+    const parts = [
+        splitTypeName(type, typeName).path.join(' › '),
+        amplifier && amplifier.value !== '00' ? amplifier.label : undefined,
+        ...hqTfDummyOptions(set).filter((key) => flags[key]).map((key) => HQ_TF_DUMMY_LABELS[key]),
+    ].filter(Boolean);
+
+    return parts.length ? parts.join(' · ') : 'Military symbol';
 }
 
 export const STROKE_STYLES = ['solid', 'dashed', 'dotted', 'outlined'];

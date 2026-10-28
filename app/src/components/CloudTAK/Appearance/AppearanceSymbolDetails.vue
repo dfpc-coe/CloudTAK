@@ -1,39 +1,10 @@
 <template>
     <div v-if='code'>
-        <div class='d-flex align-items-center pb-1'>
-            <label class='subheader user-select-none m-0'>Symbol details</label>
-            <CopyButton
-                class='ms-auto'
-                :text='code'
-                :size='18'
-                title='Copy Symbol Code'
-            />
-        </div>
-
         <template v-if='isSIDC'>
-            <label class='subheader user-select-none d-block pb-1'>Status</label>
-            <div
-                class='d-flex flex-wrap gap-1'
-                role='radiogroup'
-            >
-                <button
-                    v-for='opt of STATUS_OPTIONS'
-                    :key='opt.value'
-                    type='button'
-                    role='radio'
-                    class='btn btn-sm btn-pill d-inline-flex align-items-center gap-1'
-                    :class='opt.value === status ? "btn-secondary" : "btn-outline-secondary"'
-                    :aria-checked='opt.value === status'
-                    @click='emit("update:modelValue", withStatus(modelValue, opt.value))'
-                >
-                    <span
-                        v-if='STATUS_COLORS[opt.value]'
-                        class='status-dot'
-                        :style='{ background: STATUS_COLORS[opt.value] }'
-                    />
-                    <span v-text='opt.label' />
-                </button>
-            </div>
+            <AppearanceStatusSelect
+                :model-value='modelValue'
+                @update:model-value='emit("update:modelValue", $event)'
+            />
 
             <template v-if='amplifier'>
                 <label
@@ -84,12 +55,9 @@ import { computed } from 'vue';
 import Type2525 from '@tak-ps/node-cot/2525';
 import { IconCheck } from '@tabler/icons-vue';
 import { TablerEnum } from '@tak-ps/vue-tabler';
-import CopyButton from '../util/CopyButton.vue';
+import AppearanceStatusSelect from './AppearanceStatusSelect.vue';
 import {
-    STATUS_OPTIONS,
     HQ_TF_DUMMY_LABELS,
-    statusOf,
-    withStatus,
     symbolCode,
     symbolSetOf,
     amplifierOf,
@@ -100,13 +68,6 @@ import {
     hqTfDummyOptions,
 } from '../../../utils/appearance.ts';
 import type { HqTfDummy } from '../../../utils/appearance.ts';
-
-const STATUS_COLORS: Record<string, string> = {
-    '2': '#4DD24D',
-    '3': '#FFD21A',
-    '4': '#FF4D4D',
-    '5': '#4D8CFF',
-};
 
 const props = defineProps<{
     modelValue: string;
@@ -120,8 +81,6 @@ const code = computed<string | undefined>(() => symbolCode(props.modelValue));
 
 // Status, amplifier and indicators are 2525E fields - a 2525B CoT type has nowhere to carry them
 const isSIDC = computed<boolean>(() => Type2525.isNumericSIDCConvertable(props.modelValue));
-
-const status = computed<string>(() => statusOf(props.modelValue));
 
 const symbolset = computed<string | undefined>(() => symbolSetOf(props.modelValue));
 
@@ -149,12 +108,3 @@ function toggleIndicator(key: keyof HqTfDummy): void {
     }));
 }
 </script>
-
-<style scoped>
-.status-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-}
-</style>

@@ -28,7 +28,7 @@
                 stroke='1.5'
                 class='flex-shrink-0 mt-1'
             />
-            <span>Color and frame come from affiliation. Pick Custom icon or Dot to choose your own color.</span>
+            <span>Color and frame come from affiliation. Pick Custom icon or Spot to choose your own color.</span>
         </div>
 
         <template v-else-if='marker === "icon"'>
@@ -127,7 +127,7 @@
                     stroke='1.5'
                     class='flex-shrink-0 mt-1'
                 />
-                <span>A dot is a plain point in your color - it keeps no type.</span>
+                <span>A spot is a plain point in your color - it keeps no type.</span>
             </div>
         </template>
 
@@ -162,7 +162,7 @@ import type { Marker } from '../../../utils/appearance.ts';
 const MARKERS: Array<{ value: Marker; label: string }> = [
     { value: 'symbol', label: 'Military symbol' },
     { value: 'icon', label: 'Custom icon' },
-    { value: 'dot', label: 'Dot' },
+    { value: 'spot', label: 'Spot' },
 ];
 
 const props = defineProps<{

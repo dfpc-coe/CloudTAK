@@ -191,6 +191,35 @@ test('GET: api/type/2525e/:sidc', async () => {
     }
 });
 
+test('GET: api/type/2525e/:sidc - identity without entity', async () => {
+    try {
+        const res = await flight.fetch('/api/type/2525e/13061000000000000000', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.deepEqual(res.body, {
+            sidc: '13061000000000000000',
+            name: 'Hostile',
+            remarks: '',
+            symbolset: '10',
+        });
+
+        const unknown = await flight.fetch('/api/type/2525e/13011000000000000000', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.equal(unknown.body.name, 'Unknown');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: api/type/2525e/:sidc - unknown entity', async () => {
     try {
         const res = await flight.fetch('/api/type/2525e/13034000009999990000', {

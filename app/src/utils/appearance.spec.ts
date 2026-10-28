@@ -66,7 +66,7 @@ describe('status', () => {
 
 describe('marker', () => {
     it('classifies how a Feature is drawn', () => {
-        expect(markerOf({ type: 'u-d-p' })).toEqual('dot');
+        expect(markerOf({ type: 'u-d-p' })).toEqual('spot');
         expect(markerOf({ type: 'a-h-G-U-C-I' })).toEqual('symbol');
         expect(markerOf({ type: 'a-h-G-U-C-I', icon: 'a-h-G-U-C-I' })).toEqual('symbol');
         expect(markerOf({ type: INFANTRY_E })).toEqual('symbol');
@@ -109,7 +109,7 @@ describe('draftFrom', () => {
         expect(draftFrom(properties({ type: 'u-d-p', 'marker-color': '#FF4D4D' }))).toEqual({
             type: undefined,
             affiliation: 'u',
-            marker: 'dot',
+            marker: 'spot',
             icon: undefined,
             color: '#FF4D4D',
             opacity: 1
@@ -129,7 +129,7 @@ describe('draftFrom', () => {
 });
 
 describe('applyAppearance', () => {
-    it('types a dot as a MIL-STD symbol', () => {
+    it('types a spot as a MIL-STD symbol', () => {
         const next = applyAppearance(properties({ type: 'u-d-p', 'marker-color': '#FF4D4D' }), {
             type: INFANTRY_E,
             affiliation: 'h',
@@ -144,21 +144,22 @@ describe('applyAppearance', () => {
         expect(next['marker-color']).toEqual('#FFFFFF');
     });
 
-    it('keeps the spritesheet icon for a 2525B type', () => {
-        const next = applyAppearance(properties({ type: 'a-f-G', milicon: { id: INFANTRY_E } }), {
+    it('drops the icon for a 2525B type', () => {
+        const next = applyAppearance(properties({ type: 'a-f-G', icon: 'abc:Incident/Fire', milicon: { id: INFANTRY_E } }), {
             type: 'a-h-G-U-C-I',
             affiliation: 'h',
             marker: 'symbol',
+            icon: 'abc:Incident/Fire',
             color: '#FFFFFF',
             opacity: 1
         });
 
         expect(next.type).toEqual('a-h-G-U-C-I');
-        expect(next.icon).toEqual('a-h-G-U-C-I');
+        expect(next.icon).toBeUndefined();
         expect(next.milicon).toBeUndefined();
     });
 
-    it('leaves an untyped symbol as a dot', () => {
+    it('leaves an untyped symbol as a spot', () => {
         const next = applyAppearance(properties({ type: 'u-d-p' }), {
             affiliation: 'h',
             marker: 'symbol',
@@ -198,11 +199,11 @@ describe('applyAppearance', () => {
         expect(next['marker-color']).toEqual('#FFFFFF');
     });
 
-    it('drops the type for a dot', () => {
+    it('drops the type for a spot', () => {
         const next = applyAppearance(properties({ type: INFANTRY_E, icon: 'abc:Incident/Fire' }), {
             type: INFANTRY_E,
             affiliation: 'h',
-            marker: 'dot',
+            marker: 'spot',
             icon: 'abc:Incident/Fire',
             color: '#4D8CFF',
             opacity: 1
@@ -218,7 +219,21 @@ describe('describeAppearance', () => {
     it('summarises a MIL-STD symbol', () => {
         expect(describeAppearance(properties({ type: INFANTRY_E }), 'Infantry')).toEqual({
             title: 'Hostile · Infantry',
-            subtitle: 'Military symbol · red from Hostile'
+            subtitle: 'Land units'
+        });
+    });
+
+    it('lists the path, echelon and indicators', () => {
+        expect(describeAppearance(properties({ type: '13061026141211000000' }), 'Infantry - Mechanized')).toEqual({
+            title: 'Hostile · Mechanized · Fully capable',
+            subtitle: 'Land units › Infantry · Platoon / Detachment · Headquarters · Task force'
+        });
+    });
+
+    it('does not repeat the affiliation for a symbol with no entity', () => {
+        expect(describeAppearance(properties({ type: '13061000000000000000' }), 'Hostile')).toEqual({
+            title: 'Hostile',
+            subtitle: 'Land units'
         });
     });
 
@@ -229,10 +244,10 @@ describe('describeAppearance', () => {
         });
     });
 
-    it('summarises an untyped dot', () => {
+    it('summarises an untyped spot', () => {
         expect(describeAppearance(properties({ type: 'u-d-p', 'marker-color': '#FFD21A' }))).toEqual({
             title: 'Unknown point',
-            subtitle: 'Dot · Yellow'
+            subtitle: 'Spot · Yellow'
         });
     });
 });

@@ -37,9 +37,11 @@
                                 :class='{ active: aff.code === modelValue }'
                                 @click='emit("update:modelValue", aff.code)'
                             >
-                                <span
-                                    class='affiliation-swatch me-2'
-                                    :style='{ background: FAMILY_COLORS[aff.family] }'
+                                <AffiliationFrame
+                                    class='me-2'
+                                    :family='aff.family'
+                                    :code='aff.code'
+                                    :size='18'
                                 />
                                 <span class='d-flex flex-column text-start'>
                                     <span v-text='aff.label' />
@@ -98,9 +100,10 @@
                 :aria-checked='aff.code === modelValue'
                 @click='emit("update:modelValue", aff.code)'
             >
-                <span
-                    class='affiliation-swatch'
-                    :style='{ background: FAMILY_COLORS[aff.family] }'
+                <AffiliationFrame
+                    :family='aff.family'
+                    :code='aff.code'
+                    :size='20'
                 />
                 <span
                     class='text-truncate'
@@ -115,6 +118,7 @@
 import { computed } from 'vue';
 import { IconCheck, IconChevronDown } from '@tabler/icons-vue';
 import { TablerDropdown } from '@tak-ps/vue-tabler';
+import AffiliationFrame from './AffiliationFrame.vue';
 import { AFFILIATIONS, FAMILY_COLORS, CONTEXT_OPTIONS, affiliation } from '../../../utils/appearance.ts';
 import type { Affiliation } from '../../../utils/appearance.ts';
 
@@ -161,25 +165,26 @@ const groups = computed(() => {
 
 <style scoped>
 .affiliation-chips {
-    background: var(--tblr-bg-surface-secondary, rgba(128, 128, 128, 0.12));
+    background: light-dark(var(--tblr-gray-100), var(--tblr-gray-900));
+    border: 1px solid var(--tblr-border-color-translucent);
 }
 
 .affiliation-chip {
     min-width: 0;
     border: 1px solid transparent;
     background: transparent;
+    color: var(--tblr-secondary);
+}
+
+.affiliation-chip:hover {
+    color: var(--tblr-body-color);
 }
 
 .affiliation-chip.active {
-    border-color: var(--affiliation-color);
-    background: color-mix(in srgb, var(--affiliation-color) 18%, transparent);
-}
-
-.affiliation-swatch {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 2px;
-    flex-shrink: 0;
+    color: var(--tblr-body-color);
+    font-weight: 500;
+    background: var(--tblr-bg-surface);
+    border-color: color-mix(in srgb, var(--affiliation-color) 55%, var(--tblr-body-color));
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
 }
 </style>
