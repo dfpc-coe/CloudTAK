@@ -3,6 +3,8 @@ services:
         build:
           context: .
           dockerfile: Dockerfile
+          args:
+            WEB_PLUGINS: ${WEB_PLUGINS:-}
         restart: 'always'
         depends_on:
             - postgis
