@@ -88,8 +88,16 @@ function login() {
 
 }
 
+function resolvePlugin(url) {
+    const out = CP.execFileSync('git', ['ls-remote', url, 'HEAD'], { encoding: 'utf8' });
+    const sha = out.split(/\s+/)[0];
+    if (!sha) throw new Error(`Could not resolve HEAD for plugin ${url}`);
+    return `${url}#${sha}`;
+}
+
 function cloudtak_api(plugins = []) {
-    const buildArgs = plugins.length ? `--build-arg WEB_PLUGINS="${plugins.join(',')}"` : '';
+    const resolved = plugins.map(resolvePlugin);
+    const buildArgs = resolved.length ? `--build-arg WEB_PLUGINS="${resolved.join(',')}"` : '';
 
     return build('api', `${buildArgs} ${tags()} .`);
 }

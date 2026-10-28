@@ -19,6 +19,12 @@ function pluginURLs(): string[] {
         .filter((entry) => entry.length > 0);
 }
 
+function parsePlugin(entry: string): { url: string, rev?: string } {
+    const idx = entry.lastIndexOf('#');
+    if (idx === -1) return { url: entry };
+    return { url: entry.slice(0, idx), rev: entry.slice(idx + 1) };
+}
+
 function pluginName(url: string): string {
     return path.basename(url, '.git');
 }
@@ -30,6 +36,17 @@ async function exists(target: URL): Promise<boolean> {
     } catch {
         return false;
     }
+}
+
+async function removeDanglingLink(name: string): Promise<void> {
+    const link = fileURLToPath(new URL(name, PLUGINS_DIR));
+
+    const entry = await fs.lstat(link).catch(() => null);
+    if (!entry || !entry.isSymbolicLink()) return;
+    if (await exists(new URL(name + '/', PLUGINS_DIR))) return;
+
+    console.error(`ok - removing dangling plugin link '${name}'`);
+    await fs.unlink(link);
 }
 
 async function listFiles(root: URL, prefix = ''): Promise<string[]> {
@@ -94,17 +111,25 @@ async function main(): Promise<void> {
 
     await fs.mkdir(PLUGINS_DIR, { recursive: true });
 
-    for (const url of urls) {
+    for (const entry of urls) {
+        const { url, rev } = parsePlugin(entry);
         const name = pluginName(url);
         const pluginDir = new URL(name + '/', PLUGINS_DIR);
+        const dir = fileURLToPath(pluginDir);
+
+        await removeDanglingLink(name);
 
         if (await exists(pluginDir)) {
             console.error(`ok - plugin '${name}' already present, skipping clone`);
         } else {
             console.error(`ok - cloning plugin '${name}' from ${url}`);
-            execFileSync('git', ['clone', '--depth', '1', url, fileURLToPath(pluginDir)], {
-                stdio: 'inherit'
-            });
+            execFileSync('git', ['clone', '--depth', '1', url, dir], { stdio: 'inherit' });
+
+            if (rev) {
+                console.error(`ok - pinning plugin '${name}' to ${rev}`);
+                execFileSync('git', ['-C', dir, 'fetch', '--depth', '1', 'origin', rev], { stdio: 'inherit' });
+                execFileSync('git', ['-C', dir, 'checkout', '--quiet', rev], { stdio: 'inherit' });
+            }
         }
 
         await installPublicAssets(name, pluginDir);
