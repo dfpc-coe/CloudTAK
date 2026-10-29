@@ -174,6 +174,11 @@
                                                 title='Tiles are available offline on this device'
                                             />
                                         </div>
+                                        <OverlayLegend
+                                            v-if='card.overlay.tilejson?.legend?.length'
+                                            class='mt-2'
+                                            :legend='card.overlay.tilejson.legend'
+                                        />
                                     </div>
                                 </div>
 
@@ -298,6 +303,7 @@ import { useRouter } from 'vue-router';
 import type { Subscription } from 'dexie';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import OfflineBadge from '../util/OfflineBadge.vue';
+import OverlayLegend from '../util/OverlayLegend.vue';
 import {
     TablerDelete,
     TablerIconButton,

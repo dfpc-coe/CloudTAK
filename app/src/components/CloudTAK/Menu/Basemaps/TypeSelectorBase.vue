@@ -294,7 +294,8 @@ const showSelectedBanner = computed(() => !props.basemapId);
 const showTypeField = computed(() => {
     return props.type !== 'featureserver'
         && props.type !== 'mapserver'
-        && props.type !== 'imageserver';
+        && props.type !== 'imageserver'
+        && props.type !== 'slope';
 });
 const advanced = ref(false);
 

@@ -109,7 +109,8 @@ import TypeSelectorZxy_Tilejson from './TypeSelectorZxy_Tilejson.vue';
 import TypeSelectorZxy_Upload from './TypeSelectorZxy_Upload.vue';
 import TypeSelectorZxy from './TypeSelectorZxy.vue';
 import TypeSelectorHosted from './TypeSelectorHosted.vue';
-import { BasemapTypeConfig, inferBasemapType, normalizeEditing } from './types.ts';
+import TypeSelectorSlope from './TypeSelectorSlope.vue';
+import { BasemapTypeConfig, basemapSourceType, inferBasemapType, normalizeEditing } from './types.ts';
 import type { BasemapListItem, BasemapImport, BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from './types.ts';
 import {
     IconMap,
@@ -134,7 +135,7 @@ const warnSharing = ref(false);
 const loading = ref(false);
 
 const selectedBasemapType = ref<BasemapSourceType | null>(
-    props.basemap.url ? (inferBasemapType(props.basemap.url) ?? 'zxy') : null
+    props.basemap.url ? (basemapSourceType(props.basemap.url, props.basemap.protocol) ?? 'zxy') : null
 );
 
 const tilejson = ref({ url: '' });
@@ -207,6 +208,7 @@ const activeSelectorComponent = computed(() => {
     case 'tilejson': return TypeSelectorZxy_Tilejson;
     case 'upload': return TypeSelectorZxy_Upload;
     case 'hosted': return TypeSelectorHosted;
+    case 'slope': return TypeSelectorSlope;
     default: return null;
     }
 });
@@ -330,7 +332,7 @@ async function fetchBasemap(): Promise<void> {
     const data = res.data as BasemapListItem;
 
     editing.value = normalizeEditing(data);
-    selectedBasemapType.value = inferBasemapType(editing.value.url) ?? 'zxy';
+    selectedBasemapType.value = basemapSourceType(editing.value.url, data.protocol) ?? 'zxy';
 
     vectorLayers.value = [];
     if (editing.value.type === 'vector') {

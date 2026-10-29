@@ -102,6 +102,11 @@ export const TileJSON_VectorLayer = Type.Object({
     description: Type.Optional(Type.String()),
 });
 
+export const TileJSON_Legend = Type.Array(Type.Object({
+    label: Type.String(),
+    color: Type.String({ description: 'CSS color of the legend swatch' }),
+}), { description: 'Raster legend entries - a CloudTAK extension to TileJSON' });
+
 export const TileJSON = Type.Object({
     tilejson: Type.Literal('3.0.0'),
     version: Type.String(),
@@ -122,6 +127,7 @@ export const TileJSON = Type.Object({
     type: Type.String(),
     format: Type.Optional(Type.String()),
     vector_layers: Type.Optional(Type.Array(TileJSON_VectorLayer)),
+    legend: Type.Optional(TileJSON_Legend),
 });
 
 export const LayerError = Type.Object({

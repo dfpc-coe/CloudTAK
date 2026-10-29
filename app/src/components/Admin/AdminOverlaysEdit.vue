@@ -107,7 +107,8 @@ import TypeSelectorZxy_Tilejson from '../CloudTAK/Menu/Basemaps/TypeSelectorZxy_
 import TypeSelectorZxy_Upload from '../CloudTAK/Menu/Basemaps/TypeSelectorZxy_Upload.vue';
 import TypeSelectorZxy from '../CloudTAK/Menu/Basemaps/TypeSelectorZxy.vue';
 import TypeSelectorHosted from '../CloudTAK/Menu/Basemaps/TypeSelectorHosted.vue';
-import { BasemapTypeConfig, inferBasemapType, normalizeEditing } from '../CloudTAK/Menu/Basemaps/types.ts';
+import TypeSelectorSlope from '../CloudTAK/Menu/Basemaps/TypeSelectorSlope.vue';
+import { BasemapTypeConfig, basemapSourceType, inferBasemapType, normalizeEditing } from '../CloudTAK/Menu/Basemaps/types.ts';
 import type { BasemapImport, BasemapImportRequest, BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from '../CloudTAK/Menu/Basemaps/types.ts';
 import {
     IconCircleArrowLeft,
@@ -187,6 +188,7 @@ const activeSelectorComponent = computed(() => {
     case 'tilejson': return TypeSelectorZxy_Tilejson;
     case 'upload': return TypeSelectorZxy_Upload;
     case 'hosted': return TypeSelectorHosted;
+    case 'slope': return TypeSelectorSlope;
     default: return null;
     }
 });
@@ -338,7 +340,7 @@ async function saveOverlay(): Promise<void> {
                 },
                 body: {
                     scope: scope.value,
-                    protocol: selectedBasemapType.value as 'zxy' | 'mapserver' | 'imageserver' | 'featureserver' | 'hosted',
+                    protocol: selectedBasemapType.value as 'zxy' | 'mapserver' | 'imageserver' | 'featureserver' | 'hosted' | 'slope',
                     ...apiBody,
                 },
             });
@@ -350,7 +352,7 @@ async function saveOverlay(): Promise<void> {
                 },
                 body: {
                     scope: scope.value,
-                    protocol: selectedBasemapType.value as 'zxy' | 'mapserver' | 'imageserver' | 'featureserver' | 'hosted',
+                    protocol: selectedBasemapType.value as 'zxy' | 'mapserver' | 'imageserver' | 'featureserver' | 'hosted' | 'slope',
                     ...apiBody,
                     name: apiBody.name || '',
                     url: apiBody.url || '',
@@ -387,7 +389,7 @@ async function fetchOverlay(): Promise<void> {
     scope.value = overlayData.username ? 'user' : 'server';
 
     editing.value = normalizeEditing(overlayData as unknown as BasemapImport);
-    selectedBasemapType.value = inferBasemapType(editing.value.url)
+    selectedBasemapType.value = basemapSourceType(editing.value.url, overlayData.protocol)
         ?? (overlayData.protocol as BasemapSourceType)
         ?? 'zxy';
 

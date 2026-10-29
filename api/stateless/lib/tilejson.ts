@@ -6,6 +6,8 @@ import { isSafeUrl, fetch as safeFetch } from '@tak-ps/node-safeurl';
 import type ConfigStateless from '../config.js';
 import { TileJSON } from '../../common/types.js';
 import { BasemapProtocol, TileJSONActions } from './interface-basemap.js';
+import { fromProtocol } from './factory-basemap.js';
+import { Basemap_Protocol } from '../../common/enums.js';
 import { EsriBase, EsriProxyLayer } from './esri.js';
 
 export const AugmentedTileJSON = Type.Composite([
@@ -42,6 +44,17 @@ export async function basemapTileJSON(
 
     let tileURL = hosted ? basemap.url : config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
     if (opts.token) tileURL = tileURL + `?token=${opts.token}`;
+
+    // Derived rasters are rendered by the API, never described by the source TileJSON
+    if (basemap.protocol === Basemap_Protocol.Slope) {
+        return BasemapProtocol.json({
+            ...basemap,
+            bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+            center: basemap.center ?? undefined,
+            url: tileURL,
+            legend: fromProtocol(basemap.protocol, basemap).legend(),
+        });
+    }
 
     const esriMetadataURL = basemap.tilejson || basemap.url;
 

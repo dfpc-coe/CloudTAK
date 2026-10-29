@@ -90,6 +90,7 @@ export enum Basemap_Protocol {
     ImageServer = 'imageserver',
     FeatureServer = 'featureserver',
     Hosted = 'hosted',
+    Slope = 'slope',
 }
 
 export enum Basemap_FeatureAction {

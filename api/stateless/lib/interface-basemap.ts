@@ -12,7 +12,7 @@ import { StyleSpecification, validateStyleMin } from '@maplibre/maplibre-gl-styl
 import pointOnFeature from '@turf/point-on-feature';
 import { bboxPolygon } from '@turf/bbox-polygon';
 import { Feature } from '@tak-ps/node-cot';
-import { MultiGeoJSONFeatureCollection, MultiGeoJSONFeature, TileJSON, TileJSON_VectorLayer } from '../../common/types.js';
+import { MultiGeoJSONFeatureCollection, MultiGeoJSONFeature, TileJSON, TileJSON_Legend, TileJSON_VectorLayer } from '../../common/types.js';
 
 export const TileJSONActions = Type.Object({
     feature: Type.Array(Type.Enum(Basemap_FeatureAction)),
@@ -31,6 +31,7 @@ export interface TileJSONInterface {
     minzoom?: number;
     maxzoom?: number;
     vector_layers?: Array<Static<typeof TileJSON_VectorLayer>>;
+    legend?: Static<typeof TileJSON_Legend>;
 }
 
 export interface TileOpts {
@@ -42,6 +43,7 @@ export interface TileOpts {
  */
 export interface BasemapProtocolInterface {
     actions(): Static<typeof TileJSONActions>;
+    legend(): Static<typeof TileJSON_Legend> | undefined;
     isValidURL(str: string): void;
 
     tile(
@@ -137,6 +139,7 @@ export class BasemapProtocol implements BasemapProtocolInterface {
             || basemap.protocol === Basemap_Protocol.MapServer
             || basemap.protocol === Basemap_Protocol.ImageServer
             || basemap.protocol === Basemap_Protocol.Hosted
+            || basemap.protocol === Basemap_Protocol.Slope
         ) {
             return `${config.API_URL}/api/basemap/${basemap.id}/tiles/{$z}/{$x}/{$y}?token=${basemap.sharing_token}`;
         }
@@ -186,6 +189,7 @@ export class BasemapProtocol implements BasemapProtocolInterface {
             maxzoom: config.maxzoom ?? 16,
             tiles: [String(config.url)],
             vector_layers,
+            legend: config.legend,
         };
     }
 
@@ -230,6 +234,14 @@ export class BasemapProtocol implements BasemapProtocolInterface {
         return {
             feature: [],
         };
+    }
+
+    /**
+     * Return legend entries for rendered rasters.
+     * Subclasses that generate their own symbology should override this method.
+     */
+    legend(): Static<typeof TileJSON_Legend> | undefined {
+        return undefined;
     }
 
     featureQuery?(

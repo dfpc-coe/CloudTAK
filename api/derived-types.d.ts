@@ -843,7 +843,7 @@ export interface paths {
                                 parent: null | number;
                                 name: string;
                                 url: string;
-                                protocol: "zxy" | "mapserver" | "imageserver" | "featureserver" | "hosted";
+                                protocol: "zxy" | "mapserver" | "imageserver" | "featureserver" | "hosted" | "slope";
                                 minzoom: number;
                                 maxzoom: number;
                                 format: "png" | "webp" | "jpeg" | "mvt";
@@ -1016,6 +1016,12 @@ export interface paths {
                                 maxzoom?: number;
                                 description?: string;
                             }[];
+                            /** @description Raster legend entries - a CloudTAK extension to TileJSON */
+                            legend?: {
+                                label: string;
+                                /** @description CSS color of the legend swatch */
+                                color: string;
+                            }[];
                         };
                     };
                 };
@@ -1137,7 +1143,7 @@ export interface paths {
                         minzoom?: number;
                         maxzoom?: number;
                         format?: "png" | "webp" | "jpeg" | "mvt";
-                        protocol: "zxy" | "mapserver" | "imageserver" | "featureserver" | "hosted";
+                        protocol: "zxy" | "mapserver" | "imageserver" | "featureserver" | "hosted" | "slope";
                         /** @constant */
                         style?: "xyz";
                         type?: "raster" | "raster-dem" | "vector";
@@ -1166,7 +1172,7 @@ export interface paths {
                             parent: null | number;
                             name: string;
                             url: string;
-                            protocol: "zxy" | "mapserver" | "imageserver" | "featureserver" | "hosted";
+                            protocol: "zxy" | "mapserver" | "imageserver" | "featureserver" | "hosted" | "slope";
                             minzoom: number;
                             maxzoom: number;
                             format: "png" | "webp" | "jpeg" | "mvt";
@@ -1315,7 +1321,7 @@ export interface paths {
                             parent: null | number;
                             name: string;
                             url: string;
-                            protocol: "zxy" | "mapserver" | "imageserver" | "featureserver" | "hosted";
+                            protocol: "zxy" | "mapserver" | "imageserver" | "featureserver" | "hosted" | "slope";
                             minzoom: number;
                             maxzoom: number;
                             format: "png" | "webp" | "jpeg" | "mvt";
@@ -1351,7 +1357,7 @@ export interface paths {
                                 parent: null | number;
                                 name: string;
                                 url: string;
-                                protocol: "zxy" | "mapserver" | "imageserver" | "featureserver" | "hosted";
+                                protocol: "zxy" | "mapserver" | "imageserver" | "featureserver" | "hosted" | "slope";
                                 minzoom: number;
                                 maxzoom: number;
                                 format: "png" | "webp" | "jpeg" | "mvt";
@@ -1595,7 +1601,7 @@ export interface paths {
                         maxzoom?: number;
                         encoding?: "mapbox" | "terrarium";
                         format?: "png" | "webp" | "jpeg" | "mvt";
-                        protocol?: "zxy" | "mapserver" | "imageserver" | "featureserver" | "hosted";
+                        protocol?: "zxy" | "mapserver" | "imageserver" | "featureserver" | "hosted" | "slope";
                         /** @constant */
                         style?: "xyz";
                         type?: "raster" | "raster-dem" | "vector";
@@ -1624,7 +1630,7 @@ export interface paths {
                             parent: null | number;
                             name: string;
                             url: string;
-                            protocol: "zxy" | "mapserver" | "imageserver" | "featureserver" | "hosted";
+                            protocol: "zxy" | "mapserver" | "imageserver" | "featureserver" | "hosted" | "slope";
                             minzoom: number;
                             maxzoom: number;
                             format: "png" | "webp" | "jpeg" | "mvt";
@@ -1789,6 +1795,12 @@ export interface paths {
                                 minzoom?: number;
                                 maxzoom?: number;
                                 description?: string;
+                            }[];
+                            /** @description Raster legend entries - a CloudTAK extension to TileJSON */
+                            legend?: {
+                                label: string;
+                                /** @description CSS color of the legend swatch */
+                                color: string;
                             }[];
                             actions: {
                                 feature: ("query" | "fetch" | "create" | "update" | "delete")[];
@@ -51919,6 +51931,12 @@ export interface paths {
                                         maxzoom?: number;
                                         description?: string;
                                     }[];
+                                    /** @description Raster legend entries - a CloudTAK extension to TileJSON */
+                                    legend?: {
+                                        label: string;
+                                        /** @description CSS color of the legend swatch */
+                                        color: string;
+                                    }[];
                                 };
                             }[];
                         };
@@ -52094,6 +52112,12 @@ export interface paths {
                                     minzoom?: number;
                                     maxzoom?: number;
                                     description?: string;
+                                }[];
+                                /** @description Raster legend entries - a CloudTAK extension to TileJSON */
+                                legend?: {
+                                    label: string;
+                                    /** @description CSS color of the legend swatch */
+                                    color: string;
                                 }[];
                             };
                         };
@@ -52496,6 +52520,12 @@ export interface paths {
                                     maxzoom?: number;
                                     description?: string;
                                 }[];
+                                /** @description Raster legend entries - a CloudTAK extension to TileJSON */
+                                legend?: {
+                                    label: string;
+                                    /** @description CSS color of the legend swatch */
+                                    color: string;
+                                }[];
                             };
                         };
                     };
@@ -52669,6 +52699,12 @@ export interface paths {
                                     minzoom?: number;
                                     maxzoom?: number;
                                     description?: string;
+                                }[];
+                                /** @description Raster legend entries - a CloudTAK extension to TileJSON */
+                                legend?: {
+                                    label: string;
+                                    /** @description CSS color of the legend swatch */
+                                    color: string;
                                 }[];
                             };
                         };

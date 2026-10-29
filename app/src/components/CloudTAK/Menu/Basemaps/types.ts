@@ -7,6 +7,7 @@ import {
     IconFileUpload,
     IconGridDots,
     IconMap,
+    IconMountain,
     IconPhoto,
     IconVector,
 } from '@tabler/icons-vue';
@@ -60,7 +61,7 @@ export type BasemapImport = paths['/api/basemap']['put']['responses']['200']['co
     tilesize?: number;
 };
 
-export type BasemapSourceType = 'zxy' | 'imageserver' | 'mapserver' | 'featureserver' | 'tilejson' | 'upload' | 'hosted';
+export type BasemapSourceType = 'zxy' | 'imageserver' | 'mapserver' | 'featureserver' | 'tilejson' | 'upload' | 'hosted' | 'slope';
 
 export const BasemapTypeConfig: Record<BasemapSourceType, {
     label: string;
@@ -173,6 +174,26 @@ export const BasemapTypeConfig: Record<BasemapSourceType, {
             tilesize: 256,
         },
     },
+    slope: {
+        label: 'Slope Angle',
+        description: 'Shade avalanche slope angles from a terrain (raster-dem) source.',
+        icon: IconMountain,
+        urlLabel: 'DEM Tile URL Template',
+        urlDescription: 'Provide the XYZ template of the raster-dem tiles to derive slope angles from.',
+        urlPlaceholder: 'https://tiles.mapterhorn.com/{$z}/{$x}/{$y}.webp',
+        urlTokens: [
+            { value: '{$z}', tooltip: 'Insert Zoom Variable' },
+            { value: '{$x}', tooltip: 'Insert X Variable' },
+            { value: '{$y}', tooltip: 'Insert Y Variable' },
+        ],
+        defaults: {
+            type: 'raster',
+            format: 'png',
+            minzoom: 0,
+            maxzoom: 16,
+            tilesize: 512,
+        },
+    },
     hosted: {
         label: 'Hosted Tileset',
         description: 'Select from hosted PMTiles tilesets on this server.',
@@ -199,6 +220,12 @@ export function inferBasemapType(url?: string | null): BasemapSourceType | null 
     if (url.endsWith('/ImageServer')) return 'imageserver';
     if (url.includes('{$z}') && url.includes('{$x}') && url.includes('{$y}')) return 'zxy';
     return null;
+}
+
+// Protocols whose URLs are indistinguishable from a plain ZXY template
+export function basemapSourceType(url?: string | null, protocol?: string | null): BasemapSourceType | null {
+    if (protocol === 'slope') return 'slope';
+    return inferBasemapType(url);
 }
 
 export function normalizeEditing(data: Basemap | BasemapImport | BasemapListItem): EditingBasemap {

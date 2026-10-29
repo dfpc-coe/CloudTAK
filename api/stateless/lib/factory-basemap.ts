@@ -7,6 +7,7 @@ import HostedBasemap from './basemap/hosted.js';
 import ImageServerBasemap from './basemap/imageserver.js';
 import FeatureServerBasemap from './basemap/featureserver.js';
 import MapServerBasemap from './basemap/mapserver.js';
+import SlopeBasemap from './basemap/slope.js';
 
 /**
  * Return the protocol handler instance for the given protocol value.
@@ -23,6 +24,8 @@ export function fromProtocol(protocol?: string, basemap?: InferSelectModel<typeo
         return new MapServerBasemap(basemap);
     } else if (protocol === Basemap_Protocol.Hosted) {
         return new HostedBasemap(basemap);
+    } else if (protocol === Basemap_Protocol.Slope) {
+        return new SlopeBasemap(basemap);
     } else {
         return new ZXYBasemap(basemap);
     }

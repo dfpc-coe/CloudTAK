@@ -3,7 +3,7 @@ import { Static, Type } from '@sinclair/typebox';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Basemap, BasemapVector, BasemapRaster, BasemapTerrain } from '../schema.js';
 import { desc, eq, sql } from 'drizzle-orm';
-import { Basemap_Type } from '../enums.js';
+import { Basemap_Protocol, Basemap_Type } from '../enums.js';
 
 export const BasemapCollection = Type.Object({
     name: Type.String(),
@@ -59,6 +59,14 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
             await this.pool.insert(BasemapRaster).values({
                 basemap: base.id,
             });
+
+            // Slope rasters are rendered from a DEM and need its encoding
+            if (input.protocol === Basemap_Protocol.Slope) {
+                await this.pool.insert(BasemapTerrain).values({
+                    basemap: base.id,
+                    encoding: input.encoding,
+                });
+            }
         }
 
         return this.from(base.id);
@@ -77,6 +85,11 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
         } else {
             const res = await this.pool.select().from(BasemapRaster).where(eq(BasemapRaster.basemap, base.id));
             specific = res[0];
+
+            if (base.protocol === Basemap_Protocol.Slope) {
+                const terrain = await this.pool.select().from(BasemapTerrain).where(eq(BasemapTerrain.basemap, base.id));
+                specific = { ...terrain[0], ...specific };
+            }
         }
 
         return {
@@ -177,7 +190,27 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
                 }).onConflictDoNothing();
             }
 
-            await this.pool.delete(BasemapTerrain).where(eq(BasemapTerrain.basemap, base.id));
+            if (base.protocol === Basemap_Protocol.Slope) {
+                const terrain: any = {};
+                if (input.encoding !== undefined) terrain.encoding = input.encoding;
+
+                if (Object.keys(terrain).length > 0) {
+                    await this.pool.insert(BasemapTerrain).values({
+                        basemap: base.id,
+                        ...terrain,
+                    }).onConflictDoUpdate({
+                        target: BasemapTerrain.basemap,
+                        set: terrain,
+                    });
+                } else {
+                    await this.pool.insert(BasemapTerrain).values({
+                        basemap: base.id,
+                    }).onConflictDoNothing();
+                }
+            } else {
+                await this.pool.delete(BasemapTerrain).where(eq(BasemapTerrain.basemap, base.id));
+            }
+
             await this.pool.delete(BasemapVector).where(eq(BasemapVector.basemap, base.id));
         }
 

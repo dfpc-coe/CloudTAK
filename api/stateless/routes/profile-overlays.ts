@@ -9,7 +9,7 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthUser } from '../../common/auth.js';
 import { BasemapTerrain_Encoding } from '../../common/enums.js';
 import { ProfileOverlay } from '../../common/schema.js';
-import { StandardResponse, ProfileOverlayResponse } from '../../common/types.js';
+import { StandardResponse, ProfileOverlayResponse, TileJSON_Legend } from '../../common/types.js';
 import ConnectionEvents, { ConnectionEventDataType, ConnectionEventAction } from '../lib/connection-events.js';
 import { sql } from 'drizzle-orm';
 import * as Default from '../lib/limits.js';
@@ -38,6 +38,7 @@ const OverlayTileJSON = Type.Object({
         maxzoom: Type.Optional(Type.Number()),
         description: Type.Optional(Type.String()),
     }))),
+    legend: Type.Optional(TileJSON_Legend),
 });
 
 const AugmentedProfileOverlayResponse = Type.Composite([
