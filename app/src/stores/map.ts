@@ -29,12 +29,13 @@ import type { NavigationState, NavigationDirection, NavigationMode } from '../li
 import { syncPushToken } from '../base/push.ts';
 import { normalizePointType } from '../utils/point-type.ts';
 import { WorkerMessageType, LocationState } from '../utils/events.ts';
-import type { WorkerMessage, SyncTriggerReason } from '../utils/events.ts';
+import type { WorkerMessage, SyncTriggerReason, MissionRenderFeatureBody } from '../utils/events.ts';
 import Overlay from '../base/overlay-class.ts';
 import OverlayManager from '../base/overlay.ts';
 import { invalidateOfflinePMTiles } from './modules/pmtiles.ts';
 import { FeatureVisibility } from './modules/feature-visibility.ts';
 import Subscription from '../base/subscription.ts';
+import { renderMissionFeature } from '../base/subscription-feature.ts';
 import Filter from '../base/filter.ts';
 import { getRuntimeToken, serverUrl } from '../std.js';
 import * as mapgl from 'maplibre-gl'
@@ -59,6 +60,10 @@ const finiteOrNull = (value: unknown): number | null => {
 
 // Missions the dirty sweep has already warned about having no overlay
 const sweepWarned = new Set<string>();
+
+// A Feature_Render nudge is waiting to run - a burst of them (eg. a bulk
+// delete) collapses into one updateCOT
+let cotRenderQueued = false;
 
 const WORKER_READY_TIMEOUT_MS = 20000;
 const WORKER_INIT_TIMEOUT_MS = 30000;
@@ -945,10 +950,69 @@ export const useMapStore = defineStore('cloudtak', {
             const subscription = sub || await Subscription.from(guid, { subscribed: true });
             if (!subscription) return false;
 
+            // Read before the stored features so an edit landing in between
+            // is in one or the other, never neither
+            const pending = await this.worker.db.missionPending(guid);
+            const collection = await subscription.feature.collection(false);
+
+            // Keep local edits drawn ahead of their write on the overlay
+            if (pending.add.length || pending.remove.length) {
+                const replaced = new Set<string | number | undefined>([
+                    ...pending.remove,
+                    ...pending.add.map((feat) => feat.id)
+                ]);
+
+                collection.features = [
+                    ...collection.features.filter((feat) => !replaced.has(feat.id)),
+                    ...pending.add.map((feat) => renderMissionFeature(feat))
+                ];
+            }
+
             // @ts-expect-error Source.setData is not defined
-            oStore.setData(await subscription.feature.collection(false));
+            oStore.setData(collection);
 
             return true;
+        },
+        /**
+         * Draw a single local Mission feature edit onto its overlay straight
+         * from memory - the worker posts this before persisting the edit, and
+         * the Mission_Change_Feature render that follows the write reconciles it
+         */
+        renderMissionFeature: function(body: MissionRenderFeatureBody): void {
+            const overlay = OverlayManager.loadedByMode('mission', body.guid);
+            if (!overlay || !this._map) return;
+
+            const oStore = this._map.getSource(String(overlay.id)) as GeoJSONSource | undefined;
+            if (!oStore) return;
+
+            // An add replaces any existing feature with the same id
+            oStore.updateData({
+                add: body.add ? [renderMissionFeature(body.add)] : undefined,
+                remove: body.remove ? [body.remove] : undefined
+            }).catch((err: unknown) => {
+                // Not fatal - the full render after the write still paints it
+                console.warn(`Mission:${body.guid} optimistic render failed`, err);
+            });
+        },
+        /**
+         * Repaint a Mission overlay after its features changed in IndexedDB.
+         * Unlike loadMission this is a single render with no Active Mission or
+         * network side effects, as it runs for every Mission feature change
+         */
+        refreshMission: async function(guid: string): Promise<void> {
+            // Leave the flag set so the sweep repaints once the overlay loads
+            if (!OverlayManager.loadedByMode('mission', guid)) return;
+
+            // Clear first so a write racing this render stays flagged for the sweep
+            await db.subscription.update(guid, { dirty: false });
+
+            let painted = false;
+            try {
+                painted = await this.renderMission(guid);
+            } finally {
+                // Not painted - flag it again so the sweep retries
+                if (!painted) await db.subscription.update(guid, { dirty: true });
+            }
         },
         /**
          * Load a Mission overlay's data without blocking the caller - the
@@ -1149,9 +1213,19 @@ export const useMapStore = defineStore('cloudtak', {
                     this.hasNoChannels = false;
                 } else if (msg.type === WorkerMessageType.Channel_Change) {
                     this.channelChange = true;
+                } else if (msg.type === WorkerMessageType.Feature_Render) {
+                    if (!cotRenderQueued) {
+                        cotRenderQueued = true;
+                        setTimeout(() => {
+                            cotRenderQueued = false;
+                            void this.updateCOT();
+                        }, 0);
+                    }
+                } else if (msg.type === WorkerMessageType.Mission_Render_Feature) {
+                    this.renderMissionFeature(msg.body as MissionRenderFeatureBody);
                 } else if (msg.type === WorkerMessageType.Mission_Change_Feature) {
                     // A failed render stays dirty - the sweep repaints it
-                    await this.loadMission(msg.body.guid).catch((err: unknown) => {
+                    await this.refreshMission(msg.body.guid).catch((err: unknown) => {
                         console.error(`Mission:${msg.body.guid} render failed after feature change:`, err);
                     });
                 } else if (msg.type === WorkerMessageType.History_Change) {
