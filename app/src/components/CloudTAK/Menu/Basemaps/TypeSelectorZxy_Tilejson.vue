@@ -8,7 +8,7 @@
         <div class='col-md-12 mt-3'>
             <TablerInput
                 :model-value='url'
-                label='TileJSON URL'
+                label='TileJSON or WMTS Capabilities URL'
                 @update:model-value='emit("update:url", $event)'
             />
         </div>
@@ -24,7 +24,7 @@
                     <a
                         class='cursor-pointer btn btn-primary'
                         @click='emit("fetch")'
-                    >Fetch TileJSON</a>
+                    >Fetch Metadata</a>
                 </div>
             </div>
         </div>

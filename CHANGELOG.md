@@ -26,6 +26,15 @@
 
 ### Pending Release
 
+- :tada: Import WMTS capabilities URLs as basemaps (RESTful tile templates and KVP GetTile, Web Mercator tile matrix sets, `?layer=` selection)
+- :bug: Return a 400 with a clear message instead of a 500 when a basemap import URL returns XML, HTML or malformed JSON (#1989)
+- :rocket: `GET /api/basemap/:basemapid` accepts basemap sharing tokens so tile servers can resolve basemap config with the token they are handed
+- :tada: PMTiles tile server serves CloudTAK basemap TileJSON and tiles at `/tiles/basemap/:basemapid/tiles[/:z/:x/:y]`, mirroring the API routes: bearer or `?token=` auth, sharing tokens, owner/admin scoping, ESRI metadata merge, hosted upstream TileJSON, bounds short-circuit and zxy/hosted/MapServer/ImageServer/FeatureServer tile proxying, with basemap config cached in memory per container
+- :rocket: Expose `tilejson` on Basemap responses so tile servers can resolve hosted upstream TileJSON
+- :bug: Apply the SSRF URL check to ESRI layer metadata lookups, which previously bypassed it via esri-dump
+- :rocket: Add PMTiles API Gateway HTTP status widget to the ELB CloudWatch dashboard
+- :bug: Archive 2D line and polygon CoTs to `connection_features` by padding a Z coordinate, dedupe repeated UIDs within a batch, and persist `enabled_geofence` from the CoT instead of resetting it on every archive
+
 ### v13.116.1 - 2026-10-30
 
 - :rocket: Improvements to Rendering Performance

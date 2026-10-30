@@ -64,6 +64,28 @@ export default {
                         width: 24,
                         height: 6,
                         properties: {
+                            title: 'PMTiles HTTP status (API Gateway)',
+                            view: 'timeSeries',
+                            stacked: false,
+                            metrics: [
+                                ['AWS/ApiGateway', 'Count', 'ApiId', '${PMTilesApiId}', { label: 'total', stat: 'Sum', period: 60, yAxis: 'left' }],
+                                ['.', '4xx', '.', '.', { label: '4xx', stat: 'Sum', period: 60, yAxis: 'left' }],
+                                ['.', '5xx', '.', '.', { label: '5xx', stat: 'Sum', period: 60, yAxis: 'left' }]
+                            ],
+                            region: '${AWS::Region}',
+                            period: 300,
+                            yAxis: {
+                                left: { min: 0 },
+                                right: { min: 0 }
+                            }
+                        }
+                    }, {
+                        type: 'metric',
+                        x: 0,
+                        y: 18,
+                        width: 24,
+                        height: 6,
+                        properties: {
                             title: 'Latency',
                             view: 'timeSeries',
                             stacked: false,
@@ -88,7 +110,7 @@ export default {
                     }, {
                         type: 'metric',
                         x: 0,
-                        y: 18,
+                        y: 24,
                         width: 12,
                         height: 6,
                         properties: {
@@ -110,7 +132,7 @@ export default {
                     }, {
                         type: 'metric',
                         x: 12,
-                        y: 18,
+                        y: 24,
                         width: 12,
                         height: 6,
                         properties: {
@@ -135,7 +157,7 @@ export default {
                     }, {
                         type: 'log',
                         x: 0,
-                        y: 24,
+                        y: 30,
                         width: 24,
                         height: 6,
                         properties: {
@@ -154,7 +176,7 @@ export default {
                     }, {
                         type: 'log',
                         x: 0,
-                        y: 30,
+                        y: 36,
                         width: 24,
                         height: 6,
                         properties: {
@@ -176,6 +198,7 @@ export default {
                     TargetGroupFullName: cf.getAtt('TargetGroup', 'TargetGroupFullName'),
                     HubLoadBalancerFullName: cf.getAtt('HubELB', 'LoadBalancerFullName'),
                     HubTargetGroupFullName: cf.getAtt('HubRpcTargetGroup', 'TargetGroupFullName'),
+                    PMTilesApiId: cf.ref('PMTilesLambdaAPIV2'),
                     Apache: cf.stackName,
                     ServiceName: cf.getAtt('Service', 'Name'),
                     StatefulServiceName: cf.getAtt('StatefulService', 'Name'),
