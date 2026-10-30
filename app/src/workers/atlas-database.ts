@@ -10,6 +10,7 @@ import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
 import type Atlas from './atlas.ts';
 import Subscription from '../base/subscription.ts';
+import FeatureWriter from '../base/feature-writer.ts';
 import { coordEach } from '@turf/meta'
 import COT, { OriginMode } from '../base/cot.ts';
 import FeatureOutbox, { OutboxState, isPendingFeature } from '../base/feature-outbox.ts';
@@ -17,7 +18,7 @@ import ContactManager from '../base/contact.ts';
 import TAKNotification, { NotificationType } from '../base/notification.ts';
 import { WorkerMessageType } from '../utils/events.ts';
 import { entityLink, entityLabel } from '../utils/core-entity.ts';
-import type { MissionChangePropertyBody } from '../utils/events.ts';
+import type { MissionChangePropertyBody, MissionPendingEdits } from '../utils/events.ts';
 import type { GeoJSONSourceDiff, LngLatLike } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
 import { isEqual } from '@ver0/deep-equal';
@@ -35,6 +36,14 @@ type NestedArray = {
     count: number;
     paths: Array<NestedArray>;
 }
+
+/** A local Mission feature edit already drawn on the map whose IndexedDB write has not landed */
+type MissionWrite = {
+    mission: string;
+    feature: Feature;
+    // Settles once the write has landed or failed
+    written: Promise<void>;
+};
 
 export default class AtlasDatabase {
     atlas: Atlas;
@@ -71,6 +80,12 @@ export default class AtlasDatabase {
 
     subscriptionPending: Map<string, string>;
 
+    // Local Mission edits already drawn on the map whose IndexedDB write has
+    // not landed, keyed by feature id - see missionPending()
+    missionWrites: Map<string, MissionWrite>;
+    // Mission features already taken off the map whose delete has not landed (UID, Mission Guid)
+    missionRemoves: Map<string, string>;
+
     breadcrumb: AtlasBreadcrumb & Comlink.ProxyMarked;
 
     constructor(atlas: Atlas) {
@@ -87,8 +102,13 @@ export default class AtlasDatabase {
         this.derived = new Map();
 
         this.subscriptionPending = new Map(); // UID, Mission Guid
+        this.missionWrites = new Map();
+        this.missionRemoves = new Map();
 
         this.breadcrumb = Comlink.proxy(new AtlasBreadcrumb(this));
+
+        // A batched write is skipped once its COT has left (or been replaced in) memory
+        FeatureWriter.isLive = (cot) => this.cots.get(cot.id) === cot;
 
         // The Deleted list is read from the API, so it refreshes once a delete lands there
         FeatureOutbox.onConfirmed = (id, state) => {
@@ -827,14 +847,37 @@ export default class AtlasDatabase {
             return;
         }
 
-        // A deleted CoT takes its breadcrumb trail & history points with it
-        if (await db.breadcrumb.get(AtlasBreadcrumb.trackId(cot.id))) {
-            await this.breadcrumb.remove(cot.id);
-        }
-
+        // Take the feature off the map before the IndexedDB work below
         if (cot.origin.mode === OriginMode.CONNECTION) {
             this.pendingDelete.add(id);
 
+            this.atlas.postMessage({
+                type: WorkerMessageType.Feature_Render
+            });
+        } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
+            this.missionRemoves.set(cot.id, cot.origin.mode_id);
+
+            this.atlas.postMessage({
+                type: WorkerMessageType.Mission_Render_Feature,
+                body: {
+                    guid: cot.origin.mode_id,
+                    remove: cot.id
+                }
+            });
+        }
+
+        // A deleted CoT takes its breadcrumb trail & history points with it.
+        // The feature is already off the map, so a failure here must not
+        // abandon the delete itself
+        try {
+            if (await db.breadcrumb.get(AtlasBreadcrumb.trackId(cot.id))) {
+                await this.breadcrumb.remove(cot.id);
+            }
+        } catch (err) {
+            console.error(`Failed to remove breadcrumb trail for ${cot.id}`, err);
+        }
+
+        if (cot.origin.mode === OriginMode.CONNECTION) {
             if (cot.properties.archived) {
                 if (opts.skipNetwork) {
                     FeatureOutbox.discard(id);
@@ -847,22 +890,30 @@ export default class AtlasDatabase {
                 }
             }
         } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
-            const subscription = await Subscription.from(cot.origin.mode_id, {
-                subscribed: true
-            });
+            const guid = cot.origin.mode_id;
 
-            if (!subscription) throw new Error('Could not delete as Mission Subscription does not exist');
+            try {
+                const subscription = await Subscription.from(guid, {
+                    subscribed: true
+                });
 
-            await subscription.feature.delete(this.atlas, cot.id, {
-                skipNetwork: opts.skipNetwork
-            });
+                if (!subscription) throw new Error('Could not delete as Mission Subscription does not exist');
 
-            this.atlas.postMessage({
-                type: WorkerMessageType.Mission_Change_Feature,
-                body: {
-                    guid: cot.origin.mode_id
-                }
-            });
+                // A delete that ran before the drop's write landed would be undone by it
+                await this.missionWrites.get(cot.id)?.written;
+
+                await subscription.feature.delete(this.atlas, cot.id, {
+                    skipNetwork: opts.skipNetwork
+                });
+            } finally {
+                if (this.missionRemoves.get(cot.id) === guid) this.missionRemoves.delete(cot.id);
+
+                // Repaint from IndexedDB - this also puts the feature back if the delete failed
+                this.atlas.postMessage({
+                    type: WorkerMessageType.Mission_Change_Feature,
+                    body: { guid }
+                });
+            }
         }
     }
 
@@ -1020,7 +1071,7 @@ export default class AtlasDatabase {
      * @param opts.authored - If the COT is authored, append creator information if the CoT is new & potentially add it to a mission
      * @param opts.render - Defaults to true. When false, suppress the Mission_Change_Feature notification that reloads & re-renders the mission overlay. Callers adding many features to a mission at once (eg. a lasso import) should pass false and trigger a single loadMission() when finished.
      * @param opts.skipDatabase - Don't persist a newly created COT back to the Dexie feature table. Used when the feature already originates from that table (eg. startup hydrate) so we avoid a redundant IndexedDB write per feature.
-     * @param opts.skipMissionLookup - Don't scan subscribed mission stores when checking for an existing COT. Used when the caller knows the feature is a CONNECTION-origin profile feature (eg. startup hydrate) so we avoid an IndexedDB mission scan per feature.
+     * @param opts.skipMissionLookup - Don't scan subscribed mission stores when checking for an existing COT. Used when the caller knows the feature is a CONNECTION-origin profile feature (eg. startup hydrate) or was just created with a fresh id (eg. a dropped point), so we avoid an IndexedDB mission read the drop would otherwise wait on.
      */
     async add(
         feature: InputFeature,
@@ -1077,14 +1128,6 @@ export default class AtlasDatabase {
                 throw new Error(`Cannot add ${feat.id} to a mission as no mission GUID was found - Please report this error`);
             }
 
-            const sub = await Subscription.from(mission_guid, {
-                subscribed: true
-            });
-
-            if (!sub) {
-                throw new Error(`Cannot add ${feat.id} to mission ${mission_guid} as it is not loaded`)
-            }
-
             if (!exists) {
                 exists = await COT.load(feat, {
                     mode: OriginMode.MISSION,
@@ -1102,9 +1145,65 @@ export default class AtlasDatabase {
                 }, { skipSave: true })
             }
 
-            await sub.feature.update(this.atlas, exists, {
-                skipNetwork: !opts.authored
-            });
+            const cot = exists;
+
+            // A local edit is drawn before it is written - keep it findable
+            // by id until the write lands so it is clickable in the meantime
+            let landed = (): void => undefined;
+            let tracked: MissionWrite | undefined;
+            if (opts.authored) {
+                tracked = {
+                    mission: mission_guid,
+                    feature: cot.as_feature({ clone: true }),
+                    written: new Promise<void>((resolve) => { landed = resolve; })
+                };
+
+                this.missionWrites.set(cot.id, tracked);
+            }
+
+            // Draw a local edit from memory before any IndexedDB round trip -
+            // the reads and writes below can queue behind CoT persistence for seconds
+            const optimistic = tracked !== undefined && opts.render !== false;
+            if (tracked && optimistic) {
+                this.atlas.postMessage({
+                    type: WorkerMessageType.Mission_Render_Feature,
+                    body: {
+                        guid: mission_guid,
+                        add: tracked.feature
+                    }
+                });
+            }
+
+            try {
+                const sub = await Subscription.from(mission_guid, {
+                    subscribed: true
+                });
+
+                if (!sub) {
+                    throw new Error(`Cannot add ${feat.id} to mission ${mission_guid} as it is not loaded`);
+                }
+
+                await sub.feature.update(this.atlas, cot, {
+                    skipNetwork: !opts.authored
+                });
+            } catch (err) {
+                // Repaint from IndexedDB so the edit drawn above does not linger unsaved
+                if (optimistic) {
+                    this.atlas.postMessage({
+                        type: WorkerMessageType.Mission_Change_Feature,
+                        body: { guid: mission_guid }
+                    });
+                }
+
+                throw err;
+            } finally {
+                landed();
+
+                // A later edit of the same feature tracks its own write
+                if (tracked && this.missionWrites.get(cot.id) === tracked) {
+                    this.missionWrites.delete(cot.id);
+                }
+            }
 
             if (opts.render !== false) {
                 this.atlas.postMessage({
@@ -1146,6 +1245,13 @@ export default class AtlasDatabase {
                         if (changed && !this.pendingCreate.has(existing.id)) {
                             this.pendingUpdate.set(existing.id, existing);
                         }
+
+                        // Draw a local edit before it is persisted
+                        if (changed && opts.authored) {
+                            this.atlas.postMessage({
+                                type: WorkerMessageType.Feature_Render
+                            });
+                        }
                     }
                 });
 
@@ -1183,6 +1289,14 @@ export default class AtlasDatabase {
                 this.pendingCreate.set(exists.id, exists);
                 this.cots.set(exists.id, exists);
 
+                // Draw a local edit before it is persisted - the outbox write
+                // below can queue behind CoT persistence
+                if (opts.authored) {
+                    this.atlas.postMessage({
+                        type: WorkerMessageType.Feature_Render
+                    });
+                }
+
                 const created = exists;
                 if (opts.skipDatabase !== true) {
                     const save = opts.skipSave !== true && created.savable;
@@ -1194,7 +1308,7 @@ export default class AtlasDatabase {
                     } else if (save) {
                         await created.save();
                     } else {
-                        await withDbRetry(() => db.feature.put(FeatureOutbox.row(created.as_feature())));
+                        FeatureWriter.queue(created);
                     }
                 }
 
@@ -1302,6 +1416,25 @@ export default class AtlasDatabase {
     }
 
     /**
+     * Local edits to a Mission that are drawn on its overlay but not yet in
+     * IndexedDB - a full overlay render layers these over the stored features
+     * so it never undoes an optimistic render
+     */
+    missionPending(guid: string): MissionPendingEdits {
+        const pending: MissionPendingEdits = { add: [], remove: [] };
+
+        for (const write of this.missionWrites.values()) {
+            if (write.mission === guid) pending.add.push(write.feature);
+        }
+
+        for (const [id, mission] of this.missionRemoves) {
+            if (mission === guid) pending.remove.push(id);
+        }
+
+        return pending;
+    }
+
+    /**
      * Return a CoT by ID if it exists
      *
      * @param id - ID of the CoT to return
@@ -1324,7 +1457,18 @@ export default class AtlasDatabase {
 
         if (cot) {
             return cot;
-        } else if (opts.mission) {
+        }
+
+        // A Mission edit drawn on the map whose write has not landed yet
+        const writing = opts.mission ? this.missionWrites.get(id) : undefined;
+        if (writing) {
+            return await COT.load(structuredClone(writing.feature), {
+                mode: OriginMode.MISSION,
+                mode_id: writing.mission
+            });
+        }
+
+        if (opts.mission) {
             // subscription_feature is keyed on the feature id, so resolve the
             // owning mission with two indexed gets rather than iterating every
             // subscribed mission's store

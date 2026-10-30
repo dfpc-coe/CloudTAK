@@ -469,7 +469,9 @@ export default class DrawTool {
                     await this.stop();
 
                     await this.mapStore.worker.db.add(feat, {
-                        authored: true
+                        authored: true,
+                        // Newly drawn - its id cannot already be in a Mission
+                        skipMissionLookup: true
                     });
 
                     await this.mapStore.refresh();
