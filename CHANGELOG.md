@@ -26,6 +26,11 @@
 
 ### Pending Release
 
+### v13.116.1 - 2026-10-30
+
+- :rocket: Improvements to Rendering Performance
+- :bug: Fix double unit conversion in terrain elevation display
+
 ### v13.116.0 - 2026-10-27
 
 - :bug: Improve History Performance
