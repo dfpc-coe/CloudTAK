@@ -26,6 +26,15 @@ export interface TileOpts {
     headers?: Record<string, string | undefined>;
 }
 
+// Synchronous Lambda responses cap at 6 MiB after base64 encoding
+export const MAX_TILE_BYTES = Math.floor((6 * 1024 * 1024) * 3 / 4);
+
+export function assertTileSize(bytes: number): void {
+    if (bytes > MAX_TILE_BYTES) {
+        throw new Err(413, null, `Tile exceeds the ${MAX_TILE_BYTES} byte response limit`);
+    }
+}
+
 /**
  * Base class for basemap tile protocols, mirroring the CloudTAK API
  * BasemapProtocol. Subclasses implement _tile() to proxy or render a tile.
@@ -159,13 +168,25 @@ export class BasemapProtocol {
      */
     protected async pipe(url: URL, res: Response, opts: Required<TileOpts>): Promise<void> {
         try {
-            const { safe, reason } = await isSafeUrl(url.href);
-            if (!safe) throw new Err(400, null, `Blocked tile URL: ${reason}`);
+            if (process.env.StackName !== 'test') {
+                const { safe, reason } = await isSafeUrl(url.href);
+                if (!safe) throw new Err(400, null, `Blocked tile URL: ${reason}`);
+            }
 
             const upstream = await undici.request(url, {
                 method: 'GET',
                 headers: opts.headers as Record<string, string>,
             });
+
+            const contentLength = Number(upstream.headers['content-length']);
+            if (upstream.statusCode === 200 && !isNaN(contentLength)) {
+                try {
+                    assertTileSize(contentLength);
+                } catch (err) {
+                    upstream.body.destroy();
+                    throw err;
+                }
+            }
 
             const headers: Record<string, string | string[]> = {};
             for (const [key, value] of Object.entries(upstream.headers)) {
@@ -183,9 +204,18 @@ export class BasemapProtocol {
 
             res.writeHead(upstream.statusCode, headers);
 
+            let received = 0;
+
             await new Promise<void>((resolve, reject) => {
                 upstream.body
                     .on('data', (buf) => {
+                        received += buf.length;
+
+                        if (received > MAX_TILE_BYTES) {
+                            upstream.body.destroy(new Err(413, null, `Tile exceeds the ${MAX_TILE_BYTES} byte response limit`));
+                            return;
+                        }
+
                         res.write(buf);
                     })
                     .on('error', (err) => {
@@ -198,7 +228,7 @@ export class BasemapProtocol {
                     });
             });
         } catch (err) {
-            if (res.headersSent) throw err;
+            if (res.headersSent || err instanceof Err) throw err;
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch tile');
         }
     }

@@ -7,7 +7,7 @@ import { fetch as typedFetch } from '@tak-ps/node-safeurl';
 import type { Static } from '@sinclair/typebox';
 import { TileJSONActions } from '../tilejson.js';
 import { esriToGeoJSON, parseFeatureSet } from '../esri/geojson.js';
-import { BasemapProtocol, TileOpts } from './protocol.js';
+import { BasemapProtocol, TileOpts, assertTileSize } from './protocol.js';
 
 /**
  * ESRI FeatureServer basemap protocol.
@@ -116,6 +116,8 @@ export default class FeatureServerBasemap extends BasemapProtocol {
             if (!tileFeatures) throw new Err(404, null, 'No Features Found in Tile');
 
             const tile = vtpbf.fromGeojsonVt({ out: tileFeatures });
+
+            assertTileSize(Buffer.byteLength(tile));
 
             res.writeHead(200, {
                 ...opts.headers,

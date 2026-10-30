@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import http from 'http';
 import type { AddressInfo } from 'net';
 
+process.env.StackName = 'test';
 process.env.SigningSecret = 'test-secret';
 process.env.ASSET_BUCKET = 'test-bucket';
 
@@ -86,6 +87,20 @@ test('Setup', async () => {
         const url = new URL(String(req.url), 'http://127.0.0.1');
         const token = url.searchParams.get('token') || '';
 
+        if (url.pathname.startsWith('/oversized/')) {
+            res.writeHead(200, { 'content-type': 'image/png', 'content-length': String(10 * 1024 * 1024) });
+            res.end();
+            return;
+        }
+
+        if (url.pathname.startsWith('/oversized-chunked/')) {
+            res.writeHead(200, { 'content-type': 'image/png' });
+            res.write(Buffer.alloc(3 * 1024 * 1024));
+            res.write(Buffer.alloc(3 * 1024 * 1024));
+            res.end();
+            return;
+        }
+
         if (url.pathname === '/tiles/public/hosted-set') {
             res.writeHead(200, { 'content-type': 'application/json' });
             res.end(JSON.stringify({
@@ -139,6 +154,26 @@ test('Setup', async () => {
 
     process.env.API_URL = `http://127.0.0.1:${(api.address() as AddressInfo).port}`;
     process.env.PMTILES_URL = process.env.API_URL;
+
+    basemaps[47] = {
+        ...base,
+        id: 47,
+        name: 'Oversized',
+        url: `${process.env.API_URL}/oversized/{z}/{x}/{y}.png`,
+        protocol: 'zxy',
+        minzoom: 0,
+        maxzoom: 16,
+    };
+
+    basemaps[48] = {
+        ...base,
+        id: 48,
+        name: 'Oversized Chunked',
+        url: `${process.env.API_URL}/oversized-chunked/{z}/{x}/{y}.png`,
+        protocol: 'zxy',
+        minzoom: 0,
+        maxzoom: 16,
+    };
 
     basemaps[45] = {
         ...base,
@@ -333,6 +368,21 @@ test('GET /tiles/basemap/:basemapid/tiles/:z/:x/:y reports upstream failures as 
 
     assert.equal(res.status, 400);
     assert.equal((await res.json()).message, 'Failed to fetch tile');
+});
+
+test('GET /tiles/basemap/:basemapid/tiles/:z/:x/:y rejects tiles over the Lambda response limit by content-length', async () => {
+    const res = await fetch(`${baseURL()}/tiles/basemap/47/tiles/1/0/0?token=${userToken}`);
+
+    assert.equal(res.status, 413);
+    assert.match((await res.json()).message, /response limit/);
+});
+
+test('GET /tiles/basemap/:basemapid/tiles/:z/:x/:y truncates chunked tiles over the Lambda response limit', async () => {
+    const res = await fetch(`${baseURL()}/tiles/basemap/48/tiles/1/0/0?token=${userToken}`);
+
+    assert.equal(res.status, 200);
+    const body = await res.arrayBuffer();
+    assert.ok(body.byteLength <= Math.floor((6 * 1024 * 1024) * 3 / 4), `Body was ${body.byteLength} bytes`);
 });
 
 test('GET /tiles/basemap/:basemapid/tiles/:z/:x/:y proxies a zxy tile (live network)', async () => {

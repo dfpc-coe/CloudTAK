@@ -3,7 +3,7 @@ import Err from '@openaddresses/batch-error';
 import { fetch as typedFetch } from '@tak-ps/node-safeurl';
 import type { Static } from '@sinclair/typebox';
 import { TileJSONActions } from '../tilejson.js';
-import { BasemapProtocol, TileOpts } from './protocol.js';
+import { BasemapProtocol, TileOpts, assertTileSize } from './protocol.js';
 import FeatureServerBasemap from './featureserver.js';
 
 /**
@@ -70,6 +70,8 @@ export default class MapServerBasemap extends FeatureServerBasemap {
             if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await tileRes.text()}`);
 
             const tile = Buffer.from(await tileRes.arrayBuffer());
+
+            assertTileSize(tile.byteLength);
 
             res.writeHead(200, {
                 ...opts.headers,

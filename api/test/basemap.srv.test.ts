@@ -160,7 +160,7 @@ test('GET: api/basemap/1/tiles', async () => {
             minzoom: 0,
             maxzoom: 16,
             actions: { feature: [] },
-            tiles: [`${flight.base}/api/basemap/1/tiles/{z}/{x}/{y}`],
+            tiles: [`${flight.base}/tiles/basemap/1/tiles/{z}/{x}/{y}`],
         });
     } catch (err) {
         assert.ifError(err);

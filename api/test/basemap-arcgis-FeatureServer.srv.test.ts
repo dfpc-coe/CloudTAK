@@ -130,7 +130,7 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server direct source', async () 
             minzoom: 0,
             maxzoom: 16,
             actions: { feature: ['fetch', 'query'] },
-            tiles: [`${flight.base}/api/basemap/1/tiles/{z}/{x}/{y}`],
+            tiles: [`${flight.base}/tiles/basemap/1/tiles/{z}/{x}/{y}`],
             vector_layers: [{
                 id: 'out',
                 fields: {
@@ -191,7 +191,7 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server TileJSON', async () => {
             minzoom: 0,
             maxzoom: 16,
             actions: { feature: ['fetch', 'query'] },
-            tiles: [`${flight.base}/api/basemap/1/tiles/{z}/{x}/{y}`],
+            tiles: [`${flight.base}/tiles/basemap/1/tiles/{z}/{x}/{y}`],
             vector_layers: [{
                 id: 'out',
                 fields: {

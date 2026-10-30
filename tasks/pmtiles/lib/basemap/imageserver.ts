@@ -1,7 +1,7 @@
 import type { Response } from 'express';
 import Err from '@openaddresses/batch-error';
 import { fetch as typedFetch } from '@tak-ps/node-safeurl';
-import { BasemapProtocol, TileOpts } from './protocol.js';
+import { BasemapProtocol, TileOpts, assertTileSize } from './protocol.js';
 
 /**
  * ESRI ImageServer basemap protocol.
@@ -42,6 +42,8 @@ export default class ImageServerBasemap extends BasemapProtocol {
             if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await tileRes.text()}`);
 
             const tile = Buffer.from(await tileRes.arrayBuffer());
+
+            assertTileSize(tile.byteLength);
 
             res.writeHead(200, {
                 ...opts.headers,

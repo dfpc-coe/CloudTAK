@@ -302,7 +302,7 @@ test('Profile Default Terrain - First Login Provisions Hidden Terrain Overlay', 
     assert.equal(terrain.encoding, 'terrarium');
     assert.equal(terrain.url, `/api/basemap/${terrain.mode_id}/tiles`);
     assert.equal(terrain.tilejson.type, 'raster-dem');
-    assert.deepEqual(terrain.tilejson.tiles, [`${flight.base}/api/basemap/${terrain.mode_id}/tiles/{z}/{x}/{y}`]);
+    assert.deepEqual(terrain.tilejson.tiles, [`${flight.base}/tiles/basemap/${terrain.mode_id}/tiles/{z}/{x}/{y}`]);
 });
 
 test('Profile Default Terrain - Existing User Gets Terrain Overlay on List', async () => {

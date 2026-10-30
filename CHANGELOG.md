@@ -19,6 +19,7 @@
 - The Minio Legacy Store will be removed in V14 - Ensure you have migrated to Garage before updating to v14.
 - CoreEntity single external ID support will be removed in v14 - ensure you have migrated to multi-system external IDs before updating to v14.
 - The `GET /api/fonts/:fontstack/:start-:end.pbf` glyph endpoint is deprecated and will be removed in v14 - the web app now draws labels from bundled font files via the style `font-faces` property
+- The `GET /api/basemap/:basemapid/tiles` and `GET /api/basemap/:basemapid/tiles/:z/:x/:y` proxy routes are deprecated and will be removed in v14 - basemap TileJSON and tiles are served by the PMTiles tile server at `/tiles/basemap/:basemapid/tiles[/:z/:x/:y]`
 
 ### Beta Notice
 
@@ -33,6 +34,9 @@
 - :rocket: Expose `tilejson` on Basemap responses so tile servers can resolve hosted upstream TileJSON
 - :bug: Apply the SSRF URL check to ESRI layer metadata lookups, which previously bypassed it via esri-dump
 - :rocket: Add PMTiles API Gateway HTTP status widget to the ELB CloudWatch dashboard
+- :rocket: Basemap TileJSON and ATAK share URLs advertise tiles on the PMTiles tile server instead of the API - basemap edits and sharing revocations take up to 60 seconds to reach warm tile server containers
+- :rocket: PMTiles Lambda runs with 1536 MB, a 30 second timeout matching the API Gateway cap, a reserved concurrency ceiling (`PMTilesReservedConcurrency`) and a `live` alias with provisioned concurrency (`PMTilesProvisionedConcurrency`) so the first tile after idle is not a cold start
+- :rocket: PMTiles tile server returns 413 for proxied or rendered tiles over the 6 MiB Lambda response limit instead of failing the invocation
 - :bug: Archive 2D line and polygon CoTs to `connection_features` by padding a Z coordinate, dedupe repeated UIDs within a batch, and persist `enabled_geofence` from the CoT instead of resetting it on every archive
 
 ### v13.116.1 - 2026-10-30
