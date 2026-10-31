@@ -27,6 +27,8 @@
 
 ### Pending Release
 
+### v13.117.0 - 2026-10-31
+
 - :tada: Import WMTS capabilities URLs as basemaps (RESTful tile templates and KVP GetTile, Web Mercator tile matrix sets, `?layer=` selection)
 - :bug: Return a 400 with a clear message instead of a 500 when a basemap import URL returns XML, HTML or malformed JSON (#1989)
 - :rocket: `GET /api/basemap/:basemapid` accepts basemap sharing tokens so tile servers can resolve basemap config with the token they are handed
