@@ -266,6 +266,16 @@ test('POST: api/connection/1/submit - features with geometry are archived with a
                     properties: { callsign: 'Point One', type: 'a-f-G', stale: 3600 },
                     geometry: { type: 'Point', coordinates: [-105, 39] },
                 }, {
+                    id: 'poly-1',
+                    type: 'Feature',
+                    properties: { callsign: 'Poly One', type: 'u-d-f', stale: 3600 },
+                    geometry: { type: 'Polygon', coordinates: [[[-105, 39], [-104, 39], [-104, 40], [-105, 39]]] },
+                }, {
+                    id: 'poly-1',
+                    type: 'Feature',
+                    properties: { callsign: 'Poly One Updated', type: 'u-d-f', stale: 3600 },
+                    geometry: { type: 'Polygon', coordinates: [[[-105, 39], [-104, 39], [-104, 40], [-105, 39]]] },
+                }, {
                     id: 'no-geom-3',
                     type: 'Feature',
                     properties: { callsign: 'Device Three' },
@@ -281,10 +291,15 @@ test('POST: api/connection/1/submit - features with geometry are archived with a
 
         const features = await flight.config!.pg
             .select()
-            .from(ConnectionFeature);
+            .from(ConnectionFeature)
+            .orderBy(ConnectionFeature.id);
 
-        assert.equal(features.length, 1);
+        assert.equal(features.length, 2);
         assert.equal(features[0].id, 'point-1');
+        assert.equal(features[1].id, 'poly-1');
+        assert.equal(features[1].geometry.type, 'Polygon');
+        assert.equal(features[1].properties.callsign, 'Poly One Updated');
+        assert.ok(features[1].geometry.type === 'Polygon' && features[1].geometry.coordinates[0].every(coord => coord.length === 3));
         assert.equal(features[0].connection, 1);
         assert.equal(features[0].layer, 1);
         assert.equal(features[0].properties.callsign, 'Point One');
@@ -319,7 +334,7 @@ test('POST: api/connection/1/submit - archive=false with a user token', async ()
         assert.deepEqual(res.body.skipped, []);
 
         const remaining = await flight.config!.models.ConnectionFeature.count();
-        assert.equal(Number(remaining), 1);
+        assert.equal(Number(remaining), 2);
     } catch (err) {
         assert.ifError(err);
     }

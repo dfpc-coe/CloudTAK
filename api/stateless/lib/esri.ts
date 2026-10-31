@@ -3,7 +3,7 @@ import EsriDump from 'esri-dump';
 import { Static, Type } from '@sinclair/typebox';
 import { TileJSON } from '../../common/types.js';
 import { Basemap_Format, Basemap_Type, Basemap_Scheme } from '../../common/enums.js';
-import { fetch } from '@tak-ps/node-safeurl';
+import { fetch, isSafeUrl } from '@tak-ps/node-safeurl';
 import { ESRILayerList } from './esri/types.js';
 import {
     DefaultLayerPoints,
@@ -494,6 +494,11 @@ class EsriProxyLayer {
 
     async tilejson(): Promise<Static<typeof TileJSON>> {
         const url = `${this.esri.base}${this.esri.postfix}`;
+
+        // esri-dump fetches with the global fetch, so guard the URL here
+        const { safe, reason } = await isSafeUrl(url);
+        if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
+
         const esri = new EsriDump(url, {
             headers: this.esri.standardHeaderObject(),
         });

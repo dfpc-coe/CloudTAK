@@ -1,5 +1,6 @@
 import type { Static } from '@sinclair/typebox';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
+import { coordEach } from '@turf/meta';
 import { CoTParser, Feature } from '@tak-ps/node-cot';
 import type CoT from '@tak-ps/node-cot';
 import { ConnectionFeature } from '../../../common/schema.js';
@@ -36,16 +37,25 @@ const ARCHIVE_BATCH = 10000;
  */
 export async function archiveCots(config: ConfigStateless, cots: CoT[], connection: number, layer: number | null): Promise<void> {
     try {
-        const values = [];
+        const features = [];
         for (const cot of cots) {
-            values.push({
+            const feat = await CoTParser.to_geojson(cot);
+
+            coordEach(feat, (coords) => {
+                if (coords.length === 2) coords.push(0);
+                return coords;
+            });
+
+            features.push({
                 path: '/',
                 connection,
                 layer,
-                ...(await CoTParser.to_geojson(cot)),
+                ...feat,
+                enabled_geofence: enabledGeofence(feat.properties),
             });
         }
 
+        const values = Array.from(new Map(features.map(feat => [feat.id, feat])).values());
         for (let i = 0; i < values.length; i += ARCHIVE_BATCH) {
             await config.models.ConnectionFeature.generate(values.slice(i, i + ARCHIVE_BATCH), {
                 upsert: GenerateUpsert.UPDATE,

@@ -781,6 +781,9 @@ export const BasemapResponse = Type.Object({
     frequency: Type.Union([Type.Null(), Type.Integer()]),
     scheme: Type.Enum(Basemap_Scheme),
     overlay: Type.Boolean(),
+    tilejson: Type.Optional(Type.Union([Type.Null(), Type.String()], {
+        description: 'Upstream TileJSON URL used to resolve metadata for hosted basemaps',
+    })),
 
     // Terrain
     encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),

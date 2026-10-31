@@ -40,7 +40,7 @@ export async function basemapTileJSON(
     const pmtilesHost = new URL(config.PMTILES_URL || 'http://localhost:5001').hostname;
     const hosted = basemap.url.includes(pmtilesHost);
 
-    let tileURL = hosted ? basemap.url : config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
+    let tileURL = hosted ? basemap.url : `${config.BASEMAP_TILES_URL}/${basemap.id}/tiles/{z}/{x}/{y}`;
     if (opts.token) tileURL = tileURL + `?token=${opts.token}`;
 
     const esriMetadataURL = basemap.tilejson || basemap.url;
