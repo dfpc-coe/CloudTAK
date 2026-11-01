@@ -27,6 +27,8 @@
 
 ### Pending Release
 
+- :bug: Pass `API_URL` to the Docker Compose `tiles` service so the PMTiles server can resolve basemap config (#1993)
+
 ### v13.117.0 - 2026-10-31
 
 - :tada: Import WMTS capabilities URLs as basemaps (RESTful tile templates and KVP GetTile, Web Mercator tile matrix sets, `?layer=` selection)
