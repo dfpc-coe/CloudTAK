@@ -2,7 +2,7 @@ import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox';
 import { authRequest } from '../lib/auth.js';
-import { AugmentedTileJSON } from '../lib/tilejson.js';
+import { AugmentedTileJSON, TileJSON } from '../lib/tilejson.js';
 import Basemap from '../lib/basemap.js';
 import {
     ElevationProfileType,
@@ -128,6 +128,71 @@ export default async function router(schema: Schema) {
                 zoom: req.body.zoom,
                 samples: req.body.samples,
             }));
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    schema.get('/tiles/basemap/:basemapid/shading/slope', {
+        name: 'Get Basemap Slope TileJSON',
+        group: 'BasemapTiles',
+        description: 'Get TileJSON for slope angle shading rendered from a raster-dem basemap',
+        params: Type.Object({
+            basemapid: Type.Integer({ minimum: 1 }),
+        }),
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+        }),
+        res: TileJSON,
+    }, async (req, res) => {
+        try {
+            const auth = authRequest(req, {
+                resources: [
+                    { access: 'basemap', id: req.params.basemapid },
+                ],
+            });
+
+            const basemap = await Basemap.from(req.params.basemapid, auth.token);
+
+            basemap.authorize(auth);
+
+            res.json(await basemap.slopeTileJSON({
+                token: req.query.token,
+                upstreamToken: auth.token,
+            }));
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    schema.get('/tiles/basemap/:basemapid/shading/slope/:z/:x/:y', {
+        name: 'Get Basemap Slope Tile',
+        group: 'BasemapTiles',
+        description: 'Get a slope angle shading tile rendered from a raster-dem basemap',
+        params: Type.Object({
+            basemapid: Type.Integer({ minimum: 1 }),
+            z: Type.Integer({ minimum: 0 }),
+            x: Type.Integer({ minimum: 0 }),
+            y: Type.Integer({ minimum: 0 }),
+        }),
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+        }),
+    }, async (req, res) => {
+        try {
+            const auth = authRequest(req, {
+                resources: [
+                    { access: 'basemap', id: req.params.basemapid },
+                ],
+            });
+
+            const basemap = await Basemap.from(req.params.basemapid, auth.token);
+
+            basemap.authorize(auth);
+
+            await basemap.slopeTile(req.params.z, req.params.x, req.params.y, res, {
+                token: auth.token,
+            });
         } catch (err) {
             Err.respond(err, res);
         }

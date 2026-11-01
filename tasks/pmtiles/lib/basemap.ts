@@ -10,6 +10,7 @@ import { TileJSON, TileJSONActions } from './tilejson.js';
 import { EsriBase, EsriProxyLayer, isEsriLayerURL } from './esri.js';
 import { BasemapProtocol, TileOpts } from './basemap/protocol.js';
 import { fromProtocol } from './basemap/factory.js';
+import { MAX_OVERZOOM, slopeLegend, renderSlopeTile, sendShadingTile, DEMSource } from './shading.js';
 
 export type BasemapConfig = Exclude<paths['/api/basemap/{:basemapid}']['get']['responses'][200]['content']['application/json'], string>;
 
@@ -239,5 +240,80 @@ export default class Basemap {
             encoding,
             targetSamples: opts.samples ?? 100,
         }, url => fetch(url, { safeUrlAllow: [Basemap.pmtilesUrl()] }));
+    }
+
+    /**
+     * The DEM behind a raster-dem basemap, read back through this server's
+     * own tile route so the proxy rules apply.
+     */
+    demSource(token: string): DEMSource {
+        if (this.config.type !== 'raster-dem') {
+            throw new Err(400, null, 'Slope shading requires raster-dem tiles');
+        }
+
+        const encoding = this.config.encoding;
+        if (!encoding) {
+            throw new Err(400, null, 'Encoding could not be determined from the basemap metadata');
+        }
+
+        const template = this.tileURL(token);
+
+        return {
+            encoding,
+            minzoom: this.config.minzoom ?? 0,
+            maxzoom: this.config.maxzoom ?? 16,
+            tile: async (z, x, y) => {
+                const url = template
+                    .replace(/\{\$?z\}/, String(z))
+                    .replace(/\{\$?x\}/, String(x))
+                    .replace(/\{\$?y\}/, String(y));
+
+                const res = await fetch(url, { safeUrlAllow: [Basemap.pmtilesUrl()] });
+
+                if (res.status === 204 || res.status === 404) return null;
+                if (!res.ok) {
+                    throw new Err(502, null, `Failed to fetch tile: ${res.status} ${res.statusText}`);
+                }
+
+                return await res.arrayBuffer();
+            },
+        };
+    }
+
+    /** TileJSON for slope angle shading rendered from a raster-dem basemap */
+    async slopeTileJSON(opts: {
+        token?: string;
+        upstreamToken: string;
+    }): Promise<Static<typeof TileJSON>> {
+        this.demSource(opts.upstreamToken);
+
+        const tilejson = await this.tilejson(opts);
+        const url = `${Basemap.pmtilesUrl()}/tiles/basemap/${this.id}/shading/slope/{z}/{x}/{y}`;
+
+        return {
+            ...tilejson,
+            type: 'raster',
+            format: 'png',
+            encoding: undefined,
+            tiles: [opts.token ? `${url}?token=${opts.token}` : url],
+            maxzoom: tilejson.maxzoom + MAX_OVERZOOM,
+            legend: slopeLegend(),
+        };
+    }
+
+    async slopeTile(
+        z: number, x: number, y: number,
+        res: Response,
+        opts: {
+            token: string;
+        },
+    ): Promise<void> {
+        const source = this.demSource(opts.token);
+
+        if (z < source.minzoom || z > source.maxzoom + MAX_OVERZOOM) {
+            throw new Err(404, null, 'Tile Not Found');
+        }
+
+        sendShadingTile(res, await renderSlopeTile(z, x, y, source));
     }
 }

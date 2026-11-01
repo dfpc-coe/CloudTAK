@@ -228,4 +228,64 @@ export default async function router(schema: Schema) {
             Err.respond(err, res);
         }
     });
+
+    schema.get('/tiles/profile/:username/:file/shading/slope', {
+        name: 'Get Slope TileJSON',
+        group: 'ProfileTiles',
+        description: 'Return TileJSON for slope angle shading rendered from a profile raster-dem PMTiles source',
+        params: Type.Object({
+            username: Type.String(),
+            file: Type.String(),
+        }),
+        query: Type.Object({
+            token: Type.String(),
+            encoding: ElevationEncodingType,
+        }),
+        res: TileJSON,
+    }, async (req, res) => {
+        try {
+            const token = auth(req.query.token);
+            if (!tokenGrantsFile(token, req.params.username, req.params.file)) {
+                throw new Err(401, null, 'Unauthorized Access');
+            }
+
+            const file = new FileTiles(`profile/${req.params.username}/${req.params.file}`);
+            res.json(await file.slopeTileJSON(req.query.token, req.query.encoding));
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    schema.get('/tiles/profile/:username/:file/shading/slope/:z/:x/:y.:ext', {
+        name: 'Get Slope Tile',
+        group: 'ProfileTiles',
+        description: 'Return a slope angle shading tile rendered from a profile raster-dem PMTiles source',
+        query: Type.Object({
+            token: Type.String(),
+            encoding: ElevationEncodingType,
+        }),
+        params: Type.Object({
+            username: Type.String(),
+            file: Type.String(),
+            z: Type.Integer(),
+            x: Type.Integer(),
+            y: Type.Integer(),
+            ext: Type.String(),
+        }),
+    }, async (req, res) => {
+        try {
+            const token = auth(req.query.token);
+            if (!tokenGrantsFile(token, req.params.username, req.params.file)) {
+                throw new Err(401, null, 'Unauthorized Access');
+            }
+
+            if (req.params.ext !== 'png') throw new Err(400, null, 'Bad request: slope tiles are .png');
+
+            const file = new FileTiles(`profile/${req.params.username}/${req.params.file}`);
+
+            await file.slopeTile(res, req.params.z, req.params.x, req.params.y, req.query.encoding);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
 }

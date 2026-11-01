@@ -12,6 +12,9 @@ import { PromisePool } from '@supercharge/promise-pool';
 // @ts-expect-error No Type Defs
 import vtquery from '@mapbox/vtquery';
 import { pointToTile } from '@mapbox/tilebelt';
+import type { ElevationEncoding } from './elevation.js';
+import { TileJSON_Legend } from './tilejson.js';
+import { MAX_OVERZOOM, slopeLegend, renderSlopeTile, sendShadingTile } from './shading.js';
 
 const TILE_FORMATS = [
     [pmtiles.TileType.Mvt, 'mvt'],
@@ -33,6 +36,8 @@ export const TileJSON = Type.Object({
     bounds: Type.Array(Type.Number()),
     meta: Type.Unknown(),
     center: Type.Array(Type.Number()),
+    type: Type.Optional(Type.String()),
+    format: Type.Optional(Type.String()),
     vector_layers: Type.Optional(Type.Array(Type.Object({
         id: Type.String(),
         description: Type.Optional(Type.String()),
@@ -40,6 +45,7 @@ export const TileJSON = Type.Object({
         maxzoom: Type.Optional(Type.Integer()),
         fields: Type.Optional(Type.Record(Type.String(), Type.String())),
     }))),
+    legend: Type.Optional(TileJSON_Legend),
 });
 
 export const QueryResponse = Type.Object({
@@ -94,6 +100,79 @@ export class FileTiles {
 
     constructor(path: string) {
         this.path = path;
+    }
+
+    archive(): pmtiles.PMTiles {
+        return new pmtiles.PMTiles(new S3Source(this.path), CACHE, nativeDecompress);
+    }
+
+    /**
+     * Return the TileJSON for slope angle shading rendered from a raster-dem archive
+     *
+     * @param token - The token to use for the tile URL
+     * @param encoding - The elevation encoding of the archive's tiles
+     */
+    async slopeTileJSON(
+        token: string,
+        encoding: ElevationEncoding,
+    ): Promise<Static<typeof TileJSON>> {
+        const header = await this.archive().getHeader();
+
+        if (header.tileType === pmtiles.TileType.Mvt) {
+            throw new Err(400, null, 'Slope shading requires raster-dem tiles');
+        }
+
+        return {
+            tilejson: '3.0.0',
+            name: `${this.path}.pmtiles`,
+            description: 'Slope angle shading rendered by CloudTAK',
+            version: '1.0.0',
+            scheme: 'xyz',
+            type: 'raster',
+            format: 'png',
+            tiles: [process.env.PMTILES_URL + `/tiles/${this.path}/shading/slope/{z}/{x}/{y}.png?token=${token}&encoding=${encoding}`],
+            minzoom: header.minZoom,
+            maxzoom: header.maxZoom + MAX_OVERZOOM,
+            bounds: [header.minLon, header.minLat, header.maxLon, header.maxLat],
+            meta: header,
+            center: [header.centerLon, header.centerLat, header.centerZoom],
+            legend: slopeLegend(),
+        };
+    }
+
+    /**
+     * Render a slope angle shading tile from a raster-dem archive
+     *
+     * @param res - The Express response object
+     * @param z - The Z coordinate
+     * @param x - The X coordinate
+     * @param y - The Y coordinate
+     * @param encoding - The elevation encoding of the archive's tiles
+     */
+    async slopeTile(
+        res: Response,
+        z: number,
+        x: number,
+        y: number,
+        encoding: ElevationEncoding,
+    ): Promise<void> {
+        const p = this.archive();
+        const header = await p.getHeader();
+
+        if (header.tileType === pmtiles.TileType.Mvt) {
+            throw new Err(400, null, 'Slope shading requires raster-dem tiles');
+        }
+
+        if (z < header.minZoom || z > header.maxZoom + MAX_OVERZOOM) {
+            throw new Err(404, null, 'Tile Not Found');
+        }
+
+        sendShadingTile(res, await renderSlopeTile(z, x, y, {
+            encoding,
+            minzoom: header.minZoom,
+            maxzoom: header.maxZoom,
+            tile: async (tz, tx, ty) => (await p.getZxy(tz, tx, ty))?.data ?? null,
+        }));
     }
 
     async rasterTileSource(token: string): Promise<Static<typeof RasterTileSource>> {

@@ -268,4 +268,56 @@ export default async function router(schema: Schema) {
             Err.respond(err, res);
         }
     });
+
+    schema.get('/tiles/public/:name/shading/slope', {
+        name: 'Get Slope TileJSON',
+        group: 'PublicTiles',
+        description: 'Return TileJSON for slope angle shading rendered from a public raster-dem PMTiles source',
+        params: Type.Object({
+            name: Type.String(),
+        }),
+        query: Type.Object({
+            token: Type.String(),
+            encoding: ElevationEncodingType,
+        }),
+        res: TileJSON,
+    }, async (req, res) => {
+        try {
+            auth(req.query.token);
+
+            const file = new FileTiles(`public/${req.params.name}`);
+            res.json(await file.slopeTileJSON(req.query.token, req.query.encoding));
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    schema.get('/tiles/public/:name/shading/slope/:z/:x/:y.:ext', {
+        name: 'Get Slope Tile',
+        group: 'PublicTiles',
+        description: 'Return a slope angle shading tile rendered from a public raster-dem PMTiles source',
+        query: Type.Object({
+            token: Type.String(),
+            encoding: ElevationEncodingType,
+        }),
+        params: Type.Object({
+            name: Type.String(),
+            z: Type.Integer(),
+            x: Type.Integer(),
+            y: Type.Integer(),
+            ext: Type.String(),
+        }),
+    }, async (req, res) => {
+        try {
+            auth(req.query.token);
+
+            if (req.params.ext !== 'png') throw new Err(400, null, 'Bad request: slope tiles are .png');
+
+            const file = new FileTiles(`public/${req.params.name}`);
+
+            await file.slopeTile(res, req.params.z, req.params.x, req.params.y, req.query.encoding);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
 }
