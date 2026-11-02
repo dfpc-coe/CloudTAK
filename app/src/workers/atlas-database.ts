@@ -1180,7 +1180,7 @@ export default class AtlasDatabase {
                 });
 
                 if (!sub) {
-                    throw new Error(`Cannot add ${feat.id} to mission ${mission_guid} as it is not loaded`)
+                    throw new Error(`Cannot add ${feat.id} to mission ${mission_guid} as it is not loaded`);
                 }
 
                 await sub.feature.update(this.atlas, cot, {
