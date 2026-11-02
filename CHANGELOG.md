@@ -27,6 +27,10 @@
 
 ### Pending Release
 
+### v13.118.1 - 2026-11-02
+
+- :rocket: Add additional Filter options when nominating an Event to a board
+
 ### v13.118.0 - 2026-11-02
 
 - :tada: Unify the `Your Features` and `Devices` menus into a single `Features` menu with `Features`, `Events` & `Devices` tabs - `/menu/devices` redirects to `/menu/features/devices`
