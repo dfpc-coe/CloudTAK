@@ -1,8 +1,5 @@
-import { tileToBBOX } from './tilebelt.js';
-import { bbox } from '@turf/bbox';
 import { InferSelectModel } from 'drizzle-orm';
-import type { BBox, Geometry } from 'geojson';
-import type { Response } from 'express';
+import type { BBox } from 'geojson';
 import Config from '../../common/config.js';
 import { Basemap } from '../../common/schema.js';
 import { Static, Type } from '@sinclair/typebox';
@@ -33,22 +30,12 @@ export interface TileJSONInterface {
     vector_layers?: Array<Static<typeof TileJSON_VectorLayer>>;
 }
 
-export interface TileOpts {
-    headers?: Record<string, string | undefined>;
-}
-
 /**
  * Generic interface for a basemap protocol implementation.
  */
 export interface BasemapProtocolInterface {
     actions(): Static<typeof TileJSONActions>;
     isValidURL(str: string): void;
-
-    tile(
-        z: number, x: number, y: number,
-        res: Response,
-        opts?: TileOpts
-    ): Promise<void>;
 
     featureQuery?(
         polygon: Static<typeof Feature.Polygon>
@@ -62,10 +49,9 @@ export interface BasemapProtocolInterface {
 /**
  * @class
  *
- * Base class for all basemap protocol implementations. Provides shared utility
- * methods and a tile() facade that handles common pre-processing (header
- * normalisation and bounds checking) before delegating to the protocol-specific
- * _tile() implementation.
+ * Base class for all basemap protocol implementations - URL validation,
+ * TileJSON construction and feature actions. Tiles are served by the PMTiles
+ * tile server
  */
 export class BasemapProtocol implements BasemapProtocolInterface {
     basemap?: InferSelectModel<typeof Basemap>;
@@ -190,39 +176,6 @@ export class BasemapProtocol implements BasemapProtocolInterface {
     }
 
     /**
-     * Convert ZXY tile coordinates to a WGS-84 bounding box
-     *
-     * @param z - Zoom level
-     * @param x - Tile column
-     * @param y - Tile row
-     */
-    static extent(z: number, x: number, y: number): Array<number> {
-        return tileToBBOX([x, y, z]);
-    }
-
-    /**
-     * Generate a Bing Maps style quadkey from ZXY tile coordinates
-     *
-     * @param z - Zoom level
-     * @param x - Tile column
-     * @param y - Tile row
-     */
-    static quadkey(z: number, x: number, y: number): string {
-        const quadKey = [];
-        for (let i = z; i > 0; i--) {
-            let digit = 0;
-            const mask = 1 << (i - 1);
-            if ((x & mask) !== 0) digit++;
-            if ((y & mask) !== 0) {
-                digit++;
-                digit++;
-            }
-            quadKey.push(digit);
-        }
-        return quadKey.join('');
-    }
-
-    /**
      * Return the feature actions supported by this protocol.
      * Subclasses that support feature querying should override this method.
      */
@@ -239,57 +192,4 @@ export class BasemapProtocol implements BasemapProtocolInterface {
     featureFetch?(
         id: string
     ): Promise<Static<typeof MultiGeoJSONFeature>>;
-
-    /**
-     * Proxy a tile request to the upstream source.
-     *
-     * Handles common pre-processing (header normalisation and optional bounds
-     * checking) before delegating to the protocol-specific _tile() method.
-     */
-    async tile(
-        z: number, x: number, y: number,
-        res: Response,
-        opts?: TileOpts,
-    ): Promise<void> {
-        const headers: Record<string, string | undefined> = { ...opts?.headers };
-        for (const key of Object.keys(headers)) {
-            if (!headers[key]) delete headers[key];
-        }
-
-        const bounds = this.basemap?.bounds ? bbox(this.basemap.bounds as Geometry) : undefined;
-        if (bounds && bounds.length === 4) {
-            const tileBbox = tileToBBOX([x, y, z]);
-            const [minLon, minLat, maxLon, maxLat] = bounds;
-            const [tileMinLon, tileMinLat, tileMaxLon, tileMaxLat] = tileBbox;
-
-            if (tileMaxLat < minLat || tileMinLat > maxLat) {
-                res.status(404).send('Tile outside bounds');
-                return;
-            }
-
-            const lonInBox = minLon <= maxLon
-                ? tileMinLon <= maxLon && tileMaxLon >= minLon
-                : tileMinLon <= maxLon || tileMaxLon >= minLon;
-
-            if (!lonInBox) {
-                res.status(404).send('Tile outside bounds');
-                return;
-            }
-        }
-
-        return this._tile(z, x, y, res, { headers });
-    }
-
-    protected async _tile(
-        z: number, x: number, y: number,
-        res: Response,
-        opts: Required<TileOpts>,
-    ): Promise<void> {
-        void z;
-        void x;
-        void y;
-        void res;
-        void opts;
-        throw new Err(501, null, 'Protocol does not implement tile()');
-    }
 }

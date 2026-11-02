@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import Flight from './flight.js';
+import { basemapTileJSON } from '../stateless/lib/tilejson.js';
 
 const flight = new Flight();
 
@@ -36,16 +37,12 @@ test('POST: api/basemap - TileJSON [lon, lat, zoom] center is stored in full', a
     }
 });
 
-test('GET: api/basemap/1/tiles - stored center zoom is passed through to TileJSON', async () => {
+test('TileJSON: stored center zoom is passed through', async () => {
     try {
-        const res = await flight.fetch('/api/basemap/1/tiles', {
-            method: 'GET',
-            auth: {
-                bearer: flight.token.admin,
-            },
-        }, true);
+        const basemap = await flight.config!.models.Basemap.from(1);
+        const tilejson = await basemapTileJSON(flight.config!, basemap, { upstreamToken: flight.token.admin });
 
-        assert.deepEqual(res.body.center, [-105.1, 39.7, 14]);
+        assert.deepEqual(tilejson.center, [-105.1, 39.7, 14]);
     } catch (err) {
         assert.ifError(err);
     }
@@ -72,16 +69,12 @@ test('POST: api/basemap - 2 element center is stored as-is', async () => {
     }
 });
 
-test('GET: api/basemap/2/tiles - TileJSON center zoom is computed when not stored', async () => {
+test('TileJSON: center zoom is computed when not stored', async () => {
     try {
-        const res = await flight.fetch('/api/basemap/2/tiles', {
-            method: 'GET',
-            auth: {
-                bearer: flight.token.admin,
-            },
-        }, true);
+        const basemap = await flight.config!.models.Basemap.from(2);
+        const tilejson = await basemapTileJSON(flight.config!, basemap, { upstreamToken: flight.token.admin });
 
-        assert.deepEqual(res.body.center, [12.5, 41.9, 8]);
+        assert.deepEqual(tilejson.center, [12.5, 41.9, 8]);
     } catch (err) {
         assert.ifError(err);
     }
