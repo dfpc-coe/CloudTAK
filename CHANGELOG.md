@@ -27,6 +27,8 @@
 
 ### Pending Release
 
+- :rocket: Circle mode now snaps the center point to nearby feature vertices using the Terra-Draw 1.39.0 circle snapping options
+
 ### v13.118.1 - 2026-11-02
 
 - :rocket: Add additional Filter options when nominating an Event to a board

@@ -100,7 +100,7 @@
         "pmtiles": "^4.5.0",
         "rxjs": "^7.8.2",
         "sortablejs": "^1.15.2",
-        "terra-draw": "^1.22.0",
+        "terra-draw": "^1.39.0",
         "terra-draw-maplibre-gl-adapter": "^1.4.1",
         "terra-draw-route-snap-mode": "^0.4.1",
         "terra-route": "^0.0.18",
