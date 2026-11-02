@@ -83,7 +83,7 @@
                     />
                     <span
                         v-else
-                        v-text='step + 1 < props.forms.length ? "Submit & Continue" : "Submit"'
+                        v-text='submitLabel'
                     />
                 </button>
             </div>
@@ -99,7 +99,9 @@
  * board's drag & drop flow and Event nomination from both the board and the
  * map side, and for completing any Form shared with an Event's Channels from
  * the Event view. Forms already submitted before a Cancel stay submitted -
- * re-opening the wizard resumes with the still missing Forms.
+ * re-opening the wizard resumes with the still missing Forms. Given an
+ * existing Response the wizard instead edits it in place, keeping its Event
+ * links.
  */
 
 import { ref, computed } from 'vue';
@@ -121,9 +123,15 @@ const props = withDefaults(defineProps<{
     /** Forms to submit, one wizard step each */
     forms: Array<CoreForm>;
     title?: string;
+    /** Existing Response to edit - submitted against the single Form given */
+    response?: {
+        id: string;
+        response: Record<string, unknown>;
+    };
 }>(), {
     eventName: undefined,
     title: 'Complete Required Forms',
+    response: undefined,
 });
 
 const emit = defineEmits<{
@@ -133,11 +141,16 @@ const emit = defineEmits<{
 }>();
 
 const step = ref(0);
-const data = ref<Record<string, unknown>>({});
+const data = ref<Record<string, unknown>>({ ...(props.response?.response ?? {}) });
 const submitting = ref(false);
 const error = ref<Error | undefined>();
 
 const current = computed<CoreForm>(() => props.forms[step.value]);
+
+const submitLabel = computed<string>(() => {
+    if (props.response) return 'Save';
+    return step.value + 1 < props.forms.length ? 'Submit & Continue' : 'Submit';
+});
 
 /** TablerSchema iterates `properties` - normalise so a bare schema can't crash it */
 const currentSchema = computed<Record<string, unknown>>(() => {
@@ -153,13 +166,18 @@ async function submit(): Promise<void> {
     error.value = undefined;
 
     try {
-        const res = await server.POST('/api/core/form/{:form}/response', {
-            params: { path: { ':form': current.value.id } },
-            body: {
-                response: data.value,
-                events: [props.eventId],
-            }
-        });
+        const res = props.response
+            ? await server.PATCH('/api/core/form/{:form}/response/{:response}', {
+                params: { path: { ':form': current.value.id, ':response': props.response.id } },
+                body: { response: data.value }
+            })
+            : await server.POST('/api/core/form/{:form}/response', {
+                params: { path: { ':form': current.value.id } },
+                body: {
+                    response: data.value,
+                    events: [props.eventId],
+                }
+            });
 
         if (res.error) throw new Error(res.error.message);
 

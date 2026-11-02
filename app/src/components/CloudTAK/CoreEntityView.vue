@@ -279,6 +279,7 @@
                         :channels='event.channels'
                         :edit='is_editable'
                         @add='completeForm($event)'
+                        @edit='editResponse($event)'
                     />
                 </div>
             </div>
@@ -296,6 +297,7 @@
             :event-name='event.name'
             :forms='formWizard.forms'
             :title='formWizard.title'
+            :response='formWizard.response'
             @complete='completeFormWizard'
             @close='formWizard = undefined; formsRefresh += 1'
         />
@@ -341,7 +343,7 @@ import PropertyCoreEntityMetadata from './Property/PropertyCoreEntityMetadata.vu
 import PropertyCoreEntityMission from './Property/PropertyCoreEntityMission.vue';
 import PropertyCoreEntityTimes from './Property/PropertyCoreEntityTimes.vue';
 import FormWizard from './util/FormWizard.vue';
-import type { CoreForm, CoreEntity, CoreEntityStyle, CoreEntityBoardSummary } from '../../types.ts';
+import type { CoreForm, CoreEntity, CoreEntityStyle, CoreEntityBoardSummary, CoreEntityFormResponse } from '../../types.ts';
 import { server } from '../../std.ts';
 import { db, liveQuery } from '../../database.ts';
 import { missingRequiredForms } from '../../utils/column-forms.ts';
@@ -386,6 +388,7 @@ const formWizard = ref<{
     forms: Array<CoreForm>;
     column?: string;
     title?: string;
+    response?: { id: string; response: Record<string, unknown> };
 } | undefined>();
 
 /** Bumped when the wizard submits Responses so the Forms section re-fetches */
@@ -592,6 +595,14 @@ async function placeNomination(column: string): Promise<void> {
 /** Complete any Form shared with one of the Event's Channels */
 function completeForm(form: CoreForm): void {
     formWizard.value = { forms: [form], title: 'Complete Form' };
+}
+
+function editResponse(item: CoreEntityFormResponse): void {
+    formWizard.value = {
+        forms: [item.form],
+        title: 'Edit Response',
+        response: { id: item.id, response: item.response },
+    };
 }
 
 async function completeFormWizard(): Promise<void> {

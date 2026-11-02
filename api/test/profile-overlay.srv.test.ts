@@ -335,7 +335,7 @@ test('GET: api/profile/overlay - basemap mode, basemap present -> kept in items'
             tileSize: 256,
             minzoom: 0,
             maxzoom: 16,
-            tiles: [`${flight.base}/api/basemap/1/tiles/{z}/{x}/{y}`],
+            tiles: [`${flight.base}/tiles/basemap/1/tiles/{z}/{x}/{y}`],
         });
 
         const single = await flight.fetch(`/api/profile/overlay/${post.body.id}`, {

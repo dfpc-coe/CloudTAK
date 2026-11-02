@@ -78,6 +78,7 @@ test('POST: api/basemap - ArcGIS Imagery Source', async () => {
             actions: { feature: [] },
             url: ARCGIS_IMAGERY_URL,
             overlay: false,
+            tilejson: null,
             iconset: null,
             title: 'callsign',
             username: 'admin@example.com',
@@ -155,7 +156,7 @@ test('GET: api/basemap/1/tiles - ArcGIS Imagery TileJSON', async () => {
             minzoom: 0,
             maxzoom: 16,
             actions: { feature: [] },
-            tiles: [`${flight.base}/api/basemap/1/tiles/{z}/{x}/{y}`],
+            tiles: [`${flight.base}/tiles/basemap/1/tiles/{z}/{x}/{y}`],
         });
 
         assert.notDeepEqual(res.body.bounds, [-180, -90, 180, 90]);
