@@ -1,6 +1,6 @@
 <template>
     <MenuTemplate
-        name='Saved Features'
+        name='Features'
     >
         <template #buttons>
             <TablerDropdown>
@@ -68,6 +68,8 @@
             </TablerDropdown>
         </template>
         <template #default>
+            <FeaturesTabs />
+
             <div class='my-2'>
                 <SearchSortFilter
                     v-model='query.filter'
@@ -252,6 +254,7 @@ import type { PathNode } from '../../../utils/path-manager.ts';
 import { FeatureVisibility, GENERAL_SOURCE_ID } from '../../../stores/modules/feature-visibility.ts';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import FeaturesTabs from './Features/FeaturesTabs.vue';
 import SearchSortFilter from '../util/SearchSortFilter.vue';
 import PathBrowser from '../util/PathBrowser.vue';
 import PathBreadcrumb from '../util/PathBreadcrumb.vue';

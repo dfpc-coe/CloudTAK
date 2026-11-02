@@ -27,6 +27,8 @@
 
 ### Pending Release
 
+- :tada: Unify the `Your Features` and `Devices` menus into a single `Features` menu with `Features`, `Events` & `Devices` tabs - `/menu/devices` redirects to `/menu/features/devices`
+
 ### v13.117.2 - 2026-11-02
 
 - :rocket: Improve rendering performance on iOS by introduing a Feature Queue to avoid bottlenecking on indexDB

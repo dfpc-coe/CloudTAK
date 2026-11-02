@@ -121,6 +121,14 @@ const router = VueRouter.createRouter({
                     name: 'home-menu-features',
                     component: () => import('./components/CloudTAK/Menu/MenuFeatures.vue')
                 },{
+                    path: 'features/events',
+                    name: 'home-menu-features-events',
+                    component: () => import('./components/CloudTAK/Menu/MenuFeaturesEvents.vue')
+                },{
+                    path: 'features/devices',
+                    name: 'home-menu-features-devices',
+                    component: () => import('./components/CloudTAK/Menu/MenuFeaturesDevices.vue')
+                },{
                     path: 'features/deleted',
                     name: 'home-menu-features-deleted',
                     component: () => import('./components/CloudTAK/Menu/MenuFeaturesDeleted.vue')
@@ -142,8 +150,7 @@ const router = VueRouter.createRouter({
                     component: () => import('./components/CloudTAK/Menu/MenuContacts.vue')
                 },{
                     path: 'devices',
-                    name: 'home-menu-devices',
-                    component: () => import('./components/CloudTAK/Menu/MenuDevices.vue')
+                    redirect: { name: 'home-menu-features-devices' }
                 },{
                     path: 'missions',
                     name: 'home-menu-missions',
