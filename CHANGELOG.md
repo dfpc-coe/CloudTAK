@@ -27,6 +27,8 @@
 
 ### Pending Release
 
+### v13.117.1 - 2026-11-01
+
 - :bug: Pass `API_URL` to the Docker Compose `tiles` service so the PMTiles server can resolve basemap config (#1993)
 
 ### v13.117.0 - 2026-10-31
