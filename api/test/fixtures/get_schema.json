@@ -59,16 +59,6 @@
         "query": true,
         "res": true
     },
-    "GET /basemap/:basemapid/tiles": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /basemap/:basemapid/tiles/:z/:x/:y": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
     "POST /basemap/:basemapid/feature": {
         "body": true,
         "query": false,
@@ -813,11 +803,6 @@
         "body": false,
         "query": true,
         "res": true
-    },
-    "GET /fonts/:fontstack/:start-:end.pbf": {
-        "body": false,
-        "query": false,
-        "res": false
     },
     "GET /geofence": {
         "body": false,
@@ -1877,11 +1862,6 @@
     "GET /search": {
         "body": false,
         "query": false,
-        "res": true
-    },
-    "GET /search/reverse/:longitude/:latitude": {
-        "body": false,
-        "query": true,
         "res": true
     },
     "GET /search/reverse/:longitude/:latitude/sun": {

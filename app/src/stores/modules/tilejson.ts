@@ -8,7 +8,7 @@ import * as mapgl from 'maplibre-gl';
 import { db } from '../../database.ts';
 import KV from '../../base/kv.ts';
 import { std, server, serverUrl, getRuntimeToken } from '../../std.ts';
-import { applyTileArgs, authorizeTileJSON } from '../../utils/tilejson.ts';
+import { applyTileArgs, authorizeTileJSON, basemapIdFromUrl, fetchBasemapTileJSON } from '../../utils/tilejson.ts';
 import type { TileArgs } from '../../utils/tilejson.ts';
 import { profileAssetIdFromUrl, hasCompleteOfflineTiles } from '../../utils/offline-tiles.ts';
 import { registerPMTilesProtocol, offlineTileJSON, offlineTileTemplate, isOfflineTileJSON, setNetworkTileTemplate } from './pmtiles.ts';
@@ -136,7 +136,10 @@ export function registerTileJSONProtocol(): void {
 
         let tilejson = entry.tilejson;
         if (!tilejson) {
-            tilejson = await std(entry.url) as OverlayTileJSON;
+            const basemapId = basemapIdFromUrl(entry.url);
+            tilejson = basemapId
+                ? await fetchBasemapTileJSON<OverlayTileJSON>(basemapId)
+                : await std(entry.url) as OverlayTileJSON;
             await cache(tilejson);
         }
 

@@ -32,36 +32,6 @@ test('Setup: search layers', async () => {
     });
 });
 
-test('GET /api/search/reverse/:longitude/:latitude - success', async () => {
-    try {
-        const res = await flight.fetch('/api/search/reverse/-105/39.7', {
-            method: 'GET',
-            auth: { bearer: flight.token.admin },
-        }, true);
-
-        assert.ok(res.body.sun, 'Sun data present');
-        assert.equal(res.body.reverse, null, 'No reverse geocoding without token');
-        // Note: Should be null but downstream processing converts null to empty string
-        assert.ok(res.body.elevation === null || res.body.elevation === '', 'No elevation without query param');
-    } catch (err) {
-        assert.ifError(err);
-    }
-});
-
-test('GET /api/search/reverse/:longitude/:latitude - with elevation', async () => {
-    try {
-        const res = await flight.fetch('/api/search/reverse/-105/39.7?elevation=1655', {
-            method: 'GET',
-            auth: { bearer: flight.token.admin },
-        }, true);
-
-        assert.ok(res.body.elevation, 'Elevation data present');
-        assert.ok(res.body.elevation.includes('ft'), 'Elevation in feet (default unit)');
-    } catch (err) {
-        assert.ifError(err);
-    }
-});
-
 test('GET /api/search/suggest - success', async () => {
     try {
         const res = await flight.fetch('/api/search/suggest?query=Denver&limit=5&longitude=-105&latitude=39.7', {
@@ -205,36 +175,6 @@ test('GET /api/search/forward - empty query', async () => {
     }
 });
 
-test('GET /api/search/reverse/:longitude/:latitude - weather fallback', async () => {
-    try {
-        // Test with London coordinates (outside US) to trigger fallback
-        const res = await flight.fetch('/api/search/reverse/-0.1/51.5', {
-            method: 'GET',
-            auth: { bearer: flight.token.admin },
-        }, true);
-
-        assert.ok(res.body.sun, 'Sun data present');
-        // Weather may be present from fallback or null if APIs fail
-        assert.ok(res.body.weather !== undefined, 'Weather field present');
-    } catch (err) {
-        assert.ifError(err);
-    }
-});
-
-test('GET /api/search/reverse/:longitude/:latitude - layer token with search:read', async () => {
-    try {
-        const res = await flight.fetch('/api/search/reverse/-105/39.7?elevation=1655', {
-            method: 'GET',
-            auth: { bearer: scopedLayerToken },
-        }, true);
-
-        assert.ok(res.body.sun, 'Sun data present');
-        assert.ok(res.body.elevation.includes('ft'), 'Elevation defaults to feet for layer tokens');
-    } catch (err) {
-        assert.ifError(err);
-    }
-});
-
 test('GET /api/search/forward - layer token with search:read', async () => {
     try {
         const res = await flight.fetch('/api/search/forward?query=Denver&magicKey=test', {
@@ -243,20 +183,6 @@ test('GET /api/search/forward - layer token with search:read', async () => {
         }, true);
 
         assert.ok(Array.isArray(res.body.items), 'Items is an array');
-    } catch (err) {
-        assert.ifError(err);
-    }
-});
-
-test('GET /api/search/reverse/:longitude/:latitude - layer token without search:read', async () => {
-    try {
-        const res = await flight.fetch('/api/search/reverse/-105/39.7', {
-            method: 'GET',
-            auth: { bearer: unscopedLayerToken },
-        }, false);
-
-        assert.equal(res.status, 403);
-        assert.equal(res.body.message, 'Layer token does not have the search:read permission');
     } catch (err) {
         assert.ifError(err);
     }

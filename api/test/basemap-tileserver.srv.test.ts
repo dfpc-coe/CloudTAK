@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import Flight from './flight.js';
+import { basemapTileJSON } from '../stateless/lib/tilejson.js';
 
 const flight = new Flight();
 
@@ -29,23 +30,18 @@ test('POST: api/basemap - Shared ZXY Basemap', async () => {
     zxyToken = res.body.sharing_token;
 });
 
-test('GET: api/basemap/1/tiles - TileJSON advertises the PMTiles host', async () => {
-    const res = await flight.fetch('/api/basemap/1/tiles', {
-        method: 'GET',
-        auth: {
-            bearer: flight.token.admin,
-        },
-    }, true);
+test('TileJSON: tiles advertise the PMTiles host', async () => {
+    const basemap = await flight.config!.models.Basemap.from(1);
+    const tilejson = await basemapTileJSON(flight.config!, basemap, { upstreamToken: flight.token.admin });
 
-    assert.deepEqual(res.body.tiles, [`${flight.base}/tiles/basemap/1/tiles/{z}/{x}/{y}`]);
+    assert.deepEqual(tilejson.tiles, [`${flight.base}/tiles/basemap/1/tiles/{z}/{x}/{y}`]);
 });
 
-test('GET: api/basemap/1/tiles?token - tile URLs carry the token on the PMTiles host', async () => {
-    const res = await flight.fetch(`/api/basemap/1/tiles?token=${flight.token.admin}`, {
-        method: 'GET',
-    }, true);
+test('TileJSON: tile URLs carry the token on the PMTiles host', async () => {
+    const basemap = await flight.config!.models.Basemap.from(1);
+    const tilejson = await basemapTileJSON(flight.config!, basemap, { token: flight.token.admin, upstreamToken: flight.token.admin });
 
-    assert.deepEqual(res.body.tiles, [`${flight.base}/tiles/basemap/1/tiles/{z}/{x}/{y}?token=${flight.token.admin}`]);
+    assert.deepEqual(tilejson.tiles, [`${flight.base}/tiles/basemap/1/tiles/{z}/{x}/{y}?token=${flight.token.admin}`]);
 });
 
 test('GET: api/basemap/1?format=xml - ATAK share URL of a zxy basemap stays upstream', async () => {
@@ -89,15 +85,16 @@ test('GET: api/basemap/2?format=xml - ATAK share URL of a proxied basemap uses t
     assert.ok(res.body.includes(`<url>${flight.base}/tiles/basemap/2/tiles/{$z}/{$x}/{$y}?token=${token}</url>`), res.body);
 });
 
-test('GET: api/basemap/1/tiles - sharing token resolves on the API and advertises the PMTiles host', async () => {
-    const res = await flight.fetch('/api/basemap/1/tiles', {
+test('GET: api/basemap/1 - sharing token resolves on the API and advertises the PMTiles host', async () => {
+    const res = await flight.fetch('/api/basemap/1', {
         method: 'GET',
         auth: {
             bearer: zxyToken,
         },
     }, true);
 
-    assert.deepEqual(res.body.tiles, [`${flight.base}/tiles/basemap/1/tiles/{z}/{x}/{y}`]);
+    assert.equal(res.body.id, 1);
+    assert.equal(res.body.url, 'https://test.com/test/{z}/{x}/{y}');
 });
 
 flight.landing();

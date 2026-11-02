@@ -1,11 +1,11 @@
 import { Type } from '@sinclair/typebox';
-import { StandardResponse, CoreDeviceResponse, CoreEntityLink, CoreEntityStyle, CoreEntityExternalIdInput, GeoJSONFeatureGeometryPoint } from '../../common/types.js';
+import { StandardResponse, CoreDeviceResponse, CoreEntityLink, CoreEntityStyle, CoreEntityExternalId, GeoJSONFeatureGeometryPoint } from '../../common/types.js';
 import { sql, getTableColumns } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUser, AuthResource } from '../../common/auth.js';
 import { CoreEntity } from '../../common/schema.js';
-import { sharedWith, setChannels, setExternalId, toExternalId } from '../../common/models/CoreEntity.js';
+import { sharedWith, setChannels, setExternalId } from '../../common/models/CoreEntity.js';
 import { LayerMapping_Destination } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
 import { userChannels } from '../../common/control/tak-channels.js';
@@ -166,7 +166,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             })], {
                 description: 'Seconds after its last update the Device stops being broadcast to TAK clients - null never expires',
             })),
-            external_id: Type.Optional(CoreEntityExternalIdInput),
+            external_id: Type.Optional(CoreEntityExternalId),
             remarks: Type.String({
                 default: '',
             }),
@@ -208,7 +208,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 await setChannels(tx, id, channels);
 
-                if (external_id !== undefined) await setExternalId(tx, { id, kind: LayerMapping_Destination.COREDEVICE, connection }, toExternalId(external_id));
+                if (external_id !== undefined) await setExternalId(tx, { id, kind: LayerMapping_Destination.COREDEVICE, connection }, external_id);
 
                 return id;
             }).catch(uniqueViolation('external_id is already used by another Device of the Connection'));
@@ -248,7 +248,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             stale: Type.Optional(Type.Union([Type.Null(), Type.Integer({
                 minimum: 1,
             })])),
-            external_id: Type.Optional(CoreEntityExternalIdInput),
+            external_id: Type.Optional(CoreEntityExternalId),
             remarks: Type.Optional(Type.String()),
             metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown(), {
                 description: 'User defined key/value Device metadata - replaces the existing metadata object',
@@ -284,7 +284,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 await config.pg.transaction(async (tx) => {
                     await config.models.CoreDevice.commitDevice(req.params.device, body, tx);
 
-                    if (external_id !== undefined) await setExternalId(tx, { id: device.id, kind: LayerMapping_Destination.COREDEVICE, connection: device.connection }, toExternalId(external_id));
+                    if (external_id !== undefined) await setExternalId(tx, { id: device.id, kind: LayerMapping_Destination.COREDEVICE, connection: device.connection }, external_id);
                 }).catch(uniqueViolation('external_id is already used by another Device of the Connection'));
             }
 
