@@ -302,7 +302,8 @@ export default class DrawTool {
                     showCoordinatePoints: true
                 }),
                 new terraDraw.TerraDrawCircleMode({
-                    drawInteraction
+                    drawInteraction,
+                    snapping: { toCustom }
                 }),
                 new terraDraw.TerraDrawSelectMode({
                     flags: {
