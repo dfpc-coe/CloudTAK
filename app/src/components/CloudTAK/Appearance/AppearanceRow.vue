@@ -47,7 +47,7 @@ import { iconsetIconLabel } from './icon-label.ts';
 
 const props = defineProps<{
     properties: Feature['properties'];
-    geometry: Feature['geometry'];
+    geometry?: Feature['geometry'] | null;
     edit: boolean;
 }>();
 
@@ -58,7 +58,7 @@ const emit = defineEmits<{
 const typeName = ref<string | undefined>();
 const iconName = ref<string | undefined>();
 
-const isPoint = computed<boolean>(() => props.geometry.type === 'Point');
+const isPoint = computed<boolean>(() => !props.geometry || props.geometry.type === 'Point');
 
 const iconKey = computed<string>(() => {
     if (!isPoint.value) return `${props.properties.stroke}-${props.properties.fill}`;
@@ -66,7 +66,7 @@ const iconKey = computed<string>(() => {
 });
 
 const summary = computed(() => {
-    if (!isPoint.value) return describeStyle(props.geometry.type, props.properties);
+    if (props.geometry && !isPoint.value) return describeStyle(props.geometry.type, props.properties);
     return describeAppearance(props.properties, typeName.value, iconName.value);
 });
 
@@ -95,5 +95,12 @@ watch(() => props.properties.icon, async (icon) => {
 
 .appearance-row--edit {
     cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.appearance-row--edit:hover,
+.appearance-row--edit:focus-visible {
+    border-color: var(--cloudtak-hover-border) !important;
+    background: var(--cloudtak-hover-bg);
 }
 </style>

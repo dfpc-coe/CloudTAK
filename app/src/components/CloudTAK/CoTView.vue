@@ -4,15 +4,8 @@
             v-if='cot'
             #header
         >
-            <div class='flex-shrink-0'>
-                <FeatureIcon
-                    :key='cot.properties.type'
-                    :size='32'
-                    :feature='cot'
-                />
-            </div>
             <div
-                class='flex-grow-1 mx-2'
+                class='flex-grow-1 me-2'
                 style='min-width: 0'
             >
                 <CopyField
@@ -574,7 +567,6 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
-import FeatureIcon from './util/FeatureIcon.vue';
 import BufferInput from './Inputs/BufferInput.vue';
 import MenuTemplate from './util/MenuTemplate.vue';
 import type COT from '../../base/cot.ts';

@@ -501,6 +501,13 @@ async function fetchList(): Promise<void> {
 .type-trigger {
     background: var(--tblr-bg-surface, transparent);
     color: inherit;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.type-trigger:hover,
+.type-trigger:focus-visible {
+    border-color: var(--cloudtak-hover-border);
+    background: var(--cloudtak-hover-bg);
 }
 
 .type-trigger--open {

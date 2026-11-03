@@ -1,4 +1,5 @@
 import Type2525 from '@tak-ps/node-cot/2525';
+import type { Feature, CoreEntityStyle } from '../types.ts';
 
 export type CoreEntityKind = 'event' | 'device';
 
@@ -93,4 +94,27 @@ export function entityMarkerProperties<T extends Record<string, unknown>>(curren
     }
 
     return properties as T;
+}
+
+type AppearanceSource = Pick<MarkerSource, 'type' | 'style'>;
+
+/** The Entity's type and style as the marker properties the Appearance components read */
+export function entityAppearance(entity: AppearanceSource): Feature['properties'] {
+    return {
+        type: entity.type,
+        icon: entity.style.icon,
+        'marker-color': entity.style['marker-color'],
+        'marker-opacity': entity.style['marker-opacity'],
+    } as Feature['properties'];
+}
+
+/** The inverse of entityAppearance - only the keys the Entity style accepts */
+export function entityStyleFrom(properties: Feature['properties']): { type: string; style: CoreEntityStyle } {
+    const style: CoreEntityStyle = {};
+
+    if (typeof properties.icon === 'string') style.icon = properties.icon;
+    if (typeof properties['marker-color'] === 'string') style['marker-color'] = properties['marker-color'];
+    if (typeof properties['marker-opacity'] === 'number') style['marker-opacity'] = properties['marker-opacity'];
+
+    return { type: properties.type, style };
 }

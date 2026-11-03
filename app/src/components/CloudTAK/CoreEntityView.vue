@@ -9,15 +9,8 @@
             v-if='event'
             #header
         >
-            <div class='flex-shrink-0'>
-                <FeatureIcon
-                    :key='event.type'
-                    :size='32'
-                    :feature='iconFeature'
-                />
-            </div>
             <div
-                class='flex-grow-1 mx-2'
+                class='flex-grow-1 me-2'
                 style='min-width: 0'
             >
                 <CopyField
@@ -145,11 +138,11 @@
             >
                 <div class='pt-1'>
                     <div class='px-2 pb-2'>
-                        <PropertyType
-                            :key='event.id'
-                            :edit='is_editable'
-                            :model-value='event.type'
-                            @update:model-value='patch({ type: String($event) })'
+                        <AppearanceRow
+                            :properties='entityAppearance(event)'
+                            :geometry='event.geometry'
+                            :edit='is_editable && !embedded'
+                            @click='router.push(`/event/${event.id}/appearance`)'
                         />
                     </div>
 
@@ -234,14 +227,6 @@
                         @update:model-value='patch({ missions: $event })'
                     />
 
-                    <!-- PropertyStyle has no read-only mode so hide it for non-editors -->
-                    <PropertyStyle
-                        v-if='is_editable'
-                        geometry='Point'
-                        :model-value='styleProperties'
-                        @update:model-value='updateStyle($event)'
-                    />
-
                     <PropertyCoreEntityExternalId
                         :model-value='event.external_ids'
                         :edit='is_editable'
@@ -324,13 +309,11 @@ import {
     IconPlayerPlay,
 } from '@tabler/icons-vue';
 import MenuTemplate from './util/MenuTemplate.vue';
-import FeatureIcon from './util/FeatureIcon.vue';
 import CopyField from './util/CopyField.vue';
 import Coordinate from './util/Coordinate.vue';
 import PropertyFactRow from './util/PropertyFactRow.vue';
 import PropertyTabs, { type PropertyTab } from './util/PropertyTabs.vue';
-import PropertyType from './Property/PropertyType.vue';
-import PropertyStyle from './Property/PropertyStyle.vue';
+import AppearanceRow from './Appearance/AppearanceRow.vue';
 import PropertyRemarks from './Property/PropertyRemarks.vue';
 import PropertyCoreEntityPriority from './Property/PropertyCoreEntityPriority.vue';
 import PropertyCoreEntityDuration from './Property/PropertyCoreEntityDuration.vue';
@@ -343,13 +326,13 @@ import PropertyCoreEntityMetadata from './Property/PropertyCoreEntityMetadata.vu
 import PropertyCoreEntityMission from './Property/PropertyCoreEntityMission.vue';
 import PropertyCoreEntityTimes from './Property/PropertyCoreEntityTimes.vue';
 import FormWizard from './util/FormWizard.vue';
-import type { CoreForm, CoreEntity, CoreEntityStyle, CoreEntityBoardSummary, CoreEntityFormResponse } from '../../types.ts';
+import type { CoreForm, CoreEntity, CoreEntityBoardSummary, CoreEntityFormResponse } from '../../types.ts';
 import { server } from '../../std.ts';
 import { db, liveQuery } from '../../database.ts';
 import { missingRequiredForms } from '../../utils/column-forms.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { useEntityAccess } from '../../utils/entity-access.ts';
-import { entityMarkerProperties } from '../../utils/core-entity.ts';
+import { entityMarkerProperties, entityAppearance } from '../../utils/core-entity.ts';
 
 // When an eventId prop is provided the view runs embedded (the Event Board
 // modal) - the Event comes from the prop instead of the route and map
@@ -404,28 +387,6 @@ const tabs: Array<PropertyTab> = [
 ];
 
 const { is_creator, is_editable, load: loadAccess } = useEntityAccess(event);
-
-// The header icon isn't a CoT - FeatureIcon derives the MIL-STD symbol from the
-// type the same way it does for one
-const iconFeature = computed(() => {
-    if (!event.value) return { properties: {}, geometry: { type: 'Point' } };
-
-    return {
-        properties: {
-            type: event.value.type,
-            icon: event.value.style.icon,
-            'marker-color': event.value.style['marker-color'],
-        },
-        geometry: event.value.geometry,
-    };
-});
-
-const styleProperties = computed(() => {
-    if (!event.value) return {};
-
-    // PropertyStyle falls back to the type when an icon is cleared
-    return { ...event.value.style, type: event.value.type };
-});
 
 onMounted(async () => {
     await loadAccess();
@@ -642,21 +603,6 @@ function updateCoordinates(coordinates: number[]): void {
             coordinates: coordinates.slice(0, 2)
         }
     });
-}
-
-function updateStyle(properties: Record<string, unknown>): void {
-    // PropertyStyle round trips the whole property object - only the keys the
-    // Event style supports can be submitted back to the API
-    const style: CoreEntityStyle = {};
-
-    if (typeof properties.icon === 'string') style.icon = properties.icon;
-    if (typeof properties['marker-color'] === 'string') style['marker-color'] = properties['marker-color'];
-
-    if (properties['marker-opacity'] !== undefined && !isNaN(Number(properties['marker-opacity']))) {
-        style['marker-opacity'] = Number(properties['marker-opacity']);
-    }
-
-    void patch({ style });
 }
 
 function flyTo(): void {

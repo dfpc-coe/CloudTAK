@@ -7,7 +7,7 @@
             role='radiogroup'
         >
             <button
-                v-for='opt of MARKERS'
+                v-for='opt of markers'
                 :key='opt.value'
                 type='button'
                 role='radio'
@@ -91,9 +91,7 @@
                     <img
                         :src='urls.get(entry.name)'
                         :alt='iconLabel(entry)'
-                        width='28'
-                        height='28'
-                        style='object-fit: contain;'
+                        class='icon-cell__img'
                     >
                 </button>
             </div>
@@ -165,12 +163,18 @@ const MARKERS: Array<{ value: Marker; label: string }> = [
     { value: 'spot', label: 'Spot' },
 ];
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     marker: Marker;
     icon?: string;
     color: string;
     opacity: number;
-}>();
+    /** Offer the Spot marker - off for Core Entities whose type is always a symbol */
+    spot?: boolean;
+}>(), {
+    spot: true,
+});
+
+const markers = computed(() => MARKERS.filter((opt) => props.spot || opt.value !== 'spot'));
 
 const emit = defineEmits<{
     (e: 'update:marker', marker: Marker): void;
@@ -289,8 +293,16 @@ async function fetchIcons(): Promise<void> {
 .icon-cell {
     width: 40px;
     height: 40px;
+    flex-shrink: 0;
+    overflow: hidden;
     border: 1px solid transparent;
     background: transparent;
+}
+
+.icon-cell__img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
 }
 
 .icon-cell:hover {

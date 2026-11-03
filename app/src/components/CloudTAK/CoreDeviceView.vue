@@ -7,15 +7,8 @@
             v-if='device'
             #header
         >
-            <div class='flex-shrink-0'>
-                <FeatureIcon
-                    :key='device.type'
-                    :size='32'
-                    :feature='iconFeature'
-                />
-            </div>
             <div
-                class='flex-grow-1 mx-2'
+                class='flex-grow-1 me-2'
                 style='min-width: 0'
             >
                 <CopyField
@@ -93,11 +86,11 @@
             >
                 <div class='pt-1'>
                     <div class='px-2 pb-2'>
-                        <PropertyType
-                            :key='device.id'
+                        <AppearanceRow
+                            :properties='entityAppearance(device)'
+                            :geometry='device.geometry'
                             :edit='is_editable'
-                            :model-value='device.type'
-                            @update:model-value='patch({ type: String($event) })'
+                            @click='router.push(`/device/${device.id}/appearance`)'
                         />
                     </div>
 
@@ -255,14 +248,6 @@
                         @update:model-value='patch({ links: $event })'
                     />
 
-                    <!-- PropertyStyle has no read-only mode so hide it for non-editors -->
-                    <PropertyStyle
-                        v-if='is_editable'
-                        geometry='Point'
-                        :model-value='styleProperties'
-                        @update:model-value='updateStyle($event)'
-                    />
-
                     <PropertyCoreEntityExternalId
                         :model-value='device.external_ids'
                         :edit='is_editable'
@@ -313,13 +298,11 @@ import {
     IconBuildingFactory2,
 } from '@tabler/icons-vue';
 import MenuTemplate from './util/MenuTemplate.vue';
-import FeatureIcon from './util/FeatureIcon.vue';
 import CopyField from './util/CopyField.vue';
 import Coordinate from './util/Coordinate.vue';
 import PropertyFactRow from './util/PropertyFactRow.vue';
 import PropertyTabs, { type PropertyTab } from './util/PropertyTabs.vue';
-import PropertyType from './Property/PropertyType.vue';
-import PropertyStyle from './Property/PropertyStyle.vue';
+import AppearanceRow from './Appearance/AppearanceRow.vue';
 import PropertyRemarks from './Property/PropertyRemarks.vue';
 import PropertyBattery from './Property/PropertyBattery.vue';
 import PropertyCoreEntityExternalId from './Property/PropertyCoreEntityExternalId.vue';
@@ -327,12 +310,12 @@ import PropertyCoreEntityLinks from './Property/PropertyCoreEntityLinks.vue';
 import PropertyCoreEntityChannels from './Property/PropertyCoreEntityChannels.vue';
 import PropertyCoreEntityMetadata from './Property/PropertyCoreEntityMetadata.vue';
 import PropertyCoreEntityTimes from './Property/PropertyCoreEntityTimes.vue';
-import type { CoreDevice, CoreEntityStyle } from '../../types.ts';
+import type { CoreDevice } from '../../types.ts';
 import { server } from '../../std.ts';
 import { db, liveQuery } from '../../database.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { useEntityAccess } from '../../utils/entity-access.ts';
-import { entityMarkerProperties } from '../../utils/core-entity.ts';
+import { entityMarkerProperties, entityAppearance } from '../../utils/core-entity.ts';
 
 const route = useRoute();
 const router = useRouter();
@@ -365,28 +348,6 @@ const hardwareName = computed(() => {
 });
 
 const { is_creator, is_editable, load: loadAccess } = useEntityAccess(device);
-
-// The header icon isn't a CoT - FeatureIcon derives the MIL-STD symbol from the
-// type the same way it does for one
-const iconFeature = computed(() => {
-    if (!device.value) return { properties: {}, geometry: { type: 'Point' } };
-
-    return {
-        properties: {
-            type: device.value.type,
-            icon: device.value.style.icon,
-            'marker-color': device.value.style['marker-color'],
-        },
-        geometry: device.value.geometry || { type: 'Point' },
-    };
-});
-
-const styleProperties = computed(() => {
-    if (!device.value) return {};
-
-    // PropertyStyle falls back to the type when an icon is cleared
-    return { ...device.value.style, type: device.value.type };
-});
 
 onMounted(async () => {
     await loadAccess();
@@ -525,21 +486,6 @@ function updateCoordinates(coordinates: number[]): void {
             coordinates: coordinates.slice(0, 2)
         }
     });
-}
-
-function updateStyle(properties: Record<string, unknown>): void {
-    // PropertyStyle round trips the whole property object - only the keys the
-    // Device style supports can be submitted back to the API
-    const style: CoreEntityStyle = {};
-
-    if (typeof properties.icon === 'string') style.icon = properties.icon;
-    if (typeof properties['marker-color'] === 'string') style['marker-color'] = properties['marker-color'];
-
-    if (properties['marker-opacity'] !== undefined && !isNaN(Number(properties['marker-opacity']))) {
-        style['marker-opacity'] = Number(properties['marker-opacity']);
-    }
-
-    void patch({ style });
 }
 
 function flyTo(): void {

@@ -26,9 +26,19 @@ const router = VueRouter.createRouter({
                 name: 'home-menu-core-entity',
                 component: () => import('./components/CloudTAK/CoreEntityView.vue'),
             },{
+                path: 'event/:event/appearance',
+                name: 'home-menu-core-entity-appearance',
+                component: () => import('./components/CloudTAK/CoreEntityAppearance.vue'),
+                props: { kind: 'event' },
+            },{
                 path: 'device/:device',
                 name: 'home-menu-core-device',
                 component: () => import('./components/CloudTAK/CoreDeviceView.vue'),
+            },{
+                path: 'device/:device/appearance',
+                name: 'home-menu-core-device-appearance',
+                component: () => import('./components/CloudTAK/CoreEntityAppearance.vue'),
+                props: { kind: 'device' },
             },{
                 path: 'menu',
                 name: 'home-menu',
