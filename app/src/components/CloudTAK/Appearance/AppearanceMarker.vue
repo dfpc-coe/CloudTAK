@@ -171,6 +171,7 @@ const props = withDefaults(defineProps<{
     /** Offer the Spot marker - off for Core Entities whose type is always a symbol */
     spot?: boolean;
 }>(), {
+    icon: undefined,
     spot: true,
 });
 
