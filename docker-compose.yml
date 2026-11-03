@@ -3,6 +3,8 @@ services:
         build:
           context: .
           dockerfile: Dockerfile
+          args:
+            WEB_PLUGINS: ${WEB_PLUGINS:-}
         restart: 'always'
         depends_on:
             - postgis
@@ -33,6 +35,7 @@ services:
         ports:
             - "5002:5002"
         environment:
+            - API_URL=${API_URL}
             - PMTILES_URL=${PMTILES_URL}
             - SigningSecret=${SigningSecret}
             - ASSET_BUCKET=${ASSET_BUCKET}

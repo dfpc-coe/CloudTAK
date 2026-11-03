@@ -113,6 +113,7 @@ test('POST: api/basemap', async () => {
             actions: { feature: [] },
             url: 'https://test.com/test/{z}/{x}/{y}',
             overlay: false,
+            tilejson: null,
             iconset: null,
             attribution: null,
             frequency: null,
@@ -159,7 +160,7 @@ test('GET: api/basemap/1/tiles', async () => {
             minzoom: 0,
             maxzoom: 16,
             actions: { feature: [] },
-            tiles: [`${flight.base}/api/basemap/1/tiles/{z}/{x}/{y}`],
+            tiles: [`${flight.base}/tiles/basemap/1/tiles/{z}/{x}/{y}`],
         });
     } catch (err) {
         assert.ifError(err);
@@ -189,6 +190,7 @@ test('PATCH: api/basemap/1', async () => {
             actions: { feature: [] },
             url: 'https://test.com/test/{z}/{x}/{y}',
             overlay: false,
+            tilejson: null,
             iconset: null,
             attribution: null,
             frequency: null,

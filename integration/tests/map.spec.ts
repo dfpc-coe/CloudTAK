@@ -402,8 +402,8 @@ test.describe('Map: menus open and close', () => {
     }
 
     test('MAP-25 Close Menu after a right-side panel restores the map', async ({ readyMap: map, page }) => {
-        await map.menuItem('Your Features').click();
-        await expect(map.panelTitle).toHaveText('Saved Features');
+        await map.menuItem('Features').click();
+        await expect(map.panelTitle).toHaveText('Features');
 
         await map.closeMenu.click();
 
@@ -424,8 +424,8 @@ test.describe('Map: menus open and close', () => {
         await expect(map.menubar.getByPlaceholder('Search...')).toBeVisible();
 
         // Full layout shows label + description for each entry (MenuItemCard.vue).
-        await expect(map.menubar.getByText('Your Features', { exact: true })).toBeVisible();
-        await expect(map.menubar.getByText('Manage saved features')).toBeVisible();
+        await expect(map.menubar.getByText('Features', { exact: true })).toBeVisible();
+        await expect(map.menubar.getByText('Saved features, events, and devices')).toBeVisible();
         expect(await map.menuItems.count()).toBeGreaterThanOrEqual(MapPage.DEFAULT_MENU_TOOLTIPS.length);
 
         await expect(map.menubar.getByText(cloudtakUsername())).toBeVisible();
@@ -450,8 +450,8 @@ test.describe('Map: menus open and close', () => {
         const before = map.hash();
         expect(before).not.toBeNull();
 
-        await map.menuItem('Your Features').click();
-        await expect(map.panelTitle).toHaveText('Saved Features');
+        await map.menuItem('Features').click();
+        await expect(map.panelTitle).toHaveText('Features');
         await map.closeMenu.click();
         await expect(map.panelTitle).toHaveCount(0);
 
@@ -673,7 +673,7 @@ test.describe('Map: negatives and boundaries', () => {
 
     test('MAP-45 rapid open and close of a menu panel ends closed', async ({ readyMap: map, page }) => {
         for (let i = 0; i < 10; i++) {
-            await map.menuItem('Your Features').click();
+            await map.menuItem('Features').click();
             await map.closeMenu.click();
         }
 
@@ -696,8 +696,8 @@ test.describe('Map: negatives and boundaries', () => {
         await map.zoomIn.click();
         await map.expectZoom(zoom + 1);
 
-        await map.menuItem('Your Features').click();
-        await expect(map.panelTitle).toHaveText('Saved Features');
+        await map.menuItem('Features').click();
+        await expect(map.panelTitle).toHaveText('Features');
         await map.closeMenu.click();
         await expect(map.panelTitle).toHaveCount(0);
     });
@@ -744,8 +744,8 @@ test.describe('Map: console health', () => {
         await map.zoomOut.click();
         await map.expectZoom(zoom);
 
-        await map.menuItem('Your Features').click();
-        await expect(map.panelTitle).toHaveText('Saved Features');
+        await map.menuItem('Features').click();
+        await expect(map.panelTitle).toHaveText('Features');
         await map.closeMenu.click();
         await expect(map.panelTitle).toHaveCount(0);
 

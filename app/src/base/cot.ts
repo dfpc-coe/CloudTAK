@@ -1,7 +1,7 @@
 import { v4 as randomUUID } from 'uuid';
 import Type2525 from '@tak-ps/node-cot/2525';
 import { server } from '../std.ts';
-import { db, withDbRetry, isDatabaseSuspended, deferFeaturePersist, liveQuery, type DBTaxonomy } from '../database.ts';
+import { db, isDatabaseSuspended, deferFeaturePersist, liveQuery, type DBTaxonomy } from '../database.ts';
 import { bbox } from '@turf/bbox'
 import { length } from '@turf/length'
 import { isEqual } from '@ver0/deep-equal';
@@ -10,6 +10,7 @@ import { TEAM_COLORS, strokeColorFor } from '../utils/team-colors.ts';
 import pointOnFeature from '@turf/point-on-feature';
 import { applyEllipseMutation } from './cot/ellipse.ts';
 import FeatureOutbox from './feature-outbox.ts';
+import FeatureWriter from './feature-writer.ts';
 import { derivedFeatures, type DerivedFeature } from './cot/derived.ts';
 import type { COTMutation, COTUpdate } from './cot/types.ts';
 import type { Feature, FeaturePropertyCreator, Subscription } from '../types.ts'
@@ -390,7 +391,8 @@ export default class COT {
                 } else if (save) {
                     await this.save();
                 } else {
-                    await withDbRetry(() => db.feature.put(FeatureOutbox.row(this.as_feature())));
+                    // Server state - coalesced into a batched write off the hot path
+                    FeatureWriter.queue(this);
                 }
             }
 

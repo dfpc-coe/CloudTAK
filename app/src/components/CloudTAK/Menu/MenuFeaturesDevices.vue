@@ -1,7 +1,6 @@
 <template>
     <MenuTemplate
-        name='Devices'
-        :loading='loading'
+        name='Features'
     >
         <template #buttons>
             <TablerRefreshButton
@@ -10,6 +9,8 @@
             />
         </template>
         <template #default>
+            <FeaturesTabs />
+
             <div class='px-2 pt-2'>
                 <SearchSortFilter
                     v-model='paging.filter'
@@ -34,8 +35,12 @@
                 v-if='error'
                 :err='error'
             />
+            <TablerLoading
+                v-else-if='loading'
+                desc='Loading Devices'
+            />
             <TablerNone
-                v-else-if='!rows.length && !loading'
+                v-else-if='!rows.length'
                 label='No Devices'
                 :create='false'
             />
@@ -75,10 +80,12 @@ import {
     TablerNone,
     TablerAlert,
     TablerPager,
+    TablerLoading,
     TablerInlineAlert,
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import FeaturesTabs from './Features/FeaturesTabs.vue';
 import SearchSortFilter from '../util/SearchSortFilter.vue';
 import StandardCoreDevice from '../util/StandardCoreDevice.vue';
 import type { DeviceRow } from '../util/StandardCoreDevice.vue';

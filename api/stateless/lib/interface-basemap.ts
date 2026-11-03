@@ -138,7 +138,7 @@ export class BasemapProtocol implements BasemapProtocolInterface {
             || basemap.protocol === Basemap_Protocol.ImageServer
             || basemap.protocol === Basemap_Protocol.Hosted
         ) {
-            return `${config.API_URL}/api/basemap/${basemap.id}/tiles/{$z}/{$x}/{$y}?token=${basemap.sharing_token}`;
+            return `${config.BASEMAP_TILES_URL}/${basemap.id}/tiles/{$z}/{$x}/{$y}?token=${basemap.sharing_token}`;
         }
 
         return basemap.url;

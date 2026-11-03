@@ -142,11 +142,11 @@ export const BasemapTypeConfig: Record<BasemapSourceType, {
         },
     },
     tilejson: {
-        label: 'TileJSON Import',
-        description: 'Fetch defaults from a TileJSON URL.',
+        label: 'TileJSON / WMTS Import',
+        description: 'Fetch defaults from a TileJSON or WMTS capabilities URL.',
         icon: IconFileImport,
-        urlLabel: 'TileJSON URL',
-        urlDescription: 'Provide a TileJSON document URL to prefill the basemap form.',
+        urlLabel: 'TileJSON or WMTS Capabilities URL',
+        urlDescription: 'Provide a TileJSON document or WMTS GetCapabilities URL to prefill the basemap form. Add ?layer=<identifier> to a WMTS URL to pick a layer.',
         urlPlaceholder: 'https://example.com/tilejson.json',
         urlTokens: [],
         defaults: {

@@ -7,12 +7,15 @@ import { PNG } from 'pngjs';
 
 process.env.SigningSecret = 'test-secret';
 process.env.ASSET_BUCKET = 'test-bucket';
-process.env.API_URL = 'http://localhost:5001';
 
 let app: any;
 let server: http.Server;
+let upstream: http.Server;
 
-function createTile(elevation: number): ArrayBuffer {
+const requestedURLs = new Set<string>();
+const token = jwt.sign({ email: 'user@example.com', access: 'user' }, process.env.SigningSecret!);
+
+function createTile(elevation: number): Buffer {
     const png = new PNG({ width: 4, height: 4 });
     const value = Math.round((elevation + 10000) * 10);
     const r = (value >> 16) & 0xff;
@@ -26,13 +29,65 @@ function createTile(elevation: number): ArrayBuffer {
         png.data[index + 3] = 0xff;
     }
 
-    const bytes = new Uint8Array(PNG.sync.write(png));
-    return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+    return PNG.sync.write(png);
 }
 
 test('Setup', async () => {
-    const mod = await import('../index.js');
+    const leftTile = createTile(100);
+    const rightTile = createTile(200);
 
+    // Plays both the CloudTAK API (basemap config) and this tile server's own tile route
+    upstream = http.createServer((req, res) => {
+        const url = new URL(String(req.url), 'http://127.0.0.1');
+        requestedURLs.add(`${url.pathname}?${url.searchParams}`);
+
+        if (url.pathname === '/api/basemap/42') {
+            res.writeHead(200, { 'content-type': 'application/json' });
+            res.end(JSON.stringify({
+                id: 42,
+                name: 'Terrain',
+                url: 'https://terrain.example.test/{z}/{x}/{y}.png',
+                protocol: 'zxy',
+                type: 'raster-dem',
+                format: 'png',
+                encoding: 'mapbox',
+                minzoom: 0,
+                maxzoom: 2,
+                username: null,
+                sharing_enabled: false,
+                sharing_token: null,
+                tilesize: 256,
+                attribution: null,
+                scheme: 'xyz',
+                overlay: false,
+                actions: { feature: [] },
+                children: [],
+            }));
+            return;
+        }
+
+        const tile = url.pathname === '/tiles/basemap/42/tiles/2/1/1'
+            ? leftTile
+            : url.pathname === '/tiles/basemap/42/tiles/2/2/1' ? rightTile : undefined;
+
+        if (tile) {
+            res.writeHead(200, { 'content-type': 'image/png' });
+            res.end(tile);
+            return;
+        }
+
+        res.writeHead(404, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ status: 404, message: 'Item Not Found' }));
+    });
+
+    await new Promise<void>((resolve) => {
+        upstream.listen(0, '127.0.0.1', () => resolve());
+    });
+
+    process.env.API_URL = `http://127.0.0.1:${(upstream.address() as AddressInfo).port}`;
+    process.env.PMTILES_URL = process.env.API_URL;
+
+    const mod = await import('../index.js');
     app = mod.app;
 
     server = http.createServer(app);
@@ -42,94 +97,90 @@ test('Setup', async () => {
 });
 
 test('POST /tiles/basemap/:basemapid/elevation returns sampled elevations', async () => {
-    const token = jwt.sign({ email: 'user@example.com', access: 'user' }, process.env.SigningSecret!);
-    const originalFetch = globalThis.fetch;
-    const requestedURLs = new Set<string>();
-    const leftTile = createTile(100);
-    const rightTile = createTile(200);
-
-    globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-        const url = String(input);
-        requestedURLs.add(url);
-
-        if (url === `http://localhost:5001/api/basemap/42?token=${token}`) {
-            return Response.json({
-                id: 42,
-                type: 'raster-dem',
-                minzoom: 0,
-                maxzoom: 2,
-                encoding: 'mapbox',
-            });
-        }
-
-        if (url === `http://localhost:5001/api/basemap/42/tiles?token=${token}`) {
-            return Response.json({
-                type: 'raster-dem',
-                format: 'png',
-                minzoom: 0,
-                maxzoom: 2,
-                tiles: ['https://example.test/terrain/{z}/{x}/{y}.png?token=' + token],
-            });
-        }
-
-        if (url === `https://example.test/terrain/2/1/1.png?token=${token}`) {
-            return new Response(leftTile, {
-                status: 200,
-                headers: { 'Content-Type': 'image/png' },
-            });
-        }
-
-        if (url === `https://example.test/terrain/2/2/1.png?token=${token}`) {
-            return new Response(rightTile, {
-                status: 200,
-                headers: { 'Content-Type': 'image/png' },
-            });
-        }
-
-        return originalFetch(input, init);
-    };
-
-    try {
-        const addr = server.address() as AddressInfo;
-        const res = await originalFetch(`http://localhost:${addr.port}/tiles/basemap/42/elevation?token=${token}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
+    const addr = server.address() as AddressInfo;
+    const res = await fetch(`http://localhost:${addr.port}/tiles/basemap/42/elevation?token=${token}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            geometry: {
+                type: 'LineString',
+                coordinates: [
+                    [-10, 1],
+                    [10, 1],
+                ],
             },
-            body: JSON.stringify({
-                geometry: {
-                    type: 'LineString',
-                    coordinates: [
-                        [-10, 1],
-                        [10, 1],
-                    ],
-                },
-                samples: 10,
-                zoom: 2,
-            }),
-        });
+            samples: 10,
+            zoom: 2,
+        }),
+    });
 
-        assert.equal(res.status, 200);
+    assert.equal(res.status, 200);
 
-        const body = await res.json();
-        assert.equal(body.zoom, 2);
-        assert.equal(body.tileCount, 2);
-        assert.equal(body.samples[0].elevation, 100);
-        assert.equal(body.samples.at(-1).elevation, 200);
-        assert.ok(requestedURLs.has(`http://localhost:5001/api/basemap/42?token=${token}`));
-        assert.ok(requestedURLs.has(`http://localhost:5001/api/basemap/42/tiles?token=${token}`));
-    } finally {
-        globalThis.fetch = originalFetch;
-    }
+    const body = await res.json();
+    assert.equal(body.zoom, 2);
+    assert.equal(body.tileCount, 2);
+    assert.equal(body.samples[0].elevation, 100);
+    assert.equal(body.samples.at(-1).elevation, 200);
+    assert.ok(requestedURLs.has(`/api/basemap/42?token=${token}`));
+    assert.ok(requestedURLs.has(`/tiles/basemap/42/tiles/2/1/1?token=${token}`));
+    assert.ok(requestedURLs.has(`/tiles/basemap/42/tiles/2/2/1?token=${token}`));
+});
+
+test('POST /tiles/basemap/:basemapid/elevation rejects zoom above the layer maximum', async () => {
+    const addr = server.address() as AddressInfo;
+    const res = await fetch(`http://localhost:${addr.port}/tiles/basemap/42/elevation?token=${token}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            geometry: {
+                type: 'LineString',
+                coordinates: [
+                    [-10, 1],
+                    [10, 1],
+                ],
+            },
+            samples: 10,
+            zoom: 5,
+        }),
+    });
+
+    assert.equal(res.status, 400);
+    assert.equal((await res.json()).message, 'Above Layer MaxZoom');
+});
+
+test('POST /tiles/basemap/:basemapid/elevation without auth returns 401', async () => {
+    const addr = server.address() as AddressInfo;
+    const res = await fetch(`http://localhost:${addr.port}/tiles/basemap/42/elevation`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            geometry: {
+                type: 'LineString',
+                coordinates: [
+                    [-10, 1],
+                    [10, 1],
+                ],
+            },
+            samples: 10,
+        }),
+    });
+
+    assert.equal(res.status, 401);
+    assert.equal((await res.json()).message, 'No Auth Present');
 });
 
 test('Teardown', async () => {
-    if (server) {
-        server.closeAllConnections();
-        await new Promise<void>((resolve) => {
-            server.close(() => resolve());
-        });
-    }
+    server.closeAllConnections();
+    upstream.closeAllConnections();
+    await Promise.all([server, upstream].map(s => new Promise<void>((resolve) => {
+        s.close(() => resolve());
+    })));
 
     process.exit(0);
 });
