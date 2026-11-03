@@ -1,11 +1,11 @@
 import { Type } from '@sinclair/typebox';
-import { StandardResponse, CoreEventResponse, CoreEntityLink, CoreEntityStyle, CoreEventMission, CoreEntityExternalIdInput, GeoJSONFeatureGeometryPoint } from '../../common/types.js';
+import { StandardResponse, CoreEventResponse, CoreEntityLink, CoreEntityStyle, CoreEventMission, CoreEntityExternalId, GeoJSONFeatureGeometryPoint } from '../../common/types.js';
 import { sql, getTableColumns } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUser, AuthResource, AuthResourceAccess } from '../../common/auth.js';
 import { CoreEntity, CoreEntityEvent } from '../../common/schema.js';
-import { sharedWith, setChannels, setExternalId, toExternalId } from '../../common/models/CoreEntity.js';
+import { sharedWith, setChannels, setExternalId } from '../../common/models/CoreEntity.js';
 import { CoreEvent_Priority, LayerMapping_Destination } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
 import { userChannels } from '../../common/control/tak-channels.js';
@@ -164,7 +164,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 format: 'date-time',
                 description: 'Time at which the Event ends - a future time keeps the Event active until then, omit for an open ended Event',
             })])),
-            external_id: Type.Optional(CoreEntityExternalIdInput),
+            external_id: Type.Optional(CoreEntityExternalId),
             editable: Type.Boolean({
                 default: true,
                 description: 'Can users other than the creator edit the Event',
@@ -217,7 +217,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 await setChannels(tx, id, channels);
 
-                if (external_id !== undefined) await setExternalId(tx, { id, kind: LayerMapping_Destination.COREEVENT, connection }, toExternalId(external_id));
+                if (external_id !== undefined) await setExternalId(tx, { id, kind: LayerMapping_Destination.COREEVENT, connection }, external_id);
 
                 return id;
             }).catch(uniqueViolation('external_id is already used by another Event of the Connection'));
@@ -262,7 +262,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 format: 'date-time',
                 description: 'Time at which the Event ends - push a future time out to keep the Event active, null leaves it open ended',
             })])),
-            external_id: Type.Optional(CoreEntityExternalIdInput),
+            external_id: Type.Optional(CoreEntityExternalId),
             editable: Type.Optional(Type.Boolean()),
             metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown(), {
                 description: 'User defined key/value Event metadata - replaces the existing metadata object',
@@ -334,7 +334,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                         ...(ended === undefined ? {} : { ended }),
                     }, tx);
 
-                    if (external_id !== undefined) await setExternalId(tx, { id: event.id, kind: LayerMapping_Destination.COREEVENT, connection: event.connection }, toExternalId(external_id));
+                    if (external_id !== undefined) await setExternalId(tx, { id: event.id, kind: LayerMapping_Destination.COREEVENT, connection: event.connection }, external_id);
                 }).catch(uniqueViolation('external_id is already used by another Event of the Connection'));
             }
 

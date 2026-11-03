@@ -194,22 +194,10 @@ export const CoreEntityExternalIds = Type.Record(Type.String(), Type.String(), {
     description: 'IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" }',
 });
 
-/** Request form of an external ID - a bare string is the ID under the default system, deprecated and removed in v14 */
-export const CoreEntityExternalIdInput = Type.Union([
-    CoreEntityExternalId,
-    Type.String({ description: 'Deprecated - ID of the record under the default system, send { system, value } instead' }),
-]);
-
-/** Deprecated response field - the ID under the default system */
-export const CoreEntityExternalIdLegacy = Type.String({
-    description: 'Deprecated - ID of the record under the default system, use external_ids - removed in v14',
-});
-
 export const CoreEventResponse = Type.Composite([
     Type.Required(Type.Omit(withoutHints(CoreEventSchema), ['ended', 'external_id'])),
     Type.Object({
         id: Type.String(),
-        external_id: CoreEntityExternalIdLegacy,
         external_ids: CoreEntityExternalIds,
         missions: Type.Array(CoreEventMission, { description: 'TAK Server Missions associated with the Event' }),
         created: Type.String(),
@@ -300,7 +288,6 @@ export const CoreDeviceResponse = Type.Composite([
     Type.Required(Type.Omit(withoutHints(CoreDeviceSchema), ['battery', 'external_id'])),
     Type.Object({
         id: Type.String(),
-        external_id: CoreEntityExternalIdLegacy,
         external_ids: CoreEntityExternalIds,
         created: Type.String(),
         updated: Type.String(),
@@ -356,13 +343,11 @@ export const CoreSchemaResponse = Type.Object({
     description: 'JSON Schema of a Server supported record type',
 });
 
-/** A single named Output schema of a Task - tasks exposing a single unnamed schema are mapped to the `default` id */
+/** A single named Output schema of a Task */
 export const NamedSchema = Type.Object({
     id: Type.String(),
     schema: Type.Record(Type.String(), Type.Unknown()),
 });
-
-export const DEFAULT_SCHEMA_ID = 'default';
 
 const TaskCapabilitiesSchema = Type.Object({
     input: Type.Unknown(),

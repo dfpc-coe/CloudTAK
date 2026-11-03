@@ -104,9 +104,8 @@ export default class Config {
     }
 
     /**
-     * Base URL that proxied basemap TileJSON and ATAK share URLs advertise
-     * for tiles - the PMTiles tile server mirrors the /api/basemap/:id/tiles
-     * routes at /tiles/basemap/:id/tiles
+     * Base URL that basemap TileJSON and ATAK share URLs advertise for tiles -
+     * the PMTiles tile server serves /tiles/basemap/:id/tiles[/:z/:x/:y]
      */
     get BASEMAP_TILES_URL(): string {
         return `${this.PMTILES_URL}/tiles/basemap`;

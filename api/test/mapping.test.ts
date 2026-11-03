@@ -159,19 +159,6 @@ test('Mapping: CoreEntity - fields rendered against metadata', async () => {
     assert.equal(await new Mapping([]).match(point({})), null);
 });
 
-test('Mapping: CoreEntity - legacy string external_id is the value template', async () => {
-    const mapping = new Mapping(rows(LayerMapping_Destination.COREEVENT, [{
-        query: null,
-        mapping: { name: '{{title}}', type: '10031000001211000000', external_id: 'inc-{{number}}' },
-    }]));
-
-    const rendered = await convert(mapping, point({ title: 'Fire', number: 7 }));
-    assert.deepEqual(rendered.external_id, { value: 'inc-7' });
-
-    assert.equal(Mapping.validate(LayerMapping_Destination.COREEVENT, { external_id: 'inc-{{number}}' }), true);
-    assert.deepEqual(Mapping.createOnly({ destination: LayerMapping_Destination.COREEVENT, query: null, mapping: { external_id: { value: 'x', update: false } } }), new Set(['external_id.value']));
-});
-
 test('Mapping: CoreDevice - number templates & booleans', async () => {
     const mapping = new Mapping(rows(LayerMapping_Destination.COREDEVICE, [{
         query: null,
@@ -318,7 +305,6 @@ test('Mapping: validate', () => {
     throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { priority: 'urgent' }), /Invalid Priority: urgent/);
     throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { editable: 'maybe' }), /Invalid Editable/);
     throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { external_id: { value: '{{#each' } }), /Invalid \(external_id\) Value Template/);
-    throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { external_id: '{{#each' }), /Invalid \(external_id\) Value Template/);
     throwsSafe(() => Mapping.validate(LayerMapping_Destination.COREEVENT, { external_id: { system: '{{#each' } }), /Invalid \(external_id\) System Template/);
 
     assert.equal(Mapping.validate(LayerMapping_Destination.COREEVENT, {

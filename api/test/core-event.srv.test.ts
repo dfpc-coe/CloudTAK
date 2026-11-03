@@ -87,7 +87,6 @@ test('POST: api/core/event', async () => {
             name: 'Wildfire Report',
             active: true,
             ended: null,
-            external_id: '',
             external_ids: {},
             editable: true,
             location: '1234 Main St, Boulder, CO',
@@ -325,7 +324,6 @@ test('PATCH: api/core/event/:event - external IDs merge per system & an empty va
 
         assert.deepEqual(removed.body.external_ids, { cad: 'INC-5678' });
 
-        // Deprecated bare string form is the default system & is echoed on the deprecated response field
         const legacy = await flight.fetch(`/api/core/event/${eventId}`, {
             method: 'PATCH',
             auth: {
@@ -334,10 +332,9 @@ test('PATCH: api/core/event/:event - external IDs merge per system & an empty va
             body: {
                 external_id: 'LEGACY-1',
             },
-        }, true);
+        }, false);
 
-        assert.deepEqual(legacy.body.external_ids, { cad: 'INC-5678', default: 'LEGACY-1' });
-        assert.equal(legacy.body.external_id, 'LEGACY-1');
+        assert.equal(legacy.status, 400);
 
         const invalid = await flight.fetch(`/api/core/event/${eventId}`, {
             method: 'PATCH',

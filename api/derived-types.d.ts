@@ -1738,270 +1738,6 @@ export interface paths {
         };
         trace?: never;
     };
-    "/api/basemap/{:basemapid}/tiles": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a basemap tilejson */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":basemapid": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @constant */
-                            tilejson: "3.0.0";
-                            version: string;
-                            /** @constant */
-                            scheme: "xyz";
-                            name: string;
-                            description: string;
-                            attribution?: string;
-                            tileSize?: number;
-                            minzoom: number;
-                            maxzoom: number;
-                            tiles: string[];
-                            bounds: [
-                                number,
-                                number,
-                                number,
-                                number
-                            ];
-                            /** @enum {string} */
-                            encoding?: "mapbox" | "terrarium";
-                            center: number[];
-                            type: string;
-                            format?: string;
-                            vector_layers?: {
-                                id: string;
-                                fields: {
-                                    [key: string]: string;
-                                };
-                                minzoom?: number;
-                                maxzoom?: number;
-                                description?: string;
-                            }[];
-                            actions: {
-                                feature: ("query" | "fetch" | "create" | "update" | "delete")[];
-                            };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/basemap/{:basemapid}/tiles/{:z}/{:x}/{:y}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a basemap tile */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":basemapid": number;
-                    /** @description No Description */
-                    ":z": number;
-                    /** @description No Description */
-                    ":x": number;
-                    /** @description No Description */
-                    ":y": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/basemap/{:basemapid}/feature": {
         parameters: {
             query?: never;
@@ -20646,8 +20382,6 @@ export interface paths {
                                  */
                                 channels: number[];
                                 id: string;
-                                /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                                external_id: string;
                                 /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                                 external_ids: {
                                     [key: string]: string;
@@ -20842,7 +20576,7 @@ export interface paths {
                             system: string;
                             /** @description ID of the record in the external system - an empty value removes the system from the record */
                             value: string;
-                        } | string;
+                        };
                         /** @default  */
                         remarks: string;
                         /**
@@ -20954,8 +20688,6 @@ export interface paths {
                              */
                             channels: number[];
                             id: string;
-                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                            external_id: string;
                             /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                             external_ids: {
                                 [key: string]: string;
@@ -21172,8 +20904,6 @@ export interface paths {
                              */
                             channels: number[];
                             id: string;
-                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                            external_id: string;
                             /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                             external_ids: {
                                 [key: string]: string;
@@ -21445,7 +21175,7 @@ export interface paths {
                             system: string;
                             /** @description ID of the record in the external system - an empty value removes the system from the record */
                             value: string;
-                        } | string;
+                        };
                         remarks?: string;
                         /** @description User defined key/value Device metadata - replaces the existing metadata object */
                         metadata?: {
@@ -21547,8 +21277,6 @@ export interface paths {
                              */
                             channels: number[];
                             id: string;
-                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                            external_id: string;
                             /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                             external_ids: {
                                 [key: string]: string;
@@ -23118,8 +22846,6 @@ export interface paths {
                                         url: string;
                                     }[];
                                     id: string;
-                                    /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                                    external_id: string;
                                     /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                                     external_ids: {
                                         [key: string]: string;
@@ -23383,8 +23109,6 @@ export interface paths {
                                     url: string;
                                 }[];
                                 id: string;
-                                /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                                external_id: string;
                                 /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                                 external_ids: {
                                     [key: string]: string;
@@ -23756,8 +23480,6 @@ export interface paths {
                                     url: string;
                                 }[];
                                 id: string;
-                                /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                                external_id: string;
                                 /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                                 external_ids: {
                                     [key: string]: string;
@@ -24979,8 +24701,6 @@ export interface paths {
                                     url: string;
                                 }[];
                                 id: string;
-                                /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                                external_id: string;
                                 /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                                 external_ids: {
                                     [key: string]: string;
@@ -25152,7 +24872,7 @@ export interface paths {
                             system: string;
                             /** @description ID of the record in the external system - an empty value removes the system from the record */
                             value: string;
-                        } | string;
+                        };
                         /**
                          * @description Can users other than the creator edit the Event
                          * @default true
@@ -25313,8 +25033,6 @@ export interface paths {
                                 url: string;
                             }[];
                             id: string;
-                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                            external_id: string;
                             /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                             external_ids: {
                                 [key: string]: string;
@@ -25559,8 +25277,6 @@ export interface paths {
                                 url: string;
                             }[];
                             id: string;
-                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                            external_id: string;
                             /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                             external_ids: {
                                 [key: string]: string;
@@ -25838,7 +25554,7 @@ export interface paths {
                             system: string;
                             /** @description ID of the record in the external system - an empty value removes the system from the record */
                             value: string;
-                        } | string;
+                        };
                         editable?: boolean;
                         /** @description User defined key/value Event metadata - replaces the existing metadata object */
                         metadata?: {
@@ -25973,8 +25689,6 @@ export interface paths {
                                 url: string;
                             }[];
                             id: string;
-                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                            external_id: string;
                             /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                             external_ids: {
                                 [key: string]: string;
@@ -29640,117 +29354,6 @@ export interface paths {
                 };
             };
         };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/fonts/{:fontstack}/{:start-{:end}.pbf}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Return MapLibre Font Glyphs */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Font Stack */
-                    ":fontstack": string;
-                    /** @description Starting Glyph */
-                    ":start": number;
-                    /** @description Ending Glyph */
-                    ":end": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -63050,214 +62653,6 @@ export interface paths {
                                     name: string;
                                 }[];
                             };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/search/reverse/{:longitude}/{:latitude}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get information about a given point */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    provider?: string;
-                    /** @description No Description */
-                    altitude: number;
-                    /** @description No Description */
-                    elevation?: number;
-                };
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":latitude": number;
-                    /** @description No Description */
-                    ":longitude": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            sun: {
-                                /** @description sunrise (top edge of the sun appears on the horizon) */
-                                sunrise: string | null;
-                                /** @description sunrise ends (bottom edge of the sun touches the horizon) */
-                                sunriseEnd: string | null;
-                                /** @description morning golden hour (soft light, best time for photography) ends */
-                                goldenHourEnd: string | null;
-                                /** @description solar noon (sun is in the highest position) */
-                                solarNoon: string | null;
-                                /** @description evening golden hour starts */
-                                goldenHour: string | null;
-                                /** @description sunset starts (bottom edge of the sun touches the horizon) */
-                                sunsetStart: string | null;
-                                /** @description sunset (sun disappears below the horizon, evening civil twilight starts) */
-                                sunset: string | null;
-                                /** @description dusk (evening nautical twilight starts) */
-                                dusk: string | null;
-                                /** @description nautical dusk (evening astronomical twilight starts) */
-                                nauticalDusk: string | null;
-                                /** @description night starts (dark enough for astronomical observations) */
-                                night: string | null;
-                                /** @description nadir (darkest moment of the night, sun is in the lowest position) */
-                                nadir: string | null;
-                                /** @description night ends (morning astronomical twilight starts) */
-                                nightEnd: string | null;
-                                /** @description nautical dawn (morning nautical twilight starts) */
-                                nauticalDawn: string | null;
-                                /** @description dawn (morning nautical twilight ends, morning civil twilight starts) */
-                                dawn: string | null;
-                                /** @description IANA timezone identifier at the queried coordinate. The times above are UTC instants; render them in this zone, not the viewer's. Null if it could not be resolved, in which case present them as UTC. */
-                                timezone: string | null;
-                            };
-                            magnetic: {
-                                declination: number;
-                                inclination: number;
-                            };
-                            weather: null | {
-                                type: string;
-                                properties: {
-                                    units: string;
-                                    forecastGenerator: string;
-                                    generatedAt: string;
-                                    updateTime: string;
-                                    validTimes: string;
-                                    elevation: {
-                                        unitCode: string;
-                                        value: number;
-                                    };
-                                    periods: {
-                                        number: number;
-                                        name: string;
-                                        startTime: string;
-                                        endTime: string;
-                                        isDaytime: boolean;
-                                        temperature: number;
-                                        temperatureUnit: string;
-                                        temperatureTrend: unknown;
-                                        probabilityOfPrecipitation: {
-                                            unitCode: string;
-                                            value: number;
-                                        };
-                                        dewpoint: {
-                                            unitCode: string;
-                                            value: number;
-                                        };
-                                        relativeHumidity: {
-                                            unitCode: string;
-                                            value: number;
-                                        };
-                                        windSpeed: string;
-                                        windDirection: string;
-                                        icon: string;
-                                        shortForecast: string;
-                                        detailedForecast: string;
-                                    }[];
-                                };
-                                geometry: {
-                                    type: string;
-                                    coordinates: number[][][];
-                                };
-                            };
-                            reverse: null | {
-                                /** @description Normalized category of the result */
-                                type?: "address" | "street" | "poi" | "trailhead" | "parking" | "hospital" | "police" | "park" | "peak" | "locality" | "region" | "postal";
-                                LongLabel: string;
-                                ShortLabel: string;
-                                Addr_type: string;
-                            };
-                            elevation: null | string;
                         };
                     };
                 };
