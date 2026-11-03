@@ -27,6 +27,7 @@
 
 ### Pending Release
 
+- :rocket: Circle mode now snaps the center point to nearby feature vertices using the Terra-Draw 1.39.0 circle snapping options
 - :bug: Data Sync invite list hides current subscribers and pending invitees, re-inviting shows the server error instead of failing silently (#2009)
 
 ### v13.118.1 - 2026-11-02

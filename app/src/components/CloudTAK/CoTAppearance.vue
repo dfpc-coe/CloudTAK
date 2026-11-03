@@ -52,11 +52,8 @@
                 @update:model-value='draft.type = $event'
             />
 
-            <div class='fw-bold pt-4 pb-2'>
-                How it looks
-            </div>
-
             <AppearanceMarker
+                class='pt-3'
                 :marker='draft.marker'
                 :icon='draft.icon'
                 :color='draft.color'
@@ -101,10 +98,6 @@
                         v-text='summary.subtitle'
                     />
                 </div>
-            </div>
-
-            <div class='fw-bold pb-2'>
-                How it looks
             </div>
 
             <AppearanceStroke

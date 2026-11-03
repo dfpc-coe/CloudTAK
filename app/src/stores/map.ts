@@ -602,13 +602,14 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
-            // iOS may have killed the tile workers while backgrounded; replace
-            // them before refresh() pushes new source data through them
+            // iOS may have killed the tile workers while backgrounded. MapLibre
+            // only checks on visibilitychange, which WKWebView fires unreliably,
+            // so ask before refresh() pushes new source data through them
             if (this._map) {
                 try {
-                    await withTimeout(mapgl.restartWorkers(), WORKER_LIFECYCLE_TIMEOUT_MS, 'MapLibre worker restart');
+                    await withTimeout(mapgl.getGlobalDispatcher().ensureWorkers(), WORKER_LIFECYCLE_TIMEOUT_MS, 'MapLibre worker check');
                 } catch (err) {
-                    console.warn('MapLibre worker restart failed', err);
+                    console.warn('MapLibre worker check failed', err);
                 }
             }
 
@@ -912,6 +913,20 @@ export const useMapStore = defineStore('cloudtak', {
          * from the worker but failed to apply - without this those features
          * would never render again.
          */
+        repaintAfterRestore: async function(): Promise<void> {
+            if (!this.isMapLoadedFully) return;
+
+            try {
+                await this.resyncCOT();
+
+                await Promise.allSettled(OverlayManager.missionOverlays().map((overlay) => {
+                    return this.renderMission(String(overlay.mode_id));
+                }));
+            } catch (err) {
+                console.error('Repaint after context restore failed', err);
+            }
+        },
+
         resyncCOT: async function(): Promise<void> {
             if (this._cotResync) return this._cotResync;
 
@@ -1343,6 +1358,13 @@ export const useMapStore = defineStore('cloudtak', {
             this.loadingStage = 'Creating map…';
             mapgl.setWorkerUrl(maplibreWorkerUrl);
             const map = new mapgl.Map(init);
+
+            // A worker restart or real context loss rebuilds the style from a
+            // snapshot that lacks any updateData diff still in flight to the
+            // old workers - repaint every GeoJSON source from local storage
+            map.on('webglcontextrestored', () => {
+                void this.repaintAfterRestore();
+            });
 
             // Tag TileJSON load failures onto the owning overlay; per-tile 404s are not errors
             map.on('error', (e) => {

@@ -57,11 +57,8 @@
                 @update:model-value='draft.type = $event'
             />
 
-            <div class='fw-bold pt-4 pb-2'>
-                How it looks
-            </div>
-
             <AppearanceMarker
+                class='pt-3'
                 :marker='draft.marker'
                 :icon='draft.icon'
                 :color='draft.color'
