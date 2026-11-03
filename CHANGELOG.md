@@ -27,6 +27,8 @@
 
 ### Pending Release
 
+- :bug: Data Sync invite list hides current subscribers and pending invitees, re-inviting shows the server error instead of failing silently (#2009)
+
 ### v13.118.1 - 2026-11-02
 
 - :rocket: Add additional Filter options when nominating an Event to a board

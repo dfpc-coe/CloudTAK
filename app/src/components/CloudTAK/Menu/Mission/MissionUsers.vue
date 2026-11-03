@@ -24,11 +24,19 @@
                         style='min-width: 250px;'
                     >
                         <span class='strong'>Invite User</span>
+                        <TablerAlert
+                            v-if='inviteError'
+                            class='mt-2'
+                            :err='inviteError'
+                            @click.stop
+                        />
                         <UserClientSelect
                             v-model='inviteUsername'
                             :input='true'
                             placeholder='Username'
                             :groups='typeof subscription.meta.groups === "string" ? [subscription.meta.groups] : subscription.meta.groups'
+                            :exclude-uids='excludeUids'
+                            :exclude-callsigns='excludeCallsigns'
                             @click.stop
                             @select='inviteUser($event)'
                         />
@@ -190,7 +198,7 @@
 <script setup lang='ts'>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { TablerBadge, TablerNone, TablerInput, TablerDropdown, TablerIconButton, TablerDelete } from '@tak-ps/vue-tabler';
+import { TablerAlert, TablerBadge, TablerNone, TablerInput, TablerDropdown, TablerIconButton, TablerDelete } from '@tak-ps/vue-tabler';
 import { IconPlus, IconMail, IconChevronDown, IconChevronUp, IconPencil } from '@tabler/icons-vue';
 import type { MissionSubscriptions, Contact as ContactType, MissionInvite, MissionRoleType } from '../../../../types.ts';
 import Subscription from '../../../../base/subscription.ts';
@@ -212,6 +220,7 @@ const filter = ref('');
 const subscriptions = ref<MissionSubscriptions>([])
 const invites = ref<MissionInvite[]>([]);
 const inviteUsername = ref('');
+const inviteError = ref<Error | undefined>();
 const showInvites = ref(false);
 const editingUid = ref<string | null>(null);
 
@@ -229,6 +238,20 @@ const canManageRoles = computed(() => {
         || props.subscription.role.permissions.includes('MISSION_SET_ROLE');
 });
 
+const excludeUids = computed(() => {
+    const uids = subscriptions.value.map(sub => sub.clientUid);
+    for (const invite of invites.value) {
+        if (invite.type === 'clientUid' && invite.invitee) uids.push(invite.invitee);
+    }
+    return uids;
+});
+
+const excludeCallsigns = computed(() => {
+    return invites.value
+        .filter(invite => invite.type === 'callsign' && invite.invitee)
+        .map(invite => invite.invitee as string);
+});
+
 const filteredSubscriptions = computed(() => {
     if (!filter.value) return subscriptions.value;
     return subscriptions.value.filter(sub => {
@@ -241,12 +264,24 @@ onMounted(async () => {
 });
 
 async function inviteUser(selection?: { callsign: string } | ContactType) {
-    const invitee = selection ? selection.callsign : inviteUsername.value;
+    const invitee = (selection ? selection.callsign : inviteUsername.value).trim();
     if (!invitee) return;
 
-    await props.subscription.invite(invitee);
+    inviteError.value = undefined;
 
-    inviteUsername.value = '';
+    const pending = excludeCallsigns.value.some(c => c.toLowerCase() === invitee.toLowerCase());
+    if (pending) {
+        inviteError.value = new Error(`${invitee} has already been invited`);
+        return;
+    }
+
+    try {
+        await props.subscription.invite(invitee);
+        inviteUsername.value = '';
+    } catch (err) {
+        inviteError.value = err instanceof Error ? err : new Error(String(err));
+    }
+
     await fetchSubscriptions();
 }
 

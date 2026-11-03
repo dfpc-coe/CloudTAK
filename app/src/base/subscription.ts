@@ -567,7 +567,7 @@ export default class Subscription {
             }
         });
 
-        if (error) throw new Error('Failed to invite user to mission');
+        if (error) throw new Error(error.message || 'Failed to invite user to mission');
     }
 
     async changeRole(sub: { clientUid: string, username: string }, role: MissionRoleType): Promise<void> {
