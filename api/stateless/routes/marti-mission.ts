@@ -310,6 +310,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             groups: Type.Optional(Type.Array(Type.String(), {
                 description: 'Updated set of groups (channels) to assign to the Mission. Caller must be MISSION_OWNER or admin.',
             })),
+            defaultRole: Type.Optional(Type.Enum(MissionSubscriberRole, {
+                description: 'Role granted to new subscribers. Caller must have MISSION_SET_ROLE and every permission of the new role.',
+            })),
         }),
         res: Mission,
     }, async (req, res) => {
@@ -328,6 +331,64 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             );
 
             res.json(mission);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.put('/marti/missions/:guid/password', {
+        name: 'Set Mission Password',
+        group: 'MartiMissions',
+        description: 'Set or replace the password on a mission. Caller must have MISSION_SET_PASSWORD.',
+        params: Type.Object({
+            guid: Type.String(),
+        }),
+        body: Type.Object({
+            password: Type.String({ minLength: 1 }),
+        }),
+        res: StandardResponse,
+    }, async (req, res) => {
+        try {
+            const { user, api, opts } = await missionControl.context(req, req.params.guid);
+
+            await api.Mission.setPassword(
+                req.params.guid,
+                req.body.password,
+                opts,
+                profileUid(user.email),
+            );
+
+            res.json({
+                status: 200,
+                message: 'Password Updated',
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/marti/missions/:guid/password', {
+        name: 'Remove Mission Password',
+        group: 'MartiMissions',
+        description: 'Remove the password from a mission. Caller must have MISSION_SET_PASSWORD.',
+        params: Type.Object({
+            guid: Type.String(),
+        }),
+        res: StandardResponse,
+    }, async (req, res) => {
+        try {
+            const { user, api, opts } = await missionControl.context(req, req.params.guid);
+
+            await api.Mission.removePassword(
+                req.params.guid,
+                opts,
+                profileUid(user.email),
+            );
+
+            res.json({
+                status: 200,
+                message: 'Password Removed',
+            });
         } catch (err) {
             Err.respond(err, res);
         }
