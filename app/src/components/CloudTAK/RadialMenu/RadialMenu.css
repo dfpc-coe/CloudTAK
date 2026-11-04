@@ -1,6 +1,8 @@
 div.menuHolder {
     user-select: none;
+    -webkit-user-select: none;
     -moz-user-select: none;
+    -webkit-touch-callout: none;
     position: relative;
 }
 
@@ -14,7 +16,9 @@ svg.menu {
     transition: 0.2s;
     transition-timing-function: ease-out;
     user-select: none;
+    -webkit-user-select: none;
     -moz-user-select: none;
+    -webkit-touch-callout: none;
 }
 
 svg.menu.inner {
@@ -76,10 +80,19 @@ svg.menu > g.center > use {
     fill: white;
 }
 
+.radial-menu-popup,
+.radial-menu-popup * {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -webkit-touch-callout: none;
+}
+
 .radial-menu-popup .maplibregl-popup-content {
     background: transparent;
     box-shadow: none;
     padding: 0;
+    touch-action: manipulation;
 }
 
 .radial-menu-popup .maplibregl-popup-tip {

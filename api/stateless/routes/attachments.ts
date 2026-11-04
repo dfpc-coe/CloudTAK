@@ -4,7 +4,7 @@ import { Static, Type } from '@sinclair/typebox';
 import AttachmentControl from '../lib/control/attachment.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth from '../../common/auth.js';
+import Auth, { AuthUser, AuthResourceAccess } from '../../common/auth.js';
 import S3 from '../../common/aws/s3.js';
 import type ConfigStateless from '../config.js';
 import ProfileControl from '../lib/control/profile.js';
@@ -17,9 +17,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     const attachmentControl = new AttachmentControl(config);
     const profileControl = new ProfileControl(config);
 
+    const resources = [
+        { access: AuthResourceAccess.CONNECTION },
+        { access: AuthResourceAccess.LAYER },
+    ];
+
     await schema.get('/attachment', {
         name: 'List Attachments',
         group: 'Attachments',
+        security: Auth.security('attachment:read', { connection: true }),
         description: 'Attachments',
         query: Type.Object({
             hash: Type.Union([Type.String(), Type.Array(Type.String())]),
@@ -36,7 +42,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            await Auth.is_auth(config, req, {
+                scope: 'attachment:read',
+                resources,
+            });
 
             const items = [];
             for (const hash of Array.isArray(req.query.hash) ? req.query.hash : [req.query.hash]) {
@@ -65,10 +74,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.put('/attachment', {
         name: 'Upload Attachment',
         group: 'Attachments',
+        security: Auth.security('attachment:create', { connection: true }),
         description: 'Upload an attachment that is assigned to a given CoT',
         query: Type.Object({
             mission: Type.Optional(Type.String({
-                description: 'GUID of a mission to also upload the attachment to',
+                description: 'GUID of a mission to also upload the attachment to - requires a User token',
             })),
         }),
         res: Type.Object({
@@ -85,7 +95,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
 
-            const user = await Auth.as_user(config, req);
+            const auth = await Auth.is_auth(config, req, {
+                scope: 'attachment:create',
+                resources,
+            });
+
+            if (req.query.mission && !(auth instanceof AuthUser)) {
+                throw new Err(401, null, 'Only an authenticated user can upload an attachment to a mission');
+            }
 
             const bb = new Busboy({
                 headers: {
@@ -107,10 +124,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                     if (!result) throw new Err(400, null, 'No file uploaded');
 
-                    if (req.query.mission) {
-                        const profile = await authenticatedProfile(config, user.email);
-                        const auth = profile.auth;
-                        const api = await takserver.withAuth(auth);
+                    if (req.query.mission && auth instanceof AuthUser) {
+                        const profile = await authenticatedProfile(config, auth.email);
+                        const api = await takserver.withAuth(profile.auth);
 
                         const attachment = await S3.list(`attachment/${result.hash}/`);
                         if (attachment.length < 1 || !attachment[0].Key) throw new Err(400, null, 'Could not find uploaded attachment');
@@ -125,7 +141,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                             creatorUid: profile.username,
                         }, stream);
 
-                        const opts: Static<typeof MissionOptions> = await profileControl.subscription(user.email, req.query.mission);
+                        const opts: Static<typeof MissionOptions> = await profileControl.subscription(auth.email, req.query.mission);
 
                         await api.Mission.attachContents(
                             req.query.mission,
@@ -151,6 +167,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/attachment/:hash', {
         name: 'Get Attachment',
         group: 'Attachments',
+        security: Auth.security('attachment:read', { connection: true }),
         description: 'Attachments',
         params: Type.Object({
             hash: Type.String(),
@@ -163,7 +180,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, { token: true });
+            await Auth.is_auth(config, req, {
+                token: true,
+                scope: 'attachment:read',
+                resources,
+            });
 
             const attachment = await S3.list(`attachment/${req.params.hash}/`);
             if (attachment.length < 1) throw new Err(404, null, 'Attachment not found');

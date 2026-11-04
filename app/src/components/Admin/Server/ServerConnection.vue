@@ -148,7 +148,7 @@
                         v-if='server.certificate'
                         class='row g-2'
                     >
-                        <div class='col-lg-4'>
+                        <div class='col-lg-3'>
                             <div class='datagrid-title'>
                                 Certificate Valid From
                             </div>
@@ -157,7 +157,7 @@
                                 v-text='server.certificate.validFrom'
                             />
                         </div>
-                        <div class='col-lg-4'>
+                        <div class='col-lg-3'>
                             <div class='datagrid-title'>
                                 Certificate Valid To
                             </div>
@@ -166,7 +166,7 @@
                                 v-text='server.certificate.validTo'
                             />
                         </div>
-                        <div class='col-lg-4'>
+                        <div class='col-lg-3'>
                             <div class='datagrid-title'>
                                 Certificate Subject
                             </div>
@@ -174,6 +174,18 @@
                                 class='datagrid-content'
                                 v-text='server.certificate.subject'
                             />
+                        </div>
+                        <div class='col-lg-3'>
+                            <div class='datagrid-title'>
+                                Channels Enabled
+                            </div>
+                            <div class='datagrid-content'>
+                                <CertificateChannelsBadge
+                                    :certificate='server.certificate'
+                                    enabled-label='Enabled'
+                                    disabled-label='Disabled'
+                                />
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -219,6 +231,7 @@ import type { Server, Server_Update } from '../../../types.ts';
 import ServerManager from '../../../base/server.ts';
 import Upload from '../../util/UploadP12.vue';
 import Status from '../../ETL/Connection/StatusDot.vue';
+import CertificateChannelsBadge from '../../util/CertificateChannelsBadge.vue';
 import {
     TablerIconButton,
     TablerLoading,
@@ -281,7 +294,7 @@ onMounted(async () => {
 
 async function fetch() {
     loading.value = true;
-    server.value = await ServerManager.get();
+    server.value = await ServerManager.sync();
     if (!server.value.auth) regen.value = true;
     loading.value = false;
 }

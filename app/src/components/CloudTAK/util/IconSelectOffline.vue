@@ -69,7 +69,7 @@
 
                 <div
                     v-if='!disabled'
-                    class='ms-auto'
+                    class='ms-auto d-flex align-items-center'
                 >
                     <TablerIconButton
                         v-if='selected'

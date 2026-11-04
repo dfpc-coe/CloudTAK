@@ -6,6 +6,23 @@ import url from 'url';
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 export default {
+    Parameters: {
+        PMTilesReservedConcurrency: {
+            Description: 'Reserved concurrency ceiling for the PMTiles Lambda so a tile storm cannot starve other functions in the account',
+            Type: 'Number',
+            Default: 100,
+            MinValue: 1
+        },
+        PMTilesProvisionedConcurrency: {
+            Description: 'Warm PMTiles Lambda containers kept ready on the live alias - 0 disables provisioned concurrency',
+            Type: 'Number',
+            Default: 2,
+            MinValue: 0
+        }
+    },
+    Conditions: {
+        PMTilesProvisioned: cf.not(cf.equals(cf.ref('PMTilesProvisionedConcurrency'), '0'))
+    },
     Resources: {
         PMTilesLambdaSecurityGroup: {
             Type: 'AWS::EC2::SecurityGroup',
@@ -161,8 +178,9 @@ export default {
             DependsOn: ['SigningSecret', 'EFSMountTargetA', 'EFSMountTargetB'],
             Properties: {
                 FunctionName: cf.join([cf.stackName, '-pmtiles']),
-                MemorySize: 256,
-                Timeout: 60,
+                MemorySize: 1536,
+                Timeout: 30,
+                ReservedConcurrentExecutions: cf.ref('PMTilesReservedConcurrency'),
                 Description: 'Return Mapbox Vector Tiles from a PMTiles Store',
                 PackageType: 'Image',
                 Environment: {
@@ -170,8 +188,7 @@ export default {
                         StackName: cf.stackName,
                         ASSET_BUCKET: cf.ref('AssetBucket'),
                         API_URL: cf.join(['https://map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
-                        PMTILES_URL: cf.join(['https://tiles.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
-                        SigningSecret: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}')
+                        PMTILES_URL: cf.join(['https://tiles.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))])
                     }
                 },
                 Role: cf.getAtt('PMTilesLambdaRole', 'Arn'),
@@ -189,6 +206,24 @@ export default {
                     Arn: cf.join(['arn:', cf.partition, ':elasticfilesystem:', cf.region, ':', cf.accountId, ':access-point/', cf.ref('EFSPoint')]),
                     LocalMountPath: '/mnt/efs'
                 }]
+            }
+        },
+        PMTilesLambdaVersion: {
+            Type: 'AWS::Lambda::Version',
+            Properties: {
+                FunctionName: cf.ref('PMTilesLambda'),
+                Description: cf.join(['pmtiles-', cf.ref('GitSha')])
+            }
+        },
+        PMTilesLambdaAlias: {
+            Type: 'AWS::Lambda::Alias',
+            Properties: {
+                FunctionName: cf.ref('PMTilesLambda'),
+                FunctionVersion: cf.getAtt('PMTilesLambdaVersion', 'Version'),
+                Name: 'live',
+                ProvisionedConcurrencyConfig: cf.if('PMTilesProvisioned', {
+                    ProvisionedConcurrentExecutions: cf.ref('PMTilesProvisionedConcurrency')
+                }, cf.noValue)
             }
         },
         PMTilesLambdaRole: {
@@ -221,9 +256,16 @@ export default {
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.join('-', [cf.stackName, cf.accountId, cf.region])]),
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.join('-', [cf.stackName, cf.accountId, cf.region]), '/*'])
                             ]
+                        }, {
+                            Effect: 'Allow',
+                            Action: ['secretsmanager:GetSecretValue'],
+                            Resource: [cf.join(['arn:', cf.partition, ':secretsmanager:', cf.region, ':', cf.accountId, ':secret:', cf.stackName, '/api/secret-*'])]
+                        }, {
+                            Effect: 'Allow',
+                            Action: ['kms:Decrypt'],
+                            Resource: [cf.getAtt('KMS', 'Arn')]
                         }]
                     }
-
                 }],
                 ManagedPolicyArns: [
                     cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole']),
@@ -268,7 +310,7 @@ export default {
             Properties: {
                 ApiId: cf.ref('PMTilesLambdaAPIV2'),
                 IntegrationType: 'AWS_PROXY',
-                IntegrationUri: cf.join(['arn:', cf.partition, ':apigateway:', cf.region, ':lambda:path/2015-03-31/functions/', cf.getAtt('PMTilesLambda', 'Arn'), '/invocations']),
+                IntegrationUri: cf.join(['arn:', cf.partition, ':apigateway:', cf.region, ':lambda:path/2015-03-31/functions/', cf.ref('PMTilesLambdaAlias'), '/invocations']),
                 PayloadFormatVersion: '1.0'
             }
         },
@@ -301,7 +343,7 @@ export default {
         PMTilesLambdaAPIPermission: {
             Type: 'AWS::Lambda::Permission',
             Properties: {
-                FunctionName: cf.ref('PMTilesLambda'),
+                FunctionName: cf.ref('PMTilesLambdaAlias'),
                 Action: 'lambda:InvokeFunction',
                 Principal: 'apigateway.amazonaws.com',
                 SourceArn: cf.join(['arn:', cf.partition, ':execute-api:', cf.region, ':', cf.accountId, ':', cf.ref('PMTilesLambdaAPIV2'), '/*/*/{proxy+}'])

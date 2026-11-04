@@ -266,13 +266,10 @@ onMounted(async () => {
     reload();
     loading.value.init = false;
 
-    const { data, error } = await server.GET('/api/config/webhooks');
+    const { data, error } = await server.GET('/api/config/layer');
     if (error) throw new Error(String(error));
-    webhookBase.value = data.url;
-
-    const email = await server.GET('/api/config/email');
-    if (email.error) throw new Error(String(email.error));
-    emailDomain.value = email.data.domain;
+    webhookBase.value = data.webhooks.url;
+    emailDomain.value = data.email.domain;
 })
 
 function reload() {

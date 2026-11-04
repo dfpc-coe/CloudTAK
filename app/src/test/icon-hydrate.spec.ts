@@ -12,15 +12,16 @@ const iconFetch = vi.fn();
 
 vi.mock('../std.ts', () => ({
     server: {
-        GET: async (path: string, opts?: { params?: { path?: Record<string, string> } }) => {
-            if (path.endsWith('{:iconset}')) {
+        GET: async (path: string, opts?: { params?: { path?: Record<string, string>, query?: Record<string, unknown> } }) => {
+            if (path === '/api/icon') {
+                return { data: await iconFetch(String(opts?.params?.query?.iconset)) };
+            } else if (path.endsWith('{:iconset}')) {
                 return { data: iconsets.find((i) => i.uid === opts?.params?.path?.[':iconset']) };
             }
 
             return { data: { total: iconsets.length, items: iconsets } };
         }
     },
-    std: (url: string) => iconFetch(url),
     stdurl: (url: string) => url,
     getRuntimeToken: async () => null,
     downloadUrl: vi.fn(),
@@ -48,13 +49,7 @@ function iconset(uid: string) {
     };
 }
 
-function uidOf(url: string): string {
-    return new URL(url, 'http://x').searchParams.get('iconset')!;
-}
-
-function icons(url: string) {
-    const uid = uidOf(url);
-
+function icons(uid: string) {
     return {
         total: 1,
         items: [{
@@ -74,7 +69,7 @@ async function count(uid: string): Promise<number> {
 
 beforeEach(async () => {
     iconFetch.mockReset();
-    iconFetch.mockImplementation(async (url: string) => icons(url));
+    iconFetch.mockImplementation(async (uid: string) => icons(uid));
 
     await Promise.all([
         db.icon.clear(),
@@ -96,16 +91,16 @@ describe('Icon.hydrate', () => {
     });
 
     it('syncs the remaining iconsets when one fails and retries it next time', async () => {
-        iconFetch.mockImplementation(async (url: string) => {
-            if (uidOf(url) === 'bravo') throw new Error('boom');
-            return icons(url);
+        iconFetch.mockImplementation(async (uid: string) => {
+            if (uid === 'bravo') throw new Error('boom');
+            return icons(uid);
         });
 
         expect((await Icon.hydrate()).failed).toEqual(['bravo']);
         expect(await count('alpha')).toBe(1);
         expect(await count('bravo')).toBe(0);
 
-        iconFetch.mockImplementation(async (url: string) => icons(url));
+        iconFetch.mockImplementation(async (uid: string) => icons(uid));
 
         const result = await Icon.hydrate();
         expect(result.added).toEqual(['bravo']);

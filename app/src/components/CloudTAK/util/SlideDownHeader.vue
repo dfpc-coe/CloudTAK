@@ -140,6 +140,8 @@ function toggle() {
 
 .slidedown__panel {
     display: grid;
+    /* minmax(0, …) so long nowrap content shrinks instead of widening the track */
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: 0fr;
     transition: grid-template-rows 0.3s ease-out;
 }

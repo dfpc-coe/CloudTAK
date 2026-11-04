@@ -107,10 +107,10 @@ test('PUT: api/attachment?mission= - uploads to S3 and attaches to mission', asy
         assert.ok(attachContentsCalled, 'TAK Server Mission.attachContents should be called');
     } catch (err) {
         assert.ifError(err);
+    } finally {
+        Sinon.restore();
+        flight.tak.reset();
     }
-
-    Sinon.restore();
-    flight.tak.reset();
 });
 
 test('PUT: api/attachment (no mission param) - does NOT call TAK server', async () => {
@@ -139,10 +139,10 @@ test('PUT: api/attachment (no mission param) - does NOT call TAK server', async 
         assert.equal(s3PutStub.firstCall.args[0], `attachment/${fakeHash}/test.txt`);
     } catch (err) {
         assert.ifError(err);
+    } finally {
+        Sinon.restore();
+        flight.tak.reset();
     }
-
-    Sinon.restore();
-    flight.tak.reset();
 });
 
 test('PUT: api/attachment?mission= - fails gracefully if S3 file not found', async () => {
@@ -172,10 +172,10 @@ test('PUT: api/attachment?mission= - fails gracefully if S3 file not found', asy
         assert.equal(res.body.message, 'Could not find uploaded attachment');
     } catch (err) {
         assert.ifError(err);
+    } finally {
+        Sinon.restore();
+        flight.tak.reset();
     }
-
-    Sinon.restore();
-    flight.tak.reset();
 });
 
 test('PUT: api/attachment?mission= - fails gracefully if mission not in user overlays', async () => {
@@ -252,10 +252,10 @@ test('PUT: api/attachment?mission= - fails gracefully if mission not in user ove
         assert.ok(!res.ok, 'Request should not succeed without mission overlay');
     } catch (err) {
         assert.ifError(err);
+    } finally {
+        Sinon.restore();
+        flight.tak.reset();
     }
-
-    Sinon.restore();
-    flight.tak.reset();
 });
 
 test('PUT: api/attachment?mission= - fails with 400 if no file uploaded', async () => {

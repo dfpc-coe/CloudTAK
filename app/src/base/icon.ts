@@ -1,6 +1,6 @@
-import { std, stdurl, getRuntimeToken } from '../std.ts';
+import { server, stdurl, getRuntimeToken } from '../std.ts';
 import { db, type DBIcon, type DBIconset } from '../database.ts';
-import type { Icon as IconType, Iconset, IconList } from '../types.ts';
+import type { Iconset } from '../types.ts';
 import IconsetCache from './iconset.ts';
 
 /** Built-in sprite ids that ship with the API and are mirrored to Dexie. */
@@ -78,7 +78,11 @@ export default class Icon {
      * actually updated so the caller can purge stale map images.
      */
     static async addIconset(uid: string, opts: { force?: boolean } = {}): Promise<boolean> {
-        const iconset = await std(`/api/iconset/${uid}`) as Iconset;
+        const { data: iconset, error } = await server.GET('/api/iconset/{:iconset}', {
+            params: { path: { ':iconset': uid } }
+        });
+
+        if (error) throw new Error(error.message);
 
         const cached = await db.iconset.get(uid);
         if (!opts.force && !Icon.stale(cached, iconset)) return false;
@@ -101,9 +105,11 @@ export default class Icon {
         const path = id.slice(separator + 1);
 
         try {
-            const icon = await std(
-                `/api/iconset/${encodeURIComponent(iconset)}/icon/${encodeURIComponent(path)}`
-            ) as IconType;
+            const { data: icon, error } = await server.GET('/api/iconset/{:iconset}/icon/{:icon}', {
+                params: { path: { ':iconset': iconset, ':icon': path } }
+            });
+
+            if (error) return undefined;
 
             return dataUrlToBlob(icon.data);
         } catch {
@@ -198,9 +204,11 @@ async function syncBuiltinSprite(id: string): Promise<void> {
 }
 
 async function syncIconset(iconset: Iconset): Promise<void> {
-    const list = await std(
-        `/api/icon?iconset=${encodeURIComponent(iconset.uid)}&limit=0`
-    ) as IconList;
+    const { data: list, error } = await server.GET('/api/icon', {
+        params: { query: { iconset: iconset.uid, limit: 0, page: 0, order: 'asc', filter: '' } }
+    });
+
+    if (error) throw new Error(error.message);
 
     const rows: DBIcon[] = [];
     const prefix = `${iconset.uid}/`;

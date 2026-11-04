@@ -1,160 +1,187 @@
 <template>
     <TablerModal size='lg'>
-        <div class='modal-status bg-red' />
-        <div class='modal-header'>
-            <div class='d-flex align-items-center'>
-                <IconInfoSquare
-                    :size='28'
-                    stroke='1'
-                />
-                <span class='mx-2'>{{ current === 'details' ? 'Welcome to CloudTAK' : 'Permissions' }}</span>
+        <LocationDisclosure
+            v-if='current === "disclosure"'
+            stage='location'
+            :settings='needsNativeSettings(deviceStore.permissions.location)'
+            :working='working === "location"'
+            @accept='acceptDisclosure'
+            @decline='current = "permissions"'
+        />
+        <LocationDisclosure
+            v-else-if='current === "background"'
+            stage='background'
+            :settings='deviceStore.permissions.backgroundLocation === "denied"'
+            :working='working === "backgroundLocation"'
+            @accept='acceptBackgroundDisclosure'
+            @decline='current = "permissions"'
+        />
+        <template v-else>
+            <div class='modal-status bg-red' />
+            <div class='modal-header'>
+                <div class='d-flex align-items-center'>
+                    <IconInfoSquare
+                        :size='28'
+                        stroke='1'
+                    />
+                    <span class='mx-2'>{{ title }}</span>
+                </div>
             </div>
-        </div>
-        <div class='modal-body'>
-            <template v-if='current === "details"'>
-                <TablerLoading v-if='loading' />
+            <div class='modal-body'>
+                <template v-if='current === "details"'>
+                    <TablerLoading v-if='loading' />
+                    <template v-else>
+                        <p class='text-secondary'>
+                            Before you get started, tell other TAK users who you are. These can be changed at any time from Settings.
+                        </p>
+
+                        <div class='row g-3'>
+                            <div class='col-12'>
+                                <TablerInput
+                                    v-model='form.tak_callsign'
+                                    label='Callsign'
+                                    description='The name other users will see you as on the map'
+                                    placeholder='Enter your callsign'
+                                    :autofocus='true'
+                                    :required='true'
+                                    :error='callsignError'
+                                    @keyup.enter='submitDetails'
+                                />
+                            </div>
+                            <div class='col-12 col-md-6'>
+                                <TablerEnum
+                                    v-model='form.tak_group'
+                                    label='Team'
+                                    :options='groupOptions'
+                                />
+                            </div>
+                            <div class='col-12 col-md-6'>
+                                <TablerEnum
+                                    v-model='form.tak_role'
+                                    label='Role'
+                                    :options='roles'
+                                />
+                            </div>
+                            <div class='col-12'>
+                                <TablerInput
+                                    v-model='form.tak_phone'
+                                    label='Phone Number'
+                                    description='Optional - shared with other users in your channels'
+                                    type='tel'
+                                />
+                            </div>
+                        </div>
+                    </template>
+                </template>
                 <template v-else>
                     <p class='text-secondary'>
-                        Before you get started, tell other TAK users who you are. These can be changed at any time from Settings.
+                        CloudTAK needs the following permissions to keep your team informed. You can review these later under Settings.
                     </p>
 
-                    <div class='row g-3'>
-                        <div class='col-12'>
-                            <TablerInput
-                                v-model='form.tak_callsign'
-                                label='Callsign'
-                                description='The name other users will see you as on the map'
-                                placeholder='Enter your callsign'
-                                :autofocus='true'
-                                :required='true'
-                                :error='callsignError'
-                                @keyup.enter='submitDetails'
-                            />
-                        </div>
-                        <div class='col-12 col-md-6'>
-                            <TablerEnum
-                                v-model='form.tak_group'
-                                label='Team'
-                                :options='groupOptions'
-                            />
-                        </div>
-                        <div class='col-12 col-md-6'>
-                            <TablerEnum
-                                v-model='form.tak_role'
-                                label='Role'
-                                :options='roles'
-                            />
-                        </div>
-                        <div class='col-12'>
-                            <TablerInput
-                                v-model='form.tak_phone'
-                                label='Phone Number'
-                                description='Optional - shared with other users in your channels'
-                                type='tel'
-                            />
-                        </div>
-                    </div>
-                </template>
-            </template>
-            <template v-else>
-                <p class='text-secondary'>
-                    CloudTAK needs the following permissions to share your position with your team and keep you informed. You can review these later under Settings.
-                </p>
-
-                <div
-                    v-if='error'
-                    class='alert alert-warning'
-                    role='alert'
-                >
-                    {{ error }}
-                </div>
-
-                <div class='d-flex flex-column gap-2'>
-                    <StandardItem
-                        v-for='item of permissionItems'
-                        :key='item.key'
-                        :hover='false'
+                    <div
+                        v-if='error'
+                        class='alert alert-warning'
+                        role='alert'
                     >
-                        <div class='d-flex flex-column gap-3 px-3 py-3'>
-                            <div class='d-flex align-items-start justify-content-between gap-3'>
-                                <div class='d-flex align-items-start gap-3 flex-grow-1'>
-                                    <component
-                                        :is='item.icon'
-                                        :size='30'
-                                        stroke='1.5'
-                                        class='flex-shrink-0 mt-1'
-                                    />
+                        {{ error }}
+                    </div>
 
-                                    <div class='flex-grow-1'>
-                                        <div class='fw-bold'>
-                                            {{ item.title }}
-                                        </div>
+                    <div class='d-flex flex-column gap-2'>
+                        <StandardItem
+                            v-for='item of permissionItems'
+                            :key='item.key'
+                            :hover='false'
+                        >
+                            <div class='d-flex flex-column gap-3 px-3 py-3'>
+                                <div class='d-flex align-items-start justify-content-between gap-3'>
+                                    <div class='d-flex align-items-start gap-3 flex-grow-1'>
+                                        <component
+                                            :is='item.icon'
+                                            :size='30'
+                                            stroke='1.5'
+                                            class='flex-shrink-0 mt-1'
+                                        />
 
-                                        <div class='text-secondary small mt-1'>
-                                            {{ item.description }}
+                                        <div class='flex-grow-1'>
+                                            <div class='fw-bold'>
+                                                {{ item.title }}
+                                            </div>
+
+                                            <div class='text-secondary small mt-1'>
+                                                {{ item.description }}
+                                            </div>
                                         </div>
                                     </div>
+
+                                    <TablerBadge
+                                        text-color='var(--tblr-body-color)'
+                                        class='text-uppercase flex-shrink-0'
+                                        v-bind='badgeProps(item.status)'
+                                    >
+                                        {{ badgeLabel(item.status) }}
+                                    </TablerBadge>
                                 </div>
 
-                                <TablerBadge
-                                    class='text-uppercase flex-shrink-0'
-                                    v-bind='badgeProps(item.status)'
+                                <div
+                                    v-if='!item.satisfied'
+                                    class='d-flex justify-content-end'
                                 >
-                                    {{ badgeLabel(item.status) }}
-                                </TablerBadge>
+                                    <button
+                                        class='btn btn-primary'
+                                        :disabled='working === item.key'
+                                        @click='requestPermission(item.key)'
+                                    >
+                                        {{ actionLabel(item.key, item.status) }}
+                                    </button>
+                                </div>
                             </div>
-
-                            <div
-                                v-if='!item.satisfied'
-                                class='d-flex justify-content-end'
-                            >
-                                <button
-                                    class='btn btn-primary'
-                                    :disabled='working === item.key'
-                                    @click='requestPermission(item.key)'
-                                >
-                                    {{ actionLabel(item.key, item.status) }}
-                                </button>
-                            </div>
-                        </div>
-                    </StandardItem>
-                </div>
-            </template>
-        </div>
-        <div class='modal-footer'>
-            <template v-if='current === "details"'>
-                <div class='ms-auto'>
+                        </StandardItem>
+                    </div>
+                </template>
+            </div>
+            <div class='modal-footer'>
+                <template v-if='current === "details"'>
+                    <div class='ms-auto'>
+                        <button
+                            class='btn btn-primary'
+                            :disabled='loading || saving || !!callsignError'
+                            @click='submitDetails'
+                        >
+                            <TablerLoading
+                                v-if='saving'
+                                :inline='true'
+                            />
+                            <span v-else>Get Started</span>
+                        </button>
+                    </div>
+                </template>
+                <template v-else>
                     <button
-                        class='btn btn-primary'
-                        :disabled='loading || saving || !!callsignError'
-                        @click='submitDetails'
-                    >
-                        <TablerLoading
-                            v-if='saving'
-                            :inline='true'
-                        />
-                        <span v-else>Get Started</span>
-                    </button>
-                </div>
-            </template>
-            <template v-else>
-                <div class='ms-auto btn-list'>
-                    <button
-                        class='btn btn-secondary'
+                        class='btn btn-link text-secondary px-0'
                         :disabled='Boolean(working)'
-                        @click='refreshStatuses'
-                    >
-                        Refresh
-                    </button>
-                    <button
-                        class='btn btn-primary'
                         @click='dismissPermissions'
                     >
-                        Done
+                        Skip for now
                     </button>
-                </div>
-            </template>
-        </div>
+                    <div class='ms-auto btn-list'>
+                        <button
+                            class='btn btn-secondary'
+                            :disabled='Boolean(working)'
+                            @click='refreshStatuses'
+                        >
+                            Refresh
+                        </button>
+                        <button
+                            class='btn btn-primary'
+                            :disabled='!permissionsSatisfied'
+                            @click='emit("close")'
+                        >
+                            Done
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </template>
     </TablerModal>
 </template>
 
@@ -203,6 +230,7 @@ import {
     IconMapPin,
 } from '@tabler/icons-vue';
 import StandardItem from './StandardItem.vue';
+import LocationDisclosure from './LocationDisclosure.vue';
 import type { Profile } from '../../../types.ts';
 import Config from '../../../base/config.ts';
 import type { FullConfig } from '../../../base/config.ts';
@@ -224,7 +252,13 @@ const props = defineProps({
 
 const emit = defineEmits([ 'close' ]);
 
-const current = ref<WarnConfigurationPage>(props.page);
+type ModalPage = WarnConfigurationPage | 'disclosure' | 'background';
+
+const current = ref<ModalPage>(props.page);
+
+const title = computed(() => {
+    return current.value === 'details' ? 'Welcome to CloudTAK' : 'Permissions';
+});
 
 // --- User Details ---
 
@@ -327,7 +361,9 @@ const permissionDescriptors: Record<string, PermissionDescriptor> = {
     location: {
         key: 'location',
         title: 'Location',
-        description: 'Share your live position with your team on the map.',
+        description: isNativePlatform()
+            ? 'Share your live position with your team, including when the app is closed or not in use.'
+            : 'Share your live position with your team on the map.',
         icon: IconMapPin,
     },
     notification: {
@@ -351,6 +387,8 @@ const permissionItems = computed(() => {
             satisfied: deviceStore.isPermissionSatisfied(item.key),
         }));
 });
+
+const permissionsSatisfied = computed(() => deviceStore.hasRequiredPermissions());
 
 function badgeLabel(status: BrowserPermissionState): string {
     switch (status) {
@@ -412,7 +450,36 @@ async function refreshStatuses(): Promise<void> {
     }
 }
 
+// Location consent is collected on a disclosure page before any system
+// prompt or settings hand-off (Play prominent disclosure requirement). The
+// background escalation gets its own disclosure after the foreground grant.
 async function requestPermission(type: BrowserPermissionType): Promise<void> {
+    if (type === 'location') {
+        error.value = '';
+        current.value = 'disclosure';
+        return;
+    }
+
+    await runRequest(type);
+}
+
+function needsBackgroundRequest(): boolean {
+    return isNativePlatform()
+        && deviceStore.permissions.location === 'granted'
+        && ['prompt', 'when_in_use', 'denied'].includes(deviceStore.permissions.backgroundLocation);
+}
+
+async function acceptDisclosure(): Promise<void> {
+    await runRequest('location');
+    current.value = needsBackgroundRequest() ? 'background' : 'permissions';
+}
+
+async function acceptBackgroundDisclosure(): Promise<void> {
+    await runRequest('backgroundLocation');
+    current.value = 'permissions';
+}
+
+async function runRequest(type: BrowserPermissionType): Promise<void> {
     error.value = '';
     working.value = type;
 
@@ -423,6 +490,8 @@ async function requestPermission(type: BrowserPermissionType): Promise<void> {
             await deviceStore.geolocation.request(() => {
                 void mapStore.startLocationWatch();
             });
+        } else if (type === 'backgroundLocation') {
+            await deviceStore.geolocation.requestBackground();
         } else if (type === 'notification') {
             await deviceStore.notification.request();
         }

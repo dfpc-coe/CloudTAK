@@ -47,6 +47,10 @@ export default class LocalHub implements HubClient {
         return this.config.conns.status(id);
     }
 
+    async profileSync(username: string): Promise<void> {
+        this.config.conns.delete(username);
+    }
+
     async connectionStatus(ids: Array<number | string>): Promise<Record<string, ConnStatus>> {
         const statuses: Record<string, ConnStatus> = {};
 
@@ -55,6 +59,13 @@ export default class LocalHub implements HubClient {
         }
 
         return statuses;
+    }
+
+    async connectionChannels(id: number | string): Promise<number[] | null> {
+        const client = this.config.conns.get(id);
+        if (!client || !client.ready || !client.channelsLoaded) return null;
+
+        return [...client.channels];
     }
 
     async connectionSummary(): Promise<PoolSummary> {
@@ -96,16 +107,19 @@ export default class LocalHub implements HubClient {
     async submitCots(req: SubmitCotsRequest): Promise<void> {
         let client = this.config.conns.get(req.connection);
 
-        if (!client && req.ensureProfile && typeof req.connection === 'string') {
+        if (req.ensureProfile && typeof req.connection === 'string') {
             const profile = await this.config.models.Profile.from(req.connection);
 
             if (!profile.auth || !profile.auth.cert || !profile.auth.key) {
                 throw new Err(400, null, 'Profile auth certificate not configured');
             }
 
-            client = await this.config.conns.add(new ProfileConnConfig(this.config, req.connection, profile.auth));
+            const ensured = await this.config.conns.add(new ProfileConnConfig(this.config, req.connection, profile.auth));
 
-            await client.awaitSecure();
+            if (ensured !== client) {
+                client = ensured;
+                await client.awaitSecure();
+            }
         }
 
         if (!client) {
@@ -191,13 +205,13 @@ export default class LocalHub implements HubClient {
         this.config.etlEvents.featureRefresh(connection);
     }
 
-    async coreEntitySubmit(event: string): Promise<void> {
+    async coreEntitySubmit(entity: string): Promise<void> {
         if (this.config.noconnections) return;
 
         const client = this.config.conns.get(0);
         if (!client || !isCoreEntitySubmitter(client.config)) return;
 
-        await client.config.submitEvents(client.tak, client.api, { event });
+        await client.config.submitEntities(client.tak, client.api, { entity });
     }
 
     async geofenceRefresh(): Promise<void> {

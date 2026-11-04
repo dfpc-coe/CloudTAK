@@ -4,39 +4,20 @@
             v-if='mapStore.draw.mode === DrawToolMode.POINT'
             class='card cloudtak-panel user-select-none'
         >
-            <div class='card-header'>
-                <template v-if='!appStore.isMobileDetected'>
+            <div class='card-header point-header'>
+                <div class='d-flex flex-column'>
+                    <div class='point-label d-flex align-items-center'>
+                        <IconPoint
+                            :size='16'
+                            stroke='1'
+                        /><span class='ms-2'>Draw Point</span>
+                    </div>
                     <CoordinateType
                         v-model='mapStore.draw.point.type'
                     />
-                </template>
-                <template v-else>
-                    <IconPoint
-                        :size='24'
-                        stroke='1'
-                    /><span class='mx-2'>Draw Point</span>
-                </template>
+                </div>
 
                 <div class='ms-auto btn-list'>
-                    <TablerIconButton
-                        v-if='appStore.isMobileDetected'
-                        :title='opened ? "Close Settings" : "Open Settings"'
-                        @click='opened = !opened'
-                    >
-                        <span class='d-flex align-items-center'>
-                            <span>More</span>
-                            <IconChevronDown
-                                v-if='opened'
-                                :size='24'
-                                stroke='1'
-                            />
-                            <IconChevronUp
-                                v-else
-                                :size='24'
-                                stroke='1'
-                            />
-                        </span>
-                    </TablerIconButton>
                     <TablerIconButton
                         title='Finish Drawing'
                         :disabled='!mapStore.draw.canFinish'
@@ -57,14 +38,6 @@
                         />
                     </TablerIconButton>
                 </div>
-            </div>
-            <div
-                v-if='appStore.isMobileDetected && opened'
-                class='card-body'
-            >
-                <CoordinateType
-                    v-model='mapStore.draw.point.type'
-                />
             </div>
         </div>
         <div
@@ -423,3 +396,34 @@ watch(() => mapStore.draw.mode, async () => {
     }
 });
 </script>
+
+<style scoped>
+.point-header {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.point-header :deep(.btn-group .btn) {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+
+.point-label {
+    font-size: 0.75rem;
+    line-height: 1;
+    color: var(--tblr-secondary);
+    margin-bottom: 0.25rem;
+}
+
+@media (max-width: 600px) {
+    .point-header {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    .point-header :deep(.btn-group .btn) {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+}
+</style>

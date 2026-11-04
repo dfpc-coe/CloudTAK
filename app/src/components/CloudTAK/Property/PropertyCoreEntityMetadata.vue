@@ -43,31 +43,28 @@
                         :create='false'
                     />
 
-                    <div
+                    <KeyValueRow
                         v-for='entry of entries'
                         :key='entry.key'
-                        class='d-flex align-items-center rounded px-1 py-1 cloudtak-hover-fill'
+                        :name='entry.key'
+                        :value='entry.display'
                     >
-                        <span
-                            class='text-muted text-truncate'
-                            style='min-width: 33%'
-                            v-text='entry.key'
-                        />
-                        <span
-                            class='mx-2 text-truncate flex-fill'
-                            v-text='entry.display'
-                        />
-                        <TablerIconButton
+                        <template
                             v-if='props.edit'
-                            title='Remove Metadata'
-                            @click='removeEntry(entry.key)'
+                            #actions
                         >
-                            <IconTrash
-                                :size='18'
-                                stroke='1'
-                            />
-                        </TablerIconButton>
-                    </div>
+                            <TablerIconButton
+                                title='Remove Metadata'
+                                class='flex-shrink-0'
+                                @click='removeEntry(entry.key)'
+                            >
+                                <IconTrash
+                                    :size='18'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                        </template>
+                    </KeyValueRow>
 
                     <div
                         v-if='creating'
@@ -119,6 +116,7 @@
 <script setup lang='ts'>
 import { ref, computed } from 'vue';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
+import KeyValueRow from '../util/KeyValueRow.vue';
 import { TablerBadge, TablerInput, TablerIconButton, TablerNone } from '@tak-ps/vue-tabler';
 import { IconListDetails, IconPlus, IconTrash, IconCheck } from '@tabler/icons-vue';
 

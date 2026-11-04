@@ -18,9 +18,27 @@ const router = VueRouter.createRouter({
                 name: 'home-menu-cot',
                 component: () => import('./components/CloudTAK/CoTView.vue'),
             },{
+                path: 'cot/:uid/appearance',
+                name: 'home-menu-cot-appearance',
+                component: () => import('./components/CloudTAK/CoTAppearance.vue'),
+            },{
                 path: 'event/:event',
                 name: 'home-menu-core-entity',
                 component: () => import('./components/CloudTAK/CoreEntityView.vue'),
+            },{
+                path: 'event/:event/appearance',
+                name: 'home-menu-core-entity-appearance',
+                component: () => import('./components/CloudTAK/CoreEntityAppearance.vue'),
+                props: { kind: 'event' },
+            },{
+                path: 'device/:device',
+                name: 'home-menu-core-device',
+                component: () => import('./components/CloudTAK/CoreDeviceView.vue'),
+            },{
+                path: 'device/:device/appearance',
+                name: 'home-menu-core-device-appearance',
+                component: () => import('./components/CloudTAK/CoreEntityAppearance.vue'),
+                props: { kind: 'device' },
             },{
                 path: 'menu',
                 name: 'home-menu',
@@ -117,6 +135,14 @@ const router = VueRouter.createRouter({
                     name: 'home-menu-features',
                     component: () => import('./components/CloudTAK/Menu/MenuFeatures.vue')
                 },{
+                    path: 'features/events',
+                    name: 'home-menu-features-events',
+                    component: () => import('./components/CloudTAK/Menu/MenuFeaturesEvents.vue')
+                },{
+                    path: 'features/devices',
+                    name: 'home-menu-features-devices',
+                    component: () => import('./components/CloudTAK/Menu/MenuFeaturesDevices.vue')
+                },{
                     path: 'features/deleted',
                     name: 'home-menu-features-deleted',
                     component: () => import('./components/CloudTAK/Menu/MenuFeaturesDeleted.vue')
@@ -136,6 +162,9 @@ const router = VueRouter.createRouter({
                     path: 'contacts',
                     name: 'home-menu-contacts',
                     component: () => import('./components/CloudTAK/Menu/MenuContacts.vue')
+                },{
+                    path: 'devices',
+                    redirect: { name: 'home-menu-features-devices' }
                 },{
                     path: 'missions',
                     name: 'home-menu-missions',

@@ -177,9 +177,9 @@ test('nginx.conf: CSP and HSTS are repeated in the server block and each add_hea
         env: { ...process.env, API_URL: 'https://map.example.com' },
     });
 
-    // server block + `= /` + /admin + /connection + /assets/
-    assert.equal(stdout.split(`add_header 'Content-Security-Policy'`).length - 1, 5);
-    assert.equal(stdout.split(`add_header 'Strict-Transport-Security'`).length - 1, 5);
+    // server block + `= /` + /admin + /connection + /assets/ + SPA fallback
+    assert.equal(stdout.split(`add_header 'Content-Security-Policy'`).length - 1, 6);
+    assert.equal(stdout.split(`add_header 'Strict-Transport-Security'`).length - 1, 6);
 });
 
 test('nginx.conf: static server configuration', async () => {

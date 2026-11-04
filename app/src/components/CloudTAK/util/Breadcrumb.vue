@@ -56,6 +56,17 @@
                     Load
                 </TablerButton>
             </div>
+
+            <div
+                v-if='error'
+                class='px-3 pb-2 small text-danger'
+                v-text='error'
+            />
+            <div
+                v-else-if='loaded !== null'
+                class='px-3 pb-2 small text-muted'
+                v-text='loaded ? `Loaded ${loaded} points` : "No history in that window"'
+            />
         </template>
     </div>
 </template>
@@ -75,6 +86,7 @@ import {
     TablerToggle
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../../stores/map.ts';
+import type { InputFeature } from '../../../types.ts';
 
 const mapStore = useMapStore();
 
@@ -90,6 +102,8 @@ const query = ref({
     relative: '1 Hour'
 });
 const loading = ref(false);
+const loaded = ref<number | null>(null);
+const error = ref<string | null>(null);
 const liveEnabled = ref(false);
 
 onMounted(async () => {
@@ -97,6 +111,8 @@ onMounted(async () => {
 });
 
 watch(() => props.uid, async (uid) => {
+    loaded.value = null;
+    error.value = null;
     liveEnabled.value = await mapStore.worker.db.breadcrumb.get(uid);
 });
 
@@ -107,37 +123,28 @@ async function onLiveToggle(enabled: boolean): Promise<void> {
 
 async function loadBreadcrumb() {
     loading.value = true;
+    loaded.value = null;
+    error.value = null;
 
     try {
-        const { data: crumb, error } = await server.GET('/api/marti/cot/{:uid}/all', {
+        const { data: crumb, error: err } = await server.GET('/api/marti/cot/{:uid}/all', {
             params: {
                 path: {
                     ':uid': props.uid
                 },
                 query: {
                     secago: String(60 * 60 * Number(query.value.relative.split(' ')[0])),
-                    track: true
+                    track: false
                 }
             }
         });
-        if (error || !crumb) throw new Error(String(error || 'No data'));
+        if (err || !crumb) throw new Error(String(err || 'No data'));
 
-        for (const feat of crumb.features) {
-            if (feat.geometry.type === 'LineString' && String(feat.id).endsWith('-track')) {
-                await mapStore.worker.db.breadcrumb.merge(
-                    props.uid,
-                    feat.geometry.coordinates as number[][]
-                );
-            } else {
-                // @ts-expect-error Feature types are slightly incompatible
-                await mapStore.worker.db.add(feat);
-            }
-        }
-
-        loading.value = false;
+        loaded.value = await mapStore.worker.db.breadcrumb.ingest(crumb.features as unknown as InputFeature[]);
     } catch (err) {
+        error.value = err instanceof Error ? err.message : String(err);
+    } finally {
         loading.value = false;
-        throw err;
     }
 }
 </script>

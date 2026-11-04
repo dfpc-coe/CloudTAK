@@ -58,7 +58,19 @@ export type SubmitCotsRequest = {
 export interface HubClient {
     connectionSync(id: number, opts?: { force?: boolean; deleted?: boolean }): Promise<ConnStatus>;
 
+    /**
+     * Drop a pooled profile connection so the next WebSocket or CoT submission
+     * rebuilds it from the profile's current certificate
+     */
+    profileSync(username: string): Promise<void>;
+
     connectionStatus(ids: Array<number | string>): Promise<Record<string, ConnStatus>>;
+
+    /**
+     * Active channel bitpos set cached on a pooled connection, or null when
+     * the connection is not pooled or its channel list has not loaded yet
+     */
+    connectionChannels(id: number | string): Promise<number[] | null>;
 
     connectionSummary(): Promise<PoolSummary>;
 
@@ -76,7 +88,7 @@ export interface HubClient {
 
     featureRefresh(connection: number): Promise<void>;
 
-    coreEntitySubmit(event: string): Promise<void>;
+    coreEntitySubmit(entity: string): Promise<void>;
 
     geofenceRefresh(): Promise<void>;
 

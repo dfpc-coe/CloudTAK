@@ -152,8 +152,6 @@ export default {
                             Value: cf.join([
                                 'postgresql://',
                                 cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:username:AWSCURRENT}}'),
-                                ':',
-                                cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
                                 '@',
                                 cf.getAtt('DBCluster', 'Endpoint.Address'),
                                 ':5432/tak_ps_etl?sslmode=require'
@@ -171,8 +169,11 @@ export default {
                         { Name: 'VpcId', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])) },
                         { Name: 'SubnetPublicA', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-a'])) },
                         { Name: 'SubnetPublicB', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b'])) },
-                        { Name: 'MediaSecurityGroup', Value: cf.ref('MediaSecurityGroup') },
-                        { Name: 'CLOUDTAK_Config_geofence_password', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/geofence}}') }
+                        { Name: 'MediaSecurityGroup', Value: cf.ref('MediaSecurityGroup') }
+                    ],
+                    Secrets: [
+                        { Name: 'PGPASSWORD', ValueFrom: cf.join([cf.ref('DBMasterSecret'), ':password::']) },
+                        { Name: 'CLOUDTAK_Config_geofence_password', ValueFrom: cf.ref('GeofenceSecret') }
                     ],
                     RestartPolicy: {
                         Enabled: true,

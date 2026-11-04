@@ -188,7 +188,7 @@
                         <div class='col-12'>
                             <TablerEnum
                                 v-model='mission.role'
-                                label='Default Role'
+                                label='Default Subscriber Role'
                                 :options='["Read-Only", "Subscriber", "Owner"]'
                             />
                         </div>
@@ -214,7 +214,6 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { server } from '../../../../std.ts';
 import type { Mission_Create, MissionTemplateList } from '../../../../types.ts';
-import { useMapStore } from '../../../../stores/map.ts'
 import {
     IconLock,
     IconLockOpen,
@@ -235,7 +234,6 @@ import {
     TablerIconButton
 } from '@tak-ps/vue-tabler';
 
-const mapStore = useMapStore();
 const emit = defineEmits(['mission']);
 
 const attempted = ref(false);
@@ -374,8 +372,6 @@ async function createMission() {
             token: res.data.token,
             mode_id: res.data.guid,
         })
-
-        await mapStore.loadMission(res.data.guid);
 
         emit('mission', res.data);
 

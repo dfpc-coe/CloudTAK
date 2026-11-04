@@ -1,6 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import type Config from '../config.js';
-import TAKServerControl from './takserver.js';
+import { userChannels } from './tak-channels.js';
 
 export default class ProfileFileControl {
     config: Config;
@@ -17,12 +17,7 @@ export default class ProfileFileControl {
             throw new Err(403, null, 'You do not have permission to view this asset');
         }
 
-        const api = await new TAKServerControl(this.config).asUser(email);
-        const activeChannels = new Set(
-            (await api.Group.list({ useCache: true })).data
-                .filter(group => group.active)
-                .map(group => group.bitpos),
-        );
+        const activeChannels = await userChannels(this.config, email);
 
         if (!fileChannels.some(channel => activeChannels.has(channel))) {
             throw new Err(403, null, 'You do not have permission to view this asset');

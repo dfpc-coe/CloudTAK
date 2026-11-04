@@ -32,6 +32,9 @@ flight.integration('etl-test');
 flight.connection();
 
 process.env.ECR_TASKS_REPOSITORY_NAME = 'example-ecr';
+process.env.ETLSecurityGroup = 'sg-etl';
+process.env.SubnetPrivateA = 'subnet-private-a';
+process.env.SubnetPrivateB = 'subnet-private-b';
 
 test('GET: api/connection/1/layer', async () => {
     try {
@@ -105,10 +108,8 @@ test('POST: api/connection/1/layer', async () => {
 
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             if (command instanceof BatchGetImageCommand) {
-                assert.deepEqual(command.input, {
-                    repositoryName: process.env.ECR_TASKS_REPOSITORY_NAME,
-                    imageIds: [{ imageTag: 'etl-test-v1.0.0' }],
-                });
+                assert.equal(command.input.repositoryName, process.env.ECR_TASKS_REPOSITORY_NAME);
+                assert.deepEqual(command.input.imageIds, [{ imageTag: 'etl-test-v1.0.0' }]);
 
                 return Promise.resolve({
                     images: [{
@@ -162,6 +163,7 @@ test('POST: api/connection/1/layer', async () => {
             logging: true,
             task: 'etl-test-v1.0.0',
             version: '1.0.0',
+            schema: '1.0',
             integration: {
                 name: 'etl-test',
                 icon: null,
@@ -169,6 +171,7 @@ test('POST: api/connection/1/layer', async () => {
             connection: 1,
             memory: 256,
             timeout: 120,
+            vpc: false,
             alarm_period: 30,
             alarm_evals: 5,
             alarm_points: 4,
@@ -220,6 +223,7 @@ test('GET: api/connection/1/layer/1', async () => {
             logging: true,
             task: 'etl-test-v1.0.0',
             version: '1.0.0',
+            schema: '1.0',
             integration: {
                 name: 'etl-test',
                 icon: null,
@@ -227,6 +231,7 @@ test('GET: api/connection/1/layer/1', async () => {
             connection: 1,
             memory: 256,
             timeout: 120,
+            vpc: false,
             alarm_period: 30,
             alarm_evals: 5,
             alarm_points: 4,
@@ -281,6 +286,7 @@ test('PATCH: api/connection/1/layer/1 - set protected', async () => {
             logging: true,
             task: 'etl-test-v1.0.0',
             version: '1.0.0',
+            schema: '1.0',
             integration: {
                 name: 'etl-test',
                 icon: null,
@@ -288,6 +294,7 @@ test('PATCH: api/connection/1/layer/1 - set protected', async () => {
             connection: 1,
             memory: 256,
             timeout: 120,
+            vpc: false,
             alarm_period: 30,
             alarm_evals: 5,
             alarm_points: 4,
@@ -356,6 +363,7 @@ test('PATCH: api/connection/1/layer/1 - unset protected', async () => {
             logging: true,
             task: 'etl-test-v1.0.0',
             version: '1.0.0',
+            schema: '1.0',
             integration: {
                 name: 'etl-test',
                 icon: null,
@@ -363,6 +371,7 @@ test('PATCH: api/connection/1/layer/1 - unset protected', async () => {
             connection: 1,
             memory: 256,
             timeout: 120,
+            vpc: false,
             alarm_period: 30,
             alarm_evals: 5,
             alarm_points: 4,
@@ -1089,6 +1098,116 @@ test('Outgoing subscriptions follow the task manifest on create & version update
     }
 });
 
+test('Layer schema follows the task manifest on create & version update', async () => {
+    const manifest = (capabilities: object) => JSON.stringify({
+        schemaVersion: 2,
+        mediaType: 'application/vnd.oci.image.manifest.v1+json',
+        annotations: {
+            'com.cloudtak.capabilities': JSON.stringify(capabilities),
+        },
+    });
+
+    const base = {
+        name: 'Test Task',
+        description: 'A Task used in testing',
+        compute: { memory: 256, timeout: 30 },
+        permissions: [],
+        invocations: {},
+    };
+
+    const manifests: Record<string, string> = {
+        'etl-test-v1.0.0': manifest({ ...base, version: '1.0' }),
+        'etl-test-v1.1.0': manifest({ ...base, version: '1.1' }),
+        'etl-test-v1.2.0': '{}',
+    };
+
+    let layerId: number | undefined;
+
+    try {
+        Sinon.stub(CloudFormationClient.prototype, 'send').callsFake((command) => {
+            if (command instanceof DescribeStacksCommand) {
+                return Promise.resolve({ Stacks: [{ StackStatus: 'CREATE_COMPLETE' }] });
+            } else if (command instanceof CreateStackCommand) {
+                return Promise.resolve({});
+            } else {
+                throw new Error('Unexpected command');
+            }
+        });
+
+        Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
+            if (!(command instanceof BatchGetImageCommand)) throw new Error('Unexpected command');
+
+            const tag = command.input.imageIds![0].imageTag!;
+            if (!manifests[tag]) throw new Error(`Unexpected tag: ${tag}`);
+
+            return Promise.resolve({
+                images: [{
+                    imageId: { imageTag: tag, imageDigest: 'sha256:abcdef1234567890' },
+                    imageManifest: manifests[tag],
+                }],
+            });
+        });
+
+        const created = await flight.fetch('/api/connection/1/layer', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Schema Layer',
+                description: 'The schema version is derived from the manifest',
+                task: 'etl-test-v1.1.0',
+            },
+        }, true);
+
+        layerId = created.body.id;
+
+        assert.equal(created.body.schema, '1.1');
+
+        // An update that leaves the task alone leaves the schema alone
+        const renamed = await flight.fetch(`/api/connection/1/layer/${layerId}`, {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { name: 'Renamed Schema Layer' },
+        }, true);
+
+        assert.equal(renamed.body.schema, '1.1');
+
+        // A version change re-reads the schema from the new manifest
+        const downgraded = await flight.fetch(`/api/connection/1/layer/${layerId}`, {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { task: 'etl-test-v1.0.0' },
+        }, true);
+
+        assert.equal(downgraded.body.task, 'etl-test-v1.0.0');
+        assert.equal(downgraded.body.schema, '1.0');
+
+        const upgraded = await flight.fetch(`/api/connection/1/layer/${layerId}`, {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { task: 'etl-test-v1.1.0' },
+        }, true);
+
+        assert.equal(upgraded.body.schema, '1.1');
+
+        // A version without a Capabilities document falls back to 1.0
+        const absent = await flight.fetch(`/api/connection/1/layer/${layerId}`, {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { task: 'etl-test-v1.2.0' },
+        }, true);
+
+        assert.equal(absent.body.schema, '1.0');
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        if (layerId !== undefined) {
+            await flight.config!.models.Layer.delete(layerId);
+        }
+
+        Sinon.restore();
+    }
+});
+
 test('POST: api/connection/0/layer - admin layer', async () => {
     let layerId: number | undefined;
 
@@ -1166,6 +1285,133 @@ test('POST: api/connection/0/layer - admin layer requires admin', async () => {
         assert.equal(res.status, 401);
     } catch (err) {
         assert.ifError(err);
+    }
+});
+
+test('POST: api/connection/1/layer - vpc requires system admin', async () => {
+    try {
+        const minted = await flight.fetch('/api/connection/1/token', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: { name: 'VPC Token' },
+        }, true);
+
+        const res = await flight.fetch('/api/connection/1/layer', {
+            method: 'POST',
+            auth: { bearer: minted.body.token },
+            body: {
+                name: 'VPC Layer',
+                description: 'Should be rejected',
+                task: 'etl-test-v1.0.0',
+                vpc: true,
+            },
+        }, false);
+
+        assert.equal(res.status, 403);
+        assert.equal(res.body.message, 'Only a System Admin can enable VPC access');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/connection/1/layer/1 - vpc requires system admin', async () => {
+    try {
+        const token = 'etl.' + jwt.sign({ access: 'layer', id: 1, internal: true }, 'coe-wildland-fire');
+
+        const res = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'PATCH',
+            auth: { bearer: token },
+            body: { vpc: true },
+        }, false);
+
+        assert.equal(res.status, 403);
+        assert.equal(res.body.message, 'Only a System Admin can change VPC access');
+
+        const unchanged = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'PATCH',
+            auth: { bearer: token },
+            body: { vpc: false, description: 'Unchanged vpc is allowed' },
+        }, true);
+
+        assert.equal(unchanged.body.vpc, false);
+        assert.equal(unchanged.body.description, 'Unchanged vpc is allowed');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/connection/1/layer/1 - system admin toggles vpc', async () => {
+    let describeCount = 0;
+
+    try {
+        Sinon.stub(CloudFormationClient.prototype, 'send').callsFake((command) => {
+            if (command instanceof DescribeStacksCommand) {
+                if (command.input.StackName === 'test-layer-1') {
+                    describeCount++;
+
+                    if (describeCount % 2 === 1) {
+                        return Promise.resolve({
+                            Stacks: [{
+                                StackName: 'test-layer-1',
+                                StackStatus: 'UPDATE_COMPLETE',
+                                CreationTime: new Date(),
+                            }],
+                        });
+                    }
+
+                    throw new Error('Stack with id test-layer-1 does not exist');
+                } else if (command.input.StackName === 'test') {
+                    return Promise.resolve({
+                        Stacks: [{ Tags: [] }],
+                    });
+                }
+            } else if (command instanceof CreateStackCommand) {
+                const template = JSON.parse(String(command.input.TemplateBody));
+                const vpc = template.Resources.ETLFunction.Properties.VpcConfig;
+
+                if (describeCount <= 2) {
+                    assert.deepEqual(vpc, {
+                        SecurityGroupIds: ['sg-etl'],
+                        SubnetIds: ['subnet-private-a', 'subnet-private-b'],
+                    });
+                } else {
+                    assert.equal(vpc, undefined);
+                }
+
+                return Promise.resolve({});
+            }
+
+            throw new Error(`Unexpected CloudFormation command: ${command.constructor.name}`);
+        });
+
+        Sinon.stub(CloudWatchLogsClient.prototype, 'send').callsFake((command) => {
+            if (command instanceof DeleteLogGroupCommand) {
+                return Promise.resolve({});
+            }
+
+            throw new Error('Unexpected command');
+        });
+
+        const enabled = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { vpc: true },
+        }, true);
+
+        assert.equal(enabled.body.vpc, true);
+
+        const disabled = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { vpc: false },
+        }, true);
+
+        assert.equal(disabled.body.vpc, false);
+        assert.equal(describeCount, 4);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        Sinon.restore();
     }
 });
 

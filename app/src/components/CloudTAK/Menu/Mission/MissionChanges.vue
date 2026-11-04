@@ -4,20 +4,34 @@
         :zindex='0'
         :back='false'
         :border='false'
-        :loading='!changes'
+        :loading='loading || !changes'
         :standalone='false'
     >
-        <TablerAlert
+        <div
             v-if='error'
-            :error='error'
-        />
+            class='px-2 pt-2'
+        >
+            <TablerInlineAlert
+                severity='danger'
+                title='Failed to load Mission Changes'
+                :description='error.message'
+            />
+            <div class='d-flex justify-content-center'>
+                <TablerButton
+                    :loading='loading || fetchingAll'
+                    @click='retry'
+                >
+                    Retry
+                </TablerButton>
+            </div>
+        </div>
         <TablerNone
-            v-else-if='changes && !changes.length'
+            v-if='changes && !changes.length'
             :create='false'
-            label='No Mission Changes'
+            label='No Recent Mission Changes'
         />
         <div
-            v-if='changes && changes.length'
+            v-if='changes'
             class='col-12 px-2 py-2'
         >
             <StandardItem
@@ -110,6 +124,17 @@
                     />
                 </div>
             </StandardItem>
+            <div
+                v-if='!fetchedAll'
+                class='d-flex justify-content-center mt-2'
+            >
+                <TablerButton
+                    :loading='fetchingAll'
+                    @click='fetchAll'
+                >
+                    Fetch All Changes
+                </TablerButton>
+            </div>
         </div>
     </MenuTemplate>
 </template>
@@ -131,8 +156,9 @@ import {
     IconPolygon,
 } from '@tabler/icons-vue';
 import {
-    TablerAlert,
+    TablerInlineAlert,
     TablerNone,
+    TablerButton,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import StandardItem from '../../util/StandardItem.vue';
@@ -142,6 +168,10 @@ const props = defineProps<{
 }>();
 
 const error = ref<Error | undefined>();
+const loading = ref(true);
+const fetchingAll = ref(false);
+const fetchedAll = ref(false);
+const lastAll = ref(false);
 const changes: Ref<Array<MissionChange>> = useObservable(
     from(liveQuery(async () => {
         return await props.subscription.change.list()
@@ -149,10 +179,35 @@ const changes: Ref<Array<MissionChange>> = useObservable(
 )
 
 onMounted(async () => {
+    await load(false);
+    loading.value = false;
+});
+
+async function fetchAll(): Promise<void> {
+    fetchingAll.value = true;
+    await load(true);
+    fetchingAll.value = false;
+}
+
+async function retry(): Promise<void> {
+    if (lastAll.value) {
+        await fetchAll();
+    } else {
+        loading.value = true;
+        await load(false);
+        loading.value = false;
+    }
+}
+
+async function load(all: boolean): Promise<void> {
+    lastAll.value = all;
+    error.value = undefined;
+
     try {
-        await props.subscription.change.refresh();
+        await props.subscription.change.refresh({ all });
+        if (all) fetchedAll.value = true;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
-});
+}
 </script>

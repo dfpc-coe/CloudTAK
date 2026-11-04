@@ -274,6 +274,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import PagingEmptyHint from './Settings/PagingEmptyHint.vue';
@@ -297,6 +298,7 @@ import {
     IconAlertCircle,
 } from '@tabler/icons-vue';
 
+const router = useRouter();
 const loading = ref<boolean>(true);
 const source = ref<ProfilePaging | { type: ProfilePaging_Create['type'] } | false>(false);
 const pushLoading = ref<boolean>(false);
@@ -380,9 +382,9 @@ async function registerPush(): Promise<void> {
     pushLoading.value = true;
     pushErr.value = null;
     try {
-        await deviceStore.notification.request();
+        await deviceStore.refreshNotificationPermissionStatus();
         if (deviceStore.permissions.notification !== 'granted') {
-            pushErr.value = new Error('Push notification permission was not granted.');
+            await router.push('/menu/settings/permissions');
             return;
         }
         const token = deviceStore.getMessagingToken() ?? await deviceStore.refreshMessagingToken();

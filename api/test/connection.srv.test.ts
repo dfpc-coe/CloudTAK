@@ -375,6 +375,7 @@ test('GET: api/connection/:connectionid - existing', async () => {
         assert.ok(res.body.certificate.validFrom, 'has validFrom');
         assert.ok(res.body.certificate.validTo, 'has validTo');
         assert.ok(res.body.certificate.subject, 'has subject');
+        assert.equal(typeof res.body.certificate.channels, 'boolean', 'has channels');
         assert.ok(typeof res.body.status === 'string', 'has status');
     } catch (err) {
         assert.ifError(err);

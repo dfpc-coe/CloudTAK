@@ -314,7 +314,7 @@ export default class Flight {
                 CP.execSync(`
                     openssl req \
                         -newkey rsa:4096 \
-                        -keyout ${key} \
+                        -keyout ${key}.tmp \
                         -out /tmp/cloudtak-test-${name}.csr \
                         -nodes \
                         -subj "${subject}" \
@@ -327,15 +327,29 @@ export default class Flight {
                         -in /tmp/cloudtak-test-${name}.csr \
                         -CA ${this.tak.keys.cert} \
                         -CAkey ${this.tak.keys.key} \
-                        -out ${cert} \
+                        -out ${cert}.tmp \
                         -set_serial 01 \
                         -days 365 \
                         2> /dev/null
                 `);
+
+                // Rename into place so a file that exists is always complete -
+                // readers in other workers only check for existence
+                fs.renameSync(`${key}.tmp`, key);
+                fs.renameSync(`${cert}.tmp`, cert);
             });
         }
 
         return { key, cert };
+    }
+
+    /**
+     * Re-read a pooled connection's channel set from the Mock TAK Server, as a
+     * group-change CoT would, so a swapped group mock reaches the hub cache
+     */
+    async refreshChannels(id: number | string): Promise<void> {
+        const client = this.stateful?.conns.get(id);
+        if (client) await client.refreshChannels();
     }
 
     /**
@@ -447,6 +461,7 @@ export default class Flight {
                 status: 'dead',
                 certificate: {
                     subject: 'CN=Alice',
+                    channels: false,
                 },
                 id: 1,
                 agency: null,

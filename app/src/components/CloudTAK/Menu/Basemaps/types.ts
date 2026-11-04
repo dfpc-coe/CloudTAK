@@ -1,3 +1,4 @@
+import type { StyleLayerDef } from '../../../ETL/Styling/types.ts';
 import type { Basemap, BasemapList } from '../../../../types.ts';
 import type { paths } from '@cloudtak/api-types';
 import {
@@ -40,7 +41,7 @@ export interface EditingBasemap {
     frequency: number | null;
     snapping_enabled: boolean;
     snapping_layer: string;
-    styles: unknown[];
+    styles: StyleLayerDef[];
     tilejson: string;
     encoding: 'mapbox' | 'terrarium' | null;
 }
@@ -141,11 +142,11 @@ export const BasemapTypeConfig: Record<BasemapSourceType, {
         },
     },
     tilejson: {
-        label: 'TileJSON Import',
-        description: 'Fetch defaults from a TileJSON URL.',
+        label: 'TileJSON / WMTS Import',
+        description: 'Fetch defaults from a TileJSON or WMTS capabilities URL.',
         icon: IconFileImport,
-        urlLabel: 'TileJSON URL',
-        urlDescription: 'Provide a TileJSON document URL to prefill the basemap form.',
+        urlLabel: 'TileJSON or WMTS Capabilities URL',
+        urlDescription: 'Provide a TileJSON document or WMTS GetCapabilities URL to prefill the basemap form. Add ?layer=<identifier> to a WMTS URL to pick a layer.',
         urlPlaceholder: 'https://example.com/tilejson.json',
         urlTokens: [],
         defaults: {
@@ -232,7 +233,7 @@ export function normalizeEditing(data: Basemap | BasemapImport | BasemapListItem
         frequency: ('frequency' in data ? data.frequency : undefined) ?? null,
         snapping_enabled: ('snapping_enabled' in data ? data.snapping_enabled : undefined) ?? false,
         snapping_layer: ('snapping_layer' in data ? data.snapping_layer : undefined) ?? '',
-        styles: ('styles' in data && Array.isArray(data.styles) ? data.styles : null) ?? [],
+        styles: ('styles' in data && Array.isArray(data.styles) ? data.styles as StyleLayerDef[] : null) ?? [],
         tilejson: (() => { const v = String(('tilejson' in data ? data.tilejson : undefined) ?? ''); return (v.startsWith('http://') || v.startsWith('https://')) ? v : ''; })(),
         encoding: ('encoding' in data ? (data.encoding === 'mapbox' || data.encoding === 'terrarium' ? data.encoding : null) : null) ?? null,
     };

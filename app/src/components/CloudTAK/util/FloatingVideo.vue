@@ -1,6 +1,7 @@
 <template>
     <FloatingPane
         :uid='uid'
+        :padded='false'
         class='video-container'
         @close='emit("close")'
     >
@@ -95,7 +96,7 @@
  */
 
 import { ref, computed } from 'vue'
-import { std } from '../../../../src/std.ts';
+import { server } from '../../../std.ts';
 import StatusDot from './../../util/StatusDot.vue';
 import VideoLeaseSourceType from './VideoLeaseSourceType.vue';
 import FloatingPane from './FloatingPane.vue';
@@ -156,8 +157,7 @@ async function pushToWall(): Promise<void> {
     pushError.value = undefined;
 
     try {
-        await std('/api/profile/video', {
-            method: 'POST',
+        const { error } = await server.POST('/api/profile/video', {
             body: video.value.config.lease !== undefined ? {
                 lease: video.value.config.lease,
                 name: title.value
@@ -166,6 +166,8 @@ async function pushToWall(): Promise<void> {
                 name: title.value
             }
         });
+
+        if (error) throw new Error(error.message);
 
         await notifyVideoWall();
 

@@ -115,7 +115,25 @@
                     v-model='environment'
                     :schema='inputSchema'
                     :disabled='disabled'
-                />
+                >
+                    <template #widget-type='{ field, property, modelValue, update }'>
+                        <label
+                            class='form-label'
+                            :class='{ required: property.required }'
+                            v-text='field'
+                        />
+                        <div
+                            v-if='property.description'
+                            class='text-muted small mb-2'
+                            v-text='property.description'
+                        />
+                        <PropertyType
+                            :model-value='String(modelValue || DEFAULT_SIDC)'
+                            :edit='!disabled'
+                            @update:model-value='update'
+                        />
+                    </template>
+                </TablerSchema>
             </template>
 
             <div class='px-2 pb-3'>
@@ -166,6 +184,7 @@ import {
     TablerSchema,
 } from '@tak-ps/vue-tabler';
 import CopyField from '../../CloudTAK/util/CopyField.vue';
+import PropertyType from '../../CloudTAK/Property/PropertyType.vue';
 import LayerIncomingEnvironmentArcGIS from './LayerIncomingEnvironmentArcGIS.vue';
 import LayerOutgoingEnvironmentArcGIS from './LayerOutgoingEnvironmentArcGIS.vue';
 import {
@@ -208,6 +227,9 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'refresh'): void;
 }>();
+
+// 2525E picker before a type has been chosen
+const DEFAULT_SIDC = '10034000001100000000';
 
 const route = useRoute();
 

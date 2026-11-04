@@ -121,10 +121,6 @@ export class BrowserNotificationPermission {
         if (isNativePlatform()) {
             await this.refreshStatus();
             await this.initializeNativeMessaging();
-
-            if (this.context.permissions.notification === 'prompt') {
-                await this.request();
-            }
             return;
         }
 

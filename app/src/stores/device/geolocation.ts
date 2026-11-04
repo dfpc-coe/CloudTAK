@@ -108,14 +108,6 @@ export class GeolocationPermission {
 
             if (!granted) return;
             onGranted?.();
-
-            // iOS ignores the Always escalation while the foreground prompt is
-            // still pending, so it must follow the first grant. Not awaited:
-            // the plugin holds the call for up to 30s if the user keeps
-            // While Using, and the watch must not wait on that.
-            void BackgroundGeolocation.requestPermissions({ permissions: ['backgroundLocation'] })
-                .catch((err) => console.warn('Failed to request background location permission', err))
-                .finally(() => this.refreshStatus());
             return;
         }
 
@@ -136,6 +128,22 @@ export class GeolocationPermission {
         } catch (err) {
             await this.refreshStatus();
             throw err;
+        }
+    }
+
+    // Only called after the foreground grant and its own disclosure: iOS
+    // ignores the Always escalation while the foreground prompt is pending,
+    // and Play requires a disclosure immediately before the background request.
+    async requestBackground(): Promise<void> {
+        if (!isNativePlatform()) return;
+        if (this.context.permissions.location !== 'granted') return;
+
+        try {
+            await BackgroundGeolocation.requestPermissions({ permissions: ['backgroundLocation'] });
+        } catch (err) {
+            console.warn('Failed to request background location permission', err);
+        } finally {
+            await this.refreshStatus();
         }
     }
 

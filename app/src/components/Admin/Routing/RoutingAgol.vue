@@ -65,7 +65,7 @@
                                 v-model='config["routing::agol::auth_method"]'
                                 :options='[
                                     { value: "oauth2", label: "OAuth2" },
-                                    { value: "legacy", label: "Legacy" }
+                                    { value: "legacy", label: "API Key" }
                                 ]'
                                 :disabled='!config["routing::agol::enabled"] || !edit'
                                 size='default'
@@ -93,8 +93,8 @@
                                     type='password'
                                     autocomplete='new-password'
                                     :disabled='!edit'
-                                    label='Legacy Token'
-                                    description='ArcGIS Online access token'
+                                    label='API Key'
+                                    description='Key generated from an API key credentials item in ArcGIS Location Platform or ArcGIS Online. Keys expire after at most one year and must be regenerated.'
                                 />
                             </template>
                         </template>

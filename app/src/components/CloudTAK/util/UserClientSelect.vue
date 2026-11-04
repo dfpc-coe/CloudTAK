@@ -37,6 +37,8 @@ const props = defineProps<{
     input?: boolean;
     limit?: number;
     groups?: string[];
+    excludeUids?: string[];
+    excludeCallsigns?: string[];
 }>();
 
 const emit = defineEmits(['select', 'update:modelValue']);
@@ -44,14 +46,18 @@ const emit = defineEmits(['select', 'update:modelValue']);
 const contacts = ref<ContactType[]>([]);
 const filter = ref(props.modelValue || '');
 
+const excludedUids = computed(() => new Set(props.excludeUids || []));
+const excludedCallsigns = computed(() => new Set((props.excludeCallsigns || []).map(c => c.toLowerCase())));
+
 const filteredList = computed(() => {
-    if (!filter.value) {
-        return contacts.value.slice(0, props.limit || 10);
-    }
-    
-    return contacts.value.filter(c => {
+    const list = contacts.value.filter(c => {
+        if (excludedUids.value.has(c.uid)) return false;
+        if (excludedCallsigns.value.has(c.callsign.toLowerCase())) return false;
+        if (!filter.value) return true;
         return c.callsign.toLowerCase().includes(filter.value.toLowerCase());
-    }).slice(0, props.limit || 10);
+    });
+
+    return list.slice(0, props.limit || 10);
 });
 
 onMounted(async () => {

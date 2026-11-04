@@ -119,7 +119,16 @@
                                     rel='noopener noreferrer'
                                     class='d-flex align-items-center text-reset text-decoration-none flex-fill overflow-hidden'
                                 >
+                                    <img
+                                        v-if='thumbnail(item)'
+                                        class='link-thumb rounded me-2 flex-shrink-0'
+                                        loading='lazy'
+                                        :src='thumbnail(item)'
+                                        :alt='item.link.remarks || item.link.url'
+                                        @error='failedThumbnails.add(item.index)'
+                                    >
                                     <IconExternalLink
+                                        v-else
                                         :size='18'
                                         stroke='1'
                                         class='me-2 flex-shrink-0'
@@ -231,6 +240,7 @@
                         <TablerBadge
                             v-for='entry of statusSummary'
                             :key='entry.status'
+                            text-color='var(--tblr-body-color)'
                             class='d-flex align-items-center gap-1'
                         >
                             <span>{{ entry.status || 'Unknown' }}:</span>
@@ -278,8 +288,10 @@
 </template>
 
 <script setup lang='ts'>
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
+import { getRuntimeToken } from '../../../std.ts';
+import { proxyImageUrl, isImageLink } from '../util/proxyImages.ts';
 import { TablerBadge, TablerInput, TablerIconButton, TablerNone } from '@tak-ps/vue-tabler';
 import { IconUsers, IconLink, IconExternalLink, IconPlus, IconTrash, IconPencil, IconCheck } from '@tabler/icons-vue';
 import type COT from '../../../base/cot';
@@ -294,10 +306,17 @@ const newLink = ref<LinkEntry>({
     url: ''
 });
 const draftLinks = ref<Record<number, LinkEntry>>({});
+const token = ref<string | null | undefined>(undefined);
+const failedThumbnails = ref(new Set<number>());
+
+onMounted(async () => {
+    token.value = (await getRuntimeToken()) ?? null;
+});
 
 interface LinkEntry {
     remarks?: string;
     url?: string;
+    mime?: string;
     relation?: string;
     type?: string;
     uid?: string;
@@ -320,6 +339,16 @@ const external_links = computed(() => {
         .map((link, index) => ({ link, index }))
         .filter((item) => item.link.relation !== 't-s' && item.link.relation !== 'p-p' && !isObjectMarker(item.link));
 });
+
+// Thumbnails wait for the token so images are never requested without it
+// and only load while the section is expanded
+function thumbnail(item: { link: LinkEntry; index: number }): string | undefined {
+    if (!expandedLinks.value || token.value === undefined) return;
+    if (failedThumbnails.value.has(item.index)) return;
+    if (!item.link.url || !isImageLink(item.link)) return;
+
+    return proxyImageUrl(item.link.url, token.value) ?? undefined;
+}
 
 // A Link marking the CoT as the projection of a richer CloudTAK record -
 // for the client to resolve the record, not a user facing link
@@ -432,3 +461,12 @@ function cancelNewLink(): void {
 }
 </script>
 
+<style scoped>
+.link-thumb {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    background-color: var(--cloudtak-inset-bg);
+    border: 1px solid var(--cloudtak-inset-border);
+}
+</style>

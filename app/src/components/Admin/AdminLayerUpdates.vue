@@ -120,6 +120,7 @@
             v-if='taskUpdate'
             :layer='taskUpdate.layer'
             :update='taskUpdate.update'
+            :auto='bulk'
             @close='closeUpdate'
             @updated='closeUpdate'
         />
@@ -161,6 +162,7 @@ const list = ref<AdminLayerUpdateList>({
 
 const taskUpdate = ref<{ layer: UpdateTarget; update: TaskUpdate }>();
 const queue = ref<AdminLayerUpdate[]>([]);
+const bulk = ref(false);
 
 const updatable = computed(() => list.value.items.filter((layer) => layer.has_update && layer.latest_version));
 
@@ -218,11 +220,13 @@ async function closeUpdate(): Promise<void> {
     if (next) {
         updateLayer(next);
     } else {
+        bulk.value = false;
         await fetchList();
     }
 }
 
 function updateAll(): void {
+    bulk.value = true;
     queue.value = updatable.value.slice();
     const first = queue.value.shift();
     if (first) updateLayer(first);

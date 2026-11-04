@@ -2,6 +2,7 @@ import express from 'express';
 import Schema from '@openaddresses/batch-schema';
 import cors from 'cors';
 import serverless from '@tak-ps/serverless-http';
+import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
 import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 
@@ -29,6 +30,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             console.log('ok - no .env file loaded', err);
         }
     }
+}
+
+if (!process.env.SigningSecret && process.env.StackName) {
+    const secrets = new SecretsManagerClient({ region: process.env.AWS_REGION });
+    const secret = await secrets.send(new GetSecretValueCommand({
+        SecretId: `${process.env.StackName}/api/secret`,
+    }));
+    process.env.SigningSecret = secret.SecretString;
 }
 
 if (!process.env.SigningSecret) throw new Error('SigningSecret env var must be provided');

@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox';
 import type { TObject, TSchema } from '@sinclair/typebox';
 import { StyleSingle } from './style.js';
-import { LayerMapping_Destination, CoreEntity_Priority } from './enums.js';
+import { LayerMapping_Destination, CoreEvent_Priority } from './enums.js';
 
 export const CoreFeatureSchema = Type.Object(StyleSingle.properties, {
     title: 'Core Feature',
@@ -18,7 +18,19 @@ const Channels = Type.Array(Type.Integer({ minimum: 0 }), {
 
 export const CoreEntityLinkSchema = Type.Object({
     name: Type.String({ title: 'Name', description: 'Human readable name of the Link' }),
-    url: Type.String({ title: 'URL', description: 'URL the Link points at', pattern: '^(https?:\\/\\/.+|)$' }),
+    url: Type.String({ title: 'URL', description: 'URL the Link points at - an https:// or tel: URL', pattern: '^(https?:\\/\\/.+|tel:\\+?[0-9()\\-.]+|)$' }),
+});
+
+/**
+ * The external ID a submitted record is UPSERTed on - the Feature ID under the
+ * `default` system unless the Map says otherwise. Other systems are added to a
+ * record through the API
+ */
+export const CoreEntityExternalIdSchema = Type.Object({
+    system: Type.Optional(Type.String({ 'title': 'External ID System', '@icon': 'IconLicense', 'description': 'External system the ID belongs to - ie: active911, cad - defaults to "default"' })),
+    value: Type.Optional(Type.String({ 'title': 'External ID', '@icon': 'IconHash', 'description': 'ID of the record in the external system - defaults to the Feature ID' })),
+}, {
+    title: 'External ID',
 });
 
 /** Point styling overrides - property names match node-cot's CoT GeoJSON representation */
@@ -36,16 +48,16 @@ export const CoreEntityStyleSchema = Type.Object({
  * - `@widget`: input used in place of the one implied by the property type
  * - `@relative`: a date-time a Map may also give as a number of seconds from now
  */
-export const CoreEntitySchema = Type.Object({
+export const CoreEventSchema = Type.Object({
     name: Type.String({ 'title': 'Name', '@icon': 'IconTag', 'description': 'Human readable name of the Event' }),
     type: Type.String({ 'title': 'Type', '@icon': 'IconCategory', '@widget': 'type', 'description': 'MIL-STD-2525E Symbol ID' }),
-    priority: Type.Optional(Type.Unsafe<CoreEntity_Priority>({ 'type': 'string', 'title': 'Priority', '@icon': 'IconFlag', 'description': 'Priority of the Event', 'enum': Object.values(CoreEntity_Priority), 'default': CoreEntity_Priority.NONE })),
+    priority: Type.Optional(Type.Unsafe<CoreEvent_Priority>({ 'type': 'string', 'title': 'Priority', '@icon': 'IconFlag', 'description': 'Priority of the Event', 'enum': Object.values(CoreEvent_Priority), 'default': CoreEvent_Priority.NONE })),
     location: Type.Optional(Type.String({ 'title': 'Location', '@icon': 'IconMapPin', 'description': 'Human readable location - ie: an address' })),
     remarks: Type.Optional(Type.String({ 'title': 'Remarks', '@icon': 'IconBlockquote', 'description': 'Free text remarks about the Event' })),
     started: Type.Optional(Type.String({ 'title': 'Started', '@icon': 'IconCalendarEvent', 'description': 'Time at which the Event started - defaults to the time of creation', 'format': 'date-time' })),
     ended: Type.Optional(Type.String({ 'title': 'Ended', '@icon': 'IconCalendarOff', '@relative': true, 'description': 'Time at which the Event ends - a future time keeps the Event active until then, a Map value of a number of seconds ends the Event that far from submission', 'format': 'date-time' })),
     active: Type.Optional(Type.Boolean({ 'title': 'Active', '@icon': 'IconActivity', 'description': 'Is the Event active - derived from ended, false ends the Event now & true clears ended', 'default': true })),
-    external_id: Type.Optional(Type.String({ 'title': 'External ID', '@icon': 'IconLicense', 'description': 'ID of the Event in an external system' })),
+    external_id: Type.Optional(CoreEntityExternalIdSchema),
     editable: Type.Optional(Type.Boolean({ 'title': 'Editable', '@icon': 'IconLock', 'description': 'Can users other than the creator edit the Event', 'default': true })),
     channels: Type.Optional(Channels),
     style: Type.Optional(CoreEntityStyleSchema),
@@ -65,9 +77,8 @@ export const CoreDeviceSchema = Type.Object({
     status: Type.Optional(Type.String({ 'title': 'Status', '@icon': 'IconHeartbeat', 'description': 'General Device health status - ie: Full, Reduced, Unknown' })),
     battery: Type.Optional(Type.Number({ 'title': 'Battery', '@icon': 'IconBattery', 'description': 'Battery level as a percentage (0-100) at last report', 'minimum': 0, 'maximum': 100 })),
     simulated: Type.Optional(Type.Boolean({ 'title': 'Simulated', '@icon': 'IconTestPipe', 'description': 'Is the Device a simulated data source', 'default': false })),
-    external_id: Type.Optional(Type.String({ 'title': 'External ID', '@icon': 'IconLicense', 'description': 'ID of the Device in an external system' })),
+    external_id: Type.Optional(CoreEntityExternalIdSchema),
     remarks: Type.Optional(Type.String({ 'title': 'Remarks', '@icon': 'IconBlockquote', 'description': 'Free text remarks about the Device' })),
-    event_external_id: Type.Optional(Type.String({ 'title': 'Event', '@icon': 'IconCalendarEvent', 'description': 'External ID of the Core Event of the Connection the Device is assigned to - an empty result unassigns the Device' })),
     channels: Type.Optional(Channels),
 }, {
     title: 'Core Device',
@@ -98,6 +109,6 @@ export function withoutHints<T extends TObject>(schema: T): T {
 /** JSON Schemas of the record types the Server can convert submitted data into */
 export const CoreSchemas: Record<LayerMapping_Destination, TObject> = {
     [LayerMapping_Destination.COREFEATURE]: CoreFeatureSchema,
-    [LayerMapping_Destination.COREENTITY]: CoreEntitySchema,
+    [LayerMapping_Destination.COREEVENT]: CoreEventSchema,
     [LayerMapping_Destination.COREDEVICE]: CoreDeviceSchema,
 };

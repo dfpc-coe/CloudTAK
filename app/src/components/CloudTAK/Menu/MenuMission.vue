@@ -4,6 +4,27 @@
         :loading='(!subscription && !error) || loading'
         :scroll='false'
     >
+        <template #header='{ isModal }'>
+            <div
+                v-if='subscription && subscription.subscribed'
+                class='mission-name flex-grow-1 text-break'
+                :class='isModal ? "modal-title px-1" : "strong px-2"'
+                style='min-width: 0'
+                role='button'
+                tabindex='0'
+                title='Zoom to Mission Features'
+                @click='zoomToFeatures'
+                @keydown.enter.prevent='zoomToFeatures'
+                v-text='subscription.meta.name'
+            />
+            <div
+                v-else
+                class='flex-grow-1 text-break user-select-none'
+                :class='isModal ? "modal-title px-1" : "strong px-2"'
+                style='min-width: 0'
+                v-text='subscription ? subscription.meta.name : "Data Sync"'
+            />
+        </template>
         <template #buttons>
             <TablerDelete
                 v-if='!loading && subscription && subscription.subscribed && subscription.role.permissions.includes("MISSION_DELETE")'
@@ -86,22 +107,34 @@
                 :err='error'
             />
             <template v-else>
-                <TablerPillGroup
+                <div
                     v-if='subscription && subscription.subscribed'
-                    :model-value='String(route.name)'
-                    :options='missionTabs'
-                    @update:model-value='navigateMissionTab'
+                    ref='tabs'
                 >
-                    <template #option='{ option }'>
-                        <span :title='option.label'>
-                            <component
-                                :is='missionTabIcons[option.value]'
-                                :size='32'
-                                stroke='1'
-                            />
-                        </span>
-                    </template>
-                </TablerPillGroup>
+                    <TablerPillGroup
+                        :model-value='String(route.name)'
+                        :options='missionTabs'
+                        @update:model-value='navigateMissionTab'
+                    >
+                        <template #option='{ option }'>
+                            <span
+                                class='d-inline-flex align-items-center'
+                                :title='option.label'
+                            >
+                                <component
+                                    :is='missionTabIcons[option.value]'
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <span
+                                    v-if='showTabLabels'
+                                    class='ms-1'
+                                    v-text='option.label'
+                                />
+                            </span>
+                        </template>
+                    </TablerPillGroup>
+                </div>
 
                 <Suspense>
                     <router-view
@@ -127,7 +160,8 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, triggerRef, onMounted, onBeforeUnmount, watch } from 'vue';
+import { ref, computed, triggerRef, onMounted, onBeforeUnmount, watch, useTemplateRef } from 'vue';
+import { useElementSize } from '@vueuse/core';
 import { std } from '../../../std.ts';
 import type { Feature } from '../../../types.ts';
 import type { Component } from 'vue';
@@ -183,6 +217,12 @@ const missionTabIcons: Record<string, Component> = {
     'home-menu-mission-contents': IconFiles,
     'home-menu-mission-chats': IconMessage,
 };
+
+const MISSION_TAB_LABEL_WIDTH = 100;
+
+const tabs = useTemplateRef('tabs');
+const { width: tabsWidth } = useElementSize(tabs);
+const showTabLabels = computed(() => tabsWidth.value >= missionTabs.length * MISSION_TAB_LABEL_WIDTH);
 
 function navigateMissionTab(name: string) {
     const suffix = name.replace('home-menu-mission-', '');
@@ -240,6 +280,17 @@ async function shareToPackageSetup(): Promise<void> {
     if (!subscription.value) return;
     shareToPackage.value.features = (await subscription.value.feature.collection(true)).features as Feature[];
     shareToPackage.value.shown = true;
+}
+
+async function zoomToFeatures(): Promise<void> {
+    if (!subscription.value) return;
+    error.value = undefined;
+
+    try {
+        await subscription.value.feature.zoomTo();
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
 }
 
 async function deleteMission() {
@@ -313,3 +364,15 @@ async function fetchMission(reload = false): Promise<void> {
     }
 }
 </script>
+
+<style scoped>
+.mission-name {
+    cursor: pointer;
+}
+
+.mission-name:hover,
+.mission-name:focus-visible {
+    text-decoration: underline;
+    outline: none;
+}
+</style>

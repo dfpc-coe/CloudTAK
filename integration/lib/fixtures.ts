@@ -1,6 +1,7 @@
 import { test as base, expect, type Page } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage.ts';
 import { MapPage } from '../pages/MapPage.ts';
+import { MenuPackages } from '../pages/MenuPackages.ts';
 import { cloudtakUsername, cloudtakPassword } from './env.ts';
 
 export async function skipPermissionsModal(page: Page): Promise<void> {
@@ -16,6 +17,7 @@ type Fixtures = {
     authedMap: MapPage;
     pageErrors: Error[];
     readyMap: MapPage;
+    menuPackages: MenuPackages;
 };
 
 export const test = base.extend<Fixtures>({
@@ -58,6 +60,11 @@ export const test = base.extend<Fixtures>({
         await skipPermissionsModal(page);
         await map.expectMapIdle();
         await use(map);
+    },
+
+    // Data Packages menu panel
+    menuPackages: async ({ page }, use) => {
+        await use(new MenuPackages(page));
     },
 });
 

@@ -346,6 +346,34 @@ test.describe('Map: interaction', () => {
     });
 });
 
+test.describe('Map: permissions modal', () => {
+    // Fresh context: geolocation is still "prompt", so the modal is shown.
+    test.beforeEach(async ({ map }) => {
+        await map.goto();
+        await map.waitUntilLoaded();
+    });
+
+    test('MAP-22c Request Permission opens the location disclosure before any prompt', async ({ page }) => {
+        const modal = page.getByRole('dialog');
+        await expect(modal.getByText('Permissions', { exact: true })).toBeVisible();
+        await expect(modal.getByRole('button', { name: 'Done' })).toBeDisabled();
+
+        await modal.getByRole('button', { name: 'Request Permission' }).first().click();
+
+        await expect(modal.getByText('Location access')).toBeVisible();
+        await expect(modal.getByText('CloudTAK does not use your location for advertising.')).toBeVisible();
+        await expect(modal.getByRole('button', { name: 'Agree and continue' })).toBeVisible();
+
+        await modal.getByRole('button', { name: 'Not now' }).click();
+
+        await expect(modal.getByText('Permissions', { exact: true })).toBeVisible();
+        await expect(modal.getByRole('button', { name: 'Request Permission' }).first()).toBeVisible();
+
+        await modal.getByRole('button', { name: 'Skip for now' }).click();
+        await expect(modal).toBeHidden();
+    });
+});
+
 test.describe('Map: interaction with mocked GPS', () => {
     // Playwright grants the permission and feeds a fake position; the app's
     // Capacitor Geolocation reads navigator.geolocation on web.
@@ -374,8 +402,8 @@ test.describe('Map: menus open and close', () => {
     }
 
     test('MAP-25 Close Menu after a right-side panel restores the map', async ({ readyMap: map, page }) => {
-        await map.menuItem('Your Features').click();
-        await expect(map.panelTitle).toHaveText('Saved Features');
+        await map.menuItem('Features').click();
+        await expect(map.panelTitle).toHaveText('Features');
 
         await map.closeMenu.click();
 
@@ -396,8 +424,8 @@ test.describe('Map: menus open and close', () => {
         await expect(map.menubar.getByPlaceholder('Search...')).toBeVisible();
 
         // Full layout shows label + description for each entry (MenuItemCard.vue).
-        await expect(map.menubar.getByText('Your Features', { exact: true })).toBeVisible();
-        await expect(map.menubar.getByText('Manage saved features')).toBeVisible();
+        await expect(map.menubar.getByText('Features', { exact: true })).toBeVisible();
+        await expect(map.menubar.getByText('Saved features, events, and devices')).toBeVisible();
         expect(await map.menuItems.count()).toBeGreaterThanOrEqual(MapPage.DEFAULT_MENU_TOOLTIPS.length);
 
         await expect(map.menubar.getByText(cloudtakUsername())).toBeVisible();
@@ -422,8 +450,8 @@ test.describe('Map: menus open and close', () => {
         const before = map.hash();
         expect(before).not.toBeNull();
 
-        await map.menuItem('Your Features').click();
-        await expect(map.panelTitle).toHaveText('Saved Features');
+        await map.menuItem('Features').click();
+        await expect(map.panelTitle).toHaveText('Features');
         await map.closeMenu.click();
         await expect(map.panelTitle).toHaveCount(0);
 
@@ -645,7 +673,7 @@ test.describe('Map: negatives and boundaries', () => {
 
     test('MAP-45 rapid open and close of a menu panel ends closed', async ({ readyMap: map, page }) => {
         for (let i = 0; i < 10; i++) {
-            await map.menuItem('Your Features').click();
+            await map.menuItem('Features').click();
             await map.closeMenu.click();
         }
 
@@ -668,8 +696,8 @@ test.describe('Map: negatives and boundaries', () => {
         await map.zoomIn.click();
         await map.expectZoom(zoom + 1);
 
-        await map.menuItem('Your Features').click();
-        await expect(map.panelTitle).toHaveText('Saved Features');
+        await map.menuItem('Features').click();
+        await expect(map.panelTitle).toHaveText('Features');
         await map.closeMenu.click();
         await expect(map.panelTitle).toHaveCount(0);
     });
@@ -716,8 +744,8 @@ test.describe('Map: console health', () => {
         await map.zoomOut.click();
         await map.expectZoom(zoom);
 
-        await map.menuItem('Your Features').click();
-        await expect(map.panelTitle).toHaveText('Saved Features');
+        await map.menuItem('Features').click();
+        await expect(map.panelTitle).toHaveText('Features');
         await map.closeMenu.click();
         await expect(map.panelTitle).toHaveCount(0);
 

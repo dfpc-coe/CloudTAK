@@ -3,24 +3,8 @@
         v-if='!isDeleted'
         class='w-100'
     >
-        <Contact
-            v-if='feature.properties.group'
-            class='px-2 py-2 w-100'
-            :button-chat='false'
-            :compact='compact'
-            :contact='{
-                "uid": feature.properties.id,
-                "callsign": feature.properties.callsign,
-                "team": feature.properties.group.name,
-                "notes": "",
-                "role": "",
-                "takv": "",
-                "filterGroups": undefined
-            }'
-        />
         <StandardItem
-            v-else
-            class='w-100 d-flex flex-row gap-3 mb-2 align-items-center'
+            class='feature-row w-100 d-flex flex-row gap-3 mb-2 align-items-center px-2 py-2'
             :class='{
                 "cursor-pointer": isZoomable && props.hover,
                 "cursor-default": !isZoomable || props.hover === false,
@@ -32,7 +16,7 @@
             <div
                 v-if='props.gripHandle'
                 :id='feature.id'
-                class='d-flex drag-handle cursor-grab ms-2 align-items-center'
+                class='d-flex drag-handle cursor-grab align-items-center text-secondary'
             >
                 <IconGripVertical
                     :size='18'
@@ -40,37 +24,43 @@
                 />
             </div>
 
-            <div
-                class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle'
-                :class='{
-                    "ms-2": !props.gripHandle
-                }'
+            <span
+                class='avatar avatar-sm rounded-circle feature-row__icon flex-shrink-0'
                 :title='props.error ? "This change is saved on this device and has not reached the server yet" : undefined'
             >
+                <ContactPuck
+                    v-if='feature.properties.group'
+                    :team='feature.properties.group.name'
+                    :size='20'
+                />
                 <FeatureIcon
+                    v-else
                     :feature='feature'
                     :error='props.error'
                 />
-            </div>
+            </span>
 
             <div
-                class='flex-grow-1 d-flex flex-column gap-1 py-2'
+                class='flex-grow-1 d-flex flex-column'
                 style='min-width: 0;'
             >
-                <div class='d-flex align-items-center gap-2'>
-                    <span
-                        v-if='(feature.properties.callsign || "").trim().length > 0'
-                        class='fw-semibold text-truncate'
-                        v-text='feature.properties.callsign'
-                    />
-                    <span
-                        v-else
-                        class='fw-semibold text-truncate fst-italic text-muted'
-                    >No Callsign</span>
-                </div>
+                <span
+                    v-if='(feature.properties.callsign || "").trim().length > 0'
+                    class='fw-semibold text-truncate'
+                    v-text='feature.properties.callsign'
+                />
+                <span
+                    v-else
+                    class='fw-semibold text-truncate fst-italic text-secondary'
+                >No Callsign</span>
+                <span
+                    v-if='subtitle'
+                    class='text-secondary small text-truncate'
+                    v-text='subtitle'
+                />
             </div>
 
-            <div class='align-self-center me-2 btn-list flex-shrink-0'>
+            <div class='align-self-center btn-list flex-shrink-0'>
                 <TablerIconButton
                     v-if='visibilityToggle'
                     :title='isHidden ? "Show Feature" : "Hide Feature"'
@@ -121,11 +111,14 @@
 
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import COT from '../../../base/cot.ts';
+import Config from '../../../base/config.ts';
+import type { FullConfig } from '../../../base/config.ts';
+import { TEAM_COLORS } from '../../../utils/team-colors.ts';
 import { FeatureVisibility } from '../../../stores/modules/feature-visibility.ts';
 import FeatureIcon from './FeatureIcon.vue';
-import Contact from './Contact.vue';
+import ContactPuck from './ContactPuck.vue';
 import StandardItem from './StandardItem.vue';
 import {
     TablerDelete,
@@ -178,9 +171,9 @@ const props = defineProps({
         type: Boolean,
         default: true
     },
-    compact: {
-        type: Boolean,
-        default: true
+    detail: {
+        type: String,
+        default: ''
     }
 });
 
@@ -192,6 +185,36 @@ const isDeleting = ref(false);
 const isZoomable = ref(false);
 
 const isHidden = computed(() => FeatureVisibility.isFeatureHidden(props.feature.id));
+
+const typeName = ref('');
+const teamName = ref('');
+
+const subtitle = computed(() => {
+    if (props.detail) return props.detail;
+
+    const group = props.feature.properties.group;
+    if (!group) return typeName.value;
+
+    return [group.role, teamName.value || group.name].filter(Boolean).join(' · ');
+});
+
+watch(() => props.feature.properties.group?.name, async (team: string | undefined) => {
+    teamName.value = '';
+    if (!team || !(team in TEAM_COLORS)) return;
+
+    const config = await Config.get(`group::${team}` as keyof FullConfig);
+    const name = typeof config?.value === 'string' ? config.value.trim() : '';
+
+    if (props.feature.properties.group?.name === team) teamName.value = name;
+}, { immediate: true });
+
+watch(() => props.feature.properties.type, async (type: string | undefined) => {
+    typeName.value = type || '';
+    if (!type) return;
+
+    const resolved = await COT.resolveType(type);
+    if (props.feature.properties.type === type) typeName.value = resolved.name;
+}, { immediate: true });
 
 function toggleVisibility() {
     FeatureVisibility.toggleFeature(props.feature.id);
@@ -238,3 +261,19 @@ async function flyToClick() {
     cot.flyTo();
 }
 </script>
+
+<style scoped>
+.feature-row__icon {
+    --tblr-avatar-size: 2.25rem;
+    color: var(--tblr-body-color);
+    background-color: var(--cloudtak-inset-bg, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--cloudtak-inset-border, rgba(255, 255, 255, 0.12));
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.feature-row:hover .feature-row__icon,
+.feature-row:focus-within .feature-row__icon {
+    color: var(--tblr-primary);
+    border-color: rgba(var(--tblr-primary-rgb), 0.4);
+}
+</style>

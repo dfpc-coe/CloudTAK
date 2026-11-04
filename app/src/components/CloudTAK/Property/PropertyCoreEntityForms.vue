@@ -1,196 +1,201 @@
 <template>
-    <div class='col-12'>
-        <SlideDownHeader
-            v-model='expanded'
-            label='Forms'
-        >
-            <template #icon>
-                <IconForms
-                    :size='18'
-                    stroke='1'
-                    color='#6b7990'
-                    class='ms-2 me-1'
-                />
-            </template>
-            <template #right>
-                <div
-                    v-if='props.edit && props.channels && props.channels.length'
-                    class='me-1'
-                    @click.stop
+    <PropertySection
+        label='Forms'
+        :count='responses.length'
+    >
+        <template #actions>
+            <div
+                v-if='props.edit && props.channels && props.channels.length'
+                class='me-1'
+                @click.stop
+            >
+                <TablerDropdown
+                    :width='320'
+                    position='bottom-end'
                 >
-                    <TablerDropdown
-                        :width='320'
-                        position='bottom-end'
-                    >
-                        <template #default>
-                            <TablerIconButton
-                                title='Complete a Form'
-                                @click='listForms'
-                            >
-                                <IconPlus
-                                    :size='20'
-                                    stroke='1'
-                                />
-                            </TablerIconButton>
-                        </template>
-
-                        <template #dropdown>
-                            <div class='event-form-pick-menu'>
-                                <div class='d-flex align-items-center px-3 py-2 border-bottom'>
-                                    <h3 class='m-0 fw-bold'>
-                                        Forms
-                                    </h3>
-                                    <div class='ms-auto btn-list'>
-                                        <TablerRefreshButton
-                                            title='Refresh Forms'
-                                            :size='20'
-                                            :loading='loading'
-                                            @click.stop='listForms(true)'
-                                        />
-                                    </div>
-                                </div>
-
-                                <div class='px-3 py-2'>
-                                    <!-- The dropdown autocloses on any click it sees - the
-                                         search field has to swallow its own -->
-                                    <TablerInput
-                                        v-model='search'
-                                        placeholder='Search...'
-                                        icon='search'
-                                        :autofocus='true'
-                                        class='mb-0'
-                                        @click.stop
-                                    />
-                                </div>
-
-                                <div class='px-2 pb-2 overflow-auto event-form-pick-list'>
-                                    <TablerLoading
-                                        v-if='formsLoading'
-                                        :compact='true'
-                                        desc='Loading Forms'
-                                    />
-                                    <TablerAlert
-                                        v-else-if='formsError'
-                                        :err='formsError'
-                                    />
-                                    <template v-else>
-                                        <div
-                                            v-for='form of filtered'
-                                            :key='form.id'
-                                            class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none d-flex align-items-center gap-2'
-                                            @click='emit("add", form)'
-                                        >
-                                            <IconForms
-                                                :size='20'
-                                                stroke='1.5'
-                                                class='flex-shrink-0'
-                                            />
-                                            <div style='min-width: 0;'>
-                                                <div
-                                                    class='text-truncate'
-                                                    v-text='form.name'
-                                                />
-                                                <div
-                                                    v-if='form.description'
-                                                    class='small text-secondary text-truncate'
-                                                    v-text='form.description'
-                                                />
-                                            </div>
-                                        </div>
-                                        <TablerNone
-                                            v-if='!filtered.length'
-                                            :compact='true'
-                                            :create='false'
-                                            :label='forms.length ? "No Matching Forms" : "No Forms shared with this Event"'
-                                        />
-                                    </template>
-                                </div>
-                            </div>
-                        </template>
-                    </TablerDropdown>
-                </div>
-                <TablerBadge
-                    class='me-2'
-                    background-color='rgba(59, 130, 246, 0.15)'
-                    border-color='rgba(59, 130, 246, 0.4)'
-                    text-color='#3b82f6'
-                >
-                    {{ responses.length }}
-                </TablerBadge>
-            </template>
-
-            <div class='overflow-hidden mb-2'>
-                <div class='rounded mx-2 mt-2 px-2 py-2'>
-                    <TablerLoading
-                        v-if='loading'
-                        :compact='true'
-                        desc='Loading Forms'
-                    />
-                    <TablerAlert
-                        v-else-if='error'
-                        :err='error'
-                    />
-                    <template v-else>
-                        <TablerNone
-                            v-if='!responses.length'
-                            label='No Completed Forms'
-                            :compact='true'
-                            :create='false'
-                        />
-
-                        <div
-                            v-for='item of responses'
-                            :key='item.id'
-                            class='rounded'
+                    <template #default>
+                        <TablerIconButton
+                            title='Complete a Form'
+                            @click='listForms'
                         >
-                            <div
-                                class='d-flex align-items-center rounded px-1 py-1 cloudtak-hover-fill cursor-pointer'
-                                @click='toggle(item.id)'
-                            >
-                                <div
-                                    class='flex-grow-1'
-                                    style='min-width: 0;'
-                                >
-                                    <div
-                                        class='text-truncate'
-                                        v-text='item.form.name'
+                            <IconPlus
+                                :size='20'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                    </template>
+
+                    <template #dropdown>
+                        <div class='event-form-pick-menu'>
+                            <div class='d-flex align-items-center px-3 py-2 border-bottom'>
+                                <h3 class='m-0 fw-bold'>
+                                    Forms
+                                </h3>
+                                <div class='ms-auto btn-list'>
+                                    <TablerRefreshButton
+                                        title='Refresh Forms'
+                                        :size='20'
+                                        :loading='loading'
+                                        @click.stop='listForms(true)'
                                     />
-                                    <div class='small text-muted text-truncate'>
-                                        <span v-text='item.username || "Unknown User"' />
-                                        <span class='mx-1'>&middot;</span>
-                                        <TablerEpoch :date='item.created' />
-                                    </div>
                                 </div>
-                                <IconChevronUp
-                                    v-if='opened.has(item.id)'
-                                    :size='18'
-                                    stroke='1'
-                                    class='flex-shrink-0 mx-1'
-                                />
-                                <IconChevronDown
-                                    v-else
-                                    :size='18'
-                                    stroke='1'
-                                    class='flex-shrink-0 mx-1'
+                            </div>
+
+                            <div class='px-3 py-2'>
+                                <!-- The dropdown autocloses on any click it sees - the
+                                         search field has to swallow its own -->
+                                <TablerInput
+                                    v-model='search'
+                                    placeholder='Search...'
+                                    icon='search'
+                                    :autofocus='true'
+                                    class='mb-0'
+                                    @click.stop
                                 />
                             </div>
 
-                            <div
-                                v-if='opened.has(item.id)'
-                                class='border border-secondary border-opacity-25 rounded mb-2'
-                            >
-                                <TablerSchema
-                                    :schema='responseSchema(item)'
-                                    :model-value='item.response'
-                                    :disabled='true'
+                            <div class='px-2 pb-2 overflow-auto event-form-pick-list'>
+                                <TablerLoading
+                                    v-if='formsLoading'
+                                    :compact='true'
+                                    desc='Loading Forms'
                                 />
+                                <TablerAlert
+                                    v-else-if='formsError'
+                                    :err='formsError'
+                                />
+                                <template v-else>
+                                    <div
+                                        v-for='form of filtered'
+                                        :key='form.id'
+                                        class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none d-flex align-items-center gap-2'
+                                        @click='emit("add", form)'
+                                    >
+                                        <IconForms
+                                            :size='20'
+                                            stroke='1.5'
+                                            class='flex-shrink-0'
+                                        />
+                                        <div style='min-width: 0;'>
+                                            <div
+                                                class='text-truncate'
+                                                v-text='form.name'
+                                            />
+                                            <div
+                                                v-if='form.description'
+                                                class='small text-secondary text-truncate'
+                                                v-text='form.description'
+                                            />
+                                        </div>
+                                    </div>
+                                    <TablerNone
+                                        v-if='!filtered.length'
+                                        :compact='true'
+                                        :create='false'
+                                        :label='forms.length ? "No Matching Forms" : "No Forms shared with this Event"'
+                                    />
+                                </template>
                             </div>
                         </div>
                     </template>
+                </TablerDropdown>
+            </div>
+        </template>
+
+        <TablerLoading
+            v-if='loading'
+            :compact='true'
+            desc='Loading Forms'
+        />
+        <TablerAlert
+            v-else-if='error'
+            :err='error'
+        />
+        <template v-else>
+            <TablerAlert
+                v-if='actionError'
+                :err='actionError'
+            />
+
+            <TablerNone
+                v-if='!responses.length'
+                label='No Completed Forms'
+                class='pb-4'
+                :compact='true'
+                :create='false'
+            />
+
+            <div
+                v-for='item of responses'
+                :key='item.id'
+                class='rounded'
+            >
+                <div
+                    class='d-flex align-items-center rounded px-1 py-1 cloudtak-hover-fill cursor-pointer'
+                    @click='toggle(item.id)'
+                >
+                    <div
+                        class='flex-grow-1'
+                        style='min-width: 0;'
+                    >
+                        <div
+                            class='text-truncate'
+                            v-text='item.form.name'
+                        />
+                        <div class='small text-muted text-truncate'>
+                            <span v-text='item.username || "Unknown User"' />
+                            <span class='mx-1'>&middot;</span>
+                            <TablerEpoch :date='item.created' />
+                        </div>
+                    </div>
+                    <div
+                        v-if='canEdit(item)'
+                        class='d-flex align-items-center flex-shrink-0'
+                        @click.stop
+                    >
+                        <TablerIconButton
+                            title='Edit Response'
+                            @click='emit("edit", item)'
+                        >
+                            <IconPencil
+                                :size='18'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                        <TablerDelete
+                            displaytype='icon'
+                            title='Delete Response'
+                            :size='18'
+                            @delete='deleteResponse(item)'
+                        />
+                    </div>
+                    <IconChevronUp
+                        v-if='opened.has(item.id)'
+                        :size='18'
+                        stroke='1'
+                        class='flex-shrink-0 mx-1'
+                    />
+                    <IconChevronDown
+                        v-else
+                        :size='18'
+                        stroke='1'
+                        class='flex-shrink-0 mx-1'
+                    />
+                </div>
+
+                <div
+                    v-if='opened.has(item.id)'
+                    class='border border-secondary border-opacity-25 rounded mb-2'
+                >
+                    <TablerSchema
+                        :schema='responseSchema(item)'
+                        :model-value='item.response'
+                        :disabled='true'
+                    />
                 </div>
             </div>
-        </SlideDownHeader>
-    </div>
+        </template>
+    </PropertySection>
 </template>
 
 <script setup lang='ts'>
@@ -199,20 +204,23 @@
  * Event: every Form Response linked to it, expandable into a read-only
  * render of the submitted values against the Form's schema. When editable,
  * a picker offers every Form shared with one of the Event's Channels so a
- * new Response can be completed for it
+ * new Response can be completed for it. A Response's submitter, the Form's
+ * author and System Admins can edit or delete it
  */
 
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { server } from '../../../std.ts';
 import type { CoreForm, CoreEntityFormResponse } from '../../../types.ts';
-import SlideDownHeader from '../util/SlideDownHeader.vue';
+import { loadProfileIdentity } from '../../../utils/entity-access.ts';
+import type { ProfileIdentity } from '../../../utils/entity-access.ts';
+import PropertySection from '../util/PropertySection.vue';
 import {
     TablerNone,
     TablerAlert,
-    TablerBadge,
     TablerEpoch,
     TablerInput,
     TablerSchema,
+    TablerDelete,
     TablerLoading,
     TablerDropdown,
     TablerIconButton,
@@ -221,6 +229,7 @@ import {
 import {
     IconPlus,
     IconForms,
+    IconPencil,
     IconChevronUp,
     IconChevronDown,
 } from '@tabler/icons-vue';
@@ -238,13 +247,16 @@ const props = defineProps<{
 const emit = defineEmits<{
     /** A Form was picked for completion - the parent opens the FormWizard */
     (e: 'add', form: CoreForm): void;
+    /** An existing Response was picked for editing - the parent opens the FormWizard on it */
+    (e: 'edit', response: CoreEntityFormResponse): void;
 }>();
 
-const expanded = ref(true);
 const loading = ref(true);
 const error = ref<Error | undefined>();
+const actionError = ref<Error | undefined>();
 const responses = ref<Array<CoreEntityFormResponse>>([]);
 const opened = ref<Set<string>>(new Set());
+const profile = ref<ProfileIdentity>({});
 
 const search = ref('');
 const forms = ref<Array<CoreForm>>([]);
@@ -269,6 +281,41 @@ const filtered = computed<Array<CoreForm>>(() => {
 watch(() => [props.event, props.refresh], async () => {
     await listResponses();
 }, { immediate: true });
+
+onMounted(async () => {
+    profile.value = await loadProfileIdentity();
+});
+
+/** Mirrors the API rule - the submitter, the Form author, or a System Admin */
+function canEdit(item: CoreEntityFormResponse): boolean {
+    if (profile.value.system_admin) return true;
+    if (!profile.value.username) return false;
+
+    return item.username === profile.value.username
+        || item.form.username === profile.value.username;
+}
+
+async function deleteResponse(item: CoreEntityFormResponse): Promise<void> {
+    actionError.value = undefined;
+
+    try {
+        const res = await server.DELETE('/api/core/form/{:form}/response/{:response}', {
+            params: {
+                path: {
+                    ':form': item.form.id,
+                    ':response': item.id,
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        responses.value = responses.value.filter((r) => r.id !== item.id);
+        opened.value.delete(item.id);
+    } catch (err) {
+        actionError.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
 
 /** Fetched lazily when the picker opens - the list rarely changes so it is only refetched on demand */
 async function listForms(force = false): Promise<void> {

@@ -285,7 +285,7 @@ import {
 interface ConnectionForm {
     id?: number;
     status?: string;
-    certificate?: { subject: string; validFrom: string; validTo: string };
+    certificate?: { subject: string; validFrom: string; validTo: string; channels: boolean };
     created?: string;
     updated?: string;
     username?: string | null;

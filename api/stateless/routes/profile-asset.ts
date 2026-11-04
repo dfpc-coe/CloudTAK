@@ -10,7 +10,7 @@ import IconsetControl from '../../common/control/iconset.js';
 import ProfileFileControl from '../../common/control/profile-file.js';
 import { ProfileFile, ProfileFileChannel } from '../../common/schema.js';
 import type ConfigStateless from '../config.js';
-import { userChannels } from '../lib/tak-channels.js';
+import { userChannels } from '../../common/control/tak-channels.js';
 import { profileAssetTileJSON } from '../lib/tilejson.js';
 import * as Default from '../lib/limits.js';
 

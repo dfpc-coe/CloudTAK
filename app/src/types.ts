@@ -65,6 +65,7 @@ export type CoreDeviceList = paths["/api/core/device"]["get"]["responses"]["200"
 export type CoreEntity = paths["/api/core/event/{:event}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreEntityList = paths["/api/core/event"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreEntityLink = CoreEntity["links"][0];
+export type CoreEntityExternalId = Exclude<NonNullable<paths["/api/core/event/{:event}"]["patch"]["requestBody"]["content"]["application/json"]["external_id"]>, string>;
 export type CoreEntityStyle = CoreEntity["style"];
 export type CoreEntityMission = CoreEntity["missions"][0];
 export type CoreEntityBoardSummary = CoreEntity["boards"][0];
@@ -83,6 +84,10 @@ export type CoreFormColumnList = paths["/api/board/column/{:column}/form"]["get"
 export type CoreFormColumn = CoreFormColumnList["items"][0];
 export type CoreEntityFormResponseList = paths["/api/core/event/{:event}/response"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreEntityFormResponse = CoreEntityFormResponseList["items"][0];
+export type CoreEntityAssignmentList = paths["/api/core/event/{:event}/assignment"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CoreEntityAssignment = CoreEntityAssignmentList["items"][0];
+/** Editable form of an Assignment - a blank username means no Profile link */
+export type CoreEntityAssignmentInput = { name: string; uid: string; role: string; remarks: string };
 
 export type Contact = paths["/api/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"][0];
 export type ContactList = paths["/api/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"];

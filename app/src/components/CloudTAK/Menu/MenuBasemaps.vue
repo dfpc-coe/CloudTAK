@@ -218,6 +218,7 @@ import ProfileConfig from '../../../base/profile.ts';
 import Config from '../../../base/config.ts';
 import type { FullConfig } from '../../../base/config.ts';
 import { server, stdurl } from '../../../std.ts';
+import { useMapStore } from '../../../stores/map.ts';
 import OverlayManager from '../../../base/overlay.ts';
 import type { Subscription } from 'dexie';
 import BasemapEditModal from './Basemaps/EditModal.vue';
@@ -244,8 +245,9 @@ import {
     IconArrowUp,
     IconArrowDown,
 } from '@tabler/icons-vue'
-import type { LayerSpecification } from 'maplibre-gl'
 import { useRouter } from 'vue-router';
+
+const mapStore = useMapStore();
 
 const overlayBasemapIds = ref<Set<string>>(new Set());
 const currentBasemapModeIds = ref<Set<string>>(new Set());
@@ -325,29 +327,21 @@ watch(sort, async () => {
 });
 
 async function setBasemap(basemap: Basemap) {
-    const overlays = OverlayManager.loaded;
-    const hasBasemap = overlays.some((overlay) => {
-        return overlay.mode === 'basemap';
-    });
+    const current = OverlayManager.loaded.find((overlay) => overlay.mode === 'basemap');
 
-    if (hasBasemap) {
-        for (const overlay of overlays) {
-            if (overlay.mode !== 'basemap') continue;
+    if (current) {
+        await OverlayManager.update(String(current.id), {
+            name: basemap.name,
+            type: basemap.type,
+            opacity: 1,
+            visible: true,
+            frequency: basemap.frequency,
+            url: `/api/basemap/${basemap.id}/tiles`,
+            mode_id: String(basemap.id),
+            styles: basemap.styles
+        });
 
-            await overlay.replace({
-                name: basemap.name,
-                type: basemap.type,
-                opacity: 1,
-                visible: true,
-                url: `/api/basemap/${basemap.id}/tiles`,
-                mode: 'basemap',
-                mode_id: String(basemap.id),
-                styles: basemap.styles as Array<LayerSpecification>
-            }, {
-                before: OverlayManager.loadedBeforeOverlay(overlay)
-            });
-            break;
-        }
+        await mapStore.reconcileOverlays();
     } else {
         await OverlayManager.createLoaded({
             name: basemap.name,
@@ -360,7 +354,7 @@ async function setBasemap(basemap: Basemap) {
             mode: 'basemap',
             mode_id: String(basemap.id),
             styles: basemap.styles
-        }, { before: OverlayManager.loadedAnchorFrom(0), position: 'prepend' });
+        });
     }
 }
 

@@ -11,8 +11,9 @@
  *  - `2525C:<sidc>` / `2525D:<sidc>` / `2525E:<sidc>`
  *                            - milsymbol-generated military symbols
  *  - `<base>-colored-<hex>`  - runtime-recolored variant of another image
- *  - `<iconsetUid>:<path>`   - iconset icons served from Dexie with a network
- *                              fallback for icons that haven't synced locally
+ *  - `<iconsetUid>:<path>`   - iconset icons served from Dexie; an icon that
+ *                              hasn't synced locally renders a placeholder
+ *                              immediately and is swapped in once fetched
  *
  * Bulk hydration of the Dexie icon cache is owned by the Atlas worker (see
  * workers/atlas-sync.ts) and primes the offline cache; only iconsets whose
@@ -22,6 +23,7 @@
 import { Preferences } from '@capacitor/preferences';
 import * as mapgl from 'maplibre-gl'
 import Icon from '../../base/icon.ts'
+import type { DBIcon } from '../../database.ts';
 import IconsetManager from '../../base/iconset.ts';
 import type { Map as MapLibreMap } from 'maplibre-gl';
 import { stdurl } from '../../std.ts';
@@ -43,6 +45,7 @@ let spriteProtocolRegistered = false;
 export default class IconManager {
     private map: MapLibreMap;
     private inflight = new Map<string, Promise<void>>();
+    private remote = new Map<string, Promise<void>>();
     private loggedErrors = new Set<string>();
     private fallbackBitmap: ImageBitmap | null = null;
     /**
@@ -128,7 +131,8 @@ export default class IconManager {
     /**
      * Missing style image resolver entry point. MapLibre awaits the returned
      * promise before rendering the requesting tile, so the image must be
-     * registered by the time it settles.
+     * registered by the time it settles - and the tile's other layers wait
+     * with it, so nothing here may wait on the network.
      *
      * Must never reject: a rejected resolver promise fails the whole image
      * batch for the tile, so failures are logged and the id is left
@@ -191,33 +195,84 @@ export default class IconManager {
     }
 
     /**
-     * Resolve an `<iconsetUid>:<path>` image id from Dexie, falling back to
-     * fetching the single icon from the API (for iconsets that haven't been
-     * hydrated locally) and finally to a generic point icon.
+     * Resolve an `<iconsetUid>:<path>` image id from Dexie. An icon that is
+     * not cached locally registers the generic point placeholder so the tile
+     * renders now, and the single icon is fetched from the API in the
+     * background and swapped in when it arrives.
      */
     private async loadIconsetImage(id: string): Promise<void> {
-        const row = await Icon.get(id);
-        const blob = row ? row.data : await Icon.fetchRemote(id);
+        let row: DBIcon | undefined;
 
-        if (blob) {
+        try {
+            row = await Icon.get(id);
+        } catch (error) {
+            this.logWarnOnce(`icon-cache:${id}`, 'Iconset icon cache read failed', { imageId: id, error });
+        }
+
+        if (row) {
             this.fallbackIds.delete(id);
-            this.addImage(id, await this.decodeIconBlob(blob));
+            this.addImage(id, await this.decodeIconBlob(row.data));
             return;
         }
 
-        this.logWarnOnce(
-            `missing-iconset-icon:${id}`,
-            'Iconset icon not found locally or remotely, using fallback',
-            { imageId: id }
-        );
-
         this.fallbackIds.add(id);
         this.addImage(id, await this.getFallbackBitmap());
+        this.fetchRemoteImage(id);
+    }
+
+    private fetchRemoteImage(id: string): void {
+        if (this.remote.has(id)) return;
+
+        const work = (async () => {
+            const blob = await Icon.fetchRemote(id);
+
+            if (!blob) {
+                this.logWarnOnce(
+                    `missing-iconset-icon:${id}`,
+                    'Iconset icon not found locally or remotely, using fallback',
+                    { imageId: id }
+                );
+                return;
+            }
+
+            // Already replaced by the real icon (eg. the iconset synced meanwhile)
+            if (!this.fallbackIds.has(id)) return;
+
+            this.replaceImage(id, await this.decodeIconBlob(blob));
+        })()
+            .catch((error: unknown) => {
+                this.logErrorOnce(`remote:${id}`, 'Failed to fetch iconset icon', error, { imageId: id });
+            })
+            .finally(() => {
+                this.remote.delete(id);
+            });
+
+        this.remote.set(id, work);
     }
 
     private addImage(id: string, image: ImageBitmap | ImageData): void {
         if (!this.map.hasImage(id)) {
             this.map.addImage(id, image);
+        }
+    }
+
+    /**
+     * Swap a placeholder for the real icon. MapLibre reloads the tiles that
+     * depend on a removed or added image, and recolored variants derived
+     * from the placeholder are dropped so they re-derive from the real icon.
+     */
+    private replaceImage(id: string, image: ImageBitmap): void {
+        this.fallbackIds.delete(id);
+
+        if (this.map.hasImage(id)) this.map.removeImage(id);
+        this.map.addImage(id, image);
+
+        const prefix = `${id}-colored-`;
+        for (const variant of [...this.fallbackIds]) {
+            if (!variant.startsWith(prefix)) continue;
+
+            this.fallbackIds.delete(variant);
+            if (this.map.hasImage(variant)) this.map.removeImage(variant);
         }
     }
 

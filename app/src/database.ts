@@ -29,6 +29,12 @@ export interface DBFeature {
     path: string;
     properties: Feature["properties"];
     geometry: Feature["geometry"];
+    /** false while a local create/edit awaits confirmation from the API */
+    synced?: boolean;
+    /** Tombstone for a local delete awaiting confirmation from the API */
+    deleted?: boolean;
+    attempts?: number;
+    error?: string;
 }
 
 export interface DBBreadcrumb {
@@ -37,8 +43,34 @@ export interface DBBreadcrumb {
     path: string;
     callsign: string;
     color?: string;
-    coordinates: number[][];
+    /** @deprecated Trails are built from `feature_history` points - only populated by rows written before v13.115 */
+    coordinates?: number[][];
     live: boolean;       // whether live breadcrumb recording is currently enabled
+}
+
+export enum FeatureHistorySource {
+    /** Written by live breadcrumb recording as the CoT updated */
+    Live = 'live',
+    /** Loaded from the TAK Server CoT history */
+    History = 'history',
+}
+
+/**
+ * A single CoT report at a point in time - the discrete points a breadcrumb
+ * trail is drawn from, each keeping the properties the CoT carried then
+ */
+export interface DBFeatureHistory {
+    /** `${uid}@${time}` so a report loaded twice overwrites itself */
+    id: string;
+    uid: string;
+    /** Report time as epoch milliseconds */
+    time: number;
+    callsign: string;
+    type: string;
+    path: string;
+    source: FeatureHistorySource;
+    properties: Feature["properties"];
+    geometry: Feature["geometry"];
 }
 
 export interface DBChatroom {
@@ -261,6 +293,13 @@ export interface DBCache {
     updated: number;
 }
 
+/** Human readable name for a CoT type or MIL-STD-2525 SIDC */
+export interface DBTaxonomy {
+    type: string;
+    name: string;
+    desc: string;
+}
+
 export interface DBSprite {
     /** Sprite id, e.g. 'default' */
     id: string;
@@ -281,6 +320,7 @@ export type DatabaseType = Dexie & {
     filter: EntityTable<DBFilter, 'id'>,
     feature: EntityTable<DBFeature, 'id'>,
     breadcrumb: EntityTable<DBBreadcrumb, 'id'>,
+    feature_history: EntityTable<DBFeatureHistory, 'id'>,
     chatroom: EntityTable<DBChatroom, 'id'>,
     chatroom_chats: EntityTable<DBChatroomChat, 'id'>,
     notification: EntityTable<DBNotification, 'id'>,
@@ -299,10 +339,13 @@ export type DatabaseType = Dexie & {
     profile_file: EntityTable<DBProfileFile, 'id'>,
     config: EntityTable<DBConfig, 'key'>,
     cache: EntityTable<DBCache, 'key'>,
-    contact: EntityTable<Contact, 'uid'>
+    contact: EntityTable<Contact, 'uid'>,
+    taxonomy: EntityTable<DBTaxonomy, 'type'>
 };
 
-export const db = new Dexie('CloudTAK') as DatabaseType;
+// Dexie's default result cache deep-clones every live query delivery on the
+// main thread, which stalls input once tables hold thousands of rows
+export const db = new Dexie('CloudTAK', { cache: 'disabled' }) as DatabaseType;
 
 db.version(4).stores({
     kv: 'key',
@@ -349,6 +392,14 @@ db.version(4).stores({
     });
 });
 
+db.version(5).stores({
+    taxonomy: 'type',
+});
+
+db.version(6).stores({
+    feature_history: 'id, uid, time, [uid+time]',
+});
+
 let reopenPromise: Promise<void> | null = null;
 
 // An IndexedDB open issued while a page is unloading leaves WKWebView's
@@ -379,6 +430,31 @@ if (typeof window !== 'undefined') {
     });
 }
 
+const VERSION_RELOAD_KEY = 'cloudtak-db-version-reload';
+const VERSION_RELOAD_COOLDOWN_MS = 60_000;
+
+/**
+ * Another session running a newer build upgraded the schema past what this
+ * bundle declares - the connection can never reopen, so reload once to pick
+ * up the newer build. The cooldown stops a loop if the old build is still served.
+ */
+function reloadForNewerSchema(): boolean {
+    if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') return false;
+
+    try {
+        const last = Number(sessionStorage.getItem(VERSION_RELOAD_KEY)) || 0;
+        if (Date.now() - last < VERSION_RELOAD_COOLDOWN_MS) return false;
+        sessionStorage.setItem(VERSION_RELOAD_KEY, String(Date.now()));
+    } catch {
+        return false;
+    }
+
+    console.warn('IndexedDB schema is newer than this build - reloading to pick up the update');
+    shuttingDown = true;
+    window.location.reload();
+    return true;
+}
+
 export async function ensureDatabase(): Promise<void> {
     if (shuttingDown || suspended || db.isOpen()) return;
 
@@ -394,6 +470,11 @@ export async function ensureDatabase(): Promise<void> {
                 } catch (err) {
                     if (db.isOpen()) return;
                     lastError = err;
+
+                    if ((err as { name?: string } | null)?.name === 'VersionError') {
+                        if (reloadForNewerSchema()) return;
+                        throw err;
+                    }
                     console.warn(`Dexie reopen attempt ${attempt + 1} failed:`, err);
                     await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
                 }

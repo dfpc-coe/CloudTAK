@@ -12,6 +12,9 @@ RUN if [ "$USE_LOCAL_ZIP" != "true" ]; then wget -O data.zip "$DATA_SOURCE_URL";
     && mkdir /data \
     && cp -r CloudTAK-Data-*/* /data/
 
+# https://hub.docker.com/_/node
+FROM node:26-alpine3.24 AS node
+
 # https://hub.docker.com/_/nginx
 FROM nginx:alpine3.24
 
@@ -23,7 +26,14 @@ WORKDIR $HOME
 ARG API_URL
 ARG WEB_PLUGINS
 
-RUN apk add --no-cache git nodejs-current npm python3 make bash g++ openssl postgresql-client grep wget unzip perf
+RUN apk add --no-cache git libstdc++ python3 make bash g++ openssl postgresql-client grep wget unzip perf
+
+COPY --from=node /usr/local/bin/node /usr/local/bin/
+COPY --from=node /usr/local/include/node /usr/local/include/node
+COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
+
+RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+    && ln -s ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
 
 WORKDIR $HOME/api
 

@@ -103,6 +103,15 @@ export default class Config {
         this.etlEvents = new ETLEvents(this);
     }
 
+    /**
+     * Base URL that proxied basemap TileJSON and ATAK share URLs advertise
+     * for tiles - the PMTiles tile server mirrors the /api/basemap/:id/tiles
+     * routes at /tiles/basemap/:id/tiles
+     */
+    get BASEMAP_TILES_URL(): string {
+        return `${this.PMTILES_URL}/tiles/basemap`;
+    }
+
     serverCert(): {
         cert: string;
         key: string;

@@ -25,20 +25,23 @@
                 class='text-danger small mt-1'
                 v-text='error'
             />
-            <div class='d-flex justify-content-end mt-1'>
-                <TablerIconButton
-                    v-if='!error'
-                    title='Done Editing'
+            <div class='d-flex justify-content-end mt-2'>
+                <button
+                    type='button'
+                    class='btn btn-primary btn-sm'
+                    :disabled='!!error'
                     @click.stop.prevent='validUpdate(text, {
                         submit: true,
                         editing: false
                     })'
                 >
                     <IconCheck
-                        :size='20'
+                        :size='16'
                         stroke='1.5'
+                        class='me-1'
                     />
-                </TablerIconButton>
+                    Save
+                </button>
             </div>
         </div>
         <div
@@ -47,6 +50,7 @@
         >
             <TablerInput
                 v-model='text'
+                :type='type'
                 :rows='rows'
                 :autofocus='true'
                 label=''
@@ -86,6 +90,7 @@
             class='position-relative rounded text-truncate'
             :style='{
                 ...(rows === 1 ? { minHeight: `${minheight}px` } : {}),
+                ...(rows === 1 && props.mode !== "pre" ? { paddingRight: `${actionsWidth}px` } : {}),
                 ...(props.mode !== "pre" ? { backgroundColor: "rgba(0, 0, 0, 0.1)" } : {}),
             }'
             :class='{
@@ -148,7 +153,7 @@
                 />
             </template>
             <template v-else>
-                <span v-text='text' />
+                <span v-text='props.display ?? text' />
 
                 <TablerDelete
                     v-if='props.deletable'
@@ -240,6 +245,11 @@ const props = defineProps({
         type: String,
         default: undefined
     },
+    type: {
+        // HTML input type used while editing a single row field
+        type: String,
+        default: 'text'
+    },
     rows: {
         type: Number,
         default: 1
@@ -280,6 +290,11 @@ const text = ref(props.modelValue);
 const error = ref<string | undefined>()
 
 const infoboxRef = useTemplateRef<HTMLElement>('infobox');
+
+// Right padding so single-row text truncates before the absolutely positioned buttons
+const actionsWidth = computed(() => {
+    return 36 + (props.edit ? 28 : 0) + (props.deletable ? 28 : 0);
+});
 
 const wysiwyg = computed(() => {
     return props.markdown && props.mode === 'text' && props.rows > 1;

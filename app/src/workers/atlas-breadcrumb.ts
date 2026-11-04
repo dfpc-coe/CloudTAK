@@ -1,28 +1,91 @@
 import type COT from '../base/cot.ts';
-import type { Point, LineString } from 'geojson';
-import type { InputFeature } from '../types.ts';
 import type AtlasDatabase from './atlas-database.ts';
-import { db } from '../database.ts';
+import { db, withDbRetry, isDatabaseSuspendedError, FeatureHistorySource, type DBBreadcrumb, type DBFeatureHistory } from '../database.ts';
+import FeatureHistory, { type FeatureHistory_Input } from '../base/feature-history.ts';
+import { WorkerMessageType } from '../utils/events.ts';
+import type { HistoryChangeBody } from '../utils/events.ts';
 
+const NOTIFY_BATCH_MS = 250;
+
+export type BreadcrumbIngestOptions = {
+    source?: FeatureHistorySource;
+};
+
+/**
+ * Breadcrumb trails are discrete, timestamped `feature_history` points - one
+ * per CoT report - rather than a single LineString, so the properties a CoT
+ * carried at any point along its trail can be surfaced. The `breadcrumb`
+ * table holds per-UID trail metadata (callsign, colour, live flag); the
+ * HistoryLayer on the main thread draws both the points and the trail line.
+ */
 export default class AtlasBreadcrumb {
     db: AtlasDatabase;
 
     // Tracks which CoT UIDs have live breadcrumb trail recording enabled
     enabled: Set<string>;
-    // Buffers the first coordinate for a UID while waiting for the second to form a LineString
-    pending: Map<string, number[]>;
+    // Report time of the last point written per UID - skips duplicate reports
+    last: Map<string, number>;
+
+    // UIDs written since the main thread was last told, flushed in one batch
+    private changed: Set<string>;
+    private removed: Set<string>;
+    private changedAll: boolean;
+    private notifyTimer: ReturnType<typeof setTimeout> | null;
 
     constructor(db: AtlasDatabase) {
         this.db = db;
         this.enabled = new Set();
-        this.pending = new Map();
+        this.last = new Map();
+        this.changed = new Set();
+        this.removed = new Set();
+        this.changedAll = false;
+        this.notifyTimer = null;
+    }
+
+    /**
+     * Tell the HistoryLayer which trails to re-read. Writes are batched so a
+     * burst of reports costs one message, and the layer only touches those UIDs.
+     */
+    private notify(uids: Iterable<string>, opts: { removed?: boolean; all?: boolean } = {}): void {
+        if (opts.all) {
+            this.changedAll = true;
+        } else {
+            for (const uid of uids) {
+                if (opts.removed) {
+                    this.removed.add(uid);
+                    this.changed.delete(uid);
+                } else {
+                    this.changed.add(uid);
+                }
+            }
+        }
+
+        if (this.notifyTimer) return;
+
+        this.notifyTimer = setTimeout(() => {
+            this.notifyTimer = null;
+
+            const body: HistoryChangeBody = {
+                uids: [...this.changed],
+                removed: [...this.removed],
+                all: this.changedAll || undefined,
+            };
+            this.changed.clear();
+            this.removed.clear();
+            this.changedAll = false;
+
+            void this.db.atlas.postMessage({ type: WorkerMessageType.History_Change, body });
+        }, NOTIFY_BATCH_MS);
+    }
+
+    static trackId(uid: string): string {
+        return `${uid}.track`;
     }
 
     /**
      * Enable or disable live breadcrumb trail recording for a given CoT UID.
-     * When enabled, each incoming Point position update for that UID will
-     * incrementally extend a companion LineString stored under the ID
-     * `<uid>.track`.
+     * When enabled, each incoming Point position update for that UID is
+     * recorded as a `feature_history` point.
      *
      * @param uid     - The CoT UID to toggle
      * @param enabled - True to start recording, false to stop (trail is kept)
@@ -32,25 +95,34 @@ export default class AtlasBreadcrumb {
             this.enabled.add(uid);
         } else {
             this.enabled.delete(uid);
-            this.pending.delete(uid);
+            this.last.delete(uid);
         }
 
-        // Persist live state to DB so it survives page reloads
-        const trackId = `${uid}.track`;
-        const existing = await db.breadcrumb.get(trackId);
-        if (existing) {
-            await db.breadcrumb.put({ ...existing, live: enabled });
-        }
+        await this.ensureTrail(uid, { live: enabled });
+        this.notify([uid]);
     }
 
     /**
-     * Remove a breadcrumb trail entirely and disable any future live updates.
+     * Remove a breadcrumb trail entirely - its metadata and every history
+     * point - and disable any future live updates.
      */
     async remove(uid: string): Promise<void> {
         this.enabled.delete(uid);
-        this.pending.delete(uid);
+        this.last.delete(uid);
 
-        await db.breadcrumb.delete(`${uid}.track`);
+        await withDbRetry(() => db.breadcrumb.delete(AtlasBreadcrumb.trackId(uid)));
+        await FeatureHistory.clear(uid);
+        this.notify([uid], { removed: true });
+    }
+
+    /** Remove every trail and every history point */
+    async clearAll(): Promise<void> {
+        this.enabled.clear();
+        this.last.clear();
+
+        await withDbRetry(() => db.breadcrumb.clear());
+        await FeatureHistory.clear();
+        this.notify([], { all: true });
     }
 
     /**
@@ -65,188 +137,137 @@ export default class AtlasBreadcrumb {
      * Queries the persistent Dexie store so the result survives page reloads.
      */
     async listEnabled(): Promise<string[]> {
-        const rows = await db.breadcrumb.where('live').equals(1).toArray();
+        // `live` is a boolean, which IndexedDB cannot index, so scan the (small) table
+        const rows = await db.breadcrumb.filter((r) => r.live === true).toArray();
         return rows.map((r) => r.uid);
     }
 
     /**
-     * On startup, restore all persisted breadcrumb LineStrings from Dexie
-     * into the in-memory cots Map so they are rendered on the map.
-     * Also restores the in-memory `enabled` Set from entries that have live: true.
+     * On startup, restore the in-memory `enabled` Set from trails persisted
+     * with live: true and drop history points past the retention window.
      */
     async load(): Promise<void> {
         const all = await db.breadcrumb.toArray();
 
         for (const entry of all) {
-            if (entry.live) {
-                this.enabled.add(entry.uid);
-            }
-
-            if (entry.coordinates.length < 2) continue;
-
-            const feature: InputFeature = this._buildFeature(
-                entry.id,
-                entry.uid,
-                entry.path,
-                entry.callsign,
-                entry.coordinates,
-                entry.color,
-            );
-
-            await this.db.add(feature, { skipSave: true });
+            if (entry.live) this.enabled.add(entry.uid);
         }
+
+        if (await FeatureHistory.prune() > 0) this.notify([], { all: true });
     }
 
     /**
-     * Build the InputFeature used to add/update a breadcrumb in the cots Map.
+     * Record a set of CoT reports as history points. Each report keeps its
+     * own timestamp & properties; a report ingested twice overwrites itself.
+     * Trail metadata is created for every UID seen so the History menu lists it.
+     *
+     * @returns the number of points written
      */
-    private _buildFeature(
-        id: string,
-        uid: string,
-        path: string,
-        callsign: string,
-        coordinates: number[][],
-        color?: string,
-    ): InputFeature {
-        return {
-            id,
-            type: 'Feature',
-            path,
-            properties: {
-                callsign: `${callsign} Track`,
-                type: 'u-d-f-m',
-                breadcrumb: true,
-                uid,
-                stroke: color || '#ff0000',
-                'stroke-width': 2,
-                'stroke-opacity': 1,
-                'stroke-style': 'dashed',
-            } as unknown as InputFeature['properties'],
-            geometry: {
-                type: 'LineString',
-                coordinates,
-            } as LineString,
-        };
+    async ingest(features: FeatureHistory_Input[], opts: BreadcrumbIngestOptions = {}): Promise<number> {
+        const source = opts.source || FeatureHistorySource.History;
+        const rows: DBFeatureHistory[] = [];
+        const meta = new Map<string, { callsign: string; path: string }>();
+        const latest = new Map<string, number>();
+
+        for (const feature of features) {
+            const row = FeatureHistory.fromFeature(feature, source);
+            if (!row) continue;
+
+            rows.push(row);
+
+            // Trail metadata follows the newest report of each UID
+            if (row.time >= (latest.get(row.uid) ?? -Infinity)) {
+                latest.set(row.uid, row.time);
+                meta.set(row.uid, { callsign: row.callsign, path: row.path });
+            }
+        }
+
+        const count = await FeatureHistory.put(rows);
+
+        for (const [uid, info] of meta) {
+            await this.ensureTrail(uid, info);
+        }
+
+        this.notify(meta.keys());
+
+        return count;
     }
 
     /**
-     * Merge a set of historical coordinates into the `<uid>.track` LineString.
-     * Historical coordinates are prepended so the trail reads oldest → newest.
-     *
-     * Handles both orderings:
-     *
-     * • History loaded first, live enabled later — no existing track yet.
-     *   The history seeds the LineString. If live was already enabled and one
-     *   position has been buffered in `pending` (waiting for a second coord to
-     *   form the initial LineString) it is flushed to the end of the seed so it
-     *   is not lost. Subsequent live positions are appended normally by update().
-     *   Note: if significant time passes between the last historical position and
-     *   the first live position the rendered trail will include a straight
-     *   connecting line across that gap — a LineString cannot represent breaks.     *
-     * • Live enabled first, history loaded later — existing track already
-     *   contains live positions. History is prepended. Any single pending coord
-     *   is never reachable here (the status of pending is irrelevant once a
-     *   track LineString exists).
-     *
-     * @param uid         - The CoT UID whose trail should be updated
-     * @param coordinates - Ordered array of [lng, lat] (or [lng, lat, alt]) positions
+     * @deprecated Trails are built from timestamped history points - use
+     * ingest(). Kept so a caller holding bare coordinates still gets a line:
+     * they are stored on the legacy `coordinates` field, which the
+     * HistoryLayer draws only while the UID has no history points.
      */
     async merge(uid: string, coordinates: number[][]): Promise<void> {
         if (coordinates.length < 2) return;
 
-        const trackId = `${uid}.track`;
+        const trackId = AtlasBreadcrumb.trackId(uid);
         const existing = await db.breadcrumb.get(trackId);
 
         if (existing) {
-            // Live trail already exists — prepend history before it
-            const merged = [...coordinates, ...existing.coordinates];
-
-            await db.breadcrumb.put({ ...existing, coordinates: merged });
-
-            await this.db.add(
-                this._buildFeature(trackId, uid, existing.path, existing.callsign, merged, existing.color),
-                { skipSave: true },
-            );
+            await withDbRetry(() => db.breadcrumb.put({
+                ...existing,
+                coordinates: [...coordinates, ...(existing.coordinates || [])],
+            }));
         } else {
-            // No live trail yet — seed from history.
-            // Flush any single buffered live coord so it is not silently dropped.
-            const pendingCoord = this.pending.get(uid);
-            const seedCoords = pendingCoord
-                ? [...coordinates, pendingCoord]
-                : coordinates;
-            this.pending.delete(uid);
-
-            const trackedCot = this.db.cots.get(uid);
-            const callsign = trackedCot?.properties.callsign ?? uid;
-            const path = trackedCot?.path ?? '/';
-            const color = (trackedCot?.properties['marker-color'] as string | undefined) || undefined;
-
-            await db.breadcrumb.put({
-                id: trackId,
-                uid,
-                path,
-                callsign,
-                color,
-                coordinates: seedCoords,
-                live: this.enabled.has(uid),
-            });
-
-            await this.db.add(
-                this._buildFeature(trackId, uid, path, callsign, seedCoords, color),
-                { skipSave: true },
-            );
+            await this.ensureTrail(uid, { coordinates });
         }
+
+        this.notify([uid]);
     }
 
     /**
-     * Called after every add() to extend the breadcrumb LineString for a Point
+     * Called after every add() to record a history point for a Point
      * feature whose UID is in `enabled`.
      */
     async update(cot: COT): Promise<void> {
         if (cot.geometry.type !== 'Point') return;
         if (!this.enabled.has(cot.id)) return;
 
-        const coord = (cot.geometry as Point).coordinates;
-        const breadcrumbId = `${cot.id}.track`;
-        const existing = await db.breadcrumb.get(breadcrumbId);
+        const row = FeatureHistory.fromFeature(cot.as_feature(), FeatureHistorySource.Live);
+        if (!row) return;
 
-        if (!existing) {
-            const pendingCoord = this.pending.get(cot.id);
+        if (this.last.get(cot.id) === row.time) return;
 
-            if (!pendingCoord) {
-                // Buffer the first position — we need at least two to form a LineString
-                this.pending.set(cot.id, coord);
-            } else {
-                // We now have two distinct positions: create the LineString
-                this.pending.delete(cot.id);
-                const coordinates = [pendingCoord, coord];
-                const color = (cot.properties['marker-color'] as string | undefined) || undefined;
-
-                await db.breadcrumb.put({
-                    id: breadcrumbId,
-                    uid: cot.id,
-                    path: cot.path,
-                    callsign: cot.properties.callsign,
-                    color,
-                    coordinates,
-                    live: true,
-                });
-
-                await this.db.add(
-                    this._buildFeature(breadcrumbId, cot.id, cot.path, cot.properties.callsign, coordinates, color),
-                    { skipSave: true },
-                );
-            }
-        } else {
-            // Append the new coordinate to the existing LineString
-            const coordinates = [...existing.coordinates, coord];
-
-            await db.breadcrumb.put({ ...existing, coordinates });
-
-            await this.db.add(
-                this._buildFeature(breadcrumbId, cot.id, existing.path, existing.callsign, coordinates, existing.color),
-                { skipSave: true },
-            );
+        try {
+            await FeatureHistory.put([row]);
+            this.last.set(cot.id, row.time);
+            this.notify([cot.id]);
+        } catch (err) {
+            // Backgrounded on mobile - the position still renders, the trail just skips it
+            if (!isDatabaseSuspendedError(err)) throw err;
         }
+    }
+
+    /**
+     * Create the trail metadata row for a UID if it does not exist, otherwise
+     * apply the given changes. Callsign, path & colour come from the tracked
+     * CoT when it is in the store.
+     */
+    private async ensureTrail(uid: string, changes: Partial<Omit<DBBreadcrumb, 'id' | 'uid'>> = {}): Promise<DBBreadcrumb> {
+        const trackId = AtlasBreadcrumb.trackId(uid);
+        const existing = await db.breadcrumb.get(trackId);
+
+        if (existing) {
+            const updated = { ...existing, ...changes };
+            await withDbRetry(() => db.breadcrumb.put(updated));
+            return updated;
+        }
+
+        const trackedCot = this.db.cots.get(uid);
+
+        const created: DBBreadcrumb = {
+            id: trackId,
+            uid,
+            path: trackedCot?.path ?? '/',
+            callsign: trackedCot?.properties.callsign ?? uid,
+            color: (trackedCot?.properties['marker-color'] as string | undefined) || undefined,
+            live: this.enabled.has(uid),
+            ...changes,
+        };
+
+        await withDbRetry(() => db.breadcrumb.put(created));
+        return created;
     }
 }

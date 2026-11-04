@@ -1,139 +1,134 @@
 <template>
-    <div
-        class='col-12'
-        :style='{ zIndex: expanded ? 10 : "auto", position: "relative" }'
+    <!-- Raised so the icon picker's dropdown overlays the sections below -->
+    <PropertySection
+        label='Style'
+        class='position-relative'
+        style='z-index: 10;'
     >
-        <SlideDownHeader
-            v-model='expanded'
-            label='Style'
-        >
-            <template #icon>
-                <IconPaint
-                    :size='18'
+        <template v-if='geometry === "Point"'>
+            <div class='pb-1'>
+                <IconSelect
+                    :model-value='(modelValue.icon as string | undefined) ?? ""'
+                    label='Icon'
+                    :size='32'
                     stroke='1'
-                    color='#6b7990'
-                    class='ms-2 me-1'
+                    @update:model-value='updatePropertyIcon($event)'
                 />
-            </template>
-
-            <div class='mx-2 py-2'>
-                <div class='rounded px-2 py-2'>
-                    <div class='row g-2'>
-                        <template v-if='geometry === "Point"'>
-                            <div class='col-12'>
-                                <IconSelect
-                                    :model-value='(modelValue.icon as string | undefined) ?? ""'
-                                    label='Point Icon'
-                                    :size='32'
-                                    stroke='1'
-                                    @update:model-value='updatePropertyIcon($event)'
-                                />
-                            </div>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Point Color</label>
-                                <TablerInput
-                                    :model-value='modelValue["marker-color"]'
-                                    label=''
-                                    default='#FFFFFF'
-                                    type='color'
-                                    class='pb-2'
-                                    @update:model-value='updateProperty("marker-color", $event)'
-                                />
-                            </div>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Point Opacity</label>
-                                <TablerRange
-                                    :model-value='modelValue["marker-opacity"] ?? 1'
-                                    label=''
-                                    :default='1'
-                                    :min='0'
-                                    :max='1'
-                                    :step='0.01'
-                                    @update:model-value='updateProperty("marker-opacity", $event)'
-                                />
-                            </div>
-                        </template>
-                        <template v-else>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Line Colour</label>
-                                <TablerInput
-                                    :model-value='modelValue["stroke"]'
-                                    label=''
-                                    type='color'
-                                    @update:model-value='updateProperty("stroke", $event)'
-                                />
-                            </div>
-
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Line Style</label>
-                                <TablerEnum
-                                    :model-value='modelValue["stroke-style"] ?? "solid"'
-                                    label=''
-                                    :options='["solid", "dashed", "dotted", "outlined"]'
-                                    default='solid'
-                                    @update:model-value='updateProperty("stroke-style", $event)'
-                                />
-                            </div>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Line Thickness</label>
-                                <TablerRange
-                                    :model-value='modelValue["stroke-width"] ?? 1'
-                                    label=''
-                                    :default='1'
-                                    :min='1'
-                                    :max='6'
-                                    :step='1'
-                                    @update:model-value='updateProperty("stroke-width", $event)'
-                                />
-                            </div>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Line Opacity</label>
-                                <TablerRange
-                                    :model-value='modelValue["stroke-opacity"] ?? 1'
-                                    label=''
-                                    :default='1'
-                                    :min='0'
-                                    :max='1'
-                                    :step='0.01'
-                                    @update:model-value='updateProperty("stroke-opacity", $event)'
-                                />
-                            </div>
-                        </template>
-                        <template v-if='geometry === "Polygon" || geometry === "MultiPolygon"'>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Fill Colour</label>
-                                <TablerInput
-                                    :model-value='modelValue["fill"]'
-                                    label=''
-                                    type='color'
-                                    @update:model-value='updateProperty("fill", $event)'
-                                />
-                            </div>
-                            <div class='col-12 round'>
-                                <label class='subheader user-select-none'>Fill Opacity</label>
-                                <TablerRange
-                                    :model-value='modelValue["fill-opacity"] ?? 1'
-                                    label=''
-                                    :default='1'
-                                    :min='0'
-                                    :max='1'
-                                    :step='0.01'
-                                    @update:model-value='updateProperty("fill-opacity", $event)'
-                                />
-                            </div>
-                        </template>
-                    </div>
-                </div>
             </div>
-        </SlideDownHeader>
-    </div>
+            <PropertyFactRow
+                label='Color'
+                class='py-1'
+            >
+                <TablerInput
+                    :model-value='modelValue["marker-color"]'
+                    label=''
+                    default='#FFFFFF'
+                    type='color'
+                    @update:model-value='updateProperty("marker-color", $event)'
+                />
+            </PropertyFactRow>
+            <PropertyFactRow
+                label='Opacity'
+                class='py-1'
+            >
+                <TablerRange
+                    :model-value='modelValue["marker-opacity"] ?? 1'
+                    label=''
+                    :default='1'
+                    :min='0'
+                    :max='1'
+                    :step='0.01'
+                    @update:model-value='updateProperty("marker-opacity", $event)'
+                />
+            </PropertyFactRow>
+        </template>
+        <template v-else>
+            <PropertyFactRow
+                label='Stroke'
+                class='py-1'
+            >
+                <TablerInput
+                    :model-value='modelValue["stroke"]'
+                    label=''
+                    type='color'
+                    @update:model-value='updateProperty("stroke", $event)'
+                />
+            </PropertyFactRow>
+            <PropertyFactRow
+                label='Line Style'
+                class='py-1'
+            >
+                <TablerEnum
+                    :model-value='modelValue["stroke-style"] ?? "solid"'
+                    label=''
+                    :options='["solid", "dashed", "dotted", "outlined"]'
+                    default='solid'
+                    @update:model-value='updateProperty("stroke-style", $event)'
+                />
+            </PropertyFactRow>
+            <PropertyFactRow
+                label='Width'
+                class='py-1'
+            >
+                <TablerRange
+                    :model-value='modelValue["stroke-width"] ?? 1'
+                    label=''
+                    :default='1'
+                    :min='1'
+                    :max='6'
+                    :step='1'
+                    @update:model-value='updateProperty("stroke-width", $event)'
+                />
+            </PropertyFactRow>
+            <PropertyFactRow
+                label='Opacity'
+                class='py-1'
+            >
+                <TablerRange
+                    :model-value='modelValue["stroke-opacity"] ?? 1'
+                    label=''
+                    :default='1'
+                    :min='0'
+                    :max='1'
+                    :step='0.01'
+                    @update:model-value='updateProperty("stroke-opacity", $event)'
+                />
+            </PropertyFactRow>
+        </template>
+        <template v-if='geometry === "Polygon" || geometry === "MultiPolygon"'>
+            <PropertyFactRow
+                label='Fill'
+                class='py-1'
+            >
+                <TablerInput
+                    :model-value='modelValue["fill"]'
+                    label=''
+                    type='color'
+                    @update:model-value='updateProperty("fill", $event)'
+                />
+            </PropertyFactRow>
+            <PropertyFactRow
+                label='Fill Opacity'
+                class='py-1'
+            >
+                <TablerRange
+                    :model-value='modelValue["fill-opacity"] ?? 1'
+                    label=''
+                    :default='1'
+                    :min='0'
+                    :max='1'
+                    :step='0.01'
+                    @update:model-value='updateProperty("fill-opacity", $event)'
+                />
+            </PropertyFactRow>
+        </template>
+    </PropertySection>
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue';
 import Type2525 from '@tak-ps/node-cot/2525';
-import SlideDownHeader from '../util/SlideDownHeader.vue';
-import { IconPaint } from '@tabler/icons-vue';
+import PropertySection from '../util/PropertySection.vue';
+import PropertyFactRow from '../util/PropertyFactRow.vue';
 import {
     TablerInput,
     TablerRange,
@@ -151,9 +146,6 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'update:modelValue', value: StyleProperties): void
 }>();
-
-const expanded = ref(false);
-
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function updateProperty(key: string, event: any) {

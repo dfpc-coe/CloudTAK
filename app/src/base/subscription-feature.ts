@@ -53,6 +53,26 @@ function asFeature(row: DBSubscriptionFeature): Feature {
     };
 }
 
+/**
+ * A Mission feature as it is drawn on its overlay. Shared by the full overlay
+ * render and the optimistic render of a local edit so both produce the same feature
+ */
+export function renderMissionFeature(feat: Feature): Feature {
+    const icon = renderedIcon(feat.properties);
+
+    return {
+        id: feat.id,
+        type: 'Feature',
+        path: feat.path,
+        properties: {
+            ...feat.properties,
+            path: feat.path || '/',
+            ...(icon !== undefined ? { icon } : {})
+        },
+        geometry: feat.geometry,
+    };
+}
+
 function isPending(row: DBSubscriptionFeature): boolean {
     return row.synced === false || row.deleted === true;
 }
@@ -274,16 +294,7 @@ export default class SubscriptionFeature {
                 }
 
                 if (!blocked) {
-                    const icon = renderedIcon(feat.properties);
-
-                    filtered.push({
-                        ...feat,
-                        properties: {
-                            ...feat.properties,
-                            path: feat.path || '/',
-                            ...(icon !== undefined ? { icon } : {})
-                        }
-                    });
+                    filtered.push(renderMissionFeature(feat));
                 }
             }
 
@@ -296,6 +307,36 @@ export default class SubscriptionFeature {
 
     async bounds(): Promise<BBox> {
         return bbox(await this.collection() as GeoJSONFeatureCollection);
+    }
+
+    /**
+     * Fit the map to the extent of the mission's features.
+     * No-op when the mission has no features with usable geometry
+     */
+    async zoomTo(): Promise<void> {
+        const bounds = await this.bounds();
+        if (bounds.some((v) => !Number.isFinite(v))) return;
+
+        const channel = new BroadcastChannel('cloudtak');
+
+        channel.postMessage({
+            type: WorkerMessageType.Map_FitBounds,
+            body: {
+                bounds,
+                options: {
+                    maxZoom: 16,
+                    padding: {
+                        top: 25,
+                        bottom: 25,
+                        left: 25,
+                        right: 25
+                    },
+                    speed: Infinity,
+                }
+            }
+        });
+
+        channel.close();
     }
 
     async from(

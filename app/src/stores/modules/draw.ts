@@ -19,10 +19,10 @@ import { coordEach } from '@turf/meta';
 import { distance } from '@turf/distance';
 import type { GeoJSONFeatureId } from 'maplibre-gl'
 import type COT from '../../base/cot.ts';
-import Filter from '../../base/filter.ts';
+import Filter, { EDIT_HIDE_PREFIX } from '../../base/filter.ts';
 import { OriginMode } from '../../base/cot.ts';
 import { createCircleEllipseShape } from '../../base/cot/ellipse.ts';
-import { std, stdurl, server } from '../../std.ts';
+import { std, server } from '../../std.ts';
 import type { Feature, FeatureCollection } from '../../types.ts';
 import type { paths } from '@cloudtak/api-types';
 import OverlayManager from '../../base/overlay.ts';
@@ -302,7 +302,8 @@ export default class DrawTool {
                     showCoordinatePoints: true
                 }),
                 new terraDraw.TerraDrawCircleMode({
-                    drawInteraction
+                    drawInteraction,
+                    snapping: { toCustom }
                 }),
                 new terraDraw.TerraDrawSelectMode({
                     flags: {
@@ -377,14 +378,16 @@ export default class DrawTool {
                         this.lasso.loading = true;
 
                         try {
-                            const url = stdurl(`/api/basemap/${ov.mode_id}/feature`);
-
-                            const fc = await std(url, {
-                                method: 'POST',
+                            const res = await server.POST('/api/basemap/{:basemapid}/feature', {
+                                params: { path: { ':basemapid': Number(ov.mode_id) } },
                                 body: {
-                                    polygon: feat.geometry
+                                    polygon: feat.geometry as Polygon
                                 }
-                            }) as FeatureCollection;
+                            });
+
+                            if (res.error) throw new Error(res.error.message);
+
+                            const fc = res.data as FeatureCollection;
 
                             mapStore.toImport = fc.features.map((f) => {
                                 const id = randomUUID();
@@ -433,7 +436,7 @@ export default class DrawTool {
                             callsign: 'New Feature',
                             time: now.toISOString(),
                             start: now.toISOString(),
-                            stale: new Date(now.getTime() + 3600).toISOString(),
+                            stale: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(),
                             center: [0,0]
                         },
                         geometry: JSON.parse(JSON.stringify(storeFeat.geometry))
@@ -467,7 +470,9 @@ export default class DrawTool {
                     await this.stop();
 
                     await this.mapStore.worker.db.add(feat, {
-                        authored: true
+                        authored: true,
+                        // Newly drawn - its id cannot already be in a Mission
+                        skipMissionLookup: true
                     });
 
                     await this.mapStore.refresh();
@@ -725,10 +730,23 @@ export default class DrawTool {
             this.draw.start();
             this.draw.setMode(mode)
 
-            this.snapping = await this.mapStore.worker.db.snapping(
-                this.mapStore.map.getBounds().toArray()
-            );
+            await this.refreshSnapping();
         }
+    }
+
+    /**
+     * Reload the vertex snapping set for the current map bounds from
+     * Map Features and any visible Mission overlays
+     */
+    async refreshSnapping(): Promise<void> {
+        this.snapping = await this.mapStore.worker.db.snapping(
+            this.mapStore.map.getBounds().toArray(),
+            {
+                missions: OverlayManager.visible('mission')
+                    .map((overlay) => overlay.mode_id)
+                    .filter((guid): guid is string => !!guid)
+            }
+        );
     }
 
     async finish(): Promise<void> {
@@ -770,7 +788,7 @@ export default class DrawTool {
                         callsign: 'New Feature',
                         time: now.toISOString(),
                         start: now.toISOString(),
-                        stale: new Date(now.getTime() + 3600).toISOString(),
+                        stale: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(),
                         center: [0, 0]
                     },
                     geometry: JSON.parse(JSON.stringify(drawn.geometry))
@@ -812,7 +830,7 @@ export default class DrawTool {
 
         if (!this.editing) return;
 
-        await Filter.delete({ external: `hidden-${this.editing.id}` });
+        await Filter.delete({ external: `${EDIT_HIDE_PREFIX}${this.editing.id}` });
 
         if (refresh) {
             if (this.editing && this.editing.origin.mode === OriginMode.MISSION && this.editing.origin.mode_id) {
@@ -855,7 +873,7 @@ export default class DrawTool {
 
             await Filter.create(
                 cot.properties.callsign + ' Hidden',
-                `hidden-${cot.id}`,
+                `${EDIT_HIDE_PREFIX}${cot.id}`,
                 'AtlasDatabase',
                 true,
                 `id = "${cot.id}"`

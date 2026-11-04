@@ -1,6 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import type { StaticCapabilitiesDocument } from '@tak-ps/etl';
-import { PERMISSIONS as ETL_PERMISSIONS } from '@tak-ps/etl';
+import { PERMISSIONS as ETL_PERMISSIONS, StaticCapabilities } from '@tak-ps/etl';
 
 /**
  * Permissions grantable to Layer & Connection tokens - the upstream ETL
@@ -10,6 +10,7 @@ export const PERMISSIONS: Record<string, Array<string>> = {
     ...ETL_PERMISSIONS,
     assignment: ['create', 'read', 'update', 'delete'],
     effect: ['create', 'read', 'update', 'delete'],
+    attachment: ['create', 'read'],
 };
 
 export default class LayerControl {
@@ -63,6 +64,14 @@ export default class LayerControl {
                 throw new Err(400, null, `Permission ${resource} is required by ${task}`);
             }
         }
+    }
+
+    /**
+     * The static Capabilities document version a Task declares - `1.0` when the
+     * Task has no Capabilities document
+     */
+    static schemaVersion(capabilities: StaticCapabilitiesDocument | null): string {
+        return capabilities ? capabilities.version : StaticCapabilities.versions.V1_0;
     }
 
     /**

@@ -8,15 +8,15 @@ import { OutgoingMessageType, OutgoingAction, StaticCapabilities } from '@tak-ps
 import type Config from './config.js';
 import type ConnectionConfig from './connection-config.js';
 import type {
-    CoreEntityResponse,
-    CoreEntityBoardResponse,
-    CoreEntityBoardColumnResponse,
-    CoreEntityBoardEventResponse,
+    CoreEventResponse,
+    CoreEventBoardResponse,
+    CoreEventBoardColumnResponse,
+    CoreEventBoardEventResponse,
 } from './types.js';
 import Filter from './filter.js';
 import type { FilterContainer } from './filter.js';
 import Queue from './aws/queue.js';
-import TAKServerControl from './control/takserver.js';
+import { connectionChannels } from './control/tak-channels.js';
 
 export { OutgoingAction as ETLEventAction };
 
@@ -125,22 +125,22 @@ export default class ETLEvents {
     }
 
     /** `event:<action>` - a CoreEntity, scoped to the Channels it is shared with */
-    async event(action: OutgoingAction, event: Static<typeof CoreEntityResponse>): Promise<void> {
+    async event(action: OutgoingAction, event: Static<typeof CoreEventResponse>): Promise<void> {
         await this.deliver(OutgoingMessageType.Event, action, event.id, event.channels.map(Number), event);
     }
 
     /** `board:<action>` - a CoreEntity Board, scoped to its Channel */
-    async board(action: OutgoingAction, board: Static<typeof CoreEntityBoardResponse>): Promise<void> {
+    async board(action: OutgoingAction, board: Static<typeof CoreEventBoardResponse>): Promise<void> {
         await this.deliver(OutgoingMessageType.Board, action, board.id, [board.channel], board);
     }
 
     /** `board:column:<action>` - a Column, scoped to the Channel of the Board it belongs to */
-    async boardColumn(action: OutgoingAction, channel: number, column: Static<typeof CoreEntityBoardColumnResponse>): Promise<void> {
+    async boardColumn(action: OutgoingAction, channel: number, column: Static<typeof CoreEventBoardColumnResponse>): Promise<void> {
         await this.deliver(OutgoingMessageType.BoardColumn, action, column.id, [channel], column);
     }
 
     /** `board:event:<action>` - a CoreEntity placed on a Board, scoped to the Channel of that Board */
-    async boardEvent(action: OutgoingAction, channel: number, placement: Static<typeof CoreEntityBoardEventResponse>): Promise<void> {
+    async boardEvent(action: OutgoingAction, channel: number, placement: Static<typeof CoreEventBoardEventResponse>): Promise<void> {
         await this.deliver(OutgoingMessageType.BoardEvent, action, placement.id, [channel], placement);
     }
 
@@ -209,13 +209,7 @@ export default class ETLEvents {
     async connectionChannels(connection: number): Promise<Set<number>> {
         const conn = await this.config.models.Connection.from(connection);
 
-        const api = await new TAKServerControl(this.config).asConnection(conn);
-
-        return new Set(
-            (await api.Group.list({ useCache: true })).data
-                .filter(group => group.active)
-                .map(group => group.bitpos),
-        );
+        return await connectionChannels(this.config, conn);
     }
 
     async submit(layer: number, messages: Message[]): Promise<void> {

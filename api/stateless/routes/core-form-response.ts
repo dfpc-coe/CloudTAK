@@ -3,16 +3,16 @@ import {
     StandardResponse,
     CoreFormResponse as CoreFormResponseType,
     CoreFormResponseResponse,
-    CoreEntityFormResponse,
+    CoreEventFormResponse,
 } from '../../common/types.js';
 import { sql, eq } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUser } from '../../common/auth.js';
-import { CoreFormResponse, CoreEntityResponse } from '../../common/schema.js';
+import { CoreFormResponse, CoreEventResponse } from '../../common/schema.js';
 import type ConfigStateless from '../config.js';
 import FormControl from '../lib/control/form.js';
-import { userChannels } from '../lib/tak-channels.js';
+import { userChannels } from '../../common/control/tak-channels.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: ConfigStateless) {
@@ -49,11 +49,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
     /** Replace the Core Events a Response is linked to */
     async function commitEvents(response: string, events: string[]): Promise<void> {
-        await config.pg.delete(CoreEntityResponse)
-            .where(eq(CoreEntityResponse.response, response));
+        await config.pg.delete(CoreEventResponse)
+            .where(eq(CoreEventResponse.response, response));
 
         if (events.length > 0) {
-            await config.pg.insert(CoreEntityResponse)
+            await config.pg.insert(CoreEventResponse)
                 .values(events.map(event => ({ event, response })));
         }
     }
@@ -78,7 +78,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(CoreEntityFormResponse),
+            items: Type.Array(CoreEventFormResponse),
         }),
     }, async (req, res) => {
         try {
@@ -115,7 +115,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
             }
 
-            const items: Array<Static<typeof CoreEntityFormResponse>> = [];
+            const items: Array<Static<typeof CoreEventFormResponse>> = [];
             for (const response of list.items) {
                 const form = forms.get(response.form);
 

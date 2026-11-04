@@ -1,45 +1,43 @@
 <template>
-    <div class='col-12'>
-        <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded cloudtak-accent'>
-            <IconCloudPin
-                :size='32'
-                stroke='1'
-                class='flex-shrink-0'
-            />
-            <span class='ms-2 flex-shrink-0'>From:</span>
-            <a
-                class='mx-2 cursor-pointer text-truncate'
-                :title='props.subscription.meta.name'
-                @click='router.push(`/menu/missions/${props.subscription.meta.guid}`)'
-                v-text='props.subscription.meta.name'
+    <div class='d-flex align-items-center gap-2 mx-2 mt-2 px-2 py-1 rounded border cloudtak-accent small'>
+        <IconCloudPin
+            :size='18'
+            stroke='1'
+            class='flex-shrink-0'
+        />
+        <span class='text-secondary flex-shrink-0 user-select-none'>From</span>
+        <a
+            class='cursor-pointer text-truncate'
+            :title='props.subscription.meta.name'
+            @click='router.push(`/menu/missions/${props.subscription.meta.guid}`)'
+            v-text='props.subscription.meta.name'
+        />
+
+        <div class='ms-auto d-flex align-items-center gap-1 flex-shrink-0'>
+            <NotSyncedBadge
+                v-if='pending'
+                :error='pending.error'
+                :loading='syncing'
+                :retry='true'
+                :class='{ "cursor-pointer": !syncing }'
+                @click='sync'
             />
 
-            <div class='ms-auto d-flex align-items-center gap-1 flex-shrink-0'>
-                <NotSyncedBadge
-                    v-if='pending'
-                    :error='pending.error'
-                    :loading='syncing'
-                    :retry='true'
-                    :class='{ "cursor-pointer": !syncing }'
-                    @click='sync'
+            <TablerBadge
+                v-if='readonly'
+                class='d-flex align-items-center flex-shrink-0'
+                background-color='rgba(255, 171, 0, 0.15)'
+                border-color='rgba(255, 171, 0, 0.35)'
+                text-color='#c98500'
+                title='Your role in this Mission does not allow editing this feature'
+            >
+                <IconLock
+                    :size='14'
+                    stroke='1'
+                    class='me-1'
                 />
-
-                <TablerBadge
-                    v-if='readonly'
-                    class='small d-flex align-items-center flex-shrink-0'
-                    background-color='rgba(255, 171, 0, 0.15)'
-                    border-color='rgba(255, 171, 0, 0.35)'
-                    text-color='#c98500'
-                    title='Your role in this Mission does not allow editing this feature'
-                >
-                    <IconLock
-                        :size='14'
-                        stroke='1'
-                        class='me-1'
-                    />
-                    Read Only
-                </TablerBadge>
-            </div>
+                Read Only
+            </TablerBadge>
         </div>
     </div>
 </template>

@@ -224,7 +224,7 @@ import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
 import { OriginMode } from '../../../base/cot.ts';
 import { v4 as randomUUID } from 'uuid';
-import { std } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import ContactManager from '../../../base/contact.ts';
 import {
     TablerNone,
@@ -387,10 +387,12 @@ async function share() {
             ...Array.from(selectedMissions.value).map((mission): { mission: string } => ({ mission: mission.guid })),
         ];
 
-        await std('/api/marti/package', {
-            method: 'PUT',
+        const { error } = await server.PUT('/api/marti/package', {
             body: {
                 type: 'FeatureCollection',
+                public: false,
+                keywords: [],
+                assets: [],
                 destinations,
                 basemaps: props.basemaps || [],
                 features: feats.map((f) => {
@@ -399,6 +401,8 @@ async function share() {
                 })
             }
         });
+
+        if (error) throw new Error(error.message);
     }
 
     loading.value = false;
@@ -417,10 +421,13 @@ async function broadcast() {
         await mapStore.worker.conn.sendCOT(JSON.parse(JSON.stringify(feats[0])));
         emit('done');
     } else {
-        await std('/api/marti/package', {
-            method: 'PUT',
+        const { error } = await server.PUT('/api/marti/package', {
             body: {
                 type: 'FeatureCollection',
+                public: false,
+                keywords: [],
+                assets: [],
+                destinations: [],
                 basemaps: props.basemaps || [],
                 features: feats.map((f) => {
                     f = JSON.parse(JSON.stringify(f));
@@ -434,6 +441,8 @@ async function broadcast() {
                 })
             }
         });
+
+        if (error) throw new Error(error.message);
     }
 }
 

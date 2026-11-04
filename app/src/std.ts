@@ -10,6 +10,12 @@ import { reportError } from './lib/reporting/index.ts';
 import { db } from './database.ts';
 import { parseWorkerBootConfig } from './utils/worker-boot.ts';
 
+/**
+ * Default timeout applied to every API request issued through `std()` and the
+ * typed `server` client.
+ */
+const DEFAULT_REQUEST_TIMEOUT_MS = 20000;
+
 export const serverUrl = await getRuntimeServerUrl();
 export const server = await getServer();
 
@@ -22,8 +28,11 @@ export function setSessionRefresher(fn: (() => Promise<string | undefined>) | un
 }
 
 export async function getServer() {
+    const timedFetch = fetchWithTimeout(DEFAULT_REQUEST_TIMEOUT_MS);
+
     const server = createClient<paths>({
         baseUrl: serverUrl,
+        fetch: timedFetch,
     });
 
     const authMiddleware: Middleware = {
@@ -62,9 +71,76 @@ export async function getServer() {
         },
     };
 
-    server.use(authMiddleware, errorReportMiddleware);
+    // Mirrors std(): a 401 on an expired session is verified against /login,
+    // the session is refreshed, and the original request is replayed once
+    const replayable = new WeakMap<Request, Request>();
+
+    const refreshMiddleware: Middleware = {
+        async onRequest({ request }) {
+            if (!isWebWorker()) replayable.set(request, request.clone());
+            return request;
+        },
+        async onResponse({ request, response }) {
+            if (response.status !== 401 || isWebWorker()) return response;
+
+            const token = request.headers.get('Authorization')?.replace(/^Bearer /, '');
+            const loginRes = await fetch(stdurl('/login'), {
+                headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+
+            if (loginRes.status !== 401) return response;
+
+            const refreshed = sessionRefresher ? await sessionRefresher() : undefined;
+
+            if (!refreshed) {
+                await Preferences.remove({ key: 'token' });
+                return response;
+            }
+
+            const original = replayable.get(request) ?? request;
+            const headers = new Headers(original.headers);
+            headers.set('Authorization', `Bearer ${refreshed}`);
+
+            return await timedFetch(new Request(original, { headers, duplex: 'half' } as RequestInit));
+        },
+    };
+
+    server.use(authMiddleware, refreshMiddleware, errorReportMiddleware);
 
     return server;
+}
+
+/**
+ * Authorization header for an explicit token, or none so the client's
+ * middleware supplies the session token
+ */
+export function bearer(token?: string | null): Record<string, string> | undefined {
+    return token ? { Authorization: `Bearer ${token}` } : undefined;
+}
+
+/**
+ * A fetch that rejects after `timeoutMs` so a stalled connection never hangs
+ * a caller - the caller's own AbortSignal is honoured as well
+ */
+export function fetchWithTimeout(timeoutMs: number): typeof fetch {
+    return async (input, init) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        const upstream = init?.signal ?? (input instanceof Request ? input.signal : undefined);
+        const signal = upstream ? anySignal([upstream, controller.signal]) : controller.signal;
+
+        try {
+            return await fetch(input, { ...init, signal });
+        } catch (err) {
+            if (controller.signal.aborted && !upstream?.aborted) {
+                const url = input instanceof Request ? input.url : String(input);
+                throw new Error(`Request timed out after ${timeoutMs}ms: ${url}`, { cause: err });
+            }
+            throw err;
+        } finally {
+            clearTimeout(timeoutId);
+        }
+    };
 }
 
 export async function getRuntimeToken(): Promise<string | undefined> {
@@ -220,11 +296,6 @@ export async function std(
         return res;
     }
 }
-
-/**
- * Default timeout applied to every API request issued through `std()`.
- */
-const DEFAULT_REQUEST_TIMEOUT_MS = 20000;
 
 /**
  * Combine multiple AbortSignals into a single signal that aborts when any of

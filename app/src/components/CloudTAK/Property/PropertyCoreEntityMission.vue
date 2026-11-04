@@ -187,7 +187,6 @@ import SlideDownHeader from '../util/SlideDownHeader.vue';
 import Subscription from '../../../base/subscription.ts';
 import GroupManager from '../../../base/group.ts';
 import OverlayManager from '../../../base/overlay.ts';
-import { useMapStore } from '../../../stores/map.ts';
 import { server } from '../../../std.ts';
 import type { Mission, CoreEntityMission } from '../../../types.ts';
 import {
@@ -224,9 +223,8 @@ const emit = defineEmits<{
 }>();
 
 const router = useRouter();
-const mapStore = useMapStore();
 
-const expanded = ref(props.modelValue.length > 0);
+const expanded = ref(true);
 const mode = ref<'view' | 'select'>('view');
 
 const error = ref<Error | undefined>();
@@ -328,8 +326,6 @@ async function createMission(): Promise<void> {
                 token: res.data.token,
                 mode_id: res.data.guid,
             });
-
-            await mapStore.loadMission(res.data.guid);
         } catch (err) {
             console.error('Failed to load the new Mission onto the map:', err);
         }

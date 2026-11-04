@@ -1,16 +1,16 @@
 <template>
-    <div class='col-12'>
-        <IconLabel
-            :size='18'
-            stroke='1'
-            color='#6b7990'
-            class='ms-2 me-1'
-        />
+    <!-- Inline renders only the field so a caller can place it in a row of its own -->
+    <component
+        :is='inline || labelPosition === "top" ? "div" : PropertyFactRow'
+        :label='inline || labelPosition === "top" ? undefined : label'
+        :class='{ "py-1": !inline }'
+    >
         <label
-            class='subheader user-select-none'
+            v-if='!inline && labelPosition === "top"'
+            class='form-label'
             v-text='label'
         />
-        <div class='mx-2'>
+        <div>
             <CopyField
                 :model-value='inMode'
                 :edit='edit'
@@ -20,37 +20,22 @@
                 @submit='submitCoordinate($event)'
                 @update:model-value='coordinateEntry($event)'
             />
-            <template v-if='availableModes.length'>
-                <div
-                    role='menu'
-                    class='mx-2'
-                >
-                    <span
-                        v-for='mode in availableModes'
-                        :key='mode.value'
-                        :title='mode.title'
-                        role='menuitem'
-                        tabindex='0'
-                        class='my-1 px-2 user-select-none'
-                        :class='{
-                            "cloudtak-accent rounded-bottom text-blue": config.mode === mode.value,
-                            "cursor-pointer": config.mode !== mode.value,
-                        }'
-                        @click='config.mode = mode.value'
-                    >{{ mode.label }}</span>
-                </div>
-            </template>
+            <UnitSwitcher
+                v-if='availableModes.length > 1'
+                :model-value='config.mode'
+                :options='availableModes'
+                @update:model-value='config.mode = $event as CoordMode'
+            />
         </div>
-    </div>
+    </component>
 </template>
 
 <script setup lang='ts'>
 import CopyField from './CopyField.vue';
+import UnitSwitcher from './UnitSwitcher.vue';
+import PropertyFactRow from './PropertyFactRow.vue';
 import { COORD_MODES, formatCoordPair, parseCoordPair, validateCoordPair, type CoordMode } from '../../../utils/coordinateFormat.ts';
-import {
-    IconLabel
-} from '@tabler/icons-vue';
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, type PropType } from 'vue';
 
 const props = defineProps({
     label: {
@@ -64,6 +49,16 @@ const props = defineProps({
     edit: {
         type: Boolean,
         default: false
+    },
+    inline: {
+        type: Boolean,
+        description: 'Render only the field - the caller provides the label',
+        default: false
+    },
+    labelPosition: {
+        type: String as PropType<'left' | 'top'>,
+        description: 'Place the label beside the field or above it',
+        default: 'left'
     },
     truncate: {
         type: Number,

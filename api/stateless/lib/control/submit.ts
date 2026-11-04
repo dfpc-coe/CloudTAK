@@ -4,10 +4,14 @@ import Err from '@openaddresses/batch-error';
 import pointOnFeature from '@turf/point-on-feature';
 import type { Feature as GeoJSONFeature, Geometry } from 'geojson';
 import type { MappingFeature, MappedEvent, MappedDevice } from '../../../common/mapping.js';
-import { CoreEntity, CoreEntityEvent, CoreEntityChannel, CoreDevice, CoreDeviceChannel } from '../../../common/schema.js';
-import { splitEvent } from '../../../common/models/CoreEntity.js';
+import { CoreEntity, CoreEntityEvent, CoreEntityDevice, CoreEntityChannel, CoreEntityExternal } from '../../../common/schema.js';
+import { LayerMapping_Destination } from '../../../common/enums.js';
+import { splitEvent, setChannels, setExternalId, DEFAULT_EXTERNAL_SYSTEM } from '../../../common/models/CoreEntity.js';
+import type { ExternalId } from '../../../common/models/CoreEntity.js';
+import { splitDevice } from '../../../common/models/CoreDevice.js';
 import { ETLEventAction } from '../../../common/etl-events.js';
-import { notifyCoreEntity } from '../core-entity.js';
+import { notifyCoreEvent } from '../core-event.js';
+import { notifyCoreDevice } from '../core-device.js';
 import type ConfigStateless from '../../config.js';
 
 export interface SubmitOptions {
@@ -17,19 +21,18 @@ export interface SubmitOptions {
     inherit?: () => Promise<number[]>;
 }
 
-const HAS_EXTERNAL_ID = sql`external_id <> ''`;
-
 // Ending an Event never moves an end time that has already passed
 const END_NOW = sql`LEAST(COALESCE(${CoreEntityEvent.ended}, Now()), Now())`;
 
-// xmax is only set on a row version produced by the conflict UPDATE
-const INSERTED = sql<boolean>`(xmax = 0)`;
+type Tx = Parameters<Parameters<ConfigStateless['pg']['transaction']>[0]>[0];
+type Side = typeof CoreEntityEvent | typeof CoreEntityDevice;
 
 /**
  * Persist CoreEntities & CoreDevices produced by the Layer Mappings of a submission
  *
- * Records are UPSERTed on the `external_id` of the Connection - the mapped
- * value, falling back to the Feature ID - records without one are always created
+ * Records are UPSERTed on their external ID within the Connection & kind - the
+ * mapped value under the mapped system, falling back to the Feature ID under
+ * the default system - records without one are always created
  */
 export default class SubmitControl {
     config: ConfigStateless;
@@ -52,7 +55,7 @@ export default class SubmitControl {
         const createOnly = new Set(opts.createOnly);
         if (createOnly.has('active') && mapped.ended === undefined) createOnly.add('ended');
 
-        const record = this.#record(CoreEntity, connection, feature, { ...columns, geometry }, createOnly);
+        const record = this.#record('CoreEvent', connection, feature, { ...columns, geometry }, createOnly);
         const inherited = channels ? [] : await opts.inherit?.() ?? [];
 
         const values = splitEvent(closing ? { ...record.values, ended: sql`Now()` } : record.values);
@@ -60,89 +63,115 @@ export default class SubmitControl {
         if (closing && !createOnly.has('ended')) set.event.ended = END_NOW;
 
         const { id, inserted } = await this.config.pg.transaction(async (tx) => {
-            const [row] = await tx.insert(CoreEntity)
-                .values(values.entity as PgInsertValue<typeof CoreEntity>)
-                .onConflictDoUpdate({
-                    target: [CoreEntity.connection, CoreEntity.external_id],
-                    targetWhere: HAS_EXTERNAL_ID,
-                    set: set.entity as PgUpdateSetSource<typeof CoreEntity>,
-                })
-                .returning({ id: CoreEntity.id, inserted: INSERTED });
-
-            const event = tx.insert(CoreEntityEvent).values({ ...values.event, id: row.id });
-
-            if (Object.keys(set.event).length) {
-                await event.onConflictDoUpdate({ target: CoreEntityEvent.id, set: set.event as PgUpdateSetSource<typeof CoreEntityEvent> });
-            } else {
-                await event.onConflictDoNothing({ target: CoreEntityEvent.id });
-            }
-
-            if (channels && (row.inserted || !createOnly.has('channels'))) {
-                await tx.delete(CoreEntityChannel).where(eq(CoreEntityChannel.entity, row.id));
-                await tx.insert(CoreEntityChannel).values(channels.map(channel => ({ entity: row.id, channel: BigInt(channel) })));
-            } else if (inherited.length && (row.inserted || !(await tx.$count(CoreEntityChannel, eq(CoreEntityChannel.entity, row.id))))) {
-                await tx.insert(CoreEntityChannel).values(inherited.map(channel => ({ entity: row.id, channel: BigInt(channel) })));
-            }
-
+            const row = await this.#upsert(tx, LayerMapping_Destination.COREEVENT, connection, record.external, values.entity, set.entity);
+            await this.#side(tx, CoreEntityEvent, row.id, values.event, set.event);
+            await this.#channels(tx, row, channels, inherited, createOnly);
             return row;
         });
 
         const action = inserted ? ETLEventAction.Create : ETLEventAction.Update;
 
         this.config.models.CoreEntity.augmented_from(id).then((event) => {
-            notifyCoreEntity(this.config, action, event);
+            notifyCoreEvent(this.config, action, event);
         }).catch((err) => {
             console.error(`not ok - failed to notify ${action} of Core Event ${id}:`, err);
         });
     }
 
     async device(connection: number, feature: MappingFeature, mapped: MappedDevice, opts: SubmitOptions = {}): Promise<void> {
-        const { channels, event_external_id, ...columns } = mapped;
+        const { channels, ...columns } = mapped;
 
         const createOnly = new Set(opts.createOnly);
-        if (createOnly.has('event_external_id')) createOnly.add('event');
 
-        const record = this.#record(CoreDevice, connection, feature, {
-            ...columns,
-            ...(event_external_id === undefined ? {} : { event: await this.#eventId(connection, event_external_id) }),
-        }, createOnly);
-
+        // A submission without a geometry keeps the last known location
+        const geometry = this.eventGeometry(feature);
+        const record = this.#record('CoreDevice', connection, feature, { ...columns, ...(geometry ? { geometry } : {}) }, createOnly);
         const inherited = channels ? [] : await opts.inherit?.() ?? [];
 
-        await this.config.pg.transaction(async (tx) => {
-            const [row] = await tx.insert(CoreDevice)
-                .values(record.values)
-                .onConflictDoUpdate({ target: [CoreDevice.connection, CoreDevice.external_id], targetWhere: HAS_EXTERNAL_ID, set: record.set })
-                .returning({ id: CoreDevice.id, inserted: INSERTED });
+        const values = splitDevice(record.values);
+        const set = splitDevice(record.set);
 
-            if (channels && (row.inserted || !createOnly.has('channels'))) {
-                await tx.delete(CoreDeviceChannel).where(eq(CoreDeviceChannel.device, row.id));
-                await tx.insert(CoreDeviceChannel).values(channels.map(channel => ({ device: row.id, channel: BigInt(channel) })));
-            } else if (inherited.length && (row.inserted || !(await tx.$count(CoreDeviceChannel, eq(CoreDeviceChannel.device, row.id))))) {
-                await tx.insert(CoreDeviceChannel).values(inherited.map(channel => ({ device: row.id, channel: BigInt(channel) })));
-            }
+        const { id } = await this.config.pg.transaction(async (tx) => {
+            const row = await this.#upsert(tx, LayerMapping_Destination.COREDEVICE, connection, record.external, values.entity, set.entity);
+            await this.#side(tx, CoreEntityDevice, row.id, values.device, set.device);
+            await this.#channels(tx, row, channels, inherited, createOnly);
+            return row;
         });
-    }
 
-    /** Core Event of the Connection with the given external_id - null unassigns the Device */
-    async #eventId(connection: number, external_id: string): Promise<string | null> {
-        if (!external_id.trim()) return null;
-
-        const [event] = await this.config.pg.select({ id: CoreEntity.id })
-            .from(CoreEntity)
-            .where(and(eq(CoreEntity.connection, connection), eq(CoreEntity.external_id, external_id.trim())))
-            .limit(1);
-
-        return event ? event.id : null;
+        notifyCoreDevice(this.config, id);
     }
 
     /**
-     * Values to insert & the subset to overwrite when the external_id already
-     * exists on the Connection - create only fields are left out of the overwrite
-     * and object columns are merged so their create only properties survive
+     * UPSERT the core_entity half of a record on its external ID within the
+     * Connection & kind - an advisory lock serialises concurrent submissions of
+     * the same ID so exactly one of them inserts
      */
-    #record<T extends Omit<MappedEvent | MappedDevice, 'channels' | 'event_external_id'>>(
-        table: typeof CoreEntity | typeof CoreDevice,
+    async #upsert(
+        tx: Tx,
+        kind: LayerMapping_Destination,
+        connection: number,
+        external: ExternalId | null,
+        values: Record<string, unknown>,
+        set: Record<string, unknown>,
+    ): Promise<{ id: string; inserted: boolean }> {
+        if (external) {
+            await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${`${connection}:${kind}:${external.system}:${external.value}`}::text))`);
+
+            const [existing] = await tx.select({ id: CoreEntityExternal.entity })
+                .from(CoreEntityExternal)
+                .where(and(
+                    eq(CoreEntityExternal.connection, connection),
+                    eq(CoreEntityExternal.kind, kind),
+                    eq(CoreEntityExternal.system, external.system),
+                    eq(CoreEntityExternal.value, external.value),
+                ));
+
+            if (existing) {
+                await tx.update(CoreEntity)
+                    .set(set as PgUpdateSetSource<typeof CoreEntity>)
+                    .where(eq(CoreEntity.id, existing.id));
+
+                return { id: existing.id, inserted: false };
+            }
+        }
+
+        const [row] = await tx.insert(CoreEntity)
+            .values({ ...values, kind } as PgInsertValue<typeof CoreEntity>)
+            .returning({ id: CoreEntity.id });
+
+        if (external) await setExternalId(tx, { id: row.id, kind, connection }, external);
+
+        return { id: row.id, inserted: true };
+    }
+
+    /** UPSERT the side table half of a record on the shared primary key */
+    async #side<T extends Side>(tx: Tx, table: T, id: string, values: Record<string, unknown>, set: Record<string, unknown>): Promise<void> {
+        const insert = tx.insert(table).values({ ...values, id } as PgInsertValue<T>);
+
+        if (Object.keys(set).length) {
+            await insert.onConflictDoUpdate({ target: table.id, set: set as PgUpdateSetSource<T> });
+        } else {
+            await insert.onConflictDoNothing({ target: table.id });
+        }
+    }
+
+    /** Mapped Channels replace the record's, inherited Channels only fill in a record that has none */
+    async #channels(tx: Tx, row: { id: string; inserted: boolean }, channels: number[] | undefined, inherited: number[], createOnly: Set<string>): Promise<void> {
+        if (channels && (row.inserted || !createOnly.has('channels'))) {
+            await setChannels(tx, row.id, channels);
+        } else if (inherited.length && (row.inserted || !(await tx.$count(CoreEntityChannel, eq(CoreEntityChannel.entity, row.id))))) {
+            await tx.insert(CoreEntityChannel).values(inherited.map(channel => ({ entity: row.id, channel: BigInt(channel) })));
+        }
+    }
+
+    /**
+     * Values to insert, the subset to overwrite when the external ID already
+     * exists on the Connection & that external ID - create only fields are left
+     * out of the overwrite and object columns are merged so their create only
+     * properties survive
+     */
+    #record<T extends Omit<MappedEvent | MappedDevice, 'channels'>>(
+        label: 'CoreEvent' | 'CoreDevice',
         connection: number,
         feature: MappingFeature,
         mapped: T,
@@ -150,15 +179,19 @@ export default class SubmitControl {
     ) {
         const featureId = feature.id ? String(feature.id) : undefined;
 
-        const name = mapped.name ?? (feature.properties?.callsign || featureId);
-        const type = mapped.type;
+        const { external_id, ...fields } = mapped;
 
-        const label = table === CoreEntity ? 'CoreEvent' : 'CoreDevice';
+        const name = fields.name ?? (feature.properties?.callsign || featureId);
+        const type = fields.type;
+
         const missing = [!name && 'name', !type && 'type'].filter(Boolean);
         if (!name || !type) throw new Err(400, null, `${label} Map did not produce: ${missing.join(', ')}`);
 
+        const value = external_id?.value || featureId || '';
+        const external: ExternalId | null = value ? { system: external_id?.system || DEFAULT_EXTERNAL_SYSTEM, value } : null;
+
         const set: Record<string, unknown> = {};
-        for (const [key, value] of Object.entries(mapped)) {
+        for (const [key, value] of Object.entries(fields)) {
             if (createOnly.has(key)) continue;
 
             if (key === 'geometry' || value === null || typeof value !== 'object' || Array.isArray(value)) {
@@ -169,17 +202,15 @@ export default class SubmitControl {
             const properties = Object.entries(value).filter(([property]) => !createOnly.has(`${key}.${property}`));
             if (!properties.length) continue;
 
-            set[key] = sql`${sql.identifier(getTableName(table))}.${sql.identifier(key)} || ${JSON.stringify(Object.fromEntries(properties))}::text::jsonb`;
+            set[key] = sql`${sql.identifier(getTableName(CoreEntity))}.${sql.identifier(key)} || ${JSON.stringify(Object.fromEntries(properties))}::text::jsonb`;
         }
 
-        const identity = {
-            external_id: mapped.external_id ?? featureId ?? '',
-            metadata: feature.properties?.metadata ?? {},
-        };
+        const metadata = feature.properties?.metadata ?? {};
 
         return {
-            values: { ...mapped, ...identity, name, type, username: null, connection },
-            set: { ...set, ...identity, updated: sql`Now()` } as unknown as Partial<T>,
+            external,
+            values: { ...fields, metadata, name, type, username: null, connection },
+            set: { ...set, metadata, updated: sql`Now()` } as unknown as Partial<T>,
         };
     }
 

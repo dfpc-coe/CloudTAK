@@ -143,6 +143,13 @@
                                                     @click.stop='router.push(`/menu/missions/${card.overlay.mode_id}`)'
                                                     v-text='card.overlay.name'
                                                 />
+                                                <a
+                                                    v-else-if='card.overlay.mode === "internal"'
+                                                    class='fw-semibold text-primary text-decoration-underline d-inline-flex align-items-center text-break cursor-pointer'
+                                                    title='Open Features Menu'
+                                                    @click.stop='router.push("/menu/features")'
+                                                    v-text='card.overlay.name'
+                                                />
                                                 <span
                                                     v-else
                                                     class='fw-semibold d-inline-flex align-items-center flex-grow-1 text-break'
@@ -384,7 +391,8 @@ const overlayCards = computed<OverlayCard[]>(() => {
     }
 
     // Menu lists the map stack top-first: topmost overlay first, basemap last
-    return cards.sort((a, b) => OverlayManager.loaded.indexOf(b.overlay) - OverlayManager.loaded.indexOf(a.overlay));
+    const stack = OverlayManager.stack();
+    return cards.sort((a, b) => stack.indexOf(b.overlay) - stack.indexOf(a.overlay));
 });
 
 const sortableCount = computed(() => overlayCards.value.filter((card) => !OverlayManager.isPinned(card.overlay)).length);
@@ -583,14 +591,11 @@ async function saveOrder(sortableEv: SortableEvent) {
     if (!sortable) return;
     if (sortableEv.newIndex === undefined || isNaN(parseInt(String(sortableEv.newIndex)))) return;
 
-    const id = sortableEv.item.getAttribute('id');
-    if (!id) return;
-
     // The list is top-first while the manager orders bottom-first
     const overlay_ids = sortable.toArray().map((i) => parseInt(i)).reverse();
 
     try {
-        await OverlayManager.reorderLoaded(overlay_ids, id);
+        await OverlayManager.reorderLoaded(overlay_ids);
     } catch (err) {
         console.error('Failed to sync overlay order:', err);
     }

@@ -26,6 +26,7 @@ test('GET: api/type/2525e', async () => {
         assert.deepEqual(res.body.symbolsets.find((set: { id: string }) => set.id === '10'), {
             id: '10',
             name: 'Land unit',
+            count: 214,
         });
 
         assert.equal(res.body.items.length, 2);
@@ -185,6 +186,35 @@ test('GET: api/type/2525e/:sidc', async () => {
             remarks: '',
             symbolset: '40',
         });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: api/type/2525e/:sidc - identity without entity', async () => {
+    try {
+        const res = await flight.fetch('/api/type/2525e/13061000000000000000', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.deepEqual(res.body, {
+            sidc: '13061000000000000000',
+            name: 'Hostile',
+            remarks: '',
+            symbolset: '10',
+        });
+
+        const unknown = await flight.fetch('/api/type/2525e/13011000000000000000', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.equal(unknown.body.name, 'Unknown');
     } catch (err) {
         assert.ifError(err);
     }

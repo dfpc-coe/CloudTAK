@@ -107,8 +107,20 @@ export default class RemoteHub implements HubClient {
         return res.status;
     }
 
+    async profileSync(username: string): Promise<void> {
+        await this.#call('/profile/sync', { username });
+    }
+
     async connectionStatus(ids: Array<number | string>): Promise<Record<string, ConnStatus>> {
         return await this.#call('/connection/status', { ids });
+    }
+
+    async connectionChannels(id: number | string): Promise<number[] | null> {
+        const res = await this.#call<{ channels: number[] | null }>('/connection/channels', { id }, {
+            timeout: 5 * 1000,
+        });
+
+        return res.channels;
     }
 
     async connectionSummary(): Promise<PoolSummary> {
@@ -168,8 +180,8 @@ export default class RemoteHub implements HubClient {
         await this.#call('/feature/refresh', { connection });
     }
 
-    async coreEntitySubmit(event: string): Promise<void> {
-        await this.#call(`/core/event/${encodeURIComponent(event)}`, {});
+    async coreEntitySubmit(entity: string): Promise<void> {
+        await this.#call(`/core/entity/${encodeURIComponent(entity)}`, {});
     }
 
     async geofenceRefresh(): Promise<void> {

@@ -6,6 +6,7 @@
                 @click='fetchList'
             />
             <TablerIconButton
+                v-if='!isNativePlatform()'
                 title='Create Connection'
                 @click='external("/connection/new")'
             >
@@ -66,6 +67,7 @@
                     >
                         <StandardItem
                             class='d-flex align-items-center py-2 px-3'
+                            :hover='!isNativePlatform()'
                             @click='external(`/connection/${conn.id}`)'
                         >
                             <div class='col-auto'>
@@ -115,6 +117,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import type { ETLConnectionList } from '../../../types.ts';
 import { server } from '../../../std.ts';
+import { isNativePlatform } from '../../../utils/capacitor.ts';
 import {
     TablerNone,
     TablerAlert,
@@ -203,6 +206,7 @@ async function fetchList() {
 }
 
 function external(url: string) {
+    if (isNativePlatform()) return;
     window.location.href = url;
 }
 </script>

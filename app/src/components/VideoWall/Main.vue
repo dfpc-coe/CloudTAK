@@ -103,9 +103,8 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { GridLayout, GridItem } from 'grid-layout-plus';
 import type { Layout } from 'grid-layout-plus';
-import { std, stdurl } from '../../std.ts';
+import { server } from '../../std.ts';
 import { registerVideoWall } from '../../lib/video-wall.ts';
-import type { ProfileVideoList } from '../../types.ts';
 import NavHeader from '../util/NavHeader.vue';
 import VideoPlayer from '../util/VideoPlayer.vue';
 import {
@@ -161,9 +160,11 @@ async function listVideos(): Promise<void> {
     try {
         error.value = undefined;
 
-        const url = stdurl('/api/profile/video');
-        url.searchParams.set('limit', '1000');
-        const list = await std(url) as ProfileVideoList;
+        const { data: list, error: listError } = await server.GET('/api/profile/video', {
+            params: { query: { limit: 1000, page: 0, order: 'asc' } }
+        });
+
+        if (listError) throw new Error(listError.message);
 
         const items: Layout = [];
         const leaseMap = new Map<string, number>();
@@ -217,10 +218,12 @@ function saveLayout(updated: Layout): void {
             ) continue;
 
             try {
-                await std(`/api/profile/video/${id}`, {
-                    method: 'PATCH',
+                const { error } = await server.PATCH('/api/profile/video/{:id}', {
+                    params: { path: { ':id': id } },
                     body: { position }
                 });
+
+                if (error) throw new Error(error.message);
 
                 saved.value.set(id, position);
             } catch (err) {
@@ -232,9 +235,11 @@ function saveLayout(updated: Layout): void {
 
 async function removeVideo(id: string): Promise<void> {
     try {
-        await std(`/api/profile/video/${id}`, {
-            method: 'DELETE'
+        const { error } = await server.DELETE('/api/profile/video/{:id}', {
+            params: { path: { ':id': id } }
         });
+
+        if (error) throw new Error(error.message);
 
         layout.value = layout.value.filter((item) => String(item.i) !== id);
         leases.value.delete(id);

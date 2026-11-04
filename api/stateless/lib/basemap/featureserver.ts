@@ -9,6 +9,7 @@ import { Static } from '@sinclair/typebox';
 import { Basemap_FeatureAction } from '../../../common/enums.js';
 import { MultiGeoJSONFeatureCollection, MultiGeoJSONFeature } from '../../../common/types.js';
 import { EsriPolygon } from '../esri/types.js';
+import { esriToGeoJSON, parseFeatureSet } from '../esri/geojson.js';
 import { BasemapProtocol, TileJSONActions, TileOpts } from '../interface-basemap.js';
 
 /**
@@ -44,7 +45,7 @@ export default class FeatureServerBasemap extends BasemapProtocol {
             url.pathname = url.pathname + '/query';
         }
 
-        url.searchParams.set('f', 'geojson');
+        url.searchParams.set('f', 'json');
         url.searchParams.set('inSR', '4326');
         url.searchParams.set('outSR', '4326');
         url.searchParams.set('returnZ', 'false');
@@ -73,13 +74,23 @@ export default class FeatureServerBasemap extends BasemapProtocol {
 
         url.searchParams.set('quantizationParameters', JSON.stringify({
             extent,
-            tolerance: 0.001,
+            tolerance: FeatureServerBasemap.tileTolerance(z),
             mode: 'view',
         }));
 
         url.searchParams.set('geometry', JSON.stringify(extent));
 
         return url;
+    }
+
+    /**
+     * Quantization tolerance in degrees for one unit of a 4096 extent tile
+     * at the given zoom, matching the GeoJSONVT extent used for encoding.
+     *
+     * @param z - Zoom level
+     */
+    static tileTolerance(z: number): number {
+        return 360 / Math.pow(2, z) / 4096;
     }
 
     actions(): Static<typeof TileJSONActions> {
@@ -110,17 +121,20 @@ export default class FeatureServerBasemap extends BasemapProtocol {
         const formData = new FormData();
         formData.append('where', '1=1');
         formData.append('outFields', '*');
-        formData.append('f', 'geojson');
+        formData.append('f', 'json');
+        formData.append('outSR', '4326');
         formData.append('geometryType', 'esriGeometryPolygon');
         formData.append('spatialRel', 'esriSpatialRelIntersects');
         formData.append('geometry', JSON.stringify(esriPolygon));
 
-        const fc = await (await fetch(urlBuilder, {
+        const res = await fetch(urlBuilder, {
             method: 'POST',
             body: formData,
-        })).json() as Static<typeof MultiGeoJSONFeatureCollection>;
+        });
 
-        return fc;
+        if (!res.ok) throw new Err(400, null, `Upstream Error: ${await res.text()}`);
+
+        return esriToGeoJSON(parseFeatureSet(await res.json()));
     }
 
     /**
@@ -132,12 +146,16 @@ export default class FeatureServerBasemap extends BasemapProtocol {
         id: string,
     ): Promise<Static<typeof MultiGeoJSONFeature>> {
         const urlBuilder = new URL(this.basemap!.url + '/query');
-        urlBuilder.searchParams.set('f', 'geojson');
+        urlBuilder.searchParams.set('f', 'json');
+        urlBuilder.searchParams.set('outSR', '4326');
         urlBuilder.searchParams.set('objectIds', String(id));
         urlBuilder.searchParams.set('outFields', '*');
 
         const res = await typedFetch(urlBuilder);
-        const fc = await res.typed(MultiGeoJSONFeatureCollection);
+
+        if (!res.ok) throw new Err(400, null, `Upstream Error: ${await res.text()}`);
+
+        const fc = esriToGeoJSON(parseFeatureSet(await res.json()));
 
         if (fc.features.length === 0) {
             throw new Err(404, null, `Could not find feature with ID: ${id}`);
@@ -162,7 +180,7 @@ export default class FeatureServerBasemap extends BasemapProtocol {
 
             if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await tileRes.text()}`);
 
-            const fc = await tileRes.typed(MultiGeoJSONFeatureCollection);
+            const fc = esriToGeoJSON(parseFeatureSet(await tileRes.json()));
 
             if (!fc.features.length) {
                 res.status(404).json({

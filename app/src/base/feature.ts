@@ -38,27 +38,32 @@ export type Feature_DownloadOptions = {
     format?: Feature_ExportFormat;
 };
 
+// A delete awaiting confirmation from the API leaves a tombstone row
+function isLive(feat: DBFeature): boolean {
+    return feat.deleted !== true;
+}
+
 export default class FeatureManager extends BaseInterface {
     static readonly listCacheKey = 'feature';
 
     static async count(): Promise<number> {
-        return await db.feature.count();
+        return await db.feature.filter(isLive).count();
     }
 
     static liveCount(): Observable<number> {
         return liveQuery(async () => {
-            return await db.feature.count();
+            return await db.feature.filter(isLive).count();
         });
     }
 
     static liveList(): Observable<DBFeature[]> {
         return liveQuery(async () => {
-            return await db.feature.toArray();
+            return await db.feature.filter(isLive).toArray();
         });
     }
 
     static async list(opts: Feature_ListOptions = {}): Promise<DBFeature[]> {
-        let collection = db.feature.toCollection();
+        let collection = db.feature.filter(isLive);
 
         if (opts.path !== undefined) {
             collection = collection.filter((feat) => feat.path === opts.path);

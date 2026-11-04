@@ -1,14 +1,15 @@
 import Err from '@openaddresses/batch-error';
 import Modeler, { GenericList, GenericListInput, GenericIterInput } from '@openaddresses/batch-generic';
 import { Static } from '@sinclair/typebox';
-import { CoreEntityResponse, GeoJSONFeatureGeometryPoint } from '../types.js';
+import { CoreEventResponse, GeoJSONFeatureGeometryPoint } from '../types.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { CoreEntity, CoreEntityEvent, CoreEntityChannel } from '../schema.js';
+import { CoreEntity, CoreEntityEvent, CoreEntityDevice, CoreEntityChannel, CoreEntityExternal } from '../schema.js';
+import { LayerMapping_Destination } from '../enums.js';
 import type { PgInsertValue } from 'drizzle-orm/pg-core';
-import { SQL, is, sql, eq, asc, desc, getTableColumns } from 'drizzle-orm';
+import { SQL, is, sql, eq, and, asc, desc, getTableColumns } from 'drizzle-orm';
 
-/** kind is internal until Devices share the table - keep it out of Event payloads */
-const EntityColumns = Object.fromEntries(
+/** kind is internal - keep it out of payloads */
+export const EntityColumns = Object.fromEntries(
     Object.entries(getTableColumns(CoreEntity)).filter(([name]) => name !== 'kind'),
 ) as Omit<ReturnType<typeof getTableColumns<typeof CoreEntity>>, 'kind'>;
 
@@ -19,25 +20,112 @@ const EventColumns = Object.fromEntries(
 
 const EVENT_KEYS = new Set(Object.keys(EventColumns));
 
-type WithSQL<T> = { [K in keyof T]: T[K] | SQL };
+/** Device side table columns - the shared primary key is already selected from core_entity */
+export const DeviceColumns = Object.fromEntries(
+    Object.entries(getTableColumns(CoreEntityDevice)).filter(([name]) => name !== 'id'),
+) as Omit<ReturnType<typeof getTableColumns<typeof CoreEntityDevice>>, 'id'>;
+
+export type WithSQL<T> = { [K in keyof T]: T[K] | SQL };
 
 export type CoreEntityEventInsert = WithSQL<Omit<typeof CoreEntity.$inferInsert, 'kind'> & Omit<typeof CoreEntityEvent.$inferInsert, 'id'>>;
 export type CoreEntityEventUpdate = Partial<WithSQL<Omit<typeof CoreEntity.$inferInsert, 'id' | 'kind'> & Omit<typeof CoreEntityEvent.$inferInsert, 'id'>>>;
 
-/** Database or transaction the Event writers run against */
-type Writer = Pick<PostgresJsDatabase<Record<string, unknown>>, 'insert' | 'update'>;
+/** Database or transaction the Entity writers run against */
+export type Writer = Pick<PostgresJsDatabase<Record<string, unknown>>, 'insert' | 'update' | 'delete'>;
 
-/** Split a flat set of Event values into the core_entity & core_entity_event halves */
-export function splitEvent<T extends Record<string, unknown>>(values: T): { entity: Record<string, unknown>; event: Record<string, unknown> } {
-    const entity: Record<string, unknown> = {};
-    const event: Record<string, unknown> = {};
+/** Channels of every Entity as a JSON array - left join against core_entity.id */
+export function channelsSubquery(pool: Pick<PostgresJsDatabase<Record<string, unknown>>, 'select'>) {
+    return pool
+        .select({
+            entity: CoreEntityChannel.entity,
+            channels: sql`JSON_AGG(core_entity_channel.channel::BIGINT ORDER BY core_entity_channel.channel::BIGINT)`.as('channels'),
+        })
+        .from(CoreEntityChannel)
+        .groupBy(CoreEntityChannel.entity)
+        .as('channels');
+}
+
+/** core_entity WHERE fragment matching Entities shared with any of the given Channels */
+export function sharedWith(channels: number[]): SQL {
+    if (!channels.length) return sql`False`;
+
+    return sql`EXISTS (
+        SELECT 1
+        FROM core_entity_channel
+        WHERE core_entity_channel.entity = core_entity.id
+        AND core_entity_channel.channel IN ${channels}
+    )`;
+}
+
+/** System a submitted record's external ID is filed under when its Map names none */
+export const DEFAULT_EXTERNAL_SYSTEM = 'default';
+
+export type ExternalId = { system: string; value: string };
+
+/** A request external ID - the deprecated bare string form is the value under the default system */
+export function toExternalId(input: ExternalId | string): ExternalId {
+    return typeof input === 'string' ? { system: DEFAULT_EXTERNAL_SYSTEM, value: input } : input;
+}
+
+/** The deprecated external_id response field - the value under the default system */
+export function legacyExternalId(ids: Record<string, string>): string {
+    return ids[DEFAULT_EXTERNAL_SYSTEM] ?? '';
+}
+
+/** External IDs of every Entity as a JSON object keyed by system - correlated against core_entity.id */
+export const EXTERNAL_IDS = sql`COALESCE((
+    SELECT JSON_OBJECT_AGG(core_entity_external.system, core_entity_external.value ORDER BY core_entity_external.system)
+    FROM core_entity_external
+    WHERE core_entity_external.entity = core_entity.id
+), '{}'::JSON)`;
+
+/**
+ * Set the ID of an Entity in a single external system - an empty value removes
+ * the system. connection & kind are copied onto the row for the uniqueness of
+ * a value per system within the Connection & kind
+ */
+export async function setExternalId(
+    tx: Writer,
+    entity: { id: string; kind: LayerMapping_Destination; connection: number | null },
+    external: ExternalId,
+): Promise<void> {
+    if (!external.value) {
+        await tx.delete(CoreEntityExternal).where(and(eq(CoreEntityExternal.entity, entity.id), eq(CoreEntityExternal.system, external.system)));
+        return;
+    }
+
+    await tx.insert(CoreEntityExternal)
+        .values({ entity: entity.id, connection: entity.connection, kind: entity.kind, system: external.system, value: external.value })
+        .onConflictDoUpdate({
+            target: [CoreEntityExternal.entity, CoreEntityExternal.system],
+            set: { value: external.value },
+        });
+}
+
+/** Replace the Channels an Entity is shared with */
+export async function setChannels(tx: Writer, id: string, channels: number[]): Promise<void> {
+    await tx.delete(CoreEntityChannel).where(eq(CoreEntityChannel.entity, id));
+
+    if (channels.length) {
+        await tx.insert(CoreEntityChannel).values(channels.map(channel => ({ entity: id, channel: BigInt(channel) })));
+    }
+}
+
+/** Split a flat set of values into the core_entity half & the side table half - side names the side table's columns */
+export function splitEntity(values: Record<string, unknown>, side: Set<string>): { entity: Record<string, unknown>; side: Record<string, unknown> } {
+    const split = { entity: {} as Record<string, unknown>, side: {} as Record<string, unknown> };
 
     for (const [key, value] of Object.entries(values)) {
         if (value === undefined) continue;
-        (EVENT_KEYS.has(key) ? event : entity)[key] = value;
+        (side.has(key) ? split.side : split.entity)[key] = value;
     }
 
-    return { entity, event };
+    return split;
+}
+
+export function splitEvent(values: Record<string, unknown>): { entity: Record<string, unknown>; event: Record<string, unknown> } {
+    const { entity, side } = splitEntity(values, EVENT_KEYS);
+    return { entity, event: side };
 }
 
 /**
@@ -84,6 +172,20 @@ const BOARDS = sql`COALESCE((
 /** An Event is active until its ended time - a future ended keeps it active until then */
 export const ACTIVE = sql<boolean>`(${CoreEntityEvent.ended} IS NULL OR ${CoreEntityEvent.ended} > Now())`;
 
+/** An Entity is broadcast as CoT when it is located - a Device, or an Event that is still active */
+export const BROADCAST = sql<boolean>`(${CoreEntity.geometry} IS NOT NULL AND (${CoreEntity.kind} = ${LayerMapping_Destination.COREDEVICE} OR ${ACTIVE}))`;
+
+type BroadcastEntity = Omit<typeof CoreEntity.$inferSelect, 'kind' | 'geometry'> & {
+    geometry: Static<typeof GeoJSONFeatureGeometryPoint>;
+    channels: number[];
+    external_ids: Record<string, string>;
+};
+
+/** A located Entity with the columns of its kind's side table - `kind` says which */
+export type CoreEntityBroadcast
+    = (BroadcastEntity & { kind: LayerMapping_Destination.COREEVENT } & Omit<typeof CoreEntityEvent.$inferSelect, 'id'>)
+        | (BroadcastEntity & { kind: LayerMapping_Destination.COREDEVICE } & Omit<typeof CoreEntityDevice.$inferSelect, 'id'>);
+
 export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
     constructor(
         pool: PostgresJsDatabase<Record<string, unknown>>,
@@ -96,7 +198,7 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
         const { entity, event } = splitEvent(values);
 
         const [row] = await tx.insert(CoreEntity)
-            .values(entity as PgInsertValue<typeof CoreEntity>)
+            .values({ ...entity, kind: LayerMapping_Destination.COREEVENT } as PgInsertValue<typeof CoreEntity>)
             .returning({ id: CoreEntity.id });
 
         await tx.insert(CoreEntityEvent).values({ ...event, id: row.id });
@@ -122,20 +224,14 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
         }
     }
 
-    async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof CoreEntityResponse>> {
-        const SubTable = this.pool
-            .select({
-                entity: CoreEntityChannel.entity,
-                channels: sql`JSON_AGG(core_entity_channel.channel::BIGINT ORDER BY core_entity_channel.channel::BIGINT)`.as('channels'),
-            })
-            .from(CoreEntityChannel)
-            .groupBy(CoreEntityChannel.entity)
-            .as('channels');
+    async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof CoreEventResponse>> {
+        const SubTable = channelsSubquery(this.pool);
 
         const pgres = await this.pool
             .select({
                 event: { ...EntityColumns, ...EventColumns },
                 active: ACTIVE.as('active'),
+                external_ids: EXTERNAL_IDS.as('external_ids'),
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
                 boards: BOARDS.as('boards'),
             })
@@ -150,14 +246,16 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
         return {
             ...pgres[0].event,
             active: pgres[0].active,
+            external_id: legacyExternalId(pgres[0].external_ids as Record<string, string>),
+            external_ids: pgres[0].external_ids as Record<string, string>,
             geometry: pgres[0].event.geometry as Static<typeof GeoJSONFeatureGeometryPoint>,
             channels: pgres[0].channels as number[],
-            boards: pgres[0].boards as Static<typeof CoreEntityResponse>['boards'],
+            boards: pgres[0].boards as Static<typeof CoreEventResponse>['boards'],
         };
     }
 
     /** Iterating variant of augmented_list */
-    async* augmented_iter(query: GenericIterInput & { boards?: boolean } = {}): AsyncGenerator<Static<typeof CoreEntityResponse>> {
+    async* augmented_iter(query: GenericIterInput & { boards?: boolean } = {}): AsyncGenerator<Static<typeof CoreEventResponse>> {
         const pagesize = query.pagesize || 100;
         let page = 0;
         let pgres;
@@ -183,24 +281,18 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
      * `boards` is a correlated subquery run once per returned row - callers
      * that never surface it (ie the Event => CoT broadcast loop) opt out
      */
-    async augmented_list(query: GenericListInput & { boards?: boolean } = {}): Promise<GenericList<Static<typeof CoreEntityResponse>>> {
+    async augmented_list(query: GenericListInput & { boards?: boolean } = {}): Promise<GenericList<Static<typeof CoreEventResponse>>> {
         const order = query.order && query.order === 'desc' ? desc : asc;
         const orderBy = order(query.sort ? this.key(query.sort) : this.requiredPrimaryKey());
 
-        const SubTable = this.pool
-            .select({
-                entity: CoreEntityChannel.entity,
-                channels: sql`JSON_AGG(core_entity_channel.channel::BIGINT ORDER BY core_entity_channel.channel::BIGINT)`.as('channels'),
-            })
-            .from(CoreEntityChannel)
-            .groupBy(CoreEntityChannel.entity)
-            .as('channels');
+        const SubTable = channelsSubquery(this.pool);
 
         const pgres = await this.pool
             .select({
                 count: sql<string>`count(*) OVER()`.as('count'),
                 event: { ...EntityColumns, ...EventColumns },
                 active: ACTIVE.as('active'),
+                external_ids: EXTERNAL_IDS.as('external_ids'),
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
                 boards: (query.boards === false ? sql`'[]'::JSON` : BOARDS).as('boards'),
             })
@@ -221,12 +313,65 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
                     return {
                         ...t.event,
                         active: t.active,
+                        external_id: legacyExternalId(t.external_ids as Record<string, string>),
+                        external_ids: t.external_ids as Record<string, string>,
                         geometry: t.event.geometry as Static<typeof GeoJSONFeatureGeometryPoint>,
                         channels: t.channels as number[],
-                        boards: t.boards as Static<typeof CoreEntityResponse>['boards'],
+                        boards: t.boards as Static<typeof CoreEventResponse>['boards'],
                     };
                 }),
             };
         }
+    }
+
+    /**
+     * Stream every Entity to broadcast as CoT regardless of kind - both side
+     * tables are joined and the row's kind picks which one populated it
+     */
+    async* broadcast_iter(opts: { id?: string; pagesize?: number } = {}): AsyncGenerator<CoreEntityBroadcast> {
+        const pagesize = opts.pagesize || 100;
+        const SubTable = channelsSubquery(this.pool);
+        const where = opts.id ? and(BROADCAST, eq(CoreEntity.id, opts.id)) : BROADCAST;
+
+        let page = 0;
+        let pgres;
+
+        do {
+            pgres = await this.pool
+                .select({
+                    entity: { ...EntityColumns, kind: CoreEntity.kind },
+                    event: EventColumns,
+                    device: DeviceColumns,
+                    external_ids: EXTERNAL_IDS.as('external_ids'),
+                    channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
+                })
+                .from(CoreEntity)
+                .leftJoin(CoreEntityEvent, eq(CoreEntity.id, CoreEntityEvent.id))
+                .leftJoin(CoreEntityDevice, eq(CoreEntity.id, CoreEntityDevice.id))
+                .leftJoin(SubTable, eq(CoreEntity.id, SubTable.entity))
+                .where(where)
+                .orderBy(asc(CoreEntity.id))
+                .limit(pagesize)
+                .offset(page * pagesize);
+
+            for (const row of pgres) {
+                const { kind, ...entity } = row.entity;
+
+                const base = {
+                    ...entity,
+                    geometry: entity.geometry as Static<typeof GeoJSONFeatureGeometryPoint>,
+                    channels: row.channels as number[],
+                    external_ids: row.external_ids as Record<string, string>,
+                };
+
+                if (kind === LayerMapping_Destination.COREDEVICE && row.device) {
+                    yield { ...base, ...row.device, kind: LayerMapping_Destination.COREDEVICE };
+                } else if (kind === LayerMapping_Destination.COREEVENT && row.event) {
+                    yield { ...base, ...row.event, kind: LayerMapping_Destination.COREEVENT };
+                }
+            }
+
+            page++;
+        } while (pgres.length === pagesize);
     }
 }

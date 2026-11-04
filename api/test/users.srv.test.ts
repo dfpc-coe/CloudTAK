@@ -30,14 +30,15 @@ test('GET: api/user', async () => {
             last_login: string;
             created: string;
             updated: string;
-            certificate?: { subject: string; validFrom: string; validTo: string };
+            certificate?: { subject: string; validFrom: string; validTo: string; channels: boolean };
         }) => {
             i.last_login = time;
             i.created = time;
             i.updated = time;
 
             assert.ok(i.certificate, 'certificate metadata is returned');
-            assert.deepEqual(Object.keys(i.certificate).sort(), ['subject', 'validFrom', 'validTo']);
+            assert.deepEqual(Object.keys(i.certificate).sort(), ['channels', 'subject', 'validFrom', 'validTo']);
+            assert.equal(i.certificate.channels, false);
             assert.ok(!Number.isNaN(Date.parse(i.certificate.validTo)));
             delete i.certificate;
         });
@@ -197,7 +198,8 @@ test('GET: api/user/admin@example.com', async () => {
         res.body.updated = time;
 
         assert.ok(res.body.certificate, 'certificate metadata is returned');
-        assert.deepEqual(Object.keys(res.body.certificate).sort(), ['known', 'revoked', 'subject', 'validFrom', 'validTo']);
+        assert.deepEqual(Object.keys(res.body.certificate).sort(), ['channels', 'known', 'revoked', 'subject', 'validFrom', 'validTo']);
+        assert.equal(res.body.certificate.channels, false);
         assert.ok(!Number.isNaN(Date.parse(res.body.certificate.validTo)));
         assert.ok(!('auth' in res.body), 'private key material is never returned');
         delete res.body.certificate;

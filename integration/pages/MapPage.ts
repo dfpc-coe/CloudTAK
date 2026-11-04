@@ -85,7 +85,7 @@ export class MapPage {
     readonly cancelManualLocation: Locator;
 
     static readonly DEFAULT_MENU_TOOLTIPS = [
-        'Your Features',
+        'Features',
         'Overlays',
         'Contacts',
         'Basemaps',
@@ -104,7 +104,7 @@ export class MapPage {
 
     // Right-side entries: tooltip -> route and panel title (menu.ts + Menu*.vue).
     static readonly MENU_PANELS: Record<string, { route: string; title: string }> = {
-        'Your Features': { route: '/menu/features', title: 'Saved Features' },
+        'Features': { route: '/menu/features', title: 'Features' },
         'Overlays': { route: '/menu/overlays', title: 'Overlays' },
         'Contacts': { route: '/menu/contacts', title: 'Contacts' },
         'Basemaps': { route: '/menu/basemaps', title: 'Basemaps' },

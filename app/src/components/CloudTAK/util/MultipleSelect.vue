@@ -16,7 +16,6 @@
         >
             <Feature
                 :feature='feat'
-                :compact='true'
                 :delete-button='false'
             />
         </div>

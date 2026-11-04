@@ -178,6 +178,56 @@ test('GET: api/profile/overlay - profile mode, S3 absent -> moved to removed', a
     }
 });
 
+test('GET: api/profile/overlay - profile mode, S3 error -> kept in items', async () => {
+    let stub: Sinon.SinonStub | undefined;
+
+    try {
+        const post = await flight.fetch('/api/profile/overlay', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Unverifiable Profile Overlay',
+                mode: 'profile',
+                url: '/profile/admin@example.com/unverifiable.pmtiles',
+            },
+        }, false);
+
+        assert.equal(post.status, 200, `POST overlay failed: ${JSON.stringify(post.body)}`);
+
+        const forbidden = Object.assign(new Error('UnknownError'), {
+            name: '403',
+            $metadata: { httpStatusCode: 403 },
+        });
+
+        stub = Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
+            if (command instanceof HeadObjectCommand) return Promise.reject(forbidden);
+            throw new Error(`Unexpected S3 command: ${command.constructor.name}`);
+        });
+
+        const res = await flight.fetch('/api/profile/overlay', {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.equal(res.body.removed.length, 0);
+        assert.equal(res.body.total, 1);
+        assert.equal(res.body.items.length, 1);
+        assert.equal(res.body.items[0].name, 'Unverifiable Profile Overlay');
+
+        const del = await flight.fetch(`/api/profile/overlay?id=${res.body.items[0].id}`, {
+            method: 'DELETE',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.equal(del.status, 200);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        stub?.restore();
+        Sinon.restore();
+    }
+});
+
 test('GET: api/profile/overlay - data mode, S3 absent -> moved to removed', async () => {
     let stub: Sinon.SinonStub | undefined;
 
@@ -285,7 +335,7 @@ test('GET: api/profile/overlay - basemap mode, basemap present -> kept in items'
             tileSize: 256,
             minzoom: 0,
             maxzoom: 16,
-            tiles: [`${flight.base}/api/basemap/1/tiles/{z}/{x}/{y}`],
+            tiles: [`${flight.base}/tiles/basemap/1/tiles/{z}/{x}/{y}`],
         });
 
         const single = await flight.fetch(`/api/profile/overlay/${post.body.id}`, {
@@ -419,6 +469,188 @@ test('GET: api/profile/overlay - mission mode, access denied -> moved to removed
         assert.ifError(err);
     } finally {
         flight.tak.reset();
+    }
+});
+
+test('POST: api/profile/overlay - new overlays stack on top & basemaps stay pinned', async () => {
+    const created: Array<number> = [];
+
+    try {
+        const first = await flight.fetch('/api/profile/overlay', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Stack First',
+                mode: 'profile',
+                url: '/profile/admin@example.com/stack-first.pmtiles',
+            },
+        }, true);
+        created.push(first.body.id);
+
+        const second = await flight.fetch('/api/profile/overlay', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Stack Second',
+                mode: 'profile',
+                url: '/profile/admin@example.com/stack-second.pmtiles',
+            },
+        }, true);
+        created.push(second.body.id);
+
+        assert.ok(first.body.pos >= 0);
+        assert.equal(second.body.pos, first.body.pos + 1);
+
+        const basemap = await flight.fetch('/api/basemap', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Pinned Basemap',
+                url: 'https://tiles.example.com/pinned/{z}/{x}/{y}',
+                protocol: 'zxy',
+                type: 'raster',
+                sharing_enabled: false,
+            },
+        }, true);
+
+        const pinned = await flight.fetch('/api/profile/overlay', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Pinned Basemap Overlay',
+                mode: 'basemap',
+                mode_id: String(basemap.body.id),
+                pos: 7,
+                url: 'https://tiles.example.com/pinned/{z}/{x}/{y}',
+            },
+        }, true);
+        created.push(pinned.body.id);
+
+        assert.equal(pinned.body.pos, -1);
+
+        const patched = await flight.fetch(`/api/profile/overlay/${pinned.body.id}`, {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { pos: 3 },
+        }, true);
+
+        assert.equal(patched.body.pos, -1);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        for (const id of created) {
+            await flight.fetch(`/api/profile/overlay?id=${id}`, {
+                method: 'DELETE',
+                auth: { bearer: flight.token.admin },
+            }, false);
+        }
+    }
+});
+
+test('POST: api/profile/overlay - style layer ids are scoped to the overlay', async () => {
+    let id: number | undefined;
+
+    try {
+        const post = await flight.fetch('/api/profile/overlay', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Styled Overlay',
+                mode: 'profile',
+                type: 'raster',
+                url: '/profile/admin@example.com/styled.pmtiles',
+                styles: [{ id: 'tiles', type: 'raster', source: 'anything' }],
+            },
+        }, true);
+        id = post.body.id;
+
+        assert.deepEqual(post.body.styles, [{ id: `${id}-tiles`, type: 'raster', source: String(id) }]);
+
+        const patch = await flight.fetch(`/api/profile/overlay/${id}`, {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: {
+                styles: [
+                    { id: `${id}-tiles`, type: 'raster', source: String(id) },
+                    { id: 'hillshade', type: 'raster', source: 'anything' },
+                ],
+            },
+        }, true);
+
+        assert.deepEqual(patch.body.styles, [
+            { id: `${id}-tiles`, type: 'raster', source: String(id) },
+            { id: `${id}-hillshade`, type: 'raster', source: String(id) },
+        ]);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        if (id !== undefined) {
+            await flight.fetch(`/api/profile/overlay?id=${id}`, {
+                method: 'DELETE',
+                auth: { bearer: flight.token.admin },
+            }, false);
+        }
+    }
+});
+
+test('PATCH: api/profile/overlay/order', async () => {
+    const created: Array<number> = [];
+
+    try {
+        for (const name of ['Order A', 'Order B', 'Order C']) {
+            const post = await flight.fetch('/api/profile/overlay', {
+                method: 'POST',
+                auth: { bearer: flight.token.admin },
+                body: {
+                    name,
+                    mode: 'profile',
+                    url: `/profile/admin@example.com/${name.replace(' ', '-')}.pmtiles`,
+                },
+            }, true);
+            created.push(post.body.id);
+        }
+
+        const reversed = [...created].reverse();
+
+        const res = await flight.fetch('/api/profile/overlay/order', {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { ids: reversed },
+        }, true);
+
+        assert.deepEqual(res.body.items.map((o: { id: number; pos: number }) => [o.id, o.pos]), reversed.map((id, pos) => [id, pos]));
+
+        const single = await flight.fetch(`/api/profile/overlay/${created[0]}`, {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.equal(single.body.pos, 2);
+
+        const missing = await flight.fetch('/api/profile/overlay/order', {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { ids: [...created, 999999] },
+        }, false);
+
+        assert.equal(missing.status, 404);
+
+        const duplicate = await flight.fetch('/api/profile/overlay/order', {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: { ids: [created[0], created[0]] },
+        }, false);
+
+        assert.equal(duplicate.status, 400);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        for (const id of created) {
+            await flight.fetch(`/api/profile/overlay?id=${id}`, {
+                method: 'DELETE',
+                auth: { bearer: flight.token.admin },
+            }, false);
+        }
     }
 });
 

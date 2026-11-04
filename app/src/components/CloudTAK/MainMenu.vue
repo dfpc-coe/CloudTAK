@@ -9,7 +9,7 @@
             }'
         />
         <div
-            class='position-absolute cloudtak-panel d-flex'
+            class='position-absolute cloudtak-panel d-flex cloudtak-main-menu'
             role='menubar'
             style='
                 z-index: 4;

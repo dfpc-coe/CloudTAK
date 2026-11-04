@@ -1,6 +1,6 @@
 {
     "name": "tak-cloudtak",
-    "profile": "coegc",
+    "profile": "cotak-prod",
     "region": "us-gov-east-1",
     "role": "arn:{{partition}}:iam::{{accountId}}:role/tak-vpc-{{stack}}-cloudformation",
     "tags": [

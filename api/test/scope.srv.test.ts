@@ -33,6 +33,13 @@ test('GET: api/scope', async () => {
 
         const device = res.body.items.find((item: { resource: string }) => item.resource === 'device');
         assert.deepEqual(device.scopes, ['device:*', 'device:create', 'device:read', 'device:update', 'device:delete']);
+
+        const attachment = res.body.items.find((item: { resource: string }) => item.resource === 'attachment');
+        assert.deepEqual(attachment, {
+            resource: 'attachment',
+            levels: ['create', 'read'],
+            scopes: ['attachment:*', 'attachment:create', 'attachment:read'],
+        });
     } catch (err) {
         assert.ifError(err);
     }

@@ -125,10 +125,13 @@ export default class LayerControl {
             throw new Err(400, null, `Layer Task ${input.task} does not exist in AWS Container Registry`);
         }
 
+        const capabilities = await this.capabilities(input.task);
+
         const base = await this.config.models.Layer.generate({
             ...input,
             task: integration.id,
             version,
+            schema: CommonLayerControl.schemaVersion(capabilities),
         });
 
         if (opts && opts.incoming) {
@@ -139,8 +142,6 @@ export default class LayerControl {
         }
 
         if (opts && opts.outgoing) {
-            const capabilities = await this.capabilities(input.task);
-
             await this.config.models.LayerOutgoing.generate({
                 ...opts.outgoing,
                 ...(capabilities ? { subscriptions: CommonLayerControl.outgoingSubscriptions(capabilities) } : {}),

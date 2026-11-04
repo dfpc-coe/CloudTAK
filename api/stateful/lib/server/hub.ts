@@ -130,17 +130,13 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
             } else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
                 config.conns.keep(parsedParams.connection);
 
-                let client: ConnectionClient;
-                let created = false;
-                if (!config.conns.has(parsedParams.connection)) {
-                    const profile = await config.models.Profile.from(parsedParams.connection);
-                    if (!profile.auth || !profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
+                const profile = await config.models.Profile.from(parsedParams.connection);
+                if (!profile.auth || !profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
 
-                    client = await config.conns.add(new ProfileConnConfig(config, parsedParams.connection, profile.auth));
-                    created = true;
-                } else {
-                    client = config.conns.get(parsedParams.connection) as ConnectionClient;
-                }
+                // The pool replaces a tracked connection whose certificate was regenerated
+                const existing = config.conns.get(parsedParams.connection);
+                const client: ConnectionClient = await config.conns.add(new ProfileConnConfig(config, parsedParams.connection, profile.auth));
+                const created = client !== existing;
 
                 const connClient = new ConnectionWebSocket(ws, parsedParams.format, parsedParams.events, client, auth.session);
 

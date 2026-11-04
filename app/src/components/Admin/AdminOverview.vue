@@ -66,6 +66,10 @@
                     >
                         <div>Certificate Expires</div>
                         <div v-text='new Date(takserver.certificate.validTo).toLocaleDateString()' />
+                        <CertificateChannelsBadge
+                            class='mt-1'
+                            :certificate='takserver.certificate'
+                        />
                     </div>
                 </div>
             </StandardItem>
@@ -158,6 +162,7 @@ import { useRouter } from 'vue-router';
 import { server } from '../../std.ts';
 import type { Server } from '../../types.ts';
 import StatusDot from '../util/StatusDot.vue';
+import CertificateChannelsBadge from '../util/CertificateChannelsBadge.vue';
 import StandardItem from '../CloudTAK/util/StandardItem.vue';
 import {
     TablerLoading,

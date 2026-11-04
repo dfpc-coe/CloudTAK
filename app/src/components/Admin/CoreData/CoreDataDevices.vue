@@ -200,14 +200,6 @@
                             </div>
                             <div class='datagrid-item'>
                                 <div class='datagrid-title'>
-                                    Assigned Event
-                                </div>
-                                <div class='datagrid-content font-monospace'>
-                                    {{ device.event || "Unassigned" }}
-                                </div>
-                            </div>
-                            <div class='datagrid-item'>
-                                <div class='datagrid-title'>
                                     Created
                                 </div>
                                 <div class='datagrid-content'>
@@ -224,10 +216,10 @@
                             </div>
                             <div class='datagrid-item'>
                                 <div class='datagrid-title'>
-                                    External ID
+                                    External IDs
                                 </div>
                                 <div class='datagrid-content'>
-                                    {{ device.external_id || "—" }}
+                                    {{ Object.entries(device.external_ids).map(([system, value]) => `${system}: ${value}`).join(', ') || "—" }}
                                 </div>
                             </div>
                             <div class='datagrid-item'>
@@ -301,7 +293,7 @@ import {
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 
-type CoreDeviceSort = 'id' | 'created' | 'updated' | 'username' | 'connection' | 'event' | 'type' | 'name' | 'manufacturer' | 'model' | 'serial' | 'external_id';
+type CoreDeviceSort = 'id' | 'created' | 'updated' | 'username' | 'connection' | 'type' | 'name' | 'editable' | 'remarks';
 
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);

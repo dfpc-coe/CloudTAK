@@ -24,7 +24,7 @@
 */
 
 import type Atlas from './atlas.ts';
-import { std } from '../std.ts';
+import { server, bearer } from '../std.ts';
 import type { Feature, ProfileOverlay } from '../types.ts';
 import { WorkerMessageType } from '../utils/events.ts';
 import type { SyncTriggerReason } from '../utils/events.ts';
@@ -34,6 +34,7 @@ import type { SyncTriggerReason } from '../utils/events.ts';
 // worker. The worker-safe sync shared with OverlayManager lives in overlay-sync.
 import { syncOverlays, applyOverlay, removeOverlay } from '../base/overlay-sync.ts';
 import Icon from '../base/icon.ts';
+import FeatureOutbox from '../base/feature-outbox.ts';
 import ContactManager from '../base/contact.ts';
 import GroupManager from '../base/group.ts';
 import Chatroom from '../base/chatroom.ts';
@@ -129,6 +130,8 @@ export default class AtlasSync {
      * events that fired while offline or disconnected were not replayed
      */
     private onTrigger(reason: SyncTriggerReason): void {
+        void FeatureOutbox.push();
+
         this.syncMissions().catch((err: unknown) => {
             console.error(`AtlasSync: Failed to sync missions after ${reason} restored`, err);
         });
@@ -236,7 +239,10 @@ export default class AtlasSync {
 
         const tasks: Array<[SyncDataType, () => Promise<unknown>]> = [
             [SyncDataType.Overlay, () => syncOverlays()],
-            [SyncDataType.Feature, () => this.atlas.db.loadArchive()],
+            [SyncDataType.Feature, async () => {
+                await FeatureOutbox.push();
+                await this.atlas.db.loadArchive();
+            }],
             [SyncDataType.Iconset, () => this.syncIcons()],
             [SyncDataType.Contact, () => ContactManager.sync()],
             [SyncDataType.Group, () => GroupManager.sync()],
@@ -356,7 +362,7 @@ export default class AtlasSync {
             }
         } else if (event.type === SyncDataType.Feature) {
             if (event.action === SyncEventAction.Delete && event.id !== undefined) {
-                await this.atlas.db.remove(String(event.id), { skipNetwork: true });
+                await this.atlas.db.remove(String(event.id), { skipNetwork: true, keepPending: true });
             } else if (event.body) {
                 // The event carries the mutated feature inline - apply it
                 // directly with no follow-up fetch. db.add() is idempotent and
@@ -396,26 +402,23 @@ export default class AtlasSync {
      * firing and this fetch) it is removed locally instead.
      */
     private async syncFeature(id: string): Promise<void> {
-        let feat: Feature;
+        const { data: feat, error, response } = await server.GET('/api/profile/feature/{:id}', {
+            params: { path: { ':id': id } },
+            headers: bearer(this.atlas.token)
+        });
 
-        try {
-            feat = await std(`/api/profile/feature/${encodeURIComponent(id)}`, {
-                token: this.atlas.token
-            }) as Feature;
-        } catch (err) {
-            const status = (err as { body?: { status?: number } }).body?.status;
-
-            if (status === 404) {
+        if (error) {
+            if (response.status === 404) {
                 // The feature was deleted after the event was emitted. Drop it
                 // locally without a network delete (skipNetwork) so we don't
                 // re-broadcast a sync event.
-                await this.atlas.db.remove(id, { skipNetwork: true }).catch(() => undefined);
+                await this.atlas.db.remove(id, { skipNetwork: true, keepPending: true }).catch(() => undefined);
                 return;
             }
 
-            // Anything else (network blip, auth, 5xx) must surface - silently
-            // swallowing it makes features appear to never propagate
-            throw err;
+            // Anything else (auth, 5xx) must surface - silently swallowing it
+            // makes features appear to never propagate
+            throw new Error(error.message);
         }
 
         await this.atlas.db.add(feat, { skipSave: true });

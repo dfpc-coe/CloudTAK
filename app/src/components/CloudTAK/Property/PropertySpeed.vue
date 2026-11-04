@@ -1,70 +1,30 @@
 <template>
-    <div class='col-12'>
-        <IconBrandSpeedtest
-            :size='18'
-            stroke='1'
-            color='#6b7990'
-            class='ms-2 me-1'
-        />
-        <label class='subheader user-select-none'>Speed</label>
-        <div class='mx-2'>
-            <CopyField
-                v-model='inMode'
-                :size='24'
-            />
-            <div
-                class='mx-2'
-                role='menu'
-            >
-                <span
-                    title='Meters Per Second'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "m/s",
-                        "cursor-pointer": mode !== "m/s",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='mode = "m/s"'
-                    @click='mode = "m/s"'
-                >M/S</span>
-                <span
-                    title='Miles Per Hour'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "mi/h",
-                        "cursor-pointer": mode !== "mi/h",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='mode = "mi/h"'
-                    @click='mode = "mi/h"'
-                >MPH</span>
-                <span
-                    title='Kilometers Per Hour'
-                    class='my-1 px-2 user-select-none'
-                    :class='{
-                        "cloudtak-accent rounded-bottom text-blue": mode === "km/h",
-                        "cursor-pointer": mode !== "km/h",
-                    }'
-                    role='menuitem'
-                    tabindex='0'
-                    @keyup.enter='mode = "km/h"'
-                    @click='mode = "km/h"'
-                >KM/H</span>
-            </div>
-        </div>
-    </div>
+    <PropertyMeasureRow
+        :label='label'
+        :model-value='inMode'
+        :unit='mode'
+        :inline='inline'
+        :units='UNITS'
+        @update:unit='mode = $event'
+    />
 </template>
 
 <script setup lang='ts'>
 import { ref, computed, watchEffect } from 'vue';
-import CopyField from '../util/CopyField.vue';
-import {
-    IconBrandSpeedtest
-} from '@tabler/icons-vue';
+import PropertyMeasureRow from '../util/PropertyMeasureRow.vue';
+import type { UnitOption } from '../util/UnitSwitcher.vue';
+
+const UNITS: Array<UnitOption> = [
+    { value: 'mi/h', label: 'mph', title: 'Miles Per Hour' },
+    { value: 'km/h', label: 'km/h', title: 'Kilometers Per Hour' },
+    { value: 'm/s', label: 'm/s', title: 'Meters Per Second' },
+];
 
 const props = defineProps({
+    label: {
+        type: String,
+        default: 'Speed'
+    },
     speed: {
         type: Number,
         required: true
@@ -72,6 +32,11 @@ const props = defineProps({
     unit: {
         type: String,
         default: 'mi/h'
+    }
+,
+    inline: {
+        type: Boolean,
+        default: false
     }
 });
 

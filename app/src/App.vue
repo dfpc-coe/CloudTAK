@@ -109,8 +109,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import ChannelChangeModal from './components/CloudTAK/Menu/ChannelChangeModal.vue';
 import NotificationToast from './components/CloudTAK/util/NotificationToast.vue';
-import TAKNotification_ from './base/notification.ts';
-const TAKNotification = TAKNotification_;
+import TAKNotification from './base/notification.ts';
 import { supportsServiceWorker, addBackButtonListener, minimizeApp } from './utils/capacitor.ts';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';

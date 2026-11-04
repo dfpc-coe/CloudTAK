@@ -1,7 +1,7 @@
 import Modeler, { Pool } from '@openaddresses/batch-generic';
 import CoreDevice from './models/CoreDevice.js';
 import CoreEntity from './models/CoreEntity.js';
-import CoreEntityBoardEvent from './models/CoreEntityBoardEvent.js';
+import CoreEventBoardEvent from './models/CoreEventBoardEvent.js';
 import CoreForm from './models/CoreForm.js';
 import CoreFormResponse from './models/CoreFormResponse.js';
 import Data from './models/Data.js';
@@ -28,18 +28,17 @@ export default class Models {
     Channel: Modeler<typeof pgtypes.Channel>;
 
     CoreDevice: CoreDevice;
-    CoreDeviceChannel: Modeler<typeof pgtypes.CoreDeviceChannel>;
     CoreEntity: CoreEntity;
-    CoreEntityBoard: Modeler<typeof pgtypes.CoreEntityBoard>;
-    CoreEntityBoardColumn: Modeler<typeof pgtypes.CoreEntityBoardColumn>;
-    CoreEntityBoardEvent: CoreEntityBoardEvent;
-    CoreEntityAssignment: Modeler<typeof pgtypes.CoreEntityAssignment>;
-    CoreEntityEffect: Modeler<typeof pgtypes.CoreEntityEffect>;
+    CoreEventBoard: Modeler<typeof pgtypes.CoreEventBoard>;
+    CoreEventBoardColumn: Modeler<typeof pgtypes.CoreEventBoardColumn>;
+    CoreEventBoardEvent: CoreEventBoardEvent;
+    CoreEventAssignment: Modeler<typeof pgtypes.CoreEventAssignment>;
+    CoreEventEffect: Modeler<typeof pgtypes.CoreEventEffect>;
     CoreForm: CoreForm;
     CoreFormChannel: Modeler<typeof pgtypes.CoreFormChannel>;
     CoreFormColumn: Modeler<typeof pgtypes.CoreFormColumn>;
     CoreFormResponse: CoreFormResponse;
-    CoreEntityResponse: Modeler<typeof pgtypes.CoreEntityResponse>;
+    CoreEventResponse: Modeler<typeof pgtypes.CoreEventResponse>;
 
     Connection: Modeler<typeof pgtypes.Connection>;
     ConnectionToken: Modeler<typeof pgtypes.ConnectionToken>;
@@ -82,18 +81,17 @@ export default class Models {
     constructor(pg: Pool<typeof pgtypes>) {
         this.Channel = new Modeler(pg, pgtypes.Channel);
         this.CoreDevice = new CoreDevice(pg);
-        this.CoreDeviceChannel = new Modeler(pg, pgtypes.CoreDeviceChannel);
         this.CoreEntity = new CoreEntity(pg);
-        this.CoreEntityBoard = new Modeler(pg, pgtypes.CoreEntityBoard);
-        this.CoreEntityBoardColumn = new Modeler(pg, pgtypes.CoreEntityBoardColumn);
-        this.CoreEntityBoardEvent = new CoreEntityBoardEvent(pg);
-        this.CoreEntityAssignment = new Modeler(pg, pgtypes.CoreEntityAssignment);
-        this.CoreEntityEffect = new Modeler(pg, pgtypes.CoreEntityEffect);
+        this.CoreEventBoard = new Modeler(pg, pgtypes.CoreEventBoard);
+        this.CoreEventBoardColumn = new Modeler(pg, pgtypes.CoreEventBoardColumn);
+        this.CoreEventBoardEvent = new CoreEventBoardEvent(pg);
+        this.CoreEventAssignment = new Modeler(pg, pgtypes.CoreEventAssignment);
+        this.CoreEventEffect = new Modeler(pg, pgtypes.CoreEventEffect);
         this.CoreForm = new CoreForm(pg);
         this.CoreFormChannel = new Modeler(pg, pgtypes.CoreFormChannel);
         this.CoreFormColumn = new Modeler(pg, pgtypes.CoreFormColumn);
         this.CoreFormResponse = new CoreFormResponse(pg);
-        this.CoreEntityResponse = new Modeler(pg, pgtypes.CoreEntityResponse);
+        this.CoreEventResponse = new Modeler(pg, pgtypes.CoreEventResponse);
         this.ProfileChat = new ProfileChat(pg);
         this.Icon = new Icon(pg);
 

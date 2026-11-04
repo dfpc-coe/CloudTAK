@@ -14,8 +14,12 @@
 
 - `GET /api/search/reverse/:long/:lat` endpoint is deprecated and will be removed in v14, use `GET /api/search/reverse/:long/:lat/<type>` instead
 - `Layer.template` is deprecated and will be removed
+- The `external_id` string on CoreEvent & CoreDevice requests & responses is deprecated and will be removed in v14, use `external_id: { system, value }` on requests and `external_ids` on responses
 - ETLs in v14 will be required to declare Named Schemas, single schema support will be removed
 - The Minio Legacy Store will be removed in V14 - Ensure you have migrated to Garage before updating to v14.
+- CoreEntity single external ID support will be removed in v14 - ensure you have migrated to multi-system external IDs before updating to v14.
+- The `GET /api/fonts/:fontstack/:start-:end.pbf` glyph endpoint is deprecated and will be removed in v14 - the web app now draws labels from bundled font files via the style `font-faces` property
+- The `GET /api/basemap/:basemapid/tiles` and `GET /api/basemap/:basemapid/tiles/:z/:x/:y` proxy routes are deprecated and will be removed in v14 - basemap TileJSON and tiles are served by the PMTiles tile server at `/tiles/basemap/:basemapid/tiles[/:z/:x/:y]`
 
 ### Beta Notice
 
@@ -23,7 +27,222 @@
 
 ### Pending Release
 
+### v13.119.0 - 2026-11-03
+
+- :tada: Introduce new Appearance Menu
+- :rocket: Circle mode now snaps the center point to nearby feature vertices using the Terra-Draw 1.39.0 circle snapping options
+- :bug: Data Sync invite list hides current subscribers and pending invitees, re-inviting shows the server error instead of failing silently (#2009)
+
+### v13.118.1 - 2026-11-02
+
+- :rocket: Add additional Filter options when nominating an Event to a board
+
+### v13.118.0 - 2026-11-02
+
+- :tada: Unify the `Your Features` and `Devices` menus into a single `Features` menu with `Features`, `Events` & `Devices` tabs - `/menu/devices` redirects to `/menu/features/devices`
+
+### v13.117.2 - 2026-11-02
+
+- :rocket: Improve rendering performance on iOS by introduing a Feature Queue to avoid bottlenecking on indexDB
+
+### v13.117.1 - 2026-11-01
+
+- :bug: Pass `API_URL` to the Docker Compose `tiles` service so the PMTiles server can resolve basemap config (#1993)
+
+### v13.117.0 - 2026-10-31
+
+- :tada: Import WMTS capabilities URLs as basemaps (RESTful tile templates and KVP GetTile, Web Mercator tile matrix sets, `?layer=` selection)
+- :bug: Return a 400 with a clear message instead of a 500 when a basemap import URL returns XML, HTML or malformed JSON (#1989)
+- :rocket: `GET /api/basemap/:basemapid` accepts basemap sharing tokens so tile servers can resolve basemap config with the token they are handed
+- :tada: PMTiles tile server serves CloudTAK basemap TileJSON and tiles at `/tiles/basemap/:basemapid/tiles[/:z/:x/:y]`, mirroring the API routes: bearer or `?token=` auth, sharing tokens, owner/admin scoping, ESRI metadata merge, hosted upstream TileJSON, bounds short-circuit and zxy/hosted/MapServer/ImageServer/FeatureServer tile proxying, with basemap config cached in memory per container
+- :rocket: Expose `tilejson` on Basemap responses so tile servers can resolve hosted upstream TileJSON
+- :bug: Apply the SSRF URL check to ESRI layer metadata lookups, which previously bypassed it via esri-dump
+- :rocket: Add PMTiles API Gateway HTTP status widget to the ELB CloudWatch dashboard
+- :rocket: Basemap TileJSON and ATAK share URLs advertise tiles on the PMTiles tile server instead of the API - basemap edits and sharing revocations take up to 60 seconds to reach warm tile server containers
+- :rocket: PMTiles Lambda runs with 1536 MB, a 30 second timeout matching the API Gateway cap, a reserved concurrency ceiling (`PMTilesReservedConcurrency`) and a `live` alias with provisioned concurrency (`PMTilesProvisionedConcurrency`) so the first tile after idle is not a cold start
+- :rocket: PMTiles tile server returns 413 for proxied or rendered tiles over the 6 MiB Lambda response limit instead of failing the invocation
+- :bug: Archive 2D line and polygon CoTs to `connection_features` by padding a Z coordinate, dedupe repeated UIDs within a batch, and persist `enabled_geofence` from the CoT instead of resetting it on every archive
+
+### v13.116.1 - 2026-10-30
+
+- :rocket: Improvements to Rendering Performance
+- :bug: Fix double unit conversion in terrain elevation display
+
+### v13.116.0 - 2026-10-27
+
+- :bug: Improve History Performance
+- :tada: Add `profile` Plugin API to pulling user preferences
+
+### v13.115.1 - 2026-10-27
+
+- :bug: The Mission Archive API doesn't support GUIDs which would result in the download silently failing - Closes: Mission *Download Archive* returns an empty file #1977
+
+### v13.115.0 - 2026-10-27
+
+- :tada: `API` Add `GET /api/marti/cot` to list every CoT event visible to the user within a time window of at most 24 hours (`start`/`end` or `secago`), optionally restricted to a `bbox` - backed by the TAK Server `/Marti/api/cot/sa` query
+- :tada: `UI` Breadcrumb trails are now built from a local `feature_history` table of discrete timestamped points - hovering a point shows who/when, clicking it opens the properties that CoT reported at that moment; the dashed trail line is derived from the same points
+- :tada: `UI` The History menu can load every CoT's history for a time window (optionally only the current map view) alongside the existing per-CoT history loader in the CoT view
+- :tada: `PluginAPI` Add `cot.historyAll()` plus `breadcrumb.history.{load,loadAll,list,stream,clear}` and a `breadcrumb.history.popup` renderer registry so plugins can surface their own properties on hovered history points - existing `cot.history()` and `breadcrumb.live.*` are unchanged
+- :arrow_up: `API` Update `@tak-ps/node-tak` to `^12.32.0` for the `Query.saFeats` Situational Awareness client
+
+### v13.114.2 - 2026-10-26
+
+- :tada: Clicking on the name of the mission zooms to the mission extent
+- :rocket: Show labels next to Data Sync tabs when the sidebar is wide enough to avoid truncation, and show the tab icon only when the sidebar is narrow
+- :rocket: Only load the last 7 days of changes by default in the Mission Timeline view
+- :tada: `API` CoreEvent & CoreDevice `links` accept `tel:` URLs alongside `https://` so a marker can carry a tappable phone number - ATAK opens the `r-u` link in the dialer, which no longer carries a `text/html` mime (#1954)
+- :rocket: `UI` Core Entity `tel:` links show a phone icon and open in the current window
+
+### v13.114.1 - 2026-10-26
+
+- :rocket: Remove need to Glyphs API entirely
+
+### v13.114.0 - 2026-10-26
+
+- :bug: `API` Mission file uploads (`POST /api/marti/missions/:guid/upload`) of text, XML, JSON & `application/octet-stream` files reached TAK Server as empty bodies and were rejected - the global body parsers consumed the raw request stream before it could be forwarded
+- :rocket: `API` `POST /api/marti/missions/:guid/upload` now accepts a `multipart/form-data` upload like every other file route - the file is staged on disk so TAK Server receives the required `Content-Length`; the `name` query param is now an optional override of the form file name
+- :rocket: `UI` Mission file uploads use the standard multipart upload flow
+- :bug: `UI` Failed Mission file uploads show the API error message instead of the bare HTTP status text
+- :rocket: `UI` Map labels are drawn from a bundled Open Sans Bold font via the style `font-faces` property instead of glyph ranges fetched from `/api/fonts`, so labels never wait on the network
+- :rocket: `UI` Background location now has its own prominent disclosure, shown immediately after the foreground location grant and again before every settings hand-off from Settings > Permissions, to satisfy the Google Play User Data policy - the shared `LocationDisclosure` component names background use ("even when the app is closed or not in use") and requires an explicit `Agree and continue`
+- :bug: `UI` On Android, Settings > Permissions showed no action for Background Location until it had been denied once, leaving users who chose "While using the app" with no way to upgrade from inside the app
+
+### v13.113.0 - 2026-10-22
+
+- :rocket: Core Events & Devices are broadcast as CoT at most once every 10s per Entity - a create or update is still sent immediately unless that Entity was broadcast within the last 10s, in which case the next scheduled sweep carries it
+- :rocket: `POST /api/core/device` mirrors `POST /api/core/event` - `channels` is required for users and a Connection or Layer token that omits it shares the Device with the active Channels of its Connection, so machine-created Devices are broadcast to the map instead of sitting unshared
+- :rocket: `PATCH /api/core/device/:device` mirrors the Event API - `channels` can no longer be cleared, and a Device of a Connection that has no Channels inherits the active Channels of its Connection on its next PATCH so previously unshared Devices reach the map
+- :rocket: `PATCH /api/core/event/:event` fills in the active Channels of the Connection for an Event of a Connection that has none, the same as Devices
+- :rocket: Connection & Layer tokens can read a Device shared with an active Channel of their Connection, the same rule Events already followed - editing still requires the creator
+- :rocket: Access control and Channel sharing for Core Events & Devices is shared through one `EntityControl` instead of separate Event & Device control classes
+
+### v13.112.3 - 2026-10-21
+
+- :Bug: Centralize read/write operations to avoid overlay positional drift between Dexie and MapLibre
+
+### v13.112.2 - 2026-10-21
+
+- :tada: Certificate metadata returned by the Server, Connection & User APIs now includes `channels` - whether TAK Server signed the certificate with the channels Extended Key Usage (OID `1.2.840.113549.1.9.7`); certificates without it have their channel selection ignored by TAK Server. The Connection card, Server settings, Admin Overview, Admin User page, and the Admin Users list show the state as a `Channels` / `No Channels` badge
+- :white_check_mark: Queue mock TAK Server writes for streaming connections still completing their TLS handshake so chat and reconnect tests no longer race the server-side `secureConnection` event under Node 26.12.1
+- :bug: Install `gdal-driver-all` in the events task image - Alpine splits GDAL drivers into subpackages and the Parquet and PDF drivers the task uses were missing
+- :rocket: Install Node.js in the API image from the official `node:26-alpine3.24` image instead of Alpine's `nodejs-current` package so security releases (October 2026: Brotli RCE, TLS hostname bypass) ship as soon as upstream publishes them
+- :rocket: Build the events task on `node:26-alpine3.24` with GDAL 3.13.3 from Alpine 3.24 packages instead of the `osgeo/gdal` Alpine 3.23 image
+- :bug: `PATCH /api/basemap/:basemapid` no longer defaults `scope` to `user` or `tilesize` to `256` when omitted, so editing a single field of a Server scoped basemap keeps it Server scoped (#1947)
+
+### v13.112.1 - 2026-10-21
+
+- :bug: Send `Cache-Control: no-store` from the nginx SPA fallback so browsers never heuristically cache `index.html` under a misrouted path (#1949)
+- :bug: The mobile app is only able to show the SPA at this time and navigation events to other pages result in an ugly reload. Hide all nav elements that nav to other parts of the web app - IE Board/Video/Admin etc when on mobile
+
+### v13.112.0 - 2026-10-21
+
+- :tada: Add a Devices menu listing Core Devices from the Device API, falling back to the Device markers already on the map when offline
+- :tada: Add a Core Device sidebar for viewing and editing a Device, reached from a Device marker the same way Events are
+- :rocket: Open the Core Device a marker was generated from when clicking a Device CoT, with the same offline fallback Events have, and sync dragged Device markers back to the Device API
+- :rocket: Broadcast Core Devices with a `p` Link of type `core-device` carrying the Device UUID so clients can open the Device a marker was generated from
+
+### v13.111.3 - 2026-10-20
+
+- :rocket: Allow global search to search through remarks field
+
+### v13.111.2 - 2026-10-20
+
+- :bug: FeatureServer basemap tiles derive the Esri quantization tolerance from the tile zoom (one unit per 4096th of the tile width) instead of a fixed 0.001 degrees - the fixed value snapped geometry to a ~100m grid and collapsed most parcels once tiles were requested as Esri JSON, which honours quantization where `f=geojson` ignored it
+- :bug: Badges that relied on the default white badge text (Layer & Token permissions, basemap type selector, settings permissions, etc.) now use the theme body color so they are legible in light mode
+- :tada: Links section shows `r-u` links to images (by mime or URL extension) as thumbnails loaded through the `/api/proxy/image` API
+
+### v13.111.1 - 2026-10-18
+
+- :arrow_up: Update `@tak-ps/maplibre-gl` to 6.15.0 (upstream MapLibre 6.15.0 with the worker restart fork)
+- :rocket: Mouse drag rotate & pitch now turn the map around the point under the pointer (`dragRotate: { around: 'pointer' }`) instead of the map center
+- :tada: Layer environment inputs carrying an `@widget: type` hint are edited with the MIL-STD-2525E type picker (requires the pending vue-tabler `TablerSchema` widget slot)
+- :rocket: User rows in feature lists (Search Box, Mission Layers, etc.) use the same `FeatureRow` layout and height as other features, with the team puck in the icon slot and team/role as the subtitle
+- :bug: FeatureServer basemaps now request Esri JSON and nest polygon holes themselves - ArcGIS `f=geojson` flattened multipart holes into standalone polygons, which rendered as double-filled shapes instead of cutouts
+
+### v13.111.0 - 2026-10-16
+
+- :rocket: Surface Overlays in Search Box
+- :rocket: Surface Feature Type (and cache it in local client) in FeatureRow
+- :tada: UX overhaul of Search Box
+
+### v13.110.2 - 2026-10-15
+
+- :tada: `POST /api/core/event` - `channels` is now optional for Connection & Layer tokens, which share the Event with the Channels of their Connection when it is omitted, matching the Layer Mapping submit path
+
+### v13.110.1 - 2026-10-15
+
+- :bug: Allow Coordinate component to place label to the left or on top - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1931
+- :arrow_up: Migrate the video player from video.js 8 to Video.js 10 (`@videojs/html` live-video web components); WebRTC (WHEP) & HLS playback engines and stream recovery are unchanged
+
+### v13.110.0 - 2026-10-14
+
+- :tada: Permissions modal now shows a location disclosure with explicit consent before the system location prompt (or settings hand-off) on every platform; the location row describes background use on native, and the footer is `Skip for now` / `Refresh` / `Done` with `Done` enabled once required permissions are satisfied
+- :tada: The Admin Connection now broadcasts located Core Devices as CoT alongside Core Events - one stream over `core_entity` joins both side tables, and Device create/update/submit trigger an immediate broadcast like Events do (`hub.coreEntitySubmit`); Device specific CoT details are future work
+- :rocket: Rename Event-specific `core-entity` files & `CoreEntity*` identifiers to `core-event` / `CoreEvent*` (routes, lib, tests, Board/Assignment/Effect/Response tables & models, enums, TypeBox types, `hub.coreEventSubmit`) - the name predated the CoreEntity inheritance model; DB table names & API paths are unchanged
+- :tada: `DELETE /api/core/event/:event` & `DELETE /api/core/device/:device` accept Layer & Connection tokens holding the `event:delete` / `device:delete` permission - a token can only delete records of its own Connection
+
+### v13.109.2 - 2026-10-14
+
+- :rocket: change AGOL text to be `API Key` instead of Legacy Key as the new API Keys are submitted the same way just with a max 1 year lifespan
+
+### v13.109.1 - 2026-10-12
+
+- :bug: Allow Schema UI to represent & edit Array<primitive>
+- :tada: Add `attachment:create` & `attachment:read` scopes so Layer & Connection tokens can upload, list & download Attachments
+
+### v13.109.0 - 2026-10-12
+
+- :rocket: Visual Redesign of CoT Sidebar
+
+### v13.108.3 - 2026-10-09
+
+- :bug: If the user's certificate is invalidated and regenerated by a new CloudTAK Login, if the old certificate was active in the pool it would attempt to reconnect and never receive the new certificate. The end result is the client would never get new data with the new certificate until their client was disconnected for > 60s
+
+### v13.108.2 - 2026-10-09
+
+- :rocket: Migrate Draw tools to be floating panes
+- :bug: Open Floating Panes as modals on mobile - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1815 Closes: https://github.com/dfpc-co
+
+### v13.108.1 - 2026-10-08
+
+- :tada: Add a `schema` column to `layers` recording the static Capabilities document `version` of the Task (`1.0` when the Task declares none) - it is read from the ECR image manifest when a Layer is created and again whenever the Layer's task version changes
+- :rocket: Hide the Layer Incoming `Legacy Styling` tab and editor for Layers whose Task declares Capabilities `version: "1.1"` - these Layers are styled through Field Mapping only
+
+### v13.108.0 - 2026-10-08
+
+- :tada: Core Event view gains an Assignments panel for listing, adding, editing & removing the people managing an Event by name, role & optional Profile username
+
+### v13.107.0 - 2026-10-07
+
+- :rocket: Introduce Quick Pic Support in the Draw Menu
+
+### v13.106.0 - 2026-10-07
+
+- :tada: CoreEvents & CoreDevices now carry multiple external IDs keyed by system (ie: `{ "active911": "1234", "caltopo": "B42325" }`) in a new `core_entity_external` table, returned as `external_ids`
+- :rocket: `POST` & `PATCH /api/core/event` & `/api/core/device` take a single `external_id: { system, value }` which is merged into the record's external IDs - an empty value removes the system - a bare string is still accepted as the `default` system and echoed on the deprecated `external_id` response field
+- :rocket: The CoreEvent & CoreDevice Layer Mappings map the External ID as a `system` & `value` pair - the value defaults to the Feature ID and the system to `default`, which is where existing external IDs are migrated to - Mappings saved with the bare string form are migrated & still accepted
+- :rocket: Layer submissions UPSERT on the external ID within the Connection, kind & system, serialised by an advisory lock
+- :white_check_mark: Add API & Mapping tests for multi-system external IDs
+
+### v13.105.1 - 2026-10-07
+
+- :rocket: Use internally cached active group list for faster API responses as we can avoid a TAK Server Request
+
+### v13.105.0 - 2026-10-06
+
+- :tada: Introduce GeoParquet output for imported vector layers to power future offline search
+
+### v13.104.0 - 2026-10-06
+
+- :tada: Add `Layer.vpc` - System Admins can attach a Layer's Lambda to the private VPC subnets so it egresses from the static NAT addresses and can reach internal resources; the addresses to allowlist are shown under Layer > Deployment > Infrastructure
+- :tada: Add `cloudformation/sms.template.js` provisioning AWS End User Messaging SMS resources (opt-out list, protect configuration, configuration set with CloudWatch event logging, phone number, pool, optional two-way SNS topic and send policy) for outbound SMS from CloudTAK in commercial and GovCloud partitions
+- :rocket: **Breaking** Core Devices are now `core_entity` rows of kind `CoreDevice` with a `core_entity_device` side table, matching Core Events - the `core_device` & `core_device_channel` tables are dropped, Device payloads gain `editable`, `links`, `style` & a nullable `geometry` and lose `event`, the `event` query of `GET /api/core/device` & `event_external_id` of the CoreDevice ETL schema are removed - a Device's Event assignment is expressed through Effects, existing assignments are migrated to an active `assigned` Effect
+- :rocket: **Internal** Replace `GET /api/config/webhooks` & `GET /api/config/email` with a single `GET /api/config/layer` returning webhook, email & VPC settings
+
+### v13.103.5 - 2026-10-06
+
 - :rocket: Allow navigating to non-cot Point Features from imported overlays
+- :rocket: Require explicit confirmation when updating a single Layer's Task version, only Admin "Update All" skips the prompt
 
 ### v13.103.4 - 2026-10-05
 

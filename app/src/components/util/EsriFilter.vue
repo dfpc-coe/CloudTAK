@@ -62,7 +62,7 @@
 
 <script setup lang='ts'>
 import { ref, computed } from 'vue';
-import { std, stdurl } from '../../std.ts';
+import { server } from '../../std.ts';
 import {
     TablerAlert,
     TablerModal,
@@ -118,14 +118,21 @@ async function fetch() {
     loading.value.count = true;
 
     try {
-        const url = stdurl('/api/esri/server/layer');
-        url.searchParams.set('query', filter.value.query);
-        if (props.layer) url.searchParams.set('layer', props.layer);
-        if (props.token) url.searchParams.set('token', props.token);
+        if (!props.layer) throw new Error('An ESRI Layer URL is required');
 
-        list.value = await std(url, {
-            method: 'GET',
-        }) as typeof list.value;
+        const { data, error } = await server.GET('/api/esri/server/layer', {
+            params: {
+                query: {
+                    query: filter.value.query,
+                    layer: props.layer,
+                    token: props.token || undefined
+                }
+            }
+        });
+
+        if (error) throw new Error(error.message);
+
+        list.value = data as typeof list.value;
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
     }

@@ -25,7 +25,7 @@
                  omitted on iOS, where the status bar sits fully transparent
                  over the map -->
             <div
-                v-if='!isIOS'
+                v-if='!isIOSPlatform()'
                 class='position-absolute top-0 start-0 end-0'
                 style='
                     z-index: 5;
@@ -47,13 +47,6 @@
 
             <DrawOverlay
                 v-if='isDrawing'
-            />
-
-            <GeoJSONInput
-                v-if='mapStore.toImport.length'
-                :features='mapStore.toImport'
-                @close='mapStore.toImport = []'
-                @done='mapStore.toImport = []'
             />
 
             <GenericBottomPane v-if='mode === "SetLocation"'>
@@ -258,26 +251,17 @@
             <TablerModal
                 v-if='searchBoxShown'
                 :dismissable='true'
-                @close='searchBoxShown = false'
                 size='lg'
+                @close='searchBoxShown = false'
             >
-                <div class='modal-header'>
-                    <div class='modal-title'>
-                        Search
-                    </div>
-                    <button
-                        type='button'
-                        class='btn-close'
-                        aria-label='Close'
-                        @click='searchBoxShown = false'
-                    />
-                </div>
-                <div class='modal-body'>
-                    <SearchBox
-                        :autofocus='true'
-                        @select='searchBoxShown = false'
-                    />
-                </div>
+                <SearchBox
+                    variant='panel'
+                    placeholder='Search places, overlays, coordinates, or callsigns'
+                    :autofocus='true'
+                    :overlays='true'
+                    @select='searchBoxShown = false'
+                    @close='searchBoxShown = false'
+                />
             </TablerModal>
 
             <MainMenu
@@ -367,7 +351,7 @@
 <script setup lang='ts'>
 import GeoJSONInput from './Inputs/GeoJSONInput.vue';
 import BufferInput from './Inputs/BufferInput.vue';
-import { ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
+import { ref, watch, computed, toRaw, nextTick, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import GPSPanel from './GPSPanel/GPSPanel.vue';
 import PluginPane from './PluginPane.vue';
 import {useRoute, useRouter } from 'vue-router';
@@ -431,8 +415,6 @@ const mapStore = useMapStore();
 const deviceStore = useDeviceStore();
 const appStore = useAppStore();
 const floatStore = useFloatStore();
-
-const isIOS = isIOSPlatform();
 
 const hasTerrain = computed(() => OverlayManager.loaded.some((overlay) => overlay.type === 'raster-dem'));
 const router = useRouter();
@@ -532,6 +514,28 @@ watch(isMobileDetected, () => {
     appStore.isMobileDetected = isMobileDetected.value;
 });
 
+watch(() => mapStore.toImport.length, async (length) => {
+    if (!length) return;
+
+    const features = toRaw(mapStore.toImport).slice();
+    mapStore.toImport = [];
+
+    // Delete first so a pane already open from the Draw Tools remounts with the dropped features
+    const uid = 'geojson-import';
+    floatStore.delete(uid);
+    await nextTick();
+
+    floatStore.add({
+        uid,
+        name: 'GeoJSON Import',
+        component: GeoJSONInput,
+        config: { features },
+        height: 500,
+        width: 500,
+        corner: 'top-right',
+    });
+});
+
 watch(() => appStore.resolvedTheme, (theme) => {
     if (!mapStore._map || !mapStore.isMapLoaded) return;
     mapStore.map.setGlobalStateProperty('theme', theme);
@@ -544,7 +548,6 @@ const displayZoom = computed(() => {
         return mapStore.zoom === 'always' ? true : false;
     }
 })
-
 
 const humanBearing = computed(() => {
     if (mapStore.bearing < 0) {
@@ -814,8 +817,6 @@ async function exitManualMode() {
     await mapStore.refresh();
 }
 
-
-
 function fileUpload(event: unknown) {
     upload.value.shown = false;
     const imp = event as { imports: Array<{ uid: string }> };
@@ -867,7 +868,9 @@ async function handleRadial(event: string): Promise<void> {
         const feat = toRaw(mapStore.radial.cot as Feature) as Feature;
 
         await mapStore.worker.db.add(feat, {
-            authored: true
+            authored: true,
+            // Fresh id from the contextmenu - it cannot already be in a Mission
+            skipMissionLookup: true
         });
 
         await mapStore.refresh();
@@ -911,7 +914,9 @@ async function handleRadial(event: string): Promise<void> {
         feat.properties.archived = true;
 
         await mapStore.worker.db.add(feat, {
-            authored: true
+            authored: true,
+            // Fresh id - it cannot already be in a Mission
+            skipMissionLookup: true
         });
 
         await mapStore.refresh();

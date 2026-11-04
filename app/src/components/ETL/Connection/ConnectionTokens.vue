@@ -63,6 +63,7 @@
                                 <TablerBadge
                                     v-for='permission in t.permissions'
                                     :key='permission'
+                                    text-color='var(--tblr-body-color)'
                                     class='me-1'
                                 >
                                     <code v-text='permission' />

@@ -7,7 +7,7 @@
             <template #default>
                 <div
                     class='d-flex align-items-center gap-2 rounded'
-                    :class='isNative ? "" : "cursor-pointer cloudtak-hover"'
+                    :class='isNativePlatform() ? "" : "cursor-pointer cloudtak-hover"'
                     :title='coordSource === "gps" ? "GPS Location - Click to change format" : "Cursor Position - Click to change format"'
                 >
                     <IconCursorText
@@ -26,7 +26,7 @@
 
             <template #dropdown>
                 <li
-                    v-if='!isNative'
+                    v-if='!isNativePlatform()'
                     class='px-3 py-2'
                     @click.stop
                 >
@@ -108,8 +108,6 @@ import { useMapStore } from '../../../stores/map.ts';
 import { isNativePlatform } from '../../../utils/capacitor.ts';
 
 const mapStore = useMapStore();
-
-const isNative = isNativePlatform();
 
 const coordSource = ref<string>('gps');
 
