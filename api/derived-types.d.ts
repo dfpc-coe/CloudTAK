@@ -12706,9 +12706,21 @@ export interface paths {
                          * @default 120
                          */
                         timeout: number;
-                        alarm_period?: number;
-                        alarm_evals?: number;
-                        alarm_points?: number;
+                        /**
+                         * @description CloudWatch alarm period in seconds
+                         * @default 30
+                         */
+                        alarm_period: number;
+                        /**
+                         * @description Number of periods evaluated by the CloudWatch alarm
+                         * @default 5
+                         */
+                        alarm_evals: number;
+                        /**
+                         * @description Breaching data points required to alarm - must not exceed alarm_evals
+                         * @default 4
+                         */
+                        alarm_points: number;
                         /** @default false */
                         protected: boolean;
                         /**
@@ -15542,8 +15554,11 @@ export interface paths {
                         vpc?: boolean;
                         task?: string;
                         logging?: boolean;
+                        /** @description CloudWatch alarm period in seconds */
                         alarm_period?: number;
+                        /** @description Number of periods evaluated by the CloudWatch alarm */
                         alarm_evals?: number;
+                        /** @description Breaching data points required to alarm - must not exceed alarm_evals */
                         alarm_points?: number;
                         /** @description Permissions granted to the Layer as <permission>:<level> pairs - ie video:read or video:* */
                         permissions?: string[];

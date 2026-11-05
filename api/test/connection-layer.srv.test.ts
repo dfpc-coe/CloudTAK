@@ -81,6 +81,29 @@ test('POST: api/connection/1/layer - unregistered integration', async () => {
     }
 });
 
+test('POST: api/connection/1/layer - alarm points exceed evaluation periods', async () => {
+    try {
+        const res = await flight.fetch('/api/connection/1/layer', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                name: 'Bad Alarm Layer',
+                description: 'Layer with more data points than evaluation periods',
+                task: 'etl-test-v1.0.0',
+                alarm_evals: 2,
+                alarm_points: 3,
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'Alarm Data Points (3) must be less than or equal to Evaluation Periods (2)');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('POST: api/connection/1/layer', async () => {
     try {
         Sinon.stub(CloudFormationClient.prototype, 'send').callsFake((command) => {
@@ -320,6 +343,44 @@ test('DELETE: api/connection/1/layer/1 - protected layer should fail', async () 
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Layer is protected and cannot be deleted');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/connection/1/layer/1 - alarm points exceed evaluation periods', async () => {
+    try {
+        const res = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                alarm_points: 6,
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'Alarm Data Points (6) must be less than or equal to Evaluation Periods (5)');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/connection/1/layer/1 - evaluation periods below existing alarm points', async () => {
+    try {
+        const res = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                alarm_evals: 3,
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'Alarm Data Points (4) must be less than or equal to Evaluation Periods (3)');
     } catch (err) {
         assert.ifError(err);
     }
