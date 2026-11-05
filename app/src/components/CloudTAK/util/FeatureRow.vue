@@ -45,9 +45,9 @@
                 style='min-width: 0;'
             >
                 <span
-                    v-if='(feature.properties.callsign || "").trim().length > 0'
+                    v-if='label'
                     class='fw-semibold text-truncate'
-                    v-text='feature.properties.callsign'
+                    v-text='label'
                 />
                 <span
                     v-else
@@ -174,6 +174,10 @@ const props = defineProps({
     detail: {
         type: String,
         default: ''
+    },
+    title: {
+        type: String,
+        default: ''
     }
 });
 
@@ -188,6 +192,12 @@ const isHidden = computed(() => FeatureVisibility.isFeatureHidden(props.feature.
 
 const typeName = ref('');
 const teamName = ref('');
+
+const label = computed(() => {
+    if (props.title.trim()) return props.title;
+    const callsign = props.feature.properties.callsign;
+    return typeof callsign === 'string' && callsign.trim() ? callsign : '';
+});
 
 const subtitle = computed(() => {
     if (props.detail) return props.detail;
