@@ -945,7 +945,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.delete('/marti/missions/:guid/user', {
         name: 'Delete Mission User',
         group: 'MartiMissions',
-        description: 'Remove one or more active subscribers from a mission by UID',
+        description: 'Remove one or more subscribers from a mission by UID - requires MISSION_SET_ROLE',
         params: Type.Object({
             guid: Type.String(),
         }),
@@ -960,7 +960,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const uids = Array.isArray(req.query.uid) ? req.query.uid : [req.query.uid];
 
             for (const uid of uids) {
-                await api.Mission.unsubscribe(req.params.guid, { uid }, opts);
+                await api.Mission.removeUser(req.params.guid, { clientUid: uid }, opts);
             }
 
             res.json({
