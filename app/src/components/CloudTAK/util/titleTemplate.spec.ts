@@ -10,6 +10,7 @@ const props = {
     callsign: 'ALPHA',
     name: 'Tom & Jerry',
     html: '<table><tr><td>Speed</td><td>50</td></tr></table>',
+    evil: '<scr<script>ipt>alert(1)</script> <b onclick="x">ok</b>',
     depth: 12.3456,
     nested: { label: 'Inner' },
     empty: ''
@@ -55,6 +56,7 @@ describe('renderTitleTemplate', () => {
         expect(renderTitleTemplate('{{slice locationArea 0 5}}', props)).toBe('SH 82');
         expect(renderTitleTemplate('{{slice locationArea 6}}', props)).toBe('14km west of Ikawai');
         expect(renderTitleTemplate('{{htmlstrip html}}', props)).toBe('Speed: 50:');
+        expect(renderTitleTemplate('{{htmlstrip evil}}', props)).toBe('ipt>alert(1) ok');
         expect(renderTitleTemplate('{{replace locationArea "km" " km"}}', props)).toBe('SH 82 14 km west of Ikawai');
         expect(renderTitleTemplate('{{round depth}}', props)).toBe('12.35');
         expect(renderTitleTemplate('{{round depth 1}}m', props)).toBe('12.3m');

@@ -44,12 +44,12 @@ const helpers: Record<string, Helper> = {
     },
     htmlstrip: (text) => {
         if (typeof text !== 'string' || !text) return '';
-        return text
-            .replace(/<\/tr\s*>/gi, '\n')
-            .replace(/<\/td\s*>/gi, ': ')
-            .replace(/<[^>]*>/g, '')
-            .replace(/[ \t]+/g, ' ')
-            .trim();
+
+        const doc = new DOMParser().parseFromString(text, 'text/html');
+        for (const td of doc.body.querySelectorAll('td')) td.append(': ');
+        for (const tr of doc.body.querySelectorAll('tr')) tr.append('\n');
+
+        return (doc.body.textContent || '').replace(/[ \t]+/g, ' ').trim();
     },
     replace: (text, search, replacement) => {
         if (typeof text !== 'string' || !text) return '';
