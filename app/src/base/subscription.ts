@@ -615,13 +615,15 @@ export default class Subscription {
     }
 
     async removeUser(uid: string): Promise<void> {
-        await server.DELETE('/api/marti/missions/{:guid}/user', {
+        const { error } = await server.DELETE('/api/marti/missions/{:guid}/user', {
             params: {
                 path: { ':guid': this.guid },
                 query: { uid }
             },
             headers: Subscription.headers(this.missiontoken)
         });
+
+        if (error) throw new Error('Failed to remove user');
     }
 
     async subscriptions(): Promise<MissionSubscriptions> {

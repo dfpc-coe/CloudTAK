@@ -27,6 +27,8 @@
 
 ### Pending Release
 
+- :bug: Data Sync "Remove User" now removes the target subscriber (via a role-less TAK Server `PUT .../role`) instead of silently unsubscribing only the caller's own session; the button is gated on `MISSION_SET_ROLE` and failures are shown in the Users list (#2010)
+
 ### v13.119.0 - 2026-11-03
 
 - :tada: Introduce new Appearance Menu
