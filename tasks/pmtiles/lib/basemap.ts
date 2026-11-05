@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import Err from '@openaddresses/batch-error';
 import type { Response } from 'express';
 import type { Static } from '@sinclair/typebox';
@@ -10,8 +11,34 @@ import { TileJSON, TileJSONActions } from './tilejson.js';
 import { EsriBase, EsriProxyLayer, isEsriLayerURL } from './esri.js';
 import { BasemapProtocol, TileOpts } from './basemap/protocol.js';
 import { fromProtocol } from './basemap/factory.js';
+import TileCache from './cache.js';
+import {
+    MAX_OVERZOOM,
+    DEFAULT_SLOPE_CLASSES,
+    SlopeClass,
+    slopeLegend,
+    serializeSlopeLayers,
+    renderSlopeTile,
+    DEMSource,
+} from './shading.js';
 
-export type BasemapConfig = Exclude<paths['/api/basemap/{:basemapid}']['get']['responses'][200]['content']['application/json'], string>;
+type ApiBasemapConfig = Exclude<paths['/api/basemap/{:basemapid}']['get']['responses'][200]['content']['application/json'], string>;
+type ApiBasemapChildConfig = ApiBasemapConfig['children'][number];
+
+/** Protocols the tile server renders - composite is served here ahead of the API advertising it */
+export type BasemapProtocolName = ApiBasemapConfig['protocol'] | 'composite';
+
+export type BasemapChildConfig = Omit<ApiBasemapChildConfig, 'protocol'> & {
+    protocol: BasemapProtocolName;
+    /** Composite layer stack, present on composite basemaps */
+    layers?: unknown;
+};
+
+export type BasemapConfig = Omit<ApiBasemapConfig, 'protocol' | 'children'> & {
+    protocol: BasemapProtocolName;
+    children?: BasemapChildConfig[];
+    layers?: unknown;
+};
 
 /**
  * A CloudTAK Basemap as seen by the tile server.
@@ -239,5 +266,99 @@ export default class Basemap {
             encoding,
             targetSamples: opts.samples ?? 100,
         }, url => fetch(url, { safeUrlAllow: [Basemap.pmtilesUrl()] }));
+    }
+
+    /**
+     * The DEM behind a raster-dem basemap, read in process through the
+     * protocol's buffered tile fetch. Throws for any other basemap type.
+     */
+    demSource(opts?: TileOpts): DEMSource {
+        if (this.config.type !== 'raster-dem') {
+            throw new Err(400, null, 'Slope shading requires a raster-dem basemap');
+        }
+
+        const encoding = this.config.encoding;
+        if (!encoding) {
+            throw new Err(400, null, 'Encoding could not be determined from the basemap metadata');
+        }
+
+        const protocol = this.protocol();
+
+        return {
+            encoding,
+            minzoom: this.config.minzoom ?? 0,
+            maxzoom: this.config.maxzoom ?? 16,
+            tile: async (z, x, y) => (await protocol.buffer(z, x, y, opts))?.data ?? null,
+        };
+    }
+
+    /**
+     * TileJSON for slope angle shading rendered from this raster-dem basemap.
+     * Requested classes are carried onto the tile URL template as `layer` params
+     * so every tile renders the same bands the legend describes.
+     */
+    async slopeTileJSON(opts: {
+        token?: string;
+        upstreamToken: string;
+        classes?: SlopeClass[];
+    }): Promise<Static<typeof TileJSON>> {
+        this.demSource();
+
+        const tilejson = await this.tilejson(opts);
+        const classes = opts.classes ?? DEFAULT_SLOPE_CLASSES;
+
+        const params = opts.classes ? serializeSlopeLayers(opts.classes).map(layer => `layer=${layer}`) : [];
+        if (opts.token) params.push(`token=${opts.token}`);
+
+        const url = `${Basemap.pmtilesUrl()}/tiles/slope/${this.id}/tiles/{z}/{x}/{y}`;
+
+        return {
+            ...tilejson,
+            type: 'raster',
+            format: 'png',
+            encoding: undefined,
+            tiles: [params.length ? `${url}?${params.join('&')}` : url],
+            maxzoom: tilejson.maxzoom + MAX_OVERZOOM,
+            legend: slopeLegend(classes),
+        };
+    }
+
+    async slopeTile(
+        z: number, x: number, y: number,
+        res: Response,
+        opts?: TileOpts & { classes?: SlopeClass[] },
+    ): Promise<void> {
+        const source = this.demSource(opts);
+        const classes = opts?.classes ?? DEFAULT_SLOPE_CLASSES;
+
+        if (z < source.minzoom || z > source.maxzoom + MAX_OVERZOOM) {
+            throw new Err(404, null, 'Tile Not Found');
+        }
+
+        const identity = JSON.stringify([this.id, this.config.url, this.config.updated, source.encoding, serializeSlopeLayers(classes)]);
+        const key = `slope/${createHash('sha256').update(identity).digest('hex').slice(0, 32)}/${z}/${x}/${y}.png`;
+        const cache = TileCache.shared();
+
+        let png = await cache.get(key);
+
+        if (!png) {
+            png = await renderSlopeTile(z, x, y, source, classes);
+
+            if (!png) {
+                res.status(204).send('');
+                return;
+            }
+
+            await cache.set(key, png);
+        }
+
+        res.writeHead(200, {
+            'Content-Type': 'image/png',
+            'Content-Length': png.byteLength,
+            'Cache-Control': 'private, max-age=86400',
+            'ETag': `"${createHash('sha256').update(png).digest('hex')}"`,
+        });
+
+        res.end(png);
     }
 }

@@ -12,6 +12,7 @@ import { PromisePool } from '@supercharge/promise-pool';
 // @ts-expect-error No Type Defs
 import vtquery from '@mapbox/vtquery';
 import { pointToTile } from '@mapbox/tilebelt';
+import type { TileBuffer } from './basemap/protocol.js';
 
 const TILE_FORMATS = [
     [pmtiles.TileType.Mvt, 'mvt'],
@@ -89,11 +90,57 @@ export const RasterTileSource = Type.Object({
     maxzoom: Type.Integer(),
 });
 
+const CONTENT_TYPES: Partial<Record<pmtiles.TileType, string>> = {
+    [pmtiles.TileType.Mvt]: 'application/x-protobuf',
+    [pmtiles.TileType.Png]: 'image/png',
+    [pmtiles.TileType.Jpeg]: 'image/jpeg',
+    [pmtiles.TileType.Webp]: 'image/webp',
+    [pmtiles.TileType.Avif]: 'image/avif',
+};
+
 export class FileTiles {
     path: string;
 
     constructor(path: string) {
         this.path = path;
+    }
+
+    /**
+     * Resolve a tile URL on this server to its archive so hosted basemaps can
+     * be read from S3 directly instead of through a loopback HTTP request
+     */
+    static fromURL(url: URL): FileTiles | null {
+        let host: string;
+        try {
+            host = new URL(process.env.PMTILES_URL || 'http://localhost:5002').hostname;
+        } catch {
+            return null;
+        }
+
+        if (url.hostname !== host) return null;
+
+        const match = url.pathname.match(/^(?:\/api)?\/tiles\/(public\/[^/]+|profile\/[^/]+\/[^/]+)\/tiles\/\d+\/\d+\/\d+\.\w+$/);
+        if (!match) return null;
+
+        return new FileTiles(decodeURIComponent(match[1]));
+    }
+
+    /** Read a tile into memory, gunzipped. Null when the archive has no tile there */
+    async buffer(z: number, x: number, y: number): Promise<TileBuffer | null> {
+        const p = new pmtiles.PMTiles(new S3Source(this.path), CACHE, nativeDecompress);
+        const header = await p.getHeader();
+
+        if (z < header.minZoom || z > header.maxZoom) return null;
+
+        const tile = await p.getZxy(z, x, y);
+        if (!tile) return null;
+
+        let data = Buffer.from(tile.data);
+        if (data.length >= 2 && data[0] === 0x1f && data[1] === 0x8b) {
+            data = zlib.gunzipSync(data);
+        }
+
+        return { data, contentType: CONTENT_TYPES[header.tileType] };
     }
 
     async rasterTileSource(token: string): Promise<Static<typeof RasterTileSource>> {

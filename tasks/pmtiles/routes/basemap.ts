@@ -78,6 +78,7 @@ export default async function router(schema: Schema) {
                 req.params.y,
                 res,
                 {
+                    token: auth.token,
                     headers: {
                         'user-agent': req.headers['user-agent'],
                         'accept': req.headers['accept'],
