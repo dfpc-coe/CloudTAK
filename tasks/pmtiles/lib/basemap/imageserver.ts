@@ -1,7 +1,7 @@
 import type { Response } from 'express';
 import Err from '@openaddresses/batch-error';
 import { fetch as typedFetch } from '@tak-ps/node-safeurl';
-import { BasemapProtocol, TileOpts, assertTileSize } from './protocol.js';
+import { BasemapProtocol, ResolvedTileOpts, TileBuffer, assertTileSize } from './protocol.js';
 
 /**
  * ESRI ImageServer basemap protocol.
@@ -29,11 +29,12 @@ export default class ImageServerBasemap extends BasemapProtocol {
         return url;
     }
 
-    protected async _tile(
+    protected async _buffer(
         z: number, x: number, y: number,
-        res: Response,
-        opts: Required<TileOpts>,
-    ): Promise<void> {
+        opts: ResolvedTileOpts,
+    ): Promise<TileBuffer | null> {
+        void opts;
+
         try {
             const url = ImageServerBasemap.esriRasterTileURL(this.basemap.url, z, x, y);
 
@@ -41,19 +42,11 @@ export default class ImageServerBasemap extends BasemapProtocol {
 
             if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await tileRes.text()}`);
 
-            const tile = Buffer.from(await tileRes.arrayBuffer());
+            const data = Buffer.from(await tileRes.arrayBuffer());
 
-            assertTileSize(tile.byteLength);
+            assertTileSize(data.byteLength);
 
-            res.writeHead(200, {
-                ...opts.headers,
-                'Content-Type': 'image/jpeg',
-                'Content-Length': Buffer.byteLength(tile),
-                'Cache-Control': 'public, max-age=3600',
-            });
-
-            res.write(tile);
-            res.end();
+            return { data, contentType: 'image/jpeg' };
         } catch (err) {
             if (err instanceof Err) {
                 throw err;
@@ -61,5 +54,28 @@ export default class ImageServerBasemap extends BasemapProtocol {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch ESRI tile');
             }
         }
+    }
+
+    protected async _tile(
+        z: number, x: number, y: number,
+        res: Response,
+        opts: ResolvedTileOpts,
+    ): Promise<void> {
+        const tile = await this._buffer(z, x, y, opts);
+
+        if (!tile) {
+            res.status(204).send('');
+            return;
+        }
+
+        res.writeHead(200, {
+            ...opts.headers,
+            'Content-Type': 'image/jpeg',
+            'Content-Length': tile.data.byteLength,
+            'Cache-Control': 'public, max-age=3600',
+        });
+
+        res.write(tile.data);
+        res.end();
     }
 }

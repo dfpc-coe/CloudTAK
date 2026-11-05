@@ -6,6 +6,7 @@ import MapServerBasemap from './mapserver.js';
 import ImageServerBasemap from './imageserver.js';
 import FeatureServerBasemap from './featureserver.js';
 import HostedBasemap from './hosted.js';
+import CompositeBasemap from './composite.js';
 
 export function fromProtocol(basemap: BasemapConfig): BasemapProtocol {
     switch (basemap.protocol) {
@@ -14,6 +15,7 @@ export function fromProtocol(basemap: BasemapConfig): BasemapProtocol {
         case 'imageserver': return new ImageServerBasemap(basemap);
         case 'featureserver': return new FeatureServerBasemap(basemap);
         case 'hosted': return new HostedBasemap(basemap);
+        case 'composite': return new CompositeBasemap(basemap);
         default: throw new Err(400, null, `Unsupported basemap protocol: ${basemap.protocol}`);
     }
 }

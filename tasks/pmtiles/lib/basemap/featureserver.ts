@@ -7,7 +7,7 @@ import { fetch as typedFetch } from '@tak-ps/node-safeurl';
 import type { Static } from '@sinclair/typebox';
 import { TileJSONActions } from '../tilejson.js';
 import { esriToGeoJSON, parseFeatureSet } from '../esri/geojson.js';
-import { BasemapProtocol, TileOpts, assertTileSize } from './protocol.js';
+import { BasemapProtocol, ResolvedTileOpts, assertTileSize } from './protocol.js';
 
 /**
  * ESRI FeatureServer basemap protocol.
@@ -77,7 +77,7 @@ export default class FeatureServerBasemap extends BasemapProtocol {
     protected async _tile(
         z: number, x: number, y: number,
         res: Response,
-        opts: Required<TileOpts>,
+        opts: ResolvedTileOpts,
     ): Promise<void> {
         try {
             const url = FeatureServerBasemap.esriVectorTileURL(this.basemap.url, z, x, y);

@@ -3,7 +3,7 @@ import Err from '@openaddresses/batch-error';
 import { fetch as typedFetch } from '@tak-ps/node-safeurl';
 import type { Static } from '@sinclair/typebox';
 import { TileJSONActions } from '../tilejson.js';
-import { BasemapProtocol, TileOpts, assertTileSize } from './protocol.js';
+import { BasemapProtocol, ResolvedTileOpts, TileBuffer, assertTileSize } from './protocol.js';
 import FeatureServerBasemap from './featureserver.js';
 
 /**
@@ -53,13 +53,14 @@ export default class MapServerBasemap extends FeatureServerBasemap {
         return url;
     }
 
-    protected async _tile(
+    protected async _buffer(
         z: number, x: number, y: number,
-        res: Response,
-        opts: Required<TileOpts>,
-    ): Promise<void> {
+        opts: ResolvedTileOpts,
+    ): Promise<TileBuffer | null> {
+        void opts;
+
         if (this.basemap.type === 'vector') {
-            return super._tile(z, x, y, res, opts);
+            throw new Err(400, null, 'Vector MapServer basemaps cannot be rendered as raster');
         }
 
         try {
@@ -69,22 +70,41 @@ export default class MapServerBasemap extends FeatureServerBasemap {
 
             if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await tileRes.text()}`);
 
-            const tile = Buffer.from(await tileRes.arrayBuffer());
+            const data = Buffer.from(await tileRes.arrayBuffer());
 
-            assertTileSize(tile.byteLength);
+            assertTileSize(data.byteLength);
 
-            res.writeHead(200, {
-                ...opts.headers,
-                'Content-Type': 'image/png',
-                'Content-Length': Buffer.byteLength(tile),
-                'Cache-Control': 'public, max-age=3600',
-            });
-
-            res.write(tile);
-            res.end();
+            return { data, contentType: 'image/png' };
         } catch (err) {
             if (err instanceof Err) throw err;
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch ESRI MapServer tile');
         }
+    }
+
+    protected async _tile(
+        z: number, x: number, y: number,
+        res: Response,
+        opts: ResolvedTileOpts,
+    ): Promise<void> {
+        if (this.basemap.type === 'vector') {
+            return super._tile(z, x, y, res, opts);
+        }
+
+        const tile = await this._buffer(z, x, y, opts);
+
+        if (!tile) {
+            res.status(204).send('');
+            return;
+        }
+
+        res.writeHead(200, {
+            ...opts.headers,
+            'Content-Type': 'image/png',
+            'Content-Length': tile.data.byteLength,
+            'Cache-Control': 'public, max-age=3600',
+        });
+
+        res.write(tile.data);
+        res.end();
     }
 }
