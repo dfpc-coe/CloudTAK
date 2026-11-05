@@ -124,133 +124,140 @@
                                     >No Feed Description</span>
                                 </CopyField>
                             </div>
-                        </div>
-                    </TablerBorder>
-                </div>
-
-                <div class='col-12'>
-                    <TablerBorder class='cloudtak-accent'>
-                        <template #label>
-                            <p class='text-uppercase text-secondary small mb-0'>
-                                Access
-                            </p>
-                        </template>
-
-                        <div class='row gy-3 gx-0 gx-sm-3'>
                             <div class='col-12'>
-                                <TablerBorder
-                                    :class='["cloudtak-accent", canSetRole ? "mission-editable-border" : ""]'
-                                    gap='sm'
+                                <label
+                                    class='subheader cursor-pointer d-flex align-items-center gap-1 mb-0'
+                                    @click='advanced = !advanced'
                                 >
-                                    <template #label>
-                                        <small class='text-uppercase text-secondary d-block mb-0'>Default Subscriber Role</small>
-                                    </template>
-                                    <template
-                                        v-if='canSetRole && !editingRole'
-                                        #tools
+                                    <IconSquareChevronRight
+                                        v-if='!advanced'
+                                        :size='24'
+                                        stroke='1'
+                                    />
+                                    <IconChevronDown
+                                        v-else
+                                        :size='24'
+                                        stroke='1'
+                                    />
+                                    Advanced
+                                </label>
+                            </div>
+                            <template v-if='advanced'>
+                                <div class='col-12'>
+                                    <TablerBorder
+                                        :class='["cloudtak-accent", canSetRole ? "mission-editable-border" : ""]'
+                                        gap='sm'
                                     >
-                                        <TablerIconButton
-                                            title='Edit default role'
-                                            @click.stop.prevent='startEditingRole'
+                                        <template #label>
+                                            <small class='text-uppercase text-secondary d-block mb-0'>Default Subscriber Role</small>
+                                        </template>
+                                        <template
+                                            v-if='canSetRole && !editingRole'
+                                            #tools
                                         >
-                                            <IconPencil
-                                                :size='24'
-                                                stroke='1'
-                                            />
-                                        </TablerIconButton>
-                                    </template>
-                                    <template
-                                        v-else-if='editingRole'
-                                        #tools
-                                    >
-                                        <div class='d-flex gap-1'>
                                             <TablerIconButton
-                                                :disabled='savingRole'
-                                                color='rgba(var(--tblr-primary-rgb), 0.14)'
-                                                :title='savingRole ? "Saving..." : "Save"'
-                                                @click.stop='saveRole'
+                                                title='Edit default role'
+                                                @click.stop.prevent='startEditingRole'
                                             >
-                                                <IconDeviceFloppy
-                                                    color='rgb(var(--tblr-primary-rgb))'
+                                                <IconPencil
+                                                    :size='24'
                                                     stroke='1'
                                                 />
                                             </TablerIconButton>
-                                            <TablerIconButton
-                                                :disabled='savingRole'
-                                                title='Cancel'
-                                                @click.stop='editingRole = false'
-                                            >
-                                                <IconX stroke='1' />
-                                            </TablerIconButton>
-                                        </div>
-                                    </template>
-
-                                    <select
-                                        v-if='editingRole'
-                                        v-model='roleDraft'
-                                        class='form-select form-select-sm'
-                                        :disabled='savingRole'
-                                    >
-                                        <option
-                                            v-for='option of roleOptions'
-                                            :key='option.value'
-                                            :value='option.value'
-                                            v-text='option.label'
-                                        />
-                                    </select>
-                                    <p
-                                        v-else
-                                        class='fw-semibold mb-0'
-                                        v-text='roleLabel(defaultRole)'
-                                    />
-                                </TablerBorder>
-                            </div>
-                            <div class='col-12'>
-                                <TablerBorder
-                                    class='cloudtak-accent'
-                                    gap='sm'
-                                >
-                                    <template #label>
-                                        <small class='text-uppercase text-secondary d-block mb-0'>Password</small>
-                                    </template>
-                                    <div class='d-flex align-items-center gap-2 flex-wrap'>
-                                        <IconLock
-                                            v-if='props.subscription.meta.passwordProtected'
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                        <IconLockOpen
-                                            v-else
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                        <span
-                                            class='fw-semibold flex-grow-1'
-                                            v-text='props.subscription.meta.passwordProtected ? "Password protected" : "No password"'
-                                        />
-                                        <template v-if='canSetPassword'>
-                                            <TablerLoading
-                                                v-if='savingPassword'
-                                                :inline='true'
-                                            />
-                                            <template v-else>
-                                                <button
-                                                    class='btn btn-sm btn-secondary'
-                                                    @click='openPasswordModal'
-                                                    v-text='props.subscription.meta.passwordProtected ? "Change" : "Set Password"'
-                                                />
-                                                <button
-                                                    v-if='props.subscription.meta.passwordProtected'
-                                                    class='btn btn-sm btn-outline-danger'
-                                                    @click='removePassword'
-                                                >
-                                                    Remove
-                                                </button>
-                                            </template>
                                         </template>
-                                    </div>
-                                </TablerBorder>
-                            </div>
+                                        <template
+                                            v-else-if='editingRole'
+                                            #tools
+                                        >
+                                            <div class='d-flex gap-1'>
+                                                <TablerIconButton
+                                                    :disabled='savingRole'
+                                                    color='rgba(var(--tblr-primary-rgb), 0.14)'
+                                                    :title='savingRole ? "Saving..." : "Save"'
+                                                    @click.stop='saveRole'
+                                                >
+                                                    <IconDeviceFloppy
+                                                        color='rgb(var(--tblr-primary-rgb))'
+                                                        stroke='1'
+                                                    />
+                                                </TablerIconButton>
+                                                <TablerIconButton
+                                                    :disabled='savingRole'
+                                                    title='Cancel'
+                                                    @click.stop='editingRole = false'
+                                                >
+                                                    <IconX stroke='1' />
+                                                </TablerIconButton>
+                                            </div>
+                                        </template>
+
+                                        <select
+                                            v-if='editingRole'
+                                            v-model='roleDraft'
+                                            class='form-select form-select-sm'
+                                            :disabled='savingRole'
+                                        >
+                                            <option
+                                                v-for='option of roleOptions'
+                                                :key='option.value'
+                                                :value='option.value'
+                                                v-text='option.label'
+                                            />
+                                        </select>
+                                        <p
+                                            v-else
+                                            class='fw-semibold mb-0'
+                                            v-text='roleLabel(defaultRole)'
+                                        />
+                                    </TablerBorder>
+                                </div>
+                                <div class='col-12'>
+                                    <TablerBorder
+                                        class='cloudtak-accent'
+                                        gap='sm'
+                                    >
+                                        <template #label>
+                                            <small class='text-uppercase text-secondary d-block mb-0'>Password</small>
+                                        </template>
+                                        <div class='d-flex align-items-center gap-2 flex-wrap'>
+                                            <IconLock
+                                                v-if='props.subscription.meta.passwordProtected'
+                                                :size='20'
+                                                stroke='1'
+                                            />
+                                            <IconLockOpen
+                                                v-else
+                                                :size='20'
+                                                stroke='1'
+                                            />
+                                            <span
+                                                class='fw-semibold flex-grow-1'
+                                                v-text='props.subscription.meta.passwordProtected ? "Password protected" : "No password"'
+                                            />
+                                            <template v-if='canSetPassword'>
+                                                <TablerLoading
+                                                    v-if='savingPassword'
+                                                    :inline='true'
+                                                />
+                                                <template v-else>
+                                                    <button
+                                                        class='btn btn-sm btn-secondary'
+                                                        @click='openPasswordModal'
+                                                        v-text='props.subscription.meta.passwordProtected ? "Change" : "Set Password"'
+                                                    />
+                                                    <button
+                                                        v-if='props.subscription.meta.passwordProtected'
+                                                        class='btn btn-sm btn-outline-danger'
+                                                        @click='removePassword'
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </template>
+                                            </template>
+                                        </div>
+                                    </TablerBorder>
+                                </div>
+                            </template>
                         </div>
                     </TablerBorder>
                 </div>
@@ -458,6 +465,8 @@ import {
     IconDeviceFloppy,
     IconLock,
     IconLockOpen,
+    IconSquareChevronRight,
+    IconChevronDown,
 } from '@tabler/icons-vue';
 import {
     TablerAlert,
@@ -564,6 +573,7 @@ async function saveRole(): Promise<void> {
     }
 }
 
+const advanced = ref(false);
 const showPassword = ref(false);
 const savingPassword = ref(false);
 const passwordDraft = ref('');
@@ -579,7 +589,7 @@ async function savePassword(): Promise<void> {
     try {
         savingPassword.value = true;
         error.value = undefined;
-        await props.subscription.setPassword(passwordDraft.value);
+        await props.subscription.update({ password: passwordDraft.value });
         showPassword.value = false;
     } catch (err) {
         fail(err);
@@ -593,7 +603,7 @@ async function removePassword(): Promise<void> {
     try {
         savingPassword.value = true;
         error.value = undefined;
-        await props.subscription.removePassword();
+        await props.subscription.update({ password: null });
     } catch (err) {
         fail(err);
     } finally {

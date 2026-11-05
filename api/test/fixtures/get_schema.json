@@ -1124,16 +1124,6 @@
         "query": false,
         "res": true
     },
-    "PUT /marti/missions/:guid/password": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /marti/missions/:guid/password": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /marti/mission": {
         "body": false,
         "query": true,

@@ -284,7 +284,8 @@ export default class Subscription {
             description?: string,
             keywords?: string[],
             groups?: string[],
-            defaultRole?: MissionRoleType
+            defaultRole?: MissionRoleType,
+            password?: string | null
         }
     ): Promise<void> {
         if (body.subscribed !== undefined) {
@@ -318,17 +319,20 @@ export default class Subscription {
                 || body.keywords !== undefined
                 || body.groups !== undefined
                 || body.defaultRole !== undefined
+                || body.password !== undefined
             ) {
                 const patch: {
                     description?: string;
                     keywords?: string[];
                     groups?: string[];
                     defaultRole?: MissionRoleType;
+                    password?: string | null;
                 } = {};
                 if (body.description !== undefined) patch.description = body.description;
                 if (body.keywords !== undefined) patch.keywords = body.keywords;
                 if (body.groups !== undefined) patch.groups = body.groups;
                 if (body.defaultRole !== undefined) patch.defaultRole = body.defaultRole;
+                if (body.password !== undefined) patch.password = body.password;
 
                 const { data, error } = await server.PATCH('/api/marti/missions/{:guid}', {
                     params: {
@@ -359,57 +363,6 @@ export default class Subscription {
                 }
             });
         }
-    }
-
-    /**
-     * Set or replace the mission password - requires MISSION_SET_PASSWORD
-     */
-    async setPassword(password: string): Promise<void> {
-        const { error } = await server.PUT('/api/marti/missions/{:guid}/password', {
-            params: {
-                path: { ':guid': this.guid }
-            },
-            headers: Subscription.headers(this.missiontoken),
-            body: { password }
-        });
-
-        if (error) throw new Error(error.message || 'Failed to set mission password');
-
-        await this.setPasswordProtected(true);
-    }
-
-    /**
-     * Remove the mission password - requires MISSION_SET_PASSWORD
-     */
-    async removePassword(): Promise<void> {
-        const { error } = await server.DELETE('/api/marti/missions/{:guid}/password', {
-            params: {
-                path: { ':guid': this.guid }
-            },
-            headers: Subscription.headers(this.missiontoken)
-        });
-
-        if (error) throw new Error(error.message || 'Failed to remove mission password');
-
-        await this.setPasswordProtected(false);
-    }
-
-    private async setPasswordProtected(passwordProtected: boolean): Promise<void> {
-        this.meta.passwordProtected = passwordProtected;
-
-        await db.subscription.update(this.guid, {
-            meta: JSON.parse(JSON.stringify(this.meta)),
-        });
-
-        announce({
-            guid: this.guid,
-            type: SubscriptionEventType.UPDATE,
-            origin: this._id,
-            state: {
-                dirty: this.dirty,
-                subscribed: this.subscribed,
-            }
-        });
     }
 
     async delete(): Promise<void> {

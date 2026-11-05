@@ -456,20 +456,52 @@ test('PATCH: api/marti/missions/:guid - rejects an unknown defaultRole', async (
     assert.equal(res.status, 400);
 });
 
-test('PUT: api/marti/missions/:guid/password - sets the password via the guid endpoint', async () => {
-    let captured: { method: string; url: URL; auth?: string } | undefined;
+const PASSWORD_MISSION = {
+    name: 'Test Mission',
+    guid: '9d2b7a6e-3c4f-4e8a-9b1d-2f6a8c0e4b71',
+    createTime: '2024-01-01T00:00:00Z',
+    description: 'test description',
+    tool: 'public',
+    keywords: [],
+    externalData: [],
+    feeds: [],
+    mapLayers: [],
+    inviteOnly: false,
+    expiration: 3600,
+    uids: [],
+    contents: [],
+    passwordProtected: false,
+    defaultRole: { type: 'MISSION_SUBSCRIBER', permissions: ['MISSION_READ', 'MISSION_WRITE'] },
+    groups: ['original-group'],
+};
 
+function mockPasswordMission(calls: Array<{ method: string; url: URL; auth?: string }>) {
     flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
         if (!request.method || !request.url) return false;
 
         const url = new URL(request.url, 'http://127.0.0.1');
 
+        if (request.method === 'GET' && url.pathname === '/Marti/api/missions/guid/9d2b7a6e-3c4f-4e8a-9b1d-2f6a8c0e4b71') {
+            response.setHeader('Content-Type', 'application/json');
+            response.write(JSON.stringify({ data: [PASSWORD_MISSION] }));
+            response.end();
+            return true;
+        }
+
+        if (request.method === 'POST' && url.pathname === '/Marti/api/missions/Test%20Mission') {
+            calls.push({ method: request.method, url });
+            response.setHeader('Content-Type', 'application/json');
+            response.write(JSON.stringify({ data: [PASSWORD_MISSION] }));
+            response.end();
+            return true;
+        }
+
         if (url.pathname === '/Marti/api/missions/guid/9d2b7a6e-3c4f-4e8a-9b1d-2f6a8c0e4b71/password') {
-            captured = {
+            calls.push({
                 method: request.method,
                 url,
                 auth: request.headers['missionauthorization'] as string | undefined,
-            };
+            });
             response.statusCode = 200;
             response.end();
             return true;
@@ -477,10 +509,15 @@ test('PUT: api/marti/missions/:guid/password - sets the password via the guid en
 
         return false;
     });
+}
+
+test('PATCH: api/marti/missions/:guid - a string password is set via the guid password endpoint', async () => {
+    const calls: Array<{ method: string; url: URL; auth?: string }> = [];
+    mockPasswordMission(calls);
 
     try {
-        const res = await flight.fetch('/api/marti/missions/9d2b7a6e-3c4f-4e8a-9b1d-2f6a8c0e4b71/password', {
-            method: 'PUT',
+        const res = await flight.fetch('/api/marti/missions/9d2b7a6e-3c4f-4e8a-9b1d-2f6a8c0e4b71', {
+            method: 'PATCH',
             auth: {
                 bearer: flight.token.admin,
             },
@@ -492,12 +529,17 @@ test('PUT: api/marti/missions/:guid/password - sets the password via the guid en
             },
         }, true);
 
-        assert.ok(captured);
-        assert.equal(captured.method, 'PUT');
-        assert.equal(captured.url.searchParams.get('password'), 'p%ss?w"rd');
-        assert.ok(captured.url.searchParams.get('creatorUid'));
-        assert.equal(captured.auth, 'Bearer test-mission-token');
-        assert.deepEqual(res.body, { status: 200, message: 'Password Updated' });
+        const post = calls.find(c => c.method === 'POST');
+        assert.ok(post);
+        assert.equal(post.url.searchParams.has('password'), false);
+
+        const set = calls.find(c => c.url.pathname.endsWith('/password'));
+        assert.ok(set);
+        assert.equal(set.method, 'PUT');
+        assert.equal(set.url.searchParams.get('password'), 'p%ss?w"rd');
+        assert.ok(set.url.searchParams.get('creatorUid'));
+        assert.equal(set.auth, 'Bearer test-mission-token');
+        assert.equal(res.body.passwordProtected, true);
     } catch (err) {
         assert.ifError(err);
     } finally {
@@ -505,23 +547,41 @@ test('PUT: api/marti/missions/:guid/password - sets the password via the guid en
     }
 });
 
-test('PUT: api/marti/missions/:guid/password - rejects an empty password', async () => {
-    let called = false;
-
-    flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
-        if (!request.url) return false;
-        if (request.url.includes('/password')) {
-            called = true;
-            response.statusCode = 200;
-            response.end();
-            return true;
-        }
-        return false;
-    });
+test('PATCH: api/marti/missions/:guid - a null password removes it via the guid password endpoint', async () => {
+    const calls: Array<{ method: string; url: URL; auth?: string }> = [];
+    mockPasswordMission(calls);
 
     try {
-        const res = await flight.fetch('/api/marti/missions/9d2b7a6e-3c4f-4e8a-9b1d-2f6a8c0e4b71/password', {
-            method: 'PUT',
+        const res = await flight.fetch('/api/marti/missions/9d2b7a6e-3c4f-4e8a-9b1d-2f6a8c0e4b71', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                password: null,
+            },
+        }, true);
+
+        const remove = calls.find(c => c.url.pathname.endsWith('/password'));
+        assert.ok(remove);
+        assert.equal(remove.method, 'DELETE');
+        assert.equal(remove.url.searchParams.has('password'), false);
+        assert.ok(remove.url.searchParams.get('creatorUid'));
+        assert.equal(res.body.passwordProtected, false);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        flight.tak.reset();
+    }
+});
+
+test('PATCH: api/marti/missions/:guid - rejects an empty password', async () => {
+    const calls: Array<{ method: string; url: URL; auth?: string }> = [];
+    mockPasswordMission(calls);
+
+    try {
+        const res = await flight.fetch('/api/marti/missions/9d2b7a6e-3c4f-4e8a-9b1d-2f6a8c0e4b71', {
+            method: 'PATCH',
             auth: {
                 bearer: flight.token.admin,
             },
@@ -531,45 +591,7 @@ test('PUT: api/marti/missions/:guid/password - rejects an empty password', async
         }, false);
 
         assert.equal(res.status, 400);
-        assert.equal(called, false);
-    } finally {
-        flight.tak.reset();
-    }
-});
-
-test('DELETE: api/marti/missions/:guid/password - removes the password via the guid endpoint', async () => {
-    let captured: { method: string; url: URL } | undefined;
-
-    flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
-        if (!request.method || !request.url) return false;
-
-        const url = new URL(request.url, 'http://127.0.0.1');
-
-        if (url.pathname === '/Marti/api/missions/guid/9d2b7a6e-3c4f-4e8a-9b1d-2f6a8c0e4b71/password') {
-            captured = { method: request.method, url };
-            response.statusCode = 200;
-            response.end();
-            return true;
-        }
-
-        return false;
-    });
-
-    try {
-        const res = await flight.fetch('/api/marti/missions/9d2b7a6e-3c4f-4e8a-9b1d-2f6a8c0e4b71/password', {
-            method: 'DELETE',
-            auth: {
-                bearer: flight.token.admin,
-            },
-        }, true);
-
-        assert.ok(captured);
-        assert.equal(captured.method, 'DELETE');
-        assert.equal(captured.url.searchParams.has('password'), false);
-        assert.ok(captured.url.searchParams.get('creatorUid'));
-        assert.deepEqual(res.body, { status: 200, message: 'Password Removed' });
-    } catch (err) {
-        assert.ifError(err);
+        assert.equal(calls.length, 0);
     } finally {
         flight.tak.reset();
     }

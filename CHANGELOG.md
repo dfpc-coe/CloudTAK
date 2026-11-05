@@ -27,7 +27,7 @@
 
 ### Pending Release
 
-- :tada: `PATCH /api/marti/missions/:guid` accepts `defaultRole` and the Mission response includes it; new `PUT` & `DELETE /api/marti/missions/:guid/password` routes (#2008)
+- :tada: `PATCH /api/marti/missions/:guid` accepts `defaultRole` and a `password` (a string sets or replaces it, `null` removes it); the Mission response includes `defaultRole` (#2008)
 - :tada: Data Sync info screen shows the default subscriber role & password state with Set/Change/Remove controls for users with `MISSION_SET_ROLE` / `MISSION_SET_PASSWORD` (#2008)
 - :bug: Data Sync "Remove User" now removes the target subscriber (via a role-less TAK Server `PUT .../role`) instead of silently unsubscribing only the caller's own session; the button is gated on `MISSION_SET_ROLE` and failures are shown in the Users list (#2010)
 

@@ -313,13 +313,18 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             defaultRole: Type.Optional(Type.Enum(MissionSubscriberRole, {
                 description: 'Role granted to new subscribers. Caller must have MISSION_SET_ROLE and every permission of the new role.',
             })),
+            password: Type.Optional(Type.Unsafe<string | null>({
+                type: ['string', 'null'],
+                minLength: 1,
+                description: 'New password, or null to remove the password. Caller must have MISSION_SET_PASSWORD.',
+            })),
         }),
         res: Mission,
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.context(req, req.params.guid);
+            const { user, api, opts } = await missionControl.context(req, req.params.guid);
 
-            const { groups, ...rest } = req.body;
+            const { groups, password, ...rest } = req.body;
 
             const mission = await api.Mission.update(
                 req.params.guid,
@@ -330,65 +335,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 opts,
             );
 
+            if (password === null) {
+                await api.Mission.removePassword(req.params.guid, opts, profileUid(user.email));
+                mission.passwordProtected = false;
+            } else if (password !== undefined) {
+                await api.Mission.setPassword(req.params.guid, password, opts, profileUid(user.email));
+                mission.passwordProtected = true;
+            }
+
             res.json(mission);
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.put('/marti/missions/:guid/password', {
-        name: 'Set Mission Password',
-        group: 'MartiMissions',
-        description: 'Set or replace the password on a mission. Caller must have MISSION_SET_PASSWORD.',
-        params: Type.Object({
-            guid: Type.String(),
-        }),
-        body: Type.Object({
-            password: Type.String({ minLength: 1 }),
-        }),
-        res: StandardResponse,
-    }, async (req, res) => {
-        try {
-            const { user, api, opts } = await missionControl.context(req, req.params.guid);
-
-            await api.Mission.setPassword(
-                req.params.guid,
-                req.body.password,
-                opts,
-                profileUid(user.email),
-            );
-
-            res.json({
-                status: 200,
-                message: 'Password Updated',
-            });
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.delete('/marti/missions/:guid/password', {
-        name: 'Remove Mission Password',
-        group: 'MartiMissions',
-        description: 'Remove the password from a mission. Caller must have MISSION_SET_PASSWORD.',
-        params: Type.Object({
-            guid: Type.String(),
-        }),
-        res: StandardResponse,
-    }, async (req, res) => {
-        try {
-            const { user, api, opts } = await missionControl.context(req, req.params.guid);
-
-            await api.Mission.removePassword(
-                req.params.guid,
-                opts,
-                profileUid(user.email),
-            );
-
-            res.json({
-                status: 200,
-                message: 'Password Removed',
-            });
         } catch (err) {
             Err.respond(err, res);
         }
