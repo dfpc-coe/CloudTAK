@@ -27,6 +27,7 @@
 
 ### Pending Release
 
+- :bug: Data Sync chat input is hidden unless the user is subscribed with `MISSION_WRITE` - TAK Server silently drops mission chat from read-only subscribers
 - :rocket: Subscribing to a Data Sync fetches the caller's role once instead of three times - `Subscription.load` skips the role refresh it just performed and `Subscription.update` adopts the stored role when another instance already applied the same subscription change
 - :tada: `PATCH /api/marti/missions/:guid` accepts `defaultRole` and a `password` (a string sets or replaces it, `null` removes it); the Mission response includes `defaultRole` (#2008)
 - :tada: Data Sync info screen shows the default subscriber role & password state with Set/Change/Remove controls for users with `MISSION_SET_ROLE` / `MISSION_SET_PASSWORD` (#2008)
