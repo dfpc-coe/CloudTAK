@@ -27,6 +27,7 @@
 
 ### Pending Release
 
+- :rocket: Subscribing to a Data Sync fetches the caller's role once instead of three times - `Subscription.load` skips the role refresh it just performed and `Subscription.update` adopts the stored role when another instance already applied the same subscription change
 - :tada: `PATCH /api/marti/missions/:guid` accepts `defaultRole` and a `password` (a string sets or replaces it, `null` removes it); the Mission response includes `defaultRole` (#2008)
 - :tada: Data Sync info screen shows the default subscriber role & password state with Set/Change/Remove controls for users with `MISSION_SET_ROLE` / `MISSION_SET_PASSWORD` (#2008)
 - :bug: Data Sync "Remove User" now removes the target subscriber (via a role-less TAK Server `PUT .../role`) instead of silently unsubscribing only the caller's own session; the button is gated on `MISSION_SET_ROLE` and failures are shown in the Users list (#2010)

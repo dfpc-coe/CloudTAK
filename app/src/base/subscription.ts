@@ -194,17 +194,21 @@ export default class Subscription {
         const exists = await this.from(guid);
 
         if (exists) {
+            let refreshRole = true;
+
             if (opts.subscribed !== undefined || opts.missiontoken !== undefined) {
                 const update: { subscribed?: boolean, token?: string } = {};
                 if (opts.subscribed !== undefined) update.subscribed = opts.subscribed;
                 if (opts.missiontoken !== undefined) update.token = opts.missiontoken;
 
                 await exists.update(update);
+                refreshRole = false;
             }
 
             if (opts.reload !== false) {
                 await exists.refresh({
-                    refreshMission: true
+                    refreshMission: true,
+                    refreshRole
                 });
             }
 
@@ -288,6 +292,9 @@ export default class Subscription {
             password?: string | null
         }
     ): Promise<void> {
+        const roleChange = body.subscribed !== undefined || body.token !== undefined;
+        const stored = roleChange ? await db.subscription.get(this.guid) : undefined;
+
         if (body.subscribed !== undefined) {
             this.subscribed = body.subscribed;
         }
@@ -308,10 +315,19 @@ export default class Subscription {
 
         // Local state is already persisted, announce it even if the PATCH fails
         try {
-            if (body.subscribed !== undefined || body.token !== undefined) {
-                await this.refreshRole().catch((err) => {
-                    console.warn('Failed to refresh mission role', err);
-                });
+            if (roleChange) {
+                // Another instance that already made this same change fetched the role for it
+                const settled = stored
+                    && (body.subscribed === undefined || stored.subscribed === body.subscribed)
+                    && (body.token === undefined || (stored.token || '') === body.token);
+
+                if (settled) {
+                    this.role = stored.role;
+                } else {
+                    await this.refreshRole().catch((err) => {
+                        console.warn('Failed to refresh mission role', err);
+                    });
+                }
             }
 
             if (
