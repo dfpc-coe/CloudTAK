@@ -24,3 +24,11 @@ export function cloudtakUsername(): string {
 export function cloudtakPassword(): string {
     return required('CLOUDTAK_PASSWORD');
 }
+
+export function cloudtakUsername1(): string {
+    return required('CLOUDTAK_USERNAME_1');
+}
+
+export function cloudtakPassword1(): string {
+    return required('CLOUDTAK_PASSWORD_1');
+}
