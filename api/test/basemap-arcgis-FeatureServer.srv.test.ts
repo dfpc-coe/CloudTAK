@@ -56,6 +56,7 @@ test('POST: api/basemap - ArcGIS Feature Server Source', async () => {
             url: ARCGIS_FEATURE_URL,
             overlay: false,
             tilejson: null,
+            args: {},
             iconset: null,
             title: 'callsign',
             username: 'admin@example.com',
