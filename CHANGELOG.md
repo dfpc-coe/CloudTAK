@@ -27,6 +27,9 @@
 
 ### Pending Release
 
+### v13.121.0 - 2026-11-05
+
+- :tada: Introduce Slope & Composite Raster Layers
 - :bug: Data Sync names are trimmed on creation and existing names are trimmed by migration - TAK Server stores mission names trimmed but matches `<dest mission>` exactly, so a padded name left every Layer CoT brokered outside the Mission
 - :rocket: Layer CoTs submitted to a Data Sync are addressed by Mission GUID (`<dest mission-guid>`) rather than name, falling back to the trimmed name for Data Syncs without a stored GUID
 
