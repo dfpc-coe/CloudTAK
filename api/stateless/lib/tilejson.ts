@@ -7,8 +7,8 @@ import type ConfigStateless from '../config.js';
 import { TileJSON } from '../../common/types.js';
 import { BasemapProtocol, TileJSONActions } from './interface-basemap.js';
 import { EsriBase, EsriProxyLayer } from './esri.js';
-import { applyTileArgs } from './tile-args.js';
-import type { TileArgs } from './tile-args.js';
+import BasemapControl from '../../common/control/basemap.js';
+import type { TileArgs } from '../../common/control/basemap.js';
 
 export const AugmentedTileJSON = Type.Composite([
     TileJSON,
@@ -42,7 +42,7 @@ export async function basemapTileJSON(
     const pmtilesHost = new URL(config.PMTILES_URL || 'http://localhost:5001').hostname;
     const hosted = basemap.url.includes(pmtilesHost);
 
-    let tileURL = applyTileArgs(hosted ? basemap.url : `${config.BASEMAP_TILES_URL}/${basemap.id}/tiles/{z}/{x}/{y}`, basemap.args);
+    let tileURL = BasemapControl.applyTileArgs(hosted ? basemap.url : `${config.BASEMAP_TILES_URL}/${basemap.id}/tiles/{z}/{x}/{y}`, basemap.args);
     if (opts.token) tileURL = tileURL + `${tileURL.includes('?') ? '&' : '?'}token=${opts.token}`;
 
     const esriMetadataURL = basemap.tilejson || basemap.url;
@@ -65,7 +65,7 @@ export async function basemapTileJSON(
     }
 
     if (basemap.tilejson && (basemap.tilejson.startsWith('http://') || basemap.tilejson.startsWith('https://'))) {
-        const url = new URL(applyTileArgs(basemap.tilejson, basemap.args));
+        const url = new URL(BasemapControl.applyTileArgs(basemap.tilejson, basemap.args));
 
         if (url.hostname === pmtilesHost) {
             url.searchParams.set('token', opts.upstreamToken);

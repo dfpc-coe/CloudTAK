@@ -10,8 +10,17 @@
             </div>
 
             <div>
-                <div class='fw-semibold'>
+                <div class='fw-semibold d-flex align-items-center gap-2'>
                     {{ config.label }}
+                    <TablerBadge
+                        v-if='config.beta'
+                        class='rounded-pill small'
+                        background-color='rgba(255, 171, 0, 0.15)'
+                        border-color='rgba(255, 171, 0, 0.35)'
+                        text-color='#c98500'
+                    >
+                        Beta
+                    </TablerBadge>
                 </div>
                 <div class='small text-white-50'>
                     {{ config.description }}
@@ -33,6 +42,7 @@
 
 <script setup lang='ts'>
 import StandardItem from '../../util/StandardItem.vue';
+import { TablerBadge } from '@tak-ps/vue-tabler';
 import type { BasemapSourceType } from './types.ts';
 import { BasemapTypeConfig } from './types.ts';
 

@@ -78,6 +78,8 @@ export const BasemapTypeConfig: Record<BasemapSourceType, {
     urlTokens: Array<{ value: string; tooltip: string }>;
     /** The source dictates the tile type, so the form must not offer a Type field */
     fixedType?: boolean;
+    /** Shown with a Beta badge wherever the type is offered */
+    beta?: boolean;
     defaults: Pick<EditingBasemap, 'type' | 'format' | 'minzoom' | 'maxzoom' | 'tilesize'>;
 }> = {
     zxy: {
@@ -209,6 +211,7 @@ export const BasemapTypeConfig: Record<BasemapSourceType, {
         urlPlaceholder: '',
         urlTokens: [],
         fixedType: true,
+        beta: true,
         defaults: {
             type: 'raster',
             format: 'png',
@@ -226,6 +229,7 @@ export const BasemapTypeConfig: Record<BasemapSourceType, {
         urlPlaceholder: '',
         urlTokens: [],
         fixedType: true,
+        beta: true,
         defaults: {
             type: 'raster',
             format: 'png',
