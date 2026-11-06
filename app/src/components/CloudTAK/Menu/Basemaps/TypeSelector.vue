@@ -49,7 +49,7 @@ import {
 } from '@tak-ps/vue-tabler';
 
 const props = withDefaults(defineProps<{
-    modelValue?: string | null;
+    modelValue?: BasemapSourceType | null;
     isSystemAdmin?: boolean;
 }>(), {
     modelValue: null,
@@ -57,8 +57,8 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-    'update:modelValue': [value: string];
-    select: [value: string];
+    'update:modelValue': [value: BasemapSourceType];
+    select: [value: BasemapSourceType];
 }>();
 
 const filter = ref('');
@@ -85,7 +85,7 @@ const filteredOptions = computed(() => {
     });
 });
 
-function select(value: string): void {
+function select(value: BasemapSourceType): void {
     emit('update:modelValue', value);
     emit('select', value);
 }

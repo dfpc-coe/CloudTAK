@@ -1,12 +1,16 @@
 import type { StyleLayerDef } from '../../../ETL/Styling/types.ts';
 import type { Basemap, BasemapList } from '../../../../types.ts';
 import type { paths } from '@cloudtak/api-types';
+import { isSlopeURL } from './slope.ts';
+import { isCompositeURL } from './composite.ts';
 import {
     IconDatabase,
     IconFileImport,
     IconFileUpload,
     IconGridDots,
+    IconLayersIntersect,
     IconMap,
+    IconMountain,
     IconPhoto,
     IconVector,
 } from '@tabler/icons-vue';
@@ -44,6 +48,8 @@ export interface EditingBasemap {
     styles: StyleLayerDef[];
     tilejson: string;
     encoding: 'mapbox' | 'terrarium' | null;
+    /** Query params appended to every tile request, e.g. slope classes */
+    args: Record<string, string | string[]>;
 }
 
 export interface VectorLayerFieldMap {
@@ -60,7 +66,7 @@ export type BasemapImport = paths['/api/basemap']['put']['responses']['200']['co
     tilesize?: number;
 };
 
-export type BasemapSourceType = 'zxy' | 'imageserver' | 'mapserver' | 'featureserver' | 'tilejson' | 'upload' | 'hosted';
+export type BasemapSourceType = 'zxy' | 'imageserver' | 'mapserver' | 'featureserver' | 'tilejson' | 'upload' | 'hosted' | 'slope' | 'composite';
 
 export const BasemapTypeConfig: Record<BasemapSourceType, {
     label: string;
@@ -70,6 +76,8 @@ export const BasemapTypeConfig: Record<BasemapSourceType, {
     urlDescription: string;
     urlPlaceholder: string;
     urlTokens: Array<{ value: string; tooltip: string }>;
+    /** The source dictates the tile type, so the form must not offer a Type field */
+    fixedType?: boolean;
     defaults: Pick<EditingBasemap, 'type' | 'format' | 'minzoom' | 'maxzoom' | 'tilesize'>;
 }> = {
     zxy: {
@@ -101,6 +109,7 @@ export const BasemapTypeConfig: Record<BasemapSourceType, {
         urlDescription: 'Provide the ArcGIS ImageServer endpoint for this basemap.',
         urlPlaceholder: 'https://example.com/arcgis/rest/services/WorldImagery/ImageServer',
         urlTokens: [],
+        fixedType: true,
         defaults: {
             type: 'raster',
             format: 'png',
@@ -117,6 +126,7 @@ export const BasemapTypeConfig: Record<BasemapSourceType, {
         urlDescription: 'Provide the ArcGIS MapServer layer URL, including the layer id.',
         urlPlaceholder: 'https://example.com/arcgis/rest/services/WorldTopo/MapServer/1',
         urlTokens: [],
+        fixedType: true,
         defaults: {
             type: 'vector',
             format: 'mvt',
@@ -133,6 +143,7 @@ export const BasemapTypeConfig: Record<BasemapSourceType, {
         urlDescription: 'Provide the ArcGIS FeatureServer layer URL, including the layer id.',
         urlPlaceholder: 'https://example.com/arcgis/rest/services/Parcels/FeatureServer/1',
         urlTokens: [],
+        fixedType: true,
         defaults: {
             type: 'vector',
             format: 'mvt',
@@ -189,10 +200,46 @@ export const BasemapTypeConfig: Record<BasemapSourceType, {
             tilesize: 256,
         },
     },
+    slope: {
+        label: 'Slope Angle',
+        description: 'Shade slope angle classes rendered from an existing terrain (raster-dem) basemap.',
+        icon: IconMountain,
+        urlLabel: 'Slope Tile URL',
+        urlDescription: 'Generated from the selected terrain basemap and slope classes.',
+        urlPlaceholder: '',
+        urlTokens: [],
+        fixedType: true,
+        defaults: {
+            type: 'raster',
+            format: 'png',
+            minzoom: 0,
+            maxzoom: 16,
+            tilesize: 256,
+        },
+    },
+    composite: {
+        label: 'Composite',
+        description: 'Flatten an ordered stack of raster basemaps into a single tile set with blend modes.',
+        icon: IconLayersIntersect,
+        urlLabel: 'Composite Tile URL',
+        urlDescription: 'Generated from the configured layer stack.',
+        urlPlaceholder: '',
+        urlTokens: [],
+        fixedType: true,
+        defaults: {
+            type: 'raster',
+            format: 'png',
+            minzoom: 0,
+            maxzoom: 16,
+            tilesize: 256,
+        },
+    },
 };
 
 export function inferBasemapType(url?: string | null): BasemapSourceType | null {
     if (!url) return null;
+    if (isSlopeURL(url)) return 'slope';
+    if (isCompositeURL(url)) return 'composite';
     if (url.includes('{$q}')) return 'zxy';
     if (url.match(/\/FeatureServer\/\d+$/)) return 'featureserver';
     if (url.match(/\/MapServer\/\d+$/)) return 'mapserver';
@@ -236,6 +283,7 @@ export function normalizeEditing(data: Basemap | BasemapImport | BasemapListItem
         styles: ('styles' in data && Array.isArray(data.styles) ? data.styles as StyleLayerDef[] : null) ?? [],
         tilejson: (() => { const v = String(('tilejson' in data ? data.tilejson : undefined) ?? ''); return (v.startsWith('http://') || v.startsWith('https://')) ? v : ''; })(),
         encoding: ('encoding' in data ? (data.encoding === 'mapbox' || data.encoding === 'terrarium' ? data.encoding : null) : null) ?? null,
+        args: ('args' in data && data.args && typeof data.args === 'object') ? { ...data.args } : {},
     };
 }
 

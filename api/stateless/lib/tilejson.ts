@@ -7,6 +7,8 @@ import type ConfigStateless from '../config.js';
 import { TileJSON } from '../../common/types.js';
 import { BasemapProtocol, TileJSONActions } from './interface-basemap.js';
 import { EsriBase, EsriProxyLayer } from './esri.js';
+import { applyTileArgs } from './tile-args.js';
+import type { TileArgs } from './tile-args.js';
 
 export const AugmentedTileJSON = Type.Composite([
     TileJSON,
@@ -40,8 +42,8 @@ export async function basemapTileJSON(
     const pmtilesHost = new URL(config.PMTILES_URL || 'http://localhost:5001').hostname;
     const hosted = basemap.url.includes(pmtilesHost);
 
-    let tileURL = hosted ? basemap.url : `${config.BASEMAP_TILES_URL}/${basemap.id}/tiles/{z}/{x}/{y}`;
-    if (opts.token) tileURL = tileURL + `?token=${opts.token}`;
+    let tileURL = applyTileArgs(hosted ? basemap.url : `${config.BASEMAP_TILES_URL}/${basemap.id}/tiles/{z}/{x}/{y}`, basemap.args);
+    if (opts.token) tileURL = tileURL + `${tileURL.includes('?') ? '&' : '?'}token=${opts.token}`;
 
     const esriMetadataURL = basemap.tilejson || basemap.url;
 
@@ -63,7 +65,7 @@ export async function basemapTileJSON(
     }
 
     if (basemap.tilejson && (basemap.tilejson.startsWith('http://') || basemap.tilejson.startsWith('https://'))) {
-        const url = new URL(basemap.tilejson);
+        const url = new URL(applyTileArgs(basemap.tilejson, basemap.args));
 
         if (url.hostname === pmtilesHost) {
             url.searchParams.set('token', opts.upstreamToken);
@@ -96,6 +98,9 @@ export async function basemapTileJSON(
         // URL.pathname percent-encodes the `{z}/{x}/{y}` template braces to
         // `%7B`/`%7D`, so decode before stripping the tile-coordinate segment.
         tilejsonUrl.pathname = decodeURIComponent(parsedUrl.pathname).replace(/\/tiles\/\{[^}]+\}.*$/, '');
+        for (const [key, value] of Object.entries((basemap.args ?? {}) as TileArgs)) {
+            for (const v of Array.isArray(value) ? value : [value]) tilejsonUrl.searchParams.append(key, v);
+        }
         tilejsonUrl.searchParams.set('token', opts.upstreamToken);
 
         const tj = await fetch(tilejsonUrl);
