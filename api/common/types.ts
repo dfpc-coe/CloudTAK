@@ -122,6 +122,10 @@ export const TileJSON = Type.Object({
     type: Type.String(),
     format: Type.Optional(Type.String()),
     vector_layers: Type.Optional(Type.Array(TileJSON_VectorLayer)),
+    legend: Type.Optional(Type.Array(Type.Object({
+        label: Type.String(),
+        color: Type.String({ description: 'CSS color of the legend swatch' }),
+    }), { description: 'Raster legend entries - a CloudTAK extension to TileJSON' })),
 });
 
 export const LayerError = Type.Object({
@@ -577,6 +581,13 @@ export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
     source_type: Type.Enum(VideoLease_SourceType),
 });
 
+/** Query params appended to tile and TileJSON requests, e.g. slope classes as repeatable `layer` values */
+export const BasemapArgs = Type.Record(
+    Type.String({ minLength: 1 }),
+    Type.Union([Type.String(), Type.Array(Type.String())]),
+    { description: 'Query params the client appends to every tile request. A string is a single value, an array is a repeated param' },
+);
+
 export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {
     id: Type.Integer(),
     pos: Type.Integer(),
@@ -585,6 +596,7 @@ export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay,
     opacity: Type.Number(),
     visible: Type.Boolean(),
     styles: Type.Array(Type.Unknown()),
+    args: BasemapArgs,
 });
 
 export const ProfileInterestResponse = createSelectSchema(schemas.ProfileInterest, {
@@ -784,6 +796,7 @@ export const BasemapResponse = Type.Object({
     tilejson: Type.Optional(Type.Union([Type.Null(), Type.String()], {
         description: 'Upstream TileJSON URL used to resolve metadata for hosted basemaps',
     })),
+    args: BasemapArgs,
 
     // Terrain
     encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),

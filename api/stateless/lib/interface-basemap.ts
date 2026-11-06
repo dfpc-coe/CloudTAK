@@ -13,6 +13,7 @@ import pointOnFeature from '@turf/point-on-feature';
 import { bboxPolygon } from '@turf/bbox-polygon';
 import { Feature } from '@tak-ps/node-cot';
 import { MultiGeoJSONFeatureCollection, MultiGeoJSONFeature, TileJSON, TileJSON_VectorLayer } from '../../common/types.js';
+import BasemapControl from '../../common/control/basemap.js';
 
 export const TileJSONActions = Type.Object({
     feature: Type.Array(Type.Enum(Basemap_FeatureAction)),
@@ -138,10 +139,11 @@ export class BasemapProtocol implements BasemapProtocolInterface {
             || basemap.protocol === Basemap_Protocol.ImageServer
             || basemap.protocol === Basemap_Protocol.Hosted
         ) {
-            return `${config.BASEMAP_TILES_URL}/${basemap.id}/tiles/{$z}/{$x}/{$y}?token=${basemap.sharing_token}`;
+            const shared = BasemapControl.applyTileArgs(`${config.BASEMAP_TILES_URL}/${basemap.id}/tiles/{$z}/{$x}/{$y}`, basemap.args);
+            return `${shared}${shared.includes('?') ? '&' : '?'}token=${basemap.sharing_token}`;
         }
 
-        return basemap.url;
+        return BasemapControl.applyTileArgs(basemap.url, basemap.args);
     }
 
     /**

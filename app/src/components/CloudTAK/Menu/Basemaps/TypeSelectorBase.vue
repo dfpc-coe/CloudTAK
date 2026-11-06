@@ -23,7 +23,7 @@
             <TablerToggle
                 v-model='editing.sharing_enabled'
                 label='Enable Sharing'
-                @change='emit("update:warnSharing", !editing.sharing_enabled)'
+                @change='warnSharing = !editing.sharing_enabled'
             />
         </TablerInput>
     </div>
@@ -54,34 +54,36 @@
             </template>
         </TablerPillGroup>
     </div>
-    <div class='col-md-12'>
-        <TablerInput
-            v-model='editing.url'
-            required
-            :label='config.urlLabel'
-            :description='config.urlDescription'
-            :placeholder='config.urlPlaceholder'
-            :error='errors.url'
-        >
-            <div
-                v-if='config.urlTokens.length'
-                class='btn-list'
+    <slot name='source'>
+        <div class='col-md-12'>
+            <TablerInput
+                v-model='editing.url'
+                required
+                :label='config.urlLabel'
+                :description='config.urlDescription'
+                :placeholder='config.urlPlaceholder'
+                :error='errors.url'
             >
-                <TablerBadge
-                    v-for='token in config.urlTokens'
-                    :key='token.value'
-                    :title='token.tooltip'
-                    class='cursor-pointer'
-                    background-color='rgba(6, 182, 212, 0.15)'
-                    border-color='rgba(6, 182, 212, 0.4)'
-                    text-color='#0891b2'
-                    @click='editing.url = editing.url + token.value'
+                <div
+                    v-if='config.urlTokens.length'
+                    class='btn-list'
                 >
-                    {{ token.value }}
-                </TablerBadge>
-            </div>
-        </TablerInput>
-    </div>
+                    <TablerBadge
+                        v-for='token in config.urlTokens'
+                        :key='token.value'
+                        :title='token.tooltip'
+                        class='cursor-pointer'
+                        background-color='rgba(6, 182, 212, 0.15)'
+                        border-color='rgba(6, 182, 212, 0.4)'
+                        text-color='#0891b2'
+                        @click='editing.url = editing.url + token.value'
+                    >
+                        {{ token.value }}
+                    </TablerBadge>
+                </div>
+            </TablerInput>
+        </div>
+    </slot>
 
     <label
         class='subheader mt-3 cursor-pointer'
@@ -131,11 +133,10 @@
                 class='col-12 mt-3'
             >
                 <TablerEnum
-                    :model-value='scope'
+                    v-model='scope'
                     required
                     label='Access Scope'
                     :options='["user", "server"]'
-                    @update:model-value='emit("update:scope", $event)'
                 />
             </div>
             <SelectBasemapCollection
@@ -269,33 +270,28 @@ import HandleForm from '../../../util/HandleForm.vue';
 import SelectBasemapCollection from '../../util/SelectBasemapCollection.vue';
 import TypeSelectorSelected from './TypeSelectorSelected.vue';
 import { BasemapTypeConfig } from './types.ts';
+import type { BasemapErrors, BasemapScope } from './modes.ts';
 import type { BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from './types.ts';
 
 const editing = defineModel<EditingBasemap>('editing', { required: true });
+const scope = defineModel<BasemapScope>('scope', { required: true });
+const warnSharing = defineModel<boolean>('warnSharing', { required: true });
 
 const props = defineProps<{
+    type: BasemapSourceType;
     basemapId?: number;
     vectorLayers: VectorLayerDescriptor[];
-    errors: Record<'name' | 'url', string>;
-    type: BasemapSourceType;
-    scope: 'user' | 'server';
-    warnSharing: boolean;
+    errors: BasemapErrors;
     isSystemAdmin: boolean;
 }>();
 
 const emit = defineEmits<{
     'change-type': [];
-    'update:scope': [value: 'user' | 'server'];
-    'update:warnSharing': [value: boolean];
 }>();
 
 const config = BasemapTypeConfig[props.type];
 const showSelectedBanner = computed(() => !props.basemapId);
-const showTypeField = computed(() => {
-    return props.type !== 'featureserver'
-        && props.type !== 'mapserver'
-        && props.type !== 'imageserver';
-});
+const showTypeField = computed(() => !config.fixedType);
 const advanced = ref(false);
 
 const vectorTitleSchema = computed(() => {

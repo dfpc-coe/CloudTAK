@@ -476,6 +476,7 @@ export const Basemap = pgTable('basemaps', {
     scheme: text().$type<Basemap_Scheme>().notNull().default(Basemap_Scheme.XYZ),
     overlay: boolean().notNull().default(false),
     tilejson: text(),
+    args: jsonb().$type<Record<string, string | string[]>>().notNull().default({}),
 }, (table) => {
     return {
         username_idx: index('basemaps_username_idx').on(table.username),
@@ -848,6 +849,7 @@ export const ProfileOverlay = pgTable('profile_overlays', {
     mode: text().notNull(),
     mode_id: text(), // Used for Data not for Profile
     url: text().notNull(),
+    args: jsonb().$type<Record<string, string | string[]>>().notNull().default({}),
 }, t => ({
     unq: unique().on(t.username, t.url),
 }));

@@ -1,7 +1,7 @@
 <template>
     <div class='row row-cards'>
         <TypeSelectorSelected
-            type='upload'
+            :type='type'
             @change-type='emit("change-type")'
         />
 
@@ -9,7 +9,7 @@
             <Upload
                 method='PUT'
                 :url='uploadUrl'
-                @done='emit("done", $event)'
+                @done='emit("imported", fromImport($event as BasemapImport))'
                 @cancel='emit("change-type")'
             />
         </div>
@@ -19,13 +19,19 @@
 <script setup lang='ts'>
 import Upload from '../../../util/Upload.vue';
 import TypeSelectorSelected from './TypeSelectorSelected.vue';
+import { stdurl } from '../../../../std.ts';
+import { fromImport } from './modes.ts';
+import type { BasemapImported } from './modes.ts';
+import type { BasemapImport, BasemapSourceType } from './types.ts';
 
 defineProps<{
-    uploadUrl: URL;
+    type: BasemapSourceType;
 }>();
 
 const emit = defineEmits<{
     'change-type': [];
-    done: [value: unknown];
+    imported: [value: BasemapImported];
 }>();
+
+const uploadUrl = stdurl('/api/basemap');
 </script>
