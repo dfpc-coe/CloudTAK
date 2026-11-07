@@ -1,23 +1,25 @@
 import assert from 'node:assert/strict';
-import sharp from 'sharp';
+import { Raster } from '@tak-ps/node-tiles';
+import { decodeImage, encodePNG } from '@tak-ps/node-tiles/node';
 
 /** A square PNG of one colour */
 export async function solid(r: number, g: number, b: number, alpha = 1, size = 256): Promise<Buffer> {
-    return await sharp({ create: { width: size, height: size, channels: 4, background: { r, g, b, alpha } } })
-        .png()
-        .toBuffer();
+    const raster = Raster.alloc(size, size, 4);
+    const pixel = [r, g, b, Math.round(alpha * 255)];
+
+    for (let i = 0; i < raster.data.length; i += 4) raster.data.set(pixel, i);
+
+    return await encodePNG(raster);
 }
 
 /** Channel values of one pixel - three entries for an opaque JPEG, four for RGBA */
 export async function pixel(image: Buffer | ArrayBuffer, x = 0, y = 0): Promise<number[]> {
-    const { data, info } = await sharp(Buffer.isBuffer(image) ? image : Buffer.from(image)).raw().toBuffer({ resolveWithObject: true });
-    const i = (y * info.width + x) * info.channels;
-    return Array.from(data.subarray(i, i + info.channels));
+    return (await decodeImage(image)).get(x, y);
 }
 
 export async function dimensions(image: Buffer): Promise<[number, number]> {
-    const meta = await sharp(image).metadata();
-    return [meta.width, meta.height];
+    const { width, height } = await decodeImage(image);
+    return [width, height];
 }
 
 /** Assert channel values match within a tolerance that absorbs encoder rounding */
