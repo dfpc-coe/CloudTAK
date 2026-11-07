@@ -27,6 +27,11 @@
 
 ### Pending Release
 
+### v13.121.1 - 2026-11-07
+
+- :rocket: Migrate PMTile Tile utilities into the `@tak-ps/node-tiles` library for better unit testing and common usage across the API and ETL tasks
+- :arrow_up: Update all Lambda runtimes to Node 26
+
 ### v13.121.0 - 2026-11-05
 
 - :tada: Introduce Slope & Composite Raster Layers
