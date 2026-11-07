@@ -3,7 +3,7 @@ import { Type, Static } from '@sinclair/typebox';
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Area, Profile_Speed, Profile_Text, Profile_Radiation_Dose, Profile_Wake_Lock } from './enums.js';
-import { VideoLease_SourceType, CoreEventBoardColumn_Type, CoreEventEffect_Status, LayerMapping_Destination } from './enums.js';
+import { VideoLease_SourceType, CoreEventBoardColumn_Type, CoreEventEffect_Status, CoreEntityTimeline_Type, LayerMapping_Destination } from './enums.js';
 import { Capabilities, InvocationType } from '@tak-ps/etl';
 import { CoreEventSchema, CoreDeviceSchema, CoreEntityLinkSchema, CoreEntityStyleSchema, withoutHints } from './core-schema.js';
 import { AugmentedData } from './models/Data.js';
@@ -328,6 +328,45 @@ export const CoreEventAssignmentResponse = Type.Object({
     name: Type.String({ description: 'Name of the assigned person' }),
     role: Type.String({ description: 'Capacity the person manages the Event in - ie: IC, JAG' }),
     remarks: Type.String(),
+});
+
+export const CoreEntityTimelineResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    occurred: Type.String({ description: 'When the entry happened at its source' }),
+    entity: Type.String({ description: 'Core Event or Device the entry belongs to' }),
+    type: Type.Enum(CoreEntityTimeline_Type),
+    username: Type.Union([Type.Null(), Type.String()], { description: 'Username of the author if they have a Profile' }),
+    author: Type.String({ description: 'Display name of the author - a dispatcher, a unit, an ETL' }),
+    body: Type.String(),
+    metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'Type specific payload - ie: unit & status' }),
+    external_id: Type.Union([Type.Null(), Type.String()], { description: 'ID of the entry in the source system' }),
+});
+
+export const CoreEntityTimelineInput = Type.Object({
+    type: Type.Enum(CoreEntityTimeline_Type, { default: CoreEntityTimeline_Type.COMMENT }),
+    occurred: Type.Optional(Type.String({ format: 'date-time', description: 'When the entry happened at its source - defaults to now' })),
+    author: Type.String({ default: '', description: 'Display name of the author - defaults to the requesting user' }),
+    body: Type.String({ default: '' }),
+    metadata: Type.Record(Type.String(), Type.Unknown(), { default: {}, description: 'Type specific payload - ie: unit & status' }),
+    external_id: Type.Optional(Type.Unsafe<string | null>({
+        type: ['string', 'null'],
+        minLength: 1,
+        description: 'ID of the entry in the source system - unique per Entity',
+    })),
+});
+
+export const CoreEntityTimelinePatch = Type.Object({
+    type: Type.Optional(Type.Enum(CoreEntityTimeline_Type)),
+    occurred: Type.Optional(Type.String({ format: 'date-time' })),
+    author: Type.Optional(Type.String()),
+    body: Type.Optional(Type.String()),
+    metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
+    external_id: Type.Optional(Type.Unsafe<string | null>({
+        type: ['string', 'null'],
+        minLength: 1,
+    })),
 });
 
 export const CoreEventEffectResponse = Type.Object({
