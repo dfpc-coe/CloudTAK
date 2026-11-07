@@ -3,7 +3,7 @@ import type { Static } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import undici from 'undici';
 import { isSafeUrl } from '@tak-ps/node-safeurl';
-import { tileToBBOX } from '../tilebelt.js';
+import { Tile } from '@tak-ps/node-tiles';
 import { TileJSON, TileJSONActions } from '../tilejson.js';
 import type { BasemapConfig } from '../basemap.js';
 
@@ -97,8 +97,17 @@ export class BasemapProtocol {
         };
     }
 
+    /** The tile at these coordinates, or a 404 when they fall outside the grid */
+    static tileAt(z: number, x: number, y: number): Tile {
+        try {
+            return new Tile(z, x, y);
+        } catch (err) {
+            throw new Err(404, err instanceof Error ? err : new Error(String(err)), 'Tile Not Found');
+        }
+    }
+
     static extent(z: number, x: number, y: number): Array<number> {
-        return tileToBBOX([x, y, z]);
+        return BasemapProtocol.tileAt(z, x, y).bounds();
     }
 
     static quadkey(z: number, x: number, y: number): string {
@@ -137,7 +146,7 @@ export class BasemapProtocol {
         if (!bounds || bounds.length !== 4) return true;
 
         const [minLon, minLat, maxLon, maxLat] = bounds;
-        const [tileMinLon, tileMinLat, tileMaxLon, tileMaxLat] = tileToBBOX([x, y, z]);
+        const [tileMinLon, tileMinLat, tileMaxLon, tileMaxLat] = BasemapProtocol.tileAt(z, x, y).bounds();
 
         if (tileMaxLat < minLat || tileMinLat > maxLat) return false;
 
