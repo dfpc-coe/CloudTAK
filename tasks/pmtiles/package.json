@@ -4,7 +4,7 @@
     "type": "module",
     "private": true,
     "engines": {
-        "node": ">= 24"
+        "node": ">= 26"
     },
     "scripts": {
         "check": "tsc --noEmit --project tsconfig.json",
@@ -21,7 +21,6 @@
         "@aws-sdk/client-secrets-manager": "^3.726.1",
         "@aws-sdk/node-http-handler": "^3.212.0",
         "@mapbox/tile-cover": "^3.0.2",
-        "@mapbox/tilebelt": "^2.0.1",
         "@mapbox/vector-tile": "^3.0.0",
         "@mapbox/vtquery": "^0.6.0",
         "@maplibre/geojson-vt": "^6.3.0",
@@ -30,6 +29,7 @@
         "@sinclair/typebox": "^0.34.11",
         "@supercharge/promise-pool": "^3.2.0",
         "@tak-ps/node-safeurl": "^1.4.0",
+        "@tak-ps/node-tiles": "^1.0.0",
         "@tak-ps/serverless-http": "^3.4.0",
         "@turf/along": "^7.3.5",
         "@turf/distance": "^7.3.5",
@@ -42,7 +42,6 @@
         "jsonwebtoken": "^9.0.0",
         "pbf": "^5.0.0",
         "pmtiles": "^4.0.0",
-        "pngjs": "^7.0.0",
         "sharp": "^0.35.0",
         "undici": "^8.12.3",
         "vt-pbf": "^3.1.3"
@@ -54,7 +53,6 @@
         "@types/geojson": "^7946.0.16",
         "@types/jsonwebtoken": "^9.0.2",
         "@types/node": "^26.0.0",
-        "@types/pngjs": "^6.0.5",
         "c8": "^12.0.0",
         "eslint": "^10.0.0",
         "openapi-typescript": "^7.13.0",

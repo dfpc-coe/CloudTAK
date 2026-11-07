@@ -12,15 +12,9 @@ import { EsriBase, EsriProxyLayer, isEsriLayerURL } from './esri.js';
 import { BasemapProtocol, TileOpts } from './basemap/protocol.js';
 import { fromProtocol } from './basemap/factory.js';
 import TileCache from './cache.js';
-import {
-    MAX_OVERZOOM,
-    DEFAULT_SLOPE_CLASSES,
-    SlopeClass,
-    slopeLegend,
-    serializeSlopeLayers,
-    renderSlopeTile,
-    DEMSource,
-} from './shading.js';
+import { Slope, Terrain } from '@tak-ps/node-tiles';
+import type { SlopeClass, TerrainSource } from '@tak-ps/node-tiles';
+import { encodePNG, imageTerrainSource } from '@tak-ps/node-tiles/node';
 
 type ApiBasemapConfig = Exclude<paths['/api/basemap/{:basemapid}']['get']['responses'][200]['content']['application/json'], string>;
 type ApiBasemapChildConfig = ApiBasemapConfig['children'][number];
@@ -272,7 +266,7 @@ export default class Basemap {
      * The DEM behind a raster-dem basemap, read in process through the
      * protocol's buffered tile fetch. Throws for any other basemap type.
      */
-    demSource(opts?: TileOpts): DEMSource {
+    demSource(opts?: TileOpts): TerrainSource {
         if (this.config.type !== 'raster-dem') {
             throw new Err(400, null, 'Slope shading requires a raster-dem basemap');
         }
@@ -284,12 +278,12 @@ export default class Basemap {
 
         const protocol = this.protocol();
 
-        return {
+        return imageTerrainSource({
             encoding,
             minzoom: this.config.minzoom ?? 0,
             maxzoom: this.config.maxzoom ?? 16,
-            tile: async (z, x, y) => (await protocol.buffer(z, x, y, opts))?.data ?? null,
-        };
+            fetch: async tile => (await protocol.buffer(tile.z, tile.x, tile.y, opts))?.data ?? null,
+        });
     }
 
     /**
@@ -305,9 +299,9 @@ export default class Basemap {
         this.demSource();
 
         const tilejson = await this.tilejson(opts);
-        const classes = opts.classes ?? DEFAULT_SLOPE_CLASSES;
+        const classes = opts.classes ?? Slope.DEFAULT_CLASSES;
 
-        const params = opts.classes ? serializeSlopeLayers(opts.classes).map(layer => `layer=${layer}`) : [];
+        const params = opts.classes ? Slope.serialize(opts.classes).map(layer => `layer=${layer}`) : [];
         if (opts.token) params.push(`token=${opts.token}`);
 
         const url = `${Basemap.pmtilesUrl()}/tiles/slope/${this.id}/tiles/{z}/{x}/{y}`;
@@ -318,8 +312,8 @@ export default class Basemap {
             format: 'png',
             encoding: undefined,
             tiles: [params.length ? `${url}?${params.join('&')}` : url],
-            maxzoom: tilejson.maxzoom + MAX_OVERZOOM,
-            legend: slopeLegend(classes),
+            maxzoom: tilejson.maxzoom + Terrain.MAX_OVERZOOM,
+            legend: Slope.legend(classes),
         };
     }
 
@@ -329,26 +323,35 @@ export default class Basemap {
         opts?: TileOpts & { classes?: SlopeClass[] },
     ): Promise<void> {
         const source = this.demSource(opts);
-        const classes = opts?.classes ?? DEFAULT_SLOPE_CLASSES;
+        const classes = opts?.classes ?? Slope.DEFAULT_CLASSES;
 
-        if (z < source.minzoom || z > source.maxzoom + MAX_OVERZOOM) {
+        if (z < source.minzoom || z > source.maxzoom + Terrain.MAX_OVERZOOM) {
             throw new Err(404, null, 'Tile Not Found');
         }
 
-        const identity = JSON.stringify([this.id, this.config.url, this.config.updated, source.encoding, serializeSlopeLayers(classes)]);
+        const tile = BasemapProtocol.tileAt(z, x, y);
+        const identity = JSON.stringify([this.id, this.config.url, this.config.updated, source.encoding, Slope.serialize(classes)]);
         const key = `slope/${createHash('sha256').update(identity).digest('hex').slice(0, 32)}/${z}/${x}/${y}.png`;
         const cache = TileCache.shared();
 
         let png = await cache.get(key);
 
         if (!png) {
-            png = await renderSlopeTile(z, x, y, source, classes);
+            let terrain: Terrain | null;
 
-            if (!png) {
+            try {
+                terrain = await Terrain.fetch(tile, source);
+            } catch (err) {
+                if (err instanceof Err) throw err;
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'DEM tile is not a supported raster image');
+            }
+
+            if (!terrain) {
                 res.status(204).send('');
                 return;
             }
 
+            png = await encodePNG(Slope.render(terrain, classes), { palette: true });
             await cache.set(key, png);
         }
 

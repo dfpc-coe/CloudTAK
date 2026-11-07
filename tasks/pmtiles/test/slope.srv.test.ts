@@ -5,16 +5,17 @@ import http from 'http';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import sharp from 'sharp';
+import { Tile } from '@tak-ps/node-tiles';
 import type { AddressInfo } from 'net';
 import { pixel } from './lib/raster.js';
+import { demTile, plane } from './lib/dem.js';
 
 process.env.StackName = 'test';
 process.env.SigningSecret = 'test-secret';
 process.env.ASSET_BUCKET = 'test-bucket';
 
 const SIZE = 64;
-const DEM = { z: 12, x: 2048, y: 1024 };
+const DEM = new Tile(12, 2048, 1024);
 const CENTRE = SIZE / 2;
 
 // z14/8193/4098 sits inside the DEM tile, two zooms below its maxzoom
@@ -26,26 +27,6 @@ let upstream: http.Server;
 
 const requestedURLs: string[] = [];
 const token = jwt.sign({ email: 'user@example.com', access: 'user' }, 'test-secret');
-
-// Planar DEM rising eastward at 33 degrees, terrarium encoded
-async function demTile(): Promise<Buffer> {
-    const raw = Buffer.alloc(SIZE * SIZE * 3);
-
-    for (let py = 0; py < SIZE; py++) {
-        const n = Math.PI - (2 * Math.PI * (DEM.y + (py + 0.5) / SIZE)) / 2 ** DEM.z;
-        const cell = (40075016.686 * Math.cos(Math.atan(Math.sinh(n)))) / (2 ** DEM.z * SIZE);
-
-        for (let px = 0; px < SIZE; px++) {
-            const value = 1000 + px * cell * Math.tan(33 * Math.PI / 180) + 32768;
-            const i = (py * SIZE + px) * 3;
-            raw[i] = Math.floor(value / 256);
-            raw[i + 1] = Math.floor(value % 256);
-            raw[i + 2] = Math.round((value % 1) * 256) & 0xff;
-        }
-    }
-
-    return await sharp(raw, { raw: { width: SIZE, height: SIZE, channels: 3 } }).png().toBuffer();
-}
 
 function baseURL(): string {
     return `http://localhost:${(server.address() as AddressInfo).port}`;
@@ -82,7 +63,7 @@ function basemap(id: number, type: string): Record<string, unknown> {
 test('Setup', async () => {
     process.env.TILE_CACHE_DIR = await fs.mkdtemp(path.join(os.tmpdir(), 'pmtiles-slope-'));
 
-    const tile = await demTile();
+    const tile = await demTile(plane(33, DEM, SIZE), { tile: DEM, size: SIZE, encoding: 'terrarium' });
 
     // Plays both the CloudTAK API (basemap config) and the upstream DEM tile host
     upstream = http.createServer((req, res) => {
@@ -102,6 +83,11 @@ test('Setup', async () => {
         if (url.pathname === `/dem/${DEM.z}/${DEM.x}/${DEM.y}.png`) {
             res.writeHead(200, { 'content-type': 'image/png' });
             return res.end(tile);
+        }
+
+        if (url.pathname === '/dem/12/1/1.png') {
+            res.writeHead(200, { 'content-type': 'image/png' });
+            return res.end('not a tile');
         }
 
         if (url.pathname.startsWith('/dem/')) {
@@ -213,6 +199,13 @@ test('tile: 204 where the DEM has no tile', async () => {
     assert.equal(res.status, 204);
 });
 
+test('tile: 400 when the DEM tile is not an image', async () => {
+    const res = await get('/tiles/slope/42/tiles/12/1/1');
+
+    assert.equal(res.status, 400);
+    assert.equal((await res.json()).message, 'DEM tile is not a supported raster image');
+});
+
 test('tile: 404 outside the shaded zoom range', async () => {
     assert.equal((await get('/tiles/slope/42/tiles/3/0/0')).status, 404);
     assert.equal((await get('/tiles/slope/42/tiles/17/0/0')).status, 404);
@@ -221,11 +214,11 @@ test('tile: 404 outside the shaded zoom range', async () => {
 test('both routes reject malformed layers', async () => {
     const tilejson = await get('/tiles/slope/42?layer=30:45');
     assert.equal(tilejson.status, 400);
-    assert.equal((await tilejson.json()).message, 'Invalid slope layer "30:45": expected lower:upper:hex_color');
+    assert.equal((await tilejson.json()).message, 'Invalid slope class "30:45": expected lower:upper:hex_color');
 
     const tile = await get(`/tiles/slope/42/tiles/${OVERZOOMED}?layer=45:30:ff0000`);
     assert.equal(tile.status, 400);
-    assert.equal((await tile.json()).message, 'Invalid slope layer "45:30:ff0000": expected 0 <= lower < upper <= 90');
+    assert.equal((await tile.json()).message, 'Invalid slope class "45:30:ff0000": expected 0 <= lower < upper <= 90');
 });
 
 test('both routes reject basemaps that are not raster-dem', async () => {

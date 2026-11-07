@@ -4,7 +4,8 @@ import { Type } from '@sinclair/typebox';
 import { authRequest } from '../lib/auth.js';
 import { TileJSON } from '../lib/tilejson.js';
 import Basemap from '../lib/basemap.js';
-import { parseSlopeLayers } from '../lib/shading.js';
+import { Slope } from '@tak-ps/node-tiles';
+import type { SlopeClass } from '@tak-ps/node-tiles';
 
 const SlopeLayerQuery = Type.Optional(Type.Union([
     Type.String(),
@@ -12,6 +13,14 @@ const SlopeLayerQuery = Type.Optional(Type.Union([
 ], {
     description: 'Slope class as lower:upper:hex_color (RRGGBB or RRGGBBAA), repeatable. Defaults to the avalanche classes when omitted',
 }));
+
+function parseSlopeLayers(raw: string | string[] | undefined): SlopeClass[] {
+    try {
+        return Slope.parse(raw);
+    } catch (err) {
+        throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : 'Invalid slope layer');
+    }
+}
 
 export default async function router(schema: Schema) {
     schema.get('/tiles/slope/:basemapid', {
