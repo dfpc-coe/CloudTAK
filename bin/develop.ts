@@ -30,6 +30,9 @@ import process from 'node:process';
  * API_URL defaults to the Vite dev server so locally generated URLs (basemap
  * TileJSON, ESRI proxy, passkey origin) don't point back at the deployed stack.
  * Pass 'stack' to either URL option to use the deployed Output instead.
+ *
+ * Hosted basemap URLs in the dump point at the deployed PMTilesAPI host, which
+ * rejects local sessions, so they are rewritten to PMTILES_URL after loading.
  */
 
 const DEFAULT_STACK = 'cotak-prod';
@@ -186,6 +189,23 @@ if (!opts['no-dump']) {
     interactive('npm', ['run', 'loaddb', dump], apiDir, `failed to load ${dump} into tak_ps_etl - the local database was not updated`);
 
     log(`ok - loaded ${dump} into tak_ps_etl`);
+}
+
+if (hostedPmtilesUrl && hostedPmtilesUrl !== pmtilesUrl) {
+    const hosted = hostedPmtilesUrl.replace(/\/$/, '');
+    const local = pmtilesUrl.replace(/\/$/, '');
+
+    await run('psql', ['-v', 'ON_ERROR_STOP=1', 'tak_ps_etl', '-c', `
+        UPDATE basemaps
+            SET url = replace(url, '${hosted}', '${local}'),
+                tilejson = replace(tilejson, '${hosted}', '${local}')
+            WHERE url LIKE '%${hosted}%' OR tilejson LIKE '%${hosted}%';
+        UPDATE profile_overlays
+            SET url = replace(url, '${hosted}', '${local}')
+            WHERE url LIKE '%${hosted}%';
+    `]);
+
+    log(`ok - rewrote hosted basemap URLs from ${hosted} to ${local}`);
 }
 
 // The AWS SDK in both servers reads the shell's default credentials - point
