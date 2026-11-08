@@ -27,6 +27,10 @@
 
 ### Pending Release
 
+### v13.122.1 - 2026-11-08
+
+- :arrow_up: Update etl-base & node-cot to latest versions
+
 ### v13.122.0 - 2026-11-08
 
 - :rocket: Refactor lower tabs into top level tabs for better visibility and discoverability of features
