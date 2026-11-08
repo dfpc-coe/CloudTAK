@@ -22,6 +22,7 @@ let userEventId: string;
 let userEntryId: string;
 let adminEntryId: string;
 let eventOnlyToken: string;
+let timelineOnlyToken: string;
 let scopedToken: string;
 let machineEventId: string;
 
@@ -433,6 +434,19 @@ test('POST: api/connection/1/token - event only & scoped tokens', async () => {
 
         await nextSecond();
 
+        const timelineOnly = await flight.fetch('/api/connection/1/token', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Timeline Only',
+                permissions: ['timeline:*'],
+            },
+        }, true);
+
+        timelineOnlyToken = timelineOnly.body.token;
+
+        await nextSecond();
+
         const scoped = await flight.fetch('/api/connection/1/token', {
             method: 'POST',
             auth: { bearer: flight.token.admin },
@@ -498,6 +512,37 @@ test('POST: api/core/entity/:entity/timeline - connection token needs the timeli
     }
 });
 
+test('POST: api/core/entity/:entity/timeline - connection token also needs the Entity kind scope', async () => {
+    try {
+        const denied = await flight.fetch(`/api/core/entity/${machineEventId}/timeline`, {
+            method: 'POST',
+            auth: { bearer: timelineOnlyToken },
+            body: { body: 'Machine note' },
+        }, false);
+
+        assert.equal(denied.status, 403);
+        assert.equal(denied.body.message, 'Connection token does not have the event:read permission');
+
+        const list = await flight.fetch(`/api/core/entity/${machineEventId}/timeline`, {
+            method: 'GET',
+            auth: { bearer: timelineOnlyToken },
+        }, false);
+
+        assert.equal(list.status, 403);
+        assert.equal(list.body.message, 'Connection token does not have the event:read permission');
+
+        const device = await flight.fetch(`/api/core/entity/${deviceId}/timeline`, {
+            method: 'GET',
+            auth: { bearer: scopedToken },
+        }, false);
+
+        assert.equal(device.status, 403);
+        assert.equal(device.body.message, 'Connection token does not have the device:read permission');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('POST: api/core/entity/:entity/timeline - layer token needs the timeline scope', async () => {
     try {
         await flight.config!.models.Layer.generate({
@@ -513,11 +558,20 @@ test('POST: api/core/entity/:entity/timeline - layer token needs the timeline sc
             task: 1,
             version: '1.0.0',
             connection: 1,
-            permissions: ['event:update', 'timeline:create'],
+            permissions: ['event:read', 'event:update', 'timeline:create'],
+        });
+
+        await flight.config!.models.Layer.generate({
+            name: 'Timeline Only Layer',
+            task: 1,
+            version: '1.0.0',
+            connection: 1,
+            permissions: ['timeline:create'],
         });
 
         const eventOnlyLayer = 'etl.' + jwt.sign({ access: 'layer', id: 1, internal: true }, 'coe-wildland-fire');
         const scopedLayer = 'etl.' + jwt.sign({ access: 'layer', id: 2, internal: true }, 'coe-wildland-fire');
+        const timelineOnlyLayer = 'etl.' + jwt.sign({ access: 'layer', id: 3, internal: true }, 'coe-wildland-fire');
 
         const denied = await flight.fetch(`/api/core/entity/${machineEventId}/timeline`, {
             method: 'POST',
@@ -527,6 +581,15 @@ test('POST: api/core/entity/:entity/timeline - layer token needs the timeline sc
 
         assert.equal(denied.status, 403);
         assert.equal(denied.body.message, 'Layer token does not have the timeline:create permission');
+
+        const kind = await flight.fetch(`/api/core/entity/${machineEventId}/timeline`, {
+            method: 'POST',
+            auth: { bearer: timelineOnlyLayer },
+            body: { body: 'Layer note' },
+        }, false);
+
+        assert.equal(kind.status, 403);
+        assert.equal(kind.body.message, 'Layer token does not have the event:read permission');
 
         const res = await flight.fetch(`/api/core/entity/${machineEventId}/timeline`, {
             method: 'POST',

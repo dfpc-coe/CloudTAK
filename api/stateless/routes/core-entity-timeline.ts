@@ -35,11 +35,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         entry: Type.String({ format: 'uuid' }),
     });
 
-    /** Load the Entity's sharing columns and the access rules of its kind */
-    async function loadEntity(id: string) {
+    /**
+     * Load the Entity's sharing columns and the access rules of its kind - a
+     * token must also hold read access to that kind (`event:read` or `device:read`)
+     */
+    async function loadEntity(auth: AuthUser | AuthResource, id: string) {
         const entity = await config.models.CoreEntity.shared_from(id);
-        const control = entity.kind === LayerMapping_Destination.COREDEVICE ? deviceControl : eventControl;
-        return { entity, control };
+        const device = entity.kind === LayerMapping_Destination.COREDEVICE;
+
+        await Auth.ensure_scope(config, auth, device ? 'device:read' : 'event:read');
+
+        return { entity, control: device ? deviceControl : eventControl };
     }
 
     /** Load an entry, ensuring it belongs to the Entity in the URL */
@@ -109,7 +115,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         name: 'List Timeline',
         group: 'CoreEntityTimeline',
         security: Auth.security('timeline:read', { connection: true }),
-        description: 'List the Timeline entries of a Core Entity',
+        description: 'List the Timeline entries of a Core Entity - tokens also need read access to the Entity kind (event:read or device:read)',
         params: EntityParam,
         query: Type.Object({
             limit: Default.Limit,
@@ -136,7 +142,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 resources,
             });
 
-            const { entity, control } = await loadEntity(req.params.entity);
+            const { entity, control } = await loadEntity(auth, req.params.entity);
             const connection = auth instanceof AuthResource ? await control.resourceConnection(auth) : null;
             await control.ensureAccess(auth, entity, connection);
 
@@ -168,7 +174,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         name: 'Get Timeline Entry',
         group: 'CoreEntityTimeline',
         security: Auth.security('timeline:read', { connection: true }),
-        description: 'Get a Timeline entry of a Core Entity',
+        description: 'Get a Timeline entry of a Core Entity - tokens also need read access to the Entity kind (event:read or device:read)',
         params: EntryParam,
         res: CoreEntityTimelineResponse,
     }, async (req, res) => {
@@ -178,7 +184,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 resources,
             });
 
-            const { entity, control } = await loadEntity(req.params.entity);
+            const { entity, control } = await loadEntity(auth, req.params.entity);
             const connection = auth instanceof AuthResource ? await control.resourceConnection(auth) : null;
             await control.ensureAccess(auth, entity, connection);
 
@@ -192,7 +198,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         name: 'Create Timeline Entry',
         group: 'CoreEntityTimeline',
         security: Auth.security('timeline:create', { connection: true }),
-        description: 'Add a Timeline entry to a Core Entity',
+        description: 'Add a Timeline entry to a Core Entity - tokens also need read access to the Entity kind (event:read or device:read)',
         params: EntityParam,
         body: CoreEntityTimelineInput,
         res: CoreEntityTimelineResponse,
@@ -203,7 +209,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 resources,
             });
 
-            const { entity, control } = await loadEntity(req.params.entity);
+            const { entity, control } = await loadEntity(auth, req.params.entity);
             const connection = auth instanceof AuthResource ? await control.resourceConnection(auth) : null;
             await control.ensureEditable(auth, entity, connection);
 
@@ -223,7 +229,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         name: 'Upsert Timeline Entries',
         group: 'CoreEntityTimeline',
         security: Auth.security('timeline:create', { connection: true }),
-        description: 'Add many Timeline entries to a Core Entity in one call - entries with an external_id already present on the Entity are updated in place',
+        description: 'Add many Timeline entries to a Core Entity in one call - entries with an external_id already present on the Entity are updated in place. Tokens also need read access to the Entity kind (event:read or device:read)',
         params: EntityParam,
         body: Type.Object({
             entries: Type.Array(CoreEntityTimelineInput, { minItems: 1, maxItems: 1000 }),
@@ -239,7 +245,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 resources,
             });
 
-            const { entity, control } = await loadEntity(req.params.entity);
+            const { entity, control } = await loadEntity(auth, req.params.entity);
             const connection = auth instanceof AuthResource ? await control.resourceConnection(auth) : null;
             await control.ensureEditable(auth, entity, connection);
 
@@ -291,7 +297,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         name: 'Update Timeline Entry',
         group: 'CoreEntityTimeline',
         security: Auth.security('timeline:update', { connection: true }),
-        description: 'Update a Timeline entry of a Core Entity',
+        description: 'Update a Timeline entry of a Core Entity - tokens also need read access to the Entity kind (event:read or device:read)',
         params: EntryParam,
         body: CoreEntityTimelinePatch,
         res: CoreEntityTimelineResponse,
@@ -302,7 +308,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 resources,
             });
 
-            const { entity, control } = await loadEntity(req.params.entity);
+            const { entity, control } = await loadEntity(auth, req.params.entity);
             const connection = auth instanceof AuthResource ? await control.resourceConnection(auth) : null;
             await control.ensureEditable(auth, entity, connection);
 
@@ -323,7 +329,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         name: 'Delete Timeline Entry',
         group: 'CoreEntityTimeline',
         security: Auth.security('timeline:delete', { connection: true }),
-        description: 'Remove a Timeline entry from a Core Entity',
+        description: 'Remove a Timeline entry from a Core Entity - tokens also need read access to the Entity kind (event:read or device:read)',
         params: EntryParam,
         res: StandardResponse,
     }, async (req, res) => {
@@ -333,7 +339,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 resources,
             });
 
-            const { entity, control } = await loadEntity(req.params.entity);
+            const { entity, control } = await loadEntity(auth, req.params.entity);
             const connection = auth instanceof AuthResource ? await control.resourceConnection(auth) : null;
             await control.ensureEditable(auth, entity, connection);
 

@@ -27,6 +27,12 @@
 
 ### Pending Release
 
+### v13.122.0 - 2026-11-08
+
+- :rocket: Refactor lower tabs into top level tabs for better visibility and discoverability of features
+- :rocket: Redesign Links & Data Syncs property panels to be more visually consistent
+- :tada: Introduce Core Event Timeline APIs for storing timelined events related to an Entity
+
 ### v13.121.1 - 2026-11-07
 
 - :rocket: Migrate PMTile Tile utilities into the `@tak-ps/node-tiles` library for better unit testing and common usage across the API and ETL tasks
